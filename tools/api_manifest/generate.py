@@ -1530,7 +1530,11 @@ def _validate_ready_mapping_targets(
             if (
                 target is None
                 and language == "c"
-                and mapping_semantics in {"native-handle-release", "secret-buffer-wipe"}
+                and mapping_semantics in {
+                    "native-handle-release",
+                    "native-handle-release-managed-java-value",
+                    "secret-buffer-wipe",
+                }
                 and (mapping.get("packageId"), mapping.get("name")) in c_release_functions
             ):
                 target = {
@@ -2941,6 +2945,7 @@ def render_c_header(
                 or c_type["releaseFunction"] in ready_c_exports
             )
         ):
+            lines.append(f"/* Releases the library-owned {c_type['name']} handle. */")
             lines.append(f"void {c_type['releaseFunction']}({c_type['name']} *handle);")
     for error in manifest["errorCategories"]:
         if (
@@ -3316,7 +3321,14 @@ def render_java_api(manifest: dict[str, Any]) -> str:
             "class": function["java"]["class"],
             "method": function["java"]["method"],
             "returnType": function["java"]["returnType"],
-            "parameters": function["java"]["parameters"],
+            "parameters": [
+                {
+                    key: parameter[key]
+                    for key in ("name", "type", "nullable")
+                    if key in parameter
+                }
+                for parameter in function["java"]["parameters"]
+            ],
             "requirementIds": function["requirementIds"],
             "errorCategories": function["java"]["errorCategories"],
         }

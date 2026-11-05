@@ -6280,6 +6280,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_last_error_clear",
             "kmipkit_extension_registry_limits_v1_t.struct_size",
             "kmipkit_extension_registry_limits_v1_t.abi_version",
+            "kmipkit_client_configuration_release",
+            "kmipkit_client_batch_item_release",
+            "kmipkit_codec_limits_release",
+            "kmipkit_transport_config_release",
         }
         self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
         for symbol in c_exclusions:

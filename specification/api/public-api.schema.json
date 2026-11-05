@@ -1497,9 +1497,7 @@
               "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
             },
             "class": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z][A-Za-z0-9_]*)*$"
+              "$ref": "#/$defs/qualifiedName"
             },
             "method": {
               "$ref": "#/$defs/identifier"
@@ -2335,7 +2333,8 @@
           "$ref": "#/$defs/javaType"
         },
         "nullable": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Whether the Java parameter may be null."
         }
       },
       "additionalProperties": false

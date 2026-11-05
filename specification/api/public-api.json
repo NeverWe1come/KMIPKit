@@ -47099,36 +47099,59 @@
       },
       "java": {
         "package": "org.kmipkit.extensions",
-        "class": "Client",
-        "method": "create",
-        "parameters": [
-          {
-            "name": "configuration",
-            "type": "ClientConfiguration"
-          },
-          {
-            "name": "transport",
-            "type": "TransportConfiguration"
-          }
-        ],
+        "class": "TransportConfiguration.Builder",
+        "method": "build",
+        "parameters": [],
         "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_transportConfigCreate",
         "errorCategories": [
           "invalid_input",
           "resource_limit"
         ],
-        "returnType": "Client"
+        "returnType": "TransportConfiguration"
       },
       "python": {
         "module": "kmipkit.client",
-        "function": "Client.create",
+        "function": "TransportConfig",
         "parameters": [
           {
-            "name": "configuration",
-            "type": "ClientConfiguration"
+            "name": "endpoint",
+            "type": "Endpoint"
           },
           {
-            "name": "transport",
-            "type": "TransportConfig"
+            "name": "client_certificates",
+            "type": "tuple[TransportInput, ...]"
+          },
+          {
+            "name": "client_private_key",
+            "type": "TransportInput"
+          },
+          {
+            "name": "trust",
+            "type": "TrustSource"
+          },
+          {
+            "name": "revocation_lists",
+            "type": "tuple[TransportInput, ...]"
+          },
+          {
+            "name": "connect_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "write_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "read_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "total_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "int"
           }
         ],
         "cffiSymbol": "kmipkit_transport_config_create_v1",
@@ -47605,45 +47628,6 @@
       }
     },
     {
-      "declarationId": "ClientBatchItem:c-release",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_client_batch_item_release",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItem"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItem.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.ClientBatchItem.close"
-        }
-      },
-      "mappingSemantics": "native-handle-release"
-    },
-    {
       "declarationId": "ClientBatchItem:java",
       "packageId": "java-kmipkit",
       "kind": "type",
@@ -47768,45 +47752,6 @@
           "name": "kmipkit.extensions.ClientConfiguration"
         }
       }
-    },
-    {
-      "declarationId": "ClientConfiguration:c-release",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_client_configuration_release",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::extension_registry::ClientConfiguration"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_configuration_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientConfiguration.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.ClientConfiguration.close"
-        }
-      },
-      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "ClientConfiguration:java",
@@ -48367,47 +48312,6 @@
           "name": "kmipkit.ttlv.CodecLimits"
         }
       }
-    },
-    {
-      "declarationId": "CodecLimits:c-release",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_codec_limits_release",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0005-FR-007",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-009",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-ttlv",
-          "name": "kmipkit_ttlv::codec::CodecLimits"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_codec_limits_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.CodecLimits"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.ttlv.CodecLimits.close"
-        }
-      },
-      "mappingSemantics": "native-handle-release-managed-java-value"
     },
     {
       "declarationId": "CodecLimits:java",
@@ -234706,46 +234610,6 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchOutcome.PENDING"
-        }
-      }
-    },
-    {
-      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.Builder.build",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.build",
-      "capabilityId": "production_transport",
-      "requirementIds": [
-        "KMIPKIT-0013-FR-001",
-        "KMIPKIT-0013-FR-007",
-        "KMIPKIT-0043-FR-003",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/013-production-transport/spec.md",
-        "status": "Accepted",
-        "evidence": "**Status**: Accepted"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfigBuilder::build"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportConfig"
         }
       }
     },
@@ -444899,11 +444763,11 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.Client.create"
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.Client.create"
+          "name": "kmipkit.client.TransportConfig"
         }
       }
     },
@@ -445443,6 +445307,45 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0057",
       "blockedReason": "EncodingMismatch is a transport diagnostic detail normalized by the client into the established redacted protocol encoding error; the category has no standalone C, Java, or Python facade mapping."
+    },
+    {
+      "declarationId": "transport_config_create_v1:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.build",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportConfig::builder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_create_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportConfig"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -625477,6 +625380,42 @@
         "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
       },
       "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_configuration_release",
+      "reason": "This C-only native-handle release entry point is required to clean up the public KMIP client construction path. Other bindings manage equivalent lifetimes through their existing object ownership; it adds no separate KMIP operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable C client and transport construction path. The symbol already exists in the C ABI; this exclusion exposes its prototype in the generated header without claiming a separate cross-language facade operation."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_codec_limits_release",
+      "reason": "This C-only native-handle release entry point is required to clean up the public KMIP client construction path. Other bindings manage equivalent lifetimes through their existing object ownership; it adds no separate KMIP operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable C client and transport construction path. The symbol already exists in the C ABI; this exclusion exposes its prototype in the generated header without claiming a separate cross-language facade operation."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_release",
+      "reason": "This C-only native-handle release entry point is required to clean up a client batch item when it is not successfully transferred to a batch. Other bindings manage equivalent lifetimes through their existing object ownership; it adds no separate KMIP operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable C client and batch construction path. The symbol already exists in the C ABI; this exclusion exposes its prototype in the generated header without claiming a separate cross-language facade operation."
     }
   ],
   "apiLevels": [
@@ -631361,6 +631300,7 @@
           "org.kmipkit.extensions.ProtocolVersion.major",
           "org.kmipkit.extensions.ProtocolVersion.minor",
           "org.kmipkit.extensions.TransportConfiguration",
+          "org.kmipkit.extensions.TransportConfiguration.Builder.build",
           "org.kmipkit.message.ProtocolVersion",
           "org.kmipkit.message.ProtocolVersion.<init>",
           "org.kmipkit.message.ProtocolVersion.major",

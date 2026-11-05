@@ -482,76 +482,147 @@ struct kmipkit_transport_config_v1_t {
     uint64_t max_request_bytes;
 };
 
+/* Releases the library-owned kmipkit_extension_identity_t handle. */
 void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
+/* Releases the library-owned kmipkit_extension_compatibility_t handle. */
 void kmipkit_extension_compatibility_release(kmipkit_extension_compatibility_t *handle);
+/* Releases the library-owned kmipkit_ttlv_path_t handle. */
 void kmipkit_ttlv_path_release(kmipkit_ttlv_path_t *handle);
+/* Releases the library-owned kmipkit_extension_discriminator_t handle. */
 void kmipkit_extension_discriminator_release(kmipkit_extension_discriminator_t *handle);
+/* Releases the library-owned kmipkit_extension_schema_t handle. */
 void kmipkit_extension_schema_release(kmipkit_extension_schema_t *handle);
+/* Releases the library-owned kmipkit_extension_information_t handle. */
 void kmipkit_extension_information_release(kmipkit_extension_information_t *handle);
+/* Releases the library-owned kmipkit_extension_definition_t handle. */
 void kmipkit_extension_definition_release(kmipkit_extension_definition_t *handle);
+/* Releases the library-owned kmipkit_client_extension_registry_t handle. */
 void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry_t *handle);
+/* Releases the library-owned kmipkit_client_configuration_t handle. */
 void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
+/* Releases the library-owned kmipkit_validated_extension_value_t handle. */
 void kmipkit_validated_extension_value_release(kmipkit_validated_extension_value_t *handle);
+/* Releases the library-owned kmipkit_registered_extension_value_t handle. */
 void kmipkit_registered_extension_value_release(kmipkit_registered_extension_value_t *handle);
+/* Releases the library-owned kmipkit_client_request_message_extension_t handle. */
 void kmipkit_client_request_message_extension_release(kmipkit_client_request_message_extension_t *handle);
+/* Releases the library-owned kmipkit_ttlv_structure_t handle. */
 void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
+/* Releases the library-owned kmipkit_client_batch_item_t handle. */
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
+/* Releases the library-owned kmipkit_extension_child_rule_t handle. */
 void kmipkit_extension_child_rule_release(kmipkit_extension_child_rule_t *handle);
+/* Releases the library-owned kmipkit_extension_order_constraint_t handle. */
 void kmipkit_extension_order_constraint_release(kmipkit_extension_order_constraint_t *handle);
+/* Releases the library-owned kmipkit_ttlv_value_t handle. */
 void kmipkit_ttlv_value_release(kmipkit_ttlv_value_t *handle);
+/* Releases the library-owned kmipkit_extension_recognition_t handle. */
 void kmipkit_extension_recognition_release(kmipkit_extension_recognition_t *handle);
+/* Releases the library-owned kmipkit_raw_tag_t handle. */
 void kmipkit_raw_tag_release(kmipkit_raw_tag_t *handle);
+/* Releases the library-owned kmipkit_tag_t handle. */
 void kmipkit_tag_release(kmipkit_tag_t *handle);
+/* Releases the library-owned kmipkit_ttlv_item_t handle. */
 void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
+/* Releases the library-owned kmipkit_codec_limits_t handle. */
 void kmipkit_codec_limits_release(kmipkit_codec_limits_t *handle);
+/* Releases the library-owned kmipkit_ttlv_structure_view_t handle. */
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
+/* Releases the library-owned kmipkit_ttlv_item_view_t handle. */
 void kmipkit_ttlv_item_view_release(kmipkit_ttlv_item_view_t *handle);
+/* Releases the library-owned kmipkit_ttlv_value_view_t handle. */
 void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
+/* Releases the library-owned kmipkit_transport_config_t handle. */
 void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
+/* Releases the library-owned kmipkit_client_t handle. */
 void kmipkit_client_release(kmipkit_client_t *handle);
+/* Releases the library-owned kmipkit_client_batch_t handle. */
 void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
+/* Releases the library-owned kmipkit_client_batch_response_t handle. */
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
+/* Releases the library-owned kmipkit_client_batch_item_response_t handle. */
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
+/* Releases the library-owned kmipkit_register_request_t handle. */
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
+/* Releases the library-owned kmipkit_split_key_reference_t handle. */
 void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
+/* Releases the library-owned kmipkit_usage_allocation_context_t handle. */
 void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t *handle);
+/* Releases the library-owned kmipkit_revocation_reason_t handle. */
 void kmipkit_revocation_reason_release(kmipkit_revocation_reason_t *handle);
+/* Releases the library-owned kmipkit_revoke_request_t handle. */
 void kmipkit_revoke_request_release(kmipkit_revoke_request_t *handle);
+/* Releases the library-owned kmipkit_client_async_operation_outcome_t handle. */
 void kmipkit_client_async_operation_outcome_release(kmipkit_client_async_operation_outcome_t *handle);
+/* Releases the library-owned kmipkit_request_message_t handle. */
 void kmipkit_request_message_release(kmipkit_request_message_t *handle);
+/* Releases the library-owned kmipkit_request_header_view_t handle. */
 void kmipkit_request_header_view_release(kmipkit_request_header_view_t *handle);
+/* Releases the library-owned kmipkit_request_batch_item_view_t handle. */
 void kmipkit_request_batch_item_release(kmipkit_request_batch_item_view_t *handle);
+/* Releases the library-owned kmipkit_response_message_t handle. */
 void kmipkit_response_message_release(kmipkit_response_message_t *handle);
+/* Releases the library-owned kmipkit_response_header_view_t handle. */
 void kmipkit_response_header_view_release(kmipkit_response_header_view_t *handle);
+/* Releases the library-owned kmipkit_response_batch_item_view_t handle. */
 void kmipkit_response_batch_item_release(kmipkit_response_batch_item_view_t *handle);
+/* Releases the library-owned kmipkit_message_extension_view_t handle. */
 void kmipkit_message_extension_view_release(kmipkit_message_extension_view_t *handle);
+/* Releases the library-owned kmipkit_message_validation_error_t handle. */
 void kmipkit_message_validation_error_release(kmipkit_message_validation_error_t *handle);
+/* Releases the library-owned kmipkit_profile_validation_error_t handle. */
 void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *handle);
+/* Releases the library-owned kmipkit_credential_t handle. */
 void kmipkit_credential_release(kmipkit_credential_t *handle);
+/* Releases the library-owned kmipkit_nonce_t handle. */
 void kmipkit_nonce_release(kmipkit_nonce_t *handle);
+/* Releases the library-owned kmipkit_attestation_credential_t handle. */
 void kmipkit_attestation_credential_release(kmipkit_attestation_credential_t *handle);
+/* Releases the library-owned kmipkit_device_credential_t handle. */
 void kmipkit_device_credential_release(kmipkit_device_credential_t *handle);
+/* Releases the library-owned kmipkit_authentication_t handle. */
 void kmipkit_authentication_release(kmipkit_authentication_t *handle);
+/* Releases the library-owned kmipkit_credential_view_t handle. */
 void kmipkit_credential_view_release(kmipkit_credential_view_t *handle);
+/* Releases the library-owned kmipkit_username_and_password_credential_t handle. */
 void kmipkit_username_and_password_credential_release(kmipkit_username_and_password_credential_t *handle);
+/* Releases the library-owned kmipkit_secret_bytes_t handle. */
 void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
+/* Releases the library-owned kmipkit_secret_text_t handle. */
 void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
+/* Releases the library-owned kmipkit_hashed_password_timestamp_sequence_t handle. */
 void kmipkit_hashed_password_timestamp_sequence_release(kmipkit_hashed_password_timestamp_sequence_t *handle);
+/* Releases the library-owned kmipkit_hashed_password_credential_t handle. */
 void kmipkit_hashed_password_credential_release(kmipkit_hashed_password_credential_t *handle);
+/* Releases the library-owned kmipkit_credential_value_t handle. */
 void kmipkit_credential_value_release(kmipkit_credential_value_t *handle);
+/* Releases the library-owned kmipkit_cancel_request_t handle. */
 void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
+/* Releases the library-owned kmipkit_poll_request_t handle. */
 void kmipkit_poll_request_release(kmipkit_poll_request_t *handle);
+/* Releases the library-owned kmipkit_process_request_t handle. */
 void kmipkit_process_request_release(kmipkit_process_request_t *handle);
+/* Releases the library-owned kmipkit_query_async_requests_request_t handle. */
 void kmipkit_query_async_requests_request_release(kmipkit_query_async_requests_request_t *handle);
+/* Releases the library-owned kmipkit_add_attribute_request_t handle. */
 void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
+/* Releases the library-owned kmipkit_adjust_attribute_request_t handle. */
 void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t *handle);
+/* Releases the library-owned kmipkit_delete_attribute_request_t handle. */
 void kmipkit_delete_attribute_request_release(kmipkit_delete_attribute_request_t *handle);
+/* Releases the library-owned kmipkit_modify_attribute_request_t handle. */
 void kmipkit_modify_attribute_request_release(kmipkit_modify_attribute_request_t *handle);
+/* Releases the library-owned kmipkit_set_attribute_request_t handle. */
 void kmipkit_set_attribute_request_release(kmipkit_set_attribute_request_t *handle);
+/* Releases the library-owned kmipkit_get_attributes_request_t handle. */
 void kmipkit_get_attributes_request_release(kmipkit_get_attributes_request_t *handle);
+/* Releases the library-owned kmipkit_get_attribute_list_request_t handle. */
 void kmipkit_get_attribute_list_request_release(kmipkit_get_attribute_list_request_t *handle);
+/* Releases the library-owned kmipkit_attribute_set_t handle. */
 void kmipkit_attribute_set_release(kmipkit_attribute_set_t *handle);
+/* Releases the library-owned kmipkit_profile_readiness_t handle. */
 void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
+/* Releases the library-owned kmipkit_profile_validation_result_t handle. */
 void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)

@@ -148,7 +148,7 @@ class WireEncodingPublicApiTests(unittest.TestCase):
         parameter["nullable"] = True
 
         generate._validate_schema(manifest, schema)
-        self.assertIn('"nullable":true', generate.render_java_api(manifest))
+        self.assertIn(r'\"nullable\":true', generate.render_java_api(manifest))
 
     def test_java_nullable_override_matches_python_none_and_c_default_sentinel(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -173,6 +173,23 @@ class WireEncodingPublicApiTests(unittest.TestCase):
         self.assertEqual(python_parameter["type"], "WireEncoding | None")
         self.assertEqual(c_parameter["type"], "int32_t")
         self.assertIn("-1 to use the configured default", " ".join(function["c"]["documentation"]))
+
+    def test_c_client_handle_release_prototypes_are_manifest_backed_and_documented(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        header = generate.render_c_header(manifest)
+        release_types = {
+            "kmipkit_client_configuration_release": "kmipkit_client_configuration_t",
+            "kmipkit_client_batch_item_release": "kmipkit_client_batch_item_t",
+            "kmipkit_codec_limits_release": "kmipkit_codec_limits_t",
+            "kmipkit_transport_config_release": "kmipkit_transport_config_t",
+        }
+        for symbol, handle_type in release_types.items():
+            with self.subTest(symbol=symbol):
+                documented_declaration = (
+                    f"/* Releases the library-owned {handle_type} handle. */\n"
+                    f"void {symbol}({handle_type} *handle);"
+                )
+                self.assertIn(documented_declaration, header)
 
     def test_versioned_c_record_layout_is_generated_from_manifest_fields(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
