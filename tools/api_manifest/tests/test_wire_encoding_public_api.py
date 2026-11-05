@@ -102,6 +102,78 @@ class WireEncodingPublicApiTests(unittest.TestCase):
             <= type_ids
         )
 
+    def test_transport_configuration_function_maps_to_transport_construction(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        function = next(
+            record for record in manifest["functions"]
+            if record["id"] == "transport_config_create_v1"
+        )
+
+        self.assertEqual(function["java"]["class"], "TransportConfiguration.Builder")
+        self.assertEqual(function["java"]["method"], "build")
+        self.assertEqual(function["java"]["returnType"], "TransportConfiguration")
+        self.assertEqual(function["python"]["function"], "TransportConfig")
+        self.assertEqual(function["python"]["returnType"], "TransportConfig")
+
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["publicDeclarations"]
+        }
+        java_name = "org.kmipkit.extensions.TransportConfiguration.Builder.build"
+        python_name = "kmipkit.client.TransportConfig"
+        for row in manifest["publicDeclarations"]:
+            if row["declarationId"] in {
+                "transport_config_create_v1:rust",
+                "transport_config_create_v1:c",
+                "transport_config_create_v1:java",
+            }:
+                self.assertEqual(row["languageMappings"]["java"]["name"], java_name)
+                self.assertEqual(row["languageMappings"]["python"]["name"], python_name)
+        self.assertIn(("java-kmipkit", java_name), declarations)
+        self.assertIn(("python-kmipkit", python_name), declarations)
+
+    def test_java_nullable_parameters_are_supported_by_schema_and_generator(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        schema = json.loads((ROOT / "specification" / "api" / "public-api.schema.json").read_text(
+            encoding="utf-8"
+        ))
+        function = next(
+            record for record in manifest["functions"]
+            if record["id"] == "client_execute_with_options"
+        )
+        parameter = next(
+            row for row in function["java"]["parameters"]
+            if row["name"] == "encodingOverride"
+        )
+        parameter["nullable"] = True
+
+        generate._validate_schema(manifest, schema)
+        self.assertIn('"nullable":true', generate.render_java_api(manifest))
+
+    def test_java_nullable_override_matches_python_none_and_c_default_sentinel(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        function = next(
+            record for record in manifest["functions"]
+            if record["id"] == "client_execute_with_options"
+        )
+        java_parameter = next(
+            row for row in function["java"]["parameters"]
+            if row["name"] == "encodingOverride"
+        )
+        python_parameter = next(
+            row for row in function["python"]["parameters"]
+            if row["name"] == "wire_encoding"
+        )
+        c_parameter = next(
+            row for row in function["c"]["parameters"]
+            if row["name"] == "encoding_override"
+        )
+
+        self.assertIs(java_parameter.get("nullable"), True)
+        self.assertEqual(python_parameter["type"], "WireEncoding | None")
+        self.assertEqual(c_parameter["type"], "int32_t")
+        self.assertIn("-1 to use the configured default", " ".join(function["c"]["documentation"]))
+
     def test_versioned_c_record_layout_is_generated_from_manifest_fields(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         manifest["types"].insert(
