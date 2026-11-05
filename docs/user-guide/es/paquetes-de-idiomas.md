@@ -64,7 +64,7 @@ tabla.
 | `ttlv_wire_codec` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ffi_runtime_metadata` | declared | Los metadatos de versión y consulta de capacidades están mapeados en Rust, C, Java y Python. |
 | `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
-| `public_binding_surface` | blocked | T011 confirma que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. Los mapeos de la capacidad siguen incompletos, por lo que continúa bloqueada. |
+| `public_binding_surface` | verified | T108 y T109 registran los mapeos exactos de la capacidad en cuatro lenguajes y la auditoría completa de exportaciones Rust/C/Java/Python. Esto verifica la cobertura del inventario y los mapeos; no afirma conformidad KMIP ni preparación para publicar la versión. |
 | `vendor_extension_registry` | declared | Los mapeos exactos incluyen Rust drop, C release, Java close y Python close para los handles nativos; falta verificar la paridad. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |

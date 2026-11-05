@@ -214,6 +214,31 @@ class PackageDocumentationContractTests(unittest.TestCase):
         self.assertIn("The Register operation row is verified.", self.english)
         self.assertIn("La fila de la operación Register está `verified`.", self.spanish)
 
+    def test_bilingual_public_binding_surface_state_matches_the_manifest(self) -> None:
+        capability = next(
+            item
+            for item in self.manifest["capabilities"]
+            if item["capabilityId"] == "public_binding_surface"
+        )
+
+        for language, guide, nonclaim in (
+            ("English", self.english, "does not claim KMIP conformance"),
+            ("Spanish", self.spanish, "no afirma conformidad KMIP"),
+        ):
+            with self.subTest(language=language):
+                match = re.search(
+                    r"(?m)^\|\s*`public_binding_surface`\s*\|\s*"
+                    r"(blocked|declared|verified)\s*\|",
+                    guide,
+                )
+                self.assertIsNotNone(match)
+                self.assertEqual(capability["capabilityState"], match.group(1))
+                self.assertIn(nonclaim, guide)
+                self.assertNotIn("mappings remain incomplete", guide.lower())
+                self.assertNotIn(
+                    "los mapeos de la capacidad siguen incompletos", guide.lower()
+                )
+
     def test_bilingual_client_execution_guides_scope_operation_rows_to_rust(self) -> None:
         guides = {
             "en": (ROOT / "docs/user-guide/en/client-execution.md").read_text(
