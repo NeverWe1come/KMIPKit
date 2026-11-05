@@ -27,10 +27,11 @@ the Cryptographic Parameters debug views do not reveal `P Source`.
 Successful Windows checks on this branch:
 
 - `cargo fmt --all --check`.
-- `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings`.
+- `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`.
 - `cargo test --workspace --all-features`.
-- `cargo llvm-cov --workspace --all-features --text` (full workspace tests and
-  coverage instrumentation completed successfully).
+- `cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw-local.json`
+  (full Windows workspace test and coverage instrumentation completed).
+- `python scripts/coverage_gate.py normalize --workspace . --input coverage-raw-local.json --output coverage-local.json`.
 - `cargo test -p kmipkit-protocol --all-features --test cryptographic_parameters_public`
   (9 tests passed).
 - Focused direct-method parity and option-forwarding tests passed.
@@ -39,24 +40,35 @@ Successful Windows checks on this branch:
 - `python tools/api_manifest/generate.py --check` (12 generated outputs current).
 - `python tools/api_manifest/audit_rust_exports.py --check` (complete, matches
   manifest, no missing or unobserved Rust paths, zero issues).
+- `python -B -m unittest scripts.tests.test_requirement_traceability -v`
+  (2 tests passed).
+- `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v`
+  (30 tests passed; one symlink-privilege-dependent test skipped by Windows).
 - `python scripts/test_user_guide_examples.py` (22 Rust guide examples compiled).
 - Manifest reconciler dry run: zero declarations and exclusions left to add.
 
-Windows line coverage from the full workspace run:
+Windows line coverage calculated from the normalized report using the exact
+eligible-source inventory in `scripts/coverage_gate.py`. The repository's
+documented generated-source exclusions were applied; this is a Windows-only
+measurement, not the three-platform CI aggregate.
 
 | Scope | Covered / executable lines | Result |
 |---|---:|---:|
-| Changed executable Rust lines | 741 / 756 (98.02%) | Meets 95% |
-| `kmipkit-ttlv` | 748 / 761 (98.29%) | Meets 95% |
-| `kmipkit-protocol` | 23,417 / 26,025 (89.98%) | **Below 95% project gate** |
-| `kmipkit-client` | 6,503 / 6,756 (96.26%) | Above 95% |
-| `kmipkit-ffi` | 13,019 / 15,047 (86.52%) | Meets 85% |
-| Workspace total | 49,280 / 54,543 (90.35%) | Meets 90% |
+| Changed executable Rust lines | 305 / 318 (95.91%) | Meets 95% |
+| `kmipkit-ttlv` | 735 / 741 (99.19%) | Meets 95% |
+| `kmipkit-protocol` | 21,442 / 22,306 (96.13%) | Meets 95% |
+| `kmipkit-transport` | 3,718 / 3,907 (95.16%) | Meets 85% |
+| `kmipkit-ffi` | 12,505 / 14,258 (87.71%) | Meets 85% |
+| Workspace total | 46,597 / 49,625 (93.90%) | Meets 90% |
 
-The protocol crate's aggregate coverage is below the repository's 95% gate.
-The changed executable lines in this feature exceed 95%, but this does not
-clear the pre-existing protocol-wide deficit. Keep the PR in draft until the
-protocol gate is met or the maintainer records an applicable exception.
+The unfiltered `cargo llvm-cov --text` diagnostic previously showed 89.98% for
+`kmipkit-protocol`; that denominator included generated files excluded by the
+repository's exact documented coverage inventory. With the same exclusions
+the coverage gate uses, the local Windows measurements exceed every Rust
+threshold, including protocol and changed executable lines. The separate
+instrumented C-consumer report and the Linux/macOS platform reports have not
+been produced locally, so this does not establish that the complete hosted
+coverage job passes.
 
 Only Windows has been exercised locally. Linux and macOS checks and hosted CI
 remain unverified; the repository's current GitHub billing issue may prevent
@@ -65,7 +77,14 @@ environment warnings about NASM and an optional compiler probe.
 
 ## Reviews and publication
 
-- Independent security and QA review: pending.
+- Independent QA review found no API-manifest, documentation, or parity
+  discrepancy; its coverage concern was resolved by recalculating against the
+  gate's documented generated-source exclusions.
+- Independent security review and Codex Security diff scan found no confirmed
+  security defect. The scan reviewed 15 changed files and recorded zero
+  findings (scan `ab320995-27a7-4417-8bdc-17bed9db42a6`). The reviewer noted an
+  unconfirmed resource concern: caller-supplied `Authentication` is deep-cloned
+  before encoder limits apply; no remote path or exploitability was established.
 - Draft pull request: pending creation and verification.
 - This evidence does not claim profile conformance, interoperability, human
   security approval, or release readiness.
