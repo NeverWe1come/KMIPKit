@@ -525,7 +525,8 @@ pub extern "C" fn kmipkit_client_create(
         }
         let client_configuration = client_extension::ClientConfiguration::from_shared_registry(
             configuration.shared_extension_registry(),
-        );
+        )
+        .with_wire_encoding(configuration.wire_encoding());
         let transport_configuration = match owned_payload(transport_handle, Kind::TransportConfig) {
             Ok(HandleValue::TransportConfig(configuration)) => configuration,
             Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
@@ -716,53 +717,82 @@ pub extern "C" fn kmipkit_client_execute(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let out = out_slot!(out_response);
-        if batch.is_null() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+    ffi_entrypoint(|| execute_client(client, batch, limits, -1, out_response))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    encoding_override: i32,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| execute_client(client, batch, limits, encoding_override, out_response))
+}
+
+fn execute_client(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    encoding_override: i32,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let out = out_slot!(out_response);
+    let encoding_override = match encoding_override {
+        -1 => None,
+        0 => Some(WireEncoding::Ttlv),
+        1 => Some(WireEncoding::Json),
+        2 => Some(WireEncoding::Xml),
+        _ => return record_ffi_error(ERROR_INVALID_INPUT),
+    };
+    if batch.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the caller supplies a writable in/out slot holding the
+    // one-shot ordered batch consumed by execution.
+    let batch_slot = unsafe { &mut *batch };
+    let batch_handle = *batch_slot;
+    if batch_handle.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let client = read_handle!(client, Client);
+    let HandleValue::Client(client) = &client.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let limits_handle = read_handle!(limits, CodecLimits);
+    let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    if let Err(status) = reference_handle(&batch_handle, Kind::ClientBatch) {
+        return record_ffi_error(status);
+    }
+    let batch_payload = match owned_payload(batch_handle, Kind::ClientBatch) {
+        Ok(HandleValue::ClientBatch(batch)) => batch,
+        Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        Err(status) => return record_ffi_error(status),
+    };
+    *batch_slot = ptr::null_mut();
+    let batch = match batch_payload.into_inner() {
+        Ok(batch) => batch.into_batch(),
+        Err(_) => return record_ffi_error(ERROR_INTERNAL),
+    };
+    let Ok(mut client) = client.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    let request_options = encoding_override.map_or_else(RequestOptions::default, |encoding| {
+        RequestOptions::default().with_wire_encoding(encoding)
+    });
+    match client.execute_with_options(batch, limits, &request_options) {
+        Ok(response) => {
+            *out = make_handle(
+                Kind::ClientBatchResponse,
+                HandleValue::ClientBatchResponse(Arc::new(response)),
+            );
+            SUCCESS
         }
-        // SAFETY: the caller supplies a writable in/out slot holding the
-        // one-shot ordered batch consumed by execution.
-        let batch_slot = unsafe { &mut *batch };
-        let batch_handle = *batch_slot;
-        if batch_handle.is_null() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let client = read_handle!(client, Client);
-        let HandleValue::Client(client) = &client.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let limits_handle = read_handle!(limits, CodecLimits);
-        let HandleValue::CodecLimits(limits) = &limits_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if let Err(status) = reference_handle(&batch_handle, Kind::ClientBatch) {
-            return record_ffi_error(status);
-        }
-        let batch_payload = match owned_payload(batch_handle, Kind::ClientBatch) {
-            Ok(HandleValue::ClientBatch(batch)) => batch,
-            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
-            Err(status) => return record_ffi_error(status),
-        };
-        *batch_slot = ptr::null_mut();
-        let batch = match batch_payload.into_inner() {
-            Ok(batch) => batch.into_batch(),
-            Err(_) => return record_ffi_error(ERROR_INTERNAL),
-        };
-        let Ok(mut client) = client.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        match client.execute(batch, limits) {
-            Ok(response) => {
-                *out = make_handle(
-                    Kind::ClientBatchResponse,
-                    HandleValue::ClientBatchResponse(Arc::new(response)),
-                );
-                SUCCESS
-            }
-            Err(error) => record_client_error(&error),
-        }
-    })
+        Err(error) => record_client_error(&error),
+    }
 }
 
 #[unsafe(no_mangle)]

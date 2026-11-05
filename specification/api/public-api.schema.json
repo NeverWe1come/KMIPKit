@@ -1640,6 +1640,10 @@
         {
           "pattern": "^\\*(?:const|mut)\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
         }
+        ,
+        {
+          "pattern": "^\\*(?:const|mut)\\s+\\*(?:const|mut)\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
+        }
       ],
       "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, and raw pointers for reviewed C ABI declarations."
     },

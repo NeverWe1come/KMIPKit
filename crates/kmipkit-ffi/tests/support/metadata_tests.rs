@@ -35,12 +35,14 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     assert_eq!(
         crate::public_api_generated::C_AVAILABLE_CAPABILITIES,
         &[
+            "client_execution",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
             "generic_ttlv_model",
             "opaque_register_context",
             "ttlv_wire_codec",
             "vendor_extension_registry",
+            "wire_encoding_selection",
         ]
     );
     for capability in crate::public_api_generated::C_AVAILABLE_CAPABILITIES {
@@ -332,7 +334,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         })
         .collect();
 
-    assert_eq!(exports.len(), 154, "update the count when adding C exports");
+    assert_eq!(exports.len(), 157, "update the count when adding C exports");
     assert!(
         exports.iter().all(|uses_boundary| *uses_boundary),
         "every exported C function must enter the shared panic boundary first"

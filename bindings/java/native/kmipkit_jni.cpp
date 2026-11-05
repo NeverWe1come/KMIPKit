@@ -12,68 +12,8 @@
 #include <utility>
 #include <vector>
 
-// Private T076 ABI declarations. The generated/public C headers intentionally
-// remain blocked until every foreign-language facade has been mapped.
-typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
-typedef struct kmipkit_client_t kmipkit_client_t;
-typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
-typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
-typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
-
-struct kmipkit_byte_span_v1_t {
-    const uint8_t* data;
-    uint64_t length;
-};
-
-struct kmipkit_transport_input_v1_t {
-    uint32_t source_kind;
-    uint32_t encoding;
-    kmipkit_byte_span_v1_t data;
-};
-
-struct kmipkit_timeout_limit_v1_t {
-    uint32_t kind;
-    uint32_t reserved;
-    uint64_t seconds;
-    uint32_t nanoseconds;
-    uint32_t reserved2;
-};
-
-struct kmipkit_transport_config_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t endpoint_kind;
-    uint32_t trust_kind;
-    uint32_t flags;
-    uint32_t reserved;
-    kmipkit_byte_span_v1_t endpoint;
-    uint16_t endpoint_port;
-    uint16_t reserved2;
-    const kmipkit_transport_input_v1_t* client_certificates;
-    uint64_t client_certificate_count;
-    kmipkit_transport_input_v1_t client_private_key;
-    const kmipkit_transport_input_v1_t* trust_certificates;
-    uint64_t trust_certificate_count;
-    const kmipkit_transport_input_v1_t* revocation_lists;
-    uint64_t revocation_list_count;
-    kmipkit_byte_span_v1_t tls_server_name;
-    kmipkit_byte_span_v1_t target_uri;
-    kmipkit_timeout_limit_v1_t connect_timeout;
-    kmipkit_timeout_limit_v1_t write_timeout;
-    kmipkit_timeout_limit_v1_t read_timeout;
-    kmipkit_timeout_limit_v1_t total_timeout;
-    uint64_t max_request_bytes;
-};
-
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
-};
-
+// Keep these assertions adjacent to the JNI marshaling code so changes to the
+// generated, manifest-backed C records fail the native build immediately.
 static_assert(sizeof(kmipkit_byte_span_v1_t) == 16);
 static_assert(offsetof(kmipkit_byte_span_v1_t, length) == 8);
 static_assert(sizeof(kmipkit_transport_input_v1_t) == 24);
@@ -88,25 +28,15 @@ static_assert(offsetof(kmipkit_transport_config_v1_t, max_request_bytes) == 248)
 static_assert(sizeof(kmipkit_client_batch_item_metadata_v1_t) == 24);
 static_assert(offsetof(kmipkit_client_batch_item_metadata_v1_t, outcome_kind) == 8);
 
+// Private compatibility calls that are not part of the public manifest surface.
 extern "C" {
-int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t*, kmipkit_transport_config_t**);
-void kmipkit_transport_config_release(kmipkit_transport_config_t*);
-int32_t kmipkit_client_create(kmipkit_client_configuration_t*, kmipkit_transport_config_t**, kmipkit_client_t**);
-void kmipkit_client_release(kmipkit_client_t*);
-int32_t kmipkit_client_batch_create(kmipkit_client_batch_t**);
-int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t*, kmipkit_client_batch_item_t**);
 int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t*, uint32_t);
-void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
-void kmipkit_client_batch_release(kmipkit_client_batch_t*);
-int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
-void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t*);
-void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t*);
-int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t*, uint64_t*);
-int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t*, uint64_t, kmipkit_client_batch_item_response_t**);
-int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t*, kmipkit_client_batch_item_metadata_v1_t*);
-int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
-int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
-int32_t kmipkit_last_error_get(int32_t*, uint32_t*, uint32_t*, uint32_t*);
+int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**,
+        kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_batch_item_response_unique_batch_item_id(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
+int32_t kmipkit_client_batch_item_response_pending_correlation_value(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 }
 
 namespace {
@@ -1166,6 +1096,35 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigura
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithWireEncoding(
+        JNIEnv* env, jclass, jlong raw_configuration, jint encoding) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_configuration_t>(env, [&](auto output) {
+            return kmipkit_client_configuration_with_wire_encoding(
+                    from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
+                    static_cast<kmipkit_wire_encoding_t>(encoding), output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWireEncoding(
+        JNIEnv* env, jclass, jlong raw_configuration) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t encoding = 0;
+        const int32_t status = kmipkit_client_configuration_wire_encoding(
+                from_java_handle<kmipkit_client_configuration_t>(raw_configuration), &encoding);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jint>(0);
+        }
+        if (encoding > 2) {
+            throw_invalid_input(env);
+            return static_cast<jint>(0);
+        }
+        return static_cast<jint>(encoding);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationExtensionRegistry(
         JNIEnv* env, jclass, jlong raw_configuration) {
     return guarded<jlong>(env, 0, [&] {
@@ -2052,6 +2011,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecute(
         if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
         kmipkit_client_batch_response_t* response = nullptr;
         const int32_t status = kmipkit_client_execute(client, &batch, limits.get(), &response);
+        if (status != 0) throw_status(env, status);
+        if (batch != nullptr) kmipkit_client_batch_release(batch);
+        if (status != 0) return static_cast<jlong>(0);
+        if (response == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(response);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_batch, jlongArray raw_limits,
+        jint encoding_override) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        auto* batch = from_java_handle<kmipkit_client_batch_t>(raw_batch);
+        if (client == nullptr || batch == nullptr
+                || encoding_override < -1 || encoding_override > 2) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_client_batch_response_t* response = nullptr;
+        const int32_t status = kmipkit_client_execute_with_options(
+                client, &batch, limits.get(), encoding_override, &response);
         if (status != 0) throw_status(env, status);
         if (batch != nullptr) kmipkit_client_batch_release(batch);
         if (status != 0) return static_cast<jlong>(0);

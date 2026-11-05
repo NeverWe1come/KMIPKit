@@ -14,8 +14,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, errors, extensions, ttlv
-from kmipkit.encoding import WireEncoding
+from kmipkit import _handles, client, errors, extensions, ttlv
+from kmipkit.extensions import WireEncoding
 
 
 def test_python_package_advertises_inline_typing_support() -> None:
@@ -781,6 +781,76 @@ def test_client_execute_with_options_forwards_encoding_and_consumes_batch(
         assert batch.closed
         assert result.items == ()
         result.close()
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
+def test_client_configuration_defaults_to_ttlv_and_encoding_copy_is_immutable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_pointer = extensions.ffi.cast("kmipkit_client_configuration_t *", 1)
+    json_pointer = extensions.ffi.cast("kmipkit_client_configuration_t *", 2)
+    configuration = extensions.ClientConfiguration(original_pointer, (), object())
+    requested: list[tuple[object, int]] = []
+
+    def clone(_kind: str, function: str, arguments: tuple[object, ...], **_kwargs: object) -> object:
+        assert function == "kmipkit_client_configuration_with_wire_encoding"
+        requested.append((arguments[0], int(arguments[1])))
+        return json_pointer
+
+    def encoding(handle: object, output: object) -> int:
+        output[0] = 1 if handle == json_pointer else 0  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(extensions, "_make_handle", clone)
+    monkeypatch.setattr(
+        extensions,
+        "lib",
+        SimpleNamespace(kmipkit_client_configuration_wire_encoding=encoding),
+    )
+    monkeypatch.setattr(
+        _handles,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_configuration_wire_encoding=encoding,
+            kmipkit_client_configuration_release=lambda _handle: None,
+        ),
+    )
+    try:
+        json_configuration = configuration.with_wire_encoding(WireEncoding.JSON)
+        assert configuration.wire_encoding is WireEncoding.TTLV
+        assert extensions.client_configuration_wire_encoding(configuration) is WireEncoding.TTLV
+        assert json_configuration.wire_encoding is WireEncoding.JSON
+        assert extensions.client_configuration_wire_encoding(json_configuration) is WireEncoding.JSON
+        assert requested == [(original_pointer, int(WireEncoding.JSON))]
+    finally:
+        configuration.close()
+        if "json_configuration" in locals():
+            json_configuration.close()
+
+
+def test_client_execute_rejects_invalid_wire_encoding_without_consuming_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    handle = client.Client(client_pointer)
+    batch = client.Batch(batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_release=lambda _handle: None,
+            kmipkit_client_batch_release=lambda _handle: None,
+        ),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            handle.execute(batch, limits, wire_encoding="JSON")  # type: ignore[arg-type]
+        assert not batch.closed
     finally:
         limits.close()
         batch.close()

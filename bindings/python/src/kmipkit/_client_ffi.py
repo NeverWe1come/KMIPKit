@@ -120,6 +120,12 @@ ffi.cdef(
         kmipkit_client_batch_t **batch,
         kmipkit_codec_limits_t *limits,
         kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_options(
+        kmipkit_client_t *client,
+        kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        int32_t encoding_override,
+        kmipkit_client_batch_response_t **out_response);
     void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
     int32_t kmipkit_client_batch_response_item_count(
         kmipkit_client_batch_response_t *response, uint64_t *out_count);

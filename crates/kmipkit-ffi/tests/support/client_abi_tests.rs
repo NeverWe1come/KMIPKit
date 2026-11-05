@@ -652,6 +652,82 @@ fn ffi_constructs_a_client_from_validated_https_configuration() {
 }
 
 #[test]
+fn client_configuration_wire_encoding_is_immutable_and_defaults_to_ttlv() {
+    let mut limits = kmipkit_extension_registry_limits_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())
+            .expect("limits struct size fits ABI field"),
+        abi_version: 1,
+        max_definitions: 0,
+        max_schema_nodes: 0,
+        max_child_rules_per_structure: 0,
+        max_text_bytes_per_field: 0,
+        max_registry_text_bytes: 0,
+        max_discriminator_scalar_bytes: 0,
+        max_total_discriminator_scalar_bytes: 0,
+        max_constraint_members_per_rule: 0,
+        max_total_constraint_members: 0,
+        max_payload_index_records: 0,
+        max_lookup_comparisons: 0,
+        max_depth: 0,
+    };
+    assert_eq!(
+        kmipkit_extension_registry_limits_v1_default_values(&mut limits),
+        SUCCESS
+    );
+    let mut registry = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_create_v1(ptr::null_mut(), 0, &limits, &mut registry,),
+        SUCCESS
+    );
+    let mut ttlv_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_create(registry, &mut ttlv_configuration),
+        SUCCESS
+    );
+
+    let mut encoding = u32::MAX;
+    assert_eq!(
+        kmipkit_client_configuration_wire_encoding(ttlv_configuration, &mut encoding),
+        SUCCESS
+    );
+    assert_eq!(encoding, 0);
+
+    let mut json_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_wire_encoding(
+            ttlv_configuration,
+            1,
+            &mut json_configuration,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_configuration_wire_encoding(json_configuration, &mut encoding),
+        SUCCESS
+    );
+    assert_eq!(encoding, 1);
+    assert_eq!(
+        kmipkit_client_configuration_wire_encoding(ttlv_configuration, &mut encoding),
+        SUCCESS
+    );
+    assert_eq!(encoding, 0);
+
+    let mut invalid_output = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_wire_encoding(
+            ttlv_configuration,
+            u32::MAX,
+            &mut invalid_output,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(invalid_output.is_null());
+
+    kmipkit_client_configuration_release(json_configuration);
+    kmipkit_client_configuration_release(ttlv_configuration);
+}
+
+#[test]
 fn validated_raw_tls_config_accepts_memory_der_crl_and_every_timeout_kind() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let chain = pki.client_identity().certificate_chain_der();

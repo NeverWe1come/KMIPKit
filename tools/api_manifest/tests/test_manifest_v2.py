@@ -878,7 +878,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(exclusions), 40)
         for row in exclusions:
             with self.subTest(export_name=row["exportName"]):
-                self.assertIn("standard and blanket Rust trait implementations", row["reason"])
+                self.assertIn(
+                    "standard and blanket rust trait implementations",
+                    row["reason"].lower(),
+                )
                 self.assertEqual(
                     row["approvalSource"]["path"],
                     "specs/057-multi-encoding-client-integration/spec.md",
@@ -902,6 +905,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     row["candidateSpecId"],
                     "KMIPKIT-0057",
                 )
+
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
         declarations = [
@@ -914,8 +918,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9503)
-        self.assertEqual(len(exclusions), 22)
+        self.assertEqual(len(declarations), 9521)
+        self.assertEqual(len(exclusions), 62)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1294,7 +1298,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 367)
+        self.assertEqual(len(declarations), 388)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1412,6 +1416,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and item["exportName"].startswith("KMIPKIT_ERROR_")
         }
         self.assertEqual(header_error_macros, manifest_error_macros)
+        header_encoding_macros = set(
+            re.findall(r"^#define (KMIPKIT_WIRE_ENCODING_\w+)", header, re.MULTILINE)
+        )
+        manifest_encoding_macros = {
+            item["exportName"]
+            for item in declarations
+            if item["kind"] == "constant"
+            and item["declarationState"] in {"declared", "verified"}
+            and item["exportName"].startswith("KMIPKIT_WIRE_ENCODING_")
+        }
+        self.assertEqual(header_encoding_macros, manifest_encoding_macros)
 
     def test_c_header_only_declares_ready_manifest_entries(self) -> None:
         header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
@@ -1563,7 +1578,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 285)
+        self.assertEqual(len(declarations), 306)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

@@ -585,6 +585,11 @@ class BatchItemResult:
     unique_batch_item_id: bytes | None = field(repr=False)
     pending_correlation_value: bytes | None = field(repr=False)
 
+    def metadata(self) -> tuple[int, int, int, int]:
+        """Return outcome, status, reason-present flag, and raw reason value."""
+        reason = 0 if self.result_reason is None else self.result_reason
+        return int(self.outcome), self.result_status, int(self.result_reason is not None), reason
+
 
 class BatchResult(_ClientHandle):
     """Owns a native batch response and exposes copied, ordered outcome metadata."""
@@ -594,6 +599,19 @@ class BatchResult(_ClientHandle):
     def __init__(self, handle: Any, items: tuple[BatchItemResult, ...]) -> None:
         super().__init__(handle)
         self.items = items
+
+    def item_count(self) -> int:
+        """Return the number of ordered response items."""
+        return len(self.items)
+
+    def item_at(self, index: int) -> BatchItemResult:
+        """Return a copied response item by zero-based position."""
+        if not isinstance(index, int) or isinstance(index, bool) or index < 0:
+            errors.raise_for_status(4)
+        try:
+            return self.items[index]
+        except IndexError:
+            errors.raise_for_status(4)
 
 
 class Client(_ClientHandle):
@@ -643,10 +661,17 @@ class Client(_ClientHandle):
         return cls(client_output[0])
 
     def execute(
-        self, batch: Batch, limits: ttlv.CodecLimits
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        wire_encoding: extensions.WireEncoding | None = None,
     ) -> BatchResult:
-        """Execute exactly one typed batch and copy ordered common result metadata."""
+        """Execute one typed batch, optionally overriding the configured encoding."""
         if not isinstance(batch, Batch) or not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        if wire_encoding is not None and not isinstance(
+            wire_encoding, extensions.WireEncoding
+        ):
             errors.raise_for_status(4)
         response_output = ffi.new("kmipkit_client_batch_response_t **")
         with _NATIVE_CALL_LOCK:
@@ -655,12 +680,21 @@ class Client(_ClientHandle):
                 original, owner = batch._take()
                 batch_slot = ffi.new("kmipkit_client_batch_t **", original)
                 try:
-                    status = lib.kmipkit_client_execute(
-                        self._pointer(),
-                        batch_slot,
-                        ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
-                        response_output,
+                    native_limits = ffi.cast(
+                        "kmipkit_codec_limits_t *", limits._pointer()
                     )
+                    if wire_encoding is None:
+                        status = lib.kmipkit_client_execute(
+                            self._pointer(), batch_slot, native_limits, response_output
+                        )
+                    else:
+                        status = lib.kmipkit_client_execute_with_options(
+                            self._pointer(),
+                            batch_slot,
+                            native_limits,
+                            int(wire_encoding),
+                            response_output,
+                        )
                 except (OverflowError, TypeError, ValueError):
                     batch._restore(original, owner)
                     raise errors.InvalidInputError() from None

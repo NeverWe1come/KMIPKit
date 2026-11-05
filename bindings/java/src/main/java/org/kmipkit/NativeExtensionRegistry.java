@@ -100,6 +100,8 @@ public final class NativeExtensionRegistry {
             long discriminator, long schema);
     public static native long extensionDefinitionValidate(long definition, long value, long[] codecLimits);
     public static native long clientConfigurationCreate(long registry);
+    public static native long clientConfigurationWithWireEncoding(long configuration, int encoding);
+    public static native int clientConfigurationWireEncoding(long configuration);
     public static native long clientConfigurationExtensionRegistry(long configuration);
     public static native long clientExtensionRegistryCreate(long[] definitions, long[] limits);
     public static native long clientExtensionRegistryInspect(long registry, String vendorIdentifier,
@@ -130,6 +132,8 @@ public final class NativeExtensionRegistry {
     public static native void clientBatchAddItem(long batch, long item);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
     public static native long clientExecute(long client, long batch, long[] codecLimits);
+    public static native long clientExecuteWithOptions(long client, long batch, long[] codecLimits,
+            int encodingOverride);
     public static native long clientBatchResponseItemCount(long response);
     public static native long clientBatchResponseItemAt(long response, long index);
     public static native long[] clientBatchItemResponseMetadata(long itemResponse);

@@ -68,6 +68,8 @@ tabla.
 | `vendor_extension_registry` | declared | Hay mapeos compartidos exactos; falta verificar la paridad y las declaraciones no reconciliadas siguen bloqueadas. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la ejecución completa y la paridad de respuesta de Discover Versions siguen bloqueadas. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
+| `client_execution` | declared | El cliente tipado, la construcción de lotes, la configuración de transporte y el acceso a respuestas están mapeados en cuatro lenguajes; la paridad completa de operaciones sigue bloqueada. |
+| `wire_encoding_selection` | declared | La configuración predeterminada y la selección por intercambio de TTLV, JSON y XML están mapeadas en cuatro lenguajes. |
 
 Las **56 / 56** filas de operaciones KMIP `client_1_0` tienen actualmente el
 estado `blocked` en el manifiesto. No se debe inferir que una operación está

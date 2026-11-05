@@ -13,6 +13,7 @@ fn main() {
     );
     let workspace_root = manifest_dir.join("../..");
     let consumer_source = workspace_root.join("bindings/c/tests/extension_registry.c");
+    let public_client_source = workspace_root.join("bindings/c/tests/public_client_api.c");
     let consumer_header = workspace_root.join("bindings/c/include");
     let internal_header = workspace_root.join("tests/fixtures/api/generated");
     let target_deps = PathBuf::from(
@@ -21,11 +22,13 @@ fn main() {
     .join("../../../deps");
 
     println!("cargo:rerun-if-changed={}", consumer_source.display());
+    println!("cargo:rerun-if-changed={}", public_client_source.display());
     println!("cargo:rerun-if-changed={}", consumer_header.display());
     println!("cargo:rerun-if-changed={}", internal_header.display());
     println!("cargo:rustc-link-search=native={}", target_deps.display());
     cc::Build::new()
         .file(consumer_source)
+        .file(public_client_source)
         .include(consumer_header)
         .include(internal_header)
         .define("main", Some("kmipkit_extension_registry_c_consumer_main"))

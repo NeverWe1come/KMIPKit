@@ -46,7 +46,8 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return value == null ? Optional.empty() : Optional.of(value.clone());
     }
 
-    private long[] metadata() {
+    /** Returns outcome, status, reason-present flag, and raw reason as fresh values. */
+    public long[] metadata() {
         NativeExtensionRegistry.ensureLoaded();
         long[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMetadata);
         if (values == null || values.length != 4) {

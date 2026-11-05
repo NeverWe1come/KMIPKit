@@ -2,12 +2,14 @@
 // Mechanical API inventory only; reviewed FFI code owns behavior.
 pub(crate) const PUBLIC_API_FORMAT_VERSION: u32 = 2;
 pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
+    "client_execution",
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "generic_ttlv_model",
     "opaque_register_context",
     "ttlv_wire_codec",
     "vendor_extension_registry",
+    "wire_encoding_selection",
 ];
 pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
@@ -615,9 +617,29 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_transport::TransportResponse::as_bytes",
     ),
     (
+        "Client:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client",
+    ),
+    (
+        "client_execute_with_options:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_with_options",
+    ),
+    (
+        "ClientBatch:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch",
+    ),
+    (
         "rust-observed-f6620e59c28f505087bc",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItem",
+    ),
+    (
+        "ClientBatchResponse:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse",
     ),
     (
         "rust-observed-29383d8d0499ca959dc8",
@@ -704,5 +726,130 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "KMIPKIT-0044-opaque-context-managed:rust",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::OpaqueObjectContext::ManagedCryptographicObject",
+    ),
+    (
+        "WireEncoding.Json:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding::Json",
+    ),
+    (
+        "WireEncoding.Ttlv:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding::Ttlv",
+    ),
+    (
+        "WireEncoding.Xml:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding::Xml",
+    ),
+    (
+        "WireEncoding:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::WireEncoding",
+    ),
+    (
+        "client_configuration_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+    ),
+    (
+        "client_configuration_with_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
+    ),
+    (
+        "request_options_with_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::with_wire_encoding",
+    ),
+    (
+        "request_options_wire_encoding:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::RequestOptions::wire_encoding",
+    ),
+    (
+        "TransportConfiguration:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfig",
+    ),
+    (
+        "ClientBatchItemResponse:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse",
+    ),
+    (
+        "transport_config_create_v1:rust",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::TransportConfig::builder",
+    ),
+    (
+        "client_create:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::new",
+    ),
+    (
+        "client_batch_create:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::from_items",
+    ),
+    (
+        "client_batch_add_item:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::push",
+    ),
+    (
+        "client_batch_response_item_count:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse::len",
+    ),
+    (
+        "client_batch_response_item_at:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse::get",
+    ),
+    (
+        "client_batch_item_response_metadata_v1:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::outcome",
+    ),
+    (
+        "WireEncoding:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding",
+    ),
+    (
+        "WireEncoding.TTLV:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding::Ttlv",
+    ),
+    (
+        "WireEncoding.JSON:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding::Json",
+    ),
+    (
+        "WireEncoding.XML:client",
+        "rust-kmipkit-client",
+        "kmipkit_client::WireEncoding::Xml",
+    ),
+    (
+        "request_options_with_wire_encoding:transport",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::with_wire_encoding",
+    ),
+    (
+        "request_options_wire_encoding:transport",
+        "rust-kmipkit-transport",
+        "kmipkit_transport::RequestOptions::wire_encoding",
+    ),
+    (
+        "request_options_with_wire_encoding:facade",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::with_wire_encoding",
+    ),
+    (
+        "request_options_wire_encoding:facade",
+        "rust-kmipkit",
+        "kmipkit::RequestOptions::wire_encoding",
     ),
 ];

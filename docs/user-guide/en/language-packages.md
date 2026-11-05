@@ -64,6 +64,8 @@ changes to this table.
 | `vendor_extension_registry` | declared | Exact shared mappings are recorded; parity verification remains pending and unreconciled exports stay blocked. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions execution and response parity remain blocked. |
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
+| `client_execution` | declared | Typed client, batch construction, transport configuration, and response access are mapped across four languages; full operation parity remains blocked. |
+| `wire_encoding_selection` | declared | TTLV, JSON, and XML defaults and per-exchange selection are mapped across four languages. |
 
 All **56 / 56** KMIP `client_1_0` operation rows currently have manifest state
 `blocked`. Do not infer operation availability from types or implementation
