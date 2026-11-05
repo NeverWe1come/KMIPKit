@@ -128,3 +128,26 @@ fn delete_attribute_response_copies_success_identifier_and_hides_failure_payload
     );
     kmipkit_client_batch_item_response_release(failure);
 }
+
+#[test]
+fn delete_attribute_response_rejects_each_missing_required_output() {
+    let mut present = u8::MAX;
+    let mut identifier = empty_identifier_record();
+
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_delete_attribute(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_delete_attribute(
+            ptr::null_mut(),
+            &raw mut present,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+}

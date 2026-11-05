@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 import kmipkit
-from kmipkit import errors, ttlv
+from kmipkit import credentials, errors, ttlv
 
 
 class CredentialSecretTests(unittest.TestCase):
+    def test_secret_span_rejects_invalid_pointer_length_pairs(self) -> None:
+        with self.assertRaises(errors.InvalidInputError):
+            credentials._copy_secret_span(None, 1)
+        with self.assertRaises(errors.InvalidInputError):
+            credentials._copy_secret_span(None, -1)
+        self.assertEqual(bytearray(), credentials._copy_secret_span(None, 0))
+
     def test_secret_bytes_callback_is_read_only_scoped_and_cleared(self) -> None:
         expected = bytes((0x00, 0x7F, 0xFF, 0x00))
         source = bytearray(expected)
@@ -125,6 +133,17 @@ class CredentialSecretTests(unittest.TestCase):
         with secret:
             self.assertFalse(secret.closed)
         self.assertTrue(secret.closed)
+        secret.close()
+
+    def test_secret_text_temporary_bytes_are_wiped_when_utf8_decoding_fails(self) -> None:
+        secret = kmipkit.credentials.SecretText.from_text("valid secret")
+        staged = bytearray(b"\xff\xfe")
+
+        with patch("kmipkit.credentials._copy_secret_span", return_value=staged):
+            with self.assertRaises(UnicodeDecodeError):
+                secret.with_str(lambda value: value)
+
+        self.assertEqual(bytearray(len(staged)), staged)
         secret.close()
 
 

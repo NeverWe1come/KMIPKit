@@ -9851,9 +9851,31 @@ fn versioned_transport_config_rejects_invalid_headers_limits_and_timeout_fields(
     assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.reserved = 0;
 
+    config.reserved2 = 1;
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    config.reserved2 = 0;
+
     config.flags = u32::MAX;
     assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.flags = 0;
+
+    config.endpoint_kind = u32::MAX;
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    config.endpoint_kind = TRANSPORT_ENDPOINT_RAW_TLS;
+
+    config.trust_kind = TRANSPORT_TRUST_PLATFORM;
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    config.trust_kind = TRANSPORT_TRUST_CERTIFICATES;
+    config.trust_certificate_count = 0;
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    config.trust_certificate_count = u64::try_from(roots.len()).expect("root count fits ABI");
+
+    config.tls_server_name = byte_span(b"server.kmipkit.test");
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    config.tls_server_name = byte_span(&[]);
+    config.target_uri = byte_span(b"/kms/kmip");
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+    config.target_uri = byte_span(&[]);
 
     config.connect_timeout = timeout(TRANSPORT_TIMEOUT_BOUNDED, 0, 1_000_000_000);
     assert_config_rejected(&config, ERROR_INVALID_INPUT);
@@ -9906,6 +9928,14 @@ fn versioned_transport_config_rejects_invalid_headers_limits_and_timeout_fields(
 
 fn assert_config_rejected(config: &kmipkit_transport_config_v1_t, expected: i32) {
     assert_eq!(transport_config_from_v1(config).err(), Some(expected));
+}
+
+#[test]
+fn transport_config_from_v1_rejects_a_null_record() {
+    assert_eq!(
+        transport_config_from_v1(ptr::null()).err(),
+        Some(ERROR_INVALID_INPUT)
+    );
 }
 
 #[test]

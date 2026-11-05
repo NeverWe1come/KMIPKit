@@ -6,15 +6,34 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientExtensionRegistry;
+import org.kmipkit.extensions.ClientRequestMessageExtension;
+import org.kmipkit.extensions.Compatibility;
+import org.kmipkit.extensions.Discriminator;
 import org.kmipkit.extensions.DuplicateExtensionKeyException;
+import org.kmipkit.extensions.ExtensionChildRule;
 import org.kmipkit.extensions.ExtensionCompatibilityException;
+import org.kmipkit.extensions.ExtensionDefinition;
+import org.kmipkit.extensions.ExtensionIdentity;
+import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.ExtensionSchema;
 import org.kmipkit.extensions.InvalidExtensionIdentityException;
+import org.kmipkit.extensions.RegisteredExtensionValue;
+import org.kmipkit.extensions.TtlvPath;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvValue;
 
 final class NativeBridgeCoverageTest {
     private static final long[] CODEC_LIMITS = {16_777_216, 64, 100_000};
@@ -22,6 +41,15 @@ final class NativeBridgeCoverageTest {
             256, 16_384, 256, 4_096, 1_048_576, 4_096,
             1_048_576, 256, 16_384, 200_000, 1_048_576, 64
     };
+    private static final int CRITICALITY_EXTENSION_TAG = 0x420001;
+    private static final CodecLimits DEFAULT_CODEC_LIMITS = CodecLimits.defaults();
+
+    @Test
+    void nativeAbiVersionMatchesTheExpectedVersion() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertEquals(1, NativeExtensionRegistry.nativeAbiVersion());
+    }
 
     @Test
     void nativeStringBridgeRoundTripsUnicodeAndRejectsInvalidJavaText() {
@@ -73,6 +101,53 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(0, 0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(0, 0));
+    }
+
+    @Test
+    void nativeBatchItemCriticalityReaderReturnsBothCallerSelectedValues() {
+        try (RawTag rawTag = RawTag.fromRaw(CRITICALITY_EXTENSION_TAG);
+                Tag tag = rawTag.checked();
+                ExtensionIdentity identity = ExtensionIdentity.create("coverage.vendor", "criticality", "1");
+                Compatibility compatibility = Compatibility.create(2, 1, 2, 1, "0.0.0", "99.0.0");
+                TtlvPath discriminatorPath = TtlvPath.create(tag);
+                TtlvValue discriminatorValue = TtlvValue.TextString(
+                        "marker".getBytes(StandardCharsets.UTF_8), DEFAULT_CODEC_LIMITS);
+                ExtensionSchema markerSchema = ExtensionSchema.scalar(TtlvItemType.TextString);
+                ExtensionChildRule childRule = ExtensionChildRule.required(tag, markerSchema);
+                ExtensionSchema schema = ExtensionSchema.structure(List.of(childRule), List.of(), false);
+                Discriminator discriminator = Discriminator.create(discriminatorPath, discriminatorValue);
+                TtlvStructure payload = markerPayload()) {
+            ExtensionDefinition definition = ExtensionDefinition.create(
+                    identity, compatibility, discriminator, schema);
+            try (definition;
+                    ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                            List.of(definition), ExtensionRegistryLimits.defaults())) {
+                for (boolean criticalityIndicator : new boolean[] {false, true}) {
+                    try (RegisteredExtensionValue currentValue = registry.validateExtensionValue(
+                                    identity, payload, DEFAULT_CODEC_LIMITS);
+                            ClientRequestMessageExtension extension = ClientRequestMessageExtension.create(
+                                    currentValue, criticalityIndicator);
+                            ClientBatchItem baseItem = ClientBatchItem.discoverVersions()) {
+                        ClientBatchItem itemWithExtension = baseItem.withExtension(extension);
+                        try (itemWithExtension) {
+                            assertEquals(criticalityIndicator,
+                                    itemWithExtension.extensionCriticalityIndicatorAt(0));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static TtlvStructure markerPayload() {
+        try (RawTag rawTag = RawTag.fromRaw(CRITICALITY_EXTENSION_TAG);
+                Tag tag = rawTag.checked();
+                TtlvStructure empty = TtlvStructure.create();
+                TtlvValue value = TtlvValue.TextString(
+                        "marker".getBytes(StandardCharsets.UTF_8), DEFAULT_CODEC_LIMITS);
+                TtlvItem item = TtlvItem.create(tag, value, DEFAULT_CODEC_LIMITS)) {
+            return TtlvStructure.withItem(empty, item, DEFAULT_CODEC_LIMITS);
+        }
     }
 
     @Test

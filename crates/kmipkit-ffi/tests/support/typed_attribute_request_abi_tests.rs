@@ -1,4 +1,5 @@
 use super::*;
+use kmipkit_protocol::{AdjustAttributeRequest, AdjustmentType, AttributeReference};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 
 #[test]
@@ -223,6 +224,75 @@ fn standalone_set_attribute_model_serializes_and_enters_a_batch() {
     kmipkit_ttlv_structure_release(payload_handle_ptr);
     kmipkit_set_attribute_request_release(request);
     kmipkit_ttlv_item_release(new_attribute);
+}
+
+#[test]
+fn typed_attribute_mutation_response_accessors_hide_other_operation_fields() {
+    let request = ClientRequest::AdjustAttribute(AdjustAttributeRequest::new(
+        Some(RESPONSE_FIXTURE_UID.to_owned()),
+        AttributeReference::tag(0x0042_000a),
+        AdjustmentType::from_raw(1),
+        None,
+    ));
+    let success = successful_cryptographic_item(
+        request,
+        0x30,
+        b"attribute-mutation-dispatch",
+        vec![ttlv_item(0x0042_0094, 0x07, b"adjusted-object-1")],
+    );
+
+    let mut present = 0;
+    let mut identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier record size fits ABI"),
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_adjust_attribute(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(
+        identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+
+    let other_operation_accessors: [extern "C" fn(
+        *mut kmipkit_client_batch_item_response_t,
+        *mut u8,
+        *mut kmipkit_unique_identifier_v1_t,
+    ) -> i32; 4] = [
+        client_abi::kmipkit_client_batch_item_response_add_attribute,
+        client_abi::kmipkit_client_batch_item_response_modify_attribute,
+        client_abi::kmipkit_client_batch_item_response_set_attribute,
+        client_abi::kmipkit_client_batch_item_response_delete_attribute,
+    ];
+    for accessor in other_operation_accessors {
+        present = u8::MAX;
+        identifier.kind = u32::MAX;
+        identifier.text_data = std::ptr::dangling();
+        identifier.text_length = u64::MAX;
+        assert_eq!(
+            accessor(success, &raw mut present, &raw mut identifier),
+            SUCCESS
+        );
+        assert_eq!(present, 0);
+        assert_eq!(identifier.kind, 0);
+        assert!(identifier.text_data.is_null());
+        assert_eq!(identifier.text_length, 0);
+    }
+
+    kmipkit_client_batch_item_response_release(success);
 }
 
 fn text_identifier_record(identifier: &'static [u8]) -> kmipkit_unique_identifier_v1_t {

@@ -208,6 +208,137 @@ fn registry_construction_checks_aggregate_limits_before_definition_clones() {
     kmipkit_extension_definition_release(definition);
 }
 
+fn marker_extension_structure(value: Value) -> *mut kmipkit_ttlv_structure_t {
+    let marker_tag = RawTag::new(0x0042_0001)
+        .expect("marker tag is representable")
+        .try_checked()
+        .expect("marker tag is allocated");
+    let marker = Item::new(marker_tag, value).expect("marker is a valid TTLV item");
+    let mut structure = Structure::new();
+    structure
+        .try_push(marker)
+        .expect("the marker fits the extension structure");
+    make_handle(Kind::Structure, HandleValue::Structure(structure))
+}
+
+#[test]
+fn registry_validate_and_inspect_preserve_matching_and_unrecognized_values() {
+    let definition = definition_handle();
+    let mut definitions = [definition];
+    let (status, registry) = call_registry_create(&mut definitions, 2);
+    assert_eq!(status, SUCCESS);
+    assert!(!registry.is_null());
+
+    let mut identity = ptr::null_mut();
+    assert_eq!(
+        kmipkit_extension_definition_identity(definition, &raw mut identity),
+        SUCCESS
+    );
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let matching = marker_extension_structure(Value::text_string("marker".to_owned()));
+
+    let mut registered = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_validate(
+            registry,
+            identity,
+            matching,
+            limits,
+            &raw mut registered,
+        ),
+        SUCCESS
+    );
+    assert!(!registered.is_null());
+    kmipkit_registered_extension_value_release(registered);
+
+    let vendor = b"example.vendor";
+    let mut recognition = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_inspect(
+            registry,
+            vendor.as_ptr(),
+            u64::try_from(vendor.len()).expect("vendor length fits ABI"),
+            matching,
+            &raw mut recognition,
+            limits,
+        ),
+        SUCCESS
+    );
+    let mut recognized = u32::MAX;
+    assert_eq!(
+        kmipkit_extension_recognition_is_recognized(recognition, &raw mut recognized),
+        SUCCESS
+    );
+    assert_eq!(recognized, 1);
+    let mut validated = ptr::null_mut();
+    assert_eq!(
+        kmipkit_extension_recognition_validated_value(recognition, &raw mut validated),
+        SUCCESS
+    );
+    assert!(!validated.is_null());
+    kmipkit_validated_extension_value_release(validated);
+    kmipkit_extension_recognition_release(recognition);
+
+    let mismatching = marker_extension_structure(Value::text_string("different".to_owned()));
+    recognition = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_inspect(
+            registry,
+            vendor.as_ptr(),
+            u64::try_from(vendor.len()).expect("vendor length fits ABI"),
+            mismatching,
+            &raw mut recognition,
+            limits,
+        ),
+        SUCCESS
+    );
+    recognized = u32::MAX;
+    assert_eq!(
+        kmipkit_extension_recognition_is_recognized(recognition, &raw mut recognized),
+        SUCCESS
+    );
+    assert_eq!(recognized, 0);
+    let mut generic_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_extension_recognition_generic_value(recognition, &raw mut generic_view),
+        SUCCESS
+    );
+    assert!(!generic_view.is_null());
+    kmipkit_ttlv_structure_view_release(generic_view);
+    validated = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_extension_recognition_validated_value(recognition, &raw mut validated),
+        SUCCESS
+    );
+    assert!(validated.is_null());
+    kmipkit_extension_recognition_release(recognition);
+
+    let malformed = marker_extension_structure(Value::integer(1));
+    registered = ptr::dangling_mut();
+    assert_ne!(
+        kmipkit_client_extension_registry_validate(
+            registry,
+            identity,
+            malformed,
+            limits,
+            &raw mut registered,
+        ),
+        SUCCESS
+    );
+    assert!(registered.is_null());
+
+    kmipkit_ttlv_structure_release(malformed);
+    kmipkit_ttlv_structure_release(mismatching);
+    kmipkit_ttlv_structure_release(matching);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_extension_identity_release(identity);
+    kmipkit_client_extension_registry_release(registry);
+    kmipkit_extension_definition_release(definition);
+}
+
 fn versioned_default_limits() -> kmipkit_extension_registry_limits_v1_t {
     let mut limits = kmipkit_extension_registry_limits_v1_t {
         struct_size: u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())

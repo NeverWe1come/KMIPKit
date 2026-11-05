@@ -144,6 +144,15 @@ final class ProfileValidationMappingTest {
     }
 
     @Test
+    void jniProfileSelectionRejectsAnEmptySelection() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        ProfileValidationException failure = assertThrows(ProfileValidationException.class,
+                () -> NativeExtensionRegistry.profileValidationSelectionValidate(new String[0]));
+        assertEquals("empty_selection", failure.profileValidation().errorCode());
+    }
+
+    @Test
     void jniProfileValidationResultMethodsRejectInvalidNativeHandles() {
         NativeExtensionRegistry.ensureLoaded();
         long[] noIndexes = new long[0];
@@ -176,6 +185,30 @@ final class ProfileValidationMappingTest {
                         0, 0, 0, noIndexes, noIdentifiers, noKnownFields,
                         noBooleanValues, noUsageTotals, noUsageCounts));
         NativeExtensionRegistry.profileValidationResultRelease(0);
+    }
+
+    @Test
+    void jniProfileValidationContextMethodsInitializeParallelArraysBeforeRejectingWrongKindHandles() {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] itemIndexes = {0};
+        String[] uniqueIdentifiers = {"object-7"};
+        int[] knownFields = {1};
+        int[] booleanValues = {0};
+        long[] usageLimitsTotals = {0};
+        long[] usageLimitsCounts = {0};
+
+        try (TtlvStructure request = TtlvStructure.create();
+                TtlvStructure response = TtlvStructure.create()) {
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.profileValidationResultValidateRequestWithContext(
+                            request.handle(), request.handle(), itemIndexes, uniqueIdentifiers,
+                            knownFields, booleanValues, usageLimitsTotals, usageLimitsCounts));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.profileValidationResultValidateResponseWithContext(
+                            request.handle(), request.handle(), response.handle(), itemIndexes,
+                            uniqueIdentifiers, knownFields, booleanValues,
+                            usageLimitsTotals, usageLimitsCounts));
+        }
     }
 
     @Test

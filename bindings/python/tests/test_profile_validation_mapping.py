@@ -373,10 +373,55 @@ def test_profile_result_calls_all_validators_with_live_context_buffers(monkeypat
         b"caller-context-secret",
         b"caller-context-secret",
     ]
+    assert client.ffi.buffer(native.context_buffer, native.context_length)[:] == bytes(
+        native.context_length
+    )
 
     request.close()
     response.close()
     result.close()
+
+
+def test_profile_context_bytes_are_wiped_after_a_validation_error(monkeypatch):
+    native = _ProfileValidationLib()
+    result = _profile_result_from_mock(monkeypatch, native)
+    request = ttlv.ttlv_structure_create()
+    secret_identifier = "failed-validation-context"
+    context = client.ProfileValidationContext().with_object_state(
+        4, client.ProfileObjectState(secret_identifier)
+    )
+
+    native.validator_status = 4
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            result.validate_request_with_context(request, context)
+        assert native.context_bytes_during_call == secret_identifier.encode()
+        assert client.ffi.buffer(native.context_buffer, native.context_length)[:] == bytes(
+            native.context_length
+        )
+    finally:
+        request.close()
+        result.close()
+
+
+def test_profile_result_releases_native_handle_when_returned_ids_are_invalid(
+    monkeypatch,
+):
+    native = _ProfileValidationLib()
+    native.profile_ids = ("profile\x00secret",)
+    result_pointer = client.ffi.cast("kmipkit_profile_validation_result_t *", 101)
+
+    def stable_result_pointer(slot, _address: int):
+        return client.ffi.cast(client.ffi.typeof(slot[0]), result_pointer)
+
+    native._pointer_for_slot = stable_result_pointer
+    monkeypatch.setattr(client, "lib", native)
+    monkeypatch.setattr(_handles, "lib", native)
+
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileValidationSelection(("profile-a",)).validate()
+
+    assert native.released == [result_pointer]
 
 
 def test_profile_result_keeps_input_handle_locked_from_pointer_read_to_native_call(

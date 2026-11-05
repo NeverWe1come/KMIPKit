@@ -7,6 +7,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterable
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from kmipkit import messages, ttlv
@@ -50,6 +51,7 @@ _VENDOR_IDENTIFICATION = 0x0042_009D
 _CRITICALITY_INDICATOR = 0x0042_0026
 _VENDOR_EXTENSION = 0x0042_009C
 _SERVER_HASHED_PASSWORD = 0x0042_0155
+_CLIENT_CORRELATION_VALUE = 0x0042_0105
 _ROOT = Path(__file__).resolve().parents[3]
 _SHARED_PARITY_FIXTURE = _ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 _TYPED_MESSAGE_CASE_ID = "typed-message.ordered-open-values-and-lifetime.v1"
@@ -655,3 +657,65 @@ def test_invalid_message_error_is_payload_free_and_consumes_input() -> None:
     assert raised.value.structure_index is not None
     assert "DO-NOT-LEAK-MESSAGE-CONTENT" not in str(raised.value)
     assert "DO-NOT-LEAK-MESSAGE-CONTENT" not in repr(raised.value)
+
+
+def test_typed_header_accessor_rejects_a_malformed_field_type_and_closes_its_copy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    request = messages.RequestMessage.from_ttlv(_request_tree())
+    header = request.header()
+    limits = _limits()
+    malformed_header = _structure(
+        [(_CLIENT_CORRELATION_VALUE, _integer(123))], limits
+    )
+    malformed_pointer, malformed_owner = malformed_header._take()
+    copied_structures: list[ttlv.Structure] = []
+    structure_from_address = ttlv._structure_from_native_address
+
+    def track_structure_copy(address: int) -> ttlv.Structure:
+        copied = structure_from_address(address)
+        copied_structures.append(copied)
+        return copied
+
+    def malformed_header_ttlv(_header: object, output: object) -> int:
+        output[0] = messages.ffi.cast(
+            "kmipkit_ttlv_structure_t *", malformed_pointer
+        )
+        return 0
+
+    monkeypatch.setattr(
+        messages,
+        "lib",
+        SimpleNamespace(kmipkit_request_header_view_ttlv=malformed_header_ttlv),
+    )
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", track_structure_copy)
+    try:
+        with pytest.raises(messages.errors.InvalidInputError):
+            _ = header.client_correlation_value
+        assert len(copied_structures) == 1
+        assert copied_structures[0].closed
+    finally:
+        header.close()
+        request.close()
+        limits.close()
+        del malformed_owner
+
+
+def test_message_child_views_remain_readable_after_parent_close() -> None:
+    original = _request_tree(operation=0x0000_001E)
+    request = messages.RequestMessage.from_ttlv(original)
+    header = request.header()
+    item = request.batch_item_at(0)
+    with pytest.raises(messages.errors.InvalidInputError):
+        request.batch_item_at(True)
+
+    request.close()
+    try:
+        assert (header.protocol_version.major, header.protocol_version.minor) == (2, 1)
+        assert item.operation == 0x0000_001E
+        payload = item.request_payload
+        assert payload is not None
+        payload.close()
+    finally:
+        item.close()
+        header.close()
