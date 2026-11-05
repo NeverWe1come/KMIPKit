@@ -99,6 +99,10 @@ mod typed_attributes;
 mod validate;
 mod validation;
 
+#[cfg(test)]
+#[path = "../tests/unit/validation_report_tests.rs"]
+mod validation_report_tests;
+
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
 pub use adjust_attribute::{
