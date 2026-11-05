@@ -2,15 +2,17 @@ use crate::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, AttributeSet,
     CancelRequest, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest,
-    DeriveKeyRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest, ExportRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
-    GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
-    ModifyAttributeRequest, ObjectType, ObtainLeaseRequest, PingRequest, Pkcs11Request,
-    PollRequest, ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest,
-    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
-    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
-    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, ValidateKmipRequest, ValidateRequest,
+    DerivationMethod, DerivationParameters, DeriveKeyRequest, DestroyRequest,
+    DiscoverVersionsRequest, EncryptRequest, ExportRequest, GetAttributeListRequest,
+    GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest, LogRequest,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ModifyAttributeRequest, ObjectType,
+    ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
+    QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest, SetConstraintsRequest,
+    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, ValidateKmipRequest,
+    ValidateRequest,
 };
 use kmipkit_ttlv::{Item, RawTag, Value};
 
@@ -171,4 +173,51 @@ fn create_validation_borrows_and_reports_duplicate_single_instance_attributes() 
     );
     assert!(!format!("{report:?}").contains("first"));
     assert!(!format!("{report:?}").contains("second"));
+}
+
+#[test]
+fn certify_validation_rejects_request_value_without_type() {
+    let request = CertifyRequest::new()
+        .with_certificate_request_value(SecretBytes::new(b"opaque-request".to_vec()));
+
+    assert!(!request.validate().is_valid());
+}
+
+#[test]
+fn create_split_key_validation_rejects_missing_prime_field_size() {
+    let request = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::POLYNOMIAL_SHARING_PRIME_FIELD,
+        AttributeSet::new(),
+    );
+
+    assert!(!request.validate().is_valid());
+}
+
+#[test]
+fn derive_key_validation_rejects_missing_required_input_identifier() {
+    let request = DeriveKeyRequest::new(
+        ObjectType::from_raw(7),
+        Vec::new(),
+        DerivationMethod::from_raw(0),
+        DerivationParameters::new(),
+        AttributeSet::new(),
+    );
+
+    assert!(!request.validate().is_valid());
+}
+
+#[test]
+fn revoke_validation_rejects_compromise_date_for_unrelated_reason() {
+    let request = RevokeRequest::new(RevocationReason::UNSPECIFIED)
+        .with_compromise_occurrence_date(1_700_000_000);
+
+    assert!(!request.validate().is_valid());
+}
+
+#[test]
+fn validate_request_validation_rejects_an_empty_chain() {
+    assert!(!ValidateRequest::new().validate().is_valid());
 }
