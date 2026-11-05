@@ -1,4 +1,4 @@
-# ADR-0017: KMIP 2.1 Multi-Encoding Scope for 1.0
+# ADR-0018: KMIP 2.1 Multi-Encoding Scope for 1.0
 
 **Status**: Accepted by maintainer instruction on 2026-11-05
 **Date**: 2026-11-05

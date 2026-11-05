@@ -34,21 +34,32 @@ client selector and common dispatch are introduced only by KMIPKIT-0057.
 
 ## Names and unknown values
 
-- Look up known tag source names, assigned Enumeration names/values, and
-  tag-to-Enumeration-family mappings from the private metadata generated
-  offline by `tools/normative_catalog/generate_wire_names.py` from the reviewed
+- Look up known tag source names, assigned Enumeration names/values, assigned
+  Bit Mask family names/components, and tag-to-family mappings from the
+  private metadata generated offline by
+  `tools/normative_catalog/generate_wire_names.py` from the reviewed
   catalog; builds never scrape or download OASIS sources. The generated Rust
   module embeds a TSV document in one raw string literal rather than expanding
   every catalog row into repeated Rust tuple syntax or an unsupported macro.
   Records use `T<TAB>tag-hex<TAB>tag-name`,
-  `F<TAB>tag-hex<TAB>enumeration-family`, or
-  `E<TAB>enumeration-family<TAB>value-hex<TAB>value-name`, in that order and
-  sorted within each record type. Hex values are uppercase and fixed-width.
+  `F<TAB>tag-hex<TAB>enumeration-family`,
+  `E<TAB>enumeration-family<TAB>value-hex<TAB>value-name`,
+  `M<TAB>tag-hex<TAB>bitmask-family`, and
+  `B<TAB>bitmask-family<TAB>value-hex<TAB>value-name`, in that order and
+  sorted within each record type. `M` maps an assigned tag to its Bit Mask
+  family. `B` includes only assigned catalog values; reserved and extension
+  placeholder values are omitted. Hex values are uppercase and fixed-width.
   Names are UTF-8 and cannot contain tabs or line breaks; generation fails if
   the catalog contains those delimiters. Mapping inputs are catalog
   `structure_member`, `message_field`, and `operation_structure` rows whose
   source encoding is Enumeration; each maps by its assigned tag name and the
   longest matching Enumeration family suffix.
+- Bit Mask family names come from catalog `bitmask` rows and map to the
+  assigned tag with the same source name. `B` records come from assigned
+  `bitmask_value` rows and their unique parent Bit Mask. Reserved values and
+  extension placeholders have no symbolic record; codecs represent unknown
+  components using the hexadecimal form allowed by Profiles
+  §§5.4.1.6.4 and 5.5.1.6.4.
 - The common model retains an Enumeration as its raw 32-bit value. Resolve its
   family through the generated tag-to-family table; when an unambiguous family
   mapping is absent or the value is unknown, preserve it in an OASIS-permitted
@@ -57,7 +68,9 @@ client selector and common dispatch are introduced only by KMIPKIT-0057.
   model. JSON uses an assigned Enumeration name when resolved, otherwise a
   profile-permitted unsigned number or 32-bit hexadecimal string. XML uses the
   assigned CamelCase Enumeration name when resolved, otherwise a hexadecimal
-  string. Unknown tags use profile-permitted hexadecimal forms.
+  string. JSON mask strings use `|` between assigned names or hexadecimal
+  components; XML mask strings use spaces. Unknown mask bits and tags use the
+  profile-permitted hexadecimal forms.
 - Preserve Structure child order, repeated children, exact represented
   payloads, and allocation-valid unknown tags accepted by the model.
 - Each codec specification defines its exact symbolic-name normalization and

@@ -5,11 +5,11 @@
 - **Approved scope and design**: The maintainer approved the multi-encoding
   design and directly instructed implementation in the current Codex task on
   2026-11-05.
-- **Approved specification**: `spec.md` at the feature branch revision
-  containing this record. The authorization covers the governance amendment
-  and internal common contract only; it does not approve codec or client API
-  implementation assigned to KMIPKIT-0055 through KMIPKIT-0057.
-- **ADR**: ADR-0017 is accepted under the same direct maintainer instruction.
+- **Approved specifications**: KMIPKIT-0054, KMIPKIT-0055, KMIPKIT-0056, and
+  KMIPKIT-0057 are approved for implementation. This includes the common
+  catalog-derived Bit Mask metadata, the private JSON/XML codecs, and the
+  client/transport and four-language integration boundary.
+- **ADR**: ADR-0018 is accepted under the same direct maintainer instruction.
 - **Human PR review/merge**: Still required under `AGENTS.md` and the
   repository workflow.
 

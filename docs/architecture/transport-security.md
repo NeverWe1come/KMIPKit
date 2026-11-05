@@ -13,7 +13,7 @@ implemented boundary.
 
 The typed client supports TTLV, JSON, and XML over both transports, with TTLV
 as the default. JSON/XML HTTPS body and Content-Type behavior follows the
-contextual interpretation in [ADR-0017](../adr/0017-multi-encoding-1-0-scope.md).
+contextual interpretation in [ADR-0018](../adr/0018-multi-encoding-1-0-scope.md).
 The local received-byte cap applies to actual wire bytes; KMIP `Maximum
 Response Size` retains its TTLV-equivalent meaning.
 
@@ -38,7 +38,7 @@ Response Size` retains its TTLV-equivalent meaning.
 - Send exactly one `Host` header derived from the endpoint authority; the
   target path and TLS verification-name override do not alter it.
 - `Content-Type` is `application/octet-stream` for TTLV, `application/json`
-  for JSON, and `text/xml` for XML under ADR-0017's contextual interpretation.
+  for JSON, and `text/xml` for XML under ADR-0018's contextual interpretation.
 - No redirect, proxy, or compression behavior.
 - Strict KMIP HTTPS profile status, header, and body checks.
 

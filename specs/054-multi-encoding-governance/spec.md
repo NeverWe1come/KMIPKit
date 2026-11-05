@@ -20,7 +20,7 @@ and feature-ID ownership.
 **Acceptance Scenarios**:
 
 1. **Given** the original TTLV-only scope in ADR-0002, **When** a reviewer
-   reads the current governance set, **Then** ADR-0017 clearly supersedes only
+   reads the current governance set, **Then** ADR-0018 clearly supersedes only
    the encoding decision and preserves remaining 1.0 boundaries.
 2. **Given** the reserved Phase 5 identifiers 0047–0053, **When** the roadmap
    lists multi-encoding work, **Then** the new specifications use 0054–0057.
@@ -60,11 +60,11 @@ copies are immutable. Normative references:
 |---|---|---|
 | OASIS KMIP Specification v2.1 | §§10.1–10.2.3 | TTLV baseline and delegation of JSON/XML message protocols to KMIP Profiles. |
 | OASIS KMIP Profiles v2.1 | §§5.3.1–5.3.2 | HTTPS client/server content types and the documented source discrepancy. |
-| OASIS KMIP Profiles v2.1 | §§5.4.1.1–5.4.1.3, 5.4.1.6.7, 5.4.2 | XML name normalization, tag/type/value representations, XML client clauses. |
-| OASIS KMIP Profiles v2.1 | §§5.5.1.1–5.5.1.3, 5.5.1.6.7, 5.5.2 | JSON name normalization, tag/type/value representations, JSON client clauses. |
+| OASIS KMIP Profiles v2.1 | §§5.4.1.1–5.4.1.3, 5.4.1.6.4, 5.4.1.6.7, 5.4.2 | XML name normalization, tag/type/value representations, special mask components, XML client clauses. |
+| OASIS KMIP Profiles v2.1 | §§5.5.1.1–5.5.1.3, 5.5.1.6.4, 5.5.1.6.7, 5.5.2 | JSON name normalization, tag/type/value representations, special mask components, JSON client clauses. |
 | OASIS KMIP Profiles v2.1 | §§5.4.4.1, 5.5.4.1 | Official `MSGENC-XML-M-1-21` and `MSGENC-JSON-M-1-21` acceptance evidence. |
 
-ADR-0017 controls the project-specific scope and the contextual HTTPS
+ADR-0018 controls the project-specific scope and the contextual HTTPS
 interpretation. It does not change OASIS text or claim official clarification.
 
 ## Functional Requirements
@@ -78,18 +78,19 @@ interpretation. It does not change OASIS text or claim official clarification.
 - **KMIPKIT-0054-FR-003**: The common codec contract MUST use the existing
   ordered `kmipkit-ttlv::Item` semantic model. A repository-owned offline
   generator MUST produce private Rust tables of assigned tag names,
-  Enumeration families and values, and tag-to-Enumeration-family mappings
-  from the reviewed catalog; codec specifications consume them for
-  profile-specific symbolic normalization. The codecs MUST preserve
-  unknown allocation-valid tags, raw Enumeration values, bitmask bits, and
-  extension values represented by the model.
+  Enumeration families and values, assigned Bit Mask families and values,
+  and tag-to-family mappings from the reviewed catalog; codec specifications
+  consume them for profile-specific symbolic normalization. The codecs MUST
+  preserve unknown allocation-valid tags, raw Enumeration values, bitmask
+  bits, and extension values represented by the model.
 - **KMIPKIT-0054-FR-004**: The common contract MUST define shared limits,
   payload-free/redacted error behavior, and the conversion boundary needed by
   codecs, without exposing a new public encoding API.
-- **KMIPKIT-0054-FR-005**: Symbolic tag and Enumeration names MUST be
-  resolved from checked-in generated catalog metadata. JSON/XML codecs MUST
-  use profile-compliant hexadecimal or numeric forms for unknown tags and
-  Enumeration values; builds MUST NOT fetch or scrape OASIS pages.
+- **KMIPKIT-0054-FR-005**: Symbolic tag, Enumeration, and Bit Mask component
+  names MUST be resolved from checked-in generated catalog metadata. JSON/XML
+  codecs MUST use profile-compliant hexadecimal or numeric forms for unknown
+  tags, Enumeration values, and unassigned mask components; builds MUST NOT
+  fetch or scrape OASIS pages.
 - **KMIPKIT-0054-FR-006**: KMIPKIT-0054, -0055, and -0056 MUST NOT modify
   `specification/api/public-api.json`, generated public API output, or public
   client dispatch. KMIPKIT-0057 owns the coordinated `WireEncoding` type,
@@ -102,7 +103,7 @@ interpretation. It does not change OASIS text or claim official clarification.
   document per exchange, incrementally detected under decoder limits, with
   no KMIPKit-specific wire prefix, and the connection MUST close after the
   response.
-- **KMIPKIT-0054-FR-009**: HTTPS JSON/XML bodies MUST follow ADR-0017's
+- **KMIPKIT-0054-FR-009**: HTTPS JSON/XML bodies MUST follow ADR-0018's
   contextual interpretation of Profiles §§5.3.1–5.3.2. The design record MUST
   label the source conflict as unresolved by OASIS and MUST NOT assert that
   the selected interpretation is an erratum.
@@ -116,11 +117,17 @@ interpretation. It does not change OASIS text or claim official clarification.
 - **KMIPKIT-0054-FR-012**: The feature MUST reserve identifiers 0047–0053
   for Phase 5 and assign 0054 to governance/common contract, 0055 to JSON,
   0056 to XML, and 0057 to client/transport integration.
+- **KMIPKIT-0054-FR-013**: The catalog generator MUST emit the three Bit Mask
+  families, their matching assigned tags, and every catalog `bitmask_value`
+  whose allocation is `assigned`. It MUST NOT emit reserved or extension
+  placeholder values as assigned names; codecs preserve unrecognized mask
+  components through profile-permitted hexadecimal values. The normative
+  component representations are Profiles §§5.4.1.6.4 and 5.5.1.6.4.
 
 ## Success Criteria
 
 - **KMIPKIT-0054-SC-001**: All canonical governance sources describe the same
-  1.0 encoding/transport scope and ADR-0017 is indexed as accepted.
+  1.0 encoding/transport scope and ADR-0018 is indexed as accepted.
 - **KMIPKIT-0054-SC-002**: The requirements in this specification map to the
   governance, ADR, or downstream feature owner; traceability is complete.
 - **KMIPKIT-0054-SC-003**: The JSON and XML implementations can be developed
@@ -132,6 +139,9 @@ interpretation. It does not change OASIS text or claim official clarification.
 - **KMIPKIT-0054-SC-005**: Every 0054–0057 specification identifies its
   correct dependency and exact OASIS source sections; 0055 uses Profiles §5.5
   and 0056 uses Profiles §5.4.
+- **KMIPKIT-0054-SC-006**: `WIRE_NAMES` includes every assigned catalog Bit
+  Mask family and component, excludes reserved and extension placeholders,
+  and resolves each mask tag to its component family.
 
 ## Dependencies and Exclusions
 
@@ -179,5 +189,5 @@ branch ownership are fixed in [the common wire codec contract](contracts/common-
 - The resolved catalog provides canonical tag names, assigned Enumeration
   values, and tag-to-Enumeration-family mappings. Hex or numeric forms
   preserve unknown values as permitted by each OASIS encoding profile.
-- ADR-0017 records the approved project interpretation of the HTTPS source
+- ADR-0018 records the approved project interpretation of the HTTPS source
   conflict, while formal profile conformance remains an evidence-driven claim.
