@@ -313,6 +313,32 @@ fn join_split_key_validation_checks_references_and_attribute_multiplicity() {
 }
 
 #[test]
+fn join_split_key_validation_requires_reference_threshold_context_and_count() {
+    let identifier = UniqueIdentifier::TextString("split-key".to_owned());
+    let missing_threshold = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![SplitKeyReference::new(identifier.clone())],
+    )
+    .validate();
+    assert!(!missing_threshold.is_valid());
+    assert_eq!(
+        missing_threshold.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.27, Table 244; §2.8, Table 9"
+    );
+
+    let insufficient_count = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![SplitKeyReference::new(identifier).with_split_key_threshold(2)],
+    )
+    .validate();
+    assert!(!insufficient_count.is_valid());
+    assert_eq!(
+        insufficient_count.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.27, Table 244; §2.8, Table 9"
+    );
+}
+
+#[test]
 fn create_key_pair_validation_rejects_conflicting_table_191_attributes() {
     const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
     let attributes = |length| {
