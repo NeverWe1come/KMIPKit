@@ -449,46 +449,48 @@ const OPERATIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     nested_schema: None,
 }];
 
+macro_rules! required_singleton_field {
+    ($rule:literal, $name:literal, $tag:literal, $types:expr) => {
+        FieldDescriptor {
+            rule_id: $rule,
+            name: $name,
+            tag: FieldTag::Exact($tag),
+            types: $types,
+            min_count: 1,
+            max_count: Some(1),
+            nested_schema: None,
+        }
+    };
+}
+
 const CERTIFICATE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R249",
-        name: "Certificate Type",
-        tag: FieldTag::Exact(0x0042_001D),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R250",
-        name: "Certificate Value",
-        tag: FieldTag::Exact(0x0042_001E),
-        types: TYPE_BYTE_STRING,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    required_singleton_field!(
+        "KMIPKIT-0051-R249",
+        "Certificate Type",
+        0x0042_001D,
+        TYPE_ENUMERATION
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R250",
+        "Certificate Value",
+        0x0042_001E,
+        TYPE_BYTE_STRING
+    ),
 ];
 
 const CERTIFICATE_REQUEST_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R251",
-        name: "Certificate Request Type",
-        tag: FieldTag::Exact(0x0042_0019),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R252",
-        name: "Certificate Request Value",
-        tag: FieldTag::Exact(0x0042_0140),
-        types: TYPE_BYTE_STRING,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    required_singleton_field!(
+        "KMIPKIT-0051-R251",
+        "Certificate Request Type",
+        0x0042_0019,
+        TYPE_ENUMERATION
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R252",
+        "Certificate Request Value",
+        0x0042_0140,
+        TYPE_BYTE_STRING
+    ),
 ];
 
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
