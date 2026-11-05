@@ -74,7 +74,9 @@ independent human security review required before release.
 ## Integration status
 
 The feature branch is intended to target
-`feature/KMIPKIT-0043-t076-shared-client-mapping` as a draft stacked PR. The
-remote branch push succeeded after replacing private commit email addresses
-with the account's GitHub noreply address; repository content is unchanged.
-The draft PR URL and current PR checks will be recorded after PR creation.
+`feature/KMIPKIT-0043-t076-shared-client-mapping` as a draft stacked PR. Draft
+PR [#114](https://github.com/NeverWe1come/KMIPKit/pull/114) is open against
+that branch. The remote branch push succeeded after replacing private commit
+email addresses with the account's GitHub noreply address; repository content
+is unchanged. At the last check, GitHub reported no status checks yet. T007
+remains open for the aggregate coverage and remote platform controls.

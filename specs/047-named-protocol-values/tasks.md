@@ -23,6 +23,6 @@
   reserved and wildcard extension entries, which do not have assigned
   numeric values. Confirm that generated usable constants cover only entries
   with `allocation=assigned` and concrete 32-bit values.
-- [ ] T008 Push this feature branch and open a draft PR against
+- [x] T008 Push this feature branch and open a draft PR against
   `feature/KMIPKIT-0043-t076-shared-client-mapping`; later change its base to
   `release/1.0.0` as described by the approved Phase 5 plan.
