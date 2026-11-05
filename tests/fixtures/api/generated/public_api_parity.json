@@ -73,6 +73,162 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_config_v1_t.endpoint_kind as raw TLS endpoint; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_config_v1_t.endpoint_kind as HTTPS endpoint; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_ENDPOINT_HTTPS",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_config_v1_t.trust_kind as platform trust roots; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_TRUST_PLATFORM",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_config_v1_t.trust_kind as explicit CA certificate list; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_input_v1_t.source_kind as in-memory input bytes; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_SOURCE_MEMORY",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_input_v1_t.source_kind as filesystem path input; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_SOURCE_FILE",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_input_v1_t.encoding as PEM material; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_ENCODING_PEM",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_input_v1_t.encoding as DER material; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_ENCODING_DER",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 0 for kmipkit_timeout_limit_v1_t.kind as inherit the configured timeout; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_timeout_limit_v1_t.kind as apply a finite timeout; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_timeout_limit_v1_t.kind as disable this timeout; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_config_v1_t.flags as bit set when tls_server_name is present; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_config_v1_t.flags as bit set when target_uri is present; the constant is excluded from cross-language enum parity.",
+      "exportName": "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI",
+      "packageId": "c-kmipkit",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
         "kind": "feature-specification",
         "path": "specs/029-opaque-object-context/spec.md",

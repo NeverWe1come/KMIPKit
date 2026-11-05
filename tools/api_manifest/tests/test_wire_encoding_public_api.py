@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -193,6 +194,12 @@ class WireEncodingPublicApiTests(unittest.TestCase):
 
     def test_transport_record_values_are_c_only_manifest_constants(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        schema = json.loads(
+            (ROOT / "specification" / "api" / "public-api.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        generate._validate_schema(manifest, schema)
         expected = {
             "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS": (
                 "kmipkit_transport_config_v1_t.endpoint_kind", 1, "raw TLS endpoint"
@@ -228,10 +235,12 @@ class WireEncodingPublicApiTests(unittest.TestCase):
                 "kmipkit_timeout_limit_v1_t.kind", 2, "disable this timeout"
             ),
             "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME": (
-                "kmipkit_transport_config_v1_t.flags", 1, "tls_server_name is present"
+                "kmipkit_transport_config_v1_t.flags", 1,
+                "bit set when tls_server_name is present"
             ),
             "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI": (
-                "kmipkit_transport_config_v1_t.flags", 2, "target_uri is present"
+                "kmipkit_transport_config_v1_t.flags", 2,
+                "bit set when target_uri is present"
             ),
         }
         constants = manifest["cAbiRecordConstants"]
@@ -275,6 +284,20 @@ class WireEncodingPublicApiTests(unittest.TestCase):
             self.assertIn(selector, c_consumer)
         self.assertNotIn("transport.endpoint_kind = UINT32_C(1)", c_consumer)
         self.assertNotIn("transport.trust_kind = UINT32_C(2)", c_consumer)
+        self.assertNotRegex(
+            c_consumer,
+            r"\.(?:endpoint_kind|trust_kind|source_kind|encoding|flags|"
+            r"(?:connect|write|read|total)_timeout\.kind)\s*=\s*UINT32_C\(\d+\)",
+        )
+        self.assertIn(
+            "client, &batch, limits, KMIPKIT_WIRE_ENCODING_JSON, &response",
+            c_consumer,
+        )
+
+        invalid_manifest = json.loads(json.dumps(manifest))
+        invalid_manifest["cAbiRecordConstants"][0]["value"] = 4_294_967_296
+        with self.assertRaises(generate.ManifestError):
+            generate._validate_schema(invalid_manifest, schema)
 
     def test_versioned_c_record_layout_is_generated_from_manifest_fields(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))

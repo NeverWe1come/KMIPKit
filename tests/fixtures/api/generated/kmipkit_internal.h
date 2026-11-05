@@ -163,6 +163,33 @@ typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_WIRE_ENCODING_JSON ((kmipkit_wire_encoding_t)1)
 #define KMIPKIT_WIRE_ENCODING_XML ((kmipkit_wire_encoding_t)2)
 
+/* C ABI record input for kmipkit_transport_config_v1_t.endpoint_kind: raw TLS endpoint. */
+#define KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS ((uint32_t)1)
+/* C ABI record input for kmipkit_transport_config_v1_t.endpoint_kind: HTTPS endpoint. */
+#define KMIPKIT_TRANSPORT_ENDPOINT_HTTPS ((uint32_t)2)
+/* C ABI record input for kmipkit_transport_config_v1_t.trust_kind: platform trust roots. */
+#define KMIPKIT_TRANSPORT_TRUST_PLATFORM ((uint32_t)1)
+/* C ABI record input for kmipkit_transport_config_v1_t.trust_kind: explicit CA certificate list. */
+#define KMIPKIT_TRANSPORT_TRUST_CERTIFICATES ((uint32_t)2)
+/* C ABI record input for kmipkit_transport_input_v1_t.source_kind: in-memory input bytes. */
+#define KMIPKIT_TRANSPORT_SOURCE_MEMORY ((uint32_t)1)
+/* C ABI record input for kmipkit_transport_input_v1_t.source_kind: filesystem path input. */
+#define KMIPKIT_TRANSPORT_SOURCE_FILE ((uint32_t)2)
+/* C ABI record input for kmipkit_transport_input_v1_t.encoding: PEM material. */
+#define KMIPKIT_TRANSPORT_ENCODING_PEM ((uint32_t)1)
+/* C ABI record input for kmipkit_transport_input_v1_t.encoding: DER material. */
+#define KMIPKIT_TRANSPORT_ENCODING_DER ((uint32_t)2)
+/* C ABI record input for kmipkit_timeout_limit_v1_t.kind: inherit the configured timeout. */
+#define KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT ((uint32_t)0)
+/* C ABI record input for kmipkit_timeout_limit_v1_t.kind: apply a finite timeout. */
+#define KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED ((uint32_t)1)
+/* C ABI record input for kmipkit_timeout_limit_v1_t.kind: disable this timeout. */
+#define KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED ((uint32_t)2)
+/* C ABI record input for kmipkit_transport_config_v1_t.flags: bit set when tls_server_name is present. */
+#define KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME ((uint32_t)1)
+/* C ABI record input for kmipkit_transport_config_v1_t.flags: bit set when target_uri is present. */
+#define KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI ((uint32_t)2)
+
 /* Releases the library-owned kmipkit_extension_identity_t handle. */
 void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
 /* Releases the library-owned kmipkit_extension_compatibility_t handle. */
