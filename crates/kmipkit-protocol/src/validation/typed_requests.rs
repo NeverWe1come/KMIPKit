@@ -3,13 +3,12 @@
 use crate::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest,
     CheckRequest, DelegatedLoginRequest, DeleteAttributeRequest, DestroyRequest,
-    DiscoverVersionsRequest, ExportRequest, GetAttributeListRequest, GetAttributesRequest,
-    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest,
-    JoinSplitKeyRequest, LocateRequest, LogRequest, LoginRequest, LogoutRequest,
-    ModifyAttributeRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
-    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest,
-    RngSeedRequest, SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest,
-    ValidationReport,
+    DiscoverVersionsRequest, GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
+    LocateRequest, LogRequest, LoginRequest, LogoutRequest, ModifyAttributeRequest,
+    ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
+    QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest, RngSeedRequest,
+    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, ValidationReport,
 };
 
 use super::schema::RequestPayloadSchema;
@@ -72,7 +71,6 @@ impl_typed_request_validation! {
     DeleteAttributeRequest => DeleteAttribute,
     DestroyRequest => Destroy,
     DiscoverVersionsRequest => DiscoverVersions,
-    ExportRequest => Export,
     GetAttributeListRequest => GetAttributeList,
     GetAttributesRequest => GetAttributes,
     GetConstraintsRequest => GetConstraints,
