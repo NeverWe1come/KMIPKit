@@ -14,6 +14,11 @@ const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
+const USAGE_LIMITS: u32 = 0x0042_0095;
+const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
+const RIGHT: u32 = 0x0042_0150;
+const OBJECTS: u32 = 0x0042_014E;
+const OPERATIONS: u32 = 0x0042_014F;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -320,6 +325,89 @@ fn key_information_requires_text_string_unique_identifier() {
         issue.path().to_string() == "Unique Identifier"
             && issue.source().to_string() == "KMIP v2.1 §3.3, Table 16"
     }));
+}
+
+#[test]
+fn rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights() {
+    let malformed_usage_limits = structure([item(
+        USAGE_LIMITS_TOTAL,
+        Value::integer(2),
+    )]);
+    let right = structure([item(
+        USAGE_LIMITS,
+        Value::structure(malformed_usage_limits),
+    )]);
+    let rights = structure([item(RIGHT, Value::structure(right))]);
+    let payload = structure([
+        item(0x0042_014A, Value::enumeration(1)),
+        item(0x0042_014B, Value::byte_string(b"ticket".to_vec())),
+        item(0x0042_014D, Value::structure(rights)),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DelegatedLogin,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.path().to_string() == "Right.Usage Limits.Usage Limits Total"
+            && issue.source().to_string() == "KMIP v2.1 §7.40, Table 392"
+    }));
+}
+
+#[test]
+fn rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions() {
+    let empty_rights = structure([]);
+    let empty_payload = structure([
+        item(0x0042_014A, Value::enumeration(1)),
+        item(0x0042_014B, Value::byte_string(b"ticket".to_vec())),
+        item(0x0042_014D, Value::structure(empty_rights)),
+    ]);
+    let empty_report = validate_structure(
+        &empty_payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DelegatedLogin,
+        )),
+    );
+    assert!(empty_report.is_valid());
+
+    let empty_right = structure([]);
+    let populated_right = structure([
+        item(
+            OPERATIONS,
+            Value::structure(structure([item(0x0042_005C, Value::enumeration(0x8000_0001))])),
+        ),
+        item(
+            OBJECTS,
+            Value::structure(structure([item(
+                0x0042_0094,
+                Value::text_string("object-id".to_owned()),
+            )])),
+        ),
+        item(VENDOR_EXTENSION, Value::byte_string(vec![0xCA, 0xFE])),
+    ]);
+    let rights = structure([
+        item(RIGHT, Value::structure(empty_right)),
+        item(RIGHT, Value::structure(populated_right)),
+        item(VENDOR_EXTENSION, Value::byte_string(vec![0xBE, 0xEF])),
+    ]);
+    let payload = structure([
+        item(0x0042_014A, Value::enumeration(1)),
+        item(0x0042_014B, Value::byte_string(b"ticket".to_vec())),
+        item(0x0042_014D, Value::structure(rights)),
+    ]);
+
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DelegatedLogin,
+        )),
+    );
+
+    assert!(report.is_valid());
+    assert_eq!(payload.view().children().len(), 3);
 }
 
 #[test]
