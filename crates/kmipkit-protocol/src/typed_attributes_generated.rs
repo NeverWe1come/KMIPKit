@@ -516,7 +516,10 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
 ];
 
 pub mod typed {
-    use super::*;
+    use super::{
+        AttributeValueError, Structure, StructureView, UniqueIdentifierValue, UniqueIdentifierView,
+        Value, ValueView,
+    };
 
     /// Typed marker for the KMIP 2.1 Activation Date attribute.
     pub struct ActivationDate;

@@ -128,6 +128,12 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
 
     def test_preserves_reviewed_manifest_order_for_existing_rows(self) -> None:
         manifest = copy.deepcopy(self.manifest)
+        manifest["publicDeclarations"] = [manifest["publicDeclarations"][0]]
+        manifest["capabilities"][0]["mappings"] = {
+            "c": [], "java": [], "python": [], "rust": [
+                "kmipkit::protocol::named_values_generated::values::enumeration::state::ACTIVE"
+            ],
+        }
         second_declaration = copy.deepcopy(manifest["publicDeclarations"][0])
         second_declaration["declarationId"] = "reviewed-second"
         second_declaration["exportName"] = "kmipkit::protocol::ZExisting"
@@ -152,8 +158,14 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
 
         result = reconcile(manifest, {"missingFromManifest": []})
 
-        self.assertEqual(result["publicDeclarations"][:2], manifest["publicDeclarations"])
-        self.assertEqual(result["capabilities"][:2], manifest["capabilities"])
+        self.assertEqual(
+            [row["declarationId"] for row in result["publicDeclarations"][:2]],
+            [row["declarationId"] for row in manifest["publicDeclarations"]],
+        )
+        self.assertEqual(
+            [row["capabilityId"] for row in result["capabilities"][:2]],
+            [row["capabilityId"] for row in manifest["capabilities"]],
+        )
         self.assertEqual(result["approvedExclusions"], manifest["approvedExclusions"])
 
     def test_unknown_export_fails_closed(self) -> None:

@@ -104,7 +104,6 @@ pub use asynchronous::AsynchronousOperationError;
 pub use attribute::{
     Attribute, AttributeDefinition, AttributeSet, AttributeSetError, AttributeValueError,
     AttributeView, CurrentAttribute, NewAttribute, UniqueIdentifierValue, UniqueIdentifierView,
-    typed,
 };
 pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};

@@ -5,7 +5,8 @@ table, tag, encoding, and multiplicity are in [gap-matrix.md](gap-matrix.md).
 The 62 `KMIPKIT-0048-ATTR-<tag>` rows map to generated attribute markers in
 `crates/kmipkit-protocol/src/typed_attributes_generated.rs`; the complete
 catalog-to-generated mapping is verified by
-`all_catalogued_typed_attributes_match_source_tag_and_value_type`.
+`test_catalog_defines_all_and_only_direct_typed_attributes` and
+`generated_typed_attribute_registry_covers_every_direct_definition`.
 `KMIPKIT-0048-EXC-CERTIFICATE-ATTRIBUTES` records the source-justified
 exclusion in §4.6/Table 39.
 

@@ -53,7 +53,7 @@ fn typed_scalar_attribute_builds_and_borrows_its_value() {
         .expect("Comment accepts a Text String");
 
     let observed = attribute
-        .with_value(|value| value.to_owned())
+        .with_value(str::to_owned)
         .expect("typed Comment view matches its source encoding");
 
     assert_eq!(observed, "private-note-sentinel");
@@ -71,6 +71,45 @@ fn typed_enumeration_preserves_unknown_raw_values() {
         .expect("Enumeration has the catalogued TTLV type");
 
     assert_eq!(raw, 0xF123_4567);
+}
+
+#[test]
+fn typed_attribute_conversions_cover_each_catalogued_value_category() {
+    let sensitive = Attribute::<typed::Sensitive>::new(true).unwrap();
+    assert!(sensitive.with_value(|value| value).unwrap());
+
+    let short_id = Attribute::<typed::ShortUniqueIdentifier>::new(vec![0x01, 0xFE]).unwrap();
+    assert_eq!(short_id.with_value(<[u8]>::to_vec).unwrap(), [0x01, 0xFE]);
+
+    let certificate_length = Attribute::<typed::CertificateLength>::new(-17).unwrap();
+    assert_eq!(certificate_length.with_value(|value| value).unwrap(), -17);
+
+    let lease_time = Attribute::<typed::LeaseTime>::new(u32::MAX).unwrap();
+    assert_eq!(lease_time.with_value(|value| value).unwrap(), u32::MAX);
+
+    let date = Attribute::<typed::ActivationDate>::new(i64::MIN).unwrap();
+    assert_eq!(date.with_value(|value| value).unwrap(), i64::MIN);
+
+    let random_number_generator =
+        Attribute::<typed::RandomNumberGenerator>::new(structure_with_children(2)).unwrap();
+    assert_eq!(
+        random_number_generator
+            .with_value(|structure| structure.children().len())
+            .unwrap(),
+        2
+    );
+}
+
+#[test]
+fn typed_attribute_from_generic_item_checks_tag_and_value_type() {
+    let valid = item(0x0042_00FD, Value::text_string("comment".to_owned()));
+    assert!(Attribute::<typed::Comment>::from_item(valid).is_ok());
+
+    let wrong_value = item(0x0042_00FD, Value::integer(8));
+    assert!(Attribute::<typed::Comment>::from_item(wrong_value).is_err());
+
+    let wrong_tag = item(0x0042_0022, Value::text_string("contact".to_owned()));
+    assert!(Attribute::<typed::Comment>::from_item(wrong_tag).is_err());
 }
 
 #[test]

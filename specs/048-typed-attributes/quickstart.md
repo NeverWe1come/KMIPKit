@@ -1,6 +1,7 @@
 # KMIPKIT-0048 Quickstart Scenarios
 
-The exact public names are exercised by the Rust consumer tests. Intended use:
+The exact public names are exercised by the protocol crate tests and guide
+example. Intended use:
 
 ```rust
 let name = Attribute::<typed::Name>::new(name_structure)?;
@@ -20,7 +21,7 @@ let new_attribute = NewAttribute::from_typed(comment);
 
 The method names above are fixed by
 [`contracts/typed-attribute-api.md`](contracts/typed-attribute-api.md) and will
-be compiled by the consumer test. Tests must cover one scalar, one repeated
+are compiled by the package tests. Tests cover scalar and repeated
 attribute, one Structure-valued attribute, an open Enumeration, invalid
 tag/type pairs, and the generic fallback path. They must never assert that a
 remote server accepts an attribute.

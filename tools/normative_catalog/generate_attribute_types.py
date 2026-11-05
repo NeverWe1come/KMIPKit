@@ -469,7 +469,18 @@ def render_typed_rust(catalog: dict[str, Any]) -> str:
             + " "
             "},"
         )
-    lines.extend(["];", "", "pub mod typed {", "    use super::*;", ""])
+    lines.extend(
+        [
+            "];",
+            "",
+            "pub mod typed {",
+            "    use super::{",
+            "        AttributeValueError, Structure, StructureView, UniqueIdentifierValue,",
+            "        UniqueIdentifierView, Value, ValueView,",
+            "    };",
+            "",
+        ]
+    )
     for definition in definitions:
         lines.extend(_render_typed_impl(definition))
     lines.extend(["}", ""])

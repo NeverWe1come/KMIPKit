@@ -23,6 +23,11 @@ pub trait AttributeDefinition: sealed::Sealed + 'static {
     fn into_ttlv(value: Self::Value) -> Value;
 
     /// Interprets one value view using the catalogued TTLV Item Type.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`AttributeValueError::ValueTypeMismatch`] when the value uses
+    /// a TTLV Item Type outside this attribute's source encoding.
     fn value_view<'a>(value: ValueView<'a>) -> Result<Self::ValueView<'a>, AttributeValueError>
     where
         Self: 'a;
