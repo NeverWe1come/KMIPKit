@@ -121,7 +121,7 @@ const OBJECT_DEFAULTS_FIELDS: &[FieldDescriptor] = &[
     },
 ];
 
-macro_rules! optional_crypto_field {
+macro_rules! optional_singleton_field {
     ($rule:literal, $name:literal, $tag:literal, $types:expr) => {
         FieldDescriptor {
             rule_id: $rule,
@@ -136,94 +136,94 @@ macro_rules! optional_crypto_field {
 }
 
 const CRYPTOGRAPHIC_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R201",
         "Block Cipher Mode",
         0x0042_0011,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R202",
         "Padding Method",
         0x0042_005F,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R203",
         "Hashing Algorithm",
         0x0042_0038,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R204",
         "Key Role Type",
         0x0042_0083,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R205",
         "Digital Signature Algorithm",
         0x0042_00AE,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R206",
         "Cryptographic Algorithm",
         0x0042_0028,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!("KMIPKIT-0051-R207", "Random IV", 0x0042_00C5, TYPE_BOOLEAN),
-    optional_crypto_field!("KMIPKIT-0051-R208", "IV Length", 0x0042_00CD, TYPE_INTEGER),
-    optional_crypto_field!("KMIPKIT-0051-R209", "Tag Length", 0x0042_00CE, TYPE_INTEGER),
-    optional_crypto_field!(
+    optional_singleton_field!("KMIPKIT-0051-R207", "Random IV", 0x0042_00C5, TYPE_BOOLEAN),
+    optional_singleton_field!("KMIPKIT-0051-R208", "IV Length", 0x0042_00CD, TYPE_INTEGER),
+    optional_singleton_field!("KMIPKIT-0051-R209", "Tag Length", 0x0042_00CE, TYPE_INTEGER),
+    optional_singleton_field!(
         "KMIPKIT-0051-R210",
         "Fixed Field Length",
         0x0042_00CF,
         TYPE_INTEGER
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R211",
         "Invocation Field Length",
         0x0042_00D2,
         TYPE_INTEGER
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R212",
         "Counter Length",
         0x0042_00D0,
         TYPE_INTEGER
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R213",
         "Initial Counter Value",
         0x0042_00D1,
         TYPE_INTEGER
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R214",
         "Salt Length",
         0x0042_0100,
         TYPE_INTEGER
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R215",
         "Mask Generator",
         0x0042_0101,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R216",
         "Mask Generator Hashing Algorithm",
         0x0042_0102,
         TYPE_ENUMERATION
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R217",
         "P Source",
         0x0042_0103,
         TYPE_BYTE_STRING
     ),
-    optional_crypto_field!(
+    optional_singleton_field!(
         "KMIPKIT-0051-R218",
         "Trailer Field",
         0x0042_0104,
@@ -540,15 +540,12 @@ const REVOCATION_REASON_FIELDS: &[FieldDescriptor] = &[
         0x0042_0082,
         TYPE_ENUMERATION
     ),
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R258",
-        name: "Revocation Message",
-        tag: FieldTag::Exact(0x0042_0080),
-        types: TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    optional_singleton_field!(
+        "KMIPKIT-0051-R258",
+        "Revocation Message",
+        0x0042_0080,
+        TYPE_TEXT_STRING
+    ),
 ];
 
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
