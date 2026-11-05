@@ -63,8 +63,13 @@ Java, and Python, with the rationale and consumer tests recorded in
 `docs/development/testing.md`. Coverage thresholds are not weakened. Full
 The local Windows LLVM run is evidence only and does not replace the aggregate
 platform and adapter coverage gate. Remote platform CI and full adapter
-aggregate coverage are still pending. No independent human security review is
-claimed here.
+aggregate coverage are still pending.
+
+The Codex Security diff scan for base `7ea1fac2b8eb55e40a57d1da0c86fbf6d420b6f1`
+and head `a782fa24027922bb5dff81f3f15343293f0b84de` completed with no findings
+(scan `011da8a8-e23b-429b-8a52-10ebc0fd4641`). It reviewed the 18 changed files
+and relevant project security guidance. This is a scoped diff review, not the
+independent human security review required before release.
 
 ## Integration status
 
