@@ -1,0 +1,265 @@
+"""Tests for OASIS Profiles v2.1 §§5.4.1.1–5.4.1.3, 5.4.1.6.7,
+5.5.1.1–5.5.1.3, and 5.5.1.6.7 catalog-derived names."""
+
+from __future__ import annotations
+
+import os
+import runpy
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
+from unittest.mock import patch
+from pathlib import Path
+
+from tools.normative_catalog.generate_wire_names import (
+    _assigned_enumeration_names,
+    _assigned_tag_names,
+    _tag_enumeration_families,
+    main,
+    render_rust,
+)
+from tools.normative_catalog.validate import CatalogValidationError
+
+
+ROOT = Path(__file__).resolve().parents[3]
+SCRIPT = ROOT / "tools" / "normative_catalog" / "generate_wire_names.py"
+OUTPUT_PATH = "crates/kmipkit-client/src/wire_names_generated.rs"
+
+
+class WireNameRenderingTests(unittest.TestCase):
+    def test_renders_only_assigned_tags_in_numeric_order(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420002", "name": "Application Data"},
+                {"kind": "tag", "allocation": "reserved", "wire_value": "420001", "name": "Reserved"},
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Activation Date"},
+            ]
+        }
+
+        rendered = render_rust(catalog)
+
+        self.assertLess(rendered.index("Activation Date"), rendered.index("Application Data"))
+        self.assertNotIn("Reserved", rendered)
+
+    def test_renders_assigned_enumeration_names_with_their_family(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420057", "name": "Object Type"},
+                {"kind": "enumeration", "element_id": "ENUM-OBJECT", "name": "Object Type"},
+                {"kind": "structure_member", "name": "Object Type", "source_encoding": "Enumeration"},
+                {"kind": "message_field", "name": "Object Type", "source_encoding": "Enumeration"},
+                {
+                    "kind": "enumeration_value",
+                    "allocation": "assigned",
+                    "parent_element_ids": ["ENUM-OBJECT"],
+                    "wire_value": "00000002",
+                    "name": "Certificate",
+                },
+                {
+                    "kind": "enumeration_value",
+                    "allocation": "extension",
+                    "parent_element_ids": ["ENUM-OBJECT"],
+                    "wire_value": "8XXXXXXX",
+                    "name": "Extensions",
+                },
+            ]
+        }
+
+        rendered = render_rust(catalog)
+
+        self.assertIn('("Object Type", 0x00_00_00_02, "Certificate")', rendered)
+        self.assertIn('(0x42_00_57, "Object Type")', rendered)
+        family_table = rendered.split("TAG_ENUMERATION_FAMILIES", 1)[1]
+        self.assertIn('(0x42_00_57, "Object Type")', family_table)
+        self.assertNotIn("Extensions", rendered)
+
+    def test_renders_long_tuple_rows_in_rustfmt_vertical_form(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Alternative Name Type"},
+                {"kind": "enumeration", "element_id": "ENUM-ALT", "name": "Alternative Name Type"},
+                {"kind": "structure_member", "name": "Alternative Name Type", "source_encoding": "Enumeration"},
+                {
+                    "kind": "enumeration_value",
+                    "allocation": "assigned",
+                    "parent_element_ids": ["ENUM-ALT"],
+                    "wire_value": "00000001",
+                    "name": "Uninterpreted Text String",
+                },
+            ]
+        }
+
+        rendered = render_rust(catalog)
+
+        self.assertIn('''    (
+        "Alternative Name Type",
+        0x00_00_00_01,
+        "Uninterpreted Text String",
+    ),''', rendered)
+
+    def test_rejects_invalid_tag_and_enumeration_catalog_shapes(self) -> None:
+        for renderer in (_assigned_tag_names, _assigned_enumeration_names, _tag_enumeration_families):
+            with self.subTest(renderer=renderer.__name__), self.assertRaises(ValueError):
+                renderer({"elements": "invalid"})
+
+        with self.assertRaises(ValueError):
+            _assigned_tag_names({"elements": [{"kind": "tag", "allocation": "reserved"}]})
+        with self.assertRaises(ValueError):
+            _assigned_tag_names({"elements": [{"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": ""}]})
+        with self.assertRaises(ValueError):
+            _assigned_enumeration_names({"elements": [{"kind": "enumeration", "element_id": "", "name": "Invalid"}]})
+        with self.assertRaises(ValueError):
+            _assigned_enumeration_names({"elements": [
+                {"kind": "enumeration", "element_id": "E", "name": "Family"},
+                {"kind": "enumeration", "element_id": "E", "name": "Family"},
+            ]})
+        with self.assertRaises(ValueError):
+            _assigned_enumeration_names({"elements": [
+                {"kind": "enumeration", "element_id": "E", "name": "Family"},
+                {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["UNKNOWN"], "wire_value": "00000001", "name": "Value"},
+            ]})
+        with self.assertRaises(ValueError):
+            _assigned_enumeration_names({"elements": [
+                {"kind": "enumeration", "element_id": "E", "name": "Family"},
+                {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["E"], "wire_value": "not-hex!", "name": "Value"},
+            ]})
+
+    def test_rejects_enumeration_name_or_value_collisions_and_ambiguous_tag_mapping(self) -> None:
+        base = [
+            {"kind": "enumeration", "element_id": "E", "name": "Object Type"},
+            {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["E"], "wire_value": "00000001", "name": "Value"},
+        ]
+        for duplicate in (
+            {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["E"], "wire_value": "00000001", "name": "Other"},
+            {"kind": "enumeration_value", "allocation": "assigned", "parent_element_ids": ["E"], "wire_value": "00000002", "name": "Value"},
+        ):
+            with self.subTest(duplicate=duplicate), self.assertRaises(ValueError):
+                _assigned_enumeration_names({"elements": [*base, duplicate]})
+
+        tag = {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Result Status"}
+        with self.assertRaises(ValueError):
+            _tag_enumeration_families({"elements": [
+                tag,
+                {"kind": "enumeration", "name": "Reason"},
+                {"kind": "structure_member", "name": "Result Status", "source_encoding": "Enumeration"},
+            ]})
+        with self.assertRaises(ValueError):
+            _tag_enumeration_families({"elements": [tag, {"kind": "structure_member", "name": "Result Status", "source_encoding": "Enumeration"}]})
+        with self.assertRaises(ValueError):
+            _tag_enumeration_families({"elements": [tag, {"kind": "enumeration", "name": "Result Status"}, {"kind": "enumeration", "name": "Result Status"}]})
+
+    def test_rejects_ambiguous_names_and_values(self) -> None:
+        catalog = {
+            "elements": [
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "First"},
+                {"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Second"},
+            ]
+        }
+
+        with self.assertRaises(ValueError):
+            render_rust(catalog)
+
+
+class WireNameGeneratorCliTests(unittest.TestCase):
+    def test_main_reports_all_safe_outcomes_without_payloads(self) -> None:
+        catalog = {"elements": [{"kind": "tag", "allocation": "assigned", "wire_value": "420001", "name": "Tag"}]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / OUTPUT_PATH
+            output.parent.mkdir(parents=True)
+
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", return_value=b"catalog"), patch(
+                "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
+            ), patch("tools.normative_catalog.generate_wire_names.atomic_write_bytes") as write_output:
+                with redirect_stdout(StringIO()):
+                    self.assertEqual(main(["--write", "--repo-root", str(root)]), 0)
+                write_output.assert_called_once()
+
+            generated = render_rust(catalog).encode("utf-8")
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", generated]), patch(
+                "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
+            ), redirect_stdout(StringIO()):
+                self.assertEqual(main(["--check", "--repo-root", str(root)]), 0)
+
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=[b"catalog", b"stale"]), patch(
+                "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
+            ), redirect_stderr(StringIO()):
+                self.assertEqual(main(["--check", "--repo-root", str(root)]), 1)
+
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", side_effect=OSError("secret path")), redirect_stderr(StringIO()) as error:
+                self.assertEqual(main(["--check", "--repo-root", str(root)]), 2)
+                self.assertNotIn("secret path", error.getvalue())
+
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", return_value=b"catalog"), patch(
+                "tools.normative_catalog.generate_wire_names.load_validated_catalog", side_effect=CatalogValidationError("secret catalog")
+            ), redirect_stderr(StringIO()) as error:
+                self.assertEqual(main(["--check", "--repo-root", str(root)]), 2)
+                self.assertNotIn("secret catalog", error.getvalue())
+
+            with patch("tools.normative_catalog.generate_wire_names.safe_read_bytes", return_value=b"catalog"), patch(
+                "tools.normative_catalog.generate_wire_names.load_validated_catalog", return_value=catalog
+            ), patch("tools.normative_catalog.generate_wire_names.render_rust", side_effect=ValueError("secret value")), redirect_stderr(StringIO()) as error:
+                self.assertEqual(main(["--check", "--repo-root", str(root)]), 2)
+                self.assertNotIn("secret value", error.getvalue())
+
+    def test_script_can_load_from_its_standalone_import_path(self) -> None:
+        with patch("sys.path", [str(SCRIPT.parent), *sys.path]):
+            namespace = runpy.run_path(str(SCRIPT), run_name="wire_names_standalone")
+        self.assertIn("render_rust", namespace)
+
+    def test_write_check_stale_and_missing_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "specification").mkdir()
+            shutil.copy2(ROOT / "AGENTS.md", root / "AGENTS.md")
+            shutil.copytree(ROOT / "specification" / "oasis", root / "specification" / "oasis")
+            shutil.copytree(ROOT / "specification" / "catalog", root / "specification" / "catalog")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "add", "specification/oasis"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "-c", "user.name=Wire Name Tests", "-c", "user.email=wire-name-tests@example.invalid", "commit", "-qm", "test fixture sources"],
+                cwd=root,
+                check=True,
+            )
+            output = root / OUTPUT_PATH
+            output.parent.mkdir(parents=True)
+
+            def run(mode: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(SCRIPT), mode, "--repo-root", str(root)],
+                    cwd=ROOT,
+                    capture_output=True,
+                    check=False,
+                    text=True,
+                )
+
+            missing = run("--check")
+            self.assertEqual(missing.returncode, 2, missing.stderr)
+            self.assertFalse(output.exists())
+
+            written = run("--write")
+            self.assertEqual(written.returncode, 0, written.stderr)
+            original = output.read_bytes()
+            self.assertTrue(original)
+            os.utime(output, ns=(946_684_800_000_000_000, 946_684_800_000_000_000))
+            timestamp = output.stat().st_mtime_ns
+
+            checked = run("--check")
+            self.assertEqual(checked.returncode, 0, checked.stderr)
+            self.assertEqual(output.read_bytes(), original)
+            self.assertEqual(output.stat().st_mtime_ns, timestamp)
+            self.assertEqual(run("--write").returncode, 0)
+            self.assertEqual(output.read_bytes(), original)
+
+            output.write_bytes(b"stale metadata\n")
+            stale_check = run("--check")
+            self.assertEqual(stale_check.returncode, 1, stale_check.stderr)
+            self.assertEqual(output.read_bytes(), b"stale metadata\n")
+
+
+if __name__ == "__main__":
+    unittest.main()
