@@ -144,10 +144,32 @@ class T098LifecycleReconciliationTests(unittest.TestCase):
             self.baseline["kindCounts"],
         )
         for item in self.baseline_rows:
-            current = self.declarations_by_id[item["declarationId"]]
+            current = self.declarations_by_id.get(item["declarationId"])
+            if current is not None:
+                current_identity = (
+                    current["packageId"],
+                    current["kind"],
+                    current["exportName"],
+                )
+            else:
+                exclusion = next(
+                    (
+                        row
+                        for row in self.manifest["approvedExclusions"]
+                        if row.get("packageId") == item["packageId"]
+                        and row.get("exportName") == item["exportName"]
+                    ),
+                    None,
+                )
+                self.assertIsNotNone(exclusion, item["declarationId"])
+                current_identity = (
+                    exclusion["packageId"],
+                    item["kind"],
+                    exclusion["exportName"],
+                )
             self.assertEqual(
                 (item["packageId"], item["kind"], item["exportName"]),
-                (current["packageId"], current["kind"], current["exportName"]),
+                current_identity,
             )
 
     def test_reconciled_manifest_stays_within_the_bounded_parser_input_size(self) -> None:

@@ -949,6 +949,16 @@ _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
         {"KMIPKIT-0017-FR-001", "KMIPKIT-0017-FR-011", "KMIPKIT-0017-FR-012"}
     ),
     **{
+        family: frozenset(
+            {
+                "KMIPKIT-0018-FR-001",
+                "KMIPKIT-0018-FR-006",
+                "KMIPKIT-0018-FR-010",
+            }
+        )
+        for family in ("ActivateError", "ArchiveError", "DestroyError", "RecoverError")
+    },
+    **{
         family: frozenset({"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004"})
         for family in (
             "CertifyError", "CheckError", "ObtainLeaseError", "ReProvisionError",
