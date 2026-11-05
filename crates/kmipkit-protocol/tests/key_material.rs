@@ -1,7 +1,7 @@
 //! OASIS KMIP 2.1 §3.2, Table 13: Key Material encoding and fallback.
 
 use kmipkit_protocol::{KeyFormatType, KeyMaterial};
-use kmipkit_ttlv::{ItemType, ValueView};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
 #[test]
 fn key_material_preserves_explicit_byte_string_and_structure_forms() {
@@ -43,6 +43,29 @@ fn key_material_reader_preserves_format_and_ttlv_type() {
 }
 
 #[test]
+fn key_material_rejects_malformed_known_transparent_structures() {
+    let empty = Item::new(tag(0x0042_0043), Value::structure(Structure::new()))
+        .expect("valid empty Key Material structure");
+    assert!(KeyMaterial::try_from_item(empty, KeyFormatType::from_raw(7)).is_err());
+}
+
+#[test]
+fn transparent_rsa_private_reader_requires_a_source_defined_private_component_set() {
+    let modulus =
+        Item::new(tag(0x0042_0052), Value::big_integer(vec![0x11])).expect("valid Modulus");
+    let mut fields = Structure::new();
+    fields.try_push(modulus).expect("valid RSA field");
+    let material =
+        Item::new(tag(0x0042_0043), Value::structure(fields)).expect("valid outer Key Material");
+    assert!(kmipkit_protocol::TransparentRsaPrivateKey::try_from_item(material).is_err());
+}
+
+#[test]
+fn known_transparent_structure_builder_rejects_missing_required_fields() {
+    assert!(KeyMaterial::structure(7, Structure::new()).is_err());
+}
+
+#[test]
 fn key_value_keeps_optional_attributes_after_required_material() {
     let value = kmipkit_protocol::KeyValue::try_new(
         KeyMaterial::byte_string(1, vec![0xA0]).unwrap(),
@@ -59,4 +82,11 @@ fn key_value_keeps_optional_attributes_after_required_material() {
         _ => Vec::new(),
     });
     assert_eq!(tags, [0x0042_0043, 0x0042_0125]);
+}
+
+fn tag(raw: u32) -> kmipkit_ttlv::Tag {
+    RawTag::new(raw)
+        .expect("tag fits")
+        .try_checked()
+        .expect("assigned tag")
 }
