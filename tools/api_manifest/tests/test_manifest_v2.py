@@ -150,6 +150,7 @@ def _valid_v2_manifest() -> dict[str, object]:
             ],
             "publicDeclarations": [],
             "approvedExclusions": [],
+            "cAbiRecordConstants": [],
             "apiLevels": [
                 {"id": level, "requirementIds": ["KMIPKIT-0043-FR-001"]}
                 for level in EXPECTED_API_LEVELS
@@ -6286,6 +6287,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_transport_config_release",
         }
         self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
+        c_transport_constants = {
+            "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS",
+            "KMIPKIT_TRANSPORT_ENDPOINT_HTTPS",
+            "KMIPKIT_TRANSPORT_TRUST_PLATFORM",
+            "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES",
+            "KMIPKIT_TRANSPORT_SOURCE_MEMORY",
+            "KMIPKIT_TRANSPORT_SOURCE_FILE",
+            "KMIPKIT_TRANSPORT_ENCODING_PEM",
+            "KMIPKIT_TRANSPORT_ENCODING_DER",
+            "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT",
+            "KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED",
+            "KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED",
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME",
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI",
+        }
+        self.assertTrue(c_transport_constants <= set(c_exclusions))
         for symbol in c_exclusions:
             self.assertTrue(c_exclusions[symbol]["reason"])
             self.assertTrue(c_exclusions[symbol]["evidence"])

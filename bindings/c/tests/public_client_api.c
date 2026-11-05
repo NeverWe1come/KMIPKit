@@ -88,37 +88,41 @@ int kmipkit_public_client_execute_json_override(
     REQUIRE_C_API(kmipkit_client_configuration_create(registry, &configuration), 4);
     registry = NULL; /* The configuration constructor consumes this handle. */
 
-    client_certificates[0].source_kind = UINT32_C(1); /* in-memory */
-    client_certificates[0].encoding = UINT32_C(2); /* DER */
+    client_certificates[0].source_kind = KMIPKIT_TRANSPORT_SOURCE_MEMORY;
+    client_certificates[0].encoding = KMIPKIT_TRANSPORT_ENCODING_DER;
     client_certificates[0].data.data = leaf_certificate;
     client_certificates[0].data.length = leaf_certificate_length;
-    client_certificates[1].source_kind = UINT32_C(1);
-    client_certificates[1].encoding = UINT32_C(2);
+    client_certificates[1].source_kind = KMIPKIT_TRANSPORT_SOURCE_MEMORY;
+    client_certificates[1].encoding = KMIPKIT_TRANSPORT_ENCODING_DER;
     client_certificates[1].data.data = intermediate_certificate;
     client_certificates[1].data.length = intermediate_certificate_length;
-    trust_certificates[0].source_kind = UINT32_C(1);
-    trust_certificates[0].encoding = UINT32_C(2);
+    trust_certificates[0].source_kind = KMIPKIT_TRANSPORT_SOURCE_MEMORY;
+    trust_certificates[0].encoding = KMIPKIT_TRANSPORT_ENCODING_DER;
     trust_certificates[0].data.data = trust_root;
     trust_certificates[0].data.length = trust_root_length;
 
     transport.struct_size = (uint32_t)sizeof(transport);
     transport.abi_version = UINT32_C(1);
-    transport.endpoint_kind = UINT32_C(1); /* raw TLS */
-    transport.trust_kind = UINT32_C(2); /* explicit CA list */
-    transport.flags = UINT32_C(1); /* explicit TLS server name */
+    transport.endpoint_kind = KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS;
+    transport.trust_kind = KMIPKIT_TRANSPORT_TRUST_CERTIFICATES;
+    transport.flags = KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME;
     transport.endpoint.data = endpoint;
     transport.endpoint.length = (uint64_t)(sizeof(endpoint) - 1);
     transport.endpoint_port = port;
     transport.client_certificates = client_certificates;
     transport.client_certificate_count = UINT64_C(2);
-    transport.client_private_key.source_kind = UINT32_C(1);
-    transport.client_private_key.encoding = UINT32_C(2);
+    transport.client_private_key.source_kind = KMIPKIT_TRANSPORT_SOURCE_MEMORY;
+    transport.client_private_key.encoding = KMIPKIT_TRANSPORT_ENCODING_DER;
     transport.client_private_key.data.data = private_key;
     transport.client_private_key.data.length = private_key_length;
     transport.trust_certificates = trust_certificates;
     transport.trust_certificate_count = UINT64_C(1);
     transport.tls_server_name.data = server_name;
     transport.tls_server_name.length = (uint64_t)(sizeof(server_name) - 1);
+    transport.connect_timeout.kind = KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT;
+    transport.write_timeout.kind = KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT;
+    transport.read_timeout.kind = KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT;
+    transport.total_timeout.kind = KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT;
     transport.max_request_bytes = UINT64_C(1048576);
 
     REQUIRE_C_API(kmipkit_transport_config_create_v1(&transport, &transport_configuration), 5);
@@ -127,7 +131,8 @@ int kmipkit_public_client_execute_json_override(
     REQUIRE_C_API(kmipkit_client_batch_create(&batch), 8);
     REQUIRE_C_API(kmipkit_client_batch_item_discover_versions(&item), 9);
     REQUIRE_C_API(kmipkit_client_batch_add_item(batch, &item), 10);
-    execute_status = kmipkit_client_execute_with_options(client, &batch, limits, 1, &response);
+    execute_status = kmipkit_client_execute_with_options(
+        client, &batch, limits, KMIPKIT_WIRE_ENCODING_JSON, &response);
     if (execute_status != INT32_C(0)) {
         result = INT32_C(100) + execute_status;
         goto cleanup;

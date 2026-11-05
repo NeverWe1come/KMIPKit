@@ -1957,6 +1957,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     error_ids = _require_unique(manifest["errorCategories"], "id", "error category IDs")
     _require_unique(manifest["types"], "id", "type IDs")
     _require_unique(manifest["functions"], "id", "function IDs")
+    c_abi_record_constants = manifest.get("cAbiRecordConstants", [])
+    c_abi_constant_names = _require_unique(
+        c_abi_record_constants, "name", "C ABI record constant names"
+    )
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
     approved_c_layouts = _ordered_approved_c_type_layouts(manifest)
@@ -2071,10 +2075,14 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     for record in requirement_bearing_records:
         if any(identifier not in root_requirements for identifier in record["requirementIds"]):
             raise ManifestError("manifest record references an unknown requirement ID")
+    for record in c_abi_record_constants:
+        if any(identifier not in root_requirements for identifier in record["requirementIds"]):
+            raise ManifestError("C ABI record constant references an unknown requirement ID")
     requirement_lists = [
         manifest["requirementIds"],
         *(record["requirementIds"] for record in [*manifest["types"], *manifest["functions"]]),
         *(record["requirementIds"] for record in requirement_bearing_records),
+        *(record["requirementIds"] for record in c_abi_record_constants),
     ]
     if any(identifiers != sorted(set(identifiers)) for identifiers in requirement_lists):
         raise ManifestError("requirement IDs must be unique and lexicographically sorted")
@@ -2088,6 +2096,48 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     }
     for type_record in manifest["types"]:
         _validate_c_value_layout(type_record["c"], c_type_names)
+    c_record_names = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "fixed-width-value" and record["c"].get("fields")
+    }
+    c_only_exports = {
+        record["exportName"]
+        for record in manifest.get("approvedExclusions", [])
+        if record["packageId"] == "c-kmipkit"
+    }
+    if not c_abi_constant_names <= c_only_exports:
+        raise ManifestError("C ABI record constants must be recorded as C-only exports")
+    for constant in c_abi_record_constants:
+        record_name, field_name = constant["field"].split(".", maxsplit=1)
+        record = c_record_names.get(record_name)
+        field = None if record is None else next(
+            (item for item in record["c"]["fields"] if item["name"] == field_name),
+            None,
+        )
+        if field is None or field["type"] != "uint32_t":
+            raise ManifestError("C ABI record constant must identify a uint32_t record field")
+    c_record_field_type_names = set(c_handle_names) | set(c_record_names) | {
+        record["c"]["name"]
+        for record in manifest["types"]
+        if record["c"]["kind"] in {"enum", "fixed-width-value"}
+    }
+    for record in c_record_names.values():
+        fields = record["c"]["fields"]
+        field_names = [field["name"] for field in fields]
+        if len(set(field_names)) != len(field_names):
+            raise ManifestError("C record field names must be unique")
+        for field in fields:
+            field_type = field["type"]
+            match = re.fullmatch(
+                r"(const )?(uint8_t|uint16_t|uint32_t|uint64_t|int32_t|int64_t|kmipkit_[a-z0-9_]+_t)( \*)?",
+                field_type,
+            )
+            if match is None:
+                raise ManifestError("C record field type is not a supported fixed-width field")
+            base_name = field_type.removeprefix("const ").removesuffix(" *")
+            if base_name.startswith("kmipkit_") and base_name not in c_record_field_type_names:
+                raise ManifestError("C record field references an unknown manifest type")
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -2819,7 +2869,6 @@ def render_c_header(
                 continue
             lines.append(f"#define {const_name} (({name}){value['value']})")
         lines.append("")
-
     for declaration in manifest.get("publicDeclarations", []):
         if (
             declaration.get("packageId") != "c-kmipkit"
@@ -2856,86 +2905,17 @@ def render_c_header(
     ):
         lines.append("")
 
-    # Forward declarations make pointer members independent of manifest order.
-    for declaration in manifest["types"]:
-        c_type = declaration["c"]
-        name = c_type["name"]
-        if ready_c_exports is not None and name not in ready_c_exports:
+    for constant in manifest.get("cAbiRecordConstants", []):
+        if ready_c_exports is not None and constant["name"] not in ready_c_exports:
             continue
-        if c_type["kind"] == "opaque-handle" or (
-            c_type["kind"] == "fixed-width-value" and c_type.get("fields")
-        ):
-            lines.append(f"typedef struct {name} {name};")
-            emitted.add(name)
-    if emitted:
+        lines.append(
+            f"/* C ABI record input for {constant['field']}: {constant['meaning']}. */"
+        )
+        lines.append(
+            f"#define {constant['name']} ((uint32_t){constant['value']})"
+        )
+    if manifest.get("cAbiRecordConstants"):
         lines.append("")
-
-    c_layouts = _ordered_approved_c_type_layouts(
-        manifest,
-        include_blocked=include_blocked,
-    )
-    for c_type in c_layouts:
-        lines.append(f"typedef struct {c_type['name']} {c_type['name']};")
-    if c_layouts:
-        lines.append("")
-
-    # Preserve the existing generated layout for limit records without explicit fields.
-    for declaration in manifest["types"]:
-        c_type = declaration["c"]
-        name = c_type["name"]
-        if (
-            c_type["kind"] != "fixed-width-value"
-            or c_type.get("fields")
-            or name in emitted
-            or (ready_c_exports is not None and name not in ready_c_exports)
-        ):
-            continue
-        emitted.add(name)
-        if not _c_value_layout_is_complete(
-            declaration,
-            manifest["limits"],
-            declared_c_fields,
-            include_blocked=include_blocked or ready_c_exports is None,
-        ):
-            lines.append(f"typedef struct {name} {name};")
-            lines.append("")
-            continue
-        lines.append("typedef struct {")
-        if c_type.get("versioned"):
-            lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
-        for limit in manifest["limits"]:
-            lines.append(f"    uint64_t {limit['cField']};")
-        lines.append(f"}} {name};")
-        lines.append("")
-
-    for declaration in _ordered_ready_c_value_layouts(
-        manifest,
-        ready_c_exports,
-        declared_c_fields,
-        include_blocked=include_blocked,
-        approved_layouts=c_layouts,
-    ):
-        c_type = declaration["c"]
-        lines.append(f"struct {c_type['name']} {{")
-        lines.extend(f"    {field['type']} {field['name']};" for field in c_type["fields"])
-        lines.extend(["};", ""])
-    if ready_c_exports is not None:
-        carrier_layout_names = {layout["name"] for layout in c_layouts}
-        emitted_type_names = {
-            declaration["c"]["name"]
-            for declaration in manifest["types"]
-            if declaration["c"]["name"] in ready_c_exports
-        }
-        for c_type in c_layouts:
-            for field in c_type["fields"]:
-                match = _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field["type"])
-                base_type = match.group("base") if match is not None else ""
-                if (
-                    base_type.startswith("kmipkit_")
-                    and base_type not in emitted_type_names
-                    and base_type not in carrier_layout_names
-                ):
-                    raise ManifestError("approved C carrier references a blocked C type")
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         if (
