@@ -29,13 +29,16 @@
 - Distinguish a valid alternate KMIP media type from HTTP metadata errors and
   report the former as a redacted protocol `InvalidEncoding` error.
 
-## Task 4 — frame raw TLS JSON/XML documents [ ]
+## Task 4 — frame raw TLS JSON/XML documents [x]
 
 - Add failing tests for fragmented complete JSON/XML, incomplete/malformed
   documents, trailing bytes, byte-cap enforcement, and one-exchange closure.
 - Implement bounded incremental framing; do not add a proprietary length
   prefix. Keep TTLV framing unchanged and close the raw TLS connection after
   every response.
+- Evidence: [raw-tls-evidence.md](raw-tls-evidence.md). RED, correction RED,
+  GREEN, and REFACTOR are separate signed commits; final independent review
+  found no findings.
 
 ## Task 5 — expose equivalent four-language selection [ ]
 
