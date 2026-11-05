@@ -92,6 +92,10 @@ def _c_string(value: str) -> str:
     return f'"{escaped}"'
 
 
+def _source_provenance(source_refs: tuple[tuple[str, str], ...]) -> str:
+    return ", ".join(f"{source_id} §{section}" for source_id, section in source_refs)
+
+
 def _wire_integer(element: dict[str, Any]) -> int:
     raw = element.get("wire_value")
     if not isinstance(raw, str) or not re.fullmatch(r"(?:0x)?[0-9A-Fa-f]{1,8}", raw):
@@ -222,9 +226,7 @@ def _render_rust(values: CatalogValues) -> str:
             lines.append(f"        /// Values for the KMIP {group.name} {kind.title()}.")
             lines.extend([f"        pub mod {_snake_identifier(group.name)} {{"])
             for value in group.values:
-                source = ", ".join(
-                    f"{source_id} §{section}" for source_id, section in value.source_refs
-                )
+                source = _source_provenance(value.source_refs)
                 lines.append(f"            /// `{value.name}`; {value.element_id}; {source}.")
                 lines.append(
                     f"            pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
@@ -348,9 +350,7 @@ def _render_java(values: CatalogValues) -> str:
             type_name = _type_identifier(group.name)
             lines.extend([f"    /** Named KMIP 2.1 values for {group.name}. */", f"    public static final class {type_name} {{", f"        private {type_name}() {{}}"])
             for value in group.values:
-                source = ", ".join(
-                    f"{source_id} §{section}" for source_id, section in value.source_refs
-                )
+                source = _source_provenance(value.source_refs)
                 lines.append(f"        /** {value.name}; {value.element_id}; {source}. */")
                 lines.append(f"        public static final long {value.identifier} = 0x{value.value:08X}L;")
             if kind == "Enumeration":
@@ -395,9 +395,9 @@ def _render_python(values: CatalogValues) -> str:
             type_name = _type_identifier(group.name)
             lines.extend([f"class {type_name}:", f'    """Named values for {group.name}."""'])
             for value in group.values:
-                lines.append(f"    # {value.element_id}; " + ", ".join(
-                    f"{source_id} §{section}" for source_id, section in value.source_refs
-                ))
+                lines.append(
+                    f"    # {value.element_id}; {_source_provenance(value.source_refs)}"
+                )
                 lines.append(f"    {value.identifier} = 0x{value.value:08X}")
             if kind == "enumeration":
                 lines.extend(["", "    @staticmethod", "    def name(raw: int) -> str | None:", '        """Return the assigned catalog name, or None for an unknown raw value."""', "        return {"])
