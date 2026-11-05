@@ -120,6 +120,12 @@ def field_descriptor(cells: list[str]) -> str:
         digits = f"{int(raw_tag.group(1), 16):08x}"
         tag = f"FieldTag::Exact(0x{digits[:4]}_{digits[4:]})"
     minimum, maximum = cardinality(cells[5])
+    nested_match = re.search(r"nested schema: ([A-Za-z]+)", cells[7])
+    nested_schema = (
+        f"Some(NestedStructureSchema::{nested_match.group(1)})"
+        if nested_match
+        else "None"
+    )
     return (
         "    FieldDescriptor {\n"
         f'        rule_id: "KMIPKIT-0051-{rule.group(0)}",\n'
@@ -128,6 +134,7 @@ def field_descriptor(cells: list[str]) -> str:
         f"        types: {type_mask(cells[4])},\n"
         f"        min_count: {minimum},\n"
         f"        max_count: {maximum},\n"
+        f"        nested_schema: {nested_schema},\n"
         "    },"
     )
 
@@ -152,7 +159,7 @@ def render() -> str:
         "//! Generated operation Request Payload schema identities and descriptors.",
         "//! Regenerate with `python tools/validation_schema/generate.py`.",
         "",
-        "use super::{FieldDescriptor, FieldTag, RequestSchemaDescriptor};",
+        "use super::{FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor};",
         "use super::{",
         "    TYPE_BIG_INTEGER, TYPE_BOOLEAN, TYPE_BYTE_STRING, TYPE_DATE_TIME,",
         "    TYPE_DATE_TIME_EXTENDED, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_INTERVAL,",

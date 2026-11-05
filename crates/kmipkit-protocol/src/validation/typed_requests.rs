@@ -82,8 +82,6 @@ impl_typed_request_validation! {
     RngRetrieveRequest => RngRetrieve,
     RngSeedRequest => RngSeed,
     SetAttributeRequest => SetAttribute,
-    SetConstraintsRequest => SetConstraints,
-    SetDefaultsRequest => SetDefaults,
 }
 
 macro_rules! impl_validation_with_existing_check {
@@ -244,5 +242,37 @@ impl ValidateKmipRequest for Pkcs11Request {
                 reference,
             },
         )
+    }
+}
+
+impl ValidateKmipRequest for SetConstraintsRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetConstraints;
+
+    fn validate(&self) -> ValidationReport {
+        super::nested::validate_nested_with_prefix(
+            &self.constraints(),
+            crate::NestedStructureSchema::Constraints,
+            &crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Constraints"),
+        )
+    }
+}
+
+impl ValidateKmipRequest for SetDefaultsRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetDefaults;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if let Some(defaults) = self.defaults_information() {
+            report.append(super::nested::validate_nested_with_prefix(
+                &defaults,
+                crate::NestedStructureSchema::DefaultsInformation,
+                &crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Defaults Information"),
+            ));
+        }
+        report
     }
 }

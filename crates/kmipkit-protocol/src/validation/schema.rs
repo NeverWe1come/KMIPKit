@@ -12,17 +12,17 @@ mod generated;
 
 pub use generated::RequestPayloadSchema;
 
-const TYPE_STRUCTURE: u16 = 1 << 0;
-const TYPE_INTEGER: u16 = 1 << 1;
-const TYPE_LONG_INTEGER: u16 = 1 << 2;
-const TYPE_BIG_INTEGER: u16 = 1 << 3;
-const TYPE_ENUMERATION: u16 = 1 << 4;
-const TYPE_BOOLEAN: u16 = 1 << 5;
-const TYPE_TEXT_STRING: u16 = 1 << 6;
-const TYPE_BYTE_STRING: u16 = 1 << 7;
-const TYPE_DATE_TIME: u16 = 1 << 8;
-const TYPE_INTERVAL: u16 = 1 << 9;
-const TYPE_DATE_TIME_EXTENDED: u16 = 1 << 10;
+pub(super) const TYPE_STRUCTURE: u16 = 1 << 0;
+pub(super) const TYPE_INTEGER: u16 = 1 << 1;
+pub(super) const TYPE_LONG_INTEGER: u16 = 1 << 2;
+pub(super) const TYPE_BIG_INTEGER: u16 = 1 << 3;
+pub(super) const TYPE_ENUMERATION: u16 = 1 << 4;
+pub(super) const TYPE_BOOLEAN: u16 = 1 << 5;
+pub(super) const TYPE_TEXT_STRING: u16 = 1 << 6;
+pub(super) const TYPE_BYTE_STRING: u16 = 1 << 7;
+pub(super) const TYPE_DATE_TIME: u16 = 1 << 8;
+pub(super) const TYPE_INTERVAL: u16 = 1 << 9;
+pub(super) const TYPE_DATE_TIME_EXTENDED: u16 = 1 << 10;
 
 /// Explicitly identifies the schema to use for generic TTLV validation.
 #[non_exhaustive]
@@ -30,6 +30,8 @@ const TYPE_DATE_TIME_EXTENDED: u16 = 1 << 10;
 pub enum ValidationSchema {
     /// A KMIP 2.1 client Request Payload schema.
     RequestPayload(RequestPayloadSchema),
+    /// A reusable nested KMIP 2.1 Structure schema.
+    Nested(NestedStructureSchema),
     /// A known but unsupported or future schema identity.
     Unsupported,
 }
@@ -42,18 +44,39 @@ pub(super) enum FieldTag {
 
 #[derive(Clone, Copy)]
 pub(super) struct FieldDescriptor {
-    rule_id: &'static str,
-    name: &'static str,
-    tag: FieldTag,
-    types: u16,
-    min_count: usize,
-    max_count: Option<usize>,
+    pub(super) rule_id: &'static str,
+    pub(super) name: &'static str,
+    pub(super) tag: FieldTag,
+    pub(super) types: u16,
+    pub(super) min_count: usize,
+    pub(super) max_count: Option<usize>,
+    pub(super) nested_schema: Option<NestedStructureSchema>,
+}
+
+/// Explicit identity for a reusable nested KMIP 2.1 Structure schema.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum NestedStructureSchema {
+    /// The §7.7 Constraints Structure and its known children.
+    Constraints,
+    /// One §7.6 Constraint structure.
+    Constraint,
+    /// The §7.24 Object Types Structure.
+    ObjectTypes,
+    /// The §7.23 Object Groups Structure.
+    ObjectGroups,
+    /// The §5.1 Attributes Structure with tag-selected attribute values.
+    Attributes,
+    /// The §7.11 Defaults Information Structure.
+    DefaultsInformation,
+    /// One §7.22 Object Defaults structure.
+    ObjectDefaults,
 }
 
 #[derive(Clone, Copy)]
 pub(super) struct RequestSchemaDescriptor {
-    source: &'static str,
-    fields: &'static [FieldDescriptor],
+    pub(super) source: &'static str,
+    pub(super) fields: &'static [FieldDescriptor],
 }
 
 /// Validates a borrowed Structure against an explicitly selected schema.
@@ -78,6 +101,9 @@ pub fn validate_structure(
             };
             descriptor
         }
+        ValidationSchema::Nested(nested_schema) => {
+            return super::nested::validate_nested_structure(structure, nested_schema);
+        }
         ValidationSchema::Unsupported => return unsupported_schema_report(),
     };
 
@@ -95,9 +121,21 @@ fn unsupported_schema_report() -> ValidationReport {
     report
 }
 
-fn validate_structure_with_descriptor(
+pub(super) fn validate_structure_with_descriptor(
     structure: &StructureView<'_>,
     descriptor: &RequestSchemaDescriptor,
+) -> ValidationReport {
+    validate_structure_with_descriptor_and_prefix(
+        structure,
+        descriptor,
+        &ValidationPath::root().field("Request Payload"),
+    )
+}
+
+pub(super) fn validate_structure_with_descriptor_and_prefix(
+    structure: &StructureView<'_>,
+    descriptor: &RequestSchemaDescriptor,
+    prefix: &ValidationPath,
 ) -> ValidationReport {
     let mut report = ValidationReport::default();
     let mut state = FieldCounts::new(descriptor.fields.len());
@@ -117,16 +155,34 @@ fn validate_structure_with_descriptor(
             field_index,
             child_index,
             item.item_type(),
+            prefix,
         );
+        if let Some(nested_schema) = descriptor.fields[field_index].nested_schema
+            && let ItemType::Structure = item.item_type()
+        {
+            let mut child_prefix = prefix.clone().field(descriptor.fields[field_index].name);
+            if descriptor.fields[field_index].max_count.is_none() {
+                child_prefix = child_prefix.index(child_index);
+            }
+            let nested_report = item.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::Structure(nested) => {
+                    super::nested::validate_nested_with_prefix(
+                        &nested,
+                        nested_schema,
+                        &child_prefix,
+                    )
+                }
+                _ => ValidationReport::default(),
+            });
+            report.append(nested_report);
+        }
     }
 
     for (field, count) in descriptor.fields.iter().zip(state.counts) {
         if count < field.min_count {
             report.push(ValidationIssue::new(
                 ValidationCode::new(field.rule_id),
-                ValidationPath::root()
-                    .field("Request Payload")
-                    .field(field.name),
+                prefix.clone().field(field.name),
                 ValidationSeverity::Error,
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -162,6 +218,7 @@ fn validate_known_child(
     field_index: usize,
     child_index: usize,
     item_type: ItemType,
+    prefix: &ValidationPath,
 ) {
     let field = descriptor.fields[field_index];
     let count = state.counts[field_index].saturating_add(1);
@@ -173,6 +230,7 @@ fn validate_known_child(
             field,
             descriptor.source,
             ValidationCode::new(field.rule_id),
+            prefix,
             field.max_count.is_none().then_some(child_index),
         );
     }
@@ -185,6 +243,7 @@ fn validate_known_child(
             field,
             descriptor.source,
             ValidationCode::new(field.rule_id),
+            prefix,
             Some(child_index),
         );
     }
@@ -195,6 +254,7 @@ fn validate_known_child(
             field,
             descriptor.source,
             ValidationCode::new(field.rule_id),
+            prefix,
             (field.max_count.is_none() || count > 1).then_some(child_index),
         );
     }
@@ -244,11 +304,10 @@ fn push_field_issue(
     field: FieldDescriptor,
     source: &'static str,
     code: ValidationCode,
+    prefix: &ValidationPath,
     child_index: Option<usize>,
 ) {
-    let path = ValidationPath::root()
-        .field("Request Payload")
-        .field(field.name);
+    let path = prefix.clone().field(field.name);
     let path = match child_index {
         Some(index) => path.index(index),
         None => path,

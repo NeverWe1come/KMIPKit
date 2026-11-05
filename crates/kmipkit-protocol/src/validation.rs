@@ -2,10 +2,13 @@
 
 use std::fmt;
 
+mod nested;
 mod schema;
 mod typed_requests;
 
-pub use schema::{RequestPayloadSchema, ValidationSchema, validate_structure};
+pub use schema::{
+    NestedStructureSchema, RequestPayloadSchema, ValidationSchema, validate_structure,
+};
 pub use typed_requests::ValidateKmipRequest;
 
 /// Severity of one locally detected validation finding.
@@ -236,6 +239,10 @@ impl ValidationReport {
 
     pub(crate) fn push(&mut self, issue: ValidationIssue) {
         self.issues.push(issue);
+    }
+
+    pub(crate) fn append(&mut self, report: Self) {
+        self.issues.extend(report.issues);
     }
 
     /// Returns the ordered findings; each issue contains only safe metadata.

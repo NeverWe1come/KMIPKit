@@ -1,7 +1,7 @@
 //! Generated operation Request Payload schema identities and descriptors.
 //! Regenerate with `python tools/validation_schema/generate.py`.
 
-use super::{FieldDescriptor, FieldTag, RequestSchemaDescriptor};
+use super::{FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor};
 use super::{
     TYPE_BIG_INTEGER, TYPE_BOOLEAN, TYPE_BYTE_STRING, TYPE_DATE_TIME, TYPE_DATE_TIME_EXTENDED,
     TYPE_ENUMERATION, TYPE_INTEGER, TYPE_INTERVAL, TYPE_LONG_INTEGER, TYPE_STRUCTURE,
@@ -451,6 +451,7 @@ static ACTIVATE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static ADDATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
@@ -461,6 +462,7 @@ static ADDATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R003",
@@ -469,6 +471,7 @@ static ADDATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -480,6 +483,7 @@ static ADJUSTATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R005",
@@ -488,6 +492,7 @@ static ADJUSTATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R006",
@@ -496,6 +501,7 @@ static ADJUSTATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R007",
@@ -514,6 +520,7 @@ static ADJUSTATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
             | TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -524,6 +531,7 @@ static ARCHIVE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static CANCEL_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
@@ -533,6 +541,7 @@ static CANCEL_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_BYTE_STRING,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static CERTIFY_FIELDS: &[FieldDescriptor] = &[
@@ -543,6 +552,7 @@ static CERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R011",
@@ -551,6 +561,7 @@ static CERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R012",
@@ -559,6 +570,7 @@ static CERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R013",
@@ -567,6 +579,7 @@ static CERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R014",
@@ -575,6 +588,7 @@ static CERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -586,6 +600,7 @@ static CHECK_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R016",
@@ -594,6 +609,7 @@ static CHECK_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_LONG_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R017",
@@ -602,6 +618,7 @@ static CHECK_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R018",
@@ -610,6 +627,7 @@ static CHECK_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_DATE_TIME | TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -621,6 +639,7 @@ static CREATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R020",
@@ -629,6 +648,7 @@ static CREATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R021",
@@ -637,6 +657,7 @@ static CREATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -648,6 +669,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R023",
@@ -656,6 +678,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R024",
@@ -664,6 +687,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R025",
@@ -672,6 +696,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R026",
@@ -680,6 +705,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R027",
@@ -688,6 +714,7 @@ static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -699,6 +726,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R029",
@@ -707,6 +735,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R030",
@@ -715,6 +744,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R031",
@@ -723,6 +753,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R032",
@@ -731,6 +762,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R033",
@@ -739,6 +771,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_BIG_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R034",
@@ -747,6 +780,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R035",
@@ -755,6 +789,7 @@ static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -766,6 +801,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R037",
@@ -774,6 +810,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R038",
@@ -782,6 +819,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R039",
@@ -790,6 +828,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R040",
@@ -798,6 +837,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R041",
@@ -806,6 +846,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R042",
@@ -814,6 +855,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R043",
@@ -822,6 +864,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R044",
@@ -830,6 +873,7 @@ static DECRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -841,6 +885,7 @@ static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_DATE_TIME | TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R046",
@@ -849,6 +894,7 @@ static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R047",
@@ -857,6 +903,7 @@ static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R048",
@@ -865,6 +912,7 @@ static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -876,6 +924,7 @@ static DELETEATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R050",
@@ -884,6 +933,7 @@ static DELETEATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R051",
@@ -892,6 +942,7 @@ static DELETEATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -903,6 +954,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R053",
@@ -911,6 +963,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 1,
         max_count: None,
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R054",
@@ -919,6 +972,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R055",
@@ -927,6 +981,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R056",
@@ -935,6 +990,7 @@ static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -945,6 +1001,7 @@ static DESTROY_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static DISCOVERVERSIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
@@ -954,6 +1011,7 @@ static DISCOVERVERSIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_STRUCTURE,
     min_count: 0,
     max_count: None,
+    nested_schema: None,
 }];
 
 static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
@@ -964,6 +1022,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R060",
@@ -972,6 +1031,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R061",
@@ -980,6 +1040,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R062",
@@ -988,6 +1049,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R063",
@@ -996,6 +1058,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R064",
@@ -1004,6 +1067,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R065",
@@ -1012,6 +1076,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R066",
@@ -1020,6 +1085,7 @@ static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1031,6 +1097,7 @@ static EXPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R068",
@@ -1039,6 +1106,7 @@ static EXPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R069",
@@ -1047,6 +1115,7 @@ static EXPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R070",
@@ -1055,6 +1124,7 @@ static EXPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R071",
@@ -1063,6 +1133,7 @@ static EXPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1074,6 +1145,7 @@ static GET_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R073",
@@ -1082,6 +1154,7 @@ static GET_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R074",
@@ -1090,6 +1163,7 @@ static GET_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R075",
@@ -1098,6 +1172,7 @@ static GET_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R076",
@@ -1106,6 +1181,7 @@ static GET_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1116,6 +1192,7 @@ static GETATTRIBUTELIST_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static GETATTRIBUTES_FIELDS: &[FieldDescriptor] = &[
@@ -1126,6 +1203,7 @@ static GETATTRIBUTES_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R078",
@@ -1134,6 +1212,7 @@ static GETATTRIBUTES_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: None,
+        nested_schema: None,
     },
 ];
 
@@ -1147,6 +1226,7 @@ static GETUSAGEALLOCATION_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R081",
@@ -1155,6 +1235,7 @@ static GETUSAGEALLOCATION_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_LONG_INTEGER,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1166,6 +1247,7 @@ static HASH_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R083",
@@ -1174,6 +1256,7 @@ static HASH_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R084",
@@ -1182,6 +1265,7 @@ static HASH_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R085",
@@ -1190,6 +1274,7 @@ static HASH_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R086",
@@ -1198,6 +1283,7 @@ static HASH_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1209,6 +1295,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R088",
@@ -1217,6 +1304,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R089",
@@ -1225,6 +1313,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R090",
@@ -1233,6 +1322,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R091",
@@ -1241,6 +1331,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R092",
@@ -1249,6 +1340,7 @@ static IMPORT_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1260,6 +1352,7 @@ static INTEROP_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R094",
@@ -1268,6 +1361,7 @@ static INTEROP_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_TEXT_STRING,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1279,6 +1373,7 @@ static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R096",
@@ -1287,6 +1382,7 @@ static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 1,
         max_count: None,
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R097",
@@ -1295,6 +1391,7 @@ static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R098",
@@ -1303,6 +1400,7 @@ static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R099",
@@ -1311,6 +1409,7 @@ static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1322,6 +1421,7 @@ static LOCATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R101",
@@ -1330,6 +1430,7 @@ static LOCATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R102",
@@ -1338,6 +1439,7 @@ static LOCATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R103",
@@ -1346,6 +1448,7 @@ static LOCATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R104",
@@ -1354,6 +1457,7 @@ static LOCATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1364,6 +1468,7 @@ static LOG_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_TEXT_STRING,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static LOGIN_FIELDS: &[FieldDescriptor] = &[
@@ -1374,6 +1479,7 @@ static LOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_DATE_TIME | TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R107",
@@ -1382,6 +1488,7 @@ static LOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R108",
@@ -1390,6 +1497,7 @@ static LOGIN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1400,6 +1508,7 @@ static LOGOUT_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_STRUCTURE | TYPE_ENUMERATION | TYPE_BYTE_STRING,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static MAC_FIELDS: &[FieldDescriptor] = &[
@@ -1410,6 +1519,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R111",
@@ -1418,6 +1528,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R112",
@@ -1426,6 +1537,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R113",
@@ -1434,6 +1546,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R114",
@@ -1442,6 +1555,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R115",
@@ -1450,6 +1564,7 @@ static MAC_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1461,6 +1576,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R117",
@@ -1469,6 +1585,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R118",
@@ -1477,6 +1594,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R119",
@@ -1485,6 +1603,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R120",
@@ -1493,6 +1612,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R121",
@@ -1501,6 +1621,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R122",
@@ -1509,6 +1630,7 @@ static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1520,6 +1642,7 @@ static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R124",
@@ -1528,6 +1651,7 @@ static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R125",
@@ -1536,6 +1660,7 @@ static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1546,6 +1671,7 @@ static OBTAINLEASE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static PING_FIELDS: &[FieldDescriptor] = &[];
@@ -1558,6 +1684,7 @@ static PKCS11_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R128",
@@ -1566,6 +1693,7 @@ static PKCS11_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R129",
@@ -1574,6 +1702,7 @@ static PKCS11_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R130",
@@ -1582,6 +1711,7 @@ static PKCS11_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1592,6 +1722,7 @@ static POLL_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_BYTE_STRING,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static PROCESS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
@@ -1601,6 +1732,7 @@ static PROCESS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_BYTE_STRING,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static QUERY_FIELDS: &[FieldDescriptor] = &[
@@ -1611,6 +1743,7 @@ static QUERY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: None,
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R134",
@@ -1619,6 +1752,7 @@ static QUERY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1630,6 +1764,7 @@ static QUERYASYNCREQUESTS_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R136",
@@ -1638,6 +1773,7 @@ static QUERYASYNCREQUESTS_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1649,6 +1785,7 @@ static REPROVISION_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R165",
@@ -1657,6 +1794,7 @@ static REPROVISION_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1668,6 +1806,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R146",
@@ -1676,6 +1815,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R147",
@@ -1684,6 +1824,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R148",
@@ -1692,6 +1833,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R149",
@@ -1700,6 +1842,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R150",
@@ -1708,6 +1851,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R151",
@@ -1716,6 +1860,7 @@ static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1726,6 +1871,7 @@ static RECOVER_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static REGISTER_FIELDS: &[FieldDescriptor] = &[
@@ -1736,6 +1882,7 @@ static REGISTER_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R139",
@@ -1744,6 +1891,7 @@ static REGISTER_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R140",
@@ -1752,6 +1900,7 @@ static REGISTER_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R141",
@@ -1760,6 +1909,7 @@ static REGISTER_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1771,6 +1921,7 @@ static REKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R153",
@@ -1779,6 +1930,7 @@ static REKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R154",
@@ -1787,6 +1939,7 @@ static REKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R155",
@@ -1795,6 +1948,7 @@ static REKEY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1806,6 +1960,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R157",
@@ -1814,6 +1969,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTERVAL,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R158",
@@ -1822,6 +1978,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R159",
@@ -1830,6 +1987,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R160",
@@ -1838,6 +1996,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R161",
@@ -1846,6 +2005,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R162",
@@ -1854,6 +2014,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R163",
@@ -1862,6 +2023,7 @@ static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1873,6 +2035,7 @@ static REVOKE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R143",
@@ -1881,6 +2044,7 @@ static REVOKE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE | TYPE_ENUMERATION,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R144",
@@ -1889,6 +2053,7 @@ static REVOKE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_DATE_TIME,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1899,6 +2064,7 @@ static RNGRETRIEVE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static RNGSEED_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
@@ -1908,6 +2074,7 @@ static RNGSEED_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: None,
 }];
 
 static SETATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
@@ -1918,6 +2085,7 @@ static SETATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R169",
@@ -1926,6 +2094,7 @@ static SETATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 1,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -1936,6 +2105,7 @@ static SETCONSTRAINTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_STRUCTURE,
     min_count: 1,
     max_count: Some(1),
+    nested_schema: Some(NestedStructureSchema::Constraints),
 }];
 
 static SETDEFAULTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
@@ -1945,6 +2115,7 @@ static SETDEFAULTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     types: TYPE_STRUCTURE,
     min_count: 0,
     max_count: Some(1),
+    nested_schema: Some(NestedStructureSchema::DefaultsInformation),
 }];
 
 static SIGN_FIELDS: &[FieldDescriptor] = &[
@@ -1955,6 +2126,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R173",
@@ -1963,6 +2135,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R174",
@@ -1971,6 +2144,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R175",
@@ -1979,6 +2153,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R176",
@@ -1987,6 +2162,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R177",
@@ -1995,6 +2171,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R178",
@@ -2003,6 +2180,7 @@ static SIGN_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -2014,6 +2192,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R180",
@@ -2022,6 +2201,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R181",
@@ -2030,6 +2210,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R182",
@@ -2038,6 +2219,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R183",
@@ -2046,6 +2228,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R184",
@@ -2054,6 +2237,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BYTE_STRING,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R185",
@@ -2062,6 +2246,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R186",
@@ -2070,6 +2255,7 @@ static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_BOOLEAN,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];
 
@@ -2081,6 +2267,7 @@ static VALIDATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_STRUCTURE,
         min_count: 0,
         max_count: None,
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R188",
@@ -2089,6 +2276,7 @@ static VALIDATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
         min_count: 0,
         max_count: None,
+        nested_schema: None,
     },
     FieldDescriptor {
         rule_id: "KMIPKIT-0051-R189",
@@ -2097,5 +2285,6 @@ static VALIDATE_FIELDS: &[FieldDescriptor] = &[
         types: TYPE_DATE_TIME,
         min_count: 0,
         max_count: Some(1),
+        nested_schema: None,
     },
 ];

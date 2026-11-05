@@ -330,10 +330,7 @@ fn request_payload_schema_recurses_into_known_nested_payloads() {
         .expect("Object Type is a valid Enumeration");
     let mut defaults_information = Structure::new();
     defaults_information
-        .try_push(item(
-            OBJECT_DEFAULTS,
-            Value::structure(object_defaults),
-        ))
+        .try_push(item(OBJECT_DEFAULTS, Value::structure(object_defaults)))
         .expect("Object Defaults is a valid Structure");
     let mut request_payload = Structure::new();
     request_payload
