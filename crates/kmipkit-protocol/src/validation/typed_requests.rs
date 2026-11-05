@@ -187,13 +187,43 @@ macro_rules! impl_validation_with_existing_check {
     };
 }
 
-impl_validation_with_existing_check!(
+macro_rules! impl_crypto_request_validation {
+    ($request:ty => $schema:ident, $check:ident, $field:literal, $reference:literal) => {
+        impl ValidateKmipRequest for $request {
+            const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::$schema;
+
+            fn validate(&self) -> ValidationReport {
+                let mut report = ValidationReport::default();
+                if self.$check().is_err() {
+                    report.append(crate::validation::request_issue_report(
+                        "KMIPKIT-0051-P005",
+                        $field,
+                        crate::ValidationSourceRef::Oasis {
+                            document: "KMIP v2.1",
+                            reference: $reference,
+                        },
+                    ));
+                }
+                if let Some(parameters) = self.cryptographic_parameters() {
+                    report.append(validate_nested_request_field(
+                        parameters,
+                        crate::NestedStructureSchema::CryptographicParameters,
+                        "Cryptographic Parameters",
+                    ));
+                }
+                report
+            }
+        }
+    };
+}
+
+impl_crypto_request_validation!(
     crate::EncryptRequest => Encrypt,
     validate_multipart_shape,
     "Data",
     "§6.1.17, Table 214"
 );
-impl_validation_with_existing_check!(
+impl_crypto_request_validation!(
     crate::DecryptRequest => Decrypt,
     validate_multipart_shape,
     "Data",
@@ -205,25 +235,25 @@ impl_validation_with_existing_check!(
     "Data",
     "§6.1.24, Table 235"
 );
-impl_validation_with_existing_check!(
+impl_crypto_request_validation!(
     crate::MacRequest => Mac,
     validate_multipart_shape,
     "Data",
     "§6.1.32, Table 259"
 );
-impl_validation_with_existing_check!(
+impl_crypto_request_validation!(
     crate::MacVerifyRequest => MacVerify,
     validate_multipart_shape,
     "MAC Data",
     "§6.1.33, Table 262"
 );
-impl_validation_with_existing_check!(
+impl_crypto_request_validation!(
     crate::SignRequest => Sign,
     validate_multipart_shape,
     "Data",
     "§6.1.55, Table 334"
 );
-impl_validation_with_existing_check!(
+impl_crypto_request_validation!(
     crate::SignatureVerifyRequest => SignatureVerify,
     validate_multipart_shape,
     "Signature Data",

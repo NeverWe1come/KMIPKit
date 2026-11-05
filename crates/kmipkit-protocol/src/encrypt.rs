@@ -96,6 +96,10 @@ impl EncryptRequest {
         self
     }
 
+    pub(crate) const fn cryptographic_parameters(&self) -> Option<&Structure> {
+        self.cryptographic_parameters.as_ref()
+    }
+
     /// Supplies typed Cryptographic Parameters for this request.
     #[must_use]
     pub fn with_typed_cryptographic_parameters(
