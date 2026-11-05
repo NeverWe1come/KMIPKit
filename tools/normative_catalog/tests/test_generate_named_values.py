@@ -105,6 +105,23 @@ class NamedValueGeneratorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate.*name"):
             generate_named_values.collect_values(catalog)
 
+    def test_group_name_normalization_collisions_are_rejected(self) -> None:
+        catalog: dict[str, Any] = {
+            "elements": [
+                {"element_id": "enum-1", "kind": "enumeration", "name": "Same Group"},
+                {"element_id": "enum-2", "kind": "enumeration", "name": "Same-Group"},
+            ]
+        }
+
+        with self.assertRaisesRegex(ValueError, "duplicate generated group identifier"):
+            generate_named_values.collect_values(catalog)
+
+    def test_superscript_bits_remain_distinct_in_generated_symbols(self) -> None:
+        self.assertNotEqual(
+            generate_named_values._identifier("Polynomial Sharing GF (2¹⁶)"),
+            generate_named_values._identifier("Polynomial Sharing GF (2⁸)"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
