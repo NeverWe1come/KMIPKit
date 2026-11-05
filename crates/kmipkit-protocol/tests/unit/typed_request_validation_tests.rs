@@ -566,6 +566,27 @@ fn get_validation_checks_the_supplied_key_wrapping_specification() {
 }
 
 #[test]
+fn export_validation_checks_the_supplied_key_wrapping_specification() {
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+
+    let specification = schema_structure([schema_item(
+        WRAPPING_METHOD,
+        Value::text_string("secret-canary".to_owned()),
+    )]);
+    let report = ExportRequest::new()
+        .with_key_wrapping_specification(specification)
+        .validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R229"
+            && issue.path().to_string()
+                == "Request Payload.Key Wrapping Specification.Wrapping Method"
+            && issue.source().to_string() == "KMIP v2.1 §7.18, Table 370"
+    }));
+    assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
 fn login_validation_checks_optional_usage_limits_structure() {
     const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
     const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
