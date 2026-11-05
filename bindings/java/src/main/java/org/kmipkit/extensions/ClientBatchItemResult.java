@@ -2991,20 +2991,6 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return Optional.of(new SetAttributeResponse(uniqueIdentifier));
     }
 
-    private static long[] requireNativeLongArray(Object value, String message) {
-        if (!(value instanceof long[] values) || values.length > MAX_NATIVE_ARRAY_ELEMENTS) {
-            throw new InvalidInputException(message);
-        }
-        return values;
-    }
-
-    private static String[] requireNativeStringArray(Object value, String message) {
-        if (!(value instanceof String[] values) || values.length > MAX_NATIVE_ARRAY_ELEMENTS) {
-            throw new InvalidInputException(message);
-        }
-        return values;
-    }
-
     private static long[] requireNativeLongArray(
             Object value, String message, long maximumElements) {
         if (!(value instanceof long[] values)) {
