@@ -191,6 +191,91 @@ class WireEncodingPublicApiTests(unittest.TestCase):
                 )
                 self.assertIn(documented_declaration, header)
 
+    def test_transport_record_values_are_c_only_manifest_constants(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        expected = {
+            "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS": (
+                "kmipkit_transport_config_v1_t.endpoint_kind", 1, "raw TLS endpoint"
+            ),
+            "KMIPKIT_TRANSPORT_ENDPOINT_HTTPS": (
+                "kmipkit_transport_config_v1_t.endpoint_kind", 2, "HTTPS endpoint"
+            ),
+            "KMIPKIT_TRANSPORT_TRUST_PLATFORM": (
+                "kmipkit_transport_config_v1_t.trust_kind", 1, "platform trust roots"
+            ),
+            "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES": (
+                "kmipkit_transport_config_v1_t.trust_kind", 2, "explicit CA certificate list"
+            ),
+            "KMIPKIT_TRANSPORT_SOURCE_MEMORY": (
+                "kmipkit_transport_input_v1_t.source_kind", 1, "in-memory input bytes"
+            ),
+            "KMIPKIT_TRANSPORT_SOURCE_FILE": (
+                "kmipkit_transport_input_v1_t.source_kind", 2, "filesystem path input"
+            ),
+            "KMIPKIT_TRANSPORT_ENCODING_PEM": (
+                "kmipkit_transport_input_v1_t.encoding", 1, "PEM material"
+            ),
+            "KMIPKIT_TRANSPORT_ENCODING_DER": (
+                "kmipkit_transport_input_v1_t.encoding", 2, "DER material"
+            ),
+            "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT": (
+                "kmipkit_timeout_limit_v1_t.kind", 0, "inherit the configured timeout"
+            ),
+            "KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED": (
+                "kmipkit_timeout_limit_v1_t.kind", 1, "apply a finite timeout"
+            ),
+            "KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED": (
+                "kmipkit_timeout_limit_v1_t.kind", 2, "disable this timeout"
+            ),
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME": (
+                "kmipkit_transport_config_v1_t.flags", 1, "tls_server_name is present"
+            ),
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI": (
+                "kmipkit_transport_config_v1_t.flags", 2, "target_uri is present"
+            ),
+        }
+        constants = manifest["cAbiRecordConstants"]
+        actual = {
+            row["name"]: (row["field"], row["value"], row["meaning"])
+            for row in constants
+        }
+        self.assertEqual(actual, expected)
+
+        c_exclusions = {
+            row["exportName"]
+            for row in manifest["approvedExclusions"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        self.assertLessEqual(set(expected), c_exclusions)
+        self.assertFalse(set(expected) & {
+            row["exportName"] for row in manifest["publicDeclarations"]
+        })
+
+        header = generate.render_c_header(manifest)
+        for name, (field, value, meaning) in expected.items():
+            with self.subTest(name=name):
+                declaration = (
+                    f"/* C ABI record input for {field}: {meaning}. */\n"
+                    f"#define {name} ((uint32_t){value})"
+                )
+                self.assertIn(declaration, header)
+
+        c_consumer = (ROOT / "bindings" / "c" / "tests" / "public_client_api.c").read_text(
+            encoding="utf-8"
+        )
+        for selector in (
+            "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS",
+            "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES",
+            "KMIPKIT_TRANSPORT_SOURCE_MEMORY",
+            "KMIPKIT_TRANSPORT_ENCODING_DER",
+            "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT",
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME",
+            "KMIPKIT_WIRE_ENCODING_JSON",
+        ):
+            self.assertIn(selector, c_consumer)
+        self.assertNotIn("transport.endpoint_kind = UINT32_C(1)", c_consumer)
+        self.assertNotIn("transport.trust_kind = UINT32_C(2)", c_consumer)
+
     def test_versioned_c_record_layout_is_generated_from_manifest_fields(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         manifest["types"].insert(
