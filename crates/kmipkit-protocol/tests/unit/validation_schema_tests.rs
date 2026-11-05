@@ -19,6 +19,8 @@ const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const RIGHT: u32 = 0x0042_0150;
 const OBJECTS: u32 = 0x0042_014E;
 const OPERATIONS: u32 = 0x0042_014F;
+const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
 
 fn item(tag: u32, value: Value) -> Item {
     let raw_tag = RawTag::new(tag).expect("fixture tag fits the TTLV tag field");
@@ -409,6 +411,47 @@ fn rights_schema_preserves_empty_and_repeated_rights_and_unknown_extensions() {
 
     assert!(report.is_valid());
     assert_eq!(payload.view().children().len(), 3);
+}
+
+#[test]
+fn attribute_wrappers_require_exactly_one_attribute_item() {
+    let payload = structure([item(NEW_ATTRIBUTE, Value::structure(structure([])))]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::AddAttribute,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R247"
+            && issue.path().to_string() == "Request Payload.New Attribute.Attribute"
+            && issue.source().to_string() == "KMIP v2.1 §5.7, Table 163"
+    }));
+}
+
+#[test]
+fn current_attribute_wrapper_rejects_multiple_attribute_items() {
+    let current_attribute = structure([
+        item(0x0042_00C5, Value::boolean(true)),
+        item(HASHING_ALGORITHM, Value::enumeration(1)),
+    ]);
+    let payload = structure([item(
+        CURRENT_ATTRIBUTE,
+        Value::structure(current_attribute),
+    )]);
+    let report = validate_structure(
+        &payload.view(),
+        Some(ValidationSchema::RequestPayload(
+            RequestPayloadSchema::DeleteAttribute,
+        )),
+    );
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R248"
+            && issue.path().to_string() == "Request Payload.Current Attribute.Attribute"
+            && issue.source().to_string() == "KMIP v2.1 §5.6, Table 162"
+    }));
 }
 
 #[test]
