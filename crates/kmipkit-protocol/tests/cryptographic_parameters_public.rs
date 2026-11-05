@@ -264,3 +264,25 @@ fn future_block_cipher_mode_does_not_trigger_invented_local_requirements() {
         .build()
         .expect("unknown future values remain representable");
 }
+
+#[test]
+fn default_builder_and_debug_views_are_redacted() {
+    let builder =
+        CryptographicParametersBuilder::default().with_p_source(b"secret marker".to_vec());
+    let builder_debug = format!("{builder:?}");
+    assert!(builder_debug.contains("member_count: 1"));
+    assert!(builder_debug.contains("extension_count: 0"));
+    assert!(!builder_debug.contains("secret marker"));
+
+    let parameters = builder
+        .build()
+        .expect("P Source is a valid byte string parameter");
+    let parameters_debug = format!("{parameters:?}");
+    assert!(parameters_debug.contains("member_count: 1"));
+    assert!(!parameters_debug.contains("secret marker"));
+
+    let empty = CryptographicParametersBuilder::default()
+        .build()
+        .expect("an empty parameter structure is valid");
+    assert_eq!(item_tags(&empty), Vec::<u32>::new());
+}
