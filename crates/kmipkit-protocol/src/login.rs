@@ -74,6 +74,10 @@ impl LoginRequest {
         self
     }
 
+    pub(crate) const fn usage_limits(&self) -> Option<&Structure> {
+        self.usage_limits.as_ref()
+    }
+
     /// Encodes the Table 253 Request Payload in protocol field order.
     ///
     /// # Errors

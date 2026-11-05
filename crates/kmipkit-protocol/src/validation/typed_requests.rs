@@ -55,21 +55,17 @@ impl_typed_request_validation! {
     ArchiveRequest => Archive,
     CancelRequest => Cancel,
     CheckRequest => Check,
-    DelegatedLoginRequest => DelegatedLogin,
     DeleteAttributeRequest => DeleteAttribute,
     DestroyRequest => Destroy,
     DiscoverVersionsRequest => DiscoverVersions,
     ExportRequest => Export,
-    GetRequest => Get,
     GetAttributeListRequest => GetAttributeList,
     GetAttributesRequest => GetAttributes,
     GetConstraintsRequest => GetConstraints,
     GetUsageAllocationRequest => GetUsageAllocation,
-    ImportRequest => Import,
     InteropRequest => Interop,
     LocateRequest => Locate,
     LogRequest => Log,
-    LoginRequest => Login,
     LogoutRequest => Logout,
     ModifyAttributeRequest => ModifyAttribute,
     ObtainLeaseRequest => ObtainLease,
@@ -82,6 +78,84 @@ impl_typed_request_validation! {
     RngRetrieveRequest => RngRetrieve,
     RngSeedRequest => RngSeed,
     SetAttributeRequest => SetAttribute,
+}
+
+impl ValidateKmipRequest for GetRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Get;
+
+    fn validate(&self) -> ValidationReport {
+        let Some(specification) = self.key_wrapping_specification() else {
+            return ValidationReport::default();
+        };
+        super::nested::validate_nested_with_prefix(
+            &specification.view(),
+            crate::NestedStructureSchema::KeyWrappingSpecification,
+            &crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Key Wrapping Specification"),
+        )
+    }
+}
+
+impl ValidateKmipRequest for LoginRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Login;
+
+    fn validate(&self) -> ValidationReport {
+        self.usage_limits()
+            .map_or_else(ValidationReport::default, |usage_limits| {
+                super::nested::validate_nested_with_prefix(
+                    &usage_limits.view(),
+                    crate::NestedStructureSchema::UsageLimits,
+                    &crate::ValidationPath::root()
+                        .field("Request Payload")
+                        .field("Usage Limits"),
+                )
+            })
+    }
+}
+
+impl ValidateKmipRequest for DelegatedLoginRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DelegatedLogin;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = super::nested::validate_nested_with_prefix(
+            &self.rights().view(),
+            crate::NestedStructureSchema::Rights,
+            &crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Rights"),
+        );
+        if let Some(usage_limits) = self.usage_limits() {
+            report.append(super::nested::validate_nested_with_prefix(
+                &usage_limits.view(),
+                crate::NestedStructureSchema::UsageLimits,
+                &crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Usage Limits"),
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for ImportRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Import;
+
+    fn validate(&self) -> ValidationReport {
+        let object = self.object();
+        object.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(object_structure) => {
+                super::nested::validate_managed_object(
+                    &object_structure,
+                    object.tag().raw(),
+                    &crate::ValidationPath::root()
+                        .field("Request Payload")
+                        .field("Any Object"),
+                )
+            }
+            _ => ValidationReport::default(),
+        })
+    }
 }
 
 macro_rules! impl_validation_with_existing_check {
