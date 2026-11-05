@@ -1,4 +1,4 @@
-//! Shared payload-free private codec errors.
+//! Payload-free errors shared by private text wire codecs.
 use std::fmt;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum WireCodecErrorKind {
@@ -21,7 +21,7 @@ impl WireCodecError {
 }
 impl fmt::Display for WireCodecError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "wire codec: {:?}", self.kind)
+        write!(f, "wire codec error: {:?}", self.kind)
     }
 }
 impl std::error::Error for WireCodecError {}
