@@ -47,10 +47,11 @@ Normative identifiers in this feature use the prefix `KMIPKIT-0051-`. OASIS refe
 | Rule ID | Exact OASIS source | Validation obligation | Implementation / test |
 |---|---|---|---|
 | `KMIPKIT-0051-R001`–`KMIPKIT-0051-R189` | See each exact source in `gap-matrix.md` and `conditions-audit.md` | Validate the field’s schema and only locally decidable OASIS conditions; operation-specific exclusions and server-dependent conditions are recorded alongside each source rule. | T002–T003 source/model map complete; T032 adds validator and focused test links per rule before closure |
+| `KMIPKIT-0051-R190` | KMIP v2.1 §4, Table 46; §6.1.8, Table 186 | In Create Attributes, reject repeated values only where source-defined multiplicity is single and object context resolves conditional rules; retain multiple and unknown attributes. | `crates/kmipkit-protocol/src/create.rs::CreateRequest::validate`; `crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs::create_validation_borrows_and_reports_duplicate_single_instance_attributes` |
 
 | Project decision ID | Decision | Evidence |
 |---|---|---|
-| `KMIPKIT-0051-P001` | Public borrowed `validate()` API and deterministic value-free report. | Pending API tests and rustdoc |
+| `KMIPKIT-0051-P001` | Public borrowed `validate()` API and deterministic value-free report. | `crates/kmipkit-protocol/src/validation/typed_requests.rs`; identity and redaction tests in `typed_request_validation_tests.rs` |
 | `KMIPKIT-0051-P002` | Explicit unsupported-schema requests produce a sanitized error-severity issue; no schema inference. | Pending schema validation tests |
 | `KMIPKIT-0051-P003` | `Client::execute` blocks locally invalid requests before encoding/transport and reports `NotSent`. | Pending fake-transport tests |
 | `KMIPKIT-0051-P004` | Where the Request Payload table omits a TTLV type and OASIS provides no direct operation-specific type: encode Request Count as Integer (the operation describes an integer count and the typed field is `i32`); standalone Usage Limits Count as Long Integer (consistent with shared §7.40 Table 392 and typed `i64`); and IV/Counter/Nonce request values as Byte String (consistent with the explicit `SecretBytes` API and §3.3 Table 15). Do not add positive-only numeric bounds from this decision. | R016, R039, R046, R062, R081, R107 in `gap-matrix.md`; validate encoding through schema and wire tests. |

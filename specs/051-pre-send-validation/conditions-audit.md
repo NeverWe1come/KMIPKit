@@ -323,6 +323,8 @@ Every row below has BASE. The conditional REQUIRED text is copied from the actua
 | R188 | Validate: Unique Identifier | 2 | §6.1.57, Table 340, Unique Identifier row (L37062) | No, MAY be repeated | VALIDATE |
 | R189 | Validate: Validity Date | 3 | §6.1.57, Table 340, Validity Date row (L37081) | No | VALIDATE |
 
+| R190 | Create: nested Object Attribute multiplicity | Nested in Attributes | §4, Table 46; §6.1.8, Table 186 | N/A (nested attribute cardinality) | Reject repeated instances of an attribute whose source-defined multiplicity is single when the known Object Type resolves the rule; preserve repeatable and unknown attributes. |
+
 ## Follow-up: verification Data requiredness (R118 / R181)
 
 This note clarifies the STREAM group: R118/R181 participate in the **framing/correlation** audit, but membership in that group does not establish mandatory original Data for verification operations.

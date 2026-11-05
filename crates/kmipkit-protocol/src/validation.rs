@@ -3,8 +3,10 @@
 use std::fmt;
 
 mod schema;
+mod typed_requests;
 
 pub use schema::{RequestPayloadSchema, ValidationSchema, validate_structure};
+pub use typed_requests::ValidateKmipRequest;
 
 /// Severity of one locally detected validation finding.
 #[non_exhaustive]

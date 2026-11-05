@@ -479,6 +479,7 @@ already covered.
 | Request Batch Item | §8.3, Table 396 | Existing Batch Item validation; generic Request Payload boundary | Retain Operation/Request Payload order and types; require Unique Batch Item ID only under the standard's applicable batch condition. |
 | Cryptographic Parameters | §4.16, Table 59 | Existing 0050 behavior | Reuse 0050 rules as-is; no broadening in this feature. |
 | Generic Structure | §10.1.2–§10.1.3 | TTLV model provides generic shape | Validate only when caller supplies an explicit schema identity; unknown/future values remain preserved. |
+| Create Attributes nested Object Attributes | §4, Table 46; §6.1.8, Table 186 | Generic `AttributeSet` retains repetitions; Create serializer checks multiplicity using known Object Type. | `CreateRequest::validate` borrows and reports a repeated source-defined singleton as R190; serializer reuses the same check. |
 
 ## Existing implementation and borrowed-validation audit
 

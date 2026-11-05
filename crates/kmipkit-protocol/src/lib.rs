@@ -230,9 +230,9 @@ pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, Signatu
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
 pub use validation::{
-    RequestPayloadSchema, ValidationCode, ValidationIssue, ValidationPath, ValidationPathSegment,
-    ValidationReport, ValidationSchema, ValidationSeverity, ValidationSourceRef,
-    validate_structure,
+    RequestPayloadSchema, ValidateKmipRequest, ValidationCode, ValidationIssue, ValidationPath,
+    ValidationPathSegment, ValidationReport, ValidationSchema, ValidationSeverity,
+    ValidationSourceRef, validate_structure,
 };
 
 #[cfg(test)]
