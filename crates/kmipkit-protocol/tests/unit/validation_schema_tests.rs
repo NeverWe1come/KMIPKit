@@ -1,6 +1,6 @@
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 
-use crate::{RequestPayloadSchema, ValidationSchema, validate_structure};
+use crate::{NestedStructureSchema, RequestPayloadSchema, ValidationSchema, validate_structure};
 
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
@@ -253,6 +253,66 @@ fn repeated_protocol_versions_are_allowed_by_their_operation_schema() {
     );
 
     assert!(report.is_valid());
+}
+
+#[test]
+fn nested_object_types_schema_checks_known_members_and_preserves_vendor_fields() {
+    let mut malformed = Structure::new();
+    malformed
+        .try_push(item(OBJECT_TYPE, Value::integer(7)))
+        .expect("a wrong schema type is valid generic TTLV");
+    malformed
+        .try_push(item(VENDOR_EXTENSION, Value::byte_string(vec![0xCA, 0xFE])))
+        .expect("unknown vendor data remains valid generic TTLV");
+
+    let report = validate_structure(
+        &malformed.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::ObjectTypes)),
+    );
+
+    assert!(!report.is_valid());
+    assert_eq!(report.issues()[0].path().to_string(), "Object Type");
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §7.24, Table 376"
+    );
+    assert_eq!(report.issues().len(), 1, "the unknown vendor child is retained");
+}
+
+#[test]
+fn nested_object_defaults_enforces_alternative_and_required_attributes() {
+    let mut missing_both = Structure::new();
+    missing_both
+        .try_push(item(ATTRIBUTES, Value::structure(Structure::new())))
+        .expect("Attributes is a valid structure");
+    let missing_alternative = validate_structure(
+        &missing_both.view(),
+        Some(ValidationSchema::Nested(
+            NestedStructureSchema::ObjectDefaults,
+        )),
+    );
+    assert!(!missing_alternative.is_valid());
+    assert_eq!(
+        missing_alternative.issues()[0].source().to_string(),
+        "KMIP v2.1 §7.22, Table 374"
+    );
+
+    let mut valid = Structure::new();
+    valid
+        .try_push(item(OBJECT_TYPE, Value::enumeration(2)))
+        .expect("Object Type is a valid Enumeration");
+    valid
+        .try_push(item(ATTRIBUTES, Value::structure(Structure::new())))
+        .expect("Attributes is a valid structure");
+    assert!(
+        validate_structure(
+            &valid.view(),
+            Some(ValidationSchema::Nested(
+                NestedStructureSchema::ObjectDefaults,
+            )),
+        )
+        .is_valid()
+    );
 }
 
 #[test]
