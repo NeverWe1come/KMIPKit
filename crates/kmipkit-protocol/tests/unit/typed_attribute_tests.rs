@@ -2,7 +2,10 @@
 
 //! Typed attribute API contract from the KMIPKIT-0048 specification.
 
-use crate::attribute::{Attribute, AttributeSet, CurrentAttribute, NewAttribute, typed};
+use crate::attribute::{
+    Attribute, AttributeSet, AttributeValueError, CurrentAttribute, NewAttribute, typed,
+};
+use crate::error::{ProtocolCauseCategory, ProtocolErrorKind};
 use crate::typed_attributes::{UniqueIdentifierValue, UniqueIdentifierView};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
@@ -16,8 +19,16 @@ fn checked_tag(raw: u32) -> Tag {
 #[test]
 fn generated_typed_attribute_registry_covers_every_direct_definition() {
     let definitions = crate::typed_attributes::ATTRIBUTE_DEFINITIONS;
+    let generated_tags = crate::typed_attributes::ATTRIBUTE_TAGS;
 
     assert_eq!(definitions.len(), 62);
+    assert_eq!(generated_tags.len(), definitions.len());
+    assert!(
+        definitions
+            .iter()
+            .zip(generated_tags)
+            .all(|(definition, generated_tag)| definition.tag == *generated_tag)
+    );
     assert!(definitions.iter().any(|definition| {
         definition.element_id == "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
             && definition.source_multiplicity
@@ -154,6 +165,19 @@ fn typed_attribute_set_preserves_singleton_duplicates_for_operation_validation()
 }
 
 #[test]
+fn typed_attribute_set_wraps_vendor_validation_errors_as_protocol_errors() {
+    let invalid_vendor_attribute =
+        Attribute::<typed::VendorAttribute>::new(Structure::new()).unwrap();
+
+    let error = AttributeSet::new()
+        .try_push_typed(invalid_vendor_attribute)
+        .unwrap_err();
+
+    assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
+    assert_eq!(error.cause_category(), ProtocolCauseCategory::InvalidValue);
+}
+
+#[test]
 fn unique_identifier_preserves_each_source_permitted_value_kind() {
     let cases = [
         UniqueIdentifierValue::TextString("id-text".to_owned()),
@@ -210,6 +234,72 @@ fn generic_wrapper_typed_mismatch_is_redacted() {
 
     assert!(!format!("{error:?}").contains("do-not-print-this-value"));
     assert!(!format!("{error}").contains("do-not-print-this-value"));
+}
+
+#[test]
+fn typed_attribute_error_display_is_stable_and_redacted() {
+    let cases = [
+        (
+            AttributeValueError::InvalidTag,
+            "typed attribute tag is not allocated",
+        ),
+        (
+            AttributeValueError::TagMismatch,
+            "typed attribute item has a different tag",
+        ),
+        (
+            AttributeValueError::ValueTypeMismatch,
+            "typed attribute item has an unexpected value type",
+        ),
+        (
+            AttributeValueError::ItemConstruction,
+            "typed attribute item could not be constructed",
+        ),
+    ];
+
+    for (error, expected) in cases {
+        assert_eq!(error.to_string(), expected);
+    }
+}
+
+#[test]
+fn typed_attribute_view_exposes_item_and_redacted_debug() {
+    let current = CurrentAttribute::from_typed(
+        Attribute::<typed::Comment>::new("borrowed-view-secret".to_owned()).unwrap(),
+    );
+    let view = current.typed::<typed::Comment>().unwrap();
+
+    assert_eq!(view.as_item().tag().raw(), 0x0042_00FD);
+    let debug = format!("{view:?}");
+    assert!(debug.contains("AttributeView"));
+    assert!(debug.contains("[REDACTED]"));
+    assert!(!debug.contains("borrowed-view-secret"));
+}
+
+#[test]
+fn unique_identifier_owned_and_borrowed_debug_redact_all_value_kinds() {
+    let owned = [
+        UniqueIdentifierValue::TextString("owned-identifier-secret".to_owned()),
+        UniqueIdentifierValue::Enumeration(0xF123_4567),
+        UniqueIdentifierValue::Integer(-17),
+    ];
+    for value in &owned {
+        let debug = format!("{value:?}");
+        assert!(debug.contains("[REDACTED]"));
+        assert!(!debug.contains("owned-identifier-secret"));
+    }
+    assert_ne!(owned[0], owned[1]);
+
+    let borrowed = [
+        UniqueIdentifierView::TextString("borrowed-identifier-secret"),
+        UniqueIdentifierView::Enumeration(0xF123_4567),
+        UniqueIdentifierView::Integer(-17),
+    ];
+    for value in borrowed {
+        let debug = format!("{value:?}");
+        assert!(debug.contains("[REDACTED]"));
+        assert!(!debug.contains("borrowed-identifier-secret"));
+    }
 }
 
 #[test]

@@ -483,7 +483,17 @@ def render_typed_rust(catalog: dict[str, Any]) -> str:
     )
     for definition in definitions:
         lines.extend(_render_typed_impl(definition))
-    lines.extend(["}", ""])
+    lines.extend(
+        [
+            "}",
+            "",
+            "#[cfg(test)]",
+            "pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[",
+        ]
+    )
+    for definition in definitions:
+        lines.append(f"    typed::{definition.marker_name}::TAG,")
+    lines.extend(["];", ""])
     rendered = "\n".join(lines)
     formatted = subprocess.run(
         ["rustfmt", "--edition", "2024", "--emit", "stdout"],

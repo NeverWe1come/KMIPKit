@@ -315,8 +315,16 @@ and profile selection and readiness tests exercise its metadata consumers. It
 also excludes `crates/kmipkit-protocol/src/named_values_generated.rs` and
 `bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java` for the same
 catalog-generated reason: their generator checks exact output and consumer
-tests exercise lookup behavior. These are exact path exclusions; handwritten
-adapter and protocol code remains subject to the existing coverage gates.
+tests exercise lookup behavior. The exact generated
+`crates/kmipkit-protocol/src/typed_attributes_generated.rs` file is excluded for
+the same reason: its 62 marker implementations are mechanically rendered from
+the pinned catalog into the shared typed-attribute conversion contract. The
+generator check verifies every generated marker, tests compare every generated
+tag constant against the catalog, and runtime tests cover each distinct TTLV
+value category. The handwritten `typed_attributes.rs` implementation remains
+subject to the changed-code coverage threshold. These are exact path
+exclusions; handwritten adapter and protocol code remains subject to the
+existing coverage gates.
 
 The aggregate job requires these inputs at the report root:
 

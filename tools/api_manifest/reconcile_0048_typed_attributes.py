@@ -86,6 +86,11 @@ class ReconciliationError(ValueError):
     """Raised when an observed Rust export cannot be reconciled safely."""
 
 
+def _without_names(names: list[str], excluded: set[str]) -> list[str]:
+    """Filter exact paths while preserving the reviewed mapping order."""
+    return [name for name in names if name not in excluded]
+
+
 def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any]:
     """Return a reconciled copy of *manifest* for the supplied audit report."""
     result = copy.deepcopy(manifest)
@@ -132,18 +137,17 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
     for capability in capabilities:
         if capability.get("capabilityId") == "named_protocol_values":
             for language in ("rust", "java", "python"):
-                capability["mappings"][language] = [
-                    name for name in capability["mappings"].get(language, [])
-                    if name not in UNIMPLEMENTED_MASK_NAME_EXPORTS[f"{language}-kmipkit"]
-                ]
+                capability["mappings"][language] = _without_names(
+                    capability["mappings"].get(language, []),
+                    UNIMPLEMENTED_MASK_NAME_EXPORTS[f"{language}-kmipkit"],
+                )
             capability["mappings"]["java"] = [
                 JAVA_MASK_MEMBER_RENAMES.get(name, name)
                 for name in capability["mappings"].get("java", [])
             ]
-            capability["mappings"]["c"] = [
-                name for name in capability["mappings"].get("c", [])
-                if name not in C_ONLY_MASK_NAME_EXPORTS
-            ]
+            capability["mappings"]["c"] = _without_names(
+                capability["mappings"].get("c", []), C_ONLY_MASK_NAME_EXPORTS
+            )
     declaration_keys = {(row["packageId"], row["exportName"]) for row in declarations}
     exclusion_keys = {(row["packageId"], row["exportName"]) for row in exclusions}
     typed_routes: list[dict[str, Any]] = []

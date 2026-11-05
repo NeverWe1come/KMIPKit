@@ -19,13 +19,13 @@
 - [x] T009 [US1] Add the sealed typed definition contract, owned attributes, borrowed callback views, and redacted conversion errors in `crates/kmipkit-protocol/src/typed_attributes.rs` (FR-002, FR-005, FR-006).
 - [x] T010 [US1] Add typed insertion and ordered typed queries to `AttributeSet` in `crates/kmipkit-protocol/src/attribute.rs` without removing generic APIs (FR-003, FR-007).
 - [x] T011 [US2] Add typed constructors and views to `CurrentAttribute` and `NewAttribute` in `crates/kmipkit-protocol/src/attribute.rs` (FR-004, FR-005; Green commit).
-- [ ] T012 [US2] Reconcile every new public route and exact exclusion in the reviewed API manifest and regenerate outputs with `tools/api_manifest/` tooling (FR-008).
-- [ ] T013 [US2] Add executable Rust examples and open-value/generic-fallback guidance to `docs/user-guide/en/attribute-operations.md` and `docs/user-guide/es/attribute-operations.md` (FR-009, FR-010).
+- [x] T012 [US2] Reconcile every new public route and exact exclusion in the reviewed API manifest and regenerate outputs with `tools/api_manifest/` tooling (FR-008).
+- [x] T013 [US2] Add executable Rust examples and open-value/generic-fallback guidance to `docs/user-guide/en/attribute-operations.md` and `docs/user-guide/es/attribute-operations.md` (FR-009, FR-010).
 
 ## Phase 4: Refactor and verification
 
-- [ ] T014 Refactor the generator and shared conversion code without changing behavior; record distinct Red, Green, and Refactor commit evidence in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010; Refactor commit).
-- [ ] T015 Run format, focused/workspace tests, Clippy, generator `--check`, manifest audit, and applicable coverage/security checks; record exact results in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010).
+- [x] T014 Refactor the generator and shared conversion code without changing behavior; record distinct Red, Green, and Refactor commit evidence in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010; Refactor commit).
+- [x] T015 Run format, focused/workspace tests, Clippy, generator `--check`, manifest audit, and applicable coverage/security checks; record exact results in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010).
 - [ ] T016 Push `feature/KMIPKIT-0048-typed-attributes` and open a draft stacked PR targeting `feature/KMIPKIT-0047-named-values`.
 
 ## Dependencies and independent criteria

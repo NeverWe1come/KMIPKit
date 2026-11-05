@@ -281,4 +281,4 @@ mod generated;
 pub use generated::typed;
 
 #[cfg(test)]
-pub(crate) use generated::ATTRIBUTE_DEFINITIONS;
+pub(crate) use generated::{ATTRIBUTE_DEFINITIONS, ATTRIBUTE_TAGS};
