@@ -19,13 +19,15 @@
   profiles, and local response byte limits.
 - Update the client Rust source-inventory tests and public docs.
 
-## Task 3 — carry the selected encoding through HTTPS [ ]
+## Task 3 — carry the selected encoding through HTTPS [x]
 
 - Add failing tests for request Content-Type and response body under each
   selected encoding, preserving HTTPS request/response size limits and
   response cleanup.
 - Implement format-aware request headers and response bytes while retaining
   TLS, timeout, delivery-state, redaction, and no-retry behavior.
+- Distinguish a valid alternate KMIP media type from HTTP metadata errors and
+  report the former as a redacted protocol `InvalidEncoding` error.
 
 ## Task 4 — frame raw TLS JSON/XML documents [ ]
 
