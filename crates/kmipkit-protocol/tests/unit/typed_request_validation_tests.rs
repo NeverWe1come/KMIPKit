@@ -1,17 +1,16 @@
 use crate::{
-    ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest,
-    CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest, DeriveKeyRequest,
-    DestroyRequest, DiscoverVersionsRequest, EncryptRequest, ExportRequest,
+    ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, AttributeSet,
+    CancelRequest, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest,
+    DeriveKeyRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest, ExportRequest,
     GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
     GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
-    ModifyAttributeRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
-    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest, RecertifyRequest,
-    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevokeRequest,
-    RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
-    AttributeSet, ObjectType, SetDefaultsRequest, SignRequest, SignatureVerifyRequest,
-    ValidateKmipRequest, ValidateRequest,
+    ModifyAttributeRequest, ObjectType, ObtainLeaseRequest, PingRequest, Pkcs11Request,
+    PollRequest, ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, ReProvisionRequest,
+    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
+    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, ValidateKmipRequest, ValidateRequest,
 };
 use kmipkit_ttlv::{Item, RawTag, Value};
 
@@ -162,8 +161,14 @@ fn create_validation_borrows_and_reports_duplicate_single_instance_attributes() 
 
     assert!(!report.is_valid());
     assert_eq!(report.issues().len(), 1);
-    assert_eq!(report.issues()[0].path().to_string(), "Request Payload.Attributes");
-    assert_eq!(report.issues()[0].source().to_string(), "KMIP v2.1 §4, Table 46");
+    assert_eq!(
+        report.issues()[0].path().to_string(),
+        "Request Payload.Attributes"
+    );
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §4, Table 46"
+    );
     assert!(!format!("{report:?}").contains("first"));
     assert!(!format!("{report:?}").contains("second"));
 }
