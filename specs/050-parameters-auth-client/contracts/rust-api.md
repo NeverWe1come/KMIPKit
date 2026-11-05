@@ -3,7 +3,7 @@
 ## Typed Cryptographic Parameters
 
 - `CryptographicParameters::try_from_ttlv(Structure)` validates and retains the supplied tree.
-- `CryptographicParametersBuilder::new()` starts an empty caller-selected value. `with_*` methods replace the corresponding singleton; `with_extension(Item)` retains a non-owned extension member; `build()` emits known fields in Table 59 order and returns a payload-free validation error on invalid input.
+- `CryptographicParametersBuilder::new()` starts an empty caller-selected value. `with_*` methods replace the corresponding singleton; `with_extension(Item)` takes ownership of an extension member; `build()` emits known fields in Table 59 order and returns a payload-free validation error on invalid input.
 - Typed getters expose every known member. Enumeration getters return the exact raw `u32`; no conversion rejects future or vendor values.
 - `with_ttlv` lends the original Structure through a callback. `into_ttlv` consumes the wrapper and returns that Structure.
 - Operation request types keep their existing `with_cryptographic_parameters(Structure)` method and gain additive `with_typed_cryptographic_parameters(CryptographicParameters)` methods.
