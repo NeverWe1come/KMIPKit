@@ -1,11 +1,13 @@
 //! Fake-transport Import contracts from OASIS KMIP v2.1 §6.1.25, Tables 238–240.
 
 use kmipkit_protocol::{
-    AttributeSet, ImportRequest, KeyWrapType, ObjectType, ResultReason, UniqueIdentifier,
+    AttributeSet, EncryptionKeyInformation, ImportRequest, KeyBlock, KeyBlockValue, KeyFormatType,
+    KeyWrapType, KeyWrappingData, ManagedObject, ObjectType, ResultReason, SymmetricKey,
+    UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Item, Value};
+use kmipkit_ttlv::{Item, ItemType, Value, ValueView};
 
 use super::{ClientOperation, IMPORT_OPERATION, encode_message_for_test};
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
@@ -22,6 +24,12 @@ const OPERATION: u32 = 0x0042_005C;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const RESULT_REASON: u32 = 0x0042_007E;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const KEY_VALUE: u32 = 0x0042_0045;
+const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const SERVER_REJECTED_OBJECT: u32 = 0xF123_4567;
@@ -72,6 +80,128 @@ fn request() -> ImportRequest {
     )
     .with_replace_existing(true)
     .with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568))
+}
+
+#[test]
+fn typed_wrapped_symmetric_key_import_uses_direct_object_tag_on_fake_transport() {
+    let key_block = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("valid Key Format Type")
+        .with_key_value(KeyBlockValue::Wrapped(
+            b"typed-wrapped-import-object".to_vec(),
+        ))
+        .with_key_wrapping_data(
+            KeyWrappingData::try_new(1)
+                .expect("assigned Wrapping Method")
+                .with_encryption_key_information(
+                    EncryptionKeyInformation::try_new("wrapping-key".to_owned())
+                        .expect("required Unique Identifier"),
+                ),
+        );
+    let symmetric_key = SymmetricKey::try_new(key_block).expect("valid Symmetric Key table fields");
+    let object = ManagedObject::try_from_item(ObjectType::from_raw(2), symmetric_key.into_item())
+        .expect("Symmetric Key tag matches Object Type");
+    let request = ImportRequest::from_managed_object(
+        UniqueIdentifier::TextString("typed-import-key".to_owned()),
+        object,
+        attributes(),
+    )
+    .with_replace_existing(true)
+    .with_key_wrap_type(KeyWrapType::from_raw(1));
+    let (mut client, fake, request_bytes) = client_for(ExchangeScript::Success {
+        response: successful_response(),
+        request_write_chunks: vec![7, 11],
+    });
+    client
+        .import(request, &CodecLimits::defaults())
+        .expect("the successful fake Import response is accepted");
+
+    let request_bytes = request_bytes.borrow();
+    let bytes = request_bytes
+        .as_deref()
+        .expect("fake transport captured the typed Import request");
+    assert_eq!(
+        request_object_shape(bytes),
+        (
+            Some(SYMMETRIC_KEY),
+            vec![KEY_FORMAT_TYPE, KEY_VALUE, KEY_WRAPPING_DATA],
+            Some(ItemType::ByteString),
+        )
+    );
+    assert!(
+        bytes
+            .windows(b"typed-wrapped-import-object".len())
+            .any(|window| window == b"typed-wrapped-import-object")
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+fn request_object_shape(bytes: &[u8]) -> (Option<u32>, Vec<u32>, Option<ItemType>) {
+    let message = kmipkit_ttlv::codec::decode(bytes).expect("captured request TTLV is valid");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return (None, Vec::new(), None);
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == BATCH_ITEM);
+        let Some(batch_item) = batch_item else {
+            return (None, Vec::new(), None);
+        };
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return (None, Vec::new(), None);
+            };
+            let Some(payload) = batch_item
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+            else {
+                return (None, Vec::new(), None);
+            };
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return (None, Vec::new(), None);
+                };
+                let object = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == SYMMETRIC_KEY);
+                let Some(object) = object else {
+                    return (None, Vec::new(), None);
+                };
+                let (fields, key_value_type) = object.with_value(|value| {
+                    let ValueView::Structure(object) = value else {
+                        return (Vec::new(), None);
+                    };
+                    let key_block = object
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == KEY_BLOCK);
+                    let Some(key_block) = key_block else {
+                        return (Vec::new(), None);
+                    };
+                    key_block.with_value(|value| {
+                        let ValueView::Structure(key_block) = value else {
+                            return (Vec::new(), None);
+                        };
+                        let fields = key_block
+                            .children()
+                            .iter()
+                            .map(|field| field.tag().raw())
+                            .collect();
+                        let key_value_type = key_block
+                            .children()
+                            .iter()
+                            .find(|field| field.tag().raw() == KEY_VALUE)
+                            .map(Item::item_type);
+                        (fields, key_value_type)
+                    })
+                });
+                (Some(object.tag().raw()), fields, key_value_type)
+            })
+        })
+    })
 }
 
 fn server_error_response() -> Vec<u8> {

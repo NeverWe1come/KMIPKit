@@ -5,7 +5,8 @@
 //! These are derived execution tests, not official fixture passes.
 
 use kmipkit_protocol::{
-    AttributeSet, CheckRequest, ObjectType, OpaqueObjectContext, RegisterRequest,
+    AttributeSet, Certificate, CheckRequest, ManagedObject, ObjectType, OpaqueObjectContext,
+    RegisterRequest,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
@@ -270,6 +271,61 @@ fn managed_opaque_register_request(attributes: AttributeSet) -> RegisterRequest 
         ),
     )
     .with_opaque_object_context(OpaqueObjectContext::ManagedCryptographicObject)
+}
+
+#[test]
+fn typed_certificate_register_uses_direct_object_tag_on_fake_transport() {
+    let certificate = Certificate::try_new(1, b"typed-certificate-value".to_vec())
+        .expect("typed Certificate table fields are valid");
+    let object = ManagedObject::try_from_item(ObjectType::from_raw(1), certificate.into_item())
+        .expect("Certificate structure tag matches Object Type");
+    let attributes = AttributeSet::try_new([
+        test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
+        test_item(CERTIFICATE_LENGTH, Value::integer(512)),
+        test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+        test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
+    ])
+    .expect("Table 293 Certificate attributes are structurally valid");
+    let request = RegisterRequest::from_managed_object(object, attributes);
+    let response = asynchronous_response_bytes(
+        REGISTER_OPERATION,
+        OPERATION_FAILED,
+        Some(INVALID_OBJECT_TYPE),
+        None,
+        None,
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let outcome = client
+        .register(request, &CodecLimits::defaults())
+        .expect("the fake server response completes the encoded Register request");
+    assert_eq!(outcome.outcome().result().status().raw(), OPERATION_FAILED);
+
+    let request = captured.borrow();
+    let request = request
+        .as_deref()
+        .expect("fake transport captured the typed Register request");
+    let (operation, fields, nested) = request_fields(request, 0);
+    assert_eq!(operation, Some(REGISTER_OPERATION));
+    assert_eq!(fields, [OBJECT_TYPE, ATTRIBUTES, CERTIFICATE]);
+    assert_eq!(
+        nested[1],
+        [
+            CRYPTOGRAPHIC_USAGE_MASK,
+            CERTIFICATE_LENGTH,
+            CRYPTOGRAPHIC_ALGORITHM,
+            CRYPTOGRAPHIC_LENGTH,
+        ]
+    );
+    assert_eq!(nested[2], [CERTIFICATE_TYPE, CERTIFICATE_VALUE]);
+    assert!(
+        request
+            .windows(b"typed-certificate-value".len())
+            .any(|window| { window == b"typed-certificate-value" })
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 fn request_fields(bytes: &[u8], item_index: usize) -> (Option<u32>, Vec<u32>, Vec<Vec<u32>>) {

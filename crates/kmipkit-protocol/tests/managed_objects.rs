@@ -1,0 +1,242 @@
+//! OASIS KMIP 2.1 §§2.1–2.9, Tables 2–10: typed object wire contracts.
+
+use kmipkit_protocol::{
+    Certificate, CertificateRequest, KeyBlock, KeyFormatType, ManagedObject, ObjectType,
+    OpaqueObject, PgpKey, PrivateKey, PublicKey, SecretData, SplitKey, SplitKeyMethod,
+    SymmetricKey,
+};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Value, ValueView};
+
+fn key_block() -> KeyBlock {
+    KeyBlock::try_new(KeyFormatType::from_raw(0xFFFF_FFFE))
+        .expect("an open future Key Format Type remains representable")
+}
+
+fn item_shape(item: &Item) -> (u32, Vec<(u32, ItemType)>) {
+    item.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            panic!("typed managed object must be a Structure")
+        };
+        (
+            item.tag().raw(),
+            structure
+                .children()
+                .iter()
+                .map(|child| (child.tag().raw(), child.item_type()))
+                .collect(),
+        )
+    })
+}
+
+#[test]
+fn every_known_managed_object_uses_its_oasis_structure_tag_and_field_order() {
+    let objects = [
+        Certificate::try_new(0x8000_0001, vec![0xC1, 0xC2])
+            .expect("valid Certificate fields")
+            .into_item(),
+        CertificateRequest::try_new(0x8000_0002, vec![0xD1])
+            .expect("valid Certificate Request fields")
+            .into_item(),
+        OpaqueObject::try_new(0x8000_0003, vec![0xE1])
+            .expect("valid Opaque Object fields")
+            .into_item(),
+        PgpKey::try_new(7, key_block())
+            .expect("valid PGP Key fields")
+            .into_item(),
+        PrivateKey::try_new(key_block())
+            .expect("valid Private Key fields")
+            .into_item(),
+        PublicKey::try_new(key_block())
+            .expect("valid Public Key fields")
+            .into_item(),
+        SecretData::try_new(0x8000_0004, key_block())
+            .expect("valid Secret Data fields")
+            .into_item(),
+        SplitKey::try_new(key_block(), 2, SplitKeyMethod::from_raw(1), 5, 3, None)
+            .expect("valid Split Key fields")
+            .into_item(),
+        SymmetricKey::try_new(key_block())
+            .expect("valid Symmetric Key fields")
+            .into_item(),
+    ];
+
+    let expected = [
+        (
+            0x0042_0013,
+            vec![
+                (0x0042_001D, ItemType::Enumeration),
+                (0x0042_001E, ItemType::ByteString),
+            ],
+        ),
+        (
+            0x0042_0018,
+            vec![
+                (0x0042_0019, ItemType::Enumeration),
+                (0x0042_0140, ItemType::ByteString),
+            ],
+        ),
+        (
+            0x0042_005B,
+            vec![
+                (0x0042_0059, ItemType::Enumeration),
+                (0x0042_005A, ItemType::ByteString),
+            ],
+        ),
+        (
+            0x0042_00BD,
+            vec![
+                (0x0042_00BE, ItemType::Integer),
+                (0x0042_0040, ItemType::Structure),
+            ],
+        ),
+        (0x0042_0064, vec![(0x0042_0040, ItemType::Structure)]),
+        (0x0042_006D, vec![(0x0042_0040, ItemType::Structure)]),
+        (
+            0x0042_0085,
+            vec![
+                (0x0042_0086, ItemType::Enumeration),
+                (0x0042_0040, ItemType::Structure),
+            ],
+        ),
+        (
+            0x0042_0089,
+            vec![
+                (0x0042_008B, ItemType::Integer),
+                (0x0042_0044, ItemType::Integer),
+                (0x0042_008C, ItemType::Integer),
+                (0x0042_008A, ItemType::Enumeration),
+                (0x0042_0040, ItemType::Structure),
+            ],
+        ),
+        (0x0042_008F, vec![(0x0042_0040, ItemType::Structure)]),
+    ];
+    for (item, expected) in objects.iter().zip(expected) {
+        assert_eq!(item_shape(item), expected);
+    }
+}
+
+#[test]
+fn managed_object_dispatch_requires_matching_type_and_structure_tag() {
+    let item = Certificate::try_new(1, vec![1, 2, 3])
+        .expect("valid certificate")
+        .into_item();
+    let typed = ManagedObject::try_from_item(ObjectType::from_raw(1), item)
+        .expect("matching Object Type and structure tag");
+    assert_eq!(typed.object_type().raw(), 1);
+    assert_eq!(typed.into_item().tag().raw(), 0x0042_0013);
+}
+
+#[test]
+fn every_known_object_type_dispatches_only_its_matching_structure_tag() {
+    let objects = [
+        Certificate::try_new(1, vec![1]).unwrap().into_item(),
+        CertificateRequest::try_new(1, vec![1]).unwrap().into_item(),
+        OpaqueObject::try_new(1, vec![1]).unwrap().into_item(),
+        PgpKey::try_new(1, key_block()).unwrap().into_item(),
+        PrivateKey::try_new(key_block()).unwrap().into_item(),
+        PublicKey::try_new(key_block()).unwrap().into_item(),
+        SecretData::try_new(1, key_block()).unwrap().into_item(),
+        SplitKey::try_new(key_block(), 1, SplitKeyMethod::from_raw(1), 2, 2, None)
+            .unwrap()
+            .into_item(),
+        SymmetricKey::try_new(key_block()).unwrap().into_item(),
+    ];
+    let object_types = [1, 10, 8, 9, 4, 3, 7, 5, 2];
+    for (item, object_type) in objects.iter().zip(object_types) {
+        let typed = ManagedObject::try_from_item(
+            ObjectType::from_raw(object_type),
+            item.try_clone().expect("copy is explicit and zeroizing"),
+        )
+        .expect("known Object Type maps to the matching object Item tag");
+        assert_eq!(typed.object_type().raw(), object_type);
+        assert_eq!(typed.into_item().tag().raw(), item.tag().raw());
+    }
+}
+
+#[test]
+fn known_object_type_rejects_another_object_structure_tag() {
+    let certificate = Certificate::try_new(1, vec![1]).unwrap().into_item();
+    let error = ManagedObject::try_from_item(ObjectType::from_raw(2), certificate);
+    assert!(error.is_err());
+}
+
+#[test]
+fn unknown_object_types_and_vendor_children_remain_lossless() {
+    let extension_tag = RawTag::new(0x0054_0101)
+        .expect("24-bit tag")
+        .try_checked()
+        .expect("vendor extension tag is allocated");
+    let mut children = kmipkit_ttlv::Structure::new();
+    children
+        .try_push(Item::new(extension_tag, Value::byte_string(vec![0x51, 0x52])).unwrap())
+        .unwrap();
+    let unknown_tag = RawTag::new(0x0054_0102)
+        .expect("24-bit tag")
+        .try_checked()
+        .expect("vendor extension tag is allocated");
+    let unknown = Item::new(unknown_tag, Value::structure(children)).unwrap();
+    let typed = ManagedObject::unknown(ObjectType::from_raw(0x8000_0001), unknown)
+        .expect("unknown values use the generic fallback");
+    assert_eq!(typed.object_type().raw(), 0x8000_0001);
+    let round_trip = typed.into_item();
+    assert_eq!(round_trip.tag().raw(), 0x0054_0102);
+    let nested = round_trip.with_value(|value| match value {
+        ValueView::Structure(structure) => structure.children()[0].tag().raw(),
+        _ => 0,
+    });
+    assert_eq!(nested, 0x0054_0101);
+}
+
+#[test]
+fn split_key_rejects_identifier_outside_one_through_parts() {
+    let result = SplitKey::try_new(key_block(), 6, SplitKeyMethod::from_raw(1), 5, 3, None);
+    assert!(result.is_err());
+}
+
+#[test]
+fn polynomial_prime_field_requires_prime_field_size() {
+    let result = SplitKey::try_new(
+        key_block(),
+        1,
+        SplitKeyMethod::POLYNOMIAL_SHARING_PRIME_FIELD,
+        3,
+        2,
+        None,
+    );
+    assert!(result.is_err());
+}
+
+#[test]
+fn secret_data_rejects_key_block_algorithm_and_length_fields() {
+    let block = key_block().with_cryptographic_properties(Some(3), Some(256));
+    let result = SecretData::try_new(1, block);
+    assert!(result.is_err());
+}
+
+#[test]
+fn split_key_prime_field_size_precedes_key_block_in_table_nine_order() {
+    let item = SplitKey::try_new(
+        key_block(),
+        1,
+        SplitKeyMethod::POLYNOMIAL_SHARING_PRIME_FIELD,
+        3,
+        2,
+        Some(vec![0x11]),
+    )
+    .expect("Polynomial Sharing Prime Field requires Prime Field Size")
+    .into_item();
+    assert_eq!(
+        item_shape(&item),
+        (
+            0x0042_0089,
+            vec![
+                (0x0042_008B, ItemType::Integer),
+                (0x0042_0044, ItemType::Integer),
+                (0x0042_008C, ItemType::Integer),
+                (0x0042_008A, ItemType::Enumeration),
+                (0x0042_0062, ItemType::BigInteger),
+                (0x0042_0040, ItemType::Structure),
+            ],
+        )
+    );
+}
