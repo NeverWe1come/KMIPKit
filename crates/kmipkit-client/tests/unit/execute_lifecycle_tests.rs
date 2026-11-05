@@ -188,6 +188,24 @@ fn single_item_request_may_include_or_omit_unique_batch_item_id() {
         let encoded = captured
             .as_ref()
             .expect("the fake transport captures the encoded request");
+        if expected_id.is_none() {
+            let expected_hex = concat!(
+                "42007801000000984200770100000048420069010000002042006A0200000004",
+                "000000020000000042006B020000000400000001000000004200D30600000008",
+                "000000000000000142000D0200000004000000010000000042000F0100000040",
+                "42005C05000000040000001E0000000042007901000000284200690100000020",
+                "42006A0200000004000000020000000042006B02000000040000000100000000"
+            );
+            let (hex_pairs, _) = expected_hex.as_bytes().as_chunks::<2>();
+            let expected_bytes = hex_pairs
+                .iter()
+                .map(|pair| {
+                    let pair = std::str::from_utf8(pair).expect("hex fixture is ASCII");
+                    u8::from_str_radix(pair, 16).expect("hex fixture has valid digits")
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(encoded.as_slice(), expected_bytes);
+        }
         let message = decode(encoded.as_slice()).expect("the captured request is valid TTLV");
         let (field_count, encoded_ids) = unique_batch_item_ids(&message);
 

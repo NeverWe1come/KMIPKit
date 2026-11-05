@@ -4686,7 +4686,7 @@ impl Client {
                 error,
             )
         })?;
-        validate_cryptographic_request_shapes(&batch)?;
+        validate_typed_request_preflight(&batch)?;
         validate_request_extension_ownership(&batch, &self.configuration).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -6832,7 +6832,7 @@ pub(super) fn validate_batch(
     Ok(options)
 }
 
-fn validate_cryptographic_request_shapes(batch: &ClientBatch) -> Result<(), ClientError> {
+fn validate_typed_request_preflight(batch: &ClientBatch) -> Result<(), ClientError> {
     for item in &batch.items {
         item.request.validate_local_shape().map_err(|error| {
             ClientError::validation(

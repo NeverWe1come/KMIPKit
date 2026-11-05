@@ -59,9 +59,9 @@ description: "Dependency-ordered KMIPKIT-0051 implementation tasks"
 
 **Independent Test**: Scripted transport observes zero exchanges/writes for each invalid case and existing exact request bytes plus one exchange for valid cases.
 
-- [ ] T026 [P] [US2] Add Red tests that execute invalid typed requests and invalid batches through `ScriptedTransport`, asserting sanitized errors, `RequestDeliveryState::NotSent`, zero exchanges, and zero writes in `crates/kmipkit-client/tests/unit/request_validation_tests.rs` and `crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs`.
-- [ ] T027 [US2] Integrate the same request and batch validation into `Client::execute` before request message construction, encoding, and `transport.exchange` in `crates/kmipkit-client/src/execute.rs`; preserve existing delivery-state mapping.
-- [ ] T028 [US2] Refactor preflight order and error adaptation; add byte-for-byte valid-request regression tests in `crates/kmipkit-client/tests/unit/request_validation_tests.rs` and `crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs`.
+- [x] T026 [P] [US2] Add Red tests that execute invalid typed requests and invalid batches through `ScriptedTransport`, asserting sanitized errors, `RequestDeliveryState::NotSent`, zero exchanges, and zero writes in `crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs`.
+- [x] T027 [US2] Integrate the same request and batch validation into `Client::execute` before request message construction, encoding, and `transport.exchange` in `crates/kmipkit-client/src/execute.rs`; preserve existing delivery-state mapping.
+- [x] T028 [US2] Refactor preflight naming/order and error adaptation; add byte-for-byte valid-request regression tests in `crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs`.
 
 ## Phase 5: User Story 3 — Preserve extension data and safe diagnostics (Priority: P2)
 
