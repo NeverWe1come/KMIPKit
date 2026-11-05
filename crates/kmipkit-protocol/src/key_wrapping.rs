@@ -65,22 +65,8 @@ impl EncryptionKeyInformation {
         mut self,
         parameters: Structure,
     ) -> Result<Self, ManagedObjectError> {
-        let mut fields = self
-            .item
-            .with_value(|value| match value {
-                kmipkit_ttlv::ValueView::Structure(structure) => structure
-                    .children()
-                    .iter()
-                    .map(Item::try_clone)
-                    .collect::<Result<Vec<_>, _>>(),
-                _ => Ok(Vec::new()),
-            })
-            .map_err(ManagedObjectError::from)?;
-        fields.push(make_item(
-            CRYPTOGRAPHIC_PARAMETERS,
-            Value::structure(parameters),
-        )?);
-        self.item = structure_item(ENCRYPTION_KEY_INFORMATION, fields)?;
+        self.item =
+            append_cryptographic_parameters(&self.item, ENCRYPTION_KEY_INFORMATION, parameters)?;
         Ok(self)
     }
 
@@ -133,22 +119,8 @@ impl MacSignatureKeyInformation {
         mut self,
         parameters: Structure,
     ) -> Result<Self, ManagedObjectError> {
-        let mut fields = self
-            .item
-            .with_value(|value| match value {
-                kmipkit_ttlv::ValueView::Structure(structure) => structure
-                    .children()
-                    .iter()
-                    .map(Item::try_clone)
-                    .collect::<Result<Vec<_>, _>>(),
-                _ => Ok(Vec::new()),
-            })
-            .map_err(ManagedObjectError::from)?;
-        fields.push(make_item(
-            CRYPTOGRAPHIC_PARAMETERS,
-            Value::structure(parameters),
-        )?);
-        self.item = structure_item(MAC_SIGNATURE_KEY_INFORMATION, fields)?;
+        self.item =
+            append_cryptographic_parameters(&self.item, MAC_SIGNATURE_KEY_INFORMATION, parameters)?;
         Ok(self)
     }
 
@@ -236,6 +208,9 @@ impl KeyWrappingData {
                 Err(ManagedObjectError::MissingRequiredField)
             }
         })?;
+        if !present[1] && !present[2] {
+            return Err(ManagedObjectError::InvalidFieldCombination);
+        }
         Ok(Self {
             wrapping_method: wrapping_method.ok_or(ManagedObjectError::IncorrectFieldType)?,
             encryption_key_information: None,
@@ -301,6 +276,10 @@ impl KeyWrappingData {
     pub(crate) fn try_into_item(self) -> Result<Item, ManagedObjectError> {
         if let Some(item) = self.raw_item {
             return Ok(item);
+        }
+        if self.encryption_key_information.is_none() && self.mac_signature_key_information.is_none()
+        {
+            return Err(ManagedObjectError::InvalidFieldCombination);
         }
         let mut fields = vec![make_item(
             WRAPPING_METHOD,
@@ -370,6 +349,28 @@ fn validate_key_information(item: &Item, expected_tag: u32) -> Result<(), Manage
             Err(ManagedObjectError::MissingRequiredField)
         }
     })
+}
+
+fn append_cryptographic_parameters(
+    item: &Item,
+    information_tag: u32,
+    parameters: Structure,
+) -> Result<Item, ManagedObjectError> {
+    let mut fields = item
+        .with_value(|value| match value {
+            ValueView::Structure(structure) => structure
+                .children()
+                .iter()
+                .map(Item::try_clone)
+                .collect::<Result<Vec<_>, _>>(),
+            _ => Ok(Vec::new()),
+        })
+        .map_err(ManagedObjectError::from)?;
+    fields.push(make_item(
+        CRYPTOGRAPHIC_PARAMETERS,
+        Value::structure(parameters),
+    )?);
+    structure_item(information_tag, fields)
 }
 
 fn unique_identifier_item(value: UniqueIdentifier) -> Result<Item, ManagedObjectError> {

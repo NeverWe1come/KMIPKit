@@ -1,8 +1,8 @@
 //! OASIS KMIP 2.1 §§3.1–3.2, Tables 12–13: Key Block and Key Value.
 
 use kmipkit_protocol::{
-    KeyBlock, KeyBlockValue, KeyCompressionType, KeyFormatType, KeyMaterial, KeyValue,
-    KeyWrappingData,
+    EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyCompressionType, KeyFormatType,
+    KeyMaterial, KeyValue, KeyWrappingData,
 };
 use kmipkit_ttlv::{ItemType, ValueView};
 
@@ -55,7 +55,14 @@ fn plaintext_and_wrapped_key_values_have_distinct_ttlv_types() {
     let wrapped_block = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("valid format")
         .with_key_value(KeyBlockValue::Wrapped(vec![3, 4]))
-        .with_key_wrapping_data(KeyWrappingData::try_new(1).expect("assigned Wrapping Method"))
+        .with_key_wrapping_data(
+            KeyWrappingData::try_new(1)
+                .expect("assigned Wrapping Method")
+                .with_encryption_key_information(
+                    EncryptionKeyInformation::try_new("wrapping-key".to_owned())
+                        .expect("required Unique Identifier"),
+                ),
+        )
         .try_into_item()
         .expect("valid wrapped block");
 
@@ -101,7 +108,14 @@ fn plaintext_key_value_forbids_key_wrapping_data() {
     let item = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("valid format")
         .with_key_value(KeyBlockValue::Plaintext(key_value))
-        .with_key_wrapping_data(KeyWrappingData::try_new(1).expect("valid wrapper"))
+        .with_key_wrapping_data(
+            KeyWrappingData::try_new(1)
+                .expect("valid wrapper")
+                .with_encryption_key_information(
+                    EncryptionKeyInformation::try_new("wrapping-key".to_owned())
+                        .expect("required Unique Identifier"),
+                ),
+        )
         .try_into_item();
     assert!(item.is_err());
 }
