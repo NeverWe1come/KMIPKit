@@ -7,7 +7,7 @@
     "attributes_covered": 63,
     "enumerations_covered": 64,
     "bitmasks_covered": 3,
-    "total_cases": 123
+    "total_cases": 200
   },
   "test_cases": [
     {
@@ -3102,6 +3102,1610 @@
           "UniqueIdentifier",
           "TimeStamp",
           "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-adjustment-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Adjustment Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Adjustment Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-adjustment-type",
+        "setup_steps": [],
+        "target_step": "Validate Adjustment Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-alternative-name-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Alternative Name Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Alternative Name Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-alternative-name-type",
+        "setup_steps": [],
+        "target_step": "Validate Alternative Name Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-asynchronous-indicator",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Asynchronous Indicator.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Asynchronous Indicator"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-asynchronous-indicator",
+        "setup_steps": [],
+        "target_step": "Validate Asynchronous Indicator serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-attestation-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Attestation Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Attestation Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-attestation-type",
+        "setup_steps": [],
+        "target_step": "Validate Attestation Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-batch-error-continuation-option",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Batch Error Continuation Option.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Batch Error Continuation Option"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-batch-error-continuation-option",
+        "setup_steps": [],
+        "target_step": "Validate Batch Error Continuation Option serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-block-cipher-mode",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Block Cipher Mode.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Block Cipher Mode"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-block-cipher-mode",
+        "setup_steps": [],
+        "target_step": "Validate Block Cipher Mode serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-cancellation-result",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Cancellation Result.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Cancellation Result"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-cancellation-result",
+        "setup_steps": [],
+        "target_step": "Validate Cancellation Result serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-certificate-request-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Certificate Request Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Certificate Request Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-certificate-request-type",
+        "setup_steps": [],
+        "target_step": "Validate Certificate Request Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-certificate-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Certificate Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Certificate Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-certificate-type",
+        "setup_steps": [],
+        "target_step": "Validate Certificate Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-client-registration-method",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Client Registration Method.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Client Registration Method"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-client-registration-method",
+        "setup_steps": [],
+        "target_step": "Validate Client Registration Method serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-credential-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Credential Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Credential Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-credential-type",
+        "setup_steps": [],
+        "target_step": "Validate Credential Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-cryptographic-algorithm",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Cryptographic Algorithm.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Cryptographic Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-cryptographic-algorithm",
+        "setup_steps": [],
+        "target_step": "Validate Cryptographic Algorithm serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-drbg-algorithm",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration DRBG Algorithm.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "DRBG Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-drbg-algorithm",
+        "setup_steps": [],
+        "target_step": "Validate DRBG Algorithm serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-data",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Data.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Data"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-data",
+        "setup_steps": [],
+        "target_step": "Validate Data serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-derivation-method",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Derivation Method.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Derivation Method"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-derivation-method",
+        "setup_steps": [],
+        "target_step": "Validate Derivation Method serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-destroy-action",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Destroy Action.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Destroy Action"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-destroy-action",
+        "setup_steps": [],
+        "target_step": "Validate Destroy Action serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-digital-signature-algorithm",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Digital Signature Algorithm.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Digital Signature Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-digital-signature-algorithm",
+        "setup_steps": [],
+        "target_step": "Validate Digital Signature Algorithm serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-encoding-option",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Encoding Option.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Encoding Option"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-encoding-option",
+        "setup_steps": [],
+        "target_step": "Validate Encoding Option serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-endpoint-role",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Endpoint Role.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Endpoint Role"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-endpoint-role",
+        "setup_steps": [],
+        "target_step": "Validate Endpoint Role serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-fips186-variation",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration FIPS186 Variation.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "FIPS186 Variation"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-fips186-variation",
+        "setup_steps": [],
+        "target_step": "Validate FIPS186 Variation serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-hashing-algorithm",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Hashing Algorithm.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Hashing Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-hashing-algorithm",
+        "setup_steps": [],
+        "target_step": "Validate Hashing Algorithm serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-interop-function",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Interop Function.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Interop Function"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-interop-function",
+        "setup_steps": [],
+        "target_step": "Validate Interop Function serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-item-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Item Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Item Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-item-type",
+        "setup_steps": [],
+        "target_step": "Validate Item Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-key-compression-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Key Compression Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Key Compression Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-key-compression-type",
+        "setup_steps": [],
+        "target_step": "Validate Key Compression Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-key-format-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Key Format Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Key Format Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-key-format-type",
+        "setup_steps": [],
+        "target_step": "Validate Key Format Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-key-role-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Key Role Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Key Role Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-key-role-type",
+        "setup_steps": [],
+        "target_step": "Validate Key Role Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-key-value-location-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Key Value Location Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Key Value Location Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-key-value-location-type",
+        "setup_steps": [],
+        "target_step": "Validate Key Value Location Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-key-wrap-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Key Wrap Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Key Wrap Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-key-wrap-type",
+        "setup_steps": [],
+        "target_step": "Validate Key Wrap Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-link-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Link Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Link Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-link-type",
+        "setup_steps": [],
+        "target_step": "Validate Link Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-mask-generator",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Mask Generator.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Mask Generator"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-mask-generator",
+        "setup_steps": [],
+        "target_step": "Validate Mask Generator serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-nist-key-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration NIST Key Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "NIST Key Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-nist-key-type",
+        "setup_steps": [],
+        "target_step": "Validate NIST Key Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-name-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Name Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Name Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-name-type",
+        "setup_steps": [],
+        "target_step": "Validate Name Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-object-group-member",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Object Group Member.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Object Group Member"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-object-group-member",
+        "setup_steps": [],
+        "target_step": "Validate Object Group Member serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-object-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Object Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Object Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-object-type",
+        "setup_steps": [],
+        "target_step": "Validate Object Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-opaque-data-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Opaque Data Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Opaque Data Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-opaque-data-type",
+        "setup_steps": [],
+        "target_step": "Validate Opaque Data Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-operation",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Operation.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Operation"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-operation",
+        "setup_steps": [],
+        "target_step": "Validate Operation serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-pkcs#11-function",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration PKCS#11 Function.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "PKCS#11 Function"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-pkcs#11-function",
+        "setup_steps": [],
+        "target_step": "Validate PKCS#11 Function serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-pkcs#11-return-code",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration PKCS#11 Return Code.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "PKCS#11 Return Code"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-pkcs#11-return-code",
+        "setup_steps": [],
+        "target_step": "Validate PKCS#11 Return Code serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-padding-method",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Padding Method.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Padding Method"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-padding-method",
+        "setup_steps": [],
+        "target_step": "Validate Padding Method serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-processing-stage",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Processing Stage.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Processing Stage"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-processing-stage",
+        "setup_steps": [],
+        "target_step": "Validate Processing Stage serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-profile-name",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Profile Name.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Profile Name"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-profile-name",
+        "setup_steps": [],
+        "target_step": "Validate Profile Name serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-protection-level",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Protection Level.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Protection Level"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-protection-level",
+        "setup_steps": [],
+        "target_step": "Validate Protection Level serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-put-function",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Put Function.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Put Function"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-put-function",
+        "setup_steps": [],
+        "target_step": "Validate Put Function serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-query-function",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Query Function.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Query Function"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-query-function",
+        "setup_steps": [],
+        "target_step": "Validate Query Function serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-rng-algorithm",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration RNG Algorithm.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "RNG Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-rng-algorithm",
+        "setup_steps": [],
+        "target_step": "Validate RNG Algorithm serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-rng-mode",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration RNG Mode.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "RNG Mode"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-rng-mode",
+        "setup_steps": [],
+        "target_step": "Validate RNG Mode serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-recommended-curve",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Recommended Curve.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Recommended Curve"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-recommended-curve",
+        "setup_steps": [],
+        "target_step": "Validate Recommended Curve serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-result-reason",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Result Reason.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Result Reason"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-result-reason",
+        "setup_steps": [],
+        "target_step": "Validate Result Reason serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-result-status",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Result Status.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Result Status"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-result-status",
+        "setup_steps": [],
+        "target_step": "Validate Result Status serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-revocation-reason-code",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Revocation Reason Code.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Revocation Reason Code"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-revocation-reason-code",
+        "setup_steps": [],
+        "target_step": "Validate Revocation Reason Code serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-rotate-name-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Rotate Name Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Rotate Name Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-rotate-name-type",
+        "setup_steps": [],
+        "target_step": "Validate Rotate Name Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-secret-data-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Secret Data Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Secret Data Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-secret-data-type",
+        "setup_steps": [],
+        "target_step": "Validate Secret Data Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-shredding-algorithm",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Shredding Algorithm.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Shredding Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-shredding-algorithm",
+        "setup_steps": [],
+        "target_step": "Validate Shredding Algorithm serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-split-key-method",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Split Key Method.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Split Key Method"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-split-key-method",
+        "setup_steps": [],
+        "target_step": "Validate Split Key Method serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-state",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration State.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "State"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-state",
+        "setup_steps": [],
+        "target_step": "Validate State serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-tag",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Tag.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Tag"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-tag",
+        "setup_steps": [],
+        "target_step": "Validate Tag serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-ticket-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Ticket Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Ticket Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-ticket-type",
+        "setup_steps": [],
+        "target_step": "Validate Ticket Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-unique-identifier",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Unique Identifier.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Unique Identifier"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-unique-identifier",
+        "setup_steps": [],
+        "target_step": "Validate Unique Identifier serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-unwrap-mode",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Unwrap Mode.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Unwrap Mode"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-unwrap-mode",
+        "setup_steps": [],
+        "target_step": "Validate Unwrap Mode serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-usage-limits-unit",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Usage Limits Unit.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Usage Limits Unit"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-usage-limits-unit",
+        "setup_steps": [],
+        "target_step": "Validate Usage Limits Unit serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-validation-authority-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Validation Authority Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Validation Authority Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-validation-authority-type",
+        "setup_steps": [],
+        "target_step": "Validate Validation Authority Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-validation-type",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Validation Type.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Validation Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-validation-type",
+        "setup_steps": [],
+        "target_step": "Validate Validation Type serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-validity-indicator",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Validity Indicator.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Validity Indicator"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-validity-indicator",
+        "setup_steps": [],
+        "target_step": "Validate Validity Indicator serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-enum-wrapping-method",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify roundtrip and custom vendor extension preservation for enumeration Wrapping Method.",
+      "requires": {
+        "operation": "Query",
+        "enum_type": "Wrapping Method"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-enum-wrapping-method",
+        "setup_steps": [],
+        "target_step": "Validate Wrapping Method serialization",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-bitmask-cryptographic-usage-mask",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify bitwise composition and unknown bit preservation for bitmask Cryptographic Usage Mask.",
+      "requires": {
+        "operation": "Query",
+        "bitmask_type": "Cryptographic Usage Mask"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-mask-cryptographic-usage-mask",
+        "setup_steps": [],
+        "target_step": "Validate Cryptographic Usage Mask bits",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-bitmask-protection-storage-mask",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify bitwise composition and unknown bit preservation for bitmask Protection Storage Mask.",
+      "requires": {
+        "operation": "Query",
+        "bitmask_type": "Protection Storage Mask"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-mask-protection-storage-mask",
+        "setup_steps": [],
+        "target_step": "Validate Protection Storage Mask bits",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-bitmask-storage-status-mask",
+      "category": "enums_and_bitmasks",
+      "operation": "Query",
+      "oasis_section": "§9.1",
+      "description": "Verify bitwise composition and unknown bit preservation for bitmask Storage Status Mask.",
+      "requires": {
+        "operation": "Query",
+        "bitmask_type": "Storage Status Mask"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-mask-storage-status-mask",
+        "setup_steps": [],
+        "target_step": "Validate Storage Status Mask bits",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-batch-create-activate-destroy",
+      "category": "batch_workflows",
+      "operation": "Create",
+      "oasis_section": "§5.1",
+      "description": "Single-message batch workflow: Create -> Activate (IDPlaceholder) -> GetAttributes -> Destroy",
+      "requires": {
+        "operation": "Create",
+        "workflow_type": "batch_id_placeholder"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-batch-cad",
+        "setup_steps": [],
+        "target_step": "Execute Batch Request",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "InitialDate",
+          "ActivationDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-batch-register-encrypt-decrypt-destroy",
+      "category": "batch_workflows",
+      "operation": "Create",
+      "oasis_section": "§5.1",
+      "description": "Single-message batch workflow: Register -> Activate -> Encrypt -> Decrypt -> Destroy",
+      "requires": {
+        "operation": "Create",
+        "workflow_type": "batch_id_placeholder"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-batch-crypto",
+        "setup_steps": [],
+        "target_step": "Execute Batch Request",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "InitialDate",
+          "ActivationDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-multipart-encrypt-aes-cbc",
+      "category": "multipart_crypto",
+      "operation": "Encrypt",
+      "oasis_section": "§6.1",
+      "description": "Init -> Update(64B) -> Update(64B) -> Final Encrypt streaming with CorrelationValue",
+      "requires": {
+        "operation": "Encrypt",
+        "algorithm": "AES",
+        "key_length": 128,
+        "workflow_type": "multipart_streaming"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-stream-aes",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Multipart Encrypt",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "CorrelationValue",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-multipart-decrypt-aes-cbc",
+      "category": "multipart_crypto",
+      "operation": "Decrypt",
+      "oasis_section": "§6.1",
+      "description": "Init -> Update(64B) -> Update(64B) -> Final Decrypt streaming with CorrelationValue",
+      "requires": {
+        "operation": "Decrypt",
+        "algorithm": "AES",
+        "key_length": 128,
+        "workflow_type": "multipart_streaming"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-stream-aes",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Multipart Decrypt",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "CorrelationValue",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-multipart-sign-rsa",
+      "category": "multipart_crypto",
+      "operation": "Sign",
+      "oasis_section": "§6.1",
+      "description": "Init -> Update -> Final Sign streaming with CorrelationValue",
+      "requires": {
+        "operation": "Sign",
+        "algorithm": "RSA",
+        "key_length": 2048,
+        "workflow_type": "multipart_streaming"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-stream-rsa",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Multipart Sign",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "CorrelationValue",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-multipart-hash-sha256",
+      "category": "multipart_crypto",
+      "operation": "Hash",
+      "oasis_section": "§6.1",
+      "description": "Init -> Update -> Final Hash streaming with CorrelationValue",
+      "requires": {
+        "operation": "Hash",
+        "algorithm": "SHA_256",
+        "key_length": 0,
+        "workflow_type": "multipart_streaming"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-stream-sha_256",
+        "setup_steps": [],
+        "target_step": "Execute Multipart Hash",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "CorrelationValue",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-async-lifecycle-poll",
+      "category": "asynchronous_workflows",
+      "operation": "Create",
+      "oasis_section": "§6.1.18",
+      "description": "Send asynchronous request with AsynchronousIndicator=true, receive Pending status, query and poll until completion.",
+      "requires": {
+        "operation": "Create",
+        "requires_async": true,
+        "workflow_type": "async_poll"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-async-poll",
+        "setup_steps": [],
+        "target_step": "Submit Asynchronous Create and Poll",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "AsynchronousCorrelationValue"
+        ]
+      }
+    },
+    {
+      "case_id": "test-neg-encrypt-preactive-key",
+      "category": "negative_and_boundary",
+      "operation": "Encrypt",
+      "oasis_section": "§3",
+      "description": "Verify server rejects Encrypt on Pre-Active SymmetricKey with CryptographicFailure or InvalidField.",
+      "requires": {
+        "operation": "Encrypt",
+        "expected_status": "OperationFailed"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-neg-test-neg-encrypt-preactive-key",
+        "setup_steps": [
+          "Create test object in initial state"
+        ],
+        "target_step": "Attempt illegal Encrypt",
+        "teardown_steps": [
+          "Revoke and Destroy test object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-neg-modify-readonly-attribute",
+      "category": "negative_and_boundary",
+      "operation": "Modify Attribute",
+      "oasis_section": "§3",
+      "description": "Verify server rejects mutation of read-only server-generated attribute (InitialDate / UniqueIdentifier).",
+      "requires": {
+        "operation": "Modify Attribute",
+        "expected_status": "OperationFailed"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-neg-test-neg-modify-readonly-attribute",
+        "setup_steps": [
+          "Create test object in initial state"
+        ],
+        "target_step": "Attempt illegal Modify Attribute",
+        "teardown_steps": [
+          "Revoke and Destroy test object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-neg-destroy-active-without-revoke",
+      "category": "negative_and_boundary",
+      "operation": "Destroy",
+      "oasis_section": "§3",
+      "description": "Verify server enforces KMIP §3 lifecycle rules when attempting Destroy on Active object without prior Revocation.",
+      "requires": {
+        "operation": "Destroy",
+        "expected_status": "OperationFailed"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-neg-test-neg-destroy-active-without-revoke",
+        "setup_steps": [
+          "Create test object in initial state"
+        ],
+        "target_step": "Attempt illegal Destroy",
+        "teardown_steps": [
+          "Revoke and Destroy test object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
         ]
       }
     }

@@ -36,5 +36,8 @@ jobs:
       - name: Verify test catalog generation check
         run: python3 interop/shared/catalog/generate_test_catalog.py --check
 
+      - name: Verify canonical vectors generation check
+        run: python3 interop/shared/vectors/generate_vectors.py --check
+
       - name: Run interop shared tests
         run: python3 -B -m unittest discover -s interop/shared/tests -p 'test_*.py' -v
