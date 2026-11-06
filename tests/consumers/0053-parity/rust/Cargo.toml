@@ -1,0 +1,9 @@
+[package]
+name = "kmipkit-0053-rust-consumer"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+
+[dependencies]
+kmipkit = { path = "../../../../crates/kmipkit" }
