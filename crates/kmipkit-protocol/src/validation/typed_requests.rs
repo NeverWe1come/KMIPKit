@@ -87,11 +87,19 @@ impl ValidateKmipRequest for crate::AdjustAttributeRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::AdjustAttribute;
 
     fn validate(&self) -> ValidationReport {
-        validate_attribute_reference_mutation(
+        let mut report = validate_attribute_reference_name(
+            self.attribute_reference(),
+            "KMIPKIT-0051-R005",
+            crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Attribute Reference"),
+        );
+        report.append(validate_attribute_reference_mutation(
             self.attribute_reference(),
             crate::attribute::ClientAttributeMutation::Adjust,
             "Attribute Reference",
-        )
+        ));
+        report
     }
 }
 
@@ -108,6 +116,13 @@ impl ValidateKmipRequest for crate::DeleteAttributeRequest {
             ));
         }
         if let Some(reference) = self.attribute_reference() {
+            report.append(validate_attribute_reference_name(
+                reference,
+                "KMIPKIT-0051-R051",
+                crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Attribute Reference"),
+            ));
             report.append(validate_attribute_reference_mutation(
                 reference,
                 crate::attribute::ClientAttributeMutation::Delete,
@@ -242,6 +257,27 @@ fn validate_attribute_reference_mutation(
     })
 }
 
+fn validate_attribute_reference_name(
+    reference: &crate::AttributeReference,
+    rule: &'static str,
+    path: crate::ValidationPath,
+) -> ValidationReport {
+    let Some((vendor_identification, _)) = reference.name_parts() else {
+        return ValidationReport::default();
+    };
+    if crate::attribute_reference::vendor_identification_is_valid(vendor_identification) {
+        return ValidationReport::default();
+    }
+    crate::validation::issue_report(
+        rule,
+        path.field("Vendor Identification"),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: "§5.5, Table 161",
+        },
+    )
+}
+
 fn attribute_mutation_issue(
     field: &'static str,
     tag: u32,
@@ -310,23 +346,14 @@ impl ValidateKmipRequest for crate::GetAttributesRequest {
     fn validate(&self) -> ValidationReport {
         let mut report = ValidationReport::default();
         for (index, reference) in self.attribute_references().iter().enumerate() {
-            let Some((vendor_identification, _)) = reference.name_parts() else {
-                continue;
-            };
-            if !crate::attribute_reference::vendor_identification_is_valid(vendor_identification) {
-                report.append(crate::validation::issue_report(
-                    "KMIPKIT-0051-R078",
-                    crate::ValidationPath::root()
-                        .field("Request Payload")
-                        .field("Attribute Reference")
-                        .index(index)
-                        .field("Vendor Identification"),
-                    crate::ValidationSourceRef::Oasis {
-                        document: "KMIP v2.1",
-                        reference: "§5.5, Table 161",
-                    },
-                ));
-            }
+            report.append(validate_attribute_reference_name(
+                reference,
+                "KMIPKIT-0051-R078",
+                crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Attribute Reference")
+                    .index(index),
+            ));
         }
         report
     }
