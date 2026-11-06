@@ -945,3 +945,24 @@ fn compiled_c_consumer_navigates_response_vendor_ttlv_in_nested_structures() {
         0
     );
 }
+
+#[test]
+fn query_field_copy_builds_only_the_requested_ttlv_item() {
+    let text = kmipkit_protocol::QueryResponseField::VendorIdentification(
+        "KMIPKit vendor".to_owned(),
+    );
+    let copied = super::clone_query_response_field_item(&text)
+        .unwrap()
+        .expect("text Query fields have a TTLV Item");
+
+    assert_eq!(copied.tag().raw(), text.tag());
+    assert!(copied.with_value(|value| matches!(
+        value,
+        kmipkit_ttlv::ValueView::TextString(value) if value == "KMIPKit vendor"
+    )));
+
+    let enumeration = kmipkit_protocol::QueryResponseField::Operation(0xfeed_beef);
+    assert!(super::clone_query_response_field_item(&enumeration)
+        .unwrap()
+        .is_none());
+}
