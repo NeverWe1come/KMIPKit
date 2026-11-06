@@ -31,7 +31,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install test dependencies
-        run: pip install jsonschema
+        run: pip install --only-binary :all: jsonschema==4.23.0
 
       - name: Verify test catalog generation check
         run: python3 interop/shared/catalog/generate_test_catalog.py --check

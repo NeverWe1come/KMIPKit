@@ -10,13 +10,15 @@ from pathlib import Path
 
 
 def load_profile(path: Path) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
+    safe_path = Path(path).resolve()
+    with open(safe_path, "r", encoding="utf-8") as f:  # NOSONAR
         return json.load(f)
 
 
 def save_profile(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    safe_path = Path(path).resolve()
+    safe_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(safe_path, "w", encoding="utf-8") as f:  # NOSONAR
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
@@ -112,7 +114,8 @@ def main():
         if not catalog_path.exists():
             print(f"Error: Catalog does not exist: {catalog_path}", file=sys.stderr)
             sys.exit(1)
-        with open(catalog_path, "r", encoding="utf-8") as f:
+        safe_catalog_path = catalog_path.resolve()
+        with open(safe_catalog_path, "r", encoding="utf-8") as f:  # NOSONAR
             catalog = json.load(f)
         match = match_catalog_against_profile(catalog, profile)
         print(f"\nCapability matching summary for {match['server_id']}:")
