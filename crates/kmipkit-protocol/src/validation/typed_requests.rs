@@ -1,13 +1,13 @@
 //! Borrowed validation contract and operation identity mapping for typed requests.
 
 use crate::{
-    ActivateRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest, CheckRequest,
-    DelegatedLoginRequest, DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
-    GetUsageAllocationRequest, ImportRequest, JoinSplitKeyRequest, LocateRequest, LoginRequest,
-    LogoutRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
-    QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest, RngSeedRequest,
-    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, ValidationReport,
+    ActivateRequest, ArchiveRequest, CancelRequest, CheckRequest, DelegatedLoginRequest,
+    DestroyRequest, DiscoverVersionsRequest, GetAttributeListRequest, GetAttributesRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, ImportRequest,
+    JoinSplitKeyRequest, LocateRequest, LoginRequest, LogoutRequest, ObtainLeaseRequest,
+    PingRequest, Pkcs11Request, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
+    QueryRequest, RecoverRequest, RngRetrieveRequest, RngSeedRequest, SetConstraintsRequest,
+    SetDefaultsRequest, ValidationReport,
 };
 
 use super::schema::RequestPayloadSchema;
@@ -62,11 +62,9 @@ macro_rules! impl_typed_request_validation {
 
 impl_typed_request_validation! {
     ActivateRequest => Activate,
-    AdjustAttributeRequest => AdjustAttribute,
     ArchiveRequest => Archive,
     CancelRequest => Cancel,
     CheckRequest => Check,
-    DeleteAttributeRequest => DeleteAttribute,
     DestroyRequest => Destroy,
     DiscoverVersionsRequest => DiscoverVersions,
     GetAttributeListRequest => GetAttributeList,
@@ -83,17 +81,68 @@ impl_typed_request_validation! {
     RecoverRequest => Recover,
     RngRetrieveRequest => RngRetrieve,
     RngSeedRequest => RngSeed,
-    SetAttributeRequest => SetAttribute,
+}
+
+impl ValidateKmipRequest for crate::AdjustAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::AdjustAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        validate_attribute_reference_mutation(
+            self.attribute_reference(),
+            crate::attribute::ClientAttributeMutation::Adjust,
+            "Attribute Reference",
+        )
+    }
+}
+
+impl ValidateKmipRequest for crate::DeleteAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DeleteAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if let Some(current) = self.current_attribute() {
+            report.append(validate_attribute_item_mutation(
+                current.item(),
+                crate::attribute::ClientAttributeMutation::Delete,
+                "Current Attribute",
+            ));
+        }
+        if let Some(reference) = self.attribute_reference() {
+            report.append(validate_attribute_reference_mutation(
+                reference,
+                crate::attribute::ClientAttributeMutation::Delete,
+                "Attribute Reference",
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::SetAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        validate_attribute_item_mutation(
+            self.new_attribute().item(),
+            crate::attribute::ClientAttributeMutation::Set,
+            "New Attribute",
+        )
+    }
 }
 
 impl ValidateKmipRequest for crate::AddAttributeRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::AddAttribute;
 
     fn validate(&self) -> ValidationReport {
-        validate_usage_limits_count(
-            self.new_attribute().item(),
-            "New Attribute.Usage Limits.Usage Limits Count",
-        )
+        let attribute = self.new_attribute().item();
+        let mut report =
+            validate_usage_limits_count(attribute, "New Attribute.Usage Limits.Usage Limits Count");
+        report.append(validate_attribute_item_mutation(
+            attribute,
+            crate::attribute::ClientAttributeMutation::Add,
+            "New Attribute",
+        ));
+        report
     }
 }
 
@@ -101,11 +150,105 @@ impl ValidateKmipRequest for crate::ModifyAttributeRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::ModifyAttribute;
 
     fn validate(&self) -> ValidationReport {
-        validate_usage_limits_count(
-            self.new_attribute().item(),
-            "New Attribute.Usage Limits.Usage Limits Count",
-        )
+        let attribute = self.new_attribute().item();
+        let mut report =
+            validate_usage_limits_count(attribute, "New Attribute.Usage Limits.Usage Limits Count");
+        if let Some(current) = self.current_attribute() {
+            report.append(validate_attribute_item_mutation(
+                current.item(),
+                crate::attribute::ClientAttributeMutation::Modify,
+                "Current Attribute",
+            ));
+        }
+        report.append(validate_attribute_item_mutation(
+            attribute,
+            crate::attribute::ClientAttributeMutation::Modify,
+            "New Attribute",
+        ));
+        report
     }
+}
+
+fn validate_attribute_item_mutation(
+    item: &kmipkit_ttlv::Item,
+    mutation: crate::attribute::ClientAttributeMutation,
+    field: &'static str,
+) -> ValidationReport {
+    const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
+    const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+
+    let source_section = if item.tag().raw() == VENDOR_ATTRIBUTE {
+        item.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(fields) => fields
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == VENDOR_IDENTIFICATION)
+                .and_then(|field| {
+                    field.with_value(|value| match value {
+                        kmipkit_ttlv::ValueView::TextString(vendor) => {
+                            crate::attribute::client_vendor_attribute_mutation_source_section(
+                                vendor, mutation,
+                            )
+                        }
+                        _ => None,
+                    })
+                }),
+            _ => None,
+        })
+    } else if item.tag().raw() == USAGE_LIMITS
+        && matches!(
+            mutation,
+            crate::attribute::ClientAttributeMutation::Add
+                | crate::attribute::ClientAttributeMutation::Modify
+        )
+    {
+        // The Count prohibition is narrower than the Usage Limits attribute;
+        // the dedicated check rejects only structures that actually supply it.
+        None
+    } else {
+        crate::attribute::client_attribute_mutation_source_section(item.tag().raw(), mutation)
+    };
+
+    source_section.map_or_else(ValidationReport::default, |reference| {
+        attribute_mutation_issue(field, item.tag().raw(), reference)
+    })
+}
+
+fn validate_attribute_reference_mutation(
+    reference: &crate::AttributeReference,
+    mutation: crate::attribute::ClientAttributeMutation,
+    field: &'static str,
+) -> ValidationReport {
+    let source_section = if let Some(tag) = reference.tag_value() {
+        crate::attribute::client_attribute_mutation_source_section(tag, mutation)
+    } else {
+        reference.name_parts().and_then(|(vendor, _)| {
+            crate::attribute::client_vendor_attribute_mutation_source_section(vendor, mutation)
+        })
+    };
+    source_section.map_or_else(ValidationReport::default, |source| {
+        let tag = reference.tag_value().unwrap_or(0x0042_0008);
+        attribute_mutation_issue(field, tag, source)
+    })
+}
+
+fn attribute_mutation_issue(
+    field: &'static str,
+    tag: u32,
+    reference: &'static str,
+) -> ValidationReport {
+    crate::validation::issue_report(
+        "KMIPKIT-0051-R282",
+        crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field)
+            .tag(tag),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference,
+        },
+    )
 }
 
 fn validate_usage_limits_count(
