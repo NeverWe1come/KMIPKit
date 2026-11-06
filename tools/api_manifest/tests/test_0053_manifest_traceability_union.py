@@ -42,13 +42,20 @@ class ManifestTraceabilityUnionTests(unittest.TestCase):
             "requirementIds": ["KMIPKIT-0049-FR-002"],
             "declarationState": "verified",
             "parityScope": "four-language",
-            "languageMappings": mappings,
+            "languageMappings": {
+                **mappings,
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "KeyBlock.from_fields",
+                },
+            },
             "parityEvidenceIds": [old_evidence],
             "approvalSource": approval,
         }
         candidate = {
             **existing,
             "declarationId": "audit-stable-id",
+            "languageMappings": mappings,
             "requirementIds": ["KMIPKIT-0053-FR-003"],
             "parityEvidenceIds": [new_evidence],
         }
@@ -64,13 +71,32 @@ class ManifestTraceabilityUnionTests(unittest.TestCase):
                 }
             ],
         }
+        stale_mapping = {
+            "packageId": "python-kmipkit",
+            "name": "KeyBlock.from_fields",
+            "correctedName": "kmipkit.managed_objects.KeyBlock.from_fields",
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0053-FR-003"],
+            "evidencePaths": [new_evidence],
+            "approval": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Maintainer-approved KMIPKIT-0053 scope.",
+            },
+            "reason": "Adds the exact package prefix omitted by the earlier route.",
+        }
 
         reconciled = reconcile_0053_api_parity.add_public_declarations(
-            manifest, [candidate]
+            manifest, [candidate], python_stale_mappings=[stale_mapping]
         )
 
         declaration = reconciled["publicDeclarations"][0]
         self.assertEqual("reviewed-stable-id", declaration["declarationId"])
+        self.assertEqual(
+            "kmipkit.managed_objects.KeyBlock.from_fields",
+            declaration["languageMappings"]["python"]["name"],
+        )
         self.assertEqual(
             ["KMIPKIT-0049-FR-002", "KMIPKIT-0053-FR-003"],
             declaration["requirementIds"],
