@@ -331,14 +331,15 @@ fn typed_request_preflight_uses_borrowed_protocol_validation() {
 
 #[test]
 fn invalid_typed_request_is_not_encoded_or_written() {
+    const CANARY: &str = "PREFLIGHT_CANARY";
     let comment = RawTag::new(0x0042_00fd)
         .expect("Comment is a valid raw tag")
         .try_checked()
         .expect("Comment is an allocated KMIP tag");
     let attributes = AttributeSet::try_new([
-        Item::new(comment, Value::text_string("PREFLIGHT_CANARY".to_owned()))
+        Item::new(comment, Value::text_string(CANARY.to_owned()))
             .expect("first Comment is valid TTLV"),
-        Item::new(comment, Value::text_string("PREFLIGHT_CANARY".to_owned()))
+        Item::new(comment, Value::text_string(CANARY.to_owned()))
             .expect("second Comment is valid TTLV"),
     ])
     .expect("generic AttributeSet preserves operation-level repetitions");
@@ -360,8 +361,17 @@ fn invalid_typed_request_is_not_encoded_or_written() {
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 0);
     assert_eq!(fake.borrow().write_call_count(), 0);
-    assert!(!error.to_string().contains("PREFLIGHT_CANARY"));
-    assert!(!format!("{error:?}").contains("PREFLIGHT_CANARY"));
+    let display = error.to_string();
+    let debug = format!("{error:?}");
+    let canary_hex = CANARY
+        .as_bytes()
+        .iter()
+        .map(|byte| format!("{byte:02X}"))
+        .collect::<String>();
+    assert!(!display.contains(CANARY));
+    assert!(!debug.contains(CANARY));
+    assert!(!display.contains(&canary_hex));
+    assert!(!debug.contains(&canary_hex));
 }
 
 #[test]

@@ -108,6 +108,10 @@ mod validation_report_tests;
 mod validation_schema_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/validation_redaction_tests.rs"]
+mod validation_redaction_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/typed_request_validation_tests.rs"]
 mod typed_request_validation_tests;
 
