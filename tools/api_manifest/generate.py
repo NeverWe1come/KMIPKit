@@ -1417,7 +1417,12 @@ def _validate_v2_readiness(
         and isinstance((c_api := type_record.get("c")), dict)
         and isinstance(c_api.get("releaseFunction"), str)
     }
-    _validate_ready_mapping_targets(declarations, package_languages, c_release_functions)
+    _validate_ready_mapping_targets(
+        declarations,
+        package_languages,
+        c_release_functions,
+        exclusions=exclusions,
+    )
     _validate_capability_mapping_inventories(
         capabilities, declarations, package_languages
     )
@@ -1432,11 +1437,25 @@ def _validate_ready_mapping_targets(
     declarations: list[dict[str, Any]],
     package_languages: dict[Any, Any],
     c_release_functions: set[tuple[str, str]],
+    *,
+    exclusions: list[dict[str, Any]] | None = None,
 ) -> None:
     """Require every ready cross-language mapping to resolve to a ready export."""
     declarations_by_path = {
         (row["packageId"], row["exportName"]): row for row in declarations
     }
+    for exclusion in exclusions or []:
+        if exclusion.get("packageId") == "c-kmipkit" and isinstance(
+            exclusion.get("cFunction"), dict
+        ):
+            symbol = exclusion["cFunction"].get("symbol")
+            if isinstance(symbol, str):
+                declarations_by_path[("c-kmipkit", symbol)] = {
+                    "packageId": "c-kmipkit",
+                    "exportName": symbol,
+                    "kind": "c-symbol",
+                    "declarationState": "verified",
+                }
     for declaration in declarations:
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
@@ -2023,8 +2042,21 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for exclusion in manifest.get("approvedExclusions", [])
         if exclusion.get("cFunction") is not None
     ]
-    c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
-    c_symbols.extend(function["symbol"] for function in excluded_c_functions)
+    c_functions_by_symbol = {
+        function["c"]["symbol"]: function["c"]
+        for function in manifest["functions"]
+    }
+    excluded_only_symbols: list[str] = []
+    for excluded_function in excluded_c_functions:
+        symbol = excluded_function["symbol"]
+        existing = c_functions_by_symbol.get(symbol)
+        if existing is None:
+            excluded_only_symbols.append(symbol)
+            continue
+        comparable_fields = ("symbol", "parameters", "returnType", "errorCategories")
+        if any(existing.get(field) != excluded_function.get(field) for field in comparable_fields):
+            raise ManifestError("C-only exclusion conflicts with its canonical function signature")
+    c_symbols = [*c_functions_by_symbol, *excluded_only_symbols]
     release_symbols = [
         record["c"]["releaseFunction"]
         for record in manifest["types"]
@@ -2101,6 +2133,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "fixed-width-value" and record["c"].get("fields")
     }
+    c_record_names.update(
+        (layout["name"], {"c": layout})
+        for layout in approved_c_layouts
+    )
     c_only_exports = {
         record["exportName"]
         for record in manifest.get("approvedExclusions", [])
@@ -2276,6 +2312,15 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         ),
                         None,
                     )
+                    if element_layout is None:
+                        element_layout = next(
+                            (
+                                layout
+                                for layout in approved_c_layouts
+                                if layout["name"] == element_type
+                            ),
+                            None,
+                        )
                     if not (
                         element_layout is not None
                         and element_layout.get("kind") == "fixed-width-value"
@@ -3022,6 +3067,11 @@ def render_c_header(
         if (
             ready_c_exports is not None
             and function["c"]["symbol"] not in ready_c_exports
+        ):
+            continue
+        if any(
+            exclusion.get("cFunction", {}).get("symbol") == function["c"]["symbol"]
+            for exclusion in manifest.get("approvedExclusions", [])
         ):
             continue
         c_documentation = function["c"].get("documentation", [])

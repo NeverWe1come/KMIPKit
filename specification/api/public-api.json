@@ -4561,97 +4561,6 @@
       }
     },
     {
-      "id": "ByteSpanV1",
-      "kind": "struct",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "rust": {
-        "module": "kmipkit_ffi",
-        "name": "kmipkit_byte_span_v1_t",
-        "owner": "ffi"
-      },
-      "c": {
-        "name": "kmipkit_byte_span_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "data",
-            "type": "const uint8_t *"
-          },
-          {
-            "name": "length",
-            "type": "uint64_t"
-          }
-        ],
-        "visibility": "public"
-      },
-      "java": {
-        "package": "org.kmipkit.extensions",
-        "name": "TransportConfiguration"
-      },
-      "python": {
-        "module": "kmipkit.client",
-        "name": "TransportConfig"
-      }
-    },
-    {
-      "id": "ClientBatchItemMetadataV1",
-      "kind": "struct",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "rust": {
-        "module": "kmipkit_ffi",
-        "name": "kmipkit_client_batch_item_metadata_v1_t",
-        "owner": "ffi"
-      },
-      "c": {
-        "name": "kmipkit_client_batch_item_metadata_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "struct_size",
-            "type": "uint32_t"
-          },
-          {
-            "name": "abi_version",
-            "type": "uint32_t"
-          },
-          {
-            "name": "outcome_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "result_status",
-            "type": "uint32_t"
-          },
-          {
-            "name": "has_result_reason",
-            "type": "uint32_t"
-          },
-          {
-            "name": "result_reason",
-            "type": "uint32_t"
-          }
-        ],
-        "visibility": "public",
-        "versioned": true
-      },
-      "java": {
-        "package": "org.kmipkit.extensions",
-        "name": "ClientBatchItemResult"
-      },
-      "python": {
-        "module": "kmipkit.client",
-        "name": "BatchItemResult"
-      }
-    },
-    {
       "id": "TimeoutLimitV1",
       "kind": "struct",
       "requirementIds": [
@@ -4687,169 +4596,6 @@
           {
             "name": "reserved2",
             "type": "uint32_t"
-          }
-        ],
-        "visibility": "public"
-      },
-      "java": {
-        "package": "org.kmipkit.extensions",
-        "name": "TransportConfiguration"
-      },
-      "python": {
-        "module": "kmipkit.client",
-        "name": "TransportConfig"
-      }
-    },
-    {
-      "id": "TransportConfigV1",
-      "kind": "struct",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "rust": {
-        "module": "kmipkit_ffi",
-        "name": "kmipkit_transport_config_v1_t",
-        "owner": "ffi"
-      },
-      "c": {
-        "name": "kmipkit_transport_config_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "struct_size",
-            "type": "uint32_t"
-          },
-          {
-            "name": "abi_version",
-            "type": "uint32_t"
-          },
-          {
-            "name": "endpoint_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "trust_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "flags",
-            "type": "uint32_t"
-          },
-          {
-            "name": "reserved",
-            "type": "uint32_t"
-          },
-          {
-            "name": "endpoint",
-            "type": "kmipkit_byte_span_v1_t"
-          },
-          {
-            "name": "endpoint_port",
-            "type": "uint16_t"
-          },
-          {
-            "name": "reserved2",
-            "type": "uint16_t"
-          },
-          {
-            "name": "client_certificates",
-            "type": "const kmipkit_transport_input_v1_t *"
-          },
-          {
-            "name": "client_certificate_count",
-            "type": "uint64_t"
-          },
-          {
-            "name": "client_private_key",
-            "type": "kmipkit_transport_input_v1_t"
-          },
-          {
-            "name": "trust_certificates",
-            "type": "const kmipkit_transport_input_v1_t *"
-          },
-          {
-            "name": "trust_certificate_count",
-            "type": "uint64_t"
-          },
-          {
-            "name": "revocation_lists",
-            "type": "const kmipkit_transport_input_v1_t *"
-          },
-          {
-            "name": "revocation_list_count",
-            "type": "uint64_t"
-          },
-          {
-            "name": "tls_server_name",
-            "type": "kmipkit_byte_span_v1_t"
-          },
-          {
-            "name": "target_uri",
-            "type": "kmipkit_byte_span_v1_t"
-          },
-          {
-            "name": "connect_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "write_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "read_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "total_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "max_request_bytes",
-            "type": "uint64_t"
-          }
-        ],
-        "visibility": "public",
-        "versioned": true
-      },
-      "java": {
-        "package": "org.kmipkit.extensions",
-        "name": "TransportConfiguration"
-      },
-      "python": {
-        "module": "kmipkit.client",
-        "name": "TransportConfig"
-      }
-    },
-    {
-      "id": "TransportInputV1",
-      "kind": "struct",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "rust": {
-        "module": "kmipkit_ffi",
-        "name": "kmipkit_transport_input_v1_t",
-        "owner": "ffi"
-      },
-      "c": {
-        "name": "kmipkit_transport_input_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "source_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "encoding",
-            "type": "uint32_t"
-          },
-          {
-            "name": "data",
-            "type": "kmipkit_byte_span_v1_t"
           }
         ],
         "visibility": "public"
@@ -444649,197 +444395,6 @@
       "exportName": "kmipkit_client::RequestOptions::wire_encoding"
     },
     {
-      "declarationId": "ByteSpanV1:c",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_byte_span_v1_t",
-      "capabilityId": "client_execution",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfig"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_byte_span_v1_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportConfig"
-        }
-      }
-    },
-    {
-      "declarationId": "TransportInputV1:c",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_transport_input_v1_t",
-      "capabilityId": "client_execution",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfig"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_input_v1_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportConfig"
-        }
-      }
-    },
-    {
-      "declarationId": "TransportConfigV1:c",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_transport_config_v1_t",
-      "capabilityId": "client_execution",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfig"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_v1_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportConfig"
-        }
-      }
-    },
-    {
-      "declarationId": "ClientBatchItemMetadataV1:c",
-      "packageId": "c-kmipkit",
-      "kind": "type",
-      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
-      "capabilityId": "client_execution",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItemResponse"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_metadata_v1_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult"
-        }
-      }
-    },
-    {
-      "declarationId": "transport_config_create_v1:c",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_transport_config_create_v1",
-      "capabilityId": "client_execution",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfig::builder"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_create_v1"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportConfig"
-        }
-      }
-    },
-    {
       "declarationId": "client_batch_response_item_count:python",
       "packageId": "python-kmipkit",
       "kind": "python-export",
@@ -444914,47 +444469,6 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchResult.item_at"
-        }
-      }
-    },
-    {
-      "declarationId": "client_batch_item_response_metadata_v1:c",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
-      "capabilityId": "client_execution",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-012",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0057-FR-005"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItemResponse::outcome"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_metadata_v1"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.metadata"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.metadata"
         }
       }
     },
@@ -445381,8 +444895,10 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.build",
-      "capabilityId": "client_execution",
+      "capabilityId": "production_transport",
       "requirementIds": [
+        "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0013-FR-007",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021",
@@ -445392,9 +444908,9 @@
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
-        "path": "specs/007-client-execution/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
       },
       "languageMappings": {
         "rust": {
@@ -445403,7 +444919,7 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_create_v1"
+          "name": "kmipkit_transport_config_t"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -445607,6 +445123,43 @@
         }
       },
       "mappingSemantics": "native-handle-release-managed-java-value"
+    },
+    {
+      "declarationId": "client_configuration_wire_encoding:python-property",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.extensions.ClientConfiguration.wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.wire_encoding"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -625797,6 +625350,292 @@
         "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
       },
       "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_byte_span_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_byte_span_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "length",
+            "type": "uint64_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_client_batch_item_metadata_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "outcome_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_reason",
+            "type": "uint32_t"
+          }
+        ],
+        "versioned": true
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_transport_config_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "trust_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "flags",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "endpoint_port",
+            "type": "uint16_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint16_t"
+          },
+          {
+            "name": "client_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "client_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "client_private_key",
+            "type": "kmipkit_transport_input_v1_t"
+          },
+          {
+            "name": "trust_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "trust_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "revocation_lists",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "revocation_list_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "tls_server_name",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "target_uri",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "connect_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "write_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "read_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "total_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "uint64_t"
+          }
+        ],
+        "versioned": true
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_transport_input_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "source_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "encoding",
+            "type": "uint32_t"
+          },
+          {
+            "name": "data",
+            "type": "kmipkit_byte_span_v1_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
+      "reason": "This C-only metadata accessor fills the exact versioned batch-result carrier; the equivalent outcome, status, and reason values are exposed through the four-language batch result facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory the exact C ABI. KMIPKIT-0057-FR-005 confirms the corresponding client and transport capabilities are represented by equivalent four-language facade values.",
+      "cFunction": {
+        "symbol": "kmipkit_client_batch_item_response_metadata_v1",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_metadata",
+            "kind": "versioned-value-pointer",
+            "type": "kmipkit_client_batch_item_metadata_v1_t *",
+            "direction": "output",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "documentation": [
+          "This C-only metadata accessor fills the exact versioned batch-result carrier; the equivalent outcome, status, and reason values are exposed through the four-language batch result facade."
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_create_v1",
+      "reason": "This C-only constructor adapts the versioned transport ABI carrier into the transport configuration handle; the four-language facade exposes the equivalent builder and configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory the exact C ABI. KMIPKIT-0057-FR-005 confirms the corresponding client and transport capabilities are represented by equivalent four-language facade values.",
+      "cFunction": {
+        "symbol": "kmipkit_transport_config_create_v1",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_transport_config_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_transport_config_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "documentation": [
+          "This C-only constructor adapts the versioned transport ABI carrier into the transport configuration handle; the four-language facade exposes the equivalent builder and configuration values."
+        ]
+      }
     }
   ],
   "apiLevels": [
@@ -631599,18 +631438,14 @@
           "kmipkit_protocol::ProtocolVersion",
           "kmipkit_protocol::ProtocolVersion::from_raw",
           "kmipkit_protocol::ProtocolVersion::major",
-          "kmipkit_protocol::ProtocolVersion::minor",
-          "kmipkit_transport::TransportConfig",
-          "kmipkit_transport::TransportConfig::builder"
+          "kmipkit_protocol::ProtocolVersion::minor"
         ],
         "c": [
           "KMIPKIT_ERROR_PROTOCOL",
           "KMIPKIT_ERROR_SERVER_RESULT",
           "KMIPKIT_ERROR_TRANSPORT",
-          "kmipkit_byte_span_v1_t",
           "kmipkit_client_async_operation_outcome_extension_count",
           "kmipkit_client_async_operation_outcome_extension_ttlv_at",
-          "kmipkit_client_batch_item_metadata_v1_t",
           "kmipkit_client_batch_item_metadata_v1_t.has_result_reason",
           "kmipkit_client_batch_item_metadata_v1_t.outcome_kind",
           "kmipkit_client_batch_item_metadata_v1_t.result_reason",
@@ -631636,9 +631471,6 @@
           "kmipkit_protocol_version_v1_t",
           "kmipkit_protocol_version_v1_t.major",
           "kmipkit_protocol_version_v1_t.minor",
-          "kmipkit_transport_config_create_v1",
-          "kmipkit_transport_config_v1_t",
-          "kmipkit_transport_input_v1_t",
           "kmipkit_ttlv_structure_t"
         ],
         "java": [
@@ -631680,8 +631512,6 @@
           "org.kmipkit.extensions.ProtocolVersion.<init>",
           "org.kmipkit.extensions.ProtocolVersion.major",
           "org.kmipkit.extensions.ProtocolVersion.minor",
-          "org.kmipkit.extensions.TransportConfiguration",
-          "org.kmipkit.extensions.TransportConfiguration.Builder.build",
           "org.kmipkit.message.ProtocolVersion",
           "org.kmipkit.message.ProtocolVersion.<init>",
           "org.kmipkit.message.ProtocolVersion.major",
@@ -631718,7 +631548,6 @@
           "kmipkit.client.ProtocolVersion.__init__",
           "kmipkit.client.ProtocolVersion.major",
           "kmipkit.client.ProtocolVersion.minor",
-          "kmipkit.client.TransportConfig",
           "kmipkit.errors.ClientErrorCategory",
           "kmipkit.errors.ClientErrorCategory.OTHER",
           "kmipkit.errors.ClientErrorCategory.PROTOCOL",
@@ -635817,6 +635646,7 @@
         ],
         "python": [
           "kmipkit.client.Client.execute",
+          "kmipkit.extensions.ClientConfiguration.wire_encoding",
           "kmipkit.extensions.ClientConfiguration.with_wire_encoding",
           "kmipkit.extensions.WireEncoding",
           "kmipkit.extensions.WireEncoding.JSON",

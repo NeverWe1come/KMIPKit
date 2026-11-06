@@ -884,13 +884,22 @@ def _declared_c_record_fields(
         if row.get("packageId") == "c-kmipkit"
     }
     declarations: list[dict[str, str]] = []
-    for type_record in manifest.get("types", []):
-        c_record = type_record.get("c", {})
+    c_records = [
+        type_record.get("c", {})
+        for type_record in manifest.get("types", [])
+    ]
+    c_records.extend(
+        exclusion["cType"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+        and isinstance(exclusion.get("cType"), dict)
+    )
+    for c_record in c_records:
         c_name = c_record.get("name")
         if (
             c_record.get("kind") != "fixed-width-value"
             or not c_record.get("fields")
-            or c_name not in declared_types
+            or (c_name not in declared_types and c_name not in excluded_names)
         ):
             continue
         for field in c_record.get("fields", []):
