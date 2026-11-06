@@ -238,6 +238,20 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 self.assertNotIn(
                     "los mapeos de la capacidad siguen incompletos", guide.lower()
                 )
+                operation_mapping_claim = (
+                    "all 56 client operation API mappings are verified"
+                    if language == "English"
+                    else "los 56 mapeos de API de operaciones cliente están verificados"
+                )
+                self.assertIn(operation_mapping_claim, guide.lower())
+                self.assertNotIn(
+                    "operation mappings outside this verified inventory remain incomplete",
+                    guide.lower(),
+                )
+                self.assertNotIn(
+                    "los mapeos de operaciones que quedan fuera de este inventario verificado siguen incompletos",
+                    guide.lower(),
+                )
 
     def test_bilingual_client_execution_guides_scope_operation_rows_to_rust(self) -> None:
         guides = {
