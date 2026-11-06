@@ -13,6 +13,59 @@ GUIDES = {
 
 
 class QueryUserGuideParityTests(unittest.TestCase):
+    def test_each_guide_covers_t052_t053_surfaces_and_bulk_ttlv_copies(self) -> None:
+        required_terms = {
+            "en": (
+                "## Typed attributes",
+                "## Managed objects and key structures",
+                "## Ownership and secret data",
+                "## Cryptographic Parameters",
+                "## Request Header Authentication and batch parameters",
+                "## Validate before sending",
+                "## Typed responses and decoded TTLV access",
+                "### Typed Query response fields",
+                "NotSent",
+                "kmipkit_ttlv_value_view_byte_length",
+                "kmipkit_ttlv_value_view_byte_at",
+                "TtlvValueView.bytes()",
+                "ttlv_value_view_bytes(view)",
+                "bulk copy",
+                "temporary native staging",
+                "Java-owned byte arrays",
+                "Python-owned byte objects",
+                "no public C bulk-copy function",
+            ),
+            "es": (
+                "## Atributos tipados",
+                "## Objetos gestionados y estructuras de clave",
+                "## Propiedad y datos secretos",
+                "## Copias en bloque de bytes TTLV",
+                "## Validar antes del envío",
+                "## Respuestas tipadas y acceso TTLV decodificado",
+                "### Campos tipados de la respuesta Query",
+                "NotSent",
+                "kmipkit_ttlv_value_view_byte_length",
+                "kmipkit_ttlv_value_view_byte_at",
+                "TtlvValueView.bytes()",
+                "ttlv_value_view_bytes(view)",
+                "copia en bloque",
+                "búfer nativo temporal",
+                "arrays de bytes de Java",
+                "objetos bytes de Python",
+                "C no publica una función de copia en bloque",
+            ),
+        }
+
+        for language, path in GUIDES.items():
+            with self.subTest(language=language):
+                document = path.read_text(encoding="utf-8")
+                for term in required_terms[language]:
+                    with self.subTest(term=term):
+                        self.assertTrue(
+                            term in document,
+                            f"{language} guide is missing required term {term!r}",
+                        )
+
     def test_each_guide_names_typed_query_apis_for_c_java_and_python(self) -> None:
         required_apis = (
             "kmipkit_client_batch_item_response_query_ttlv",
