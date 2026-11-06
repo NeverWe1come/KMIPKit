@@ -6,7 +6,7 @@
 ## Phase 1: Baseline and contracts
 - [x] T001 Record baseline commit, branch, predecessor PR #123, platform, and approval in specs/053-api-parity-facade/implementation-evidence.md.
 - [x] T002 Add manifest inventory tests for the 750 candidates, four capabilities, and unowned routes in tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
-- [ ] T003 Add common ABI ownership, null-output, stale-handle, and redaction tests in crates/kmipkit-ffi/tests/support/api_parity_0053_tests.rs.
+- [x] T003 Add common ABI ownership, null-output, stale-handle, and redaction tests in crates/kmipkit-ffi/tests/support/api_parity_0053_tests.rs.
 - [ ] T004 Add clean external package consumers for Rust, C, Java, and Python in tests/consumers/0053-parity/.
 - [x] T005 Review the language boundary and ownership contract in specs/053-api-parity-facade/contracts/language-api.md.
 
@@ -66,7 +66,7 @@
 ## Phase 6: US5 operation and response parity (56 operations)
 ### Red
 - [ ] T043 [US5] Generate operation/typed-response compile matrices for all 56 entries in tools/api_manifest/tests/test_0053_operation_binding_matrix.py.
-- [ ] T044 [US5] Add async pending/correlation and raw payload presence tests in crates/kmipkit-ffi/tests/support/response_parity_0053_tests.rs, bindings/java/src/test/, and bindings/python/tests/.
+- [x] T044 [US5] Add async pending/correlation and raw payload presence tests in crates/kmipkit-ffi/tests/support/response_parity_0053_tests.rs, bindings/java/src/test/, and bindings/python/tests/.
 - [ ] T045 [US5] Run matrix red tests and record missing routes in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
 - [ ] T046 [US5] Add only evidenced missing C operation/option/result routes in crates/kmipkit-ffi/src/extension_registry/client_abi.rs.
