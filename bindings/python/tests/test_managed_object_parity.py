@@ -3,6 +3,7 @@
 import pytest
 
 from kmipkit import errors, ttlv
+import kmipkit.managed_objects as managed_objects
 from kmipkit.cryptographic_parameters import CryptographicParameters
 from kmipkit.managed_objects import (
     KeyBlock,
@@ -182,6 +183,52 @@ def test_key_wrappers_validate_and_retain_owned_generic_items():
         with ttlv.ttlv_item_view_from_item(material) as view:
             with ttlv.ttlv_item_view_tag(view) as tag:
                 assert ttlv.tag_value(tag) == 0x0042_0043
+
+
+@pytest.mark.parametrize("copy_succeeds", [True, False])
+def test_managed_field_byte_scratch_is_zeroized_after_success_or_error(
+    monkeypatch: pytest.MonkeyPatch, copy_succeeds: bool
+) -> None:
+    secret = b"temporary-key-material"
+    real_ffi = managed_objects._client_ffi
+    allocated: list[object] = []
+
+    class CapturingFfi:
+        def __getattr__(self, name: str) -> object:
+            return getattr(real_ffi, name)
+
+        def new(self, ctype: str, *arguments: object) -> object:
+            result = real_ffi.new(ctype, *arguments)
+            if ctype == "uint8_t[]":
+                allocated.append(result)
+            return result
+
+    def native_read(
+        _self: object,
+        _raw_tag: int,
+        _read_kind: int,
+        output: object | None = None,
+        _byte_capacity: int = 0,
+    ) -> tuple[bool, ttlv.ItemType | None, int, int, int]:
+        if output is None:
+            return True, ttlv.ItemType.ByteString, 0, 0, len(secret)
+        real_ffi.buffer(output, len(secret))[:] = secret
+        copied_length = len(secret) if copy_succeeds else len(secret) - 1
+        return True, ttlv.ItemType.ByteString, 0, 0, copied_length
+
+    source = _structure_item(0x0054_0001)
+    with source, ManagedObject.from_item(0x8000_0001, source) as owner:
+        monkeypatch.setattr(managed_objects, "_client_ffi", CapturingFfi())
+        monkeypatch.setattr(managed_objects.ManagedTtlvItem, "_native_field_read", native_read)
+
+        if copy_succeeds:
+            assert owner.field_bytes(0x0042_0043) == secret
+        else:
+            with pytest.raises(errors.InvalidInputError):
+                owner.field_bytes(0x0042_0043)
+
+        assert len(allocated) == 1
+        assert bytes(real_ffi.buffer(allocated[0], len(secret))) == bytes(len(secret))
 
 
 def test_nested_accessors_return_owned_nodes_with_values_and_vendor_order():
