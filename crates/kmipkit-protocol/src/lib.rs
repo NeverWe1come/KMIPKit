@@ -63,6 +63,7 @@ mod logout;
 mod mac;
 mod mac_verify;
 mod managed_object;
+mod managed_value_reader;
 mod message;
 mod modify_attribute;
 mod multipart;
@@ -201,6 +202,7 @@ pub use managed_object::{
     Certificate, CertificateRequest, ManagedObject, ManagedObjectError, OpaqueObject, PgpKey,
     PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
 };
+pub use managed_value_reader::{ManagedFieldValue, ManagedValueKind, ManagedValueReader};
 pub use message::{
     MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,

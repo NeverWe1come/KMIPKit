@@ -425,10 +425,18 @@ public final class NativeExtensionRegistry {
     public static native long typedAttributeFromValue(int expectedTag, long value);
     public static native long typedAttributeValue(int expectedTag, long item);
     public static native long managedObjectFromItem(int objectType, long item);
+    public static native long managedObjectFromFields(int objectType, long[] fields);
     public static native long keyBlockFromItem(long item);
+    public static native long keyBlockFromFields(long[] fields);
     public static native long keyValueFromItem(int formatRaw, long item);
+    public static native long keyValueFromFields(int formatRaw, long[] fields);
     public static native long keyMaterialFromItem(int formatRaw, long item);
+    public static native long keyMaterialFromFields(int formatRaw, long[] fields);
     public static native long keyWrappingDataFromItem(long item);
+    public static native long keyWrappingDataFromFields(long[] fields);
+    public static native long managedValueFieldRead(
+            int ownerKind, int contextRaw, long item, int fieldTag, int readKind,
+            byte[] outBytes, long[] outByteLength);
     public static native void attributeSetTryPush(long attributes, long item);
     public static native void attributeSetTryPushTyped(
             long attributes, int expectedTag, long item);

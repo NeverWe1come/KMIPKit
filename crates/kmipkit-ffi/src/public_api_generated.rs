@@ -30915,4 +30915,54 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit",
         "kmipkit::ClientBatchItem::operation",
     ),
+    (
+        "kmipkit-0049-kmipkit-cdedb22fc5866b5e4e06",
+        "rust-kmipkit",
+        "kmipkit::protocol::Certificate::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-5f058ffbb8f0f1c883c5",
+        "rust-kmipkit",
+        "kmipkit::protocol::SymmetricKey::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-d89458fdc34db6652566",
+        "rust-kmipkit",
+        "kmipkit::protocol::PublicKey::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-fba9ab41218a2cd486a5",
+        "rust-kmipkit",
+        "kmipkit::protocol::PrivateKey::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-a31c0f6b6d53dbe31da6",
+        "rust-kmipkit",
+        "kmipkit::protocol::SplitKey::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-805e169f3a1c5d09156c",
+        "rust-kmipkit",
+        "kmipkit::protocol::SecretData::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-5fd0fe43ca1e8f5dbd75",
+        "rust-kmipkit",
+        "kmipkit::protocol::OpaqueObject::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-c3f0352574a353379b22",
+        "rust-kmipkit",
+        "kmipkit::protocol::PgpKey::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-6722a621c10d6ab7f5fb",
+        "rust-kmipkit",
+        "kmipkit::protocol::CertificateRequest::try_from_item",
+    ),
+    (
+        "managed_value_field_read:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ManagedValueReader::read_field",
+    ),
 ];

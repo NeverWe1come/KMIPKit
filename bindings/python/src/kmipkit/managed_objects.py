@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Self
+from typing import Any, Self, Sequence
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi as _client_ffi, lib as _client_lib
@@ -15,6 +15,8 @@ def _from_item(
     item: ttlv.TtlvItem,
     *arguments: int,
     metadata: int | None = None,
+    owner_kind: int,
+    context_raw: int = 0,
 ) -> "ManagedTtlvItem":
     if not isinstance(item, ttlv.TtlvItem):
         errors.raise_for_status(4)
@@ -23,17 +25,78 @@ def _from_item(
     errors.raise_for_status(status)
     address = int(_client_ffi.cast("uintptr_t", output[0]))
     handle = ttlv.ffi.cast("kmipkit_ttlv_item_t *", address)
-    return _wrap_owned_handle(wrapper, handle, metadata=metadata)
+    return _wrap_owned_handle(
+        wrapper, handle, metadata=metadata, owner_kind=owner_kind, context_raw=context_raw
+    )
+
+
+def _from_fields(
+    wrapper: type["ManagedTtlvItem"],
+    function: Any,
+    fields: Sequence[ttlv.TtlvItem],
+    *arguments: int,
+    metadata: int | None = None,
+    owner_kind: int,
+    context_raw: int = 0,
+) -> "ManagedTtlvItem":
+    if not isinstance(fields, (list, tuple)) or any(
+        not isinstance(field, ttlv.TtlvItem) for field in fields
+    ):
+        errors.raise_for_status(4)
+    field_handles = [extensions._client_native_item(field) for field in fields]
+    native_fields = (
+        _client_ffi.new("kmipkit_ttlv_item_t *[]", field_handles)
+        if field_handles
+        else _client_ffi.NULL
+    )
+    output = _client_ffi.new("kmipkit_ttlv_item_t **")
+    status = int(function(*arguments, native_fields, len(fields), output))
+    errors.raise_for_status(status)
+    address = int(_client_ffi.cast("uintptr_t", output[0]))
+    handle = ttlv.ffi.cast("kmipkit_ttlv_item_t *", address)
+    return _wrap_owned_handle(
+        wrapper, handle, metadata=metadata, owner_kind=owner_kind, context_raw=context_raw
+    )
+
+
+def _read_enumeration(item: ttlv.TtlvItem, raw_tag: int) -> int:
+    return item.field_enumeration(raw_tag)  # type: ignore[attr-defined,no-any-return]
+
+
+def _read_integer(item: ttlv.TtlvItem, raw_tag: int) -> int:
+    return item.field_integer(raw_tag)  # type: ignore[attr-defined,no-any-return]
+
+
+def _read_bytes(item: ttlv.TtlvItem, raw_tag: int) -> bytes:
+    return item.field_bytes(raw_tag)  # type: ignore[attr-defined,no-any-return]
+
+
+def _has_field(item: ttlv.TtlvItem, raw_tag: int) -> bool:
+    return item.has_field(raw_tag)  # type: ignore[attr-defined,no-any-return]
+
+
+def _read_type(item: ttlv.TtlvItem, raw_tag: int) -> ttlv.ItemType:
+    return item.field_type(raw_tag)  # type: ignore[attr-defined,no-any-return]
 
 
 class ManagedTtlvItem(ttlv.TtlvItem):
     """Typed wrapper around an independently owned generic TTLV Item."""
 
-    __slots__ = ("_metadata",)
+    __slots__ = ("_metadata", "_owner_kind", "_context_raw")
 
-    def __init__(self, handle: Any, *, _token: object, metadata: int | None = None) -> None:
+    def __init__(
+        self,
+        handle: Any,
+        *,
+        _token: object,
+        metadata: int | None = None,
+        owner_kind: int,
+        context_raw: int = 0,
+    ) -> None:
         super().__init__(handle, _token=_token)
         self._metadata = metadata
+        self._owner_kind = owner_kind
+        self._context_raw = context_raw
 
     def _metadata_value(self) -> int:
         self._pointer()
@@ -41,6 +104,168 @@ class ManagedTtlvItem(ttlv.TtlvItem):
         if metadata is None:
             errors.raise_for_status(4)
         return metadata
+
+    def has_field(self, raw_tag: int) -> bool:
+        """Report whether a direct child with this raw tag is present."""
+        self._pointer()
+        item_handle = extensions._client_native_item(self)
+        present = _client_ffi.new("uint8_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_read(
+                self._owner_kind,
+                self._context_raw,
+                item_handle,
+                raw_tag,
+                1,
+                present,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                0,
+                _client_ffi.NULL,
+            )
+        )
+        errors.raise_for_status(status)
+        return bool(present[0])
+
+    def field_type(self, raw_tag: int) -> ttlv.ItemType:
+        """Return the first direct child's TTLV type for this raw tag."""
+        self._pointer()
+        item_handle = extensions._client_native_item(self)
+        present = _client_ffi.new("uint8_t *")
+        item_type = _client_ffi.new("uint8_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_read(
+                self._owner_kind,
+                self._context_raw,
+                item_handle,
+                raw_tag,
+                2,
+                present,
+                item_type,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                0,
+                _client_ffi.NULL,
+            )
+        )
+        errors.raise_for_status(status)
+        return ttlv.ItemType(item_type[0])
+
+    def field_enumeration(self, raw_tag: int) -> int:
+        """Read a direct child's raw Enumeration value."""
+        self._pointer()
+        item_handle = extensions._client_native_item(self)
+        present = _client_ffi.new("uint8_t *")
+        enumeration = _client_ffi.new("uint32_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_read(
+                self._owner_kind,
+                self._context_raw,
+                item_handle,
+                raw_tag,
+                3,
+                present,
+                _client_ffi.NULL,
+                enumeration,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                0,
+                _client_ffi.NULL,
+            )
+        )
+        errors.raise_for_status(status)
+        return int(enumeration[0])
+
+    def field_integer(self, raw_tag: int) -> int:
+        """Read a direct child's Integer value."""
+        self._pointer()
+        item_handle = extensions._client_native_item(self)
+        present = _client_ffi.new("uint8_t *")
+        integer = _client_ffi.new("int32_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_read(
+                self._owner_kind,
+                self._context_raw,
+                item_handle,
+                raw_tag,
+                4,
+                present,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                integer,
+                _client_ffi.NULL,
+                0,
+                _client_ffi.NULL,
+            )
+        )
+        errors.raise_for_status(status)
+        return int(integer[0])
+
+    def field_bytes(self, raw_tag: int) -> bytes:
+        """Copy a direct Byte String or Big Integer field into Python-owned bytes."""
+        self._pointer()
+        item_handle = extensions._client_native_item(self)
+        present = _client_ffi.new("uint8_t *")
+        byte_length = _client_ffi.new("uint64_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_read(
+                self._owner_kind,
+                self._context_raw,
+                item_handle,
+                raw_tag,
+                5,
+                present,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                0,
+                byte_length,
+            )
+        )
+        errors.raise_for_status(status)
+        length = int(byte_length[0])
+        if length > 0x7FFF_FFFF:
+            errors.raise_for_status(6)
+        output = _client_ffi.new("uint8_t[]", length) if length else _client_ffi.NULL
+        copied_length = _client_ffi.new("uint64_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_read(
+                self._owner_kind,
+                self._context_raw,
+                item_handle,
+                raw_tag,
+                5,
+                present,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                _client_ffi.NULL,
+                output,
+                length,
+                copied_length,
+            )
+        )
+        errors.raise_for_status(status)
+        if int(copied_length[0]) != length:
+            errors.raise_for_status(4)
+        return bytes(_client_ffi.buffer(output, length)) if length else b""
+
+    def field_read(self, raw_tag: int, read_kind: int) -> bool | ttlv.ItemType | int | bytes:
+        """Read a direct child by tag: 1=presence, 2=type, 3=Enumeration, 4=Integer, 5=bytes."""
+        if read_kind == 1:
+            return self.has_field(raw_tag)
+        if read_kind == 2:
+            return self.field_type(raw_tag)
+        if read_kind == 3:
+            return self.field_enumeration(raw_tag)
+        if read_kind == 4:
+            return self.field_integer(raw_tag)
+        if read_kind == 5:
+            return self.field_bytes(raw_tag)
+        errors.raise_for_status(4)
 
     def __repr__(self) -> str:
         state = "closed" if self.closed else "open"
@@ -66,11 +291,125 @@ class ManagedObject(ManagedTtlvItem):
             item,
             object_type,
             metadata=object_type,
+            owner_kind=1,
+            context_raw=object_type,
         )  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def from_fields(cls, object_type: int, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        """Copy fields into a typed managed object in KMIP table order."""
+        if not isinstance(object_type, int) or isinstance(object_type, bool) or not 0 <= object_type <= 0xFFFF_FFFF:
+            errors.raise_for_status(4)
+        return _from_fields(
+            cls, _client_lib.kmipkit_managed_object_from_fields, fields,
+            object_type, metadata=object_type, owner_kind=1, context_raw=object_type,
+        )  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def certificate(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_certificate_from_fields, fields, metadata=1, owner_kind=1, context_raw=1)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def symmetric_key(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_symmetric_key_from_fields, fields, metadata=2, owner_kind=1, context_raw=2)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def public_key(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_public_key_from_fields, fields, metadata=3, owner_kind=1, context_raw=3)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def private_key(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_private_key_from_fields, fields, metadata=4, owner_kind=1, context_raw=4)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def split_key(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_split_key_from_fields, fields, metadata=5, owner_kind=1, context_raw=5)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def secret_data(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_secret_data_from_fields, fields, metadata=7, owner_kind=1, context_raw=7)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def opaque_object(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_opaque_object_from_fields, fields, metadata=8, owner_kind=1, context_raw=8)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def pgp_key(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_pgp_key_from_fields, fields, metadata=9, owner_kind=1, context_raw=9)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def certificate_request(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_certificate_request_from_fields, fields, metadata=10, owner_kind=1, context_raw=10)  # type: ignore[return-value]
 
     @property
     def object_type(self) -> int:
         return self._metadata_value()
+
+    @property
+    def certificate_type(self) -> int:
+        return _read_enumeration(self, 0x0042_001D)
+
+    @property
+    def certificate_value(self) -> bytes:
+        return _read_bytes(self, 0x0042_001E)
+
+    @property
+    def certificate_request_type(self) -> int:
+        return _read_enumeration(self, 0x0042_0019)
+
+    @property
+    def certificate_request_value(self) -> bytes:
+        return _read_bytes(self, 0x0042_0140)
+
+    @property
+    def opaque_data_type(self) -> int:
+        return _read_enumeration(self, 0x0042_0059)
+
+    @property
+    def opaque_data_value(self) -> bytes:
+        return _read_bytes(self, 0x0042_005A)
+
+    @property
+    def pgp_key_version(self) -> int:
+        return _read_integer(self, 0x0042_00BE)
+
+    @property
+    def secret_data_type(self) -> int:
+        return _read_enumeration(self, 0x0042_0086)
+
+    @property
+    def key_part_identifier(self) -> int:
+        return _read_integer(self, 0x0042_0044)
+
+    @property
+    def split_key_method(self) -> int:
+        return _read_enumeration(self, 0x0042_008A)
+
+    @property
+    def split_key_parts(self) -> int:
+        return _read_integer(self, 0x0042_008B)
+
+    @property
+    def split_key_threshold(self) -> int:
+        return _read_integer(self, 0x0042_008C)
+
+    @property
+    def has_key_block(self) -> bool:
+        return self.has_field(0x0042_0040)
+
+    @property
+    def prime_field_size(self) -> bytes:
+        return self.field_bytes(0x0042_0062)
 
 
 class KeyBlock(ManagedTtlvItem):
@@ -79,7 +418,37 @@ class KeyBlock(ManagedTtlvItem):
     @classmethod
     @synchronized_native_call
     def from_item(cls, item: ttlv.TtlvItem) -> Self:
-        return _from_item(cls, _client_lib.kmipkit_key_block_from_item, item)  # type: ignore[return-value]
+        return _from_item(cls, _client_lib.kmipkit_key_block_from_item, item, owner_kind=2)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def from_fields(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        """Copy caller-owned Key Block fields in KMIP table order."""
+        return _from_fields(cls, _client_lib.kmipkit_key_block_from_fields, fields, owner_kind=2)  # type: ignore[return-value]
+
+    @property
+    def key_format_type(self) -> int:
+        return self.field_enumeration(0x0042_0042)
+
+    @property
+    def key_compression_type(self) -> int:
+        return self.field_enumeration(0x0042_0041)
+
+    @property
+    def key_value_type(self) -> ttlv.ItemType:
+        return self.field_type(0x0042_0045)
+
+    @property
+    def cryptographic_algorithm(self) -> int:
+        return self.field_enumeration(0x0042_0028)
+
+    @property
+    def cryptographic_length(self) -> int:
+        return self.field_integer(0x0042_002A)
+
+    @property
+    def has_key_wrapping_data(self) -> bool:
+        return self.has_field(0x0042_0046)
 
 
 class KeyValue(ManagedTtlvItem):
@@ -90,11 +459,26 @@ class KeyValue(ManagedTtlvItem):
     def from_item(cls, format_raw: int, item: ttlv.TtlvItem) -> Self:
         if not isinstance(format_raw, int) or isinstance(format_raw, bool) or not 0 <= format_raw <= 0xFFFF_FFFF:
             errors.raise_for_status(4)
-        return _from_item(cls, _client_lib.kmipkit_key_value_from_item, item, format_raw, metadata=format_raw)  # type: ignore[return-value]
+        return _from_item(cls, _client_lib.kmipkit_key_value_from_item, item, format_raw, metadata=format_raw, owner_kind=3, context_raw=format_raw)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def from_fields(cls, format_raw: int, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        if not isinstance(format_raw, int) or isinstance(format_raw, bool) or not 0 <= format_raw <= 0xFFFF_FFFF:
+            errors.raise_for_status(4)
+        return _from_fields(cls, _client_lib.kmipkit_key_value_from_fields, fields, format_raw, metadata=format_raw, owner_kind=3, context_raw=format_raw)  # type: ignore[return-value]
 
     @property
     def format_raw(self) -> int:
         return self._metadata_value()
+
+    @property
+    def key_material_type(self) -> ttlv.ItemType:
+        return self.field_type(0x0042_0043)
+
+    @property
+    def has_attributes(self) -> bool:
+        return self.has_field(0x0042_0125)
 
 
 class KeyMaterial(ManagedTtlvItem):
@@ -105,11 +489,82 @@ class KeyMaterial(ManagedTtlvItem):
     def from_item(cls, format_raw: int, item: ttlv.TtlvItem) -> Self:
         if not isinstance(format_raw, int) or isinstance(format_raw, bool) or not 0 <= format_raw <= 0xFFFF_FFFF:
             errors.raise_for_status(4)
-        return _from_item(cls, _client_lib.kmipkit_key_material_from_item, item, format_raw, metadata=format_raw)  # type: ignore[return-value]
+        return _from_item(cls, _client_lib.kmipkit_key_material_from_item, item, format_raw, metadata=format_raw, owner_kind=4, context_raw=format_raw)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def from_fields(cls, format_raw: int, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        if not isinstance(format_raw, int) or isinstance(format_raw, bool) or not 0 <= format_raw <= 0xFFFF_FFFF:
+            errors.raise_for_status(4)
+        return _from_fields(cls, _client_lib.kmipkit_key_material_from_fields, fields, format_raw, metadata=format_raw, owner_kind=4, context_raw=format_raw)  # type: ignore[return-value]
 
     @property
     def format_raw(self) -> int:
         return self._metadata_value()
+
+    @property
+    def modulus(self) -> bytes:
+        return _read_bytes(self, 0x0042_0052)
+
+    @property
+    def public_exponent(self) -> bytes:
+        return _read_bytes(self, 0x0042_006C)
+
+    @property
+    def key_byte_string(self) -> bytes:
+        return self.field_bytes(0x0042_003F)
+
+    @property
+    def p(self) -> bytes:
+        return self.field_bytes(0x0042_005E)
+
+    @property
+    def q(self) -> bytes:
+        return self.field_bytes(0x0042_0071)
+
+    @property
+    def g(self) -> bytes:
+        return self.field_bytes(0x0042_0037)
+
+    @property
+    def x(self) -> bytes:
+        return self.field_bytes(0x0042_009F)
+
+    @property
+    def y(self) -> bytes:
+        return self.field_bytes(0x0042_00A0)
+
+    @property
+    def j(self) -> bytes:
+        return self.field_bytes(0x0042_003E)
+
+    @property
+    def d(self) -> bytes:
+        return self.field_bytes(0x0042_002E)
+
+    @property
+    def q_string(self) -> bytes:
+        return self.field_bytes(0x0042_0072)
+
+    @property
+    def recommended_curve(self) -> int:
+        return self.field_enumeration(0x0042_0075)
+
+    @property
+    def private_exponent(self) -> bytes:
+        return self.field_bytes(0x0042_0063)
+
+    @property
+    def prime_exponent_p(self) -> bytes:
+        return self.field_bytes(0x0042_0060)
+
+    @property
+    def prime_exponent_q(self) -> bytes:
+        return self.field_bytes(0x0042_0061)
+
+    @property
+    def crt_coefficient(self) -> bytes:
+        return self.field_bytes(0x0042_0027)
 
 
 class KeyWrappingData(ManagedTtlvItem):
@@ -118,7 +573,36 @@ class KeyWrappingData(ManagedTtlvItem):
     @classmethod
     @synchronized_native_call
     def from_item(cls, item: ttlv.TtlvItem) -> Self:
-        return _from_item(cls, _client_lib.kmipkit_key_wrapping_data_from_item, item)  # type: ignore[return-value]
+        return _from_item(cls, _client_lib.kmipkit_key_wrapping_data_from_item, item, owner_kind=5)  # type: ignore[return-value]
+
+    @classmethod
+    @synchronized_native_call
+    def from_fields(cls, fields: Sequence[ttlv.TtlvItem]) -> Self:
+        return _from_fields(cls, _client_lib.kmipkit_key_wrapping_data_from_fields, fields, owner_kind=5)  # type: ignore[return-value]
+
+    @property
+    def wrapping_method(self) -> int:
+        return _read_enumeration(self, 0x0042_009E)
+
+    @property
+    def has_encryption_key_information(self) -> bool:
+        return self.has_field(0x0042_0036)
+
+    @property
+    def has_mac_signature_key_information(self) -> bool:
+        return self.has_field(0x0042_004E)
+
+    @property
+    def mac_signature(self) -> bytes:
+        return self.field_bytes(0x0042_004D)
+
+    @property
+    def iv_counter_nonce(self) -> bytes:
+        return self.field_bytes(0x0042_003D)
+
+    @property
+    def encoding_option(self) -> int:
+        return self.field_enumeration(0x0042_00A3)
 
 
 __all__ = ["KeyBlock", "KeyMaterial", "KeyValue", "KeyWrappingData", "ManagedObject"]

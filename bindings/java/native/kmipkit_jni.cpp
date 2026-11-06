@@ -12228,12 +12228,66 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_managedObjectFr
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_managedObjectFromFields(
+        JNIEnv* env, jclass, jint object_type, jlongArray raw_fields) {
+    return guarded<jlong>(env, 0, [&] {
+        const jsize count = raw_fields == nullptr ? 0 : env->GetArrayLength(raw_fields);
+        if (raw_fields == nullptr || count < 0 || count > 100'000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint64_t> raw_values;
+        if (!read_long_array(env, raw_fields, count, raw_values, 100'000)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_item_t*> fields;
+        fields.reserve(raw_values.size());
+        for (uint64_t raw : raw_values) {
+            fields.push_back(from_java_handle<kmipkit_ttlv_item_t>(static_cast<jlong>(raw)));
+        }
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_managed_object_from_fields(
+                    static_cast<uint32_t>(object_type), fields.empty() ? nullptr : fields.data(),
+                    static_cast<uint64_t>(fields.size()), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyBlockFromItem(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jlong>(env, 0, [&] {
         return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
             return kmipkit_key_block_from_item(
                     from_java_handle<kmipkit_ttlv_item_t>(raw_item), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyBlockFromFields(
+        JNIEnv* env, jclass, jlongArray raw_fields) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_fields == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize count = env->GetArrayLength(raw_fields);
+        if (count < 0 || count > 100'000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint64_t> raw_values;
+        if (!read_long_array(env, raw_fields, count, raw_values, 100'000)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_item_t*> fields;
+        fields.reserve(raw_values.size());
+        for (uint64_t raw : raw_values) {
+            fields.push_back(from_java_handle<kmipkit_ttlv_item_t>(static_cast<jlong>(raw)));
+        }
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_key_block_from_fields(
+                    fields.empty() ? nullptr : fields.data(),
+                    static_cast<uint64_t>(fields.size()), output);
         });
     });
 }
@@ -12249,6 +12303,35 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyValueFromIte
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyValueFromFields(
+        JNIEnv* env, jclass, jint format_raw, jlongArray raw_fields) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_fields == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize count = env->GetArrayLength(raw_fields);
+        if (count < 0 || count > 100'000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint64_t> raw_values;
+        if (!read_long_array(env, raw_fields, count, raw_values, 100'000)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_item_t*> fields;
+        fields.reserve(raw_values.size());
+        for (uint64_t raw : raw_values) {
+            fields.push_back(from_java_handle<kmipkit_ttlv_item_t>(static_cast<jlong>(raw)));
+        }
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_key_value_from_fields(
+                    static_cast<uint32_t>(format_raw), fields.empty() ? nullptr : fields.data(),
+                    static_cast<uint64_t>(fields.size()), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyMaterialFromItem(
         JNIEnv* env, jclass, jint format_raw, jlong raw_item) {
     return guarded<jlong>(env, 0, [&] {
@@ -12260,6 +12343,35 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyMaterialFrom
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyMaterialFromFields(
+        JNIEnv* env, jclass, jint format_raw, jlongArray raw_fields) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_fields == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize count = env->GetArrayLength(raw_fields);
+        if (count < 0 || count > 100'000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint64_t> raw_values;
+        if (!read_long_array(env, raw_fields, count, raw_values, 100'000)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_item_t*> fields;
+        fields.reserve(raw_values.size());
+        for (uint64_t raw : raw_values) {
+            fields.push_back(from_java_handle<kmipkit_ttlv_item_t>(static_cast<jlong>(raw)));
+        }
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_key_material_from_fields(
+                    static_cast<uint32_t>(format_raw), fields.empty() ? nullptr : fields.data(),
+                    static_cast<uint64_t>(fields.size()), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyWrappingDataFromItem(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jlong>(env, 0, [&] {
@@ -12267,6 +12379,92 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyWrappingData
             return kmipkit_key_wrapping_data_from_item(
                     from_java_handle<kmipkit_ttlv_item_t>(raw_item), output);
         });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_keyWrappingDataFromFields(
+        JNIEnv* env, jclass, jlongArray raw_fields) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_fields == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize count = env->GetArrayLength(raw_fields);
+        if (count < 0 || count > 100'000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint64_t> raw_values;
+        if (!read_long_array(env, raw_fields, count, raw_values, 100'000)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_item_t*> fields;
+        fields.reserve(raw_values.size());
+        for (uint64_t raw : raw_values) {
+            fields.push_back(from_java_handle<kmipkit_ttlv_item_t>(static_cast<jlong>(raw)));
+        }
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_key_wrapping_data_from_fields(
+                    fields.empty() ? nullptr : fields.data(),
+                    static_cast<uint64_t>(fields.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_managedValueFieldRead(
+        JNIEnv* env, jclass, jint owner_kind, jint context_raw, jlong raw_item,
+        jint field_tag, jint read_kind, jbyteArray output_bytes, jlongArray output_length) {
+    return guarded<jlong>(env, 0, [&] {
+        const bool byte_read = read_kind == 5;
+        auto* item = from_java_handle<kmipkit_ttlv_item_t>(raw_item);
+        if (item == nullptr || owner_kind < 1 || owner_kind > 5
+                || read_kind < 1 || read_kind > 5
+                || (byte_read && (output_length == nullptr
+                        || env->GetArrayLength(output_length) != 1))
+                || (!byte_read && (output_bytes != nullptr || output_length != nullptr))) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+
+        jbyte* bytes = nullptr;
+        jsize capacity = 0;
+        if (output_bytes != nullptr) {
+            capacity = env->GetArrayLength(output_bytes);
+            if (capacity < 0) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            bytes = env->GetByteArrayElements(output_bytes, nullptr);
+            if (bytes == nullptr) return static_cast<jlong>(0);
+        }
+
+        uint8_t present = 0;
+        uint8_t item_type = 0;
+        uint32_t enumeration = 0;
+        int32_t integer = 0;
+        uint64_t byte_length = 0;
+        const int32_t status = kmipkit_managed_value_field_read(
+                static_cast<uint32_t>(owner_kind), static_cast<uint32_t>(context_raw), item,
+                static_cast<uint32_t>(field_tag), static_cast<uint32_t>(read_kind),
+                &present, &item_type, &enumeration, &integer,
+                reinterpret_cast<uint8_t*>(bytes), static_cast<uint64_t>(capacity),
+                byte_read ? &byte_length : nullptr);
+        if (bytes != nullptr) {
+            env->ReleaseByteArrayElements(output_bytes, bytes, status == 0 ? 0 : JNI_ABORT);
+        }
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (byte_read) {
+            const jlong result_length = static_cast<jlong>(byte_length);
+            env->SetLongArrayRegion(output_length, 0, 1, &result_length);
+            return result_length;
+        }
+        if (read_kind == 1) return static_cast<jlong>(present);
+        if (read_kind == 2) return static_cast<jlong>(item_type);
+        if (read_kind == 3) return static_cast<jlong>(enumeration);
+        return static_cast<jlong>(integer);
     });
 }
 

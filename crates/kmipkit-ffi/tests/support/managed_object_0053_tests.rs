@@ -1,7 +1,7 @@
 use super::*;
 use kmipkit_protocol::{
-    Certificate, CertificateRequest, EncryptionKeyInformation, KeyBlockValue, OpaqueObject, PgpKey,
-    PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
+    Certificate, CertificateRequest, EncryptionKeyInformation, KeyBlockValue, KeyMaterial,
+    OpaqueObject, PgpKey, PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
 };
 
 const CERTIFICATE: u32 = 0x0042_0013;
@@ -17,6 +17,9 @@ const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const FIELD_OWNER_MANAGED_OBJECT: u32 = 1;
+const FIELD_OWNER_KEY_BLOCK: u32 = 2;
+const FIELD_OWNER_KEY_MATERIAL: u32 = 4;
 
 #[link(name = "kmipkit_managed_object_parity_consumer", kind = "static")]
 unsafe extern "C" {
@@ -128,6 +131,26 @@ unsafe extern "C" {
         fields: *mut *mut kmipkit_ttlv_item_t,
         field_count: u64,
     ) -> i32;
+    fn kmipkit_0053_managed_field_reader_check(
+        owner_kind: u32,
+        context_raw: u32,
+        item: *mut kmipkit_ttlv_item_t,
+        field_tag: u32,
+        read_kind: u32,
+        expected_item_type: u8,
+        expected_enumeration: u32,
+        expected_integer: i32,
+        expected_bytes: *const u8,
+        expected_byte_length: u64,
+        expected_status: i32,
+    ) -> i32;
+    fn kmipkit_0053_managed_field_reader_rejects_short_buffer(
+        owner_kind: u32,
+        context_raw: u32,
+        item: *mut kmipkit_ttlv_item_t,
+        field_tag: u32,
+        expected_byte_length: u64,
+    ) -> i32;
 }
 
 fn tag(raw: u32) -> kmipkit_ttlv::Tag {
@@ -139,6 +162,16 @@ fn tag(raw: u32) -> kmipkit_ttlv::Tag {
 
 fn key_block() -> KeyBlock {
     KeyBlock::try_new(KeyFormatType::from_raw(1)).expect("Raw Key Format Type is valid")
+}
+
+fn transparent_material_item(format_raw: u32, fields: impl IntoIterator<Item = Item>) -> Item {
+    let mut structure = Structure::new();
+    for field in fields {
+        structure.try_push(field).expect("transparent field fits");
+    }
+    KeyMaterial::structure(format_raw, structure)
+        .expect("transparent material matches its model")
+        .into_item()
 }
 
 fn all_objects() -> [(u32, Item); 9] {
@@ -231,6 +264,47 @@ fn field_handle(raw_tag: u32, value: Value) -> *mut kmipkit_ttlv_item_t {
     )
 }
 
+fn assert_compiled_c_managed_field_reader(
+    item: Item,
+    owner_kind: u32,
+    context_raw: u32,
+    field_tag: u32,
+    read_kind: u32,
+    expected_item_type: u8,
+    expected_enumeration: u32,
+    expected_integer: i32,
+    expected_bytes: &[u8],
+    expected_status: i32,
+) {
+    let item_handle = make_handle(Kind::Item, HandleValue::Item(item));
+    let expected_bytes_ptr = if expected_bytes.is_empty() {
+        ptr::null()
+    } else {
+        expected_bytes.as_ptr()
+    };
+    // SAFETY: The Item handle remains live for the C call and expected_bytes is a valid slice.
+    let status = unsafe {
+        kmipkit_0053_managed_field_reader_check(
+            owner_kind,
+            context_raw,
+            item_handle,
+            field_tag,
+            read_kind,
+            expected_item_type,
+            expected_enumeration,
+            expected_integer,
+            expected_bytes_ptr,
+            expected_bytes.len() as u64,
+            expected_status,
+        )
+    };
+    assert_eq!(
+        status, 0,
+        "owner={owner_kind} context={context_raw} field={field_tag:#x} read_kind={read_kind}"
+    );
+    kmipkit_ttlv_item_release(item_handle);
+}
+
 type FieldConstructor =
     unsafe extern "C" fn(*mut *mut kmipkit_ttlv_item_t, u64, *mut *mut kmipkit_ttlv_item_t) -> i32;
 
@@ -278,7 +352,37 @@ fn compiled_c_consumer_reads_all_nine_known_object_types() {
         SPLIT_KEY,
         SYMMETRIC_KEY,
     ];
-    for ((object_type, item), expected_tag) in all_objects().into_iter().zip(expected_tags) {
+    let object_fields = [
+        (0x0042_001d, 3, 5, 0x8000_0001, 0),
+        (0x0042_0019, 3, 5, 0x8000_0002, 0),
+        (0x0042_0059, 3, 5, 0x8000_0003, 0),
+        (0x0042_00be, 4, 2, 0, 7),
+        (KEY_BLOCK, 1, 0, 1, 0),
+        (KEY_BLOCK, 1, 0, 1, 0),
+        (0x0042_0086, 3, 5, 0x8000_0004, 0),
+        (0x0042_008b, 4, 2, 0, 5),
+        (KEY_BLOCK, 1, 0, 1, 0),
+    ];
+    for (
+        ((object_type, item), expected_tag),
+        (field_tag, read_kind, item_type, enum_value, integer),
+    ) in all_objects()
+        .into_iter()
+        .zip(expected_tags)
+        .zip(object_fields)
+    {
+        assert_compiled_c_managed_field_reader(
+            item.try_clone().expect("preserve object for reader test"),
+            FIELD_OWNER_MANAGED_OBJECT,
+            object_type,
+            field_tag,
+            read_kind,
+            item_type,
+            enum_value,
+            integer,
+            &[],
+            SUCCESS,
+        );
         assert_copied_item(
             item,
             |source, output| {
@@ -288,6 +392,195 @@ fn compiled_c_consumer_reads_all_nine_known_object_types() {
             expected_tag,
         );
     }
+}
+
+#[test]
+fn compiled_c_consumer_reads_transparent_fields_for_formats_seven_through_fifteen() {
+    let cases = [
+        (
+            7,
+            0x0042_003f,
+            5,
+            vec![
+                Item::new(tag(0x0042_003f), Value::byte_string(b"sym".to_vec()))
+                    .expect("symmetric key field"),
+            ],
+            b"sym".as_slice(),
+        ),
+        (
+            8,
+            0x0042_009f,
+            5,
+            vec![
+                Item::new(tag(0x0042_005e), Value::big_integer(vec![1])).expect("DSA P"),
+                Item::new(tag(0x0042_0071), Value::big_integer(vec![2])).expect("DSA Q"),
+                Item::new(tag(0x0042_0037), Value::big_integer(vec![3])).expect("DSA G"),
+                Item::new(tag(0x0042_009f), Value::big_integer(vec![4])).expect("DSA X"),
+            ],
+            &[4][..],
+        ),
+        (
+            9,
+            0x0042_00a0,
+            5,
+            vec![
+                Item::new(tag(0x0042_005e), Value::big_integer(vec![1])).expect("DSA P"),
+                Item::new(tag(0x0042_0071), Value::big_integer(vec![2])).expect("DSA Q"),
+                Item::new(tag(0x0042_0037), Value::big_integer(vec![3])).expect("DSA G"),
+                Item::new(tag(0x0042_00a0), Value::big_integer(vec![5])).expect("DSA Y"),
+            ],
+            &[5][..],
+        ),
+        (
+            10,
+            0x0042_0063,
+            5,
+            vec![
+                Item::new(tag(0x0042_0052), Value::big_integer(vec![6])).expect("RSA modulus"),
+                Item::new(tag(0x0042_0063), Value::big_integer(vec![7]))
+                    .expect("RSA private exponent"),
+            ],
+            &[7][..],
+        ),
+        (
+            11,
+            0x0042_006c,
+            5,
+            vec![
+                Item::new(tag(0x0042_0052), Value::big_integer(vec![8])).expect("RSA modulus"),
+                Item::new(tag(0x0042_006c), Value::big_integer(vec![9]))
+                    .expect("RSA public exponent"),
+            ],
+            &[9][..],
+        ),
+        (
+            12,
+            0x0042_009f,
+            5,
+            vec![
+                Item::new(tag(0x0042_005e), Value::big_integer(vec![1])).expect("DH P"),
+                Item::new(tag(0x0042_0037), Value::big_integer(vec![2])).expect("DH G"),
+                Item::new(tag(0x0042_009f), Value::big_integer(vec![3])).expect("DH X"),
+            ],
+            &[3][..],
+        ),
+        (
+            13,
+            0x0042_00a0,
+            5,
+            vec![
+                Item::new(tag(0x0042_005e), Value::big_integer(vec![1])).expect("DH P"),
+                Item::new(tag(0x0042_0037), Value::big_integer(vec![2])).expect("DH G"),
+                Item::new(tag(0x0042_00a0), Value::big_integer(vec![4])).expect("DH Y"),
+            ],
+            &[4][..],
+        ),
+        (
+            14,
+            0x0042_0075,
+            3,
+            vec![
+                Item::new(tag(0x0042_0075), Value::enumeration(0x8000_0014))
+                    .expect("open curve enumeration"),
+                Item::new(tag(0x0042_002e), Value::big_integer(vec![5])).expect("EC D"),
+            ],
+            &[][..],
+        ),
+        (
+            15,
+            0x0042_0072,
+            5,
+            vec![
+                Item::new(tag(0x0042_0075), Value::enumeration(0x8000_0015))
+                    .expect("open curve enumeration"),
+                Item::new(tag(0x0042_0072), Value::byte_string(b"point".to_vec()))
+                    .expect("EC Q String"),
+            ],
+            b"point".as_slice(),
+        ),
+    ];
+
+    for (format_raw, field_tag, read_kind, fields, expected_bytes) in cases {
+        let material = transparent_material_item(format_raw, fields);
+        let (item_type, expected_enumeration) = match (format_raw, read_kind) {
+            (14, 3) => (5, 0x8000_0014),
+            (7 | 15, 5) => (8, 0),
+            (_, 5) => (4, 0),
+            _ => (0, 0),
+        };
+        assert_compiled_c_managed_field_reader(
+            material
+                .try_clone()
+                .expect("preserve material for mismatch checks"),
+            FIELD_OWNER_KEY_MATERIAL,
+            format_raw,
+            field_tag,
+            read_kind,
+            item_type,
+            expected_enumeration,
+            0,
+            expected_bytes,
+            SUCCESS,
+        );
+        if format_raw == 11 {
+            assert_compiled_c_managed_field_reader(
+                material.try_clone().expect("preserve RSA material"),
+                FIELD_OWNER_KEY_MATERIAL,
+                8,
+                field_tag,
+                read_kind,
+                item_type,
+                expected_enumeration,
+                0,
+                expected_bytes,
+                -1,
+            );
+            assert_compiled_c_managed_field_reader(
+                material.try_clone().expect("preserve RSA material"),
+                FIELD_OWNER_KEY_MATERIAL,
+                format_raw,
+                field_tag,
+                3,
+                item_type,
+                expected_enumeration,
+                0,
+                &[],
+                -1,
+            );
+        }
+        if !expected_bytes.is_empty() {
+            let item_handle = make_handle(Kind::Item, HandleValue::Item(material));
+            // SAFETY: The live Item handle is borrowed only for the C reader call.
+            let status = unsafe {
+                kmipkit_0053_managed_field_reader_rejects_short_buffer(
+                    FIELD_OWNER_KEY_MATERIAL,
+                    format_raw,
+                    item_handle,
+                    field_tag,
+                    expected_bytes.len() as u64,
+                )
+            };
+            assert_eq!(status, 0);
+            kmipkit_ttlv_item_release(item_handle);
+        }
+    }
+
+    let key_block = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Key Block builder")
+        .try_into_item()
+        .expect("minimal Key Block Item");
+    assert_compiled_c_managed_field_reader(
+        key_block,
+        FIELD_OWNER_KEY_BLOCK,
+        0,
+        KEY_WRAPPING_DATA,
+        1,
+        0,
+        0,
+        0,
+        &[],
+        SUCCESS,
+    );
 }
 
 #[test]
@@ -402,12 +695,59 @@ fn compiled_c_consumer_reads_typed_managed_fields_by_owner_and_tag() {
         kmipkit_0053_managed_field_reader_roundtrip(fields.as_mut_ptr(), fields.len() as u64)
     };
     assert_eq!(status, SUCCESS);
-    assert!(fields
-        .iter()
-        .all(|field| reference_handle(*field, Kind::Item).is_ok()));
+    assert!(
+        fields
+            .iter()
+            .all(|field| reference_handle(*field, Kind::Item).is_ok())
+    );
     for field in fields {
         kmipkit_ttlv_item_release(field);
     }
+
+    let key_block = KeyBlock::try_new(KeyFormatType::from_raw(11))
+        .expect("open Key Format Type")
+        .try_into_item()
+        .expect("Key Block Item");
+    assert_compiled_c_managed_field_reader(
+        key_block,
+        FIELD_OWNER_KEY_BLOCK,
+        0,
+        0x0042_0042,
+        3,
+        5,
+        11,
+        0,
+        &[],
+        SUCCESS,
+    );
+
+    let key_value = KeyValue::try_new(
+        KeyMaterial::byte_string(1, b"key".to_vec()).expect("raw Key Material"),
+        None,
+    )
+    .expect("Key Value")
+    .into_item();
+    assert_compiled_c_managed_field_reader(key_value, 3, 1, KEY_MATERIAL, 2, 8, 0, 0, &[], SUCCESS);
+
+    let wrapping = KeyWrappingData::try_new(0x8000_0001)
+        .expect("open wrapping method")
+        .with_encryption_key_information(
+            EncryptionKeyInformation::try_new("wrapping-key".to_owned()).expect("key information"),
+        )
+        .into_item()
+        .expect("Key Wrapping Data Item");
+    assert_compiled_c_managed_field_reader(
+        wrapping,
+        5,
+        0,
+        0x0042_009e,
+        3,
+        5,
+        0x8000_0001,
+        0,
+        &[],
+        SUCCESS,
+    );
 }
 
 #[test]

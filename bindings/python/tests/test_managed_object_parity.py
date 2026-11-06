@@ -181,6 +181,7 @@ def test_certificate_from_fields_orders_known_fields_and_reads_named_values():
             1, [certificate_value, vendor_first, certificate_type, vendor_repeat]
         ) as managed:
             assert managed.certificate_type == 0x8000_0042
+            assert managed.field_read(0x0042_001D, 3) == 0x8000_0042
             assert managed.certificate_value == b"certificate-canary"
             with ttlv.ttlv_item_view_from_item(managed) as view:
                 with ttlv.ttlv_item_view_value(view) as value:
@@ -227,4 +228,300 @@ def test_transparent_rsa_public_fields_are_typed_and_reordered():
     finally:
         exponent.close()
         modulus.close()
+
+
+def test_named_object_constructors_read_all_object_specific_fields():
+    with ttlv.codec_limits_defaults() as limits:
+        def enum(raw_tag: int, raw: int) -> ttlv.TtlvItem:
+            return _item(raw_tag, ttlv.ttlv_value_enumeration(raw), limits)
+
+        def integer(raw_tag: int, raw: int) -> ttlv.TtlvItem:
+            return _item(raw_tag, ttlv.ttlv_value_integer(raw), limits)
+
+        def byte_string(raw_tag: int, raw: bytes) -> ttlv.TtlvItem:
+            return _item(raw_tag, ttlv.ttlv_value_byte_string(raw, limits), limits)
+
+        def key_block() -> ttlv.TtlvItem:
+            return _structure_with_children(0x0042_0040, limits, [enum(0x0042_0042, 1)])
+
+        typed = []
+        source_items = []
+
+        def construct(constructor, fields, object_type: int) -> None:
+            source_items.extend(fields)
+            typed.append((constructor(fields), object_type))
+
+        construct(ManagedObject.certificate, [
+            enum(0x0042_001D, 0x8000_0042), byte_string(0x0042_001E, b"cert")
+        ], 1)
+        construct(ManagedObject.symmetric_key, [key_block()], 2)
+        construct(ManagedObject.public_key, [key_block()], 3)
+        construct(ManagedObject.private_key, [key_block()], 4)
+        construct(ManagedObject.split_key, [
+            integer(0x0042_008B, 2), integer(0x0042_0044, 1),
+            integer(0x0042_008C, 2), enum(0x0042_008A, 1), key_block()
+        ], 5)
+        construct(ManagedObject.secret_data, [
+            enum(0x0042_0086, 3), key_block()
+        ], 7)
+        construct(ManagedObject.opaque_object, [
+            enum(0x0042_0059, 9), byte_string(0x0042_005A, b"opaque")
+        ], 8)
+        construct(ManagedObject.pgp_key, [
+            integer(0x0042_00BE, 7), key_block()
+        ], 9)
+        construct(ManagedObject.certificate_request, [
+            enum(0x0042_0019, 4), byte_string(0x0042_0140, b"request")
+        ], 10)
+        try:
+            assert [managed.object_type for managed, _ in typed] == [
+                object_type for _, object_type in typed
+            ]
+            assert typed[0][0].certificate_type == 0x8000_0042
+            assert typed[0][0].certificate_value == b"cert"
+            assert typed[4][0].key_part_identifier == 1
+            assert typed[4][0].split_key_parts == 2
+            assert typed[4][0].split_key_threshold == 2
+            assert typed[4][0].split_key_method == 1
+            assert typed[5][0].secret_data_type == 3
+            assert typed[6][0].opaque_data_type == 9
+            assert typed[6][0].opaque_data_value == b"opaque"
+            assert typed[7][0].pgp_key_version == 7
+            assert typed[8][0].certificate_request_type == 4
+            assert typed[8][0].certificate_request_value == b"request"
+        finally:
+            for managed, _ in typed:
+                managed.close()
+            for item in source_items:
+                item.close()
+
+
+def test_key_block_value_material_and_wrapping_fields_construct_by_format():
+    with ttlv.codec_limits_defaults() as limits:
+        material_item = _item(
+            0x0042_0043,
+            ttlv.ttlv_value_byte_string(b"secret-canary", limits),
+            limits,
+        )
+        try:
+            with KeyMaterial.from_fields(1, [material_item]) as material:
+                assert material.format_raw == 1
+                assert "secret-canary" not in repr(material)
+            with KeyValue.from_fields(1, [material_item]) as key_value:
+                with ttlv.ttlv_item_view_from_item(key_value) as view:
+                    with ttlv.ttlv_item_view_tag(view) as tag:
+                        assert ttlv.tag_value(tag) == 0x0042_0045
+            plaintext = _structure_with_children(
+                0x0042_0045,
+                limits,
+                [_item(0x0042_0043,
+                       ttlv.ttlv_value_byte_string(b"secret-canary", limits), limits)],
+            )
+            format_type = _item(0x0042_0042, ttlv.ttlv_value_enumeration(1), limits)
+            try:
+                with KeyBlock.from_fields([plaintext, format_type]) as block:
+                    with ttlv.ttlv_item_view_from_item(block) as view:
+                        with ttlv.ttlv_item_view_tag(view) as tag:
+                            assert ttlv.tag_value(tag) == 0x0042_0040
+            finally:
+                plaintext.close()
+                format_type.close()
+
+            method = _item(0x0042_009E, ttlv.ttlv_value_enumeration(1), limits)
+            identifier = _item(
+                0x0042_0094,
+                ttlv.ttlv_value_text_string(b"wrapping-key", limits),
+                limits,
+            )
+            key_information = _structure_with_children(0x0042_0036, limits, [identifier])
+            try:
+                with KeyWrappingData.from_fields([key_information, method]) as wrapping:
+                    assert wrapping.wrapping_method == 1
+            finally:
+                method.close()
+                key_information.close()
+        finally:
+            material_item.close()
+
+
+def test_managed_key_readers_cover_transparent_fields_and_wrapping_metadata():
+    with ttlv.codec_limits_defaults() as limits:
+        exponent = _item(
+            0x0042_006C,
+            ttlv.ttlv_value_big_integer(b"\x01\x00\x01", limits),
+            limits,
+        )
+        modulus = _item(
+            0x0042_0052,
+            ttlv.ttlv_value_big_integer(b"\x80\x01", limits),
+            limits,
+        )
+        format_type = _item(0x0042_0042, ttlv.ttlv_value_enumeration(11), limits)
+        algorithm = _item(0x0042_0028, ttlv.ttlv_value_enumeration(0x8000_0010), limits)
+        length = _item(0x0042_002A, ttlv.ttlv_value_integer(2048), limits)
+        method = _item(0x0042_009E, ttlv.ttlv_value_enumeration(0x8000_0020), limits)
+        unique_id = _item(
+            0x0042_0094, ttlv.ttlv_value_text_string(b"key-id", limits), limits
+        )
+        mac_signature = _item(
+            0x0042_004D, ttlv.ttlv_value_byte_string(b"signature", limits), limits
+        )
+        iv = _item(0x0042_003D, ttlv.ttlv_value_byte_string(b"nonce", limits), limits)
+        encoding = _item(0x0042_00A3, ttlv.ttlv_value_enumeration(2), limits)
+        prime_field_size = _item(
+            0x0042_0062, ttlv.ttlv_value_big_integer(b"\x17", limits), limits
+        )
+        parts = _item(0x0042_008B, ttlv.ttlv_value_integer(3), limits)
+        identifier = _item(0x0042_0044, ttlv.ttlv_value_integer(1), limits)
+        threshold = _item(0x0042_008C, ttlv.ttlv_value_integer(2), limits)
+        split_method = _item(0x0042_008A, ttlv.ttlv_value_enumeration(3), limits)
+    limits = ttlv.codec_limits_defaults()
+    try:
+        with KeyMaterial.from_fields(11, [modulus, exponent]) as material:
+            assert material.field_type(0x0042_0052) is ttlv.ItemType.BigInteger
+            assert material.modulus == b"\x80\x01"
+            assert material.public_exponent == b"\x01\x00\x01"
+            assert material.field_bytes(0x0042_006C) == b"\x01\x00\x01"
+            attributes = _structure_with_children(0x0042_0125, limits, [])
+            try:
+                with KeyValue.from_fields(11, [material, attributes]) as key_value:
+                    assert key_value.key_material_type is ttlv.ItemType.Structure
+                    assert key_value.has_attributes
+                    with KeyBlock.from_fields(
+                        [format_type, key_value, algorithm, length]
+                    ) as key_block:
+                        assert key_block.key_format_type == 11
+                        assert key_block.key_value_type is ttlv.ItemType.Structure
+                        assert key_block.cryptographic_algorithm == 0x8000_0010
+                        assert key_block.cryptographic_length == 2048
+                        assert not key_block.has_key_wrapping_data
+                        with ManagedObject.symmetric_key([key_block]) as symmetric:
+                            assert symmetric.has_key_block
+            finally:
+                attributes.close()
+
+        key_info = _structure_with_children(0x0042_0036, limits, [unique_id])
+        try:
+            with KeyWrappingData.from_fields(
+                [method, key_info, mac_signature, iv, encoding]
+            ) as wrapping:
+                assert wrapping.wrapping_method == 0x8000_0020
+                assert wrapping.has_encryption_key_information
+                assert not wrapping.has_mac_signature_key_information
+                assert wrapping.mac_signature == b"signature"
+                assert wrapping.iv_counter_nonce == b"nonce"
+                assert wrapping.encoding_option == 2
+        finally:
+            key_info.close()
+
+        split_key_block = _structure_with_children(
+            0x0042_0040, limits,
+            [_item(0x0042_0042, ttlv.ttlv_value_enumeration(1), limits)],
+        )
+        try:
+            with ManagedObject.split_key(
+                [parts, identifier, threshold, split_method,
+                 prime_field_size, split_key_block]
+            ) as split:
+                assert split.has_key_block
+                assert split.prime_field_size == b"\x17"
+        finally:
+            split_key_block.close()
+
+        # Ensure all direct field handles stay caller-owned throughout construction.
+        assert all(not field.closed for field in (
+            exponent, modulus, format_type, algorithm, length, method,
+            mac_signature, iv, encoding, prime_field_size,
+            parts, identifier, threshold, split_method,
+        ))
+    finally:
+        for field in (
+            exponent, modulus, format_type, algorithm, length, method,
+            unique_id, mac_signature, iv, encoding, prime_field_size,
+            parts, identifier, threshold, split_method,
+        ):
+            field.close()
+        limits.close()
+
+
+def test_typed_readers_cover_every_transparent_key_format():
+    with ttlv.codec_limits_defaults() as limits:
+        cases = [
+            (7, 0x0042_003F, "bytes", b"sym", "key_byte_string"),
+            (8, 0x0042_009F, "big", b"x", "x"),
+            (9, 0x0042_00A0, "big", b"y", "y"),
+            (10, 0x0042_0063, "big", b"d", "private_exponent"),
+            (11, 0x0042_006C, "big", b"e", "public_exponent"),
+            (12, 0x0042_009F, "big", b"x", "x"),
+            (13, 0x0042_00A0, "big", b"y", "y"),
+            (14, 0x0042_0075, "enum", 0x8000_0014, "recommended_curve"),
+            (15, 0x0042_0072, "bytes", b"point", "q_string"),
+        ]
+        fields_by_format = {
+            7: [(0x0042_003F, "bytes", b"sym")],
+            8: [
+                (0x0042_005E, "big", b"p"),
+                (0x0042_0071, "big", b"q"),
+                (0x0042_0037, "big", b"g"),
+                (0x0042_009F, "big", b"x"),
+            ],
+            9: [
+                (0x0042_005E, "big", b"p"),
+                (0x0042_0071, "big", b"q"),
+                (0x0042_0037, "big", b"g"),
+                (0x0042_00A0, "big", b"y"),
+            ],
+            10: [
+                (0x0042_0052, "big", b"n"),
+                (0x0042_0063, "big", b"d"),
+            ],
+            11: [
+                (0x0042_0052, "big", b"n"),
+                (0x0042_006C, "big", b"e"),
+            ],
+            12: [
+                (0x0042_005E, "big", b"p"),
+                (0x0042_0037, "big", b"g"),
+                (0x0042_009F, "big", b"x"),
+            ],
+            13: [
+                (0x0042_005E, "big", b"p"),
+                (0x0042_0037, "big", b"g"),
+                (0x0042_00A0, "big", b"y"),
+            ],
+            14: [
+                (0x0042_0075, "enum", 0x8000_0014),
+                (0x0042_002E, "big", b"d"),
+            ],
+            15: [
+                (0x0042_0075, "enum", 0x8000_0015),
+                (0x0042_0072, "bytes", b"point"),
+            ],
+        }
+        for format_raw, field_tag, value_kind, expected, accessor in cases:
+            fields = []
+            for raw_tag, kind, value in fields_by_format[format_raw]:
+                if kind == "enum":
+                    ttlv_value = ttlv.ttlv_value_enumeration(value)
+                elif kind == "big":
+                    ttlv_value = ttlv.ttlv_value_big_integer(value, limits)
+                else:
+                    ttlv_value = ttlv.ttlv_value_byte_string(value, limits)
+                fields.append(_item(raw_tag, ttlv_value, limits))
+            try:
+                with KeyMaterial.from_fields(format_raw, fields) as material:
+                    if value_kind == "enum":
+                        assert material.field_type(field_tag) is ttlv.ItemType.Enumeration
+                        assert material.field_enumeration(field_tag) == expected
+                    else:
+                        expected_type = (
+                            ttlv.ItemType.ByteString if value_kind == "bytes"
+                            else ttlv.ItemType.BigInteger
+                        )
+                        assert material.field_type(field_tag) is expected_type
+                        assert material.field_bytes(field_tag) == expected
+                    assert getattr(material, accessor) == expected
+            finally:
+                for field in fields:
+                    field.close()
 

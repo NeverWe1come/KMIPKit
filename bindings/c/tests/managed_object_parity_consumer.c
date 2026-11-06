@@ -217,3 +217,65 @@ cleanup:
     if (certificate != NULL) kmipkit_ttlv_item_release(certificate);
     return status;
 }
+
+int32_t kmipkit_0053_managed_field_reader_check(
+    uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t *item,
+    uint32_t field_tag, uint32_t read_kind, uint8_t expected_item_type,
+    uint32_t expected_enumeration, int32_t expected_integer,
+    const uint8_t *expected_bytes, uint64_t expected_byte_length,
+    int32_t expected_status) {
+    uint8_t present = 0;
+    uint8_t item_type = 0;
+    uint32_t enumeration = 0;
+    int32_t integer = 0;
+    uint64_t byte_length = 0;
+    int32_t status = kmipkit_managed_value_field_read(
+        owner_kind, context_raw, item, field_tag, read_kind,
+        &present, &item_type, &enumeration, &integer, NULL, 0, &byte_length);
+    if ((expected_status < 0 && status == 0)
+        || (expected_status >= 0 && status != expected_status)) return -1;
+    if (expected_status != 0) return 0;
+    if (read_kind == 1 && present != expected_enumeration) return -1;
+    if (read_kind != 1 && present != 1) return -1;
+    if (read_kind == 2 && item_type != expected_item_type) return -1;
+    if (read_kind == 3 && (item_type != expected_item_type || enumeration != expected_enumeration))
+        return -1;
+    if (read_kind == 4 && (item_type != expected_item_type || integer != expected_integer))
+        return -1;
+    if (read_kind == 5) {
+        if (item_type != expected_item_type || byte_length != expected_byte_length) return -1;
+        uint8_t bytes[256] = {0};
+        if (expected_byte_length > sizeof(bytes)) return -1;
+        status = kmipkit_managed_value_field_read(
+            owner_kind, context_raw, item, field_tag, read_kind,
+            &present, &item_type, &enumeration, &integer,
+            bytes, sizeof(bytes), &byte_length);
+        if (status != 0 || byte_length != expected_byte_length) return -1;
+        for (uint64_t index = 0; index < expected_byte_length; ++index) {
+            if (bytes[index] != expected_bytes[index]) return -1;
+        }
+    }
+    return 0;
+}
+
+int32_t kmipkit_0053_managed_field_reader_rejects_short_buffer(
+    uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t *item,
+    uint32_t field_tag, uint64_t expected_byte_length) {
+    uint8_t present = 0;
+    uint64_t byte_length = 0;
+    int32_t status = kmipkit_managed_value_field_read(
+        owner_kind, context_raw, item, field_tag, 5,
+        &present, NULL, NULL, NULL, NULL, 0, &byte_length);
+    if (status != 0 || present != 1 || byte_length != expected_byte_length || byte_length == 0)
+        return -1;
+    uint8_t bytes[256];
+    for (uint64_t index = 0; index < sizeof(bytes); ++index) bytes[index] = 0xa5;
+    status = kmipkit_managed_value_field_read(
+        owner_kind, context_raw, item, field_tag, 5,
+        &present, NULL, NULL, NULL, bytes, byte_length - 1, &byte_length);
+    if (status == 0 || byte_length != expected_byte_length) return -1;
+    for (uint64_t index = 0; index < sizeof(bytes); ++index) {
+        if (bytes[index] != 0xa5) return -1;
+    }
+    return 0;
+}
