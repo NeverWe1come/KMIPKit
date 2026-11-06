@@ -205,3 +205,97 @@ fn typed_attribute_from_item_preflights_null_output_without_consuming_input() {
     assert!(reference_handle(source, Kind::Item).is_ok());
     kmipkit_ttlv_item_release(source);
 }
+
+#[test]
+fn typed_attribute_value_construction_roundtrips_all_sixty_two_definitions() {
+    assert_eq!(typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS.len(), 62);
+    for (tag, kind) in typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS {
+        let source = make_handle(Kind::Value, HandleValue::Value(catalog_value(*tag, kind)));
+        let mut item = ptr::null_mut();
+        let status = typed_attributes::kmipkit_typed_attribute_from_value(
+            *tag, source, &raw mut item,
+        );
+        assert_eq!(status, SUCCESS, "typed construction {tag:#08x} ({kind})");
+        let source_handle = reference_handle(source, Kind::Value).expect("caller value stays owned");
+        let HandleValue::Value(source_value) = &source_handle.value else {
+            panic!("input handle stores the original TTLV value");
+        };
+        let result = reference_handle(item, Kind::Item).expect("typed Item is owned");
+        let HandleValue::Item(result_item) = &result.value else {
+            panic!("typed result handle stores an Item");
+        };
+        assert_eq!(result_item.tag().raw(), *tag);
+        assert_eq!(result_item.item_type(), source_value.item_type());
+        let equal = source_value.with_value(|expected| result_item.with_value(|actual| match (actual, expected) {
+            (ValueView::Enumeration(actual), ValueView::Enumeration(expected)) => actual == expected,
+            (ValueView::Integer(actual), ValueView::Integer(expected)) => actual == expected,
+            (ValueView::DateTime(actual), ValueView::DateTime(expected)) => actual == expected,
+            (ValueView::Interval(actual), ValueView::Interval(expected)) => actual == expected,
+            (ValueView::Boolean(actual), ValueView::Boolean(expected)) => actual == expected,
+            (ValueView::TextString(actual), ValueView::TextString(expected)) => actual == expected,
+            (ValueView::ByteString(actual), ValueView::ByteString(expected)) => actual == expected,
+            (ValueView::BigInteger(actual), ValueView::BigInteger(expected)) => actual == expected,
+            (ValueView::Structure(actual), ValueView::Structure(expected)) => {
+                actual.children().len() == expected.children().len()
+            }
+            (ValueView::DateTimeExtended(actual), ValueView::DateTimeExtended(expected)) => actual == expected,
+            _ => false,
+        }));
+        assert!(equal);
+        kmipkit_ttlv_item_release(item);
+        kmipkit_ttlv_value_release(source);
+    }
+}
+
+#[test]
+fn typed_attribute_set_supports_typed_insert_read_and_repeated_iteration() {
+    let source = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut attributes = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_attribute_set_create(source, &raw mut attributes),
+        SUCCESS
+    );
+    let values = [u32::MAX, u32::MAX - 1];
+    let mut items = Vec::new();
+    for value in values {
+        let item = make_handle(
+            Kind::Item,
+            HandleValue::Item(
+                Item::new(
+                    RawTag::new(0x0042_0028).expect("fixture tag fits").try_checked().expect("tag is allocated"),
+                    Value::enumeration(value),
+                )
+                .expect("fixture Item is valid"),
+            ),
+        );
+        assert_eq!(
+            client_abi::kmipkit_attribute_set_try_push_typed(
+                attributes, 0x0042_0028, item,
+            ),
+            SUCCESS
+        );
+        items.push(item);
+    }
+    let mut count = 0;
+    assert_eq!(
+        client_abi::kmipkit_attribute_set_typed_count(attributes, 0x0042_0028, &raw mut count),
+        SUCCESS
+    );
+    assert_eq!(count, 2);
+    let mut actual = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_attribute_set_typed_at(attributes, 0x0042_0028, 1, &raw mut actual),
+        SUCCESS
+    );
+    let handle = reference_handle(actual, Kind::Item).expect("typed read is caller-owned");
+    let HandleValue::Item(item) = &handle.value else {
+        panic!("typed read returns an Item");
+    };
+    assert!(item.with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == u32::MAX - 1)));
+    kmipkit_ttlv_item_release(actual);
+    for item in items {
+        kmipkit_ttlv_item_release(item);
+    }
+    kmipkit_attribute_set_release(attributes);
+    kmipkit_ttlv_structure_release(source);
+}

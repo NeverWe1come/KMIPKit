@@ -103,6 +103,53 @@ def test_typed_attribute_roundtrips_all_catalogued_source_ttlv_types():
                         ), attribute.name
 
 
+def test_typed_attribute_constructs_and_reads_actual_catalogued_values():
+    with ttlv.codec_limits_defaults() as limits:
+        for attribute in StandardAttribute:
+            value = _value_for(attribute, limits)
+            with value, TypedAttribute.create(attribute, value) as typed:
+                with typed.value as actual:
+                    assert ttlv.ttlv_value_view_type(actual) == _expected_item_type(
+                        attribute.value_kind
+                    ), attribute.name
+                    if attribute.value_kind == "Enumeration":
+                        assert ttlv.ttlv_value_view_enumeration(actual) == 0xFFFF_FFFF
+                    elif attribute.value_kind == "Integer":
+                        assert ttlv.ttlv_value_view_integer(actual) == 7
+                    elif attribute.value_kind == "Boolean":
+                        assert ttlv.ttlv_value_view_boolean(actual) is True
+                    elif attribute.value_kind == "Structure":
+                        with ttlv.ttlv_value_view_structure(actual) as structure:
+                            expected = 3 if attribute is StandardAttribute.VENDOR_ATTRIBUTE else 0
+                            assert ttlv.ttlv_structure_view_item_count(structure) == expected
+
+
+def test_attribute_set_typed_insert_read_and_iteration_preserve_repeats():
+    limits = ttlv.codec_limits_defaults()
+    first_value = ttlv.ttlv_value_enumeration(0xFFFF_FFFF)
+    second_value = ttlv.ttlv_value_enumeration(0xFFFF_FFFE)
+    with (
+        limits,
+        first_value,
+        second_value,
+        TypedAttribute.create(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, first_value) as first,
+        TypedAttribute.create(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, second_value) as second,
+        AttributeSet.try_new(ttlv.ttlv_structure_create()) as attributes,
+    ):
+        attributes.try_push_typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, first)
+        attributes.try_push_typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, second)
+        assert attributes.typed_count(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM) == 2
+        with attributes.typed_at(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, 1) as actual:
+            with actual.value as value:
+                assert ttlv.ttlv_value_view_enumeration(value) == 0xFFFF_FFFE
+        typed = attributes.typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM)
+        try:
+            assert len(typed) == 2
+        finally:
+            for attribute in typed:
+                attribute.close()
+
+
 def test_typed_attribute_copies_and_reads_the_item_without_consuming_source():
     source = _item(
         StandardAttribute.ACTIVATION_DATE,

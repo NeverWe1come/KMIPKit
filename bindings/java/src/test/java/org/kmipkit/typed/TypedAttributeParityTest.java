@@ -11,7 +11,9 @@ import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.TtlvItemType;
@@ -41,6 +43,55 @@ final class TypedAttributeParityTest {
                     assertEquals(attribute.tag(), sourceTag.raw(), "conversion must preserve input owner");
                 }
             }
+        }
+    }
+
+    @Test
+    void constructsAndReadsActualCataloguedValues() {
+        CodecLimits limits = CodecLimits.defaults();
+        for (StandardAttribute attribute : StandardAttribute.values()) {
+            try (TtlvValue value = valueFor(attribute, limits);
+                    TypedAttribute typed = TypedAttribute.create(attribute, value);
+                    TtlvValueView actual = typed.value()) {
+                assertEquals(expectedType(attribute), actual.itemType(), attribute.name());
+                switch (attribute.valueKind()) {
+                    case "Enumeration" -> assertEquals(0xffff_ffffL, actual.enumeration());
+                    case "Integer" -> assertEquals(7, actual.integer());
+                    case "Boolean" -> assertEquals(true, actual.booleanValue());
+                    case "Structure" -> {
+                        try (TtlvStructureView structure = actual.structure()) {
+                            assertEquals(attribute == StandardAttribute.VENDOR_ATTRIBUTE ? 3 : 0,
+                                    structure.itemCount());
+                        }
+                    }
+                    default -> { }
+                }
+            }
+        }
+    }
+
+    @Test
+    void typedAttributeSetSupportsOrderedRepeatedValues() {
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvValue firstValue = TtlvValue.Enumeration(0xffff_ffffL);
+                TtlvValue secondValue = TtlvValue.Enumeration(0xffff_fffeL);
+                TypedAttribute first = TypedAttribute.create(
+                        StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, firstValue);
+                TypedAttribute second = TypedAttribute.create(
+                        StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, secondValue);
+                TtlvStructure empty = TtlvStructure.create();
+                AttributeSet attributes = AttributeSet.tryNew(empty)) {
+            attributes.tryPushTyped(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, first);
+            attributes.tryPushTyped(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, second);
+            assertEquals(2, attributes.typedCount(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM));
+            try (TypedAttribute actual = attributes.typedAt(
+                            StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, 1);
+                    TtlvValueView value = actual.value()) {
+                assertEquals(0xffff_fffeL, value.enumeration());
+            }
+            var repeated = attributes.typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM);
+            assertEquals(2, repeated.size());
+            repeated.forEach(TypedAttribute::close);
         }
     }
 
