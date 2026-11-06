@@ -265,6 +265,22 @@ impl HttpsTransport {
             self.observer.clone(),
         )?;
 
+        let refreshed = self
+            .tls
+            .refresh_if_changed(&mut self.configuration)
+            .map_err(|error| {
+                safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
+        if refreshed {
+            self.http1_tls_config = build_http1_tls_config(self.tls.rustls_config_arc());
+            let mut lock = lock_https_connection(&self.connection);
+            *lock = None;
+        }
+
         let route = self.route.clone();
         let resolver = self.resolver.clone();
         let connection = Arc::clone(&self.connection);

@@ -1160,7 +1160,7 @@ fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
         ],
     );
 
-    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(format!("https://localhost:{}", address.port())))
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(format!("https://127.0.0.1:{}", address.port())))
         .tls_server_name("server.kmipkit.test")
         .client_identity(kmipkit_transport::ClientIdentity::new(
             kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file"),
@@ -1634,7 +1634,7 @@ fn server_config_with_alpn(pki: &EphemeralPki, alpn_protocols: &[&[u8]]) -> Arc<
     let verifier = WebPkiClientVerifier::builder(Arc::new(client_roots))
         .build()
         .expect("the peer requires a verified client certificate");
-    let config = builder
+    let mut config = builder
         .with_client_cert_verifier(verifier)
         .with_single_cert(
             vec![CertificateDer::from(

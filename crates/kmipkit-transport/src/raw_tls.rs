@@ -198,6 +198,16 @@ impl RawTlsTransport {
             )
         })?;
 
+        self.tls
+            .refresh_if_changed(&mut self.configuration)
+            .map_err(|error| {
+                safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
+
         let host = self.host.clone();
         let port = self.port;
         let resolver = self.resolver.clone();

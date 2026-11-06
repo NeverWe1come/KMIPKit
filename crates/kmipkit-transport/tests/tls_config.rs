@@ -617,7 +617,10 @@ fn file_backed_inputs_retain_tracked_descriptors_and_redact_paths() {
         .build()
         .expect("config builds");
 
-    assert!(config.has_tracked_files());
+    let config_debug = format!("{config:?}");
+    assert!(!config_debug.contains(cert_file.path.to_str().unwrap()));
+    assert!(!config_debug.contains(key_file.path.to_str().unwrap()));
+    assert!(config_debug.contains("[REDACTED]"));
 }
 
 struct TemporaryCredentialFile {

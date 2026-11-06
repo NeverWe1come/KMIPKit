@@ -244,6 +244,35 @@ fn session_store_clear_purges_cached_tickets_and_forces_full_handshake() {
 }
 
 #[test]
+fn config_tracks_file_backed_credentials() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let cert_pem = pem("CERTIFICATE", pki.client.der().as_ref());
+    let key_pem = pem("PRIVATE KEY", &pki.client_key.serialize_der());
+
+    let cert_path =
+        std::env::temp_dir().join(format!("test-policy-cert-{}.pem", std::process::id()));
+    let key_path =
+        std::env::temp_dir().join(format!("test-policy-key-{}.pem", std::process::id()));
+    std::fs::write(&cert_path, cert_pem).unwrap();
+    std::fs::write(&key_path, key_pem).unwrap();
+
+    let config = TransportConfig::builder(crate::Endpoint::raw_tls("localhost", 5696))
+        .client_identity(crate::ClientIdentity::new(
+            crate::CertificateInput::from_pem_file(&cert_path).unwrap(),
+            crate::PrivateKeyInput::from_pem_file(&key_path).unwrap(),
+        ))
+        .trust_source(crate::TrustSource::certificate_authorities(vec![
+            crate::CertificateInput::from_pem(pem("CERTIFICATE", pki.ca.der().as_ref())),
+        ]))
+        .build()
+        .unwrap();
+
+    assert!(config.has_tracked_files());
+    let _ = std::fs::remove_file(cert_path);
+    let _ = std::fs::remove_file(key_path);
+}
+
+#[test]
 fn each_identity_gets_an_isolated_session_cache() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let other_identity = TestPki::generate("other-client.kmipkit.test", false);

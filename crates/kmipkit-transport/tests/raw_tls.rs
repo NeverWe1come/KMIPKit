@@ -1437,7 +1437,7 @@ fn raw_tls_hot_reloads_client_certificate_and_key_from_disk_between_exchanges() 
         (first, second)
     });
 
-    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls("localhost", address.port()))
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls("127.0.0.1", address.port()))
         .tls_server_name(SERVER_NAME)
         .client_identity(kmipkit_transport::ClientIdentity::new(
             kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file"),
@@ -1492,7 +1492,7 @@ fn raw_tls_mismatched_or_corrupt_credential_file_fails_closed_as_not_sent() {
         )
     });
 
-    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls("localhost", address.port()))
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls("127.0.0.1", address.port()))
         .tls_server_name(SERVER_NAME)
         .client_identity(kmipkit_transport::ClientIdentity::new(
             kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file"),
