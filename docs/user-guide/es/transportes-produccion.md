@@ -1,18 +1,39 @@
 # Transportes de producción con TLS y HTTPS
 
-El cliente síncrono de Rust actual admite TTLV sobre TLS directo o
-HTTPS/HTTP 1.1. El alcance aprobado de 1.0 añade JSON y XML de KMIP 2.1 en
-ambos transportes, con TTLV como formato predeterminado; documentaremos esas
-codificaciones aquí cuando se integren en el cliente. El cliente envía
+El cliente tipado síncrono admite TTLV, JSON y XML de KMIP 2.1 sobre TLS
+directo o HTTPS/HTTP 1.1. TTLV es el formato predeterminado. El cliente envía
 únicamente la operación solicitada por la aplicación; al construirlo no
 resuelve el endpoint, no se conecta ni envía un Discover Versions oculto.
 
+## Elegir una codificación de red
+
+Los tres formatos usan la misma petición tipada, validación, correlación y
+ruta de respuesta. `ClientConfiguration::with_wire_encoding` establece el
+valor predeterminado inmutable del cliente. `RequestOptions::with_wire_encoding`
+puede reemplazarlo para un intercambio. La precedencia es: reemplazo del
+intercambio, valor predeterminado configurado y, por último, TTLV. El formato
+seleccionado se usa para la petición y su respuesta; recibir otro formato
+produce un error y nunca activa un reintento ni un decodificador alternativo.
+
+En HTTPS, `KMIPKit` envía el cuerpo y `Content-Type` correspondientes. Sobre TLS
+directo, TTLV conserva su trama actual; JSON y XML se leen incrementalmente
+como un documento completo por conexión, sin prefijo de longitud propio de
+`KMIPKit`. La conexión se cierra después del documento de respuesta. Los
+límites locales se aplican a los bytes de red recibidos y son distintos de
+`Maximum Response Size` de KMIP. Configura JSON como formato predeterminado
+con `ClientConfiguration::with_wire_encoding(WireEncoding::Json)` y reemplázalo
+por XML para un intercambio con
+`RequestOptions::with_wire_encoding(WireEncoding::Xml)`. La respuesta se
+decodifica con el formato seleccionado para esa petición.
+
 ## Elegir un endpoint
 
-Usa `Endpoint::raw_tls(host, port)` cuando el servidor KMIP acepte una trama
-TTLV directamente sobre TLS. Una conexión TLS directa transporta una petición
-y una respuesta y después se cierra. Usa `Endpoint::https("https://host:port")`
-cuando el servidor ofrezca el enlace HTTPS de KMIP. HTTPS usa HTTP/1.1, emplea
+Usa `Endpoint::raw_tls(host, port)` cuando el servidor KMIP acepte un mensaje
+KMIP directamente sobre TLS. TTLV usa su trama estándar; JSON y XML usan un
+documento completo por conexión. Una conexión TLS directa transporta una
+petición y una respuesta y después se cierra. Usa
+`Endpoint::https("https://host:port")` cuando el servidor ofrezca el enlace
+HTTPS de KMIP. HTTPS usa HTTP/1.1, emplea
 `/kmip` como ruta predeterminada y puede reutilizar una conexión sana para
 intercambios posteriores del mismo cliente. `target_uri` permite elegir otra
 ruta y consulta en formato origin-form. No se siguen redirecciones.

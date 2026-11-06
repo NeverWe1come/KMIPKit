@@ -52,10 +52,15 @@
 
 ## Task 6 — close requirements and release evidence [ ]
 
-- Add exact requirement traceability for the applicable KMIP Specification
+- [x] Add exact requirement traceability for the applicable KMIP Specification
   v2.1 and KMIP Profiles v2.1 clauses; cite the official message encoding
   vectors and distinguish partial fixture replay from full profile support.
-- Update the English and Spanish user guides and architecture/API docs.
-- Run formatting, lint, focused and workspace tests, generated-output checks,
-  traceability, coverage, security, and supported binding/interoperability
-  checks. Record Red, Green, Refactor evidence in separate signed commits.
+- [x] Update the English and Spanish user guides and architecture/API docs.
+- [x] Run local formatting, lint, focused/workspace tests, generated-output
+  checks, traceability, security-policy, and supported binding checks; record
+  Red, Green, Refactor evidence in separate signed commits. See
+  [task6-evidence.md](task6-evidence.md).
+- [ ] Obtain hosted multi-platform/multi-binding coverage, CI, and SonarCloud
+  evidence for the draft PR.
+- [ ] Complete two-independent-implementation KMIP interoperability before the
+  1.0 release; OASIS vectors and synthetic peers do not satisfy this gate.
