@@ -68,7 +68,7 @@ use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
-    ClientErrorCategory, ClientRequest,
+    ClientErrorCategory, ClientRequest, WireEncoding,
 };
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
@@ -3972,7 +3972,10 @@ pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
             configuration.shared_extension_registry(),
         )
         .with_wire_encoding(encoding);
-        *out = make_handle(Kind::Configuration, HandleValue::Configuration(configured));
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
         SUCCESS
     })
 }

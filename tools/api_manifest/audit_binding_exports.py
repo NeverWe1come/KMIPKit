@@ -955,6 +955,10 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                 })
 
     invalid_overlaps = sorted(declaration_exclusion_overlaps - signature_splits)
+    declaration_counts = Counter((row["packageId"], row["exportName"]) for row in package_rows)
+    duplicate_names = sorted(
+        name for (package_id, name), count in declaration_counts.items() if count > 1
+    )
     def canonical_kind(kind: str) -> str:
         if package == "python-kmipkit" and kind in {"function", "python-export"}:
             return "python-callable"

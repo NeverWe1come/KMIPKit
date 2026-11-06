@@ -1,5 +1,16 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+fn compile_public_client_api_consumer(workspace_root: &Path, consumer_header: &Path) {
+    let source = workspace_root.join("bindings/c/tests/public_client_api.c");
+    println!("cargo:rerun-if-changed={}", source.display());
+    cc::Build::new()
+        .file(source)
+        .include(consumer_header)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_public_client_api_consumer");
+}
 
 fn main() {
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_COVERAGE_C_CONSUMER");
@@ -13,7 +24,6 @@ fn main() {
     );
     let workspace_root = manifest_dir.join("../..");
     let consumer_source = workspace_root.join("bindings/c/tests/extension_registry.c");
-    let public_client_source = workspace_root.join("bindings/c/tests/public_client_api.c");
     let consumer_header = workspace_root.join("bindings/c/include");
     let internal_header = workspace_root.join("tests/fixtures/api/generated");
     let target_deps = PathBuf::from(
@@ -33,6 +43,8 @@ fn main() {
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11")
         .compile("kmipkit_extension_registry_c_consumer");
+
+    compile_public_client_api_consumer(&workspace_root, &consumer_header);
 
     let public_client_consumer = workspace_root.join("bindings/c/tests/client_abi_consumer.c");
     println!(

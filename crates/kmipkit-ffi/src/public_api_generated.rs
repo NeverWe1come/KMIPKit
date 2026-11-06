@@ -21740,4 +21740,14 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit",
         "kmipkit::RequestOptions::wire_encoding",
     ),
+    (
+        "client_configuration_wire_encoding:rust-facade",
+        "rust-kmipkit",
+        "kmipkit::client_config::ClientConfiguration::wire_encoding",
+    ),
+    (
+        "client_configuration_with_wire_encoding:rust-facade",
+        "rust-kmipkit",
+        "kmipkit::client_config::ClientConfiguration::with_wire_encoding",
+    ),
 ];

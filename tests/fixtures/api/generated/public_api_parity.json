@@ -180210,42 +180210,6 @@
       "exportName": "<kmipkit_transport::WireEncoding as core::convert::From<kmipkit_transport::config::WireEncoding>>::from",
       "packageId": "rust-kmipkit-transport",
       "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
-        "kind": "feature-specification",
-        "path": "specs/057-multi-encoding-client-integration/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "KMIPKIT-0057-FR-005 requires a usable C client and transport construction path. The symbol already exists in the C ABI; this exclusion exposes its prototype in the generated header without claiming a separate cross-language facade operation.",
-      "exportName": "kmipkit_client_configuration_release",
-      "packageId": "c-kmipkit",
-      "reason": "This C-only native-handle release entry point is required to clean up the public KMIP client construction path. Other bindings manage equivalent lifetimes through their existing object ownership; it adds no separate KMIP operation."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
-        "kind": "feature-specification",
-        "path": "specs/057-multi-encoding-client-integration/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "KMIPKIT-0057-FR-005 requires a usable C client and transport construction path. The symbol already exists in the C ABI; this exclusion exposes its prototype in the generated header without claiming a separate cross-language facade operation.",
-      "exportName": "kmipkit_codec_limits_release",
-      "packageId": "c-kmipkit",
-      "reason": "This C-only native-handle release entry point is required to clean up the public KMIP client construction path. Other bindings manage equivalent lifetimes through their existing object ownership; it adds no separate KMIP operation."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
-        "kind": "feature-specification",
-        "path": "specs/057-multi-encoding-client-integration/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "KMIPKIT-0057-FR-005 requires a usable C client and batch construction path. The symbol already exists in the C ABI; this exclusion exposes its prototype in the generated header without claiming a separate cross-language facade operation.",
-      "exportName": "kmipkit_client_batch_item_release",
-      "packageId": "c-kmipkit",
-      "reason": "This C-only native-handle release entry point is required to clean up a client batch item when it is not successfully transferred to a batch. Other bindings manage equivalent lifetimes through their existing object ownership; it adds no separate KMIP operation."
     }
   ],
   "capabilities": [
@@ -185081,6 +185045,8 @@
         "rust": [
           "kmipkit::RequestOptions::wire_encoding",
           "kmipkit::RequestOptions::with_wire_encoding",
+          "kmipkit::client_config::ClientConfiguration::wire_encoding",
+          "kmipkit::client_config::ClientConfiguration::with_wire_encoding",
           "kmipkit_client::Client::execute_with_options",
           "kmipkit_client::RequestOptions::wire_encoding",
           "kmipkit_client::RequestOptions::with_wire_encoding",
@@ -294255,6 +294221,7 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
@@ -294375,6 +294342,7 @@
       "requirementIds": [
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
         "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
@@ -294490,7 +294458,9 @@
         "KMIPKIT-0014-FR-007",
         "KMIPKIT-0014-FR-008",
         "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -294602,6 +294572,7 @@
         "KMIPKIT-0014-FR-013",
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -294714,6 +294685,7 @@
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0014-FR-015",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -306030,6 +306002,7 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
@@ -306150,6 +306123,7 @@
       "requirementIds": [
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
         "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
@@ -306265,7 +306239,9 @@
         "KMIPKIT-0014-FR-007",
         "KMIPKIT-0014-FR-008",
         "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -306377,6 +306353,7 @@
         "KMIPKIT-0014-FR-013",
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -306489,6 +306466,7 @@
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0014-FR-015",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -318765,6 +318743,7 @@
         "KMIPKIT-0036-FR-005",
         "KMIPKIT-0036-FR-006",
         "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -319030,6 +319009,8 @@
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
         "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -319236,7 +319217,13 @@
         "KMIPKIT-0037-FR-005",
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
-        "KMIPKIT-0037-FR-008"
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-REQ-SPEC-7.18-004"
       ]
     },
     {
@@ -320299,6 +320286,14 @@
       ],
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-007",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -320312,6 +320307,10 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -320836,6 +320835,13 @@
       ],
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -346976,6 +346982,7 @@
         "KMIPKIT-0036-FR-005",
         "KMIPKIT-0036-FR-006",
         "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -347241,6 +347248,8 @@
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
         "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -347447,7 +347456,13 @@
         "KMIPKIT-0037-FR-005",
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
-        "KMIPKIT-0037-FR-008"
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-REQ-SPEC-7.18-004"
       ]
     },
     {
@@ -348507,6 +348522,14 @@
       ],
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-007",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -348520,6 +348543,10 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -349044,6 +349071,13 @@
       ],
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -630460,6 +630494,199 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "wire_encoding_selection",
+      "declarationId": "client_configuration_wire_encoding:rust-facade",
+      "declarationState": "declared",
+      "exportName": "kmipkit::client_config::ClientConfiguration::wire_encoding",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_configuration_wire_encoding",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_configuration_wire_encoding",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::client_config::ClientConfiguration::wire_encoding",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056.",
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "wire_encoding_selection",
+      "declarationId": "client_configuration_with_wire_encoding:rust-facade",
+      "declarationState": "declared",
+      "exportName": "kmipkit::client_config::ClientConfiguration::with_wire_encoding",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_configuration_with_wire_encoding",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientConfiguration.with_wire_encoding",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::client_config::ClientConfiguration::with_wire_encoding",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "ClientBatchItem:c-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientBatchItem.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests.",
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "vendor_extension_registry",
+      "declarationId": "ClientConfiguration:c-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_configuration_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_configuration_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientConfiguration.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.ClientConfiguration.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::extension_registry::ClientConfiguration",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "public_binding_surface",
+      "declarationId": "CodecLimits:c-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_codec_limits_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_codec_limits_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.CodecLimits",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.CodecLimits.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::codec::CodecLimits",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value",
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ]
     }
   ],

@@ -116,8 +116,8 @@ fn public_c_client_executes_a_valid_json_override_over_mutual_tls() {
     let identity = pki.client_identity();
     let certificates = identity.certificate_chain_der();
     let private_key = zeroize::Zeroizing::new(identity.private_key_der().to_vec());
-    let listener = TcpListener::bind(("127.0.0.1", 0))
-        .expect("an ephemeral local TLS port is available");
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TLS port is available");
     let port = listener
         .local_addr()
         .expect("the fake TLS server has a local address")

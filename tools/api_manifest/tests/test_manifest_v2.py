@@ -1317,10 +1317,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"{exclusion['packageId']}\0{exclusion['exportName']}"
             for exclusion in owner_exclusions
         )
-        self.assertEqual(len(owner_keys), 426)
+        self.assertEqual(len(owner_keys), 639)
         self.assertEqual(
             hashlib.sha256(("\n".join(owner_keys) + "\n").encode()).hexdigest(),
-            "58150ca9fccbd2db84f26158fa3eb633a92334e0bf8b0b23feceace4dd00a530",
+            "8ab7dc812fba04268941b0070fae64fd533647b6a10a138c760a38ceadd7d4f1",
         )
         for exclusion in owner_exclusions:
             if exclusion["exportName"].endswith("::ProtocolErrorKind"):
@@ -1723,7 +1723,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_client::PendingOutcome",
         )
         rust_report = json.loads(
-            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-10-30.json").read_text(
+            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-11-06.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -1741,12 +1741,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         }
 
-        exclusions = {
+        client_execution_exclusions = {
             (row["packageId"], row["exportName"]): row
             for row in self.checked_in_manifest["approvedExclusions"]
             if row["packageId"] in target_packages
-            and row["approvalSource"]["path"] == "specs/007-client-execution/spec.md"
+            and row["approvalSource"]["path"]
+            in {
+                "specs/007-client-execution/spec.md",
+                "specs/012-vendor-extension-registry/spec.md",
+            }
             and row["exportName"].startswith("<")
+            and row["exportName"].split(" as ", 1)[0][1:].startswith(
+                trait_type_prefixes
+            )
         }
         unresolved = sorted(
             (row["packageId"], row["exportName"])
@@ -1760,12 +1767,29 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "KMIPKIT-0007 standard traits require exact exclusions while direct types "
             f"stay inventoried; unresolved={unresolved[:5]}",
         )
+        exclusions_by_owner = {
+            spec_path: {
+                key: row
+                for key, row in client_execution_exclusions.items()
+                if row["approvalSource"]["path"] == spec_path
+            }
+            for spec_path in (
+                "specs/007-client-execution/spec.md",
+                "specs/012-vendor-extension-registry/spec.md",
+            )
+        }
+        exclusions = exclusions_by_owner["specs/007-client-execution/spec.md"]
+        extension_registry_exclusions = exclusions_by_owner[
+            "specs/012-vendor-extension-registry/spec.md"
+        ]
         self.assertEqual(482, len(exclusions))
-        missing = sorted(exclusions.keys() - observed_traits)
-        self.assertFalse(
-            missing,
-            f"standard-trait exclusions must match observed exports exactly: {missing[:5]}",
-        )
+        self.assertEqual(10, len(extension_registry_exclusions))
+        self.assertEqual(observed_traits, set(exclusions) | set(extension_registry_exclusions))
+        for key, exclusion in extension_registry_exclusions.items():
+            with self.subTest(extension_trait=key[1]):
+                self.assertEqual("KMIPKIT-0012", exclusion.get("candidateSpecId"))
+                self.assertIn("KMIPKIT-0012-FR-", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
         directly_accounted_types = {
             (row["packageId"], row["exportName"])
@@ -3549,11 +3573,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for owner_declaration in owner_declarations
                 for requirement_id in owner_declaration["requirementIds"]
             }
-            owner_source = next(
+            owner_sources = [
                 owner_declaration["approvalSource"]
                 for owner_declaration in owner_declarations
                 if "approvalSource" in owner_declaration
-            )
+            ]
             for package_id, rust_prefix in (
                 ("rust-kmipkit-client", "kmipkit_client::"),
                 ("rust-kmipkit", "kmipkit::"),
@@ -3565,7 +3589,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertEqual(operation_id, declaration["capabilityId"])
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
-                    self.assertEqual(owner_source, declaration["approvalSource"])
+                    self.assertIn(declaration["approvalSource"], owner_sources)
                     self.assertTrue(owner_requirements.issubset(declaration["requirementIds"]))
                     self.assertEqual(
                         {
@@ -6099,7 +6123,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 13)
+        self.assertEqual(len(any_lifetime_rows), 25)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -6284,9 +6308,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_last_error_clear",
             "kmipkit_extension_registry_limits_v1_t.struct_size",
             "kmipkit_extension_registry_limits_v1_t.abi_version",
-            "kmipkit_client_configuration_release",
-            "kmipkit_client_batch_item_release",
-            "kmipkit_codec_limits_release",
             "kmipkit_transport_config_release",
         }
         self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
