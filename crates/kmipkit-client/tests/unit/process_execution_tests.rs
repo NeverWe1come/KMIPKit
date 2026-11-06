@@ -72,6 +72,12 @@ fn process_success_requires_the_empty_table_279_payload() {
     assert!(!result.is_pending());
     assert_eq!(result.result().status().raw(), 0);
     assert_eq!(
+        result
+            .process_response()
+            .map(|typed| typed.payload_member_count()),
+        Some(Some(0))
+    );
+    assert_eq!(
         result.with_response_payload(|payload| payload.children().len()),
         Some(0)
     );

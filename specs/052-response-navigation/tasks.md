@@ -7,12 +7,12 @@
 ## Phase 1: Red — executable contracts
 
 - [x] T001 [P] Add a public TTLV test proving an Item containing a Structure returns a borrowed StructureView and non-Structure values return absence (`KMIPKIT-0052-R060`).
-- [ ] T002 Add client tests for raw Response Payload and Response Header views, distinguishing absent payload from present empty Structure and preserving child order/repetition (`R057`, `R058`, `P002`, `P003`).
+- [x] T002 Add client tests for raw Response Payload and Response Header views, distinguishing absent payload from present empty Structure and preserving child order/repetition (`R057`, `R058`, `P002`, `P003`).
 - [ ] T003 Add a client response fixture with vendor tags at arbitrary nested depth, including Key Block and Server Information, and assert traversal and value preservation without exposing Debug values (`R004`, `R005`, `R059`, `R060`, `P006`).
-- [ ] T004 Add async typed-reader tests for Cancel, Poll, Process, and Query Asynchronous Requests for matching and mismatching outcomes; preserve the unresolved Table 286 payload generically (`R001`, `P005`).
+- [x] T004 Add async typed-reader tests for Cancel, Poll, Process, and Query Asynchronous Requests for matching and mismatching outcomes; preserve the unresolved Table 286 payload generically (`R001`, `P005`).
 - [ ] T005 Add response ownership/lifetime tests proving raw Rust views borrow the result owner and the retained message tree is zeroized when its last owner is dropped (`R007`, `R009`, `P001`, `P004`).
 - [ ] T006 Add C, Java, and Python consumer tests for owned raw payload/header copies, explicit release/close, nested vendor tags, empty/absent payload, and redaction (`R007`–`R009`).
-- [ ] T007 Run the focused tests and record the expected Red failures before production implementation.
+- [x] T007 Run the focused tests and record the expected Red failures before production implementation. The protocol accessor test failed to compile for the absent `.raw()` methods; the client compile reported all absent async readers and client raw methods.
 
 ## Phase 2: Green — Rust and TTLV surface
 
