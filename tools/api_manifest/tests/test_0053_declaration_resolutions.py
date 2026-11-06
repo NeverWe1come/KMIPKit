@@ -173,6 +173,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
     def test_approval_source_must_be_approved_and_exact(self) -> None:
         for source in (
             {**self.approval, "status": "Draft"},
+            {**self.approval, "path": "specs/048-typed-attributes/approval-record.md"},
             {**self.approval, "path": "specs/*/approval-record.md"},
             {**self.approval, "path": "../approval-record.md"},
         ):
@@ -211,6 +212,29 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         self.assertEqual("KMIPKIT-0048", capability["ownerSpecId"])
         self.assertEqual(
             {"rust", "c", "java", "python"}, set(capability["mappings"])
+        )
+
+    def test_capability_evidence_accumulates_across_resolution_batches(self) -> None:
+        first = self.candidates[0]
+        second = self._candidate(
+            "second-type", "type", "kmipkit::protocol::SecondAttribute"
+        )
+        self.manifest["publicDeclarations"] = [first, second]
+        first_mapping = self._mapping(first)
+        second_mapping = self._mapping(second)
+        first_mapping["evidencePaths"] = self.evidence[:2]
+        second_mapping["evidencePaths"] = self.evidence[2:]
+
+        intermediate = self._reconcile([first_mapping])
+        self.assertEqual("blocked", intermediate["capabilities"][0]["capabilityState"])
+        final = reconcile_0053_api_parity.reconcile_candidate_resolutions(
+            intermediate, [second_mapping]
+        )
+
+        capability = final["capabilities"][0]
+        self.assertEqual("verified", capability["capabilityState"])
+        self.assertEqual(
+            sorted(set(self.evidence)), capability["parityEvidenceIds"]
         )
 
     def test_requires_complete_mapping_evidence_and_approved_source(self) -> None:
