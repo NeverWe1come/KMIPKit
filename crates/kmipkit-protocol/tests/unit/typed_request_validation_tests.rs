@@ -18,6 +18,13 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 
 fn assert_validate_contract<T: ValidateKmipRequest>() {}
 
+fn report_has_code(report: &crate::ValidationReport, expected: &str) -> bool {
+    report
+        .issues()
+        .iter()
+        .any(|issue| issue.code().as_str() == expected)
+}
+
 fn schema_item(tag: u32, value: Value) -> Item {
     Item::new(
         RawTag::new(tag)
@@ -538,14 +545,18 @@ fn encrypt_requires_authenticated_additional_data_on_initial_multipart_request()
     // MUST be present on the initial Encrypt request in multipart encryption.
     let continuation = EncryptRequest::new(
         None,
-        Some(OperationData::ByteString(SecretBytes::new(b"part".to_vec()))),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"part".to_vec(),
+        ))),
     )
-        .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
-        .with_init_indicator(false)
-        .with_final_indicator(false)
-        .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
+    .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
+    .with_init_indicator(false)
+    .with_final_indicator(false)
+    .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
 
-    assert!(!continuation.validate().is_valid());
+    let report = continuation.validate();
+    assert!(report_has_code(&report, "KMIPKIT-0051-R066"));
+    assert!(continuation.to_ttlv_payload().is_err());
 
     let initial = EncryptRequest::new(None, None)
         .with_init_indicator(true)
@@ -560,23 +571,31 @@ fn decrypt_requires_authenticated_material_on_initial_multipart_request() {
     // and Authentication Tag MUST be present on the initial Decrypt request.
     let continuation_with_aad = DecryptRequest::new(
         None,
-        Some(OperationData::ByteString(SecretBytes::new(b"part".to_vec()))),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"part".to_vec(),
+        ))),
     )
-        .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
-        .with_init_indicator(false)
-        .with_final_indicator(false)
-        .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
+    .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
+    .with_init_indicator(false)
+    .with_final_indicator(false)
+    .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
     let continuation_with_tag = DecryptRequest::new(
         None,
-        Some(OperationData::ByteString(SecretBytes::new(b"part".to_vec()))),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"part".to_vec(),
+        ))),
     )
-        .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
-        .with_init_indicator(false)
-        .with_final_indicator(false)
-        .with_authenticated_encryption_tag(SecretBytes::new(b"tag".to_vec()));
+    .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
+    .with_init_indicator(false)
+    .with_final_indicator(false)
+    .with_authenticated_encryption_tag(SecretBytes::new(b"tag".to_vec()));
 
-    assert!(!continuation_with_aad.validate().is_valid());
-    assert!(!continuation_with_tag.validate().is_valid());
+    let aad_report = continuation_with_aad.validate();
+    let tag_report = continuation_with_tag.validate();
+    assert!(report_has_code(&aad_report, "KMIPKIT-0051-R043"));
+    assert!(report_has_code(&tag_report, "KMIPKIT-0051-R044"));
+    assert!(continuation_with_aad.to_ttlv_payload().is_err());
+    assert!(continuation_with_tag.to_ttlv_payload().is_err());
 
     let initial = DecryptRequest::new(None, None)
         .with_init_indicator(true)

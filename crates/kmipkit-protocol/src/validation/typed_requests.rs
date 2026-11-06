@@ -555,18 +555,88 @@ macro_rules! impl_crypto_request_validation {
     };
 }
 
-impl_crypto_request_validation!(
-    crate::EncryptRequest => Encrypt,
-    validate_multipart_shape,
-    "Data",
-    "§6.1.17, Table 214"
-);
-impl_crypto_request_validation!(
-    crate::DecryptRequest => Decrypt,
-    validate_multipart_shape,
-    "Data",
-    "§6.1.11, Table 196"
-);
+impl ValidateKmipRequest for crate::EncryptRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Encrypt;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if self.invalid_initial_only_aead_fields() {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-R066",
+                "Authenticated Encryption Additional Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.17, Table 214",
+                },
+            ));
+        }
+        if self.validate_multipart_shape().is_err() && !self.invalid_initial_only_aead_fields() {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.17, Table 214",
+                },
+            ));
+        }
+        if let Some(parameters) = self.cryptographic_parameters() {
+            report.append(validate_nested_request_field(
+                parameters,
+                crate::NestedStructureSchema::CryptographicParameters,
+                "Cryptographic Parameters",
+            ));
+        }
+        report
+    }
+}
+
+impl ValidateKmipRequest for crate::DecryptRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Decrypt;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        let (additional_data, authentication_tag) = self.invalid_initial_only_aead_fields();
+        if additional_data {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-R043",
+                "Authenticated Encryption Additional Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.11, Table 196",
+                },
+            ));
+        }
+        if authentication_tag {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-R044",
+                "Authenticated Encryption Tag",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.11, Table 196",
+                },
+            ));
+        }
+        if self.validate_multipart_shape().is_err() && !(additional_data || authentication_tag) {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Data",
+                crate::ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.11, Table 196",
+                },
+            ));
+        }
+        if let Some(parameters) = self.cryptographic_parameters() {
+            report.append(validate_nested_request_field(
+                parameters,
+                crate::NestedStructureSchema::CryptographicParameters,
+                "Cryptographic Parameters",
+            ));
+        }
+        report
+    }
+}
 impl_crypto_request_validation!(
     crate::MacRequest => Mac,
     validate_multipart_shape,
