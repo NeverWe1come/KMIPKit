@@ -10,7 +10,7 @@
 //!     Client, ClientBatch, ClientBatchResponse, ClientError, ProfileObjectState,
 //!     ProfileValidationContext, ProfileValidationSelection,
 //! };
-//! use kmipkit_ttlv::codec::CodecLimits;
+//! use kmipkit::ttlv::codec::CodecLimits;
 //!
 //! fn execute_for_profile(
 //!     client: &mut Client,
@@ -30,6 +30,31 @@
 //! }
 //! ```
 #![forbid(unsafe_code)]
+
+/// Complete typed protocol models and operation helpers.
+pub use kmipkit_protocol as protocol;
+/// Generic TTLV values and the bounded decoder.
+pub use kmipkit_ttlv as ttlv;
+
+/// Configuration for client-owned vendor extension definitions.
+pub mod client_config {
+    pub use kmipkit_client::extension_registry::{
+        ClientConfiguration, ClientExtensionRegistry, client_extension_registry,
+    };
+}
+
+/// Selected configuration types for the supported TLS 1.3 mutual-TLS transports.
+///
+/// This namespace configures the high-level client. It intentionally omits the
+/// raw transport exchange trait, response byte containers, and concrete
+/// transport adapters.
+pub mod transport_config {
+    pub use kmipkit_transport::{
+        CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RevocationListInput,
+        TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder, TransportConfigError,
+        TrustSource,
+    };
+}
 
 /// The synchronized `KMIPKit` package version compiled into this library.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -53,6 +78,18 @@ pub const fn runtime_version() -> RuntimeVersion {
         product_version: VERSION,
         abi_version: ABI_VERSION,
     }
+}
+
+/// Returns the local facade levels provided by this library build.
+///
+/// The ordered levels describe the `KMIPKit` API surface: high-level builders,
+/// typed protocol requests and responses, and generic structurally valid TTLV.
+/// This metadata query does not send a request and is distinct from the KMIP
+/// Discover Versions operation. It reports the API taxonomy only; it does not
+/// assert that every KMIP operation is mapped or complete.
+#[must_use]
+pub const fn api_levels() -> &'static [&'static str] {
+    &["high-level", "typed-protocol", "generic-ttlv"]
 }
 
 /// A stable error returned by local runtime metadata queries.
@@ -95,12 +132,30 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
     Ok(matches!(
         capability_id,
-        "ffi_runtime_metadata"
+        "api_level_discovery"
+            | "client_asynchronous_operations"
+            | "client_batch_model"
+            | "client_execution"
+            | "client_profile_readiness"
+            | "client_profile_validation"
+            | "credential_secret_parity"
+            | "credential_ttlv_parity"
+            | "credential_type_parity"
+            | "credential_validation_error_parity"
+            | "crypto_response_ttlv"
+            | "ffi_runtime_metadata"
             | "generic_ttlv_model"
+            | "hashed_password_timestamp_sequence"
+            | "nonce_ttlv_parity"
+            | "production_transport"
             | "ttlv_wire_codec"
+            | "usage_allocation_guard"
             | "vendor_extension_registry"
             | "discover_versions_request_item"
             | "opaque_register_context"
+            | "server_generated_creation"
+            | "typed_message_model"
+            | "public_binding_surface"
     ))
 }
 

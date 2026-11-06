@@ -32,7 +32,10 @@ import org.jspecify.annotations.Nullable;
 
 /** Secure selection and loading of the bundled JNI library. */
 final class NativeLibraryLoader {
-    static final String LOAD_FAILURE_MESSAGE = "KMIPKit native library could not be loaded";
+    static final String LOAD_FAILURE_MESSAGE = "KMIPKit native library could not be loaded; install a matching "
+            + "package for this OS and architecture or set -Dkmipkit.nativeLibrary to a compatible library.";
+    static final String ABI_FAILURE_MESSAGE = "KMIPKit native library has an incompatible ABI; install a matching "
+            + "package or set -Dkmipkit.nativeLibrary to a compatible library.";
 
     private static final String LIBRARY_BASE_NAME = "kmipkit_jni";
     private static final int SHA256_HEX_LENGTH = 64;
@@ -84,6 +87,9 @@ final class NativeLibraryLoader {
                     NativeLibraryLoader::createPrivateDirectory);
             loadAndVerify(library);
         } catch (UnsatisfiedLinkError failure) {
+            if (failure instanceof NativeAbiMismatchError) {
+                throw failure;
+            }
             throw loadFailure();
         } catch (RuntimeException failure) {
             throw loadFailure();
@@ -110,7 +116,7 @@ final class NativeLibraryLoader {
 
     static void validateNativeAbiVersion(int abiVersion) {
         if (abiVersion != 1) {
-            throw loadFailure();
+            throw new NativeAbiMismatchError();
         }
     }
 
@@ -522,5 +528,13 @@ final class NativeLibraryLoader {
 
     private static UnsatisfiedLinkError loadFailure() {
         return new UnsatisfiedLinkError(LOAD_FAILURE_MESSAGE);
+    }
+
+    private static final class NativeAbiMismatchError extends UnsatisfiedLinkError {
+        private static final long serialVersionUID = 1L;
+
+        private NativeAbiMismatchError() {
+            super(ABI_FAILURE_MESSAGE);
+        }
     }
 }

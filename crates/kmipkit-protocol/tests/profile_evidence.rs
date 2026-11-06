@@ -5,7 +5,8 @@
 
 use kmipkit_protocol::{
     DiscoverVersionsResponse, ProfileEvidenceReadiness, ProfileEvidenceRecord,
-    QueryAsyncRequestsResponse, ResponseMessage, profiles_generated::CLIENT_PROFILES,
+    ProfileReadinessBlocker, QueryAsyncRequestsResponse, ResponseMessage,
+    profiles_generated::CLIENT_PROFILES,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
@@ -84,6 +85,21 @@ fn passing_records() -> Vec<ProfileEvidenceRecord> {
         .iter()
         .map(|requirement_id| ProfileEvidenceRecord::passed(*requirement_id))
         .collect()
+}
+
+#[test]
+fn standard_utf8_unknown_requirement_is_accepted_and_kept_redacted() {
+    let requirement_id = "\0UNKNOWN-λ-🔐";
+    let record = ProfileEvidenceRecord::passed(requirement_id);
+    let readiness =
+        ProfileEvidenceReadiness::evaluate(BASELINE, &[record]).expect("Baseline profile resolves");
+
+    assert!(
+        readiness
+            .blockers()
+            .iter()
+            .any(|blocker| matches!(blocker, ProfileReadinessBlocker::UnknownRequirementRecord))
+    );
 }
 
 #[test]

@@ -13,6 +13,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 const RECERTIFY_OPERATION: u32 = 0x0000_0007;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const INVALID_CSR: u32 = 0x0000_002F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CERTIFICATE_REQUEST_UNIQUE_IDENTIFIER: u32 = 0x0042_0139;
@@ -76,7 +77,7 @@ fn request_emits_table_300_fields_once_in_order_and_preserves_values() {
     let request_identifier = UniqueIdentifier::Integer(17);
     let request_value = b"opaque-certificate-request";
     let attributes = structure([item(CERTIFICATE_TYPE, Value::enumeration(1))]);
-    let masks = structure([item(0x0042_0160, Value::integer(3))]);
+    let masks = structure([item(0x0042_015e, Value::integer(3))]);
     let request = RecertifyRequest::new()
         .with_unique_identifier(identifier.clone())
         .with_certificate_request_unique_identifier(request_identifier.clone())
@@ -154,6 +155,37 @@ fn request_preserves_optional_identifier_when_certificate_request_value_is_prese
     assert_eq!(
         field_tags(&payload),
         [CERTIFICATE_REQUEST_TYPE, CERTIFICATE_REQUEST_VALUE]
+    );
+}
+
+#[test]
+fn request_allows_certificate_request_type_without_request_value() {
+    // OASIS KMIP Specification v2.1 §6.1.45, Table 300. The Type is
+    // required when the Certificate Request is present; Type alone is valid.
+    let identifier = UniqueIdentifier::TextString("certificate-type-only".to_owned());
+    let payload = RecertifyRequest::new()
+        .with_unique_identifier(identifier.clone())
+        .with_certificate_request_type(5)
+        .into_ttlv_payload()
+        .expect("Type without Certificate Request Value is valid with an explicit identifier");
+
+    assert_eq!(
+        field_tags(&payload),
+        [UNIQUE_IDENTIFIER, CERTIFICATE_REQUEST_TYPE]
+    );
+    assert_eq!(
+        payload.view().children()[0].with_value(|value| match value {
+            ValueView::TextString(value) => Some(value.to_owned()),
+            _ => None,
+        }),
+        Some("certificate-type-only".to_owned())
+    );
+    assert_eq!(
+        payload.view().children()[1].with_value(|value| match value {
+            ValueView::Enumeration(value) => Some(*value),
+            _ => None,
+        }),
+        Some(5)
     );
 }
 
@@ -268,7 +300,10 @@ fn successful_response_returns_new_identifier_and_preserves_unknown_fields() {
             "replacement-certificate".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -298,6 +333,29 @@ fn failure_preserves_table_302_reason_without_success_identifier() {
         Some(INVALID_CSR)
     );
     assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 302 remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        RECERTIFY_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-recertify-response".to_owned()),
+        )])),
+    );
+    let pending = RecertifyResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]

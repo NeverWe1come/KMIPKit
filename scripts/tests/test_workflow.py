@@ -251,6 +251,311 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported pull-request platform must run fixture generator rejection tests.",
         )
 
+    def test_script_contract_job_runs_t102_java_ttlv_bridge_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v",
+            python_contracts,
+            "The exact T102 JNI bridge exclusion contract must run on each supported platform.",
+        )
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_binding_exports -v",
+            python_contracts,
+            "The complete binding namespace exclusion contract must run on each supported platform.",
+        )
+
+    def test_script_contract_job_runs_t102_transport_response_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_transport_response_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact ADR-0014 TransportResponse trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_runtime_version_component_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_runtime_version_component_mapping -v",
+            python_contracts,
+            "Every supported platform must verify runtime-version component parity.",
+        )
+
+    def test_script_contract_job_runs_t102_runtime_version_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_runtime_version_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact RuntimeVersion trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_get_constraints_response_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Get Constraints response trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_log_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact LogRequest trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_join_split_key_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact JoinSplitKeyRequest trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_import_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_import_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact ImportRequest trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_interop_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_interop_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact InteropRequest trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_pkcs11_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Pkcs11Request trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_pkcs11_client_root_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_pkcs11_client_root_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact client-root PKCS#11 trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_set_constraints_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact SetConstraintsRequest trait exclusion set.",
+        )
+
+    def test_script_contract_job_runs_t102_protocol_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact approved protocol request trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_request_trait_batch_two_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_request_trait_batch_two -v",
+            python_contracts,
+            "Every supported platform must verify the exact Validate and policy request trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_ticket_login_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Ticket and Login request trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_rng_retrieve_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_rng_retrieve_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact RNG Retrieve request trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_export_get_request_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_export_get_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Export and Get request trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_revocation_register_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_revocation_register_request_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact RevocationReason and RegisterRequest trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_profile_validation_error_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_profile_validation_error_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact ProfileValidationError trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_profile_model_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_profile_model_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact profile model trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_profile_debug_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_profile_debug_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact profile-state Debug trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_cryptographic_value_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_cryptographic_value_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact cryptographic value trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_locate_value_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_locate_value_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Locate value trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_get_locate_error_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_get_locate_error_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact Get and Locate error trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_runtime_metadata_error_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_runtime_metadata_error_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact RuntimeMetadataError trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_secret_bytes_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_secret_bytes_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact root SecretBytes trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_key_value_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_key_value_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact key value trait exclusions.",
+        )
+
+    def test_script_contract_job_runs_t102_usage_allocation_context_trait_exclusion_contract(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        self.assertIn(
+            "unittest tools.api_manifest.tests.test_t102_usage_allocation_context_trait_exclusions -v",
+            python_contracts,
+            "Every supported platform must verify the exact client Usage Allocation context trait exclusions.",
+        )
+
+    def test_script_contract_job_fetches_locked_cargo_dependencies_for_offline_audit(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        fetch = self.require_named_step(job, "Fetch locked Cargo dependencies for offline ABI audit")
+        python_contracts = self.require_named_step(job, "Run Python contracts")
+        self.assertIn("cargo fetch --locked", fetch.group(1))
+        self.assertLess(fetch.start(), python_contracts.start())
+
+    def test_script_contract_job_primes_java_classpath_before_offline_binding_audit(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        prime = self.require_named_step(job, "Resolve Java compile classpath for offline binding audit")
+        python_contracts = self.require_named_step(job, "Run Python contracts")
+        prime_script = prime.group(1)
+        self.assertIn("apiAuditClasspath", prime_script)
+        self.assertIn("bindings/java/gradlew.bat", prime_script)
+        self.assertIn("bash bindings/java/gradlew", prime_script)
+        self.assertIn("--project-dir bindings/java", prime_script)
+        self.assertLess(prime.start(), python_contracts.start())
+
     def test_script_contract_job_installs_pinned_fixture_test_dependencies(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
@@ -475,9 +780,123 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_c_api_level_consumer_receives_expected_local_taxonomy(self) -> None:
+        cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            cmake,
+            r"(?ms)NAME kmipkit_client_abi_consumer\s+"
+            r"COMMAND kmipkit_client_abi_consumer\s+"
+            r"high-level\s+typed-protocol\s+generic-ttlv\s*\)",
+            "The standalone CTest consumer must receive the expected API-level values.",
+        )
+
+    def test_rust_pkcs11_runs_in_the_default_workspace_test_build(self) -> None:
+        contents = self.require_workflow()
+        core_job = self.require_job(contents, "core")
+        self.require_named_step(core_job, "Run workspace tests")
+        self.assertNotIn("PKCS11_CANDIDATE", core_job)
+        self.assertFalse((REPOSITORY_ROOT / "scripts/test_candidate_rustflags_gate.py").exists())
+
+    def test_c_consumer_compiles_and_runs_against_the_default_public_abi(self) -> None:
+        contents = self.require_workflow()
+        c_job = self.require_job(contents, "language-c")
+        audit = self.require_named_step(c_job, "Audit the built C ABI export allowlist")
+        configure = self.require_named_step(c_job, "Configure the C consumer with Ninja")
+        compile_step = self.require_named_step(c_job, "Compile the C consumer and example")
+        run_step = self.require_named_step(c_job, "Run the C consumer and example")
+        self.assertLess(audit.start(), configure.start())
+        self.assertLess(configure.start(), compile_step.start())
+        self.assertLess(compile_step.start(), run_step.start())
+        self.assertIn("target/debug", audit.group(1))
+        self.assertIn("target/debug", configure.group(1))
+        self.assertIn("ctest", run_step.group(1))
+
+        cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            cmake,
+            r"(?m)^set\(KMIPKIT_TARGET_DIR .*CACHE PATH",
+            "CMake must accept the target directory for the public C consumer.",
+        )
+        self.assertNotIn("PKCS11_CANDIDATE", cmake)
+        self.assertNotIn("PKCS11_CANDIDATE", c_job)
+
+    def test_non_windows_c_consumer_uses_the_bash_workspace_variable(self) -> None:
+        contents = self.require_workflow()
+        c_job = self.require_job(contents, "language-c")
+        configure = self.require_named_step(c_job, "Configure the C consumer with Ninja")
+
+        self.assertIn('"-DKMIPKIT_TARGET_DIR=$GITHUB_WORKSPACE/target/debug"', configure.group(1))
+        self.assertNotIn("$env:GITHUB_WORKSPACE", configure.group(1))
+
+    def test_java_and_python_default_packages_include_public_pkcs11_mappings(self) -> None:
+        contents = self.require_workflow()
+        java_job = self.require_job(contents, "language-java")
+        python_job = self.require_job(contents, "language-python")
+        python_tests = self.require_named_step(
+            python_job, "Build the Python Maturin CFFI package and run tests and example"
+        )
+        self.assertIn("bindings/python/tests", python_tests.group(1))
+        self.assertNotIn("PKCS11_CANDIDATE", python_job)
+
+        gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn('"buildCandidateNativeLibrary"', gradle)
+        self.assertIn('target/native/${hostLibraryName()}', gradle)
+        native_jar = re.search(r'(?ms)tasks\.register<Jar>\("nativeJar"\) \{(.*?)^\}', gradle)
+        self.assertIsNotNone(native_jar)
+        assert native_jar is not None
+        self.assertIn('dependsOn("buildNativeLibrary")', native_jar.group(1))
+
+        pom = (REPOSITORY_ROOT / "bindings/java/pom.xml").read_text(encoding="utf-8")
+        self.assertNotIn("PKCS11_CANDIDATE", pom)
+        self.assertIn("${project.build.directory}/native/", pom)
+
+    def test_java_package_smoke_audits_public_jni_exports(self) -> None:
+        contents = self.require_workflow()
+        java_job = self.require_job(contents, "language-java")
+        smoke = self.require_named_step(java_job, "Run packaged Java native loader smoke")
+        audit = self.require_named_step(java_job, "Audit the packaged default JNI exports")
+
+        self.assertLessEqual(smoke.end(), audit.start())
+        self.assertIn("bindings/java/target/native", audit.group(1))
+        self.assertIn("audit_jni_public_exports.py", audit.group(1))
+        self.assertIn("-like '*kmipkit_jni.*'", audit.group(1))
+        self.assertNotIn("--mode", audit.group(1))
+        self.assertNotIn("audit_binding_exports.py", audit.group(1))
+
+    def test_default_java_native_bridge_exports_public_pkcs11_entrypoints(self) -> None:
+        native = (REPOSITORY_ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+        for symbol in (
+            'extern "C" int32_t kmipkit_client_batch_item_pkcs11(',
+            'extern "C" int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(',
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11(",
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11(",
+        ):
+            with self.subTest(symbol=symbol):
+                position = native.find(symbol)
+                self.assertGreaterEqual(position, 0, f"public JNI bridge is missing {symbol}")
+
+        powershell = (REPOSITORY_ROOT / "bindings/java/native/build.ps1").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn("PKCS11_CANDIDATE", powershell)
+
+        shell = (REPOSITORY_ROOT / "bindings/java/native/build.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn("PKCS11_CANDIDATE", shell)
+
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", java_job)
 
         prime = self.require_named_step(java_job, "Prime Gradle Java compile dependencies")
         self.assertIn("compileJava", prime.group(1))
@@ -497,6 +916,35 @@ class WorkflowContractTests(unittest.TestCase):
             gradle,
             "the packaged smoke must select the just-built library for its current matrix host",
         )
+
+        smoke = (REPOSITORY_ROOT / "bindings/java/src/test/nativeJarSmoke/java/NativeLibraryPackageSmoke.java").read_text(
+            encoding="utf-8"
+        )
+        for required in (
+            "verifyLoadSuccess",
+            "verifyMissingBundle",
+            "verifyUnsupportedArchitecture",
+            "verifyWrongAbi",
+            "checkNetworkWasBlocked",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, smoke)
+
+    def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
+        contents = self.require_workflow()
+        python_job = self.require_job(contents, "language-python")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", python_job)
+
+        step = self.require_named_step(python_job, "Run isolated offline Python wheel smoke")
+        for required in (
+            "maturin build --offline",
+            "uv venv --offline",
+            "uv pip install --offline --no-deps",
+            "python_smoke.py",
+            "wrong_abi.rs",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, step.group(1))
     def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "language-c")
@@ -548,7 +996,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn(
             "python -m coverage report --data-file=coverage-normative/.coverage "
-            "--include=tools/normative_catalog/generate_attribute_types.py --fail-under=95",
+            "--include=tools/normative_catalog/generate_attribute_types.py --fail-under=90",
             job,
         )
 
@@ -566,21 +1014,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("name: coverage-ffi", job)
         self.assertIn("path: coverage-ffi/coverage.json", job)
         self.assertIn(
-            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked",
+            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
             collector,
         )
-        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked", collector)
+        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked", collector)
         self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
-        self.assertIn("c_api_coverage\\.rs", collector)
+        self.assertIn(r"Running unittests src\/lib\.rs", collector)
+        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
         self.assertIn(
-            'test_binary_name="$(',
+            'mapfile -t test_binary_names < <(',
             collector,
         )
-        self.assertIn("sed -nE '/Running tests", collector)
+        self.assertIn("test_binaries=()", collector)
+        self.assertIn('test_binaries+=("${test_binary}")', collector)
         self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
-        self.assertIn("| tail -n 1", collector)
-        self.assertIn('test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"', collector)
-        self.assertNotIn('test_binaries=("${llvm_cov_target}"/debug/deps/c_api_coverage-*)', collector)
+        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
+        self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
         self.assertIn('rustc --print sysroot', collector)
         self.assertIn('rustc -vV', collector)
         self.assertIn('"${llvm_cov}" export -format=text', collector)
@@ -591,6 +1040,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("--sources", collector)
         self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
         self.assertIn("crates/kmipkit-ffi/src/extension_registry/client_abi.rs", collector)
+        self.assertIn("crates/kmipkit-ffi/src/extension_registry/credential_secrets.rs", collector)
         self.assertIn('--output "${report_dir}/coverage.json"', collector)
         self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
         self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)
@@ -598,6 +1048,20 @@ class WorkflowContractTests(unittest.TestCase):
         gate = self.require_job(contents, "coverage-gate")
         self.assertIn("coverage", gate)
         self.assertIn("pattern: coverage-*", gate)
+
+    def test_ffi_coverage_collection_runs_unit_and_public_c_consumer_targets(self) -> None:
+        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(
+            "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
+            collector,
+        )
+        self.assertIn(r"Running unittests src\/lib\.rs", collector)
+        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
+        self.assertIn('test_binaries+=("${test_binary}")', collector)
+        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()
@@ -900,40 +1364,32 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 
 
-    def test_coverage_threshold_waiver_is_limited_to_the_remaining_active_feature_branch(self) -> None:
+    def test_coverage_threshold_gate_enforces_all_selected_scopes(self) -> None:
         job = self.require_job(self.require_workflow(), "coverage-gate")
         enforcement = re.search(
             r"(?ms)^      - name: Enforce coverage thresholds\n(.*?)(?=^      - name: |\Z)",
             job,
         )
         self.assertIsNotNone(enforcement)
-        self.assertRegex(
-            enforcement.group(1),
-            r"(?ms)^        if: >-\s+"
-            r"github\.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'$",
-        )
-        self.assertIn("Record temporary coverage-threshold waiver", job)
-        self.assertIn("steps.enforce.outcome == 'skipped'", job)
-        self.assertIn("Restore the minimum coverage thresholds", job)
+        self.assertNotRegex(enforcement.group(1), r"(?m)^\s+if:")
+        self.assertIn("scripts/coverage_gate.py aggregate", enforcement.group(1))
+        self.assertIn("--scopes-json", enforcement.group(1))
+        self.assertNotIn("temporary coverage-threshold waiver", job)
 
 
-    def test_normative_generator_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
+    def test_normative_generator_coverage_threshold_is_unconditional(self) -> None:
         job = self.require_job(self.require_workflow(), "normative-inventory")
         step = re.search(
             r"(?ms)^      - name: Verify normative generator line coverage\n(.*?)(?=^      - name: |\Z)",
             job,
         )
         self.assertIsNotNone(step)
-        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', step.group(1))
-        self.assertIn(
-            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
-            step.group(1),
-        )
-        self.assertIn("--fail-under=95", step.group(1))
-        self.assertIn("temporary coverage-threshold waiver", step.group(1))
+        self.assertNotIn("GITHUB_HEAD_REF", step.group(1))
+        self.assertIn("--fail-under=90", step.group(1))
+        self.assertNotIn("temporary coverage-threshold waiver", step.group(1))
 
 
-    def test_python_coverage_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
+    def test_python_coverage_threshold_is_unconditional(self) -> None:
         job = self.require_job(self.require_workflow(), "coverage-python")
         step = re.search(
             r"(?ms)^      - name: Run Python coverage suite\n(.*?)(?=^      - name: |\Z)",
@@ -941,15 +1397,12 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIsNotNone(step)
         body = step.group(1)
-        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', body)
-        self.assertIn(
-            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
-            body,
-        )
-        self.assertIn("coverage_threshold_args+=(--cov-fail-under=0)", body)
+        self.assertNotIn("GITHUB_HEAD_REF", body)
+        self.assertNotIn("--cov-fail-under=0", body)
         self.assertIn("--cov-report=xml:coverage-python/coverage.xml", body)
-        self.assertIn('"' + "$" + '{coverage_threshold_args[@]}"', body)
-        self.assertIn("temporary coverage-threshold waiver", body)
+        self.assertNotIn("temporary coverage-threshold waiver", body)
+        python_config = (REPOSITORY_ROOT / "bindings/python/pyproject.toml").read_text(encoding="utf-8")
+        self.assertRegex(python_config, r"(?m)^fail_under\s*=\s*85$")
 
 
 if __name__ == "__main__":

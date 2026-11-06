@@ -6,13 +6,10 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
 AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
-AUDIT_REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "binding-export-report-2026-10-12.json"
+AUDIT_REPORT_PATH = Path(
+    "specs/043-public-api-bindings/reports/binding-export-audit-2026-11-05.json"
 )
+AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
 
 
 class CApiDocumentationTests(unittest.TestCase):
@@ -22,7 +19,7 @@ class CApiDocumentationTests(unittest.TestCase):
         self.assertIn("../../specification/api/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
-            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json",
+            f"../../{AUDIT_REPORT_PATH.as_posix()}",
             documentation,
         )
         self.assertIn("audit_binding_exports.py", documentation)
@@ -47,11 +44,96 @@ class CApiDocumentationTests(unittest.TestCase):
                 self.assertEqual(
                     fields[2:5],
                     [
-                        str(counts["observed"]),
-                        str(counts["manifest"]),
-                        str(counts["exactMatches"]),
+                        f"{counts['observed']:,}",
+                        f"{counts['manifest']:,}",
+                        f"{counts['exactMatches']:,}",
                     ],
                 )
+
+    def test_checked_in_binding_export_report_reconciles_every_package(self) -> None:
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        declarations_by_package: dict[str, int] = {}
+        stable_c_error_codes = {
+            category["cCode"]
+            for category in manifest["errorCategories"]
+            if category.get("stableCHeaderCode") is True
+        }
+        for declaration in manifest["publicDeclarations"]:
+            if (
+                declaration["packageId"] == "c-kmipkit"
+                and declaration["declarationState"] == "blocked"
+                and declaration["kind"] != "c-symbol"
+                and declaration["exportName"] not in stable_c_error_codes
+            ):
+                continue
+            package_id = declaration["packageId"]
+            declarations_by_package[package_id] = (
+                declarations_by_package.get(package_id, 0) + 1
+            )
+
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                self.assertTrue(package["complete"], "scanner inventory must be complete")
+                self.assertTrue(
+                    package["matchesManifest"],
+                    f"unreconciled exports for {package['packageId']}: "
+                    f"missing={len(package['missingFromManifest'])}, "
+                    f"stale={len(package['notObserved'])}, "
+                    f"kind={len(package['kindMismatches'])}, "
+                    f"issues={len(package['issues'])}",
+                )
+                self.assertEqual([], package["missingFromManifest"])
+                self.assertEqual([], package["notObserved"])
+                self.assertEqual([], package["kindMismatches"])
+                self.assertEqual([], package["issues"])
+                self.assertEqual(
+                    declarations_by_package[package["packageId"]],
+                    package["counts"]["manifest"],
+                    "checked-in audit report must match the current manifest",
+                )
+
+    def test_get_attribute_list_c_exports_are_present_in_checked_in_report(self) -> None:
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        c_package = next(
+            package for package in report["packages"]
+            if package["packageId"] == "c-kmipkit"
+        )
+        stable_c_error_codes = {
+            category["cCode"]
+            for category in manifest["errorCategories"]
+            if category.get("stableCHeaderCode") is True
+        }
+        c_declarations = {
+            row["exportName"]
+            for row in manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and not (
+                row["declarationState"] == "blocked"
+                and row["kind"] != "c-symbol"
+                and row["exportName"] not in stable_c_error_codes
+            )
+        }
+        expected = {
+            "kmipkit_client_batch_item_get_attribute_list",
+            "kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv",
+        }
+
+        self.assertTrue(
+            expected <= c_declarations,
+            f"Get Attribute List exports missing from manifest: {sorted(expected - c_declarations)}",
+        )
+        self.assertTrue(c_package["matchesManifest"])
+        self.assertEqual(len(c_declarations), c_package["counts"]["manifest"])
 
 
 if __name__ == "__main__":

@@ -3146,7 +3146,14 @@ fn is_test_cfg(attributes: &[Attribute]) -> bool {
 fn supported_cfg(attribute: &Attribute) -> bool {
     matches!(
         &attribute.meta,
-        Meta::List(list) if matches!(list.tokens.to_string().as_str(), "test" | "not (test)")
+        Meta::List(list)
+            if matches!(
+                list.tokens.to_string().as_str(),
+                "test"
+                    | "not (test)"
+                    | "kmipkit_pkcs11_candidate_test"
+                    | "not (kmipkit_pkcs11_candidate_test)"
+            )
     )
 }
 

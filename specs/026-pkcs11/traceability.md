@@ -66,24 +66,31 @@ Function/Return Code requirements and optional rows are each represented above.
 | FR-001 | Typed request/response, closed operation associations, explicit `Client::pkcs11` and options method; protocol/client tests |
 | FR-002 | Required fields, Enum/Integer, malformed known outer/nested types, duplicates/order, depth, unknown preservation tests |
 | FR-003 | Table 275 reasons, open reason values, retained complete generic response, Pending correlation, delivery and no-retry tests; shared Result Message redaction contract |
-| FR-004 | Rust typed and generic TTLV complete; C/Java/Python gated by T019 / KMIPKIT-0043 |
-| FR-005 | TTLV owned payloads and `SecretBytes` zeroize using existing storage; diagnostic sentinel tests; adapters/runtime-copy documentation remains gated with T019 |
+| FR-004 | Rust typed and generic TTLV plus C/Java/Python public mapping; compiled C, Java/JNI, Python/CFFI, and Rust tests verify the shared success fixture; see T019/T057 evidence |
+| FR-005 | TTLV owned payloads and `SecretBytes` zeroize using existing storage; diagnostic sentinel tests and caller-owned response lifetime tests cover all four languages; adapter/runtime-copy limits are documented |
 | FR-006 | No independent catalog client clauses; structural source rows and corresponding relevant negatives verified |
 | FR-007 | Official PKCS#11 fixture unavailable; no profile, official vector, interoperability, certification or FIPS claim |
 | FR-008 | Table rows, operation enum, tag and nested structure-member catalog records link to implementation/tests; generated report validated |
-| SC-001 | Rust operation implemented; four-language gate remains T019 |
+| SC-001 | Rust operation and four-language mapping implemented; release integration remains separate |
 | SC-002 | All Table 273/274 fields and Table 275 alternatives mapped and locally exercised; no separate client clauses |
 | SC-003 | Fake transport confirms one exchange, typed Success/Failure/Pending, unknowns, malformed response and delivery state |
 | SC-004 | Local and release quality gates recorded in `implementation-evidence.md`; multi-platform coverage and two independent servers remain required |
 
 ## Explicit outstanding gates
 
-T019 remains blocked: active release commit
-`a0846037eb9930b24d9b9e3d8c63b2e66b438d1a` has no integrated approved
-KMIPKIT-0043 capability mapping. Existing API-manifest outputs are checked
-without adding invented binding mappings. T022's local and actual CI coverage/platform/security conditions passed;
-it remains open for the two-independent-server interoperability condition.
-No live PKCS#11 interoperability exchange was performed in this increment.
+T019 is implemented on the KMIPKIT-0043 feature branch. Rust, compiled C,
+Java/JNI, and Python/CFFI consume and verify the same shared success response
+fixture, including the Batch Item Response wrapper, ordered payload fields,
+unknown Return Code and vendor extension, absent optional fields, redaction,
+response ownership, and one-exchange/no-follow-up behavior. This work was
+authorized by a direct human instruction dated 2026-10-20 under the existing
+**Approved for implementation** contract. The specification has not been
+formally accepted (`formalAcceptance: false`), and this branch's mapping has
+not yet been integrated into `release/1.0.0`.
+
+T022's local and actual CI coverage/platform/security conditions passed; it
+remains open for the two-independent-server interoperability condition. No
+live PKCS#11 interoperability exchange was performed in this increment.
 
 
 ## Independent review corrections — 2026-10-12

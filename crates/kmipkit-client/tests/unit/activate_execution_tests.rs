@@ -340,6 +340,7 @@ fn malformed_activate_success_is_a_redacted_protocol_error_after_one_exchange() 
             .expect_err("a successful Activate response needs one Unique Identifier");
 
         assert_eq!(error.category(), ClientErrorCategory::Protocol);
+        assert!(error.response_ttlv().is_none());
         assert_eq!(
             error.delivery_state(),
             Some(RequestDeliveryState::ResponseStarted)

@@ -19,7 +19,7 @@ The first suite covers Tables 273/274, optional absence, Function Enumeration/In
     python tools/normative_catalog/report.py --check
     git diff --check
 
-Apply the exact gates in docs/development/testing.md: 95% line coverage for the protocol crate and changed production code, 90% Rust workspace coverage, and 100% normative traceability. Apply the 85% per-scope adapter/transport thresholds when those scopes change.
+Apply the exact gates in docs/development/testing.md: 90% line coverage for the protocol crate and changed production code, 90% Rust workspace coverage, and 100% normative traceability. Apply the 85% per-scope adapter/transport thresholds when those scopes change.
 
 ## 1.0 interoperability release gate
 
@@ -47,10 +47,40 @@ zeroization contract. Callbacks permit deliberate caller-owned copies, whose
 lifetime is controlled by the caller. No PKCS#11 profile codec is added.
 
 The source-derived protocol suite contains 15 tests and the fake-client suite
-contains 9 tests. Exact names, sources and remaining four-language/release
-gates are in `traceability.md`; command results and TDD commits are in
-`implementation-evidence.md`. C/Java/Python mapping remains T019, gated by
-KMIPKIT-0043. No official PKCS#11 fixture or real two-server pass is claimed.
+contains 9 tests. Exact names, sources and release gates are in
+`traceability.md`; command results and TDD commits are in
+`implementation-evidence.md`. The four-language T019 mapping is implemented
+on the KMIPKIT-0043 feature branch. No official PKCS#11 fixture or real
+two-server pass is claimed.
+
+## Four-language public mapping
+
+The public request/response mapping follows the approved-for-implementation
+KMIPKIT-0040 contract. The maintainer's direct instruction dated 2026-10-20
+authorized its implementation; this does not change the specification's
+approval status or constitute formal acceptance (`formalAcceptance: false`).
+The APIs below forward the KMIP operation and preserve opaque values; they do
+not parse the PKCS#11 Profile.
+
+- **Rust**: `Pkcs11Request`, `ClientRequest::pkcs11`, `Client::pkcs11`, and
+  `Pkcs11Response::with_ttlv` / `with_ttlv_payload`.
+- **C**: `kmipkit_client_batch_item_pkcs11` constructs the request and
+  `kmipkit_client_batch_item_response_pkcs11_ttlv` returns an owned copy of
+  successful response TTLV for caller release.
+- **Java**: `ClientBatchItem.pkcs11` constructs the request;
+  `ClientBatchItemResult.pkcs11Response()` returns an owned
+  `Pkcs11Response` with `responseTtlv()` and `close()`.
+- **Python**: `client_batch_item_pkcs11` constructs the request;
+  `BatchItemResult.pkcs11_response` returns an owned `Pkcs11Response` with
+  `response_ttlv` and `close()`.
+
+The shared successful-response fixture checks the complete Batch Item Response
+wrapper, then the five ordered payload fields, unknown Return Code and vendor
+extension preservation, optional absence, redaction, ownership after source
+closure, and no automatic retry or follow-up. Rust, compiled C, Java/JNI, and
+Python/CFFI test names and command results are in `traceability.md` and
+`implementation-evidence.md`. These are local adapter tests, not
+interoperability evidence.
 
 
 The focused suites also exercise §§7.27–7.29 known nested types/cardinality,

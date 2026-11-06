@@ -52,13 +52,17 @@ pub struct TicketCredential {
 /// An opaque TTLV Structure for extension and unknown Credential Types.
 pub struct OpaqueTtlv {
     tree: Structure,
+    extension_credential_type: Option<u32>,
 }
 
 macro_rules! impl_tree_value {
     ($type:ty, $label:literal) => {
+        impl_tree_value!($type, $label, |tree| Self { tree });
+    };
+    ($type:ty, $label:literal, $make:expr) => {
         impl $type {
             fn from_tree(tree: Structure) -> Self {
-                Self { tree }
+                ($make)(tree)
             }
 
             /// Lends the original ordered TTLV Structure for callback-scoped access.
@@ -97,7 +101,36 @@ impl_tree_value!(
 impl_tree_value!(DeviceCredential, "DeviceCredential");
 impl_tree_value!(OneTimePasswordCredential, "OneTimePasswordCredential");
 impl_tree_value!(TicketCredential, "TicketCredential");
-impl_tree_value!(OpaqueTtlv, "OpaqueTtlv");
+impl_tree_value!(OpaqueTtlv, "OpaqueTtlv", |tree| Self {
+    tree,
+    extension_credential_type: None,
+});
+
+impl OpaqueTtlv {
+    fn from_extension_tree(tree: Structure, credential_type: u32) -> Self {
+        Self {
+            tree,
+            extension_credential_type: Some(credential_type),
+        }
+    }
+}
+
+impl UsernameAndPasswordCredential {
+    /// Validates and retains a Username and Password Credential Value.
+    ///
+    /// A Username is required and a Password is optional under KMIP 2.1
+    /// §9.11, Table 411. The original TTLV order and unknown fields are
+    /// retained, and validation errors never include field contents.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error when the Username or optional Password
+    /// has an invalid type, order, or multiplicity.
+    pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
+        validate(&tree, USERNAME_PASSWORD_RULES, &[])?;
+        Ok(Self::from_tree(tree))
+    }
+}
 
 /// A known or opaque KMIP Credential Value with its original ordered TTLV tree.
 #[non_exhaustive]
@@ -140,12 +173,9 @@ impl CredentialValue {
         tree: Structure,
     ) -> Result<Self, CredentialValidationError> {
         match credential_type.raw() {
-            1 => {
-                validate(&tree, USERNAME_PASSWORD_RULES, &[])?;
-                Ok(Self::UsernameAndPassword(
-                    UsernameAndPasswordCredential::from_tree(tree),
-                ))
-            }
+            1 => Ok(Self::UsernameAndPassword(
+                UsernameAndPasswordCredential::try_from_ttlv(tree)?,
+            )),
             2 => {
                 validate(&tree, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)?;
                 Ok(Self::Device(DeviceCredential::from_tree(tree)))
@@ -168,12 +198,46 @@ impl CredentialValue {
                 Ok(Self::Ticket(TicketCredential::from_tree(tree)))
             }
             raw if (0x8000_0000..=0x8FFF_FFFF).contains(&raw) => {
-                Ok(Self::Extensions(OpaqueTtlv::from_tree(tree)))
+                Ok(Self::Extensions(OpaqueTtlv::from_extension_tree(tree, raw)))
             }
             raw => Ok(Self::Unknown {
                 credential_type: raw,
                 value: OpaqueTtlv::from_tree(tree),
             }),
+        }
+    }
+
+    /// Returns the original unsigned Credential Type value used to validate this structure.
+    #[must_use]
+    pub fn credential_type_raw(&self) -> u32 {
+        match self {
+            Self::UsernameAndPassword(_) => 1,
+            Self::Device(_) => 2,
+            Self::Attestation(_) => 3,
+            Self::OneTimePassword(_) => 4,
+            Self::HashedPassword(_) => 5,
+            Self::Ticket(_) => 6,
+            Self::Extensions(value) => {
+                // The public extension variant is only created by the parser,
+                // which always records the received raw type.
+                value.extension_credential_type.unwrap_or(0x8000_0000)
+            }
+            Self::Unknown {
+                credential_type, ..
+            } => *credential_type,
+        }
+    }
+
+    /// Lends the original ordered TTLV Structure for callback-scoped access.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
+        match self {
+            Self::UsernameAndPassword(value) => value.with_ttlv(callback),
+            Self::Device(value) => value.with_ttlv(callback),
+            Self::Attestation(value) => value.with_ttlv(callback),
+            Self::OneTimePassword(value) => value.with_ttlv(callback),
+            Self::HashedPassword(value) => value.with_ttlv(callback),
+            Self::Ticket(value) => value.with_ttlv(callback),
+            Self::Extensions(value) | Self::Unknown { value, .. } => value.with_ttlv(callback),
         }
     }
 
@@ -320,6 +384,21 @@ fn validate(
 }
 
 impl DeviceCredential {
+    /// Validates and takes ownership of a Device Credential Value Structure.
+    ///
+    /// The original child order and unknown children are retained. The caller
+    /// remains responsible for choosing identifier values that are unique
+    /// under the server's policy.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error when a Table 412 field is duplicated,
+    /// malformed, out of order, or when no required identifier is present.
+    pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
+        Self::validate_view(&tree.view())?;
+        Ok(Self { tree })
+    }
+
     pub(super) fn validate_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
         validation::validate_fields(view, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)
     }

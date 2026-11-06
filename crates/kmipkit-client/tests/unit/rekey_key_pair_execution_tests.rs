@@ -57,15 +57,15 @@ fn rekey_key_pair_request() -> RekeyKeyPairRequest {
         .with_private_key_attributes(AttributeSet::new())
         .with_public_key_attributes(AttributeSet::new())
         .with_common_protection_storage_masks(test_structure([test_item(
-            0x0042_0160,
+            0x0042_015e,
             Value::integer(1),
         )]))
         .with_private_protection_storage_masks(test_structure([test_item(
-            0x0042_0160,
+            0x0042_015e,
             Value::integer(2),
         )]))
         .with_public_protection_storage_masks(test_structure([test_item(
-            0x0042_0160,
+            0x0042_015e,
             Value::integer(3),
         )]))
 }
@@ -194,9 +194,12 @@ fn rekey_key_pair_sends_table_310_and_returns_both_identifiers_once() {
             "replacement-public-key".to_owned()
         ))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     let debug = format!("{:?}", outcome.response());
-    assert!(debug.starts_with("RekeyKeyPair("));
+    assert_eq!(debug, "RekeyKeyPair");
     assert!(!debug.contains("replacement-private-key"));
     assert!(!debug.contains("replacement-public-key"));
     assert_eq!(

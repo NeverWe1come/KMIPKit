@@ -130,6 +130,31 @@ fn empty_profile_selection_is_rejected_before_exchange_on_both_entry_points() {
     assert_eq!(exchanges.get(), 0);
 }
 
+#[test]
+fn baseline_selection_with_incomplete_evidence_fails_before_exchange() {
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let error = client
+        .execute_with_profiles(
+            discover_versions_batch(),
+            &ProfileValidationSelection::new([BASELINE]),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("Baseline cannot be selected while evidence remains incomplete");
+
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(exchanges.get(), 0);
+    let profile_error = error
+        .profile_validation_error()
+        .expect("the closed selection preserves its structured profile error");
+    assert_eq!(
+        profile_error.code(),
+        ProfileValidationErrorCode::ProfileUnavailable
+    );
+    assert_eq!(profile_error.profile_id(), Some(BASELINE));
+}
+
 fn query_batch() -> ClientBatch {
     ClientBatch::new(ClientBatchItem::new(ClientRequest::query(
         QueryRequest::new([QueryFunction::PROFILES, QueryFunction::DEFAULTS_INFORMATION]),
@@ -801,7 +826,7 @@ fn original_creation_date_mutation_with_present_bound_context_is_rejected_before
     const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
     const OBJECT_ID: &str = "profile-context-object-sensitive-id";
 
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let date = || test_item(ORIGINAL_CREATION_DATE, Value::date_time(1_700_000_001));
     let requests = [
         ClientRequest::add_attribute(AddAttributeRequest::new(
@@ -865,7 +890,7 @@ fn original_creation_date_non_add_mutation_with_known_absent_state_is_rejected()
     const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
     const OBJECT_ID: &str = "profile-context-known-absent-object-id";
 
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let date = || test_item(ORIGINAL_CREATION_DATE, Value::date_time(1_700_000_001));
     let requests = [
         ClientRequest::modify_attribute(ModifyAttributeRequest::new(
@@ -940,7 +965,7 @@ fn usage_limits_total_change_after_protection_use_is_rejected_with_bound_context
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
         SetAttributeRequest::new(Some(OBJECT_ID.to_owned()), NewAttribute::new(usage_limits)),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID)
@@ -993,7 +1018,7 @@ fn usage_limits_total_change_after_allocation_is_attributed_only_when_count_chan
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
         SetAttributeRequest::new(Some(OBJECT_ID.to_owned()), NewAttribute::new(usage_limits)),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID)
@@ -1047,7 +1072,7 @@ fn usage_limits_total_change_after_allocation_without_count_change_uses_general_
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
         SetAttributeRequest::new(Some(OBJECT_ID.to_owned()), NewAttribute::new(usage_limits)),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID)
@@ -1110,7 +1135,7 @@ fn original_creation_date_can_be_added_when_the_bound_context_says_absent() {
             )),
         ),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID).with_original_creation_date_present(Some(false)),
@@ -1140,7 +1165,7 @@ fn original_creation_date_mutation_without_context_fails_closed_before_transport
             )),
         ),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
 
     let error = client
         .execute_with_profiles(batch, &selection, &CodecLimits::defaults())
@@ -1176,7 +1201,7 @@ fn original_creation_date_mutation_with_unknown_state_fails_closed_before_transp
             )),
         ),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID).with_original_creation_date_present(None),
@@ -1216,7 +1241,7 @@ fn object_state_bound_to_another_identifier_fails_closed_before_transport() {
             )),
         ),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OTHER_OBJECT_ID).with_original_creation_date_present(Some(true)),
@@ -1259,7 +1284,7 @@ fn duplicate_state_entries_for_one_batch_item_fail_closed_before_transport() {
             )),
         ),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let state =
         || ProfileObjectState::new(OBJECT_ID).with_original_creation_date_present(Some(true));
     let context = ProfileValidationContext::new()
@@ -1299,7 +1324,7 @@ fn object_state_bound_to_another_batch_item_fails_closed_before_transport() {
             )),
         ),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         1,
         ProfileObjectState::new(OBJECT_ID).with_original_creation_date_present(Some(true)),
@@ -1353,7 +1378,7 @@ fn usage_limits_total_set_preserves_count_when_protection_has_not_started() {
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
         SetAttributeRequest::new(Some(OBJECT_ID.to_owned()), NewAttribute::new(usage_limits)),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID)
@@ -1392,7 +1417,7 @@ fn usage_limits_total_set_rejects_missing_required_unit_before_transport() {
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
         SetAttributeRequest::new(Some(OBJECT_ID.to_owned()), NewAttribute::new(usage_limits)),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID)
@@ -1442,7 +1467,7 @@ fn usage_limits_total_set_cannot_change_count() {
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
         SetAttributeRequest::new(Some(OBJECT_ID.to_owned()), NewAttribute::new(usage_limits)),
     )));
-    let selection = ProfileValidationSelection::new([BASELINE]);
+    let selection = ProfileValidationSelection::for_test([BASELINE]);
     let context = ProfileValidationContext::new().with_object_state(
         0,
         ProfileObjectState::new(OBJECT_ID)

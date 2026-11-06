@@ -151,6 +151,43 @@ impl GetAttributeListResponse {
     pub fn attribute_references(&self) -> Option<&[AttributeReference]> {
         self.attribute_references.as_deref()
     }
+
+    /// Re-encodes the successful response payload as generic TTLV.
+    ///
+    /// The payload contains the Unique Identifier followed by every
+    /// Attribute Reference in wire order, as specified by OASIS KMIP v2.1
+    /// §6.1.21, Table 227. Non-success results have no operation payload and
+    /// return `None`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized protocol error if an Attribute Reference cannot
+    /// be encoded as a structurally valid TTLV item.
+    pub fn to_ttlv_payload(&self) -> Result<Option<Structure>, ProtocolError> {
+        if self.result.status().raw() != 0 {
+            return Ok(None);
+        }
+
+        let mut payload = Structure::new();
+        let Some(unique_identifier) = &self.unique_identifier else {
+            return Ok(None);
+        };
+        payload
+            .try_push(item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string(unique_identifier.clone()),
+            )?)
+            .map_err(model_error)?;
+        let Some(references) = &self.attribute_references else {
+            return Ok(None);
+        };
+        for reference in references {
+            payload
+                .try_push(reference.to_ttlv_response_item()?)
+                .map_err(model_error)?;
+        }
+        Ok(Some(payload))
+    }
 }
 
 /// A payload-free error converting a validated Get Attribute List response.

@@ -59,12 +59,9 @@ def load_native_library(
     ``backend`` and ``abi_version`` are injected so package loading can be
     tested without depending on a particular C ABI handshake symbol.
     """
-    environment = os.environ if environ is None else environ
-    administrator_path = environment.get(_ADMIN_LIBRARY_ENV)
-    selected_path = (
-        Path(administrator_path)
-        if administrator_path is not None
-        else Path(bundled_path)
+    selected_path = resolve_native_library_path(
+        bundled_path=bundled_path,
+        environ=environ,
     )
 
     if not selected_path.is_file():
@@ -77,7 +74,9 @@ def load_native_library(
         library = backend(str(selected_path))
     except Exception:
         raise NativeLibraryLoadError(
-            "KMIPKit could not load the selected native library."
+            "KMIPKit could not load the selected native library; install a package "
+            "for this OS and architecture or set KMIPKIT_NATIVE_LIBRARY to a "
+            "compatible library."
         ) from None
 
     try:
@@ -92,10 +91,33 @@ def load_native_library(
         or actual_abi_version != expected_abi_version
     ):
         raise NativeAbiMismatchError(
-            "KMIPKit native library has an incompatible ABI version."
+            "KMIPKit native library has an incompatible ABI version; install a "
+            "matching package or set KMIPKIT_NATIVE_LIBRARY to a compatible library."
         )
 
     return library
+
+
+def resolve_native_library_path(
+    *,
+    bundled_path: str | Path,
+    environ: Mapping[str, str] | None = None,
+) -> Path:
+    """Resolve the one absolute library path shared by every native bridge."""
+    environment = os.environ if environ is None else environ
+    administrator_path = environment.get(_ADMIN_LIBRARY_ENV)
+    selected_path = (
+        Path(administrator_path)
+        if administrator_path is not None
+        else Path(bundled_path)
+    )
+    try:
+        return selected_path.resolve()
+    except (OSError, RuntimeError):
+        raise NativeLibraryLoadError(
+            "KMIPKit native library is unavailable; install a matching package "
+            "or set KMIPKIT_NATIVE_LIBRARY to an administrator-provided library."
+        ) from None
 
 
 def find_bundled_native_library(package_directory: str | Path) -> Path:

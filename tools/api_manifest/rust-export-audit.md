@@ -92,9 +92,9 @@ and unsupported reachable kinds likewise produce issue records with the exact
 available paths and source locations.
 
 Any unresolved issue makes `complete` false and makes `--check` fail, even when
-all observed paths match the manifest. The current crawler still reports
-unresolved implementation predicates, so T011 remains open. C, Java, and
-Python are outside this runner's scope.
+all observed paths match the manifest. The 2026-10-20 snapshot has no unresolved
+issue records. This host and feature snapshot does not replace the supported
+platform CI matrix or the separate C, Java, and Python export audits.
 
 ## Exact comparison
 
@@ -108,33 +108,38 @@ remaining blocked for readiness and parity.
 
 ## Current snapshot and remaining reconciliation
 
-On **2026-10-12**, with the current continuation branch Rust sources, Windows
+On **2026-10-20**, with the current KMIPKIT-0043 branch Rust sources, Windows
 x64, Rust 1.94.0 and all features, the report found:
 
-| Published package | Verified | Conditional | Observed paths | Manifest rows | Not observed | Issues |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `kmipkit-ttlv` | 264 | 67 | 331 | 331 | 0 | 0 |
-| `kmipkit-protocol` | 4,585 | 1,260 | 5,845 | 5,845 | 0 | 0 |
-| `kmipkit-transport` | 275 | 90 | 365 | 365 | 0 | 0 |
-| `kmipkit-client` | 895 | 136 | 1,031 | 1,031 | 0 | 0 |
-| `kmipkit` | 1,595 | 330 | 1,925 | 1,925 | 0 | 0 |
-| **Total** | **7,614** | **1,883** | **9,497** | **9,497** | **0** | **0** |
+| Published package | Direct | Conditional | Observed paths | Manifest rows | Approved exclusions | Not observed | Issues |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `kmipkit-ttlv` | 264 | 67 | 331 | 331 | 0 | 0 | 0 |
+| `kmipkit-protocol` | 4,608 | 1,265 | 5,873 | 5,850 | 23 | 0 | 0 |
+| `kmipkit-transport` | 275 | 90 | 365 | 365 | 0 | 0 | 0 |
+| `kmipkit-client` | 902 | 136 | 1,038 | 1,038 | 0 | 0 | 0 |
+| `kmipkit` | 1,604 | 330 | 1,934 | 1,933 | 1 | 0 | 0 |
+| **Total** | **7,653** | **1,888** | **9,541** | **9,517** | **24** | **0** | **0** |
 
-There are no kind mismatches or approved Rust exclusions. Each of the 1,883
+Each of the 1,888
 `conditionalDeclarations` is an exact compiler-observed trait implementation
 member recorded as `blocked`, with no signature or language mapping. Its
 closed `condition` object retains exact generic subject bindings and ordered
 `traitBound` or `outlives` predicates, including `modifier: "maybe"` for
 `?Sized`. The 13 `core::any::Any` lifetime surfaces now preserve `T: 'static`
 and `T: ?Sized` while binding `T` to the actual owner type; they remain blocked
-until a reviewed API mapping exists. The generated report and manifest match
-all 9,497 observed paths, with zero missing, unobserved, issue, kind, or
-conditional state/condition mismatch entries. `--check` exits 0. Counts are a
+until a reviewed API mapping exists. The 24 excluded Rust paths are exact,
+approved exclusions recorded in the manifest. The two `kmipkit::Client`
+reexports for T078's guarded execution methods are recorded as blocked
+`public_binding_surface` declarations; the approved four-language T078 mapping
+remains scoped to the `kmipkit_client` package path. The generated report
+matches all 9,541 observed paths through 9,517 manifest declarations and those
+24 exclusions, with zero missing, unobserved, issue, kind, or conditional
+state/condition mismatch entries. `--check` exits 0. Counts are a
 dated source snapshot, not a coverage percentage or permanent expected test
 result; rerun after Rust or manifest changes.
 
 The full deterministic JSON from this snapshot is checked in at
-`specs/043-public-api-bindings/reports/rust-export-report-2026-10-13.json`.
+`specs/043-public-api-bindings/reports/rust-export-report-2026-10-20.json`.
 Regenerate the report after any Rust export or manifest change; the timestamped
 path identifies the source snapshot and is not a generated manifest output.
 

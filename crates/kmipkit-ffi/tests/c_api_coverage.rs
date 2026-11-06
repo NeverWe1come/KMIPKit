@@ -10,25 +10,916 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
+use std::time::{Duration, Instant};
 
-use kmipkit_ffi::kmipkit_codec_limits_t;
+#[link(name = "kmipkit_nonce_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_nonce_c_consumer_round_trip(out_item_count: *mut u64) -> i32;
+}
+
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validates_attribute_set() -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_attribute_request_models() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_batch_header_fields() -> i32;
+    fn kmipkit_client_abi_c_consumer_rejects_attribute_output_headers() -> i32;
+    fn kmipkit_client_abi_c_consumer_query_span_copy_budget() -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_variable_ttlv_value_inputs() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_import_request_validation() -> i32;
+    fn kmipkit_client_abi_c_consumer_maps_message_validation_error_kind() -> i32;
+}
+
+#[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_secret_c_consumer_contract() -> i32;
+}
+
+#[link(name = "kmipkit_credential_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_credential_c_consumer_round_trip(
+        raw_type: u32,
+        out_type: *mut u32,
+        out_count: *mut u64,
+    ) -> i32;
+    fn kmipkit_attestation_credential_c_consumer_round_trip(out_count: *mut u64) -> i32;
+    fn kmipkit_attestation_credential_c_consumer_rejects_missing_evidence() -> i32;
+    fn kmipkit_device_credential_c_consumer_round_trip(out_count: *mut u64) -> i32;
+    fn kmipkit_device_credential_c_consumer_rejects_missing_identifier() -> i32;
+    fn kmipkit_username_password_credential_c_consumer_round_trip(out_count: *mut u64) -> i32;
+    fn kmipkit_username_password_credential_c_consumer_rejects_missing_username() -> i32;
+    fn kmipkit_authentication_c_consumer_round_trip(
+        first_type: u32,
+        second_type: u32,
+        out_count: *mut u64,
+    ) -> i32;
+    fn kmipkit_authentication_c_consumer_rejects_empty_credentials() -> i32;
+    fn kmipkit_credential_c_consumer_rejects_missing_required_field() -> i32;
+    fn kmipkit_nonce_c_consumer_rejects_missing_required_value() -> i32;
+    fn kmipkit_hashed_password_credential_c_consumer_contract() -> i32;
+    fn kmipkit_hashed_password_timestamp_sequence_c_consumer_contract(
+        restored_timestamp: i64,
+        next_timestamp: i64,
+        equal_timestamp: i64,
+        earlier_timestamp: i64,
+        minimum_timestamp: i64,
+        maximum_timestamp: i64,
+    ) -> i32;
+    fn kmipkit_credential_value_c_consumer_contract() -> i32;
+}
+
+use kmipkit_ffi::{kmipkit_codec_limits_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t};
 use kmipkit_test_support::EphemeralPki;
+use kmipkit_ttlv::{Item, StructureView, ValueView};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
-const MAX_TEST_TTLV_VALUE_BYTES: usize = 1_048_576;
+const MAX_TEST_TTLV_VALUE_BYTES: usize = 8_388_608;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+unsafe extern "C" {
+    fn kmipkit_ttlv_decode(
+        data: *const u8,
+        length: u64,
+        error: *mut kmipkit_ttlv_decode_error_v1_t,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+}
+
+#[test]
+fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
+    let mut item_count = 0;
+    // SAFETY: The C consumer receives a writable count slot and owns its temporary ABI handles.
+    let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
+    assert_eq!(status, 0);
+    assert_eq!(item_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_validates_and_consumes_ordered_attribute_sets() {
+    // SAFETY: The C consumer owns and releases every temporary handle it creates.
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_attribute_set() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_validates_standalone_attribute_request_models() {
+    // SAFETY: The C consumer owns and releases every temporary handle it creates.
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_owned_attribute_request_models() {
+    // SAFETY: The C consumer owns and releases all request, item, value, payload, and batch handles.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_attribute_request_models() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_client_batch_header_fields() {
+    // SAFETY: The C consumer owns the batch and uses live, writable scalar outputs.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_batch_header_fields() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_malformed_attribute_output_headers() {
+    // SAFETY: The C consumer owns each request, item, and initialized output record.
+    let status = unsafe { kmipkit_client_abi_c_consumer_rejects_attribute_output_headers() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_enforces_total_async_correlation_copy_budget() {
+    // SAFETY: The C consumer owns the query models and the two allocated input buffers.
+    let status = unsafe { kmipkit_client_abi_c_consumer_query_span_copy_budget() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_validates_variable_ttlv_value_inputs() {
+    // SAFETY: The C consumer releases each value view, value, and codec-limits handle it creates.
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_variable_ttlv_value_inputs() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_import_request_validation() {
+    // SAFETY: The C consumer retains borrowed input structures and releases every handle it owns.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_import_request_validation() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_maps_message_validation_error_kind() {
+    // SAFETY: The C consumer owns the malformed request and its validation error handles.
+    let status = unsafe { kmipkit_client_abi_c_consumer_maps_message_validation_error_kind() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_checks_secret_ownership_callbacks_and_ttlv_conversion() {
+    // SAFETY: The C consumer owns every temporary secret/value handle and compares callback data
+    // only while the native callback is active.
+    let status = unsafe { kmipkit_secret_c_consumer_contract() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_hashed_password_algorithm_and_ttlv() {
+    // SAFETY: The C consumer owns all temporary TTLV and credential handles it creates.
+    let status = unsafe { kmipkit_hashed_password_credential_c_consumer_contract() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_matches_hashed_password_timestamp_sequence_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture contains cases")
+        .iter()
+        .find(|case| case["id"] == "credentials.hashed-password-timestamp-sequence.v1")
+        .expect("hashed-password timestamp sequence case exists");
+    let input = &case["input"];
+    let read_i64 = |name: &str| {
+        input[name]
+            .as_i64()
+            .unwrap_or_else(|| panic!("fixture field {name} is signed 64-bit"))
+    };
+
+    // SAFETY: The C consumer owns, uses, and releases all temporary opaque sequence handles.
+    let status = unsafe {
+        kmipkit_hashed_password_timestamp_sequence_c_consumer_contract(
+            read_i64("restoredTimestamp"),
+            read_i64("nextTimestamp"),
+            read_i64("equalTimestamp"),
+            read_i64("earlierTimestamp"),
+            read_i64("minimumTimestamp"),
+            read_i64("maximumTimestamp"),
+        )
+    };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_typed_and_opaque_credential_values() {
+    // SAFETY: The C consumer owns all temporary TTLV and credential-value handles it creates.
+    let status = unsafe { kmipkit_credential_value_c_consumer_contract() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_unknown_credential_type_and_structure() {
+    let raw_type = 0xf123_4567;
+    let mut observed_type = 0;
+    let mut item_count = 0;
+    // SAFETY: The C consumer receives writable result slots and manages its temporary ABI handles.
+    let status = unsafe {
+        kmipkit_credential_c_consumer_round_trip(
+            raw_type,
+            &raw mut observed_type,
+            &raw mut item_count,
+        )
+    };
+    assert_eq!(status, 0);
+    assert_eq!(observed_type, raw_type);
+    assert_eq!(item_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_attestation_credential_and_scoped_ownership() {
+    let mut item_count = 0;
+    // SAFETY: The C consumer writes the count and owns the temporary ABI handles it creates.
+    let status =
+        unsafe { kmipkit_attestation_credential_c_consumer_round_trip(&raw mut item_count) };
+    assert_eq!(status, 0);
+    assert_eq!(item_count, 4);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_attestation_without_evidence() {
+    // SAFETY: The C consumer owns all structures and handles created for this negative case.
+    let status = unsafe { kmipkit_attestation_credential_c_consumer_rejects_missing_evidence() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_device_credential_fields_and_scoped_ownership() {
+    let mut item_count = 0;
+    // SAFETY: The C consumer writes the count and owns all temporary ABI handles.
+    let status = unsafe { kmipkit_device_credential_c_consumer_round_trip(&raw mut item_count) };
+    assert_eq!(status, 0);
+    assert_eq!(item_count, 7);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_device_credential_without_identifier() {
+    // SAFETY: The C consumer owns all structures and handles created for this negative case.
+    let status = unsafe { kmipkit_device_credential_c_consumer_rejects_missing_identifier() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_username_password_ttlv_and_scoped_ownership() {
+    let mut item_count = 0;
+    // SAFETY: The C consumer writes the count and owns all temporary ABI handles.
+    let status =
+        unsafe { kmipkit_username_password_credential_c_consumer_round_trip(&raw mut item_count) };
+    assert_eq!(status, 0);
+    assert_eq!(item_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_maps_missing_username_to_typed_error() {
+    // SAFETY: The C consumer owns all temporary structures and handles for this negative case.
+    let status =
+        unsafe { kmipkit_username_password_credential_c_consumer_rejects_missing_username() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_authentication_order_and_owner_backed_views() {
+    let mut credential_count = 0;
+    // SAFETY: The C consumer writes one count and manages all temporary ABI handles.
+    let status = unsafe {
+        kmipkit_authentication_c_consumer_round_trip(
+            0xf123_4567,
+            0x8000_4321,
+            &raw mut credential_count,
+        )
+    };
+    assert_eq!(status, 0);
+    assert_eq!(credential_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_empty_authentication_credentials() {
+    // SAFETY: The C consumer owns all handles created by this negative case.
+    let status = unsafe { kmipkit_authentication_c_consumer_rejects_empty_credentials() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_maps_missing_credential_fields_to_typed_validation_error() {
+    // SAFETY: The C consumer owns all temporary structures and handles for this negative case.
+    let status = unsafe { kmipkit_credential_c_consumer_rejects_missing_required_field() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_maps_missing_nonce_fields_to_typed_validation_error() {
+    // SAFETY: The C consumer owns all temporary structures and handles for this negative case.
+    let status = unsafe { kmipkit_nonce_c_consumer_rejects_missing_required_value() };
+    assert_eq!(status, 0);
+}
 
 #[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn shared_schema_redaction_fixture_matches_fixture(
+        diagnostic_marker: *const u8,
+        diagnostic_marker_length: u64,
+        expected_category: *const c_char,
+    ) -> i32;
+    fn shared_registry_fixture_matches_cleanup_and_isolation(
+        alpha_name: *const u8,
+        alpha_name_length: u64,
+        beta_name: *const u8,
+        beta_name_length: u64,
+        expected_alpha_count: u64,
+        expected_beta_count: u64,
+        expected_registry_state_is_shared: u8,
+        close_configurations_action: *const c_char,
+        release_registry_views_action: *const c_char,
+    ) -> i32;
+}
+
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn kmipkit_client_abi_c_consumer_batch_item_readback() -> i32;
+    fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
+    fn kmipkit_client_abi_c_consumer_async_request_models() -> i32;
+    fn kmipkit_client_abi_c_consumer_extra_ffi_paths() -> i32;
+    fn kmipkit_client_abi_c_consumer_profile_readiness_contract() -> i32;
+    fn kmipkit_client_abi_c_consumer_profile_validation_result_contract() -> i32;
+    fn shared_ttlv_fixture_preserves_open_values_and_order(
+        raw_tags: *const u32,
+        enumeration_value: u32,
+        byte_string: *const u8,
+        byte_string_length: u64,
+    ) -> i32;
+    fn codec_limits_shared_fixture_matches_defaults_ranges_and_errors(
+        expected_default_message_bytes: u64,
+        expected_default_structure_depth: u64,
+        expected_default_elements: u64,
+        configured_message_bytes: u64,
+        configured_structure_depth: u64,
+        configured_elements: u64,
+        invalid_structure_depth: u64,
+    ) -> i32;
+    fn shared_ttlv_decoder_fixture_matches_values_and_errors(
+        wire: *const u8,
+        wire_length: u64,
+        truncated_wire: *const u8,
+        truncated_length: u64,
+        message_limit_bytes: u64,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
+}
+
+#[test]
+fn generated_public_c_consumer_reads_an_owned_batch_item_after_batch_release() {
+    // SAFETY: The C helper calls only the public ABI with its own handles and buffers.
+    let result = unsafe { kmipkit_client_abi_c_consumer_batch_item_readback() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_builds_typed_async_payloads_without_network_execution() {
+    // SAFETY: The C helper owns its request and TTLV handles and only reads borrowed spans while
+    // their source request handle is alive.
+    let result = unsafe { kmipkit_client_abi_c_consumer_async_request_models() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_covers_async_request_and_decoder_error_paths() {
+    // SAFETY: The C consumer owns its input arrays, output records, codec limits, and handles.
+    let result = unsafe { kmipkit_client_abi_c_consumer_extra_ffi_paths() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exposes_profile_readiness_and_catalog_contract() {
+    // SAFETY: The C helper allocates and releases its own readiness handles and only reads spans
+    // borrowed from a live handle. Catalog spans point to static generated rows.
+    let result = unsafe { kmipkit_client_abi_c_consumer_profile_readiness_contract() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exposes_profile_validation_result_resolution_and_errors() {
+    // SAFETY: The C helper owns its selection buffers and all returned error handles.
+    let result = unsafe { kmipkit_client_abi_c_consumer_profile_validation_result_contract() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+// OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
+// §6.1.18 Tables 217–219; §6.1.25 Table 238; §7.18 Table 370;
+// §6.1.46 Tables 305–307; §6.1.23 Tables 232–234;
+// §4.1.2; §6.1.6 Tables 179–181 and §4.44 Table 117; §6.1.9 Table 190;
+// §6.1.45 Table 300; §6.1.47 Tables 310–311.
+fn compiled_c_consumer_encodes_check_get_export_rekey_and_allocation_builders_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("the listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    listener
+        .set_nonblocking(true)
+        .expect("the test peer accepts with a bounded timeout");
+    // The ordered Create is only the preceding ID Placeholder producer for the GUA item whose
+    // Unique Identifier is omitted; the test does not claim or inspect Create behavior.
+    let peer = thread::spawn(move || {
+        let deadline = Instant::now() + Duration::from_secs(8);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(accepted) => break accepted,
+                Err(error)
+                    if error.kind() == io::ErrorKind::WouldBlock && Instant::now() < deadline =>
+                {
+                    thread::sleep(Duration::from_millis(10));
+                }
+                Err(error) => panic!("the compiled C client connects to the local peer: {error}"),
+            }
+        };
+        stream
+            .set_nonblocking(false)
+            .expect("the accepted peer stream uses blocking reads");
+        stream
+            .set_read_timeout(Some(Duration::from_secs(8)))
+            .expect("the peer read timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("the bounded request frame arrives");
+        let decoded = decode_test_request(&request).expect("the request is valid TTLV");
+        assert_request_builder_wire(&decoded);
+        tls.write_all(&request_builder_wire_response())
+            .expect("the fake peer returns the preceding Create Key Pair private identifier");
+        tls.flush()
+            .expect("the fake peer flushes its ordered response");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_request_builders_c_consumer")
+        .expect("the executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("the temporary path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("the port has no NUL byte");
+    let mode = CString::new("request-builders-wire").expect("the mode has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+        mode.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("the C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot retained until the synchronous C call returns.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "the configured codec limits are created");
+    assert!(
+        !limits.is_null(),
+        "the configured codec limits return a handle"
+    );
+    // SAFETY: the argv strings and codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: this test owns the limits handle; the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    assert_eq!(
+        result, 0,
+        "the C consumer builds and decodes twenty-eight ordered items"
+    );
+    peer.join()
+        .expect("the compiled C request-builder mTLS peer completes");
+}
+
+#[test]
+fn c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "ttlv.open-values-and-child-order.v1")
+        .expect("the generic TTLV fixture case exists");
+    let input_children = case["input"]["structure"]["children"]
+        .as_array()
+        .expect("generic TTLV input children are an array");
+    let expected_tags = case["expectedOutput"]["childTagsInOrder"]
+        .as_array()
+        .expect("generic TTLV expected child tags are an array")
+        .iter()
+        .map(|tag| {
+            u32::from_str_radix(
+                tag.as_str()
+                    .expect("generic TTLV child tag is a string")
+                    .strip_prefix("0x")
+                    .expect("generic TTLV child tag has a hexadecimal prefix"),
+                16,
+            )
+            .expect("generic TTLV child tag is valid hexadecimal")
+        })
+        .collect::<Vec<_>>();
+    let input_tags = input_children
+        .iter()
+        .map(|child| {
+            u32::from_str_radix(
+                child["tag"]
+                    .as_str()
+                    .expect("generic TTLV input tag is a string")
+                    .strip_prefix("0x")
+                    .expect("generic TTLV input tag has a hexadecimal prefix"),
+                16,
+            )
+            .expect("generic TTLV input tag is valid hexadecimal")
+        })
+        .collect::<Vec<_>>();
+    let enumeration_value = u32::try_from(
+        input_children[0]["value"]
+            .as_u64()
+            .expect("generic TTLV enumeration input is an unsigned integer"),
+    )
+    .expect("generic TTLV enumeration fits the public fixed-width type");
+    let expected_enumeration = u32::try_from(
+        case["expectedOutput"]["enumerationValue"]
+            .as_u64()
+            .expect("generic TTLV expected enumeration is an unsigned integer"),
+    )
+    .expect("generic TTLV expected enumeration fits the public fixed-width type");
+    let input_byte_string = input_children[1]["valueHex"]
+        .as_str()
+        .expect("generic TTLV byte-string input is hexadecimal");
+    let byte_string = decode_fixture_hex(input_byte_string);
+    let expected_byte_string = decode_fixture_hex(
+        case["expectedOutput"]["byteStringHex"]
+            .as_str()
+            .expect("generic TTLV expected byte string is hexadecimal"),
+    );
+
+    assert_eq!(input_tags, expected_tags, "fixture input order is expected");
+    assert_eq!(
+        enumeration_value, expected_enumeration,
+        "fixture enumeration input and output agree"
+    );
+    assert_eq!(
+        byte_string, expected_byte_string,
+        "fixture byte values agree"
+    );
+    assert_eq!(
+        case["expectedOutput"]["unknownValuesPreserved"], true,
+        "the fixture requires unknown values to be preserved"
+    );
+
+    // SAFETY: the fixture-backed tag and byte slices remain live for the
+    // synchronous call; the C consumer creates, inspects, and releases its own handles.
+    let result = unsafe {
+        shared_ttlv_fixture_preserves_open_values_and_order(
+            input_tags.as_ptr(),
+            enumeration_value,
+            byte_string.as_ptr(),
+            u64::try_from(byte_string.len()).expect("fixture byte length fits in u64"),
+        )
+    };
+
+    assert_eq!(
+        result, 0,
+        "the C ABI must preserve fixture values and child order"
+    );
+}
+
+fn decode_fixture_hex(value: &str) -> Vec<u8> {
+    let (pairs, remainder) = value.as_bytes().as_chunks::<2>();
+    assert!(remainder.is_empty(), "fixture hexadecimal has whole bytes");
+    pairs
+        .iter()
+        .map(|digits| {
+            let pair = std::str::from_utf8(digits).expect("fixture hex digits are ASCII");
+            u8::from_str_radix(pair, 16).expect("fixture byte is valid hexadecimal")
+        })
+        .collect()
+}
+
+#[test]
+fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "codec-limits.defaults-and-ranges.v1")
+        .expect("the shared CodecLimits fixture case exists");
+    let defaults = &case["expectedOutput"]["defaults"];
+    let configured = &case["input"]["configured"];
+    let invalid_depth = case["input"]["invalidDepth"]
+        .as_u64()
+        .expect("invalid fixture depth is unsigned");
+    let error_category = case["expectedOutput"]["invalidDepth"]["errorCategory"]
+        .as_str()
+        .expect("invalid-depth fixture error category is text");
+    assert_eq!(error_category, "resource_limit");
+
+    // SAFETY: all values come from the parsed fixture and the C consumer creates
+    // and releases each limits handle during this synchronous call.
+    let result = unsafe {
+        codec_limits_shared_fixture_matches_defaults_ranges_and_errors(
+            defaults["maxMessageBytes"]
+                .as_u64()
+                .expect("default message limit is unsigned"),
+            defaults["maxStructureDepth"]
+                .as_u64()
+                .expect("default depth is unsigned"),
+            defaults["maxElements"]
+                .as_u64()
+                .expect("default element count is unsigned"),
+            configured["maxMessageBytes"]
+                .as_u64()
+                .expect("configured message limit is unsigned"),
+            configured["maxStructureDepth"]
+                .as_u64()
+                .expect("configured depth is unsigned"),
+            configured["maxElements"]
+                .as_u64()
+                .expect("configured element count is unsigned"),
+            invalid_depth,
+        )
+    };
+
+    assert_eq!(result, 1, "the C ABI must match the CodecLimits fixture");
+}
+
+#[test]
+fn c_abi_consumer_decodes_ttlv_and_reports_safe_errors() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "ttlv.decoder-root-structure.v1")
+        .expect("the generic TTLV decoder fixture case exists");
+    let wire = decode_fixture_hex(
+        case["input"]["wireHex"]
+            .as_str()
+            .expect("decoder fixture wire is hexadecimal text"),
+    );
+    let truncated_wire = decode_fixture_hex(
+        case["input"]["truncatedWireHex"]
+            .as_str()
+            .expect("truncated decoder fixture is hexadecimal text"),
+    );
+    let message_limit = case["input"]["messageLimitBytes"]
+        .as_u64()
+        .expect("decoder fixture message limit is unsigned");
+
+    // SAFETY: the fixture-backed byte slices remain live throughout the synchronous C call.
+    let result = unsafe {
+        shared_ttlv_decoder_fixture_matches_values_and_errors(
+            wire.as_ptr(),
+            u64::try_from(wire.len()).expect("fixture wire length fits u64"),
+            truncated_wire.as_ptr(),
+            u64::try_from(truncated_wire.len()).expect("truncated fixture length fits u64"),
+            message_limit,
+        )
+    };
+    assert_eq!(result, 1, "the C ABI must decode and report safe errors");
+}
+
+#[test]
+fn ttlv_decoder_reports_stable_errors_for_malformed_scalar_and_root_items() {
+    assert_ttlv_decode_protocol_error(&[0x00, 0x42], 2, 0);
+
+    let invalid_boolean = ttlv_item(0x0042_0026, 0x06, &[0, 0, 0, 0, 0, 0, 0, 2]);
+    assert_ttlv_decode_protocol_error(&invalid_boolean, 7, 8);
+
+    let invalid_utf8 = ttlv_item(0x0042_0093, 0x07, &[0xff]);
+    assert_ttlv_decode_protocol_error(&invalid_utf8, 6, 8);
+
+    let unsupported_type = ttlv_item(0x0042_006a, 0xff, &[]);
+    assert_ttlv_decode_protocol_error(&unsupported_type, 8, 3);
+
+    let mut trailing_bytes = ttlv_item(0x0042_005c, 0x05, &0_u32.to_be_bytes());
+    trailing_bytes.extend_from_slice(&ttlv_item(0x0042_005c, 0x05, &1_u32.to_be_bytes()));
+    assert_ttlv_decode_protocol_error(&trailing_bytes, 9, 16);
+}
+
+fn assert_ttlv_decode_protocol_error(wire: &[u8], expected_kind: u32, expected_offset: u64) {
+    let mut error = kmipkit_ttlv_decode_error_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_ttlv_decode_error_v1_t>())
+            .expect("decoder error record size fits ABI"),
+        abi_version: 1,
+        kind: 0,
+        byte_offset: 0,
+    };
+    let mut item = std::ptr::dangling_mut::<kmipkit_ttlv_item_t>();
+    // SAFETY: `wire` remains readable and both output records are aligned and writable
+    // for the duration of this synchronous decoder call.
+    let status = unsafe {
+        kmipkit_ttlv_decode(
+            wire.as_ptr(),
+            u64::try_from(wire.len()).expect("wire length fits ABI"),
+            &raw mut error,
+            &raw mut item,
+        )
+    };
+
+    assert_eq!(
+        status, 8,
+        "malformed TTLV maps to the protocol error category"
+    );
+    assert!(item.is_null());
+    assert_eq!(error.kind, expected_kind);
+    assert_eq!(error.byte_offset, expected_offset);
+}
+
+#[test]
+fn c_abi_consumer_redacts_shared_fixture_diagnostic_marker() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "errors.schema-redaction.v1")
+        .expect("the shared schema-redaction fixture case exists");
+    let marker = CString::new(
+        case["input"]["diagnosticMarker"]
+            .as_str()
+            .expect("fixture diagnostic marker is text"),
+    )
+    .expect("fixture diagnostic marker contains no NUL byte");
+    let expected = &case["expectedOutput"];
+    let category = CString::new(
+        expected["errorCategory"]
+            .as_str()
+            .expect("fixture error category is text"),
+    )
+    .expect("fixture error category contains no NUL byte");
+    assert_eq!(case["errorCategory"], expected["errorCategory"]);
+    assert_eq!(expected["diagnosticOmitsInputMarker"], true);
+    assert_eq!(expected["diagnosticContainsPayload"], false);
+
+    // SAFETY: the fixture marker and category strings remain live through the
+    // synchronous C call; the compiled C consumer receives the marker as input.
+    let result = unsafe {
+        shared_schema_redaction_fixture_matches_fixture(
+            marker.as_bytes().as_ptr(),
+            u64::try_from(marker.as_bytes().len()).expect("marker length fits in u64"),
+            category.as_ptr(),
+        )
+    };
+
+    assert_eq!(
+        result, 0,
+        "the C ABI must return only the fixture's stable error category"
+    );
+}
+
+#[test]
+fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "client-configuration.registry-isolation.v1")
+        .expect("the shared registry cleanup fixture case exists");
+    let configurations = case["input"]["configurations"]
+        .as_array()
+        .expect("fixture configurations are an array");
+    let names = configurations
+        .iter()
+        .map(|configuration| {
+            configuration["extensionIdentities"][0]
+                .as_str()
+                .expect("fixture extension identity is text")
+        })
+        .collect::<Vec<_>>();
+    let expected = &case["expectedOutput"];
+    let counts = expected["configurationDefinitionCounts"]
+        .as_array()
+        .expect("fixture definition counts are an array");
+    let identities = expected["configurationIdentities"]
+        .as_array()
+        .expect("fixture configuration identities are an array");
+    let cleanup = case["cleanup"]
+        .as_array()
+        .expect("fixture cleanup actions are an array");
+    let close_configurations_action = CString::new(
+        cleanup[0]
+            .as_str()
+            .expect("fixture configuration cleanup action is text"),
+    )
+    .expect("fixture cleanup action contains no NUL byte");
+    let release_registry_views_action = CString::new(
+        cleanup[1]
+            .as_str()
+            .expect("fixture registry-view cleanup action is text"),
+    )
+    .expect("fixture cleanup action contains no NUL byte");
+    assert_eq!(names, ["alpha", "beta"]);
+    assert_eq!(identities[0][0], names[0]);
+    assert_eq!(identities[1][0], names[1]);
+    assert_eq!(expected["registryStateIsShared"], false);
+    assert_eq!(
+        close_configurations_action.to_str().unwrap(),
+        "close-configuration-owned-native-handles-once"
+    );
+    assert_eq!(
+        release_registry_views_action.to_str().unwrap(),
+        "release-returned-registry-views-once"
+    );
+
+    // SAFETY: fixture byte spans and C strings stay live for the synchronous C
+    // consumer call; the consumer releases all handles it constructs.
+    let result = unsafe {
+        shared_registry_fixture_matches_cleanup_and_isolation(
+            names[0].as_ptr(),
+            u64::try_from(names[0].len()).expect("fixture identity length fits in u64"),
+            names[1].as_ptr(),
+            u64::try_from(names[1].len()).expect("fixture identity length fits in u64"),
+            counts[0].as_u64().expect("fixture alpha count is unsigned"),
+            counts[1].as_u64().expect("fixture beta count is unsigned"),
+            u8::from(
+                expected["registryStateIsShared"]
+                    .as_bool()
+                    .expect("fixture sharing value is Boolean"),
+            ),
+            close_configurations_action.as_ptr(),
+            release_registry_views_action.as_ptr(),
+        )
+    };
+
+    assert_eq!(
+        result, 0,
+        "the C ABI must match registry fixture values and cleanup"
+    );
 }
 
 #[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
+    fn kmipkit_codec_limits_create(
+        max_message_bytes: u64,
+        max_structure_depth: u64,
+        max_elements: u64,
+        out_limits: *mut *mut kmipkit_codec_limits_t,
+    ) -> i32;
     fn kmipkit_codec_limits_release(limits: *mut kmipkit_codec_limits_t);
+    fn kmipkit_last_error_get(
+        out_status: *mut i32,
+        out_category: *mut u32,
+        out_cause: *mut u32,
+        out_delivery: *mut u32,
+    ) -> i32;
 }
 
 #[test]
@@ -104,6 +995,3303 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
     peer.join().expect("the loopback TLS peer completes");
 }
 
+#[test]
+fn generated_public_client_abi_consumer_compiles_and_runs() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "api-levels.shared.v1")
+        .expect("the API-level fixture case exists");
+    let expected_output = &case["expectedOutput"];
+    assert_eq!(case["capability"], "api_level_discovery");
+    assert_eq!(expected_output["networkCalls"], 0);
+    assert_eq!(
+        expected_output["distinctFromKmipOperation"],
+        "Discover Versions"
+    );
+    assert_eq!(
+        expected_output["operationMappingCompleteness"],
+        "not-asserted"
+    );
+    let expected_levels = expected_output["apiLevels"]
+        .as_array()
+        .expect("fixture API levels are an array")
+        .iter()
+        .map(|level| {
+            CString::new(level.as_str().expect("API level IDs are strings"))
+                .expect("API level IDs have no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(expected_levels.len(), 3);
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let mut arguments = vec![executable.as_ptr().cast_mut()];
+    arguments.extend(
+        expected_levels
+            .iter()
+            .map(|level| level.as_ptr().cast_mut()),
+    );
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    // SAFETY: the compiled consumer includes the generated public header, receives
+    // one live argv string, and releases every created handle before returning.
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_main(argument_count, arguments.as_mut_ptr()) };
+
+    assert_eq!(
+        result, 0,
+        "generated public C client ABI consumer must pass its implementation checks"
+    );
+}
+
+#[test]
+fn generated_public_async_client_abi_consumer_compiles_and_runs() {
+    // SAFETY: the C consumer uses null handles to exercise documented invalid-input
+    // paths and verifies that every output is cleared before returning.
+    let result = unsafe { kmipkit_client_abi_c_consumer_async_output_errors_clear() };
+
+    assert_eq!(
+        result, 1,
+        "the compiled C consumer must call every async ABI export and observe cleared outputs"
+    );
+}
+
+#[test]
+fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/pkcs11-parity.json"
+    ))
+    .expect("the shared PKCS#11 parity fixture is valid JSON");
+    let expected = &fixture["expectedOutput"];
+    let mut correlation_cases = vec!["nonempty".to_owned()];
+    correlation_cases.extend(
+        expected["correlationValuePresenceCases"]
+            .as_object()
+            .expect("fixture correlation presence cases are an object")
+            .keys()
+            .cloned(),
+    );
+    for correlation_case in correlation_cases {
+        compiled_c_pkcs11_consumer_matches_correlation_case(&correlation_case);
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/pkcs11-parity.json"
+    ))
+    .expect("the shared PKCS#11 parity fixture is valid JSON");
+    let expected = &fixture["expectedOutput"];
+    let expected_tags = expected["responseTags"]
+        .as_array()
+        .expect("fixture response tags are an array")
+        .iter()
+        .map(|tag| {
+            u32::from_str_radix(
+                tag.as_str()
+                    .expect("fixture response tags are strings")
+                    .strip_prefix("0x")
+                    .expect("fixture response tags have a hexadecimal prefix"),
+                16,
+            )
+            .expect("fixture response tag is hexadecimal")
+        })
+        .collect::<Vec<_>>();
+    let expected_return_code = u32::from_str_radix(
+        expected["unknownReturnCode"]
+            .as_str()
+            .expect("fixture return code is text")
+            .strip_prefix("0x")
+            .expect("fixture return code has a hexadecimal prefix"),
+        16,
+    )
+    .expect("fixture return code is hexadecimal");
+    let expected_vendor_tag = u32::from_str_radix(
+        expected["vendorExtension"]["tag"]
+            .as_str()
+            .expect("fixture vendor tag is text")
+            .strip_prefix("0x")
+            .expect("fixture vendor tag has a hexadecimal prefix"),
+        16,
+    )
+    .expect("fixture vendor tag is hexadecimal");
+    let expected_vendor_value = expected["vendorExtension"]["integer"]
+        .as_i64()
+        .and_then(|value| i32::try_from(value).ok())
+        .expect("fixture vendor integer fits the public C integer type");
+    let typed = &expected["typedResponse"];
+    let function_tag = fixture_hex_u32(&typed["function"]["childTag"]);
+    let function_value = i32::try_from(
+        typed["function"]["childValue"]
+            .as_i64()
+            .expect("fixture function value is an integer"),
+    )
+    .expect("fixture function value fits the public C integer type");
+    let (expected_correlation_present, correlation_hex) =
+        fixture_pkcs11_correlation_value(expected, correlation_case);
+    let correlation_tag = fixture_hex_u32(&typed["correlationValue"]["tag"]);
+    let output_tag = fixture_hex_u32(&typed["outputParameters"]["childTag"]);
+    let output_hex = typed["outputParameters"]["childHex"]
+        .as_str()
+        .expect("fixture output parameters are hexadecimal");
+    let return_code_tag = fixture_hex_u32(&typed["returnCode"]["childTag"]);
+    assert_eq!(expected_tags.len(), 5);
+    assert_eq!(expected["preserveUnknownValuesAndOrder"], true);
+    assert_eq!(expected["preserveOptionalAbsence"], true);
+    assert_eq!(expected["automaticRetry"], false);
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let response_bytes = pkcs11_success_response_message(expected, correlation_case);
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the compiled C client connects to the loopback peer");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded PKCS#11 request arrives");
+        assert!(
+            c_request_matches_pkcs11_fixture(&request),
+            "C request contains one ordered PKCS#11 operation with the fixture inputs"
+        );
+        tls.write_all(&response_bytes)
+            .expect("the fixture-backed KMIP response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable =
+        CString::new("kmipkit_pkcs11_c_consumer").expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let expected_tag_arguments = expected_tags
+        .iter()
+        .map(|tag| CString::new(format!("0x{tag:08X}")))
+        .collect::<Result<Vec<_>, _>>()
+        .expect("fixture tags have no NUL bytes");
+    let return_code = CString::new(format!("0x{expected_return_code:08X}"))
+        .expect("fixture return code has no NUL byte");
+    let vendor_tag = CString::new(format!("0x{expected_vendor_tag:08X}"))
+        .expect("fixture vendor tag has no NUL byte");
+    let vendor_value = CString::new(expected_vendor_value.to_string())
+        .expect("fixture vendor value has no NUL byte");
+    let function_tag = CString::new(format!("0x{function_tag:08X}"))
+        .expect("fixture function tag has no NUL byte");
+    let function_value =
+        CString::new(function_value.to_string()).expect("fixture function value has no NUL byte");
+    let correlation_hex =
+        CString::new(correlation_hex).expect("fixture correlation hexadecimal has no NUL byte");
+    let correlation_tag = CString::new(format!("0x{correlation_tag:08X}"))
+        .expect("fixture correlation tag has no NUL byte");
+    let correlation_present = CString::new(if expected_correlation_present {
+        "1"
+    } else {
+        "0"
+    })
+    .expect("correlation presence flag has no NUL byte");
+    let output_tag =
+        CString::new(format!("0x{output_tag:08X}")).expect("fixture output tag has no NUL byte");
+    let output_hex = CString::new(output_hex).expect("fixture output hexadecimal has no NUL byte");
+    let return_code_tag = CString::new(format!("0x{return_code_tag:08X}"))
+        .expect("fixture return-code tag has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    arguments.extend(
+        expected_tag_arguments
+            .iter()
+            .map(|value| value.as_ptr().cast_mut()),
+    );
+    arguments.push(return_code.as_ptr().cast_mut());
+    arguments.push(vendor_tag.as_ptr().cast_mut());
+    arguments.push(vendor_value.as_ptr().cast_mut());
+    arguments.push(function_tag.as_ptr().cast_mut());
+    arguments.push(function_value.as_ptr().cast_mut());
+    arguments.push(correlation_hex.as_ptr().cast_mut());
+    arguments.push(output_tag.as_ptr().cast_mut());
+    arguments.push(output_hex.as_ptr().cast_mut());
+    arguments.push(return_code_tag.as_ptr().cast_mut());
+    arguments.push(correlation_tag.as_ptr().cast_mut());
+    arguments.push(correlation_present.as_ptr().cast_mut());
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
+    assert_eq!(status, 0);
+    assert!(!limits.is_null());
+    // SAFETY: all argv strings and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
+            argument_count,
+            arguments.as_mut_ptr(),
+            limits,
+        )
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join().expect("the loopback mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the compiled public C consumer verifies the {correlation_case} correlation fixture"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+// Keep PKI, argv, and the synchronous C ABI call together for this mTLS harness.
+#[allow(clippy::too_many_lines)]
+fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the compiled C client connects to the loopback peer");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded Re-key Key Pair request arrives");
+        let request_issue = c_request_rekey_key_pair_issue(&request);
+        assert_eq!(
+            request_issue, "",
+            "C ABI request mapping check failed: {request_issue}"
+        );
+        tls.write_all(&rekey_key_pair_success_response())
+            .expect("the Re-key Key Pair response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_rekey_key_pair_c_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let mode = CString::new("rekey-key-pair").expect("mode has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    arguments.push(mode.as_ptr().cast_mut());
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv values and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join()
+        .expect("the Re-key Key Pair loopback mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the compiled C consumer completes the typed request"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+// OASIS KMIP v2.1 §6.1.5, Table 177; §11.7, Tables 437–438; §11.36, Table 470.
+// Exercise the public Cancel response-payload accessor from compiled C over mTLS.
+#[allow(clippy::too_many_lines)]
+fn generated_public_c_consumer_reads_cancel_echo_from_response_payload_over_mtls() {
+    const CORRELATION: &[u8] = &[0x61, 0x00, 0xfe, 0x62];
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    listener
+        .set_nonblocking(true)
+        .expect("the listener allows a bounded wait for the C consumer");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+        let stream = loop {
+            match listener.accept() {
+                Ok((stream, _)) => break stream,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    if std::time::Instant::now() >= deadline {
+                        return;
+                    }
+                    thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) => panic!("the compiled C client listener failed: {error}"),
+            }
+        };
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_nonblocking(false)
+            .expect("the accepted TLS stream uses blocking I/O");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("the bounded Cancel request arrives");
+        assert_eq!(
+            c_cancel_request_issue(&request, CORRELATION),
+            "",
+            "the C API sends Cancel with the exact opaque correlation bytes"
+        );
+        tls.write_all(&cancel_success_response(CORRELATION))
+            .expect("the successful Cancel response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_cancel_payload_c_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let mode = CString::new("cancel-payload").expect("mode has no NUL byte");
+    let correlation_hex = CString::new("6100fe62").expect("hex correlation has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+        mode.as_ptr().cast_mut(),
+        correlation_hex.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv values and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join()
+        .expect("the Cancel loopback mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the compiled C consumer reads the exact two-field Cancel response payload"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+// OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157.
+// Keep the TLS peer, certificate files, argv, and C ABI call in one runtime test.
+#[allow(clippy::too_many_lines)]
+fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.split-key.request-response.v1")
+        .expect("Create Split Key fixture case exists");
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let pending_expected = &expected["pendingMetadata"];
+    let unique_batch_item_ids = expected["uniqueBatchItemIds"]
+        .as_array()
+        .expect("fixture batch item IDs are an array")
+        .iter()
+        .map(|value| {
+            value
+                .as_str()
+                .expect("fixture batch item ID is text")
+                .as_bytes()
+                .to_vec()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(unique_batch_item_ids.len(), 2);
+    assert_eq!(input["operation"], "Create Split Key");
+    assert_eq!(input["attributesPresent"], true);
+    assert_eq!(input["protectionStorageMasks"]["present"], true);
+    assert_eq!(expected["primeFieldSizePresent"], false);
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let response_identifiers = expected["responseUniqueIdentifiersInWireOrder"]
+        .as_array()
+        .expect("fixture response identifiers are an array")
+        .iter()
+        .map(|identifier| match identifier["wireType"].as_str() {
+            Some("TextString") => ttlv_item(
+                0x0042_0094,
+                0x07,
+                identifier["text"]
+                    .as_str()
+                    .expect("TextString fixture identifier has text")
+                    .as_bytes(),
+            ),
+            Some("Enumeration") => enumeration(
+                0x0042_0094,
+                u32::try_from(
+                    identifier["enumeration"]
+                        .as_u64()
+                        .expect("Enumeration fixture identifier is U32"),
+                )
+                .expect("fixture identifier fits Enumeration"),
+            ),
+            Some("Integer") => integer(
+                0x0042_0094,
+                i32::try_from(
+                    identifier["integer"]
+                        .as_i64()
+                        .expect("Integer fixture identifier is signed"),
+                )
+                .expect("fixture identifier fits Integer"),
+            ),
+            other => panic!("unsupported fixture identifier type {other:?}"),
+        })
+        .collect::<Vec<_>>();
+    let pending_response_identifiers = expected["pendingResponseUniqueIdentifiersInWireOrder"]
+        .as_array()
+        .expect("fixture Pending response identifiers are an array")
+        .iter()
+        .map(|identifier| match identifier["wireType"].as_str() {
+            Some("TextString") => ttlv_item(
+                0x0042_0094,
+                0x07,
+                identifier["text"]
+                    .as_str()
+                    .expect("TextString fixture identifier has text")
+                    .as_bytes(),
+            ),
+            Some("Enumeration") => enumeration(
+                0x0042_0094,
+                u32::try_from(
+                    identifier["enumeration"]
+                        .as_u64()
+                        .expect("Enumeration fixture identifier is U32"),
+                )
+                .expect("fixture identifier fits Enumeration"),
+            ),
+            Some("Integer") => integer(
+                0x0042_0094,
+                i32::try_from(
+                    identifier["integer"]
+                        .as_i64()
+                        .expect("Integer fixture identifier is signed"),
+                )
+                .expect("fixture identifier fits Integer"),
+            ),
+            other => panic!("unsupported fixture Pending identifier type {other:?}"),
+        })
+        .collect::<Vec<_>>();
+    let success_payload = structure(0x0042_007c, response_identifiers);
+    let success_item = structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 40),
+            ttlv_item(0x0042_0093, 0x08, &unique_batch_item_ids[0]),
+            enumeration(
+                0x0042_007f,
+                u32::try_from(
+                    expected["resultStatus"]
+                        .as_u64()
+                        .expect("fixture success status is U32"),
+                )
+                .expect("status fits U32"),
+            ),
+            success_payload,
+        ],
+    );
+    let correlation = decode_fixture_hex(
+        pending_expected["correlationValueHex"]
+            .as_str()
+            .expect("fixture pending correlation is hexadecimal"),
+    );
+    let pending_item = structure(
+        0x0042_000f,
+        [
+            enumeration(
+                0x0042_005c,
+                u32::try_from(
+                    pending_expected["sourceOperation"]
+                        .as_u64()
+                        .expect("fixture operation is U32"),
+                )
+                .expect("operation fits U32"),
+            ),
+            ttlv_item(0x0042_0093, 0x08, &unique_batch_item_ids[1]),
+            enumeration(
+                0x0042_007f,
+                u32::try_from(
+                    pending_expected["status"]
+                        .as_u64()
+                        .expect("fixture pending status is U32"),
+                )
+                .expect("status fits U32"),
+            ),
+            ttlv_item(0x0042_0006, 0x08, &correlation),
+            structure(0x0042_007c, pending_response_identifiers),
+        ],
+    );
+    let version = structure(
+        0x0042_0069,
+        [integer(0x0042_006a, 2), integer(0x0042_006b, 1)],
+    );
+    let header = structure(
+        0x0042_007a,
+        [version, date_time(0x0042_0092, 1), integer(0x0042_000d, 2)],
+    );
+    let response = structure(0x0042_007b, [header, success_item, pending_item]);
+
+    let object_type = u32::try_from(
+        input["objectType"]
+            .as_u64()
+            .expect("fixture Object Type is U32"),
+    )
+    .expect("Object Type fits U32");
+    let unique_identifier = i32::try_from(
+        input["uniqueIdentifier"]["integer"]
+            .as_i64()
+            .expect("fixture Unique Identifier is Integer"),
+    )
+    .expect("Unique Identifier fits Integer");
+    let split_key_parts = i32::try_from(
+        input["splitKeyParts"]
+            .as_i64()
+            .expect("fixture parts are Integer"),
+    )
+    .expect("parts fit Integer");
+    let split_key_threshold = i32::try_from(
+        input["splitKeyThreshold"]
+            .as_i64()
+            .expect("fixture threshold is Integer"),
+    )
+    .expect("threshold fits Integer");
+    let split_key_method = u32::try_from(
+        input["splitKeyMethod"]
+            .as_u64()
+            .expect("fixture method is Enumeration"),
+    )
+    .expect("method fits Enumeration");
+    let expected_request_payload = structure(
+        0x0042_0079,
+        [
+            enumeration(0x0042_0057, object_type),
+            integer(0x0042_0094, unique_identifier),
+            integer(0x0042_008b, split_key_parts),
+            integer(0x0042_008c, split_key_threshold),
+            enumeration(0x0042_008a, split_key_method),
+            structure(0x0042_0125, []),
+            structure(0x0042_015f, []),
+        ],
+    );
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer_batch_item_ids = unique_batch_item_ids.clone();
+    let peer = thread::spawn(move || {
+        listener
+            .set_nonblocking(true)
+            .expect("fixture peer can bound its accept wait");
+        let accept_deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(connection) => break connection,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    assert!(
+                        std::time::Instant::now() < accept_deadline,
+                        "the compiled C consumer connects to the fixture peer before timeout"
+                    );
+                    thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) => panic!("fixture peer accept failed: {error}"),
+            }
+        };
+        stream
+            .set_nonblocking(false)
+            .expect("accepted fixture connection uses blocking reads");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("the C batch request arrives");
+        let occurrences = request
+            .windows(expected_request_payload.len())
+            .filter(|window| *window == expected_request_payload)
+            .count();
+        let batch_item_id_fields = peer_batch_item_ids
+            .iter()
+            .map(|identifier| ttlv_item(0x0042_0093, 0x08, identifier))
+            .collect::<Vec<_>>();
+        let request_id_positions = batch_item_id_fields
+            .iter()
+            .map(|field| {
+                request
+                    .windows(field.len())
+                    .position(|window| window == field)
+                    .expect("the C request contains each fixture batch-item ID")
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            occurrences, 2,
+            "the C request contains two exact fixture-shaped Create Split Key payloads"
+        );
+        assert_eq!(request_id_positions.len(), 2);
+        assert!(
+            request_id_positions[0] < request_id_positions[1],
+            "the C request keeps fixture batch-item IDs in request order"
+        );
+        tls.write_all(&response)
+            .expect("the fixture success and Pending results are written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_split_key_fixture_c_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let mode = CString::new("create-split-key-fixture").expect("fixture mode has no NUL byte");
+    let success_batch_item_id = CString::new(unique_batch_item_ids[0].as_slice())
+        .expect("fixture success batch item ID has no NUL byte");
+    let pending_batch_item_id = CString::new(unique_batch_item_ids[1].as_slice())
+        .expect("fixture Pending batch item ID has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+        mode.as_ptr().cast_mut(),
+        success_batch_item_id.as_ptr().cast_mut(),
+        pending_batch_item_id.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv values and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join()
+        .expect("the Create Split Key mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the C ABI preserves fixture identifiers and Pending metadata over mTLS"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let create_case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.create.request-response.v1")
+        .expect("shared Create fixture case exists");
+    let create_expected = &create_case["expectedOutput"];
+    assert_eq!(create_expected["responseObjectType"].as_u64(), Some(7));
+    assert_eq!(create_expected["uniqueIdentifier"]["wireType"], "Integer");
+    assert_eq!(
+        create_expected["uniqueIdentifier"]["integer"].as_i64(),
+        Some(-8)
+    );
+    assert_eq!(create_expected["resultStatus"].as_u64(), Some(0));
+    assert!(create_expected["resultMessage"].is_null());
+
+    let creation_failure_case = creation_result_message_fixture_case();
+
+    run_generated_public_client_abi_consumer(
+        &creation_failure_case,
+        CreationResultMessageExpectation::MatchesFixture,
+    );
+}
+
+#[test]
+fn compiled_c_consumer_rejects_divergent_creation_message_input_and_expected_output() {
+    let mut creation_failure_case = creation_result_message_fixture_case();
+    creation_failure_case["input"]["resultMessage"] =
+        serde_json::json!("server result differs from fixture expectation");
+    assert_ne!(
+        creation_failure_case["input"]["resultMessage"],
+        creation_failure_case["expectedOutput"]["resultMessage"],
+        "the test must present separate server input and expected output values"
+    );
+
+    run_generated_public_client_abi_consumer(
+        &creation_failure_case,
+        CreationResultMessageExpectation::RejectsDivergence,
+    );
+}
+
+#[derive(Clone, Copy)]
+enum CreationResultMessageExpectation {
+    MatchesFixture,
+    RejectsDivergence,
+}
+
+struct CreateKeyPairParityFixture {
+    input: serde_json::Value,
+    expected_output: serde_json::Value,
+}
+
+fn creation_result_message_fixture_case() -> serde_json::Value {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.result-message-on-failure.v1")
+        .expect("the creation failure fixture case exists")
+        .clone()
+}
+
+// Keep the fixture-backed argv values and TLS server alive through one visible FFI call.
+#[allow(clippy::too_many_lines)]
+fn run_generated_public_client_abi_consumer(
+    creation_failure_case_override: &serde_json::Value,
+    message_expectation: CreationResultMessageExpectation,
+) {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("the shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "batch.ordered-completed-pending-failed.v1")
+        .expect("the ordered batch fixture case exists");
+    let discover_versions_case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "discover-versions.supported-versions.v1")
+        .expect("the Discover Versions fixture case exists");
+    let create_case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.create.request-response.v1")
+        .expect("the Create fixture case exists");
+    let create_key_pair_case = fixture["cases"]
+        .as_array()
+        .expect("the shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.key-pair.request-response.v1")
+        .expect("the Create Key Pair fixture case exists");
+    let create_key_pair_expected = &create_key_pair_case["expectedOutput"];
+    assert_eq!(create_key_pair_expected["resultStatus"].as_u64(), Some(0));
+    assert!(create_key_pair_expected["resultMessage"].is_null());
+    assert!(
+        create_key_pair_expected["resultMessagePresencePreserved"]
+            .as_bool()
+            .expect("fixture result-message presence is Boolean")
+    );
+    let create_input = create_case["input"].clone();
+    let creation_failure_case = creation_failure_case_override;
+    let server_result_message = CString::new(
+        creation_failure_case["input"]["resultMessage"]
+            .as_str()
+            .expect("fixture server result message is text"),
+    )
+    .expect("fixture server result message contains no NUL byte");
+    let expected_result_message = CString::new(
+        creation_failure_case["expectedOutput"]["resultMessage"]
+            .as_str()
+            .expect("fixture expected result message is text"),
+    )
+    .expect("fixture expected result message contains no NUL byte");
+    let discover_expected = &discover_versions_case["expectedOutput"];
+    let fixture_versions = discover_expected["supportedVersions"]
+        .as_array()
+        .expect("fixture supported versions are an array")
+        .iter()
+        .map(|version| {
+            (
+                i32::try_from(
+                    version["major"]
+                        .as_i64()
+                        .expect("fixture major version is an integer"),
+                )
+                .expect("fixture major version fits i32"),
+                i32::try_from(
+                    version["minor"]
+                        .as_i64()
+                        .expect("fixture minor version is an integer"),
+                )
+                .expect("fixture minor version fits i32"),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        discover_expected["preservesSourceOrderAndRepetitions"]
+            .as_bool()
+            .expect("fixture repetition contract is boolean")
+    );
+    let input_ids = case["input"]["uniqueBatchItemIds"]
+        .as_array()
+        .expect("fixture batch IDs are an array")
+        .iter()
+        .map(|id| {
+            CString::new(id.as_str().expect("fixture batch ID is hexadecimal"))
+                .expect("fixture batch ID has no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    let expected = &case["expectedOutput"];
+    let fixture_statuses = expected["resultStatuses"]
+        .as_array()
+        .expect("fixture result statuses are an array")
+        .iter()
+        .map(|status| {
+            let value = match status.as_str().expect("fixture result status is text") {
+                "Success" => "0",
+                "Operation Pending" => "2",
+                "Operation Failed" => "1",
+                other => panic!("unsupported fixture result status {other}"),
+            };
+            CString::new(value).expect("numeric status has no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    let correlation = CString::new(
+        expected["correlationValueHex"]
+            .as_str()
+            .expect("fixture correlation is hexadecimal"),
+    )
+    .expect("fixture correlation has no NUL byte");
+    let fixture_item_count = CString::new(
+        expected["itemIndexes"]
+            .as_array()
+            .expect("fixture item indexes are an array")
+            .len()
+            .to_string(),
+    )
+    .expect("fixture item count has no NUL byte");
+    let fixture_pending_count = CString::new(
+        expected["pendingCount"]
+            .as_u64()
+            .expect("fixture pending count is unsigned")
+            .to_string(),
+    )
+    .expect("fixture pending count has no NUL byte");
+    let fixture_version_count = CString::new(fixture_versions.len().to_string())
+        .expect("fixture version count has no NUL byte");
+    let fixture_version_values = fixture_versions
+        .iter()
+        .flat_map(|(major, minor)| [major.to_string(), minor.to_string()])
+        .map(|version| CString::new(version).expect("numeric version has no NUL byte"))
+        .collect::<Vec<_>>();
+    let expected_exchange_count = expected["transportExchangeCount"]
+        .as_u64()
+        .expect("fixture transport exchange count is unsigned");
+    assert_eq!(
+        input_ids.len(),
+        3,
+        "the C fixture contract covers three items"
+    );
+    assert_eq!(fixture_statuses.len(), input_ids.len());
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer = spawn_public_client_batch_peer(
+        listener,
+        server_config,
+        Arc::clone(&exchange_count),
+        fixture_versions.clone(),
+        server_result_message.as_bytes().to_vec(),
+        create_input,
+        CreateKeyPairParityFixture {
+            input: create_key_pair_case["input"].clone(),
+            expected_output: create_key_pair_expected.clone(),
+        },
+    );
+
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    arguments.extend(input_ids.iter().map(|id| id.as_ptr().cast_mut()));
+    arguments.extend(
+        fixture_statuses
+            .iter()
+            .map(|status| status.as_ptr().cast_mut()),
+    );
+    arguments.push(correlation.as_ptr().cast_mut());
+    arguments.push(fixture_item_count.as_ptr().cast_mut());
+    arguments.push(fixture_pending_count.as_ptr().cast_mut());
+    arguments.push(fixture_version_count.as_ptr().cast_mut());
+    arguments.extend(
+        fixture_version_values
+            .iter()
+            .map(|version| version.as_ptr().cast_mut()),
+    );
+    arguments.push(expected_result_message.as_ptr().cast_mut());
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot and the successful handle is
+    // retained for the C call, then released by this Rust test harness.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(
+        !limits.is_null(),
+        "configured codec limits must return a handle"
+    );
+    // SAFETY: all argv entries remain live and NUL terminated for the synchronous
+    // C call; the consumer is compiled against the generated public header only.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the configured limits call returned this live handle and the C consumer only
+    // borrowed it while synchronously executing the batch.
+    unsafe {
+        kmipkit_codec_limits_release(limits);
+    }
+
+    let mut last_status = 0;
+    let mut last_category = 0;
+    let mut last_cause = 0;
+    let mut last_delivery = 0;
+    // SAFETY: all four arguments are writable scalar outputs for this call.
+    let metadata_status = unsafe {
+        kmipkit_last_error_get(
+            &raw mut last_status,
+            &raw mut last_category,
+            &raw mut last_cause,
+            &raw mut last_delivery,
+        )
+    };
+    assert_eq!(metadata_status, 0);
+    match message_expectation {
+        CreationResultMessageExpectation::MatchesFixture => assert_eq!(
+            result,
+            0,
+            "generated public C consumer failed (status {last_status}, category {last_category}, cause {last_cause}, delivery {last_delivery}); server exchanges: {}",
+            exchange_count.load(Ordering::Relaxed)
+        ),
+        CreationResultMessageExpectation::RejectsDivergence => assert_ne!(
+            result, 0,
+            "the compiled C consumer accepted a Result Message that differs from expectedOutput"
+        ),
+    }
+    peer.join().expect("the loopback TLS peer completes");
+    assert_eq!(
+        exchange_count.load(Ordering::Relaxed),
+        expected_exchange_count
+    );
+}
+
+fn spawn_public_client_batch_peer(
+    listener: TcpListener,
+    server_config: Arc<ServerConfig>,
+    exchange_count: Arc<AtomicU64>,
+    fixture_versions: Vec<(i32, i32)>,
+    failure_message: Vec<u8>,
+    create_input: serde_json::Value,
+    create_key_pair: CreateKeyPairParityFixture,
+) -> thread::JoinHandle<()> {
+    thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the public C client connects to the local peer");
+        exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        assert!(
+            c_request_contains_create_fixture(&request, &create_input),
+            "compiled C consumer must transmit the Create request represented by the shared fixture"
+        );
+        assert!(
+            c_request_contains_create_key_pair_fixture(&request, &create_key_pair.input),
+            "compiled C consumer must transmit the Create Key Pair request represented by the shared fixture"
+        );
+        assert!(
+            c_request_contains_large_query(&request),
+            "C ABI consumer must transmit 100,001 Query Functions and Object Groups over mTLS"
+        );
+        assert!(
+            c_request_contains_exact_derivation_parameters(&request),
+            "C ABI consumer must transmit the exact ordered Derive Key parameter values"
+        );
+        assert!(
+            c_request_contains_exact_export_selectors(&request),
+            "C ABI consumer must transmit the exact ordered Export selectors"
+        );
+        assert!(
+            c_request_contains_empty_get_constraints(&request),
+            "C ABI consumer must transmit an empty Get Constraints payload"
+        );
+        assert!(
+            c_request_contains_get_and_locate(&request),
+            "C ABI consumer must transmit the Get identifier and empty Locate attributes"
+        );
+        assert!(
+            c_request_contains_import(&request),
+            "C ABI consumer must transmit the complete Import request through the public batch API"
+        );
+        assert!(
+            c_request_contains_log(&request),
+            "C ABI consumer must transmit the typed Log request and message through the public batch API"
+        );
+        assert!(
+            c_request_contains_login(&request),
+            "C ABI consumer must transmit the typed Login request through the public batch API"
+        );
+        tls.write_all(&mixed_discover_versions_response(
+            &fixture_versions,
+            &failure_message,
+            &create_key_pair.expected_output,
+        ))
+        .expect("the typed KMIP response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    })
+}
+
+struct CreateKeyPairRequestShape {
+    groups: Vec<(u32, Vec<u32>)>,
+}
+
+fn fixture_attribute_tags(input: &serde_json::Value, field: &str) -> Option<Vec<u32>> {
+    input[field]["attributeTagsInOrder"]
+        .as_array()?
+        .iter()
+        .map(|tag| u32::from_str_radix(tag.as_str()?.strip_prefix("0x")?, 16).ok())
+        .collect()
+}
+
+fn create_key_pair_request_shape(input: &serde_json::Value) -> Option<CreateKeyPairRequestShape> {
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+    const COMMON_MASKS: u32 = 0x0042_0163;
+    const PRIVATE_MASKS: u32 = 0x0042_0164;
+    const PUBLIC_MASKS: u32 = 0x0042_0165;
+
+    if input["operation"] != "Create Key Pair"
+        || input["effectiveTable191ValuesEqual"].as_bool() != Some(true)
+    {
+        return None;
+    }
+    let common_tags = fixture_attribute_tags(input, "commonAttributes")?;
+    let private_tags = fixture_attribute_tags(input, "privateKeyAttributes")?;
+    let public_tags = fixture_attribute_tags(input, "publicKeyAttributes")?;
+    let mask_presence = [
+        (
+            COMMON_MASKS,
+            input["protectionStorageMasks"]["commonPresent"].as_bool()?,
+        ),
+        (
+            PRIVATE_MASKS,
+            input["protectionStorageMasks"]["privatePresent"].as_bool()?,
+        ),
+        (
+            PUBLIC_MASKS,
+            input["protectionStorageMasks"]["publicPresent"].as_bool()?,
+        ),
+    ];
+    if [
+        "commonAttributes",
+        "privateKeyAttributes",
+        "publicKeyAttributes",
+    ]
+    .into_iter()
+    .any(|group| input[group]["present"].as_bool() != Some(true))
+    {
+        return None;
+    }
+    let mut groups = vec![
+        (COMMON_ATTRIBUTES, common_tags),
+        (PRIVATE_KEY_ATTRIBUTES, private_tags),
+        (PUBLIC_KEY_ATTRIBUTES, public_tags),
+    ];
+    groups.extend(
+        mask_presence
+            .into_iter()
+            .filter_map(|(tag, present)| present.then_some((tag, Vec::new()))),
+    );
+    Some(CreateKeyPairRequestShape { groups })
+}
+
+fn c_request_contains_create_key_pair_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const CREATE_KEY_PAIR: u32 = 2;
+
+    let Some(shape) = create_key_pair_request_shape(input) else {
+        return false;
+    };
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut matching = message.children().iter().filter(|item| {
+            item.tag().raw() == BATCH_ITEM && c_batch_item_has_operation(item, CREATE_KEY_PAIR)
+        });
+        let Some(batch_item) = matching.next() else {
+            return false;
+        };
+        matching.next().is_none()
+            && batch_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                c_create_key_pair_payload_matches(&batch_item, &shape)
+            })
+    })
+}
+
+fn c_batch_item_has_operation(item: &Item, operation: u32) -> bool {
+    const OPERATION: u32 = 0x0042_005c;
+
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        c_unique_child_index(&batch_item, OPERATION).is_some_and(|index| {
+            batch_item.children()[index].with_value(
+                |value| matches!(value, ValueView::Enumeration(actual) if *actual == operation),
+            )
+        })
+    })
+}
+
+fn c_create_key_pair_payload_matches(
+    batch_item: &kmipkit_ttlv::StructureView<'_>,
+    shape: &CreateKeyPairRequestShape,
+) -> bool {
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+
+    c_unique_child_index(batch_item, REQUEST_PAYLOAD).is_some_and(|index| {
+        batch_item.children()[index].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                return false;
+            };
+            payload.children().len() == shape.groups.len()
+                && payload
+                    .children()
+                    .iter()
+                    .zip(&shape.groups)
+                    .all(|(item, (tag, child_tags))| {
+                        c_attribute_group_matches(item, *tag, child_tags)
+                    })
+        })
+    })
+}
+
+fn c_attribute_group_matches(item: &Item, expected_tag: u32, child_tags: &[u32]) -> bool {
+    item.tag().raw() == expected_tag
+        && item.with_value(|value| {
+            let ValueView::Structure(group) = value else {
+                return false;
+            };
+            group.children().len() == child_tags.len()
+                && group
+                    .children()
+                    .iter()
+                    .zip(child_tags)
+                    .all(|(child, expected_child_tag)| {
+                        child.tag().raw() == *expected_child_tag
+                            && child.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(raw) if *raw == 0xdead_beef)
+                            })
+                    })
+        })
+}
+
+fn c_request_contains_create_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
+    const OBJECT_TYPE_TAG: [u8; 8] = [0x42, 0x00, 0x57, 0x05, 0, 0, 0, 4];
+    const EMPTY_ATTRIBUTES: [u8; 8] = [0x42, 0x01, 0x25, 0x01, 0, 0, 0, 0];
+    const EMPTY_PROTECTION_STORAGE_MASKS: [u8; 8] = [0x42, 0x01, 0x5f, 0x01, 0, 0, 0, 0];
+
+    if input["operation"] != "Create"
+        || input["attributesPresent"].as_bool() != Some(true)
+        || input["attributeItems"].as_array().map(Vec::len) != Some(0)
+        || input["protectionStorageMasks"]["present"].as_bool() != Some(true)
+        || input["protectionStorageMasks"]["childTags"]
+            .as_array()
+            .map(Vec::len)
+            != Some(0)
+    {
+        return false;
+    }
+    let Some(object_type) = input["objectType"]
+        .as_u64()
+        .and_then(|value| u32::try_from(value).ok())
+    else {
+        return false;
+    };
+    let mut object_type_ttlv = OBJECT_TYPE_TAG.to_vec();
+    object_type_ttlv.extend_from_slice(&object_type.to_be_bytes());
+
+    encoded
+        .windows(object_type_ttlv.len())
+        .any(|window| window == object_type_ttlv)
+        && encoded
+            .windows(EMPTY_ATTRIBUTES.len())
+            .any(|window| window == EMPTY_ATTRIBUTES)
+        && encoded
+            .windows(EMPTY_PROTECTION_STORAGE_MASKS.len())
+            .any(|window| window == EMPTY_PROTECTION_STORAGE_MASKS)
+}
+
+fn c_request_contains_large_query(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const QUERY: u32 = 24;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const QUERY_FUNCTION: u32 = 0x0042_0074;
+    const OBJECT_GROUPS: u32 = 0x0042_0166;
+    const OBJECT_GROUP: u32 = 0x0042_0056;
+    const EXPECTED_COUNT: usize = 100_001;
+
+    let Ok(limits) = kmipkit_ttlv::codec::CodecLimits::new(8_388_608, 64, 400_000) else {
+        return false;
+    };
+    let Ok(root) = kmipkit_ttlv::codec::decode_with_limits(encoded, &limits) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        message.children().iter().any(|batch_item| {
+            if batch_item.tag().raw() != BATCH_ITEM {
+                return false;
+            }
+            batch_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                let children = batch_item.children();
+                let is_query = children.iter().any(|item| {
+                    item.tag().raw() == OPERATION
+                        && item.with_value(
+                            |value| matches!(value, ValueView::Enumeration(value) if *value == QUERY),
+                        )
+                });
+                let payload = children.iter().find(|item| item.tag().raw() == REQUEST_PAYLOAD);
+                is_query
+                    && payload.is_some_and(|payload| {
+                        payload.with_value(|value| {
+                            let ValueView::Structure(payload) = value else {
+                                return false;
+                            };
+                            let functions = payload
+                                .children()
+                                .iter()
+                                .filter(|item| item.tag().raw() == QUERY_FUNCTION)
+                                .count();
+                            let groups = payload
+                                .children()
+                                .iter()
+                                .find(|item| item.tag().raw() == OBJECT_GROUPS);
+                            functions == EXPECTED_COUNT
+                                && groups.is_some_and(|groups| {
+                                    groups.with_value(|value| {
+                                        let ValueView::Structure(groups) = value else {
+                                            return false;
+                                        };
+                                        groups
+                                            .children()
+                                            .iter()
+                                            .filter(|item| item.tag().raw() == OBJECT_GROUP)
+                                            .count()
+                                            == EXPECTED_COUNT
+                                    })
+                                })
+                        })
+                    })
+            })
+        })
+    })
+}
+
+const C_REKEY_BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const C_REKEY_OPERATION_TAG: u32 = 0x0042_005C;
+const C_REKEY_OPERATION_VALUE: u32 = 0x1D;
+const C_REKEY_BATCH_ID_TAG: u32 = 0x0042_0093;
+const C_REKEY_REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const C_REKEY_PRIVATE_IDENTIFIER_TAG: u32 = 0x0042_0066;
+const C_REKEY_OFFSET_TAG: u32 = 0x0042_0058;
+const C_REKEY_FIELD_TAGS: [u32; 6] = [
+    0x0042_0126,
+    0x0042_0127,
+    0x0042_0128,
+    0x0042_0163,
+    0x0042_0164,
+    0x0042_0165,
+];
+const C_REKEY_MARKERS: [(&[u8], u32); 6] = [
+    (b"common-attributes", 0x0054_1101),
+    (b"private-attributes", 0x0054_1102),
+    (b"public-attributes", 0x0054_1103),
+    (b"common-masks", 0x0054_1104),
+    (b"private-masks", 0x0054_1105),
+    (b"public-masks", 0x0054_1106),
+];
+
+fn c_request_rekey_key_pair_issue(encoded: &[u8]) -> &'static str {
+    let Some(root) = decode_test_request(encoded) else {
+        return "encoded request is not valid TTLV";
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return "request root is not a Structure";
+        };
+        let mut matching = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == C_REKEY_BATCH_ITEM_TAG)
+            .filter(|item| c_is_rekey_key_pair_batch_item(item));
+        let Some(item) = matching.next() else {
+            return "request has no Re-key Key Pair item";
+        };
+        if matching.next().is_some() {
+            return "request has multiple Re-key Key Pair items";
+        }
+        c_rekey_key_pair_batch_item_issue(item)
+    })
+}
+
+fn c_is_rekey_key_pair_batch_item(item: &Item) -> bool {
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        batch_item.children().iter().any(|field| {
+            field.tag().raw() == C_REKEY_OPERATION_TAG
+                && field.with_value(|value| {
+                    matches!(value, ValueView::Enumeration(actual) if *actual == C_REKEY_OPERATION_VALUE)
+                })
+        })
+    })
+}
+
+fn c_rekey_key_pair_batch_item_issue(item: &Item) -> &'static str {
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return "Re-key Key Pair batch item is not a Structure";
+        };
+        let mut operation_matches = false;
+        let mut id_matches = false;
+        let mut payload = None;
+        for field in batch_item.children() {
+            match field.tag().raw() {
+                C_REKEY_OPERATION_TAG => {
+                    operation_matches = field.with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == C_REKEY_OPERATION_VALUE)
+                    });
+                }
+                C_REKEY_BATCH_ID_TAG => {
+                    id_matches = field.with_value(|value| {
+                        matches!(value, ValueView::ByteString(actual) if actual == b"pair-c")
+                    });
+                }
+                C_REKEY_REQUEST_PAYLOAD_TAG if payload.is_some() => {
+                    return "request has duplicate Request Payload fields";
+                }
+                C_REKEY_REQUEST_PAYLOAD_TAG => payload = Some(field),
+                _ => {}
+            }
+        }
+        if !operation_matches {
+            return "Operation is not Re-key Key Pair";
+        }
+        if !id_matches {
+            return "Unique Batch Item ID does not match the C API input";
+        }
+        let Some(payload) = payload else {
+            return "Request Payload is missing";
+        };
+        c_rekey_key_pair_payload_issue(payload)
+    })
+}
+
+fn c_rekey_key_pair_payload_issue(payload: &Item) -> &'static str {
+    payload.with_value(|value| {
+        let ValueView::Structure(payload) = value else {
+            return "Request Payload is not a Structure";
+        };
+        let children = payload.children();
+        if children.len() != 8 {
+            return "Request Payload does not contain identifier, offset, and six fields";
+        }
+        if children[0].tag().raw() != C_REKEY_PRIVATE_IDENTIFIER_TAG {
+            return "Private Key Unique Identifier tag is incorrect";
+        }
+        if !children[0].with_value(|value| {
+            matches!(value, ValueView::TextString(actual) if actual == "existing-private-key")
+        }) {
+            return "Private Key Unique Identifier type or value is incorrect";
+        }
+        if children[1].tag().raw() != C_REKEY_OFFSET_TAG
+            || !children[1].with_value(
+                |value| matches!(value, ValueView::Interval(actual) if *actual == 86_400),
+            )
+        {
+            return "Offset does not match the C API input";
+        }
+        for (index, (marker, marker_tag)) in C_REKEY_MARKERS.iter().enumerate() {
+            let field = &children[index + 2];
+            if field.tag().raw() != C_REKEY_FIELD_TAGS[index] {
+                return "optional fields are not in KMIP Table 310 order";
+            }
+            if !c_rekey_key_pair_group_matches(field, *marker_tag, marker) {
+                return "optional field structure does not match its C API sentinel";
+            }
+        }
+        ""
+    })
+}
+
+fn c_rekey_key_pair_group_matches(group_item: &Item, marker_tag: u32, marker: &[u8]) -> bool {
+    group_item.with_value(|value| {
+        let ValueView::Structure(group) = value else {
+            return false;
+        };
+        group.children().len() == 1
+            && group.children()[0].tag().raw() == marker_tag
+            && group.children()[0].with_value(
+                |value| matches!(value, ValueView::ByteString(actual) if actual == marker),
+            )
+    })
+}
+
+fn decode_test_request(encoded: &[u8]) -> Option<Item> {
+    let limits = kmipkit_ttlv::codec::CodecLimits::new(8_388_608, 64, 400_000).ok()?;
+    kmipkit_ttlv::codec::decode_with_limits(encoded, &limits).ok()
+}
+
+#[derive(Clone, Copy)]
+enum RequestBuilderWireValue {
+    Text(&'static str),
+    ByteString(&'static [u8]),
+    Integer(i32),
+    LongInteger(i64),
+    Enumeration(u32),
+    Interval(u32),
+    StructureText { child_tag: u32, text: &'static str },
+    StructureEnumeration { child_tag: u32, enumeration: u32 },
+    StructureInteger { child_tag: u32, integer: i32 },
+}
+
+#[derive(Clone, Copy)]
+struct RequestBuilderWireField {
+    tag: u32,
+    value: RequestBuilderWireValue,
+}
+
+#[derive(Clone, Copy)]
+struct RequestBuilderWireItem {
+    operation: u32,
+    fields: &'static [RequestBuilderWireField],
+}
+
+use RequestBuilderWireValue as V;
+
+const CHECK_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("check-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0096,
+        value: V::LongInteger(3),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_002c,
+        value: V::Integer(2),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0049,
+        value: V::Interval(60),
+    },
+];
+const INTEGER_IDENTIFIER: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0094,
+    value: V::Integer(-7),
+}];
+const GET_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("get-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0042,
+        value: V::Enumeration(0xf123_4567),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_00f8,
+        value: V::Enumeration(0xf123_4568),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0041,
+        value: V::Enumeration(0xf123_4569),
+    },
+];
+const EXPORT_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("export-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0042,
+        value: V::Enumeration(0xfedc_ba98),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_00f8,
+        value: V::Enumeration(0xfedc_ba99),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0041,
+        value: V::Enumeration(0xfedc_ba9a),
+    },
+];
+const REKEY_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("rekey-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0058,
+        value: V::Interval(60),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureText {
+            child_tag: 0x0042_00fd,
+            text: "rekey-attributes",
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_015e,
+            integer: 3,
+        },
+    },
+];
+const ALLOCATION_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("allocation-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0096,
+        value: V::LongInteger(5),
+    },
+];
+const ALLOCATION_IDENTIFIER_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0096,
+    value: V::LongInteger(7),
+}];
+const RECERTIFY_VALUES: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("recertify-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0139,
+        value: V::Text("certificate-request-text"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0058,
+        value: V::Interval(86_400),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureText {
+            child_tag: 0x0042_00fd,
+            text: "recertify-attributes",
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_015e,
+            integer: 3,
+        },
+    },
+];
+const RECERTIFY_OPTIONALS_OMITTED: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0094,
+    value: V::Text("recertify-omit-text"),
+}];
+const RECERTIFY_WITH_REQUEST_VALUE: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("recertify-type-only"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(5),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0140,
+        value: V::ByteString(b"recertify-request-sentinel"),
+    },
+];
+const CERTIFY_VALUES_FULL: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-public-key"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(1),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0140,
+        value: V::ByteString(b"certify-request-sentinel"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureEnumeration {
+            child_tag: 0x0042_001d,
+            enumeration: 1,
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_015e,
+            integer: 3,
+        },
+    },
+];
+const CERTIFY_TYPE_OMITTED: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-no-type"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureEnumeration {
+            child_tag: 0x0042_001d,
+            enumeration: 1,
+        },
+    },
+];
+const CERTIFY_STRUCTURES_OMITTED: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-no-structures"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(1),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0140,
+        value: V::ByteString(b"certify-request-sentinel"),
+    },
+];
+const CERTIFY_TYPE_ONLY: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("certify-type-only"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0019,
+        value: V::Enumeration(1),
+    },
+];
+const REKEY_KEY_PAIR_UID_AND_OFFSET: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0066,
+        value: V::Text("private-key-to-rekey"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0058,
+        value: V::Interval(86_400),
+    },
+];
+const REKEY_KEY_PAIR_OFFSET_ONLY: &[RequestBuilderWireField] = &[RequestBuilderWireField {
+    tag: 0x0042_0058,
+    value: V::Interval(86_400),
+}];
+const JOIN_SPLIT_KEY_SECRET_DATA_TYPE: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0057,
+        value: V::Enumeration(7),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("join-split-id"),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0086,
+        value: V::Enumeration(0x8123_4568),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0125,
+        value: V::StructureText {
+            child_tag: 0x0042_00fd,
+            text: "join-split-attributes",
+        },
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_015f,
+        value: V::StructureInteger {
+            child_tag: 0x0042_015e,
+            integer: 3,
+        },
+    },
+];
+const JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED: &[RequestBuilderWireField] = &[
+    RequestBuilderWireField {
+        tag: 0x0042_0057,
+        value: V::Enumeration(7),
+    },
+    RequestBuilderWireField {
+        tag: 0x0042_0094,
+        value: V::Text("join-split-id"),
+    },
+];
+const EMPTY_VALUES: &[RequestBuilderWireField] = &[];
+const REQUEST_BUILDER_WIRE_EXPECTED: &[RequestBuilderWireItem] = &[
+    RequestBuilderWireItem {
+        operation: 9,
+        fields: CHECK_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 9,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 10,
+        fields: GET_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 10,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 43,
+        fields: EXPORT_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 43,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 4,
+        fields: REKEY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 4,
+        fields: INTEGER_IDENTIFIER,
+    },
+    RequestBuilderWireItem {
+        operation: 17,
+        fields: ALLOCATION_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 17,
+        fields: ALLOCATION_IDENTIFIER_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 7,
+        fields: RECERTIFY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 7,
+        fields: RECERTIFY_OPTIONALS_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 2,
+        fields: EMPTY_VALUES,
+    },
+    RequestBuilderWireItem {
+        operation: 0x1d,
+        fields: REKEY_KEY_PAIR_OFFSET_ONLY,
+    },
+    RequestBuilderWireItem {
+        operation: 0x1d,
+        fields: REKEY_KEY_PAIR_UID_AND_OFFSET,
+    },
+    RequestBuilderWireItem {
+        operation: 0x29,
+        fields: JOIN_SPLIT_KEY_SECRET_DATA_TYPE,
+    },
+    RequestBuilderWireItem {
+        operation: 0x29,
+        fields: JOIN_SPLIT_KEY_SECRET_DATA_TYPE_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_VALUES_FULL,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_TYPE_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_STRUCTURES_OMITTED,
+    },
+    RequestBuilderWireItem {
+        operation: 6,
+        fields: CERTIFY_TYPE_ONLY,
+    },
+    RequestBuilderWireItem {
+        operation: 7,
+        fields: RECERTIFY_WITH_REQUEST_VALUE,
+    },
+];
+
+fn assert_request_builder_wire(request: &Item) {
+    request.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the C consumer sends a Message Structure");
+        };
+        let request_header = message
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_0077)
+            .expect("the Request Header is present");
+        assert_request_header_ordered(request_header);
+
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == 0x0042_000f)
+            .collect::<Vec<_>>();
+        assert_eq!(batch_items.len(), REQUEST_BUILDER_WIRE_EXPECTED.len() + 6);
+        assert_placeholder_producer(batch_items[0]);
+        for (index, (actual, expected)) in batch_items[1..]
+            .iter()
+            .zip(REQUEST_BUILDER_WIRE_EXPECTED)
+            .enumerate()
+        {
+            assert_request_builder_item(actual, expected, index);
+        }
+        for (offset, actual) in batch_items[23..].iter().enumerate() {
+            assert_wrapping_builder_item(actual, offset);
+        }
+    });
+}
+
+fn assert_wrapping_builder_item(actual: &Item, index: usize) {
+    const OPERATIONS: [u32; 5] = [42, 42, 42, 43, 10];
+    const IDENTIFIERS: [&str; 5] = [
+        "import-replace-omitted",
+        "import-replace-false",
+        "import-replace-true",
+        "export-wrapped",
+        "get-wrapped",
+    ];
+    actual.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            panic!("wrapping batch item is a Structure");
+        };
+        assert_eq!(
+            batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+            [0x0042_005c, 0x0042_0093, 0x0042_0079],
+        );
+        assert!(batch_item.children()[0].with_value(
+            |value| matches!(value, ValueView::Enumeration(operation) if *operation == OPERATIONS[index]),
+        ));
+        let expected_id = format!("item-{}", index + 23);
+        assert!(batch_item.children()[1].with_value(
+            |value| matches!(value, ValueView::ByteString(id) if id == expected_id.as_bytes()),
+        ));
+        batch_item.children()[2].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("wrapping request payload is a Structure");
+            };
+            if index < 3 {
+                assert_import_wrapping_payload(&payload, index, IDENTIFIERS[index]);
+            } else {
+                assert_eq!(
+                    payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                    [0x0042_0094, 0x0042_0047],
+                );
+                let expected_identifier = IDENTIFIERS[index];
+                assert!(payload.children()[0].with_value(
+                    |value| matches!(value, ValueView::TextString(actual) if actual == expected_identifier),
+                ));
+                assert_wrapping_specification(&payload.children()[1]);
+            }
+        });
+    });
+}
+
+fn assert_import_wrapping_payload(payload: &StructureView<'_>, index: usize, identifier: &str) {
+    let expected_tags: &[u32] = if index == 0 {
+        &[
+            0x0042_0094,
+            0x0042_0057,
+            0x0042_00f8,
+            0x0042_0125,
+            0x0042_008f,
+        ]
+    } else {
+        &[
+            0x0042_0094,
+            0x0042_0057,
+            0x0042_0124,
+            0x0042_00f8,
+            0x0042_0125,
+            0x0042_008f,
+        ]
+    };
+    assert_eq!(
+        payload
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        expected_tags,
+    );
+    assert!(payload.children()[0].with_value(
+        |value| matches!(value, ValueView::TextString(actual) if actual == identifier),
+    ));
+    assert!(payload.children()[1].with_value(
+        |value| matches!(value, ValueView::Enumeration(object_type) if *object_type == 2),
+    ));
+    let mut key_wrap_index = 2;
+    if index != 0 {
+        let expected_replace_existing = index == 2;
+        assert!(payload.children()[2].with_value(
+            |value| matches!(value, ValueView::Boolean(actual) if *actual == expected_replace_existing),
+        ));
+        key_wrap_index += 1;
+    }
+    assert!(
+        payload.children()[key_wrap_index].with_value(
+            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xf123_4568),
+        )
+    );
+    let attributes_index = key_wrap_index + 1;
+    assert_eq!(
+        payload.children()[attributes_index].tag().raw(),
+        0x0042_0125
+    );
+    assert!(payload.children()[attributes_index].with_value(
+        |value| matches!(value, ValueView::Structure(fields) if fields.children().is_empty())
+    ));
+    assert_wrapped_import_object(&payload.children()[attributes_index + 1]);
+}
+
+fn assert_wrapped_import_object(object: &Item) {
+    assert_eq!(object.tag().raw(), 0x0042_008f);
+    object.with_value(|value| {
+        let ValueView::Structure(key_object) = value else {
+            panic!("Symmetric Key is a Structure");
+        };
+        assert_eq!(key_object.children().len(), 1);
+        assert_eq!(key_object.children()[0].tag().raw(), 0x0042_0040);
+        key_object.children()[0].with_value(|value| {
+            let ValueView::Structure(key_block) = value else {
+                panic!("Key Block is a Structure");
+            };
+            assert_eq!(
+                key_block.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                [0x0042_0042, 0x0042_0045, 0x0042_0046],
+            );
+            assert!(key_block.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(format) if *format == 1),
+            ));
+            assert!(key_block.children()[1].with_value(
+                |value| matches!(value, ValueView::ByteString(bytes) if bytes == b"synthetic-wrapped-key-value"),
+            ));
+            assert_wrapping_data(&key_block.children()[2]);
+        });
+    });
+}
+
+fn assert_wrapping_data(item: &Item) {
+    item.with_value(|value| {
+        let ValueView::Structure(wrapping_data) = value else {
+            panic!("Key Wrapping Data is a Structure");
+        };
+        assert_eq!(
+            wrapping_data
+                .children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>(),
+            [0x0042_009e, 0x0042_0036],
+        );
+        assert!(
+            wrapping_data.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(method) if *method == 1),
+            )
+        );
+        assert_key_information(&wrapping_data.children()[1], "wrapping-key");
+    });
+}
+
+fn assert_wrapping_specification(item: &Item) {
+    item.with_value(|value| {
+        let ValueView::Structure(specification) = value else {
+            panic!("Key Wrapping Specification is a Structure");
+        };
+        assert_eq!(
+            specification
+                .children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>(),
+            [0x0042_009e, 0x0042_0036],
+        );
+        assert!(
+            specification.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(method) if *method == 1),
+            )
+        );
+        assert_key_information(&specification.children()[1], "wrapping-key-id");
+    });
+}
+
+fn assert_key_information(item: &Item, expected_identifier: &str) {
+    assert_eq!(item.tag().raw(), 0x0042_0036);
+    item.with_value(|value| {
+        let ValueView::Structure(key_information) = value else {
+            panic!("Encryption Key Information is a Structure");
+        };
+        assert_eq!(key_information.children().len(), 1);
+        assert_eq!(key_information.children()[0].tag().raw(), 0x0042_0094);
+        assert!(key_information.children()[0].with_value(
+            |value| matches!(value, ValueView::TextString(actual) if actual == expected_identifier),
+        ));
+    });
+}
+
+fn assert_request_header_ordered(request_header: &Item) {
+    request_header.with_value(|value| {
+        let ValueView::Structure(header) = value else {
+            panic!("the Request Header is a Structure");
+        };
+        let order_option = header
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_0010)
+            .expect("the ordered placeholder context sets Batch Order Option");
+        assert!(
+            order_option
+                .with_value(|value| matches!(value, ValueView::Boolean(enabled) if *enabled),)
+        );
+    });
+}
+
+fn assert_placeholder_producer(batch_item: &Item) {
+    batch_item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            panic!("the first batch item is the ID Placeholder producer");
+        };
+        assert_eq!(
+            batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+            [0x0042_005c, 0x0042_0093, 0x0042_0079],
+            "the producer carries Operation, Unique Batch Item ID, and Request Payload"
+        );
+        assert!(batch_item.children()[0].with_value(
+            |value| matches!(value, ValueView::Enumeration(operation) if *operation == 1),
+        ));
+        assert!(batch_item.children()[1].with_value(
+            |value| matches!(value, ValueView::ByteString(id) if id == b"item-0"),
+        ));
+        batch_item.children()[2].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("the producer Request Payload is a Structure");
+            };
+            assert_eq!(
+                payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+                [0x0042_0057, 0x0042_0125],
+                "the producer requests a Symmetric Key with an empty Attributes structure"
+            );
+            assert!(payload.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(object_type) if *object_type == 2),
+            ));
+            assert!(payload.children()[1].with_value(
+                |value| matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty()),
+            ));
+        });
+    });
+}
+
+fn assert_request_builder_item(actual: &Item, expected: &RequestBuilderWireItem, index: usize) {
+    let batch_item_index = index + 1;
+    actual.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            panic!("builder batch item {batch_item_index} is a Structure");
+        };
+        assert_eq!(
+            batch_item.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+            [0x0042_005c, 0x0042_0093, 0x0042_0079],
+            "builder batch item {batch_item_index} includes its unique batch ID"
+        );
+        assert!(batch_item.children()[0].with_value(
+            |value| matches!(value, ValueView::Enumeration(operation) if *operation == expected.operation),
+        ), "builder batch item {batch_item_index} carries the expected operation");
+        let expected_batch_item_id = format!("item-{}", index + 1);
+        assert!(batch_item.children()[1].with_value(
+            |value| matches!(value, ValueView::ByteString(id) if id == expected_batch_item_id.as_bytes()),
+        ), "builder batch item {batch_item_index} carries its exact unique batch ID");
+        batch_item.children()[2].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                panic!("builder batch item {batch_item_index} Request Payload is a Structure");
+            };
+            assert_eq!(payload.children().len(), expected.fields.len());
+            let tags = payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>();
+            let expected_tags = expected.fields.iter().map(|field| field.tag).collect::<Vec<_>>();
+            assert_eq!(
+                tags,
+                expected_tags,
+                "builder batch item {batch_item_index} preserves payload order and presence"
+            );
+            for (field_index, (actual, expected_field)) in
+                payload.children().iter().zip(expected.fields).enumerate()
+            {
+                assert!(
+                    request_builder_wire_field_matches(actual, expected_field.value),
+                    "builder batch item {batch_item_index} field {field_index} has its exact TTLV value and type"
+                );
+            }
+        });
+    });
+}
+
+fn request_builder_wire_field_matches(actual: &Item, expected: RequestBuilderWireValue) -> bool {
+    actual.with_value(|value| match (value, expected) {
+        (ValueView::TextString(actual), V::Text(expected)) => actual == expected,
+        (ValueView::ByteString(actual), V::ByteString(expected)) => actual == expected,
+        (ValueView::Integer(actual), V::Integer(expected)) => *actual == expected,
+        (ValueView::LongInteger(actual), V::LongInteger(expected)) => *actual == expected,
+        (ValueView::Enumeration(actual), V::Enumeration(expected))
+        | (ValueView::Interval(actual), V::Interval(expected)) => *actual == expected,
+        (ValueView::Structure(actual), V::StructureText { child_tag, text }) => {
+            actual.children().len() == 1
+                && actual.children()[0].tag().raw() == child_tag
+                && actual.children()[0].with_value(
+                    |value| matches!(value, ValueView::TextString(actual) if actual == text),
+                )
+        }
+        (
+            ValueView::Structure(actual),
+            V::StructureEnumeration {
+                child_tag,
+                enumeration,
+            },
+        ) => actual.children().len() == 1
+            && actual.children()[0].tag().raw() == child_tag
+            && actual.children()[0].with_value(
+                |value| matches!(value, ValueView::Enumeration(actual) if *actual == enumeration),
+            ),
+        (ValueView::Structure(actual), V::StructureInteger { child_tag, integer }) => {
+            actual.children().len() == 1
+                && actual.children()[0].tag().raw() == child_tag
+                && actual.children()[0].with_value(
+                    |value| matches!(value, ValueView::Integer(actual) if *actual == integer),
+                )
+        }
+        _ => false,
+    })
+}
+
+fn c_cancel_request_issue(encoded: &[u8], expected_correlation: &[u8]) -> &'static str {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const CANCEL: u32 = 0x19;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+
+    let Some(root) = decode_test_request(encoded) else {
+        return "request is not valid TTLV";
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return "request root is not a Structure";
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        if batch_items.len() != 1 {
+            return "request does not contain exactly one batch item";
+        }
+        batch_items[0].with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return "Cancel batch item is not a Structure";
+            };
+            let operation_is_cancel = batch_item.children().iter().any(|item| {
+                item.tag().raw() == OPERATION
+                    && item.with_value(
+                        |value| matches!(value, ValueView::Enumeration(actual) if *actual == CANCEL),
+                    )
+            });
+            if !operation_is_cancel {
+                return "Operation is not Cancel";
+            }
+            let Some(payload) = batch_item
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD)
+            else {
+                return "Request Payload is missing";
+            };
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return "Request Payload is not a Structure";
+                };
+                let correlations = payload
+                    .children()
+                    .iter()
+                    .filter(|item| item.tag().raw() == ASYNCHRONOUS_CORRELATION_VALUE)
+                    .collect::<Vec<_>>();
+                if correlations.len() != 1 {
+                    return "Request Payload does not contain exactly one correlation value";
+                }
+                if correlations[0].with_value(
+                    |value| matches!(value, ValueView::ByteString(actual) if actual == expected_correlation),
+                ) {
+                    ""
+                } else {
+                    "correlation value differs from the opaque C input"
+                }
+            })
+        })
+    })
+}
+
+fn c_request_matches_pkcs11_fixture(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const PKCS11: u32 = 0x33;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const EXPECTED_PAYLOAD_TAGS: [u32; 4] = [0x0042_0159, 0x0042_015a, 0x0042_00d6, 0x0042_015b];
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        if batch_items.len() != 1 {
+            return false;
+        }
+        batch_items[0].with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let children = batch_item.children();
+            let operation = children.iter().find(|item| item.tag().raw() == OPERATION);
+            let payload = children
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD);
+            let has_pkcs11_operation = operation.is_some_and(|item| {
+                item.with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == PKCS11),
+                )
+            });
+            let has_ordered_payload = payload.is_some_and(|item| {
+                item.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        return false;
+                    };
+                    let fields = payload.children();
+                    if fields.len() != EXPECTED_PAYLOAD_TAGS.len()
+                        || fields
+                            .iter()
+                            .map(|field| field.tag().raw())
+                            .ne(EXPECTED_PAYLOAD_TAGS)
+                    {
+                        return false;
+                    }
+                    let interface_matches = fields[0].with_value(|value| {
+                        let ValueView::Structure(interface) = value else {
+                            return false;
+                        };
+                        interface.children().len() == 1
+                            && interface.children()[0].tag().raw() == 0x0042_0159
+                            && interface.children()[0].with_value(|value| {
+                                matches!(value, ValueView::TextString(actual) if actual == "test-interface")
+                            })
+                    });
+                    let function_matches = fields[1].with_value(|value| {
+                        let ValueView::Structure(function) = value else {
+                            return false;
+                        };
+                        function.children().len() == 1
+                            && function.children()[0].tag().raw() == 0x0042_015a
+                            && function.children()[0].with_value(|value| {
+                                matches!(value, ValueView::Integer(actual) if *actual == -12345)
+                            })
+                    });
+                    let correlation_matches = fields[2].with_value(|value| {
+                        matches!(value, ValueView::ByteString(actual) if actual == b"pkcs11-correlation")
+                    });
+                    let input_matches = fields[3].with_value(|value| {
+                        let ValueView::Structure(input) = value else {
+                            return false;
+                        };
+                        input.children().len() == 1
+                            && input.children()[0].tag().raw() == 0x0042_015b
+                            && input.children()[0].with_value(|value| {
+                                matches!(value, ValueView::ByteString(actual) if actual == b"opaque-input")
+                            })
+                    });
+                    interface_matches && function_matches && correlation_matches && input_matches
+                })
+            });
+            has_pkcs11_operation && has_ordered_payload
+        })
+    })
+}
+
+fn fixture_pkcs11_correlation_value(expected: &serde_json::Value, case: &str) -> (bool, String) {
+    let correlation = if case == "nonempty" {
+        &expected["typedResponse"]["correlationValue"]
+    } else {
+        &expected["correlationValuePresenceCases"][case]
+    };
+    let present = correlation["present"]
+        .as_bool()
+        .expect("fixture correlation presence is Boolean");
+    let hexadecimal = correlation["hex"].as_str().unwrap_or("").to_owned();
+    (present, hexadecimal)
+}
+
+fn pkcs11_success_response_message(fixture: &serde_json::Value, correlation_case: &str) -> Vec<u8> {
+    let expected = fixture;
+    let typed = &expected["typedResponse"];
+    let function = fixture_pkcs11_field_structure(&typed["function"]);
+    let output_parameters = fixture_pkcs11_field_structure(&typed["outputParameters"]);
+    let return_code = fixture_pkcs11_field_structure(&typed["returnCode"]);
+    let function_tag = fixture_hex_u32(&typed["function"]["tag"]);
+    let output_parameters_tag = fixture_hex_u32(&typed["outputParameters"]["tag"]);
+    let return_code_tag = fixture_hex_u32(&typed["returnCode"]["tag"]);
+    let correlation = &typed["correlationValue"];
+    let correlation_tag = fixture_hex_u32(&correlation["tag"]);
+    let (correlation_present, correlation_hex) =
+        fixture_pkcs11_correlation_value(expected, correlation_case);
+    let correlation_bytes = decode_fixture_hex(&correlation_hex);
+    let vendor_tag = u32::from_str_radix(
+        expected["vendorExtension"]["tag"]
+            .as_str()
+            .expect("shared PKCS#11 fixture vendor tag is text")
+            .strip_prefix("0x")
+            .expect("shared PKCS#11 fixture vendor tag is hexadecimal"),
+        16,
+    )
+    .expect("shared PKCS#11 fixture vendor tag is valid");
+    let vendor_value = expected["vendorExtension"]["integer"]
+        .as_i64()
+        .and_then(|value| i32::try_from(value).ok())
+        .expect("shared PKCS#11 fixture vendor integer fits i32");
+    let version = structure(
+        0x0042_0069,
+        [integer(0x0042_006a, 2), integer(0x0042_006b, 1)],
+    );
+    let header = structure(
+        0x0042_007a,
+        [version, date_time(0x0042_0092, 1), integer(0x0042_000d, 1)],
+    );
+    let mut payload_items = Vec::new();
+    for tag in expected["responseTags"]
+        .as_array()
+        .expect("shared fixture response tags are an array")
+    {
+        let tag = fixture_hex_u32(tag);
+        if tag == correlation_tag && !correlation_present {
+            continue;
+        }
+        payload_items.push(match tag {
+            value if value == function_tag => function.clone(),
+            value if value == correlation_tag => {
+                ttlv_item(correlation_tag, 0x08, &correlation_bytes)
+            }
+            value if value == output_parameters_tag => output_parameters.clone(),
+            value if value == return_code_tag => return_code.clone(),
+            value if value == vendor_tag => integer(vendor_tag, vendor_value),
+            _ => panic!("shared fixture contains an unmapped PKCS#11 response tag"),
+        });
+    }
+    let payload = structure(0x0042_007c, payload_items);
+    let response_item = structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 0x33),
+            enumeration(0x0042_007f, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007b, [header, response_item])
+}
+
+fn fixture_hex_u32(value: &serde_json::Value) -> u32 {
+    u32::from_str_radix(
+        value
+            .as_str()
+            .expect("shared fixture hexadecimal values are text")
+            .strip_prefix("0x")
+            .expect("shared fixture hexadecimal values have a prefix"),
+        16,
+    )
+    .expect("shared fixture hexadecimal value fits in u32")
+}
+
+fn fixture_pkcs11_field_structure(field: &serde_json::Value) -> Vec<u8> {
+    let tag = fixture_hex_u32(&field["tag"]);
+    let child_tag = fixture_hex_u32(&field["childTag"]);
+    let child = match field["childType"].as_str() {
+        Some("Integer") => integer(
+            child_tag,
+            i32::try_from(field["childValue"].as_i64().expect("Integer fixture value"))
+                .expect("Integer fixture value fits i32"),
+        ),
+        Some("Enumeration") => enumeration(child_tag, fixture_hex_u32(&field["childValue"])),
+        Some("ByteString") => ttlv_item(
+            child_tag,
+            0x08,
+            &decode_fixture_hex(
+                field["childHex"]
+                    .as_str()
+                    .expect("Byte String fixture value is hexadecimal"),
+            ),
+        ),
+        _ => panic!("shared fixture has an unsupported PKCS#11 child type"),
+    };
+    structure(tag, [child])
+}
+
+fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const DERIVE_KEY: u32 = 5;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const DERIVATION_PARAMETERS: u32 = 0x0042_0032;
+    const DERIVATION_DATA: u32 = 0x0042_0030;
+    const SALT: u32 = 0x0042_0084;
+    const ITERATION_COUNT: u32 = 0x0042_003C;
+    const FIRST_DATA: &[u8] = &[0xA1, 0x00, 0xB2];
+    const SECOND_DATA: &[u8] = &[0xC3, 0x00, 0xD4];
+    const SALT_BYTES: &[u8] = &[0xE5, 0x00, 0xF6];
+
+    fn byte_string_is(item: &Item, expected: &[u8]) -> bool {
+        item.with_value(
+            |value| matches!(value, ValueView::ByteString(actual) if actual == expected),
+        )
+    }
+
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn has_operation(item: &Item, expected: u32) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return false;
+            };
+            unique_child_index(&structure, OPERATION).is_some_and(|index| {
+                structure.children()[index].with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == expected),
+                )
+            })
+        })
+    }
+
+    fn has_exact_parameters(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return false;
+            };
+            let children = structure.children();
+            children.len() == 4
+                && children[0].tag().raw() == DERIVATION_DATA
+                && byte_string_is(&children[0], FIRST_DATA)
+                && children[1].tag().raw() == DERIVATION_DATA
+                && byte_string_is(&children[1], SECOND_DATA)
+                && children[2].tag().raw() == SALT
+                && byte_string_is(&children[2], SALT_BYTES)
+                && children[3].tag().raw() == ITERATION_COUNT
+                && children[3].with_value(
+                    |value| matches!(value, ValueView::Integer(actual) if *actual == 4096),
+                )
+        })
+    }
+
+    fn derive_key_item_has_expected_payload(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            unique_child_index(&batch_item, REQUEST_PAYLOAD).is_some_and(|index| {
+                batch_item.children()[index].with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        return false;
+                    };
+                    unique_child_index(&payload, DERIVATION_PARAMETERS)
+                        .is_some_and(|index| has_exact_parameters(&payload.children()[index]))
+                })
+            })
+        })
+    }
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut derive_key_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_operation(item, DERIVE_KEY));
+        let Some(derive_key_item) = derive_key_items.next() else {
+            return false;
+        };
+        derive_key_items.next().is_none() && derive_key_item_has_expected_payload(derive_key_item)
+    })
+}
+
+fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const EXPORT: u32 = 43;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
+    const KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
+    const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
+
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn has_operation(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return false;
+            };
+            unique_child_index(&structure, OPERATION).is_some_and(|index| {
+                structure.children()[index].with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == EXPORT),
+                )
+            })
+        })
+    }
+
+    fn has_exact_selectors(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let Some(payload_index) = unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+                return false;
+            };
+            batch_item.children()[payload_index].with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return false;
+                };
+                let children = payload.children();
+                children.len() == 5
+                    && children[0].tag().raw() == UNIQUE_IDENTIFIER
+                    && children[0].with_value(|value| {
+                        matches!(value, ValueView::TextString(actual) if actual == "export-key")
+                    })
+                    && children[1].tag().raw() == KEY_FORMAT_TYPE
+                    && children[1].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 0xfedc_ba98)
+                    })
+                    && children[2].tag().raw() == KEY_WRAP_TYPE
+                    && children[2].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 0xfedc_ba99)
+                    })
+                    && children[3].tag().raw() == KEY_COMPRESSION_TYPE
+                    && children[3].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 0xfedc_ba9a)
+                    })
+                    && children[4].tag().raw() == KEY_WRAPPING_SPECIFICATION
+                    && children[4].with_value(|value| {
+                        matches!(value, ValueView::Structure(actual) if actual.children().is_empty())
+                    })
+            })
+        })
+    }
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut export_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_operation(item));
+        let Some(export_item) = export_items.next() else {
+            return false;
+        };
+        export_items.next().is_none() && has_exact_selectors(export_item)
+    })
+}
+
+fn c_request_contains_empty_get_constraints(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const GET_CONSTRAINTS: u32 = 56;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn has_empty_request_payload(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let Some(payload_index) = unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+                return false;
+            };
+            batch_item.children()[payload_index].with_value(|value| {
+                matches!(value, ValueView::Structure(payload) if payload.children().is_empty())
+            })
+        })
+    }
+
+    fn has_operation(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            unique_child_index(&batch_item, OPERATION).is_some_and(|index| {
+                batch_item.children()[index].with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == GET_CONSTRAINTS),
+                )
+            })
+        })
+    }
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut get_constraints_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_operation(item));
+        let Some(request_item) = get_constraints_items.next() else {
+            return false;
+        };
+        get_constraints_items.next().is_none() && has_empty_request_payload(request_item)
+    })
+}
+
+fn c_request_contains_get_and_locate(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        batch_items
+            .iter()
+            .filter(|item| c_request_has_get_source(item))
+            .count()
+            == 1
+            && batch_items
+                .iter()
+                .filter(|item| c_request_has_empty_locate_attributes(item))
+                .count()
+                == 2
+    })
+}
+
+fn c_request_contains_import(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut import_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| c_import_batch_item_matches(item));
+        if import_items.next().is_none() {
+            return false;
+        }
+        import_items.next().is_none()
+    })
+}
+
+fn c_request_contains_log(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const LOG: u32 = 44;
+    const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const LOG_MESSAGE: u32 = 0x0042_0141;
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let matching = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| {
+                item.with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        return false;
+                    };
+                    let mut operation = None;
+                    let mut identifier = None;
+                    let mut payload = None;
+                    for child in batch_item.children() {
+                        match child.tag().raw() {
+                            OPERATION if operation.is_none() => operation = Some(child),
+                            UNIQUE_BATCH_ITEM_ID if identifier.is_none() => identifier = Some(child),
+                            REQUEST_PAYLOAD if payload.is_none() => payload = Some(child),
+                            OPERATION | UNIQUE_BATCH_ITEM_ID | REQUEST_PAYLOAD => return false,
+                            _ => {}
+                        }
+                    }
+                    let Some(operation) = operation else {
+                        return false;
+                    };
+                    let Some(identifier) = identifier else {
+                        return false;
+                    };
+                    let Some(payload) = payload else {
+                        return false;
+                    };
+                    let correct_operation = operation.with_value(
+                        |value| matches!(value, ValueView::Enumeration(actual) if *actual == LOG),
+                    );
+                    let correct_id = identifier.with_value(
+                        |value| matches!(value, ValueView::ByteString(actual) if actual == b"log-00"),
+                    );
+                    let correct_payload = payload.with_value(|value| {
+                        let ValueView::Structure(payload) = value else {
+                            return false;
+                        };
+                        payload.children().len() == 1
+                            && payload.children()[0].tag().raw() == LOG_MESSAGE
+                            && payload.children()[0].with_value(|value| {
+                                matches!(value, ValueView::TextString(actual) if actual == "c-log-message")
+                            })
+                    });
+                    correct_operation && correct_id && correct_payload
+                })
+            })
+            .count();
+        matching == 1
+    })
+}
+
+fn c_request_contains_login(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const LOGIN: u32 = 45;
+    const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        message.children().iter().any(|item| {
+            if item.tag().raw() != BATCH_ITEM {
+                return false;
+            }
+            item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                let mut login = false;
+                let mut identifier = false;
+                for child in batch_item.children() {
+                    match child.tag().raw() {
+                        OPERATION => {
+                            login |= child.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == LOGIN)
+                            });
+                        }
+                        UNIQUE_BATCH_ITEM_ID => {
+                            identifier |= child.with_value(|value| {
+                                matches!(value, ValueView::ByteString(actual) if actual == b"login0")
+                            });
+                        }
+                        _ => {}
+                    }
+                }
+                login && identifier
+            })
+        })
+    })
+}
+
+fn c_import_batch_item_matches(item: &Item) -> bool {
+    const OPERATION: u32 = 0x0042_005C;
+    const IMPORT: u32 = 42;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        let Some(operation_index) = c_unique_child_index(&batch_item, OPERATION) else {
+            return false;
+        };
+        let Some(payload_index) = c_unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+            return false;
+        };
+        let Some(id_index) = c_unique_child_index(&batch_item, UNIQUE_BATCH_ITEM_ID) else {
+            return false;
+        };
+        batch_item.children()[operation_index].with_value(
+            |value| matches!(value, ValueView::Enumeration(actual) if *actual == IMPORT),
+        ) && c_import_payload_matches(&batch_item.children()[payload_index])
+            && batch_item.children()[id_index].with_value(
+                |value| matches!(value, ValueView::ByteString(actual) if actual == b"import"),
+            )
+    })
+}
+
+fn c_import_payload_matches(item: &Item) -> bool {
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const REPLACE_EXISTING: u32 = 0x0042_0124;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SECRET_DATA: u32 = 0x0042_0085;
+
+    item.with_value(|value| {
+        let ValueView::Structure(payload) = value else {
+            return false;
+        };
+        let fields = payload.children();
+        fields.len() == 5
+            && fields[0].tag().raw() == UNIQUE_IDENTIFIER
+            && fields[0].with_value(|value| {
+                matches!(value, ValueView::TextString(actual) if actual == "import-key")
+            })
+            && fields[1].tag().raw() == OBJECT_TYPE
+            && fields[1].with_value(|value| {
+                matches!(value, ValueView::Enumeration(actual) if *actual == 7)
+            })
+            && fields[2].tag().raw() == REPLACE_EXISTING
+            && fields[2].with_value(|value| matches!(value, ValueView::Boolean(false)))
+            && fields[3].tag().raw() == ATTRIBUTES
+            && fields[3].with_value(|value| {
+                matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty())
+            })
+            && fields[4].tag().raw() == SECRET_DATA
+            && c_import_object_is_preserved(&fields[4])
+    })
+}
+
+fn c_import_object_is_preserved(item: &Item) -> bool {
+    const VENDOR_FIELD: u32 = 0x0054_1234;
+    const OBJECT_BYTES: &[u8] = &[0xde, 0xad, 0x00, 0xff];
+
+    item.with_value(|value| {
+        let ValueView::Structure(object) = value else {
+            return false;
+        };
+        let Some(index) = c_unique_child_index(&object, VENDOR_FIELD) else {
+            return false;
+        };
+        object.children().len() == 1
+            && object.children()[index].with_value(
+                |value| matches!(value, ValueView::ByteString(actual) if actual == OBJECT_BYTES),
+            )
+    })
+}
+
+fn c_request_has_get_source(item: &Item) -> bool {
+    const OPERATION: u32 = 0x0042_005C;
+    const GET: u32 = 10;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        let Some(operation_index) = c_unique_child_index(&batch_item, OPERATION) else {
+            return false;
+        };
+        if !batch_item.children()[operation_index]
+            .with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == GET))
+        {
+            return false;
+        }
+        let Some(payload_index) = c_unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+            return false;
+        };
+        batch_item.children()[payload_index].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                return false;
+            };
+            c_unique_child_index(&payload, UNIQUE_IDENTIFIER).is_some_and(|index| {
+                payload.children()[index]
+                    .with_value(|value| matches!(value, ValueView::TextString("get-source")))
+            }) && payload.children().len() == 1
+        })
+    })
+}
+
+fn c_request_has_empty_locate_attributes(item: &Item) -> bool {
+    const OPERATION: u32 = 0x0042_005C;
+    const LOCATE: u32 = 8;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        let Some(operation_index) = c_unique_child_index(&batch_item, OPERATION) else {
+            return false;
+        };
+        if !batch_item.children()[operation_index]
+            .with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == LOCATE))
+        {
+            return false;
+        }
+        let Some(payload_index) = c_unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+            return false;
+        };
+        batch_item.children()[payload_index].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                return false;
+            };
+            c_unique_child_index(&payload, ATTRIBUTES).is_some_and(|index| {
+                payload.children()[index].with_value(|value| {
+                    matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty())
+                })
+            }) && payload.children().len() == 1
+        })
+    })
+}
+
+fn c_unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+    let mut matching = structure
+        .children()
+        .iter()
+        .enumerate()
+        .filter(|(_, item)| item.tag().raw() == tag);
+    let (index, _) = matching.next()?;
+    matching.next().is_none().then_some(index)
+}
+
+#[test]
+fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has an address")
+        .port();
+    let port = CString::new(port.to_string()).expect("port contains no NUL byte");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener.accept().expect("the public C client connects");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        tls.write_all(&mac_response_missing_unique_identifier())
+            .expect("the malformed typed response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let mut arguments = [
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot for this call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv strings and the limits handle remain live for this synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
+            argument_count,
+            arguments.as_mut_ptr(),
+            limits,
+        )
+    };
+    // SAFETY: the test created this handle and the C consumer only borrowed it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+
+    assert_eq!(
+        result, 0,
+        "public C consumer must inspect and release retained TTLV"
+    );
+    peer.join().expect("the loopback TLS peer completes");
+}
+
 fn controlled_mtls_peer(
     listener: &TcpListener,
     server_config: Arc<ServerConfig>,
@@ -130,13 +4318,30 @@ fn controlled_mtls_peer(
 
     let (second_stream, _) = listener
         .accept()
-        .expect("the explicit post-dispatch call reaches the controlled peer");
+        .expect("the response-shape-error call reaches the controlled peer");
     second_stream
         .set_read_timeout(Some(std::time::Duration::from_secs(5)))
         .expect("post-dispatch peer read timeout is configured");
-    let connection = ServerConnection::new(retry_server_config)
+    let connection = ServerConnection::new(Arc::clone(&retry_server_config))
         .expect("the TLS 1.3 server connection is configured");
     let mut tls = StreamOwned::new(connection, second_stream);
+    let request = read_ttlv_frame(&mut tls).expect("response-shape-error request arrives fully");
+    assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+    tls.write_all(&mismatched_discover_versions_response())
+        .expect("mismatched response fixture is written");
+    tls.flush()
+        .expect("the malformed typed response is flushed");
+    let _ = tls.get_ref().shutdown(Shutdown::Both);
+
+    let (third_stream, _) = listener
+        .accept()
+        .expect("the explicit post-dispatch transport-failure call reaches the peer");
+    third_stream
+        .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+        .expect("transport-failure peer read timeout is configured");
+    let connection = ServerConnection::new(retry_server_config)
+        .expect("the TLS 1.3 server connection is configured");
+    let mut tls = StreamOwned::new(connection, third_stream);
     let request = read_ttlv_frame(&mut tls).expect("post-dispatch request arrives fully");
     assert!(request.starts_with(&[0x42, 0x00, 0x78]));
     let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -294,6 +4499,51 @@ fn test_peer_rejects_remote_ttlv_length_before_allocating() {
     assert_eq!(error.kind(), io::ErrorKind::InvalidData);
 }
 
+fn cancel_success_response(correlation: &[u8]) -> Vec<u8> {
+    let header = structure(
+        0x0042_007a,
+        [
+            structure(
+                0x0042_0069,
+                [integer(0x0042_006a, 2), integer(0x0042_006b, 1)],
+            ),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000d, 1),
+        ],
+    );
+    let response_payload = structure(
+        0x0042_007c,
+        [
+            ttlv_item(0x0042_0006, 0x08, correlation),
+            enumeration(0x0042_0012, 1),
+        ],
+    );
+    let response_extension = structure(
+        0x0042_0051,
+        [
+            ttlv_item(0x0042_009d, 0x07, b"OpaqueVendor"),
+            ttlv_item(0x0042_0026, 0x06, &[0; 8]),
+            structure(
+                0x0042_009c,
+                [
+                    ttlv_item(0x0054_0173, 0x07, b"opaque-v1"),
+                    enumeration(0x0054_0174, u32::MAX),
+                ],
+            ),
+        ],
+    );
+    let cancel_item = structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 0x19),
+            enumeration(0x0042_007f, 0),
+            response_payload,
+            response_extension,
+        ],
+    );
+    structure(0x0042_007b, [header, cancel_item])
+}
+
 fn discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -331,7 +4581,687 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-fn structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {
+fn rekey_key_pair_success_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = structure(
+        0x0042_007C,
+        [
+            ttlv_item(0x0042_0066, 0x07, b"replacement-private"),
+            ttlv_item(0x0042_006F, 0x07, b"replacement-public"),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 0x1D),
+            ttlv_item(0x0042_0093, 0x08, b"pair-c"),
+            enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007B, [header, item])
+}
+
+fn request_builder_wire_response() -> Vec<u8> {
+    const OPERATIONS: [u32; 28] = [
+        1, 9, 9, 10, 10, 43, 43, 4, 4, 17, 17, 7, 7, 2, 0x1d, 0x1d, 0x29, 0x29, 6, 6, 6, 6, 7, 42,
+        42, 42, 43, 10,
+    ];
+    let version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            version,
+            date_time(0x0042_0092, 1),
+            integer(
+                0x0042_000D,
+                i32::try_from(OPERATIONS.len()).expect("batch count fits i32"),
+            ),
+        ],
+    );
+    let response_items = OPERATIONS
+        .iter()
+        .enumerate()
+        .map(|(index, operation)| {
+            let batch_id = format!("item-{index}");
+            let common = [
+                enumeration(0x0042_005C, *operation),
+                ttlv_item(0x0042_0093, 0x08, batch_id.as_bytes()),
+            ];
+            if index == 13 || index == 14 || index == 15 {
+                let (private_identifier, public_identifier) = if index == 13 {
+                    (
+                        b"placeholder-private".as_slice(),
+                        b"placeholder-public".as_slice(),
+                    )
+                } else {
+                    (
+                        b"replacement-private".as_slice(),
+                        b"replacement-public".as_slice(),
+                    )
+                };
+                structure(
+                    0x0042_000F,
+                    common.into_iter().chain([
+                        enumeration(0x0042_007F, 0),
+                        structure(
+                            0x0042_007C,
+                            [
+                                ttlv_item(0x0042_0066, 0x07, private_identifier),
+                                ttlv_item(0x0042_006F, 0x07, public_identifier),
+                            ],
+                        ),
+                    ]),
+                )
+            } else {
+                structure(
+                    0x0042_000F,
+                    common
+                        .into_iter()
+                        .chain([enumeration(0x0042_007F, 1), enumeration(0x0042_007E, 5)]),
+                )
+            }
+        })
+        .collect::<Vec<_>>();
+    structure(0x0042_007B, std::iter::once(header).chain(response_items))
+}
+
+// This TLS batch returns 28 ordered items, including Login, Encrypt, Decrypt, Ping, and Query results.
+fn mixed_discover_versions_response(
+    fixture_versions: &[(i32, i32)],
+    failure_message: &[u8],
+    create_key_pair_expected: &serde_json::Value,
+) -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version.clone(),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 28),
+        ],
+    );
+    let response_versions = fixture_versions
+        .iter()
+        .map(|(major, minor)| {
+            structure(
+                0x0042_0069,
+                [integer(0x0042_006A, *major), integer(0x0042_006B, *minor)],
+            )
+        })
+        .collect::<Vec<_>>();
+    let response_payload = structure(0x0042_007C, response_versions);
+    structure(
+        0x0042_007B,
+        std::iter::once(header)
+            .chain(discover_version_response_items(response_payload))
+            .chain(creation_response_items(
+                failure_message,
+                create_key_pair_expected,
+            ))
+            .chain(cryptographic_response_items())
+            .chain([
+                derive_key_response_item(),
+                export_response_item(),
+                get_constraints_response_item(),
+                get_response_item(),
+                locate_response_item(),
+                get_failure_response_item(),
+                locate_failure_response_item(),
+                import_response_item(),
+                log_response_item(),
+                login_response_item(),
+            ])
+            .chain(encrypt_decrypt_response_items())
+            .chain([ping_response_item(), query_response_item()]),
+    )
+}
+
+fn encrypt_decrypt_response_items() -> [Vec<u8>; 2] {
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 31),
+                ttlv_item(0x0042_0093, 0x08, b"enc-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, b"c-response-key"),
+                        ttlv_item(0x0042_00C2, 0x08, b"ciphertext-c"),
+                        ttlv_item(0x0042_003D, 0x08, &[0x71, 0x72]),
+                        ttlv_item(0x0042_00D6, 0x08, &[0x81, 0x82]),
+                        ttlv_item(0x0042_00FF, 0x08, &[0x91, 0x92]),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 32),
+                ttlv_item(0x0042_0093, 0x08, b"dec-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, b"c-response-key"),
+                        ttlv_item(0x0042_00C2, 0x08, b"plaintext-c"),
+                        ttlv_item(0x0042_00D6, 0x08, &[0x81, 0x82]),
+                    ],
+                ),
+            ],
+        ),
+    ]
+}
+
+fn log_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 44),
+            ttlv_item(0x0042_0093, 0x08, b"log-00"),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, []),
+        ],
+    )
+}
+
+fn ping_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 59),
+            ttlv_item(0x0042_0093, 0x08, b"ping00"),
+            enumeration(0x0042_007f, 0),
+            structure(0x0042_007c, []),
+        ],
+    )
+}
+
+fn query_response_item() -> Vec<u8> {
+    let payload = structure(
+        0x0042_007c,
+        [
+            enumeration(0x0042_005c, 59),
+            structure(0x0042_015f, []),
+            structure(0x0042_0012, [integer(0x0042_0057, 7)]),
+        ],
+    );
+    structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 24),
+            ttlv_item(0x0042_0093, 0x08, b"query0"),
+            enumeration(0x0042_007f, 0),
+            payload,
+        ],
+    )
+}
+
+fn login_response_item() -> Vec<u8> {
+    let ticket = structure(
+        0x0042_0149,
+        [
+            enumeration(0x0042_014A, 0xFEED_BEEF),
+            ttlv_item(0x0042_014B, 0x08, b"login-ticket-native-secret"),
+        ],
+    );
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 45),
+            ttlv_item(0x0042_0093, 0x08, b"login0"),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, [ticket]),
+        ],
+    )
+}
+
+fn import_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 42),
+            ttlv_item(0x0042_0093, 0x08, b"import"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    ttlv_item(0x0042_0094, 0x07, b"imported-id"),
+                    ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                ],
+            ),
+        ],
+    )
+}
+
+fn get_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 10),
+            ttlv_item(0x0042_0093, 0x08, b"get-00"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    enumeration(0x0042_0057, 0xf123_4567),
+                    ttlv_item(0x0042_0094, 0x07, b"get-id"),
+                    structure(
+                        0x0054_0001,
+                        [ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad, 0x00, 0xff])],
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+fn locate_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 8),
+            ttlv_item(0x0042_0093, 0x08, b"loc-00"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    integer(0x0042_00D5, 3),
+                    ttlv_item(0x0042_0094, 0x07, b"first"),
+                    ttlv_item(0x0042_0094, 0x07, b"second"),
+                    ttlv_item(0x0042_0094, 0x07, b"first"),
+                ],
+            ),
+        ],
+    )
+}
+
+fn get_failure_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 10),
+            ttlv_item(0x0042_0093, 0x08, b"get-f0"),
+            enumeration(0x0042_007F, 1),
+            enumeration(0x0042_007E, 5),
+        ],
+    )
+}
+
+fn locate_failure_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 8),
+            ttlv_item(0x0042_0093, 0x08, b"loc-f0"),
+            enumeration(0x0042_007F, 1),
+            enumeration(0x0042_007E, 5),
+        ],
+    )
+}
+
+fn get_constraints_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 56),
+            ttlv_item(0x0042_0093, 0x08, b"constr"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [structure(
+                    0x0042_0168,
+                    [ttlv_item(0x0054_1234, 0x07, b"constraints-secret-sentinel")],
+                )],
+            ),
+        ],
+    )
+}
+
+fn export_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 43),
+            ttlv_item(0x0042_0093, 0x08, b"export"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    enumeration(0x0042_0057, 0xf123_4567),
+                    ttlv_item(0x0042_0094, 0x07, b"exported-key"),
+                    structure(0x0042_0125, [enumeration(0x0042_001D, 1)]),
+                    structure(
+                        0x0042_008F,
+                        [structure(
+                            0x0042_0040,
+                            [
+                                enumeration(0x0042_0042, 0xf123_4567),
+                                ttlv_item(0x0042_0043, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                            ],
+                        )],
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+fn derive_key_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 5),
+            ttlv_item(0x0042_0093, 0x08, b"derive"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    ttlv_item(0x0042_0094, 0x07, b"derived-key"),
+                    ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                ],
+            ),
+        ],
+    )
+}
+
+fn cryptographic_response_items() -> [Vec<u8>; 6] {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 39),
+                ttlv_item(0x0042_0093, 0x08, b"hash-0"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_00C2, 0x08, b"hash-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 35),
+                ttlv_item(0x0042_0093, 0x08, b"mac-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        ttlv_item(0x0042_00C4, 0x08, b"mac-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 36),
+                ttlv_item(0x0042_0093, 0x08, b"macvfy"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        enumeration(0x0042_0128, 1),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 33),
+                ttlv_item(0x0042_0093, 0x08, b"sign00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        ttlv_item(0x0042_00C3, 0x08, b"signature-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 34),
+                ttlv_item(0x0042_0093, 0x08, b"sigvfy"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        enumeration(0x0042_0128, 1),
+                        ttlv_item(0x0042_00C2, 0x08, b"recovered-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 6),
+                ttlv_item(0x0042_0093, 0x08, b"certif"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [ttlv_item(0x0042_0094, 0x07, b"issued-certificate")],
+                ),
+            ],
+        ),
+    ]
+}
+
+fn discover_version_response_items(response_payload: Vec<u8>) -> [Vec<u8>; 4] {
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-0"),
+                enumeration(0x0042_007F, 0),
+                response_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-1"),
+                enumeration(0x0042_007F, 2),
+                ttlv_item(0x0042_0006, 0x08, &[0x00, 0xa1, 0x7f]),
+                structure(0x0042_007C, []),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-2"),
+                enumeration(0x0042_007F, 1),
+                enumeration(0x0042_007E, 1),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-3"),
+                enumeration(0x0042_007F, 0),
+                structure(0x0042_007C, []),
+            ],
+        ),
+    ]
+}
+
+fn creation_response_items(
+    failure_message: &[u8],
+    create_key_pair_expected: &serde_json::Value,
+) -> [Vec<u8>; 4] {
+    let create_payload = structure(
+        0x0042_007C,
+        [enumeration(0x0042_0057, 7), integer(0x0042_0094, -8)],
+    );
+    let private_identifier = &create_key_pair_expected["privateUniqueIdentifier"];
+    assert_eq!(private_identifier["wireType"], "Enumeration");
+    let private_enumeration = private_identifier["enumeration"]
+        .as_u64()
+        .and_then(|value| u32::try_from(value).ok())
+        .expect("fixture private key identifier is a U32 Enumeration");
+    let public_identifier = &create_key_pair_expected["publicUniqueIdentifier"];
+    assert_eq!(public_identifier["wireType"], "TextString");
+    let public_text = public_identifier["text"]
+        .as_str()
+        .expect("fixture public key identifier is a TextString");
+    let create_key_pair_payload = structure(
+        0x0042_007C,
+        [
+            enumeration(0x0042_0066, private_enumeration),
+            ttlv_item(0x0042_006F, 0x07, public_text.as_bytes()),
+        ],
+    );
+    let create_split_key_payload = structure(
+        0x0042_007C,
+        (0..100_001).map(|index| integer(0x0042_0094, index)),
+    );
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 1),
+                ttlv_item(0x0042_0093, 0x08, b"item-4"),
+                enumeration(0x0042_007F, 0),
+                create_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 1),
+                ttlv_item(0x0042_0093, 0x08, b"item-5"),
+                enumeration(0x0042_007F, 1),
+                enumeration(0x0042_007E, 5),
+                ttlv_item(0x0042_007D, 0x07, failure_message),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 2),
+                ttlv_item(0x0042_0093, 0x08, b"item-6"),
+                enumeration(0x0042_007F, 0),
+                create_key_pair_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 40),
+                ttlv_item(0x0042_0093, 0x08, b"item-7"),
+                enumeration(0x0042_007F, 0),
+                create_split_key_payload,
+            ],
+        ),
+    ]
+}
+
+fn mismatched_discover_versions_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version.clone(),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, &[0xaa]),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, [ttlv_item(0x0042_0069, 0x08, &[2, 1])]),
+        ],
+    );
+    structure(
+        0x0042_007B,
+        [
+            header,
+            item,
+            ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+        ],
+    )
+}
+
+fn mac_response_missing_unique_identifier() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = structure(
+        0x0042_007C,
+        [
+            ttlv_item(0x0042_00C4, 0x08, &[0x5a]),
+            ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 35),
+            ttlv_item(0x0042_0093, 0x08, b"item-0"),
+            enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007B, [header, item])
+}
+
+fn structure(tag: u32, children: impl IntoIterator<Item = Vec<u8>>) -> Vec<u8> {
     let value = children.into_iter().flatten().collect::<Vec<_>>();
     ttlv_item(tag, 0x01, &value)
 }

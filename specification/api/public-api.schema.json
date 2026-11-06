@@ -14,7 +14,7 @@
   "$defs": {
     "requirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-[0-9]{4}-(FR|SC)-[0-9]{3}$",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
       "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
     },
     "requirementIds": {
@@ -44,7 +44,7 @@
     "pythonFunctionName": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z][A-Za-z0-9_]*)*$"
+      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*(?:\\._?[A-Za-z][A-Za-z0-9_]*)*$"
     },
     "rustOwner": {
       "type": "string",
@@ -81,6 +81,11 @@
         },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
+        },
+        "normativeSource": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The exact KMIP 2.1 clause or table defining a typed protocol value."
         },
         "enumRepresentation": {
           "$ref": "#/$defs/enumRepresentation"
@@ -357,6 +362,28 @@
           "type": "boolean",
           "description": "Whether the public fixed-width structure begins with uint32_t struct_size and uint32_t abi_version fields."
         },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": {
+                "allOf": [
+                  {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+                  {"$ref": "#/$defs/cLayoutField/properties/name"}
+                ]
+              },
+              "type": {
+                "type": "string",
+                "pattern": "^(?:const\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:\\s*\\*+)?$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "The complete ordered C field layout for a public fixed-width ABI value."
+        },
         "handleKind": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]*$"
@@ -464,8 +491,97 @@
               ]
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed-width-value"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {},
+          "else": {
+            "not": {
+              "required": ["fields"]
+            }
+          }
         }
       ],
+      "additionalProperties": false
+    },
+    "cLayoutField": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier",
+          "not": {
+            "anyOf": [
+              {
+                "pattern": "__"
+              },
+              {
+                "enum": [
+                  "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
+                  "_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
+                  "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand",
+                  "bitor", "bool", "break", "case", "catch", "char", "char16_t",
+                  "char32_t", "char8_t", "class", "co_await", "co_return", "co_yield",
+                  "compl", "concept", "const", "const_cast", "consteval", "constexpr",
+                  "constinit", "continue", "decltype", "default", "delete", "do", "double",
+                  "dynamic_cast", "else", "enum", "explicit", "export", "extern", "false",
+                  "float", "for", "friend", "goto", "if", "inline", "int", "long",
+                  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr",
+                  "operator", "or", "or_eq", "private", "protected", "public", "register",
+                  "reinterpret_cast", "requires", "restrict", "return", "short", "signed",
+                  "sizeof", "static", "static_assert", "static_cast", "struct", "switch",
+                  "template", "this", "thread_local", "throw", "true", "try", "typedef",
+                  "typeid", "typename", "union", "unsigned", "using", "virtual", "void",
+                  "volatile", "wchar_t", "while", "xor", "xor_eq"
+                ]
+              }
+            ]
+          }
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^(?:(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t)|(?:const )?(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t) \\*)$",
+          "description": "A fixed-width scalar or KMIPKit typedef, optionally as a pointer. No arbitrary C declarators are accepted."
+        }
+      },
+      "additionalProperties": false
+    },
+    "cTypeLayout": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind",
+        "fields"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/cType/properties/name"
+        },
+        "kind": {
+          "const": "fixed-width-value"
+        },
+        "versioned": {
+          "type": "boolean",
+          "description": "Whether the layout starts with uint32_t struct_size and uint32_t abi_version fields."
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/cLayoutField"
+          }
+        }
+      },
       "additionalProperties": false
     },
     "errorCategoryId": {
@@ -517,6 +633,55 @@
       },
       "additionalProperties": false
     },
+    "errorCategoryV2": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustVariant",
+        "cCode",
+        "cValue",
+        "javaException",
+        "pythonException",
+        "mappingState"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/errorCategoryId"},
+        "rustVariant": {"$ref": "#/$defs/identifier"},
+        "cCode": {
+          "type": "string",
+          "pattern": "^KMIPKIT_ERROR_[A-Z0-9_]+$",
+          "description": "Stable C error-code name; status values use int32_t."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647,
+          "description": "Explicit stable numeric value for the named int32_t C error code."
+        },
+        "javaException": {"$ref": "#/$defs/qualifiedName"},
+        "pythonException": {"$ref": "#/$defs/qualifiedName"},
+        "mappingState": {
+          "enum": ["ready", "blocked"],
+          "description": "Whether the full error category mapping is ready across languages."
+        },
+        "blockedReason": {"type": "string", "minLength": 1},
+        "stableCHeaderCode": {
+          "type": "boolean",
+          "description": "Keep a previously exposed stable C error code in the generated header while cross-language parity mapping is blocked."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"mappingState": {"const": "blocked"}},
+            "required": ["mappingState"]
+          },
+          "then": {"required": ["blockedReason"]},
+          "else": {"not": {"required": ["blockedReason"]}}
+        }
+      ],
+      "additionalProperties": false
+    },
     "cParameter": {
       "oneOf": [
         {
@@ -545,6 +710,132 @@
                 "int64_t",
                 "uint64_t"
               ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "lifetime"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "callback"
+            },
+            "type": {
+              "const": "void (*)(const uint8_t *, uint64_t, void *)",
+              "description": "Synchronous borrowed byte-span callback with opaque caller context."
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "lifetime": {
+              "const": "synchronous-call"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "lifetime"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "callback-context"
+            },
+            "type": {
+              "const": "void *"
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "lifetime": {
+              "const": "synchronous-call"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "input-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^const kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "borrowed"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Borrowed pointer to a caller-owned fixed-width C value that does not carry embedded size and ABI-version fields."
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output-scalar-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^(?:u?int(?:8|16|32|64)_t|size_t) \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "enum": [
+                "uint8_t",
+                "uint16_t",
+                "uint32_t",
+                "uint64_t",
+                "int32_t",
+                "int64_t",
+                "size_t"
+              ]
+            },
+            "ownership": {
+              "const": "none"
             }
           },
           "additionalProperties": false
@@ -593,6 +884,67 @@
             "name",
             "kind",
             "type",
+            "elementType",
+            "ownership",
+            "countParameter",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "input-array"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^const (?:int8_t|uint8_t|int16_t|uint16_t|int32_t|uint32_t|int64_t|uint64_t|kmipkit_[a-z0-9_]+_t) \\*$",
+              "description": "Borrowed pointer to a caller-owned array of fixed-width scalar, byte-span carrier, or declared versioned fixed-width value records."
+            },
+            "elementType": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "int8_t",
+                    "uint8_t",
+                    "int16_t",
+                    "uint16_t",
+                    "int32_t",
+                    "uint32_t",
+                    "int64_t",
+                    "uint64_t",
+                    "kmipkit_byte_span_v1_t",
+                    "kmipkit_attribute_reference_v1_t"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "pattern": "^kmipkit_[a-z0-9_]+_v[1-9][0-9]*_t$",
+                  "description": "Versioned fixed-width C value layouts declared in the public API manifest."
+                }
+              ]
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "countParameter": {
+              "$ref": "#/$defs/identifier",
+              "description": "Name of the uint64_t scalar parameter that counts array elements."
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the array pointer may be NULL. When true, NULL is valid only when the linked count is zero; implementations must check the count before reading elements."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
             "handleType",
             "ownership",
             "countParameter",
@@ -616,7 +968,10 @@
               "description": "Opaque handle type of each array element; must match the declared pointer type."
             },
             "ownership": {
-              "const": "borrowed"
+              "enum": [
+                "borrowed",
+                "consumed"
+              ]
             },
             "countParameter": {
               "$ref": "#/$defs/identifier",
@@ -628,6 +983,37 @@
             }
           },
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "error-output"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "library-owned"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Owned optional handle returned only when response-shape validation fails after a complete generic TTLV response was received. The slot is initialized to NULL and remains NULL for success and all other failures."
         },
         {
           "type": "object",
@@ -657,6 +1043,66 @@
                 "uint64_t *"
               ],
               "description": "Pointer to one fixed-width integer result; not nullable."
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "handleType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "consumed-handle-slot"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "handleType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "consumed"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
             },
             "ownership": {
               "const": "none"
@@ -793,6 +1239,10 @@
         "id": {
           "$ref": "#/$defs/identifier"
         },
+        "legacyRegistry": {
+          "type": "boolean",
+          "description": "Whether this full-manifest function belongs to the preserved KMIPKIT-0012 v1 registry parity slice. Defaults to true when omitted."
+        },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
         },
@@ -867,7 +1317,7 @@
               "items": {
                 "$ref": "#/$defs/cParameter"
               },
-              "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; handle arrays use explicit uint64_t element counts. Version 1 does not describe variable-length output buffers."
+          "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; output arrays require an explicit fixed-width element type, caller capacity, and returned element count."
             },
             "returnType": {
               "const": "int32_t",
@@ -887,7 +1337,6 @@
             "method",
             "parameters",
             "returnType",
-            "jniSymbol",
             "errorCategories"
           ],
           "properties": {
@@ -897,7 +1346,9 @@
               "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
             },
             "class": {
-              "$ref": "#/$defs/identifier"
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z][A-Za-z0-9_]*)*$"
             },
             "method": {
               "$ref": "#/$defs/identifier"
@@ -911,7 +1362,13 @@
             },
             "jniSymbol": {
               "type": "string",
-              "pattern": "^Java_[A-Za-z0-9_]+$"
+              "pattern": "^Java_[A-Za-z0-9_]+$",
+              "description": "Present only when this public Java method directly maps to a JNI entry point."
+            },
+            "jniAggregateSymbol": {
+              "type": "string",
+              "pattern": "^Java_[A-Za-z0-9_]+$",
+              "description": "Names the aggregate JNI entry point that returns this mapped value alongside other fields; the accessor has no direct JNI entry point."
             },
             "errorCategories": {
               "$ref": "#/$defs/errorCategoryIds"
@@ -965,9 +1422,10 @@
           "type": "string",
           "enum": [
             "not-applicable",
-            "preserves-caller-batch-and-extension-order"
+            "preserves-caller-batch-and-extension-order",
+            "preserves-response-extension-order"
           ],
-          "description": "For repeatable extension attachment, declare preservation of caller-selected batch and extension order."
+          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order."
         },
         "criticalityIndicator": {
           "$ref": "#/$defs/criticalityIndicator"
@@ -1008,6 +1466,22 @@
               "required": [
                 "criticalityIndicator"
               ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed-width-value"
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {},
+          "else": {
+            "not": {
+              "required": ["fields"]
             }
           }
         }
@@ -1100,6 +1574,38 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cSignature": {
+      "type": "object",
+      "required": ["parameters", "returnType", "errorCategories"],
+      "properties": {
+        "parameters": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/cParameter"},
+          "description": "Exact C ABI parameter order for a declaration-level symbol."
+        },
+        "returnType": {
+          "type": "string",
+          "enum": ["int32_t", "void"],
+          "description": "Fixed-width status code or void for a direct lifecycle export."
+        },
+        "errorCategories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/errorCategoryId"}
+        },
+        "documentation": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
+          },
+          "description": "Optional C API documentation lines rendered above the declaration."
         }
       },
       "additionalProperties": false
@@ -1540,6 +2046,9 @@
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
         },
         {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]\\s*>$"
+        },
+        {
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?)*\\s*>$"
         },
         {
@@ -1564,16 +2073,41 @@
           "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]$"
         },
         {
+          "pattern": "^\\*mut\\s+\\*mut\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
           "pattern": "^\\*(?:const|mut)\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(StructureView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(ValueView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(&'a \\[u8\\]\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(&'a str\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl ExactSizeIterator\\s*<\\s*Item\\s*=\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*'_\\s*>)?\\s*>\\s*\\+\\s*'_\\s*$"
         }
       ],
-      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, and raw pointers for reviewed C ABI declarations."
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView and ValueView callbacks plus secret-byte/text callbacks, and ExactSizeIterator views over borrowed credential views."
     },
     "javaType": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\[\\])*$",
-      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments. Primitive and void arguments are not allowed; wildcards are unsupported."
+      "anyOf": [
+        {
+          "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*)*\\s*>)?(?:\\s*\\[\\])*$"
+        },
+        {
+          "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*>)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\[\\])?\\s*>\\s*>$"
+        }
+      ],
+      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments, including array types. Nested reference generics are accepted for typed collection results. Primitive and void generic arguments and wildcards are unsupported."
     },
     "javaReturnType": {
       "anyOf": [
@@ -1630,6 +2164,9 @@
         },
         "type": {
           "$ref": "#/$defs/javaType"
+        },
+        "nullable": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -1652,7 +2189,7 @@
     },
     "v2RequirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-[0-9]{4}-(FR|SC)-[0-9]{3}$"
+    "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
     },
     "v2RequirementIds": {
       "type": "array",
@@ -1762,6 +2299,20 @@
       },
       "additionalProperties": false
     },
+    "implementationAuthorization": {
+      "type": "object",
+      "required": ["kind", "path", "status", "evidence"],
+      "properties": {
+        "kind": {"const": "direct-human-instruction"},
+        "path": {
+          "type": "string",
+          "pattern": "^specs/[0-9]{3}-[a-z0-9-]+/spec\\.md$"
+        },
+        "status": {"const": "Draft"},
+        "evidence": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
     "publicDeclaration": {
       "type": "object",
       "required": [
@@ -1811,6 +2362,30 @@
           "type": "string",
           "minLength": 1
         },
+        "cSignature": {
+          "$ref": "#/$defs/cSignature",
+          "description": "Exact C ABI signature when this symbol is not a high-level function record."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615,
+          "description": "Explicit fixed-width unsigned value for a generated C macro."
+        },
+        "cValueType": {
+          "enum": ["uint8_t", "uint16_t", "uint32_t", "uint64_t"],
+          "description": "Fixed-width C cast type for cValue."
+        },
+        "javaSignatures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Exact javap signatures for an overloaded Java export path."
+        },
         "capabilityId": {
           "type": "string",
           "minLength": 1
@@ -1821,6 +2396,7 @@
         "declarationState": {
           "enum": [
             "blocked",
+            "authorized_wip",
             "declared",
             "verified"
           ]
@@ -1828,14 +2404,31 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-adr"
+            "rust-only-adr",
+            "c-only"
           ]
         },
         "mappingSemantics": {
           "enum": [
-            "native-handle-release"
+            "native-handle-release",
+            "native-handle-release-managed-java-value",
+            "secret-buffer-wipe",
+            "normalized-client-protocol-error",
+            "normalized-client-protocol-error-outcome"
           ],
-          "description": "Declares that Rust maps native handle release to dropping the owning public type."
+          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception."
+        },
+        "lifecycleSemanticsByLanguage": {
+          "type": "object",
+          "properties": {
+            "rust": {"const": "wipe-on-final-owner-drop"},
+            "c": {"const": "release-shared-reference-wipe-on-final-owner-drop"},
+            "java": {"const": "wipe-owned-copy-on-close"},
+            "python": {"const": "wipe-owned-copy-on-close"}
+          },
+          "required": ["rust", "c", "java", "python"],
+          "additionalProperties": false,
+          "description": "Optional per-language cleanup behavior for cross-language lifecycle mappings where equivalent operations have different ownership boundaries."
         },
         "parityEvidenceIds": {
           "$ref": "#/$defs/parityEvidenceIds"
@@ -1908,6 +2501,18 @@
         "approvalSource": {
           "$ref": "#/$defs/approvalSource"
         },
+        "ownerSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Semantic owner specification for a delegated public API capability."
+        },
+        "approvalEvidence": {
+          "$ref": "#/$defs/approvalSource",
+          "description": "Approval record for the semantic owner specification."
+        },
+        "implementationAuthorization": {
+          "$ref": "#/$defs/implementationAuthorization"
+        },
         "languageMappings": {
           "type": "object",
           "propertyNames": {
@@ -1925,6 +2530,24 @@
       },
       "additionalProperties": false,
       "allOf": [
+        {
+          "if": {
+            "required": ["cValue"]
+          },
+          "then": {
+            "properties": {
+              "packageId": {"const": "c-kmipkit"},
+              "kind": {"const": "macro"}
+            },
+            "required": ["cValueType"]
+          }
+        },
+        {
+          "if": {
+            "required": ["cValueType"]
+          },
+          "then": {"required": ["cValue"]}
+        },
         {
           "if": {
             "properties": {
@@ -1955,6 +2578,28 @@
                     "approvalSource"
                   ]
                 }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "authorized_wip"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "implementationAuthorization",
+              "languageMappings"
+            ],
+            "not": {
+              "anyOf": [
+                {"required": ["approvalSource"]},
+                {"required": ["condition"]}
               ]
             }
           }
@@ -2056,6 +2701,17 @@
           "then": {
             "required": ["parityEvidenceIds"]
           }
+        },
+        {
+          "if": {
+            "required": ["javaSignatures"]
+          },
+          "then": {
+            "properties": {
+              "packageId": {"const": "java-kmipkit"},
+              "kind": {"const": "java-member"}
+            }
+          }
         }
       ]
     },
@@ -2085,6 +2741,16 @@
           "type": "string",
           "minLength": 1
         },
+        "javaSignatures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Exact javap signatures excluded from an overloaded Java export path when sibling overloads remain mapped."
+        },
         "reason": {
           "type": "string",
           "minLength": 1
@@ -2095,8 +2761,71 @@
         "evidence": {
           "type": "string",
           "minLength": 1
+        },
+        "candidateSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Exact owner specification for an approved declaration exclusion."
+        },
+        "cType": {
+          "$ref": "#/$defs/cTypeLayout",
+          "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
+        },
+        "cFunction": {
+          "type": "object",
+          "required": [
+            "symbol",
+            "parameters",
+            "returnType",
+            "errorCategories"
+          ],
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "documentation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
+              }
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cParameter"
+              }
+            },
+            "returnType": {
+              "const": "int32_t"
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Exact C prototype for a symbol whose idiomatic Rust, Java, or Python surface is represented through another declaration shape."
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "cType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "c-kmipkit"
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "apiLevel": {
@@ -2177,9 +2906,13 @@
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
         },
+        "implementationAuthorization": {
+          "$ref": "#/$defs/implementationAuthorization"
+        },
         "apiState": {
           "enum": [
             "blocked",
+            "authorized_wip",
             "declared",
             "verified"
           ]
@@ -2229,6 +2962,57 @@
                 {"required": ["featureSpecId"]},
                 {"required": ["approvalEvidence"]},
                 {"required": ["declarations"]},
+                {"required": ["parityEvidenceIds"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "c-only"
+              },
+              "declarationState": {
+                "enum": ["declared", "verified"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": ["c"],
+                "propertyNames": {
+                  "const": "c"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "authorized_wip"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "implementationAuthorization",
+              "declarations"
+            ],
+            "properties": {
+              "declarations": {
+                "required": ["rust", "c", "java", "python"]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {"required": ["featureSpecId"]},
+                {"required": ["approvalEvidence"]},
+                {"required": ["blockedReason"]},
                 {"required": ["parityEvidenceIds"]}
               ]
             }
@@ -2363,7 +3147,8 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-adr"
+            "rust-only-adr",
+            "c-only"
           ]
         },
         "ownerSpecId": {
@@ -2512,6 +3297,22 @@
               }
             },
             "required": ["ownerAdrId", "acceptedEvidence"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {"const": "c-only"},
+              "capabilityState": {"enum": ["declared", "verified"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": ["c"],
+                "propertyNames": {"const": "c"}
+              }
+            }
           }
         }
       ]
@@ -2871,7 +3672,7 @@
         "errorCategories": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/errorCategory"
+            "$ref": "#/$defs/errorCategoryV2"
           }
         },
         "limits": {

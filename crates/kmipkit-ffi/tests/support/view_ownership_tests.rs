@@ -114,7 +114,7 @@ fn value_view_retains_the_existing_payload_allocation() {
     let mut view = ptr::null_mut();
 
     assert_eq!(kmipkit_ttlv_value_view(source, &raw mut view), SUCCESS);
-    let view_handle = reference_handle(&view, Kind::ValueView).unwrap();
+    let view_handle = reference_handle(view, Kind::ValueView).unwrap();
     let view_data = value_view_byte_string_data(&view_handle.value);
     let shares_payload = view_data == source_data;
 
@@ -163,7 +163,7 @@ fn structure_item_and_value_views_retain_the_original_payload_allocation() {
         kmipkit_ttlv_item_view_value(item_view, &raw mut value_view),
         SUCCESS
     );
-    let value_handle = reference_handle(&value_view, Kind::ValueView).unwrap();
+    let value_handle = reference_handle(value_view, Kind::ValueView).unwrap();
     let view_data = value_view_byte_string_data(&value_handle.value);
     let shares_payload = view_data == source_data;
 
@@ -214,7 +214,7 @@ fn value_structure_descendants_retain_the_original_payload_allocation() {
         kmipkit_ttlv_item_view_value(item_view, &raw mut leaf_view),
         SUCCESS
     );
-    let leaf_handle = reference_handle(&leaf_view, Kind::ValueView).unwrap();
+    let leaf_handle = reference_handle(leaf_view, Kind::ValueView).unwrap();
     let leaf_data = value_view_byte_string_data(&leaf_handle.value);
     let shares_payload = leaf_data == source_data;
 
@@ -267,7 +267,7 @@ fn recognition_generic_view_retains_an_unrecognized_payload() {
         kmipkit_ttlv_item_view_value(item_view, &raw mut value_view),
         SUCCESS
     );
-    let value_handle = reference_handle(&value_view, Kind::ValueView).unwrap();
+    let value_handle = reference_handle(value_view, Kind::ValueView).unwrap();
     let shares_payload = value_view_byte_string_data(&value_handle.value) == source_data;
 
     kmipkit_extension_recognition_release(source);
@@ -323,8 +323,8 @@ fn validated_generic_views_retain_the_original_payload() {
         kmipkit_ttlv_item_view_value(generic_item, &raw mut generic_value),
         SUCCESS
     );
-    let recognition_handle = reference_handle(&recognition_value, Kind::ValueView).unwrap();
-    let generic_handle = reference_handle(&generic_value, Kind::ValueView).unwrap();
+    let recognition_handle = reference_handle(recognition_value, Kind::ValueView).unwrap();
+    let generic_handle = reference_handle(generic_value, Kind::ValueView).unwrap();
     let recognition_shares = value_view_byte_string_data(&recognition_handle.value) == source_data;
     let generic_shares = value_view_byte_string_data(&generic_handle.value) == source_data;
 
@@ -386,7 +386,7 @@ fn validated_tag_path_views_retain_the_original_payload() {
         bad_nested_path,
         &raw mut bad_path_value,
     );
-    let path_handle = reference_handle(&path_value, Kind::ValueView).unwrap();
+    let path_handle = reference_handle(path_value, Kind::ValueView).unwrap();
     let path_shares = value_view_byte_string_data(&path_handle.value) == source_data;
 
     kmipkit_extension_recognition_release(source);
@@ -456,7 +456,7 @@ fn repeated_tags_keep_index_selected_views_on_the_same_item() {
         kmipkit_ttlv_item_view_value(item_view, &raw mut value_view),
         SUCCESS
     );
-    let value = reference_handle(&value_view, Kind::ValueView).unwrap();
+    let value = reference_handle(value_view, Kind::ValueView).unwrap();
     let shares_second_payload = value_view_byte_string_data(&value.value) == source_data;
 
     kmipkit_ttlv_structure_release(source);

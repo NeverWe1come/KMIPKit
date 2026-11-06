@@ -230,7 +230,7 @@ fn mac_verify_response_shape_error_retains_the_generic_ttlv_item() {
     assert!(
         error
             .response_ttlv()
-            .expect("typed response shape errors retain the generic response")
+            .expect("Unique Identifier response-shape errors retain the generic response")
             .with_ttlv(|tree| {
                 structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
             })
@@ -266,14 +266,7 @@ fn nonfinal_mac_verify_response_shape_error_retains_generic_ttlv() {
         .expect_err("a non-final MAC Verify response cannot contain Validity Indicator");
 
     assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
-    assert!(
-        error
-            .response_ttlv()
-            .expect("typed response shape errors retain the generic response")
-            .with_ttlv(|tree| {
-                structure_contains_byte_string(&tree, GENERIC_RESPONSE_TAG, GENERIC_RESPONSE_BYTES)
-            })
-    );
+    assert!(error.response_ttlv().is_none());
 }
 
 #[test]

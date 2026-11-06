@@ -40,6 +40,14 @@ impl<'a> RequestBatchItemView<'a> {
             .with_root_item_structure(self.root_index, callback)
     }
 
+    /// Lends the complete ordered Request Batch Item TTLV for callback-scoped access.
+    ///
+    /// The view retains unknown fields and their source order. Copy it with
+    /// [`StructureView::try_clone`] if it must outlive this callback.
+    pub fn with_ttlv<R>(self, callback: impl for<'b> FnOnce(StructureView<'b>) -> R) -> Option<R> {
+        self.with_batch(callback)
+    }
+
     /// Returns the raw Operation Enumeration when it can be copied.
     #[must_use]
     pub fn operation(self) -> Option<u32> {

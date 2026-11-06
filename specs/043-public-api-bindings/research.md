@@ -12,7 +12,7 @@
 
 **Decision**: Compare the manifest's operation rows directly against `specification/catalog/kmip-2.1.json`; require exact set equality with the 56 entries marked `client_1_0`, in OASIS section order. Preserve the catalog's Set Endpoint Role (§6.1.54) row as `client_1_1` and exclude it from the 1.0 API.
 
-**Evidence**: The active release catalog contains 56 operation elements with `scope_state: client_1_0` and a 57th client-initiated operation, Set Endpoint Role, explicitly classified `client_1_1` because the successful role transition requires bidirectional channel behavior outside the 1.0 boundary. The current 1.0 matrix links all 56 operations to owners: 37 operations have Approved/Accepted owners and 19 remain linked to unapproved candidate specs. The updated owner statuses are recorded in `contracts/operation-dependencies.md`.
+**Evidence**: The active release catalog contains 56 operation elements with `scope_state: client_1_0` and a 57th client-initiated operation, Set Endpoint Role, explicitly classified `client_1_1` because the successful role transition requires bidirectional channel behavior outside the 1.0 boundary. The current 1.0 matrix links all 56 operations to owners: 41 operations have Approved/Accepted owners and 15 remain linked to unapproved candidate specs. The updated owner statuses are recorded in `contracts/operation-dependencies.md`.
 
 ## R3 - Keep operation semantics in their approved feature specifications
 

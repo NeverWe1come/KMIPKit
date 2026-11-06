@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import struct
 import tempfile
@@ -10,6 +11,11 @@ import textwrap
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+
+from tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions import (
+    EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS,
+    EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS,
+)
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
@@ -20,6 +26,29 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_java_classpath_resolution_uses_bash_for_posix_gradle_wrapper(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            wrapper = root / "bindings" / "java" / "gradlew"
+            wrapper.parent.mkdir(parents=True)
+            wrapper.write_text("#!/bin/sh\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                ["gradlew"],
+                0,
+                stdout="KMIPKIT_API_AUDIT_CLASSPATH=/tmp/jspecify.jar\n",
+                stderr="",
+            )
+
+            with patch.object(AUDIT.os, "name", "posix"), patch.object(
+                AUDIT.subprocess, "run", return_value=completed
+            ) as run:
+                classpath = AUDIT.resolve_java_compile_classpath(root)
+
+        command = run.call_args.args[0]
+        self.assertEqual(command[0], "bash")
+        self.assertEqual(command[1], str(wrapper))
+        self.assertEqual(classpath, "/tmp/jspecify.jar")
+
     def test_java_compile_uses_gradle_configured_jspecify_classpath(self):
         repo_root = Path(__file__).resolve().parents[3]
         with tempfile.TemporaryDirectory() as directory:
@@ -172,6 +201,19 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("KMIPKIT_ABI_VERSION", names)
         self.assertIn("KMIPKIT_FEATURE_LEVEL", names)
 
+    def test_c_header_inventory_classifies_ttlv_decode_error_macros_as_constants(self):
+        result = AUDIT.inventory_c_header(
+            "#define KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_HEADER UINT32_C(2)\n"
+        )
+        declarations = {
+            row["exportName"]: row["kind"] for row in result["declarations"]
+        }
+        self.assertEqual(
+            declarations["KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_HEADER"],
+            "constant",
+        )
+        self.assertTrue(result["complete"])
+
     def test_c_header_inventory_accounts_for_enum_types_and_values(self):
         result = AUDIT.inventory_c_header("typedef enum { KMIPKIT_A = 0, KMIPKIT_B = 1 } kmipkit_mode_t;\n")
         actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
@@ -191,6 +233,24 @@ class BindingExportAuditTests(unittest.TestCase):
             ("field", "kmipkit_options_t.field"),
             ("type", "kmipkit_value_t"),
             ("field", "kmipkit_value_t.integer"),
+        })
+        self.assertTrue(result["complete"])
+
+    def test_c_header_inventory_accounts_for_forward_declared_tagged_struct_fields(self):
+        header = (
+            "typedef struct kmipkit_transport_config_v1_t "
+            "kmipkit_transport_config_v1_t;\n"
+            "struct kmipkit_transport_config_v1_t {\n"
+            "    uint32_t struct_size;\n"
+            "    uint16_t endpoint_port;\n"
+            "};\n"
+        )
+        result = AUDIT.inventory_c_header(header)
+        actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertEqual(actual, {
+            ("type", "kmipkit_transport_config_v1_t"),
+            ("field", "kmipkit_transport_config_v1_t.struct_size"),
+            ("field", "kmipkit_transport_config_v1_t.endpoint_port"),
         })
         self.assertTrue(result["complete"])
 
@@ -313,6 +373,55 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_javap_inventory_propagates_members_from_package_private_bases(self):
+        outputs = {
+            "org/kmipkit/extensions/AttributeRequest.class": """
+                abstract class org.kmipkit.extensions.AttributeRequest implements java.lang.AutoCloseable {
+                  public final java.util.Optional<org.kmipkit.extensions.UniqueIdentifier> uniqueIdentifier();
+                  public final org.kmipkit.extensions.ClientBatchItem toBatchItem();
+                  public final void close();
+                }
+            """,
+            "org/kmipkit/extensions/AddAttributeRequest.class": """
+                public final class org.kmipkit.extensions.AddAttributeRequest extends org.kmipkit.extensions.AttributeRequest {
+                  public static org.kmipkit.extensions.AddAttributeRequest create(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.TtlvItem);
+                  public org.kmipkit.ttlv.TtlvItem newAttribute();
+                }
+            """,
+        }
+
+        result = AUDIT.inventory_javap_outputs(outputs)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertTrue(result["complete"])
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.uniqueIdentifier", names)
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.toBatchItem", names)
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.close", names)
+        self.assertIn("org.kmipkit.extensions.AddAttributeRequest.newAttribute", names)
+        self.assertNotIn("org.kmipkit.extensions.AttributeRequest", names)
+        self.assertNotIn("org.kmipkit.extensions.AttributeRequest.uniqueIdentifier", names)
+
+    def test_javap_inventory_keeps_public_base_members_at_the_declaring_type(self):
+        outputs = {
+            "org/kmipkit/ClientOperationException.class": """
+                public class org.kmipkit.ClientOperationException extends java.lang.RuntimeException {
+                  public int statusCode();
+                }
+            """,
+            "org/kmipkit/ProtocolException.class": """
+                public final class org.kmipkit.ProtocolException extends org.kmipkit.ClientOperationException {
+                  public org.kmipkit.ProtocolException();
+                }
+            """,
+        }
+
+        result = AUDIT.inventory_javap_outputs(outputs)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertTrue(result["complete"])
+        self.assertIn("org.kmipkit.ClientOperationException.statusCode", names)
+        self.assertNotIn("org.kmipkit.ProtocolException.statusCode", names)
+
     def test_python_inventory_resolves_explicit_all_and_class_fields(self):
         sources = {
             "kmipkit/__init__.py": "from .core import Client\n__all__ = ['Client']\n",
@@ -369,6 +478,222 @@ class BindingExportAuditTests(unittest.TestCase):
         }.issubset(names))
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_includes_package_constructor_inherited_from_private_base(self):
+        sources = {
+            "kmipkit/_handles.py": "class NativeHandle:\n    def __init__(self, handle): ...\n",
+            "kmipkit/client.py": textwrap.dedent("""
+                from ._handles import NativeHandle
+                __all__ = ["Client"]
+                class Client(NativeHandle):
+                    pass
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        declarations = {row["exportName"]: row for row in result["declarations"]}
+        constructor = declarations["kmipkit.client.Client.__init__"]
+        self.assertEqual(constructor["kind"], "python-export")
+        self.assertEqual(constructor["location"], "inherited:kmipkit._handles.NativeHandle:2")
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_excludes_internal_lifecycle_hooks_but_keeps_public_protocol(self):
+        sources = {
+            "kmipkit/_handles.py": textwrap.dedent("""
+                class NativeHandle:
+                    def __init__(self, handle): ...
+                    def __del__(self): ...
+                    def close(self): ...
+                    def __enter__(self): ...
+                    def __exit__(self, *args): ...
+            """),
+            "kmipkit/client.py": textwrap.dedent("""
+                from dataclasses import dataclass
+                from ._handles import NativeHandle
+                __all__ = ["ClientConfig"]
+
+                @dataclass
+                class ClientConfig(NativeHandle):
+                    endpoint: str
+
+                    def __post_init__(self): ...
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+        public_type = "kmipkit.client.ClientConfig"
+        self.assertTrue({
+            f"{public_type}.__init__",
+            f"{public_type}.close",
+            f"{public_type}.__enter__",
+            f"{public_type}.__exit__",
+        }.issubset(names))
+        self.assertNotIn(f"{public_type}.__post_init__", names)
+        self.assertNotIn(f"{public_type}.__del__", names)
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_includes_public_instance_fields_assigned_in_init(self):
+        source = textwrap.dedent("""
+            class BatchResult:
+                def __init__(self, items):
+                    self.items = items
+
+            class ClientExecutionError(Exception):
+                def __init__(self, status):
+                    self.status = status
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/client.py": source})
+        observed = {row["exportName"]: row["kind"] for row in result["declarations"]}
+        self.assertEqual(observed["kmipkit.client.BatchResult.items"], "field")
+        self.assertEqual(observed["kmipkit.client.ClientExecutionError.status"], "field")
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_deduplicates_annotated_fields_assigned_in_init(self):
+        source = textwrap.dedent("""
+            class Pkcs11Response:
+                response_ttlv: object
+                interface_ttlv: object | None
+
+                def __init__(self, response_ttlv, interface_ttlv=None):
+                    self.response_ttlv = response_ttlv
+                    self.interface_ttlv = interface_ttlv
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/client.py": source})
+        fields = [
+            row for row in result["declarations"]
+            if row["exportName"].startswith("kmipkit.client.Pkcs11Response.")
+            and row["kind"] == "field"
+        ]
+
+        self.assertEqual(
+            {"kmipkit.client.Pkcs11Response.response_ttlv", "kmipkit.client.Pkcs11Response.interface_ttlv"},
+            {row["exportName"] for row in fields},
+        )
+        self.assertEqual(2, len(fields))
+        self.assertTrue(result["complete"], result["issues"])
+
+    def test_python_inventory_includes_public_dataclass_generated_members(self):
+        sources = {
+            "kmipkit/client.py": textwrap.dedent("""
+                from dataclasses import dataclass
+                __all__ = ["BatchItemResult", "CustomValue"]
+
+                @dataclass(frozen=True)
+                class BatchItemResult:
+                    item_id: bytes
+
+                @dataclass(init=False, repr=False, eq=False)
+                class CustomValue:
+                    value: int
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        observed = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertTrue({
+            ("python-export", "kmipkit.client.BatchItemResult.__init__"),
+            ("python-export", "kmipkit.client.BatchItemResult.__repr__"),
+            ("python-export", "kmipkit.client.BatchItemResult.__eq__"),
+            ("python-export", "kmipkit.client.BatchItemResult.__hash__"),
+        }.issubset(observed))
+        custom = "kmipkit.client.CustomValue"
+        self.assertTrue({
+            ("field", f"{custom}.__dataclass_fields__"),
+            ("field", f"{custom}.__dataclass_params__"),
+            ("field", f"{custom}.__match_args__"),
+        }.issubset(observed))
+        self.assertFalse(any(
+            name in {f"{custom}.__init__", f"{custom}.__repr__", f"{custom}.__eq__",
+                     f"{custom}.__hash__", f"{custom}.__slots__", f"{custom}.__setattr__",
+                     f"{custom}.__delattr__"}
+            for _, name in observed
+        ))
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_audits_dataclass_generated_metadata_and_constructor_signature(self):
+        sources = {
+            "kmipkit/models.py": textwrap.dedent("""
+                import dataclasses as dc
+                __all__ = ["FrozenRecord", "ManualRecord"]
+
+                @dc.dataclass(frozen=True, slots=True)
+                class FrozenRecord:
+                    required: int
+                    label: str = "x"
+
+                @dc.dataclass(init=False, match_args=False, slots=False,
+                              frozen=False, repr=False, eq=False)
+                class ManualRecord:
+                    value: int
+
+                @dc.dataclass
+                class MutableRecord:
+                    value: int
+
+                @dc.dataclass
+                class ExplicitHashRecord:
+                    value: int
+
+                    def __hash__(self):
+                        return 1
+
+                @dc.dataclass
+                class SuppressedHashRecord:
+                    value: int
+                    __hash__ = None
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        declarations = {row["exportName"]: row for row in result["declarations"]}
+        frozen = "kmipkit.models.FrozenRecord"
+        self.assertTrue({
+            f"{frozen}.__init__",
+            f"{frozen}.__repr__",
+            f"{frozen}.__eq__",
+            f"{frozen}.__hash__",
+            f"{frozen}.__setattr__",
+            f"{frozen}.__delattr__",
+            f"{frozen}.__match_args__",
+            f"{frozen}.__slots__",
+            f"{frozen}.__dataclass_fields__",
+            f"{frozen}.__dataclass_params__",
+        }.issubset(declarations))
+        self.assertEqual(
+            declarations[f"{frozen}.__init__"].get("signature"),
+            "(required: int, label: str = 'x') -> None",
+        )
+        manual = "kmipkit.models.ManualRecord"
+        self.assertIn(f"{manual}.__dataclass_fields__", declarations)
+        self.assertIn(f"{manual}.__dataclass_params__", declarations)
+        self.assertNotIn(f"{manual}.__init__", declarations)
+        self.assertNotIn(f"{manual}.__match_args__", declarations)
+        self.assertNotIn(f"{manual}.__slots__", declarations)
+        self.assertEqual(declarations["kmipkit.models.MutableRecord.__hash__"]["kind"], "field")
+        self.assertEqual(declarations["kmipkit.models.ExplicitHashRecord.__hash__"]["kind"], "python-export")
+        self.assertEqual(declarations["kmipkit.models.SuppressedHashRecord.__hash__"]["kind"], "field")
+        self.assertEqual(
+            sum(name == "kmipkit.models.SuppressedHashRecord.__hash__" for name in declarations),
+            1,
+        )
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_fails_closed_for_dynamic_dataclass_options(self):
+        source = textwrap.dedent("""
+            from dataclasses import dataclass
+            __all__ = ["DynamicRecord"]
+
+            def slots_enabled():
+                return True
+
+            @dataclass(slots=slots_enabled())
+            class DynamicRecord:
+                value: int
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/models.py": source})
+        self.assertFalse(result["complete"])
+        self.assertIn(
+            {"packageId": "python-kmipkit", "exportName": "kmipkit.models.DynamicRecord",
+             "reason": "dynamic-dataclass-options"},
+            result["issues"],
+        )
+
     def test_python_inventory_resolves_private_module_values_and_property_exports(self):
         sources = {
             "kmipkit/_ffi/__init__.py": "ffi = object()\nlib = object()\n",
@@ -420,6 +745,570 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("kmipkit.errors.annotations", names)
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_omits_private_external_import_aliases(self):
+        source = "from enum import IntEnum as _IntEnum\nclass Choice(_IntEnum): pass\n"
+        result = AUDIT.inventory_python_sources({"kmipkit/errors.py": source})
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.errors.Choice", names)
+        self.assertNotIn("kmipkit.errors._IntEnum", names)
+        self.assertTrue(result["complete"])
+
+    def test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        manifest_path = repo_root / "specification/api/public-api.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+        }
+
+        native_members = {
+            "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
+            "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
+            "AUTHENTICATION", "CREDENTIAL", "CREDENTIAL_VIEW", "NONCE",
+            "ATTESTATION_CREDENTIAL",
+            "DEVICE_CREDENTIAL",
+            "SPLIT_KEY_REFERENCE", "USAGE_ALLOCATION_CONTEXT",
+            "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
+            "clientExecuteWithOptions",
+            "credentialFromTtlv", "credentialIntoTtlv", "credentialTtlvView",
+            "credentialType", "credentialTypeRaw",
+            "authenticationCreate", "authenticationFromTtlv",
+            "authenticationCredentialCount", "authenticationCredentialAt",
+            "authenticationTtlvView", "authenticationIntoTtlv",
+            "credentialViewType", "credentialViewTypeRaw", "credentialViewTtlvView",
+            "attestationCredentialFromTtlv", "attestationCredentialTtlvView",
+            "deviceCredentialFromTtlv", "deviceCredentialIntoTtlv",
+            "deviceCredentialTtlvView",
+            "attestationCredentialIntoTtlv",
+            "nonceFromTtlv", "nonceTtlvView", "nonceIntoTtlv",
+            "clientBatchCreate", "clientBatchItemResponseMetadata",
+            "clientBatchItemResponsePendingCorrelationValue",
+            "clientBatchItemResponseDiscoverVersionsSupportedVersions",
+            "clientBatchItemResponseUniqueBatchItemId",
+            "clientAsyncOperationOutcomeExtensionCount",
+            "clientAsyncOperationOutcomeExtensionTtlvAt",
+            "clientBatchItemAt",
+            "clientBatchItemResponseExtensionCount",
+            "clientBatchItemResponseExtensionTtlvAt",
+            "clientBatchItemUniqueBatchItemId",
+            "clientBatchRequestTimestamp",
+            "clientExecuteCancelWithOptions",
+            "clientExecutePollWithOptions",
+            "clientExecuteProcessWithOptions",
+            "clientExecuteQueryAsyncRequestsWithOptions",
+            "REVOCATION_REASON", "REVOKE_REQUEST",
+            "clientBatchItemReprovision", "clientBatchItemRevoke",
+            "clientBatchItemSetConstraints", "clientBatchItemSetDefaults",
+            "clientBatchItemValidate", "revocationReasonCreate", "revokeRequestCreate",
+            "clientBatchItemRekey", "clientBatchItemRekeyKeyPair",
+            "clientBatchItemRngRetrieve", "clientBatchItemRngSeed",
+            "clientBatchItemCreate", "clientBatchItemCreateKeyPair",
+            "clientBatchItemCreateSplitKey", "clientBatchItemCertify",
+            "splitKeyReferenceCreate", "clientBatchItemJoinSplitKey",
+            "clientBatchItemDelegatedLogin", "clientBatchItemDeriveKey",
+            "clientBatchItemGetConstraints", "clientBatchItemImport",
+            "clientBatchItemCheck",
+            "clientBatchItemResponseCreate",
+            "clientBatchItemResponseCreateKeyPair",
+            "clientBatchItemResponseCreateSplitKey",
+            "clientBatchItemResponseJoinSplitKey",
+            "clientBatchItemResponseDelegatedLogin",
+            "clientBatchItemResponseDeriveKey",
+            "clientBatchItemResponseGetConstraints",
+            "clientBatchItemResponseImport",
+            "clientBatchItemResponseCertify",
+            "clientBatchItemResponseCheck",
+            "clientBatchItemResponseMetadataV2",
+            "clientBatchItemResponseRekey", "clientBatchItemResponseRekeyKeyPair",
+            "clientBatchItemResponseRngRetrieve", "clientBatchItemResponseRngSeed",
+            "clientBatchItemResponseReprovision", "clientBatchItemResponseReprovisionTtlv",
+            "clientBatchItemResponseRegister", "clientBatchItemResponseRevoke",
+            "clientBatchItemResponseSetConstraints", "clientBatchItemResponseSetDefaults",
+            "clientBatchItemResponseValidate",
+            "clientBatchItemPkcs11", "clientBatchItemRecertify",
+            "clientBatchItemHash", "clientBatchItemMac",
+            "clientBatchItemMacVerify", "clientBatchItemSign",
+            "clientBatchItemSignatureVerify", "clientBatchItemResponseHash",
+            "clientBatchItemResponseMac", "clientBatchItemResponseMacVerify",
+            "clientBatchItemResponseSign",
+            "clientBatchItemResponseSignatureVerify",
+            "clientBatchItemGet", "clientBatchItemLocate",
+            "clientBatchItemQueryWithLimits",
+            "clientBatchItemPing", "clientBatchItemQuery",
+            "clientBatchItemEncrypt", "clientBatchItemDecrypt",
+            "clientBatchItemLogin", "clientBatchItemObtainLease",
+            "clientBatchItemLogout", "clientBatchItemResponseLogout",
+            "clientExecuteGuardedProtectionItem",
+            "clientExecuteGuardedProtectionItemWithAsynchronousIndicator",
+            "usageAllocationContextCreate", "usageAllocationContextUsageLimitsUnit",
+            "usageAllocationContextAllocatedUnits", "usageAllocationContextAvailableUnits",
+            "usageAllocationContextReservedUnits", "usageAllocationContextUniqueIdentifier",
+            "clientBatchItemResponsePing", "clientBatchItemResponseQueryTtlv",
+            "clientBatchItemResponsePkcs11", "clientBatchItemResponseRecertify",
+            "clientBatchItemResponseEncrypt", "clientBatchItemResponseDecrypt",
+            "clientBatchItemResponseLogin", "clientBatchItemResponseObtainLease",
+            "clientBatchItemResponseGet", "clientBatchItemResponseLocate",
+            "clientBatchItemGetUsageAllocation",
+            "clientBatchItemExport",
+            "clientBatchItemResponseGetUsageAllocation",
+            "clientBatchItemResponseExport",
+            "clientBatchItemInterop", "clientBatchItemResponseInterop",
+            "clientBatchItemLog", "clientBatchItemResponseLog",
+            "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
+            "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
+            "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
+            "clientBatchSetRequestTimestamp", "clientCreate", "clientExecute",
+            "CLIENT_ASYNC_OPERATION_OUTCOME",
+            "clientAsyncOperationOutcomeMetadataV1",
+            "clientAsyncOperationOutcomeResponsePayloadTtlv",
+            "withClientAsyncOperationOutcomeCorrelationValue",
+            "clientExecuteCancel", "clientExecutePoll", "clientExecuteProcess",
+            "clientExecuteQueryAsyncRequests", "clientExecuteWithProfiles",
+            "clientBatchItemActivate", "clientBatchItemArchive",
+            "clientBatchItemDestroy", "clientBatchItemRecover",
+            "clientBatchItemGetAttributeList", "clientBatchItemGetAttributes",
+            "clientBatchItemAddAttribute", "clientBatchItemAdjustAttribute",
+            "clientBatchItemDeleteAttribute", "clientBatchItemModifyAttribute",
+            "clientBatchItemSetAttribute",
+            "ATTRIBUTE_FIELD_CURRENT", "ATTRIBUTE_SET", "GET_ATTRIBUTES_REQUEST",
+            "GET_ATTRIBUTE_LIST_REQUEST", "attributeSetTryNew", "attributeSetAsItems",
+            "attributeSetLen", "attributeSetIntoItems", "attributeSetIsEmpty",
+            "attributeSetTryPush",
+            "clientBatchItemResponseActivate", "clientBatchItemResponseArchive",
+            "clientBatchItemResponseDestroy", "clientBatchItemResponseRecover",
+            "clientBatchItemResponseGetAttributeList",
+            "clientBatchItemResponseGetAttributes",
+            "clientBatchItemResponseAddAttribute",
+            "clientBatchItemResponseAdjustAttribute",
+            "clientBatchItemResponseDeleteAttribute",
+            "clientBatchItemResponseModifyAttribute",
+            "clientBatchItemResponseSetAttribute",
+            "transportConfigCreate",
+            "MESSAGE_EXTENSION_VIEW", "REQUEST_BATCH_ITEM_VIEW",
+            "REQUEST_HEADER_VIEW", "REQUEST_MESSAGE",
+            "RESPONSE_BATCH_ITEM_VIEW", "RESPONSE_HEADER_VIEW",
+            "RESPONSE_MESSAGE",
+            "messageExtensionViewTtlv", "requestBatchItemExtensionAt",
+            "requestBatchItemExtensionCount", "requestBatchItemViewOperation",
+            "requestBatchItemViewTtlv", "requestHeaderViewBatchCount",
+            "requestHeaderViewProtocolVersion", "requestHeaderViewTtlv",
+            "requestMessageBatchItemAt", "requestMessageBatchItemCount",
+            "requestMessageFromTtlv", "requestMessageHeader", "requestMessageTtlv",
+            "responseBatchItemExtensionAt", "responseBatchItemExtensionCount",
+            "responseBatchItemViewOperation", "responseBatchItemViewResultStatus",
+            "responseBatchItemViewTtlv", "responseHeaderViewBatchCount",
+            "responseHeaderViewProtocolVersion", "responseHeaderViewTimeStamp",
+            "responseHeaderViewTtlv", "responseMessageBatchItemAt",
+            "responseMessageBatchItemCount", "responseMessageFromTtlv",
+            "responseMessageHeader", "responseMessageTtlv",
+            "CANCEL_REQUEST", "CREDENTIAL_VALUE", "HASHED_PASSWORD_CREDENTIAL",
+            "POLL_REQUEST", "PROCESS_REQUEST", "QUERY_ASYNC_REQUESTS_REQUEST",
+            "SECRET_BYTES", "SECRET_TEXT", "USERNAME_AND_PASSWORD_CREDENTIAL",
+            "cancelRequestCreate", "cancelRequestToTtlvPayload",
+            "credentialValueFromTtlv", "credentialValueIntoTtlv",
+            "credentialValueTtlvView", "credentialValueTypeRaw",
+            "hashedPasswordCredentialEffectiveHashingAlgorithmRaw",
+            "hashedPasswordCredentialFromTtlv",
+            "hashedPasswordCredentialHashingAlgorithmRaw",
+            "hashedPasswordCredentialIntoTtlv", "hashedPasswordCredentialTtlvView",
+            "pollRequestCreate", "pollRequestToTtlvPayload",
+            "processRequestCreate", "processRequestToTtlvPayload",
+            "queryAsyncRequestsRequestCreate", "queryAsyncRequestsRequestToTtlvPayload",
+            "queryAsyncRequestsRequestWithCorrelationValues",
+            "queryAsyncRequestsRequestWithOperations", "secretBytesCreate",
+            "secretBytesIntoTtlvValue", "secretBytesWithBytes", "secretTextCreate",
+            "secretTextIntoTtlvValue", "secretTextWithStr",
+            "usernameAndPasswordCredentialFromTtlv",
+            "usernameAndPasswordCredentialIntoTtlv",
+            "usernameAndPasswordCredentialTtlvView",
+            "withCancelRequestCorrelationValue", "withPollRequestCorrelationValue",
+            "ADD_ATTRIBUTE_REQUEST", "ADJUST_ATTRIBUTE_REQUEST",
+            "ATTRIBUTE_FIELD_CURRENT", "ATTRIBUTE_FIELD_NEW",
+            "ATTRIBUTE_OPERATION_ADD", "ATTRIBUTE_OPERATION_ADJUST",
+            "ATTRIBUTE_OPERATION_DELETE", "ATTRIBUTE_OPERATION_MODIFY",
+            "ATTRIBUTE_OPERATION_SET", "DELETE_ATTRIBUTE_REQUEST",
+            "MODIFY_ATTRIBUTE_REQUEST", "SET_ATTRIBUTE_REQUEST",
+            "attributeRequestCreate", "attributeRequestToTtlvPayload",
+            "attributeRequestTtlvItem", "attributeRequestTtlvValue",
+            "clientBatchItemFromAttributeRequest",
+            "PATH", "BATCH_ITEM", "REGISTER_REQUEST",
+            "release", "registerRequestCreate", "ensureLoaded",
+            "extensionRecognitionIsRecognized", "clientBatchItemRegister",
+            "extensionDefinitionInformation", "registerRequestWithOpaqueObjectContext",
+            "clientExtensionRegistryDefinitionForIdentity", "clientBatchItemExtensionCount",
+            "clientExtensionRegistryDefinitionAt", "clientBatchItemDiscoverVersions",
+            "codecLimitsCreate",
+        }
+        native_members.update(
+            {
+                "RAW_TAG",
+                "TAG",
+                "TTLV_VALUE",
+                "TTLV_STRUCTURE",
+                "TTLV_ITEM",
+                "TTLV_STRUCTURE_VIEW",
+                "TTLV_ITEM_VIEW",
+                "TTLV_VALUE_VIEW",
+                "rawTagCreate",
+                "rawTagValue",
+                "rawTagChecked",
+                "tagValue",
+                "ttlvItemCreate",
+                "ttlvItemViewTag",
+                "ttlvItemViewType",
+                "ttlvItemViewValue",
+                "ttlvStructureCreate",
+                "ttlvStructureWithItem",
+                "ttlvStructureView",
+                "ttlvStructureViewItemAt",
+                "ttlvStructureViewItemCount",
+                "ttlvValueInteger",
+                "ttlvValueLongInteger",
+                "ttlvValueEnumeration",
+                "ttlvValueBoolean",
+                "ttlvValueDateTime",
+                "ttlvValueInterval",
+                "ttlvValueDateTimeExtended",
+                "ttlvValueBigInteger",
+                "ttlvValueTextString",
+                "ttlvValueByteString",
+                "ttlvValueStructure",
+                "ttlvValueView",
+                "ttlvValueViewStructure",
+                "ttlvValueViewType",
+                "ttlvValueViewInteger",
+                "ttlvValueViewLongInteger",
+                "ttlvValueViewEnumeration",
+                "ttlvValueViewBoolean",
+                "ttlvValueViewDateTime",
+                "ttlvValueViewInterval",
+                "ttlvValueViewDateTimeExtended",
+                "ttlvValueViewByteLength",
+                "ttlvValueViewByteAt",
+                "codecLimitValues",
+                "HASHED_PASSWORD_TIMESTAMP_SEQUENCE",
+                "hashedPasswordTimestampSequenceNew",
+                "hashedPasswordTimestampSequenceRecord",
+                "hashedPasswordTimestampSequenceLastTimestamp",
+                "ttlvPathCreate",
+                "ttlvPathWithChildTag",
+                "clientBatchItemPkcs11WithExtensions",
+            }
+        )
+        native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
+        native_members.update(
+            export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
+            for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
+        )
+        native_members.update(
+            {
+                "PROFILE_CATALOG_CLIENT_PROFILES",
+                "PROFILE_CATALOG_CLIENT_REQUIREMENTS",
+                "PROFILE_CATALOG_PROFILE_TEST_CASES",
+                "profileCatalogRelationCount",
+                "profileCatalogRelationRow",
+                "profileCatalogRow",
+                "profileCatalogTableCount",
+                "profileReadinessBlockerAt",
+                "profileReadinessCreate",
+                "profileReadinessRelease",
+                "profileReadinessView",
+            }
+        )
+        native_members.add("registerRequestWithProtectionStorageMasks")
+        expected_native = {
+            ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
+            for member in native_members
+        }
+        actual_native = {
+            key for key in exclusions
+            if key[0] == "java-kmipkit"
+            and key[1].startswith("org.kmipkit.NativeExtensionRegistry.")
+        }
+        self.assertEqual(expected_native, actual_native)
+        bridge_type = exclusions[
+            ("java-kmipkit", "org.kmipkit.NativeExtensionRegistry")
+        ]
+        self.assertEqual(bridge_type["candidateSpecId"], "KMIPKIT-0043")
+        self.assertEqual(
+            bridge_type["reason"],
+            (
+                "This exact Java type is the documented internal JNI bridge for typed "
+                "vendor-extension facades, not an independent KMIPKit product capability."
+            ),
+        )
+        self.assertIn("KMIPKIT-0043-FR-021", bridge_type["evidence"])
+        for key in expected_native:
+            exclusion = exclusions[key]
+            evidence = exclusion["evidence"]
+            combined_approved_references = any(
+                reference_group in evidence
+                for reference_group in (
+                    "KMIPKIT-0043-FR-008/010/021/022",
+                    "KMIPKIT-0043-FR-004/005/010/021/022",
+                )
+            )
+            self.assertTrue(
+                "KMIPKIT-0043-FR-021" in evidence
+                or combined_approved_references,
+                evidence,
+            )
+            bridge_owner = {
+                "org.kmipkit.NativeExtensionRegistry.clientExecuteWithProfiles": "T036",
+                "org.kmipkit.NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue": "T035",
+                "org.kmipkit.NativeExtensionRegistry.CANCEL_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.POLL_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.PROCESS_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.QUERY_ASYNC_REQUESTS_REQUEST": "T093",
+                "org.kmipkit.NativeExtensionRegistry.cancelRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.cancelRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.pollRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.pollRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.processRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.processRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestCreate": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestToTtlvPayload": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestWithCorrelationValues": "T093",
+                "org.kmipkit.NativeExtensionRegistry.queryAsyncRequestsRequestWithOperations": "T093",
+                "org.kmipkit.NativeExtensionRegistry.withCancelRequestCorrelationValue": "T093",
+                "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
+            }.get(key[1])
+            if bridge_owner is None:
+                if key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions":
+                    self.assertIn("KMIPKIT-0040-FR-002/004", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("typed PKCS#11 facade", evidence)
+                elif key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemDiscoverVersions":
+                    self.assertIn("KMIPKIT-0007-FR-001", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("typed Discover Versions API remains separately mapped", evidence)
+                elif key[1] == "org.kmipkit.NativeExtensionRegistry.codecLimitsCreate":
+                    self.assertIn("KMIPKIT-0004-FR-001", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("no Java facade reference to this raw handle factory", evidence)
+                elif any(
+                    owner_requirement in evidence
+                    for owner_requirement in (
+                        "KMIPKIT-0012-FR-010",
+                        "KMIPKIT-0044-FR-001/007",
+                    )
+                ):
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                    self.assertIn("facade", evidence)
+                elif (
+                    "This Java value is JNI handle-kind or lifecycle plumbing, "
+                    "not a product capability."
+                ) in evidence:
+                    self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                    self.assertIn("KMIPKIT-0043-FR-021", evidence)
+                elif not combined_approved_references:
+                    self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                if "ffi-and-bindings.md" not in evidence and not combined_approved_references:
+                    self.assertTrue(
+                        any(task_id in evidence for task_id in ("T035", "T037", "T039"))
+                        or "Reviewed against KMIPKIT-0043-FR-008/010/021/022" in evidence
+                        or (
+                            "This Java value is JNI handle-kind or lifecycle plumbing, "
+                            "not a product capability."
+                        ) in evidence
+                        or "KMIPKIT-0007-FR-001" in evidence
+                        or "KMIPKIT-0004-FR-001" in evidence
+                        or "KMIPKIT-0012-FR-010" in evidence
+                        or "KMIPKIT-0044-FR-001/007" in evidence
+                        or (
+                            "KMIPKIT-0043-FR-008" in evidence
+                            and "KMIPKIT-0043-FR-021" in evidence
+                            and "profile-validation JNI plumbing" in evidence
+                        ),
+                        # A few older accepted bridge rows carry their exact owner requirement
+                        # and an explicit reason instead of a T035/T037/T039 task reference.
+                        # Their reviewed owner and FR-021 linkage are checked above.
+                        evidence,
+                    )
+            else:
+                self.assertIn(bridge_owner, evidence)
+                if bridge_owner == "T093":
+                    self.assertIn("only dispatch to the JNI layer", evidence)
+                else:
+                    self.assertIn("minimal JNI bridge", evidence)
+
+        get_usage_request = exclusions[(
+            "java-kmipkit",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetUsageAllocation",
+        )]["evidence"]
+        self.assertIn(
+            "identifier kind, optional text or numeric identifier, and usage limits count",
+            get_usage_request,
+        )
+        self.assertNotIn("only transfers opaque handles", get_usage_request)
+
+        get_usage_response = exclusions[(
+            "java-kmipkit",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation",
+        )]["evidence"]
+        self.assertIn(
+            "Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle",
+            get_usage_response,
+        )
+        self.assertIn("parseGetUsageAllocationResponse", get_usage_response)
+        self.assertNotIn("only transfers opaque handles", get_usage_response)
+
+        java_boilerplate = {
+            "org.kmipkit.extensions.BatchOutcomeKind.equals",
+            "org.kmipkit.extensions.BatchOutcomeKind.hashCode",
+            "org.kmipkit.extensions.BatchOutcomeKind.toString",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.equals",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.hashCode",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.toString",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.valueOf",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.values",
+            "org.kmipkit.extensions.ClientBatchItemResult.HashResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.MacResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SignResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.JoinSplitKeyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.DeriveKeyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetConstraintsResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.LogResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.ReProvisionResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.RegisterResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.RevokeResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SetConstraintsResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.ValidateResponse.toString",
+            "org.kmipkit.extensions.RevocationReason.toString",
+            "org.kmipkit.extensions.UsageAllocationContext.toString",
+        }
+        for path in java_boilerplate:
+            self.assertIn(("java-kmipkit", path), exclusions)
+
+        for path in java_boilerplate:
+            if path.endswith("Response.toString") or path.endswith(
+                "UsageAllocationContext.toString"
+            ):
+                self.assertIn("redacted", exclusions[("java-kmipkit", path)]["reason"])
+
+        dataclass_names = (
+            "kmipkit.client.BatchItemResult",
+            "kmipkit.client.Endpoint",
+            "kmipkit.client.TimeoutLimit",
+            "kmipkit.client.TransportConfig",
+            "kmipkit.client.TransportInput",
+            "kmipkit.client.TrustSource",
+            "kmipkit.extensions.ExtensionRegistryLimits",
+            "kmipkit.metadata.Version",
+            "kmipkit.client.LogResponse",
+        )
+        dataclass_artifacts = (
+            "__dataclass_fields__", "__dataclass_params__", "__delattr__",
+            "__eq__", "__hash__", "__match_args__", "__repr__", "__setattr__",
+            "__slots__",
+        )
+        expected_python = {
+            ("python-kmipkit", f"{class_name}.{member}")
+            for class_name in dataclass_names
+            for member in dataclass_artifacts
+        }
+        for key in expected_python:
+            self.assertIn(key, exclusions)
+        approved_constructor_exclusions = {
+            "kmipkit.client.BatchItemResult": (
+                "read-only ClientBatchResponse traversal",
+                "KMIPKIT-0043-FR-012",
+            ),
+            "kmipkit.metadata.Version": (
+                "runtime metadata query remain mapped",
+                "KMIPKIT-0043-FR-021",
+            ),
+            "kmipkit.client.LogResponse": (
+                "typed Log response and close lifecycle are inventoried",
+                "KMIPKIT-0043-FR-021",
+            ),
+        }
+        for class_name in dataclass_names:
+            constructor = ("python-kmipkit", f"{class_name}.__init__")
+            if class_name in approved_constructor_exclusions:
+                exclusion = exclusions[constructor]
+                evidence_phrase, requirement = approved_constructor_exclusions[class_name]
+                self.assertIn(evidence_phrase, exclusion["evidence"])
+                self.assertIn(requirement, exclusion["evidence"])
+            else:
+                self.assertNotIn(constructor, exclusions)
+        for class_name in dataclass_names:
+            repr_exclusion = exclusions[("python-kmipkit", f"{class_name}.__repr__")]
+            expected_repr_test = (
+                "test_log_operation.py"
+                if class_name == "kmipkit.client.LogResponse"
+                else "test_secret_bearing_client_records_redact_repr"
+            )
+            self.assertIn(expected_repr_test, repr_exclusion["evidence"])
+
+        self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
+
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["publicDeclarations"]
+        }
+        java_batch_item_count = declarations[
+            ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.itemCount")
+        ]
+        self.assertEqual(java_batch_item_count["declarationState"], "declared")
+        self.assertEqual(
+            java_batch_item_count["languageMappings"]["python"]["name"],
+            "kmipkit.client.Batch.item_count",
+        )
+
+        python_response_ttlv = next(
+            row for row in manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit.errors.ClientExecutionError.response_ttlv"
+        )
+        self.assertEqual(python_response_ttlv["kind"], "field")
+
+        local_conveniences = {
+            ("python-kmipkit", "kmipkit.client.Client.closed"),
+            ("python-kmipkit", "kmipkit.client.Batch.closed"),
+            ("python-kmipkit", "kmipkit.client.BatchResult.closed"),
+        }
+        for key in local_conveniences:
+            self.assertTrue(key in exclusions, f"missing exact exclusion {key}")
+            self.assertIn("language-only convenience", exclusions[key]["reason"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
+    def test_request_timestamp_property_uses_python_export_kind(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        manifest = json.loads(
+            (repo_root / "specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        record = next(
+            row for row in manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit.client.Batch.request_timestamp"
+        )
+        self.assertEqual(record["kind"], "python-export")
+
+    def test_checked_in_binding_export_report_reconciles_every_package(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        report_dir = repo_root / "specs/043-public-api-bindings/reports"
+        report_path = max(report_dir.glob("binding-export-report-*.json"))
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {package["packageId"] for package in report["packages"]},
+            {"c-kmipkit", "java-kmipkit", "python-kmipkit"},
+        )
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                self.assertTrue(package["complete"])
+                self.assertTrue(package["matchesManifest"])
+                self.assertEqual(package["missingFromManifest"], [])
+                self.assertEqual(package["notObserved"], [])
+                self.assertEqual(package["kindMismatches"], [])
+                self.assertEqual(package["issues"], [])
+
     def test_python_inventory_collapses_explicit_overload_group_to_one_export(self):
         sources = {
             "kmipkit/api.py": textwrap.dedent("""
@@ -449,7 +1338,7 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("kmipkit.handle.Handle.close", names)
         self.assertTrue(result["complete"])
 
-    def test_java_overloads_that_share_a_manifest_path_remain_incomplete(self):
+    def test_java_overloads_that_share_a_manifest_path_keep_exact_signatures(self):
         output = """
             public class org.example.Client {
               public void send(java.lang.String);
@@ -457,8 +1346,114 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         """
         result = AUDIT.inventory_javap_outputs({"Client.class": output})
-        self.assertFalse(result["complete"])
-        self.assertEqual(result["issues"][0]["reason"], "multiple-declarations-share-export-path")
+        self.assertTrue(result["complete"])
+        declaration = next(
+            row for row in result["declarations"]
+            if row["exportName"] == "org.example.Client.send"
+        )
+        self.assertEqual(
+            declaration["signatures"],
+            ["public void send(byte[])", "public void send(java.lang.String)"]
+        )
+
+    def test_java_manifest_must_declare_all_overload_signatures(self):
+        output = """
+            public class org.example.Client {
+              public void send(java.lang.String);
+              public void send(byte[]);
+            }
+        """
+        report = AUDIT.inventory_javap_outputs({"Client.class": output})
+        declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Client.send",
+            "kind": "java-member",
+            "javaSignatures": ["public void send(java.lang.String)", "public void send(byte[])"]
+        }
+        class_declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Client",
+            "kind": "type",
+        }
+        manifest = {"publicDeclarations": [class_declaration, declaration]}
+        exact = AUDIT.compare(report, manifest, "java-kmipkit")
+        self.assertTrue(exact["matchesManifest"])
+
+        declaration.pop("javaSignatures")
+        missing = AUDIT.compare(report, manifest, "java-kmipkit")
+        self.assertFalse(missing["matchesManifest"])
+        self.assertIn("java-overload-signatures-not-declared", {row["reason"] for row in missing["issues"]})
+
+    def test_java_overload_signatures_can_split_mapping_and_exact_exclusion(self):
+        output = """
+            public class org.example.Evidence {
+              public static org.example.Evidence passed(java.lang.String);
+              public boolean passed();
+            }
+        """
+        report = AUDIT.inventory_javap_outputs({"Evidence.class": output})
+        export_name = "org.example.Evidence.passed"
+        factory = "public static org.example.Evidence passed(java.lang.String)"
+        accessor = "public boolean passed()"
+        declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": export_name,
+            "kind": "java-member",
+            "javaSignatures": [factory],
+        }
+        exclusion = {
+            "packageId": "java-kmipkit",
+            "exportName": export_name,
+            "javaSignatures": [accessor],
+            "reason": "caller input readback is not an independent cross-language capability",
+        }
+        manifest = {
+            "publicDeclarations": [{
+                "packageId": "java-kmipkit",
+                "exportName": "org.example.Evidence",
+                "kind": "type",
+            }, declaration],
+            "approvedExclusions": [exclusion],
+        }
+
+        result = AUDIT.compare(report, manifest, "java-kmipkit")
+
+        self.assertTrue(result["matchesManifest"], result["issues"])
+        self.assertEqual(2, result["counts"]["exactMatches"])
+
+        exclusion["javaSignatures"] = [factory]
+        overlap = AUDIT.compare(report, manifest, "java-kmipkit")
+        self.assertFalse(overlap["matchesManifest"])
+        self.assertIn("java-signature-partition-mismatch", {row["reason"] for row in overlap["issues"]})
+
+    def test_c_audit_counts_blocked_stable_error_code_as_accounted(self):
+        name = "KMIPKIT_ERROR_INTERNAL"
+        manifest = {
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": name,
+                    "kind": "constant",
+                    "declarationState": "blocked",
+                }
+            ],
+            "approvedExclusions": [],
+            "errorCategories": [
+                {"id": "internal", "cCode": name, "stableCHeaderCode": True}
+            ],
+        }
+        report = {
+            "complete": True,
+            "declarations": [
+                {"packageId": "c-kmipkit", "exportName": name, "kind": "constant"}
+            ],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "c-kmipkit")
+
+        self.assertTrue(result["matchesManifest"])
+        self.assertEqual(result["counts"]["exactMatches"], 1)
 
     def test_javap_inventory_keeps_compiler_generated_enum_members(self):
         output = """

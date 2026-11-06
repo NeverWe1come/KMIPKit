@@ -5,7 +5,8 @@
 //! `-003-001`, and `-003-002`. These are derived tests, not official fixture passes.
 
 use kmipkit_protocol::{
-    AttributeSet, ObjectType, RegisterRequest, RevocationReason, RevokeRequest, UniqueIdentifier,
+    AttributeSet, ObjectType, ProtocolCauseCategory, RegisterRequest, RevocationReason,
+    RevokeRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
@@ -15,8 +16,8 @@ use kmipkit_ttlv::{Value, ValueView};
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::{
-    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientErrorCategory, ClientOperation,
-    ClientRequest,
+    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientCauseCategory, ClientErrorCategory,
+    ClientOperation, ClientRequest,
 };
 
 const REVOKE_OPERATION: u32 = 0x0000_0013;
@@ -40,6 +41,7 @@ const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const KEY_COMPROMISE: u32 = 2;
 const CA_COMPROMISE: u32 = 3;
 const PENDING_CORRELATION: &[u8] = b"REVOKE_PENDING_CORRELATION\xFF";
+const RESPONSE_ERROR_SENTINEL: &[u8] = b"REVOKE_RESPONSE_ERROR_SENTINEL";
 
 fn revoke_request(reason: u32, compromise_date: Option<i64>) -> RevokeRequest {
     let request = RevokeRequest::new(RevocationReason::from_raw(reason))
@@ -307,6 +309,47 @@ fn revoke_pending_preserves_correlation_without_implicit_poll() {
         pending.asynchronous_correlation_value(),
         PENDING_CORRELATION
     );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn malformed_revoke_response_is_normalized_to_client_protocol_error() {
+    let response = asynchronous_response_bytes(
+        REVOKE_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(test_structure([test_item(
+            UNIQUE_IDENTIFIER,
+            Value::byte_string(RESPONSE_ERROR_SENTINEL.to_vec()),
+        )])),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .revoke(
+            revoke_request(KEY_COMPROMISE, None),
+            &CodecLimits::defaults(),
+        )
+        .expect_err("the malformed Revoke identifier is a response conversion error");
+
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.cause_category(),
+        Some(ClientCauseCategory::Protocol(
+            ProtocolCauseCategory::InvalidValue
+        ))
+    );
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.response_ttlv().is_none());
+    assert!(!error.to_string().contains("REVOKE_RESPONSE_ERROR_SENTINEL"));
+    assert!(!format!("{error:?}").contains("REVOKE_RESPONSE_ERROR_SENTINEL"));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 

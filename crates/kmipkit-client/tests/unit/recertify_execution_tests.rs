@@ -56,7 +56,7 @@ fn recertify_request() -> RecertifyRequest {
         .with_certificate_request_value(SecretBytes::new(CERTIFICATE_REQUEST_BYTES.to_vec()))
         .with_offset(86_400)
         .with_attributes(certificate_attributes())
-        .with_protection_storage_masks(test_structure([test_item(0x0042_0160, Value::integer(3))]))
+        .with_protection_storage_masks(test_structure([test_item(0x0042_015e, Value::integer(3))]))
 }
 
 fn certificate_attributes() -> Structure {
@@ -208,7 +208,10 @@ fn recertify_sends_one_table_300_request_and_exposes_table_301_identifier() {
             "replacement-certificate".to_owned()
         ))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     assert_eq!(
         request_fields(
             captured

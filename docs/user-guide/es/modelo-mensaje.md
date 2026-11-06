@@ -33,6 +33,12 @@ La documentación rustdoc del crate incluye un ejemplo compilado que analiza
 una petición, comprueba su versión y número de elementos y recupera el árbol
 original mediante `into_ttlv()`.
 
+Rust, C, Java y Python se verifican con el mismo fixture del modelo de
+mensajes. Este comprueba el orden de los campos, los valores desconocidos de
+operación y estado, los bits de máscara desconocidos, los valores efectivos
+por defecto, la asociación de extensiones, los metadatos de validación sin
+payload y la vida de las vistas después de cerrar el mensaje propietario.
+
 ## Valores predeterminados y resultados asíncronos
 
 Los campos opcionales conservan si estaban presentes. Si faltan, sus

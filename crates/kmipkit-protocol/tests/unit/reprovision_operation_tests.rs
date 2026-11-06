@@ -14,6 +14,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 const REPROVISION_OPERATION: u32 = 0x0000_0035;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const PERMISSION_DENIED: u32 = 0x0000_0005;
 const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
 const CERTIFICATE: u32 = 0x0042_0013;
@@ -132,7 +133,10 @@ fn successful_response_preserves_optional_identifier_and_absence() {
             "reprovisioned-credential".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| !view.children().is_empty()));
+    assert_eq!(
+        response.with_ttlv(|view| !view.children().is_empty()),
+        Some(true)
+    );
 
     let absent = typed_response(SUCCESS, None, Some(structure([])))
         .expect("Table 314 marks Unique Identifier optional");
@@ -180,6 +184,29 @@ fn failure_preserves_table_315_common_result_without_success_values() {
         Some(PERMISSION_DENIED)
     );
     assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 315 failure remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REPROVISION_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-reprovision-response".to_owned()),
+        )])),
+    );
+    let pending = ReProvisionResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]

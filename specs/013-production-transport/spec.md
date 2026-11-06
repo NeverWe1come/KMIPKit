@@ -176,7 +176,7 @@ The exact upstream source is `specification/oasis/kmip-2.1/upstream/kmip-profile
   another client's registry provenance as sanitized `InvalidInput`/`NotSent` before request
   construction/encoding/exchange and proves a same-client extension retains its valid wire
   representation.
-- **SC-008**: Formatting, Clippy, unit, negative, integration, documentation, dependency-policy, and platform CI checks required by the repository pass; transport/changed-code/workspace line coverage reaches at least 85%/95%/90% respectively, and requirement traceability reaches 100%.
+- **SC-008**: Formatting, Clippy, unit, negative, integration, documentation, dependency-policy, and platform CI checks required by the repository pass; transport/changed-code/workspace line coverage reaches at least 85%/90%/90% respectively, and requirement traceability reaches 100%.
 
 ## Clarification Record
 

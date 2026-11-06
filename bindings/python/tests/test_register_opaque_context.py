@@ -135,3 +135,14 @@ def test_register_request_rejects_unknown_context_without_consuming_request() ->
             request.with_opaque_object_context("managed")
     finally:
         request.close()
+
+
+def test_register_consumer_preserves_present_protection_storage_masks() -> None:
+    masks = ttlv.ttlv_structure_create()
+    request = extensions.RegisterRequest.create(
+        _OBJECT_TYPE_OPAQUE, ttlv.ttlv_structure_create(), _opaque_object()
+    ).with_protection_storage_masks(masks)
+
+    with masks:
+        with extensions.client_batch_item_register(request) as item:
+            assert isinstance(item, extensions.ClientBatchItem)
