@@ -1,0 +1,3109 @@
+{
+  "version": "1.0.0",
+  "catalog_source": "specification/catalog/kmip-2.1.json",
+  "statistics": {
+    "operations_covered": 56,
+    "managed_objects_covered": 9,
+    "attributes_covered": 63,
+    "enumerations_covered": 64,
+    "bitmasks_covered": 3,
+    "total_cases": 123
+  },
+  "test_cases": [
+    {
+      "case_id": "test-op-delegated-login",
+      "category": "protocol_and_session",
+      "operation": "Delegated Login",
+      "oasis_section": "6.1.12",
+      "description": "Execute Delegated Login operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Delegated Login"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-delegated-login",
+        "setup_steps": [],
+        "target_step": "Execute Delegated Login",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-discover-versions",
+      "category": "protocol_and_session",
+      "operation": "Discover Versions",
+      "oasis_section": "6.1.16",
+      "description": "Execute Discover Versions operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Discover Versions"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-discover-versions",
+        "setup_steps": [],
+        "target_step": "Execute Discover Versions",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-interop",
+      "category": "protocol_and_session",
+      "operation": "Interop",
+      "oasis_section": "6.1.26",
+      "description": "Execute Interop operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Interop"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-interop",
+        "setup_steps": [],
+        "target_step": "Execute Interop",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-log",
+      "category": "protocol_and_session",
+      "operation": "Log",
+      "oasis_section": "6.1.29",
+      "description": "Execute Log operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Log"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-log",
+        "setup_steps": [],
+        "target_step": "Execute Log",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-login",
+      "category": "protocol_and_session",
+      "operation": "Login",
+      "oasis_section": "6.1.30",
+      "description": "Execute Login operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Login"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-login",
+        "setup_steps": [],
+        "target_step": "Execute Login",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-logout",
+      "category": "protocol_and_session",
+      "operation": "Logout",
+      "oasis_section": "6.1.31",
+      "description": "Execute Logout operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Logout"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-logout",
+        "setup_steps": [],
+        "target_step": "Execute Logout",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-ping",
+      "category": "protocol_and_session",
+      "operation": "Ping",
+      "oasis_section": "6.1.36",
+      "description": "Execute Ping operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Ping"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-ping",
+        "setup_steps": [],
+        "target_step": "Execute Ping",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-query",
+      "category": "protocol_and_session",
+      "operation": "Query",
+      "oasis_section": "6.1.40",
+      "description": "Execute Query operation and verify typed response and raw TTLV preservation.",
+      "requires": {
+        "operation": "Query"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-query",
+        "setup_steps": [],
+        "target_step": "Execute Query",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-activate",
+      "category": "object_lifecycle",
+      "operation": "Activate",
+      "oasis_section": "6.1.1",
+      "description": "Execute Activate operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Activate",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-activate",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Activate",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-archive",
+      "category": "object_lifecycle",
+      "operation": "Archive",
+      "oasis_section": "6.1.4",
+      "description": "Execute Archive operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Archive",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-archive",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Archive",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-cancel",
+      "category": "object_lifecycle",
+      "operation": "Cancel",
+      "oasis_section": "6.1.5",
+      "description": "Execute Cancel operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Cancel",
+        "requires_async": true
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-cancel",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Cancel",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-certify",
+      "category": "object_lifecycle",
+      "operation": "Certify",
+      "oasis_section": "6.1.6",
+      "description": "Execute Certify operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Certify",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-certify",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Certify",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-check",
+      "category": "object_lifecycle",
+      "operation": "Check",
+      "oasis_section": "6.1.7",
+      "description": "Execute Check operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Check",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-check",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Check",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-create",
+      "category": "object_lifecycle",
+      "operation": "Create",
+      "oasis_section": "6.1.8",
+      "description": "Execute Create operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Create",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-create",
+        "setup_steps": [],
+        "target_step": "Execute Create",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-create-key-pair",
+      "category": "object_lifecycle",
+      "operation": "Create Key Pair",
+      "oasis_section": "6.1.9",
+      "description": "Execute Create Key Pair operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Create Key Pair",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-create-key-pair",
+        "setup_steps": [],
+        "target_step": "Execute Create Key Pair",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-create-split-key",
+      "category": "object_lifecycle",
+      "operation": "Create Split Key",
+      "oasis_section": "6.1.10",
+      "description": "Execute Create Split Key operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Create Split Key",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-create-split-key",
+        "setup_steps": [],
+        "target_step": "Execute Create Split Key",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-derive-key",
+      "category": "object_lifecycle",
+      "operation": "Derive Key",
+      "oasis_section": "6.1.14",
+      "description": "Execute Derive Key operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Derive Key",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-derive-key",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Derive Key",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-destroy",
+      "category": "object_lifecycle",
+      "operation": "Destroy",
+      "oasis_section": "6.1.15",
+      "description": "Execute Destroy operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Destroy",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-destroy",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Destroy",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-export",
+      "category": "object_lifecycle",
+      "operation": "Export",
+      "oasis_section": "6.1.18",
+      "description": "Execute Export operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Export",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-export",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Export",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-get",
+      "category": "object_lifecycle",
+      "operation": "Get",
+      "oasis_section": "6.1.19",
+      "description": "Execute Get operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Get",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-get",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Get",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-get-constraints",
+      "category": "object_lifecycle",
+      "operation": "Get Constraints",
+      "oasis_section": "6.1.22",
+      "description": "Execute Get Constraints operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Get Constraints",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-get-constraints",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Get Constraints",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-get-usage-allocation",
+      "category": "object_lifecycle",
+      "operation": "Get Usage Allocation",
+      "oasis_section": "6.1.23",
+      "description": "Execute Get Usage Allocation operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Get Usage Allocation",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-get-usage-allocation",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Get Usage Allocation",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-import",
+      "category": "object_lifecycle",
+      "operation": "Import",
+      "oasis_section": "6.1.25",
+      "description": "Execute Import operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Import",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-import",
+        "setup_steps": [],
+        "target_step": "Execute Import",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-join-split-key",
+      "category": "object_lifecycle",
+      "operation": "Join Split Key",
+      "oasis_section": "6.1.27",
+      "description": "Execute Join Split Key operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Join Split Key",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-join-split-key",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Join Split Key",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-locate",
+      "category": "object_lifecycle",
+      "operation": "Locate",
+      "oasis_section": "6.1.28",
+      "description": "Execute Locate operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Locate",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-locate",
+        "setup_steps": [],
+        "target_step": "Execute Locate",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-obtain-lease",
+      "category": "object_lifecycle",
+      "operation": "Obtain Lease",
+      "oasis_section": "6.1.35",
+      "description": "Execute Obtain Lease operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Obtain Lease",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obtain-lease",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Obtain Lease",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-pkcs#11",
+      "category": "object_lifecycle",
+      "operation": "PKCS#11",
+      "oasis_section": "6.1.37",
+      "description": "Execute PKCS#11 operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "PKCS#11",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-pkcs#11",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute PKCS#11",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-poll",
+      "category": "object_lifecycle",
+      "operation": "Poll",
+      "oasis_section": "6.1.38",
+      "description": "Execute Poll operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Poll",
+        "requires_async": true
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-poll",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Poll",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-process",
+      "category": "object_lifecycle",
+      "operation": "Process",
+      "oasis_section": "6.1.39",
+      "description": "Execute Process operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Process",
+        "requires_async": true
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-process",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Process",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-query-asynchronous-requests",
+      "category": "object_lifecycle",
+      "operation": "Query Asynchronous Requests",
+      "oasis_section": "6.1.41",
+      "description": "Execute Query Asynchronous Requests operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Query Asynchronous Requests",
+        "requires_async": true
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-query-asynchronous-requests",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Query Asynchronous Requests",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-re-provision",
+      "category": "object_lifecycle",
+      "operation": "Re-Provision",
+      "oasis_section": "6.1.48",
+      "description": "Execute Re-Provision operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Re-Provision",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-re-provision",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Re-Provision",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-re-certify",
+      "category": "object_lifecycle",
+      "operation": "Re-certify",
+      "oasis_section": "6.1.45",
+      "description": "Execute Re-certify operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Re-certify",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-re-certify",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Re-certify",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-re-key",
+      "category": "object_lifecycle",
+      "operation": "Re-key",
+      "oasis_section": "6.1.46",
+      "description": "Execute Re-key operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Re-key",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-re-key",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Re-key",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-re-key-key-pair",
+      "category": "object_lifecycle",
+      "operation": "Re-key Key Pair",
+      "oasis_section": "6.1.47",
+      "description": "Execute Re-key Key Pair operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Re-key Key Pair",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-re-key-key-pair",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Re-key Key Pair",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-recover",
+      "category": "object_lifecycle",
+      "operation": "Recover",
+      "oasis_section": "6.1.42",
+      "description": "Execute Recover operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Recover",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-recover",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Recover",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-register",
+      "category": "object_lifecycle",
+      "operation": "Register",
+      "oasis_section": "6.1.43",
+      "description": "Execute Register operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Register",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-register",
+        "setup_steps": [],
+        "target_step": "Execute Register",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-revoke",
+      "category": "object_lifecycle",
+      "operation": "Revoke",
+      "oasis_section": "6.1.44",
+      "description": "Execute Revoke operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Revoke",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-revoke",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Revoke",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-set-constraints",
+      "category": "object_lifecycle",
+      "operation": "Set Constraints",
+      "oasis_section": "6.1.52",
+      "description": "Execute Set Constraints operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Set Constraints",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-set-constraints",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Set Constraints",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-set-defaults",
+      "category": "object_lifecycle",
+      "operation": "Set Defaults",
+      "oasis_section": "6.1.53",
+      "description": "Execute Set Defaults operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Set Defaults",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-set-defaults",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Set Defaults",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-op-validate",
+      "category": "object_lifecycle",
+      "operation": "Validate",
+      "oasis_section": "6.1.57",
+      "description": "Execute Validate operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Validate",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-validate",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Validate",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-certificate",
+      "category": "managed_objects",
+      "operation": "Register",
+      "oasis_section": "§2",
+      "description": "Validate Certificate object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Certificate"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-certificate",
+        "setup_steps": [],
+        "target_step": "Provision Certificate",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-certificate-request",
+      "category": "managed_objects",
+      "operation": "Register",
+      "oasis_section": "§2",
+      "description": "Validate Certificate Request object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Certificate Request"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-certificate-request",
+        "setup_steps": [],
+        "target_step": "Provision Certificate Request",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-opaque-object",
+      "category": "managed_objects",
+      "operation": "Register",
+      "oasis_section": "§2",
+      "description": "Validate Opaque Object object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Opaque Object"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-opaque-object",
+        "setup_steps": [],
+        "target_step": "Provision Opaque Object",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-pgp-key",
+      "category": "managed_objects",
+      "operation": "Register",
+      "oasis_section": "§2",
+      "description": "Validate PGP Key object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "PGP Key"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-pgp-key",
+        "setup_steps": [],
+        "target_step": "Provision PGP Key",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-private-key",
+      "category": "managed_objects",
+      "operation": "Create",
+      "oasis_section": "§2",
+      "description": "Validate Private Key object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Private Key"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-private-key",
+        "setup_steps": [],
+        "target_step": "Provision Private Key",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-public-key",
+      "category": "managed_objects",
+      "operation": "Create",
+      "oasis_section": "§2",
+      "description": "Validate Public Key object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Public Key"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-public-key",
+        "setup_steps": [],
+        "target_step": "Provision Public Key",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-secret-data",
+      "category": "managed_objects",
+      "operation": "Register",
+      "oasis_section": "§2",
+      "description": "Validate Secret Data object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Secret Data"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-secret-data",
+        "setup_steps": [],
+        "target_step": "Provision Secret Data",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-split-key",
+      "category": "managed_objects",
+      "operation": "Create",
+      "oasis_section": "§2",
+      "description": "Validate Split Key object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Split Key"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-split-key",
+        "setup_steps": [],
+        "target_step": "Provision Split Key",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-obj-symmetric-key",
+      "category": "managed_objects",
+      "operation": "Create",
+      "oasis_section": "§2",
+      "description": "Validate Symmetric Key object construction, encoding roundtrip, and cleanup.",
+      "requires": {
+        "object_type": "Symmetric Key"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-obj-symmetric-key",
+        "setup_steps": [],
+        "target_step": "Provision Symmetric Key",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-activation-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Activation Date'.",
+      "requires": {
+        "attribute": "Activation Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-activation-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Activation Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-alternative-name",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Alternative Name'.",
+      "requires": {
+        "attribute": "Alternative Name"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-alternative-name",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Alternative Name",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-always-sensitive",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Always Sensitive'.",
+      "requires": {
+        "attribute": "Always Sensitive"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-always-sensitive",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Always Sensitive",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-application-specific-information",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Application Specific Information'.",
+      "requires": {
+        "attribute": "Application Specific Information"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-application-specific-information",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Application Specific Information",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-archive-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Archive Date'.",
+      "requires": {
+        "attribute": "Archive Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-archive-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Archive Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-certificate-attributes",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Certificate Attributes'.",
+      "requires": {
+        "attribute": "Certificate Attributes"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-certificate-attributes",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Certificate Attributes",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-certificate-length",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Certificate Length'.",
+      "requires": {
+        "attribute": "Certificate Length"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-certificate-length",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Certificate Length",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-certificate-type",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Certificate Type'.",
+      "requires": {
+        "attribute": "Certificate Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-certificate-type",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Certificate Type",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-comment",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Comment'.",
+      "requires": {
+        "attribute": "Comment"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-comment",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Comment",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-compromise-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Compromise Date'.",
+      "requires": {
+        "attribute": "Compromise Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-compromise-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Compromise Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-compromise-occurrence-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Compromise Occurrence Date'.",
+      "requires": {
+        "attribute": "Compromise Occurrence Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-compromise-occurrence-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Compromise Occurrence Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-contact-information",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Contact Information'.",
+      "requires": {
+        "attribute": "Contact Information"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-contact-information",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Contact Information",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-cryptographic-algorithm",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Cryptographic Algorithm'.",
+      "requires": {
+        "attribute": "Cryptographic Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-cryptographic-algorithm",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Cryptographic Algorithm",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-cryptographic-domain-parameters",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Cryptographic Domain Parameters'.",
+      "requires": {
+        "attribute": "Cryptographic Domain Parameters"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-cryptographic-domain-parameters",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Cryptographic Domain Parameters",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-cryptographic-length",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Cryptographic Length'.",
+      "requires": {
+        "attribute": "Cryptographic Length"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-cryptographic-length",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Cryptographic Length",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-cryptographic-parameters",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Cryptographic Parameters'.",
+      "requires": {
+        "attribute": "Cryptographic Parameters"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-cryptographic-parameters",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Cryptographic Parameters",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-cryptographic-usage-mask",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Cryptographic Usage Mask'.",
+      "requires": {
+        "attribute": "Cryptographic Usage Mask"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-cryptographic-usage-mask",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Cryptographic Usage Mask",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-deactivation-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Deactivation Date'.",
+      "requires": {
+        "attribute": "Deactivation Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-deactivation-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Deactivation Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-description",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Description'.",
+      "requires": {
+        "attribute": "Description"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-description",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Description",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-destroy-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Destroy Date'.",
+      "requires": {
+        "attribute": "Destroy Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-destroy-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Destroy Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-digest",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Digest'.",
+      "requires": {
+        "attribute": "Digest"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-digest",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Digest",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-digital-signature-algorithm",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Digital Signature Algorithm'.",
+      "requires": {
+        "attribute": "Digital Signature Algorithm"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-digital-signature-algorithm",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Digital Signature Algorithm",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-extractable",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Extractable'.",
+      "requires": {
+        "attribute": "Extractable"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-extractable",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Extractable",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-fresh",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Fresh'.",
+      "requires": {
+        "attribute": "Fresh"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-fresh",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Fresh",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-initial-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Initial Date'.",
+      "requires": {
+        "attribute": "Initial Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-initial-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Initial Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-key-format-type",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Key Format Type'.",
+      "requires": {
+        "attribute": "Key Format Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-key-format-type",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Key Format Type",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-key-value-location",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Key Value Location'.",
+      "requires": {
+        "attribute": "Key Value Location"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-key-value-location",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Key Value Location",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-key-value-present",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Key Value Present'.",
+      "requires": {
+        "attribute": "Key Value Present"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-key-value-present",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Key Value Present",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-last-change-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Last Change Date'.",
+      "requires": {
+        "attribute": "Last Change Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-last-change-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Last Change Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-lease-time",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Lease Time'.",
+      "requires": {
+        "attribute": "Lease Time"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-lease-time",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Lease Time",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-link",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Link'.",
+      "requires": {
+        "attribute": "Link"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-link",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Link",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-nist-key-type",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'NIST Key Type'.",
+      "requires": {
+        "attribute": "NIST Key Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-nist-key-type",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for NIST Key Type",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-name",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Name'.",
+      "requires": {
+        "attribute": "Name"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-name",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Name",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-never-extractable",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Never Extractable'.",
+      "requires": {
+        "attribute": "Never Extractable"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-never-extractable",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Never Extractable",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-object-group",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Object Group'.",
+      "requires": {
+        "attribute": "Object Group"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-object-group",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Object Group",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-object-type",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Object Type'.",
+      "requires": {
+        "attribute": "Object Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-object-type",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Object Type",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-opaque-data-type",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Opaque Data Type'.",
+      "requires": {
+        "attribute": "Opaque Data Type"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-opaque-data-type",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Opaque Data Type",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-original-creation-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Original Creation Date'.",
+      "requires": {
+        "attribute": "Original Creation Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-original-creation-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Original Creation Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-pkcs#12-friendly-name",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'PKCS#12 Friendly Name'.",
+      "requires": {
+        "attribute": "PKCS#12 Friendly Name"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-pkcs#12-friendly-name",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for PKCS#12 Friendly Name",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-process-start-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Process Start Date'.",
+      "requires": {
+        "attribute": "Process Start Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-process-start-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Process Start Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-protect-stop-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Protect Stop Date'.",
+      "requires": {
+        "attribute": "Protect Stop Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-protect-stop-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Protect Stop Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-protection-level",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Protection Level'.",
+      "requires": {
+        "attribute": "Protection Level"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-protection-level",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Protection Level",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-protection-period",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Protection Period'.",
+      "requires": {
+        "attribute": "Protection Period"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-protection-period",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Protection Period",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-protection-storage-mask",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Protection Storage Mask'.",
+      "requires": {
+        "attribute": "Protection Storage Mask"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-protection-storage-mask",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Protection Storage Mask",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-quantum-safe",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Quantum Safe'.",
+      "requires": {
+        "attribute": "Quantum Safe"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-quantum-safe",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Quantum Safe",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-random-number-generator",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Random Number Generator'.",
+      "requires": {
+        "attribute": "Random Number Generator"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-random-number-generator",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Random Number Generator",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-revocation-reason",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Revocation Reason'.",
+      "requires": {
+        "attribute": "Revocation Reason"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-revocation-reason",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Revocation Reason",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-automatic",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Automatic'.",
+      "requires": {
+        "attribute": "Rotate Automatic"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-automatic",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Automatic",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-date",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Date'.",
+      "requires": {
+        "attribute": "Rotate Date"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-date",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Date",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-generation",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Generation'.",
+      "requires": {
+        "attribute": "Rotate Generation"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-generation",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Generation",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-interval",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Interval'.",
+      "requires": {
+        "attribute": "Rotate Interval"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-interval",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Interval",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-latest",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Latest'.",
+      "requires": {
+        "attribute": "Rotate Latest"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-latest",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Latest",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-name",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Name'.",
+      "requires": {
+        "attribute": "Rotate Name"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-name",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Name",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-rotate-offset",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Rotate Offset'.",
+      "requires": {
+        "attribute": "Rotate Offset"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-rotate-offset",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Rotate Offset",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-sensitive",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Sensitive'.",
+      "requires": {
+        "attribute": "Sensitive"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-sensitive",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Sensitive",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-short-unique-identifier",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Short Unique Identifier'.",
+      "requires": {
+        "attribute": "Short Unique Identifier"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-short-unique-identifier",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Short Unique Identifier",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-state",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'State'.",
+      "requires": {
+        "attribute": "State"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-state",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for State",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-unique-identifier",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Unique Identifier'.",
+      "requires": {
+        "attribute": "Unique Identifier"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-unique-identifier",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Unique Identifier",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-usage-limits",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Usage Limits'.",
+      "requires": {
+        "attribute": "Usage Limits"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-usage-limits",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Usage Limits",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-vendor-attribute",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'Vendor Attribute'.",
+      "requires": {
+        "attribute": "Vendor Attribute"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-vendor-attribute",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for Vendor Attribute",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-x.509-certificate-identifier",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'X.509 Certificate Identifier'.",
+      "requires": {
+        "attribute": "X.509 Certificate Identifier"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-x.509-certificate-identifier",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for X.509 Certificate Identifier",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-x.509-certificate-issuer",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'X.509 Certificate Issuer'.",
+      "requires": {
+        "attribute": "X.509 Certificate Issuer"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-x.509-certificate-issuer",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for X.509 Certificate Issuer",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-attr-x.509-certificate-subject",
+      "category": "attributes",
+      "operation": "Get Attributes",
+      "oasis_section": "§4",
+      "description": "Verify read/write semantics and policies for attribute 'X.509 Certificate Subject'.",
+      "requires": {
+        "attribute": "X.509 Certificate Subject"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-attr-x.509-certificate-subject",
+        "setup_steps": [
+          "Create unique SymmetricKey with attribute"
+        ],
+        "target_step": "GetAttributes for X.509 Certificate Subject",
+        "teardown_steps": [
+          "Destroy object"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-encrypt-aes-256-cbc",
+      "category": "cryptography_and_rng",
+      "operation": "Encrypt",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Encrypt with AES 256-bit.",
+      "requires": {
+        "operation": "Encrypt",
+        "algorithm": "AES",
+        "key_length": 256
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-aes-256-cbc",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Encrypt",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-decrypt-aes-256-cbc",
+      "category": "cryptography_and_rng",
+      "operation": "Decrypt",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Decrypt with AES 256-bit.",
+      "requires": {
+        "operation": "Decrypt",
+        "algorithm": "AES",
+        "key_length": 256
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-aes-256-cbc",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Decrypt",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-sign-rsa-2048-pkcs1_v1_5",
+      "category": "cryptography_and_rng",
+      "operation": "Sign",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Sign with RSA 2048-bit.",
+      "requires": {
+        "operation": "Sign",
+        "algorithm": "RSA",
+        "key_length": 2048
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-rsa-2048-pkcs1_v1_5",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Sign",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5",
+      "category": "cryptography_and_rng",
+      "operation": "Signature Verify",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Signature Verify with RSA 2048-bit.",
+      "requires": {
+        "operation": "Signature Verify",
+        "algorithm": "RSA",
+        "key_length": 2048
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-rsa-2048-pkcs1_v1_5",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Signature Verify",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-sign-ecdsa-256-p_256",
+      "category": "cryptography_and_rng",
+      "operation": "Sign",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Sign with ECDSA 256-bit.",
+      "requires": {
+        "operation": "Sign",
+        "algorithm": "ECDSA",
+        "key_length": 256
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-ecdsa-256-p_256",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Sign",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-signature-verify-ecdsa-256-p_256",
+      "category": "cryptography_and_rng",
+      "operation": "Signature Verify",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Signature Verify with ECDSA 256-bit.",
+      "requires": {
+        "operation": "Signature Verify",
+        "algorithm": "ECDSA",
+        "key_length": 256
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-ecdsa-256-p_256",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute Signature Verify",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-mac-hmac_sha256-256",
+      "category": "cryptography_and_rng",
+      "operation": "MAC",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation MAC with HMAC_SHA256 256-bit.",
+      "requires": {
+        "operation": "MAC",
+        "algorithm": "HMAC_SHA256",
+        "key_length": 256
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-hmac_sha256-256",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute MAC",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-mac-verify-hmac_sha256-256",
+      "category": "cryptography_and_rng",
+      "operation": "MAC Verify",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation MAC Verify with HMAC_SHA256 256-bit.",
+      "requires": {
+        "operation": "MAC Verify",
+        "algorithm": "HMAC_SHA256",
+        "key_length": 256
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-hmac_sha256-256",
+        "setup_steps": [
+          "Create test key"
+        ],
+        "target_step": "Execute MAC Verify",
+        "teardown_steps": [
+          "Destroy test key"
+        ],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-hash-sha_256-0",
+      "category": "cryptography_and_rng",
+      "operation": "Hash",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation Hash with SHA_256 0-bit.",
+      "requires": {
+        "operation": "Hash",
+        "algorithm": "SHA_256",
+        "key_length": 0
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-sha_256-0",
+        "setup_steps": [],
+        "target_step": "Execute Hash",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-rng-retrieve-rng-32",
+      "category": "cryptography_and_rng",
+      "operation": "RNG Retrieve",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation RNG Retrieve with RNG 32-bit.",
+      "requires": {
+        "operation": "RNG Retrieve",
+        "algorithm": "RNG",
+        "key_length": 32
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-rng-32",
+        "setup_steps": [],
+        "target_step": "Execute RNG Retrieve",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    },
+    {
+      "case_id": "test-crypto-rng-seed-rng-32",
+      "category": "cryptography_and_rng",
+      "operation": "RNG Seed",
+      "oasis_section": "§6.1",
+      "description": "Execute cryptographic operation RNG Seed with RNG 32-bit.",
+      "requires": {
+        "operation": "RNG Seed",
+        "algorithm": "RNG",
+        "key_length": 32
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-crypto-rng-32",
+        "setup_steps": [],
+        "target_step": "Execute RNG Seed",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "UniqueIdentifier",
+          "TimeStamp",
+          "IVCounterNonce"
+        ]
+      }
+    }
+  ]
+}

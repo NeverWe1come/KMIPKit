@@ -1,0 +1,40 @@
+name: Interop Common Foundation
+
+on:
+  pull_request:
+    paths:
+      - 'interop/shared/**'
+      - '.github/workflows/interop-common.yml'
+  push:
+    branches:
+      - release/1.0.0
+    paths:
+      - 'interop/shared/**'
+      - '.github/workflows/interop-common.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-common:
+    name: Interop schemas and catalog validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a6ea81b87d963f # v5.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: pip install jsonschema
+
+      - name: Verify test catalog generation check
+        run: python3 interop/shared/catalog/generate_test_catalog.py --check
+
+      - name: Run interop shared tests
+        run: python3 -B -m unittest discover -s interop/shared/tests -p 'test_*.py' -v
