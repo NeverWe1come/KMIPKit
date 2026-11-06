@@ -601,6 +601,50 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             manifest["capabilities"][0]["mappings"],
         )
 
+    def test_adds_only_exact_approved_java_bridge_exclusions_idempotently(self) -> None:
+        reason = (
+            "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; "
+            "applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. "
+            "The bridge member has no independent product-level capability."
+        )
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/043-public-api-bindings/spec.md",
+            "status": "Approved",
+            "evidence": "**Status**: Approved for implementation",
+        }
+        exclusions = [
+            {
+                "packageId": "java-kmipkit",
+                "exportName": f"org.kmipkit.NativeExtensionRegistry.{name}",
+                "reason": reason,
+                "approvalSource": approval,
+                "evidence": (
+                    "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. "
+                    "The exact method is an internal raw-handle JNI bridge; supported callers use the typed response facade."
+                ),
+                "candidateSpecId": "KMIPKIT-0043",
+            }
+            for name in (
+                "clientBatchItemResponseRawTtlv",
+                "clientBatchItemResponseHeaderTtlv",
+            )
+        ]
+
+        first = reconcile_0053_api_parity.add_approved_exclusions(
+            {"approvedExclusions": []}, exclusions
+        )
+        second = reconcile_0053_api_parity.add_approved_exclusions(first, exclusions)
+
+        self.assertEqual(exclusions, first["approvedExclusions"])
+        self.assertEqual(first, second)
+        broad = copy.deepcopy(exclusions[0])
+        broad["exportName"] = "org.kmipkit.NativeExtensionRegistry.*"
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.add_approved_exclusions(
+                {"approvedExclusions": []}, [broad]
+            )
+
     def test_public_c_layout_field_can_be_recorded_as_an_exact_c_only_surface(self) -> None:
         declaration = {
             "declarationId": "c-only-layout-field",
