@@ -144,6 +144,53 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             self._reconcile([mapping])
 
+    def test_enum_shape_exclusion_must_name_its_exact_mapped_parent_type(self) -> None:
+        enum_type = self._candidate(
+            "enum-type", "type", "kmipkit::protocol::ExampleValue"
+        )
+        enum_variant = self._candidate(
+            "enum-variant", "variant", "kmipkit::protocol::ExampleValue::Known"
+        )
+        self.manifest["publicDeclarations"].extend([enum_type, enum_variant])
+        mapped_enum = self._mapping(enum_type)
+
+        wrong = self._exclusion(enum_variant, "rust-enum-variant", ["mapped-type"])
+        with self.assertRaisesRegex(
+            reconcile_0053_api_parity.ReconciliationError, "exact mapped parent model"
+        ):
+            self._reconcile([mapped_enum, wrong])
+
+        exact = self._exclusion(enum_variant, "rust-enum-variant", ["enum-type"])
+        result = self._reconcile([mapped_enum, exact])
+        self.assertEqual("enum-type", result["approvedExclusions"][-1]["counterpartDeclarationIds"][0])
+
+    def test_resolution_paths_and_route_names_reject_wildcards(self) -> None:
+        mapping = self._mapping(self.candidates[0])
+        mapping["languageMappings"]["c"]["name"] = "kmipkit_*"  # type: ignore[index]
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            self._reconcile([mapping])
+
+        mapping = self._mapping(self.candidates[0])
+        mapping["evidencePaths"] = ["bindings/tests/*_test.py"]
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            self._reconcile([mapping])
+
+    def test_finishing_all_candidates_updates_only_the_approved_capability(self) -> None:
+        type_declaration = self.candidates[0]
+        trait_declaration = self.candidates[1]
+        self.manifest["publicDeclarations"] = [type_declaration, trait_declaration]
+        mapped = self._mapping(type_declaration)
+        excluded = self._exclusion(trait_declaration, "rust-trait", ["mapped-type"])
+
+        result = self._reconcile([mapped, excluded])
+
+        capability = result["capabilities"][0]
+        self.assertEqual("verified", capability["capabilityState"])
+        self.assertEqual("KMIPKIT-0048", capability["ownerSpecId"])
+        self.assertEqual(
+            {"rust", "c", "java", "python"}, set(capability["mappings"])
+        )
+
     def test_requires_complete_mapping_evidence_and_approved_source(self) -> None:
         for field in ("c", "java", "python"):
             with self.subTest(language=field):
