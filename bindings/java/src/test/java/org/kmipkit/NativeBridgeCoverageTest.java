@@ -13,6 +13,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLServerSocket;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -53,6 +55,7 @@ import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.InvalidExtensionIdentityException;
 import org.kmipkit.extensions.RegisteredExtensionValue;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.extensions.TtlvPath;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -131,6 +134,70 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(0, 0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(0, 0));
+
+        List<Executable> responseGetters = List.of(
+                () -> NativeExtensionRegistry.clientBatchItemResponseMetadata(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseExtensionCount(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseExtensionTtlvAt(0, 0),
+                () -> NativeExtensionRegistry.clientBatchItemResponsePendingCorrelationValue(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCertify(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRecertify(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRekey(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRekeyKeyPair(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseReprovision(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseReprovisionTtlv(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRegister(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRevoke(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRngRetrieve(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRngSeed(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseActivate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseArchive(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDestroy(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseRecover(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCheck(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseLogin(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseLogout(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseObtainLease(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseImport(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseJoinSplitKey(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseGet(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseLocate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetConstraints(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetAttributeList(0, 1, 16),
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetAttributes(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseAddAttribute(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseAdjustAttribute(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDeleteAttribute(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseModifyAttribute(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseSetAttribute(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseSetConstraints(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseSetDefaults(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseValidate(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponsePing(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseQueryTtlv(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseInterop(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponsePkcs11(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseLog(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseExport(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseHash(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseMac(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseMacVerify(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseSign(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseDecrypt(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseEncrypt(0));
+        for (Executable responseGetter : responseGetters) {
+            assertThrows(InvalidInputException.class, responseGetter);
+        }
     }
 
     @Test
@@ -246,6 +313,10 @@ final class NativeBridgeCoverageTest {
                     assertEquals("attribute-list-object", typed.uniqueIdentifier().text());
                     assertEquals(2, typed.attributeReferences().size());
                     assertResponseMappers(result, "getAttributeListResponse");
+                    long nativeItem = nativeHandle(result);
+                    assertThrows(ResourceLimitException.class,
+                            () -> NativeExtensionRegistry.clientBatchItemResponseGetAttributeList(
+                                    nativeItem, 1, 16));
                 }
             }
 
@@ -441,6 +512,15 @@ final class NativeBridgeCoverageTest {
             if (cause instanceof Error error) throw error;
             throw new IllegalStateException("TLS test fixture failed: " + name, cause);
         }
+    }
+
+    private static long nativeHandle(ClientBatchItemResult result) throws Exception {
+        Field field = ClientBatchItemResult.class.getDeclaredField("handle");
+        if (!field.trySetAccessible()) {
+            throw new IllegalStateException("client batch item handle is inaccessible");
+        }
+        NativeHandle handle = (NativeHandle) field.get(result);
+        return handle.withValue(value -> value);
     }
 
     private static byte[] batchItemId(int index) throws Exception {

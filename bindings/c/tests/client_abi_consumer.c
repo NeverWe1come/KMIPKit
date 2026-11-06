@@ -9582,6 +9582,34 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
     uint64_t requirement_count = 0;
     uint64_t test_case_count = 0;
     uint64_t baseline_requirement_count = 0;
+    static const struct {
+        uint32_t table;
+        uint64_t row;
+        uint32_t relation;
+    } relation_cases[] = {
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
+            KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS, 0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS, 0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS},
+        {KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS, 0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS},
+    };
     int result = 0;
     uint8_t long_requirement_id[8 * 1024];
     kmipkit_profile_evidence_record_v1_t long_requirement_record = {0};
@@ -9604,6 +9632,21 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
     long_requirement_record.requirement_id.data = long_requirement_id;
     long_requirement_record.requirement_id.length = sizeof(long_requirement_id);
     long_requirement_record.passed = 1;
+    for (size_t index = 0; index < sizeof(relation_cases) / sizeof(relation_cases[0]); ++index) {
+        uint64_t relation_count = 0;
+        if (kmipkit_profile_catalog_relation_count_v1(
+                relation_cases[index].table, relation_cases[index].row,
+                relation_cases[index].relation, &relation_count) != 0) {
+            goto cleanup;
+        }
+        if (relation_count != 0 &&
+            (kmipkit_profile_catalog_relation_at_v1(
+                relation_cases[index].table, relation_cases[index].row,
+                relation_cases[index].relation, 0, &relation) != 0 ||
+             relation.row_kind == 0)) {
+            goto cleanup;
+        }
+    }
     if (kmipkit_profile_readiness_evaluate_v1(
             &baseline_span, 0, 0, &readiness) != 0 ||
         readiness == 0 ||
