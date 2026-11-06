@@ -1587,7 +1587,7 @@ fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const RNG_SEED_OPERATION: u32 = 0x0000_0026;
     const DATA: u32 = 0x0042_00C2;
-    const DATA_LENGTH: u32 = 0x0042_00D5;
+    const DATA_LENGTH: u32 = 0x0042_00C4;
 
     let request = request_message_with_operation_payload(
         RNG_SEED_OPERATION,
@@ -1669,7 +1669,7 @@ fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
 fn profile_accepts_zero_length_rng_seed_response_after_batch_reordering() {
     const RNG_SEED_OPERATION: u32 = 0x0000_0026;
     const DATA: u32 = 0x0042_00C2;
-    const DATA_LENGTH: u32 = 0x0042_00D5;
+    const DATA_LENGTH: u32 = 0x0042_00C4;
     const RNG_SEED_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-6.1.50-001";
 
     let request = request_message_with_two_operation_payloads(
