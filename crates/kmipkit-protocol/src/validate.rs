@@ -139,13 +139,13 @@ impl ValidateRequest {
 
     fn validation_report(&self) -> ValidationReport {
         if self.certificates.is_empty() && self.identifiers.is_empty() {
+            // Table 340 does not assign a minimum count to either optional
+            // list. Requiring a non-empty chain is an explicit KMIPKit
+            // semantic boundary, not a direct OASIS cardinality rule.
             return crate::validation::request_issue_report(
                 "KMIPKIT-0051-P005",
                 "Certificate",
-                ValidationSourceRef::Oasis {
-                    document: "KMIP v2.1",
-                    reference: "§6.1.57, Table 340",
-                },
+                ValidationSourceRef::ProjectRule("KMIPKIT-0051-P006"),
             );
         }
         if self
