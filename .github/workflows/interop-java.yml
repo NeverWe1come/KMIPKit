@@ -1,0 +1,57 @@
+name: Interop Java Validator
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+      - 'feature/**'
+    paths:
+      - 'interop/java-kmip-validator/**'
+      - 'interop/shared/**'
+      - '.github/workflows/interop-java.yml'
+  pull_request:
+    paths:
+      - 'interop/java-kmip-validator/**'
+      - 'interop/shared/**'
+      - '.github/workflows/interop-java.yml'
+
+jobs:
+  validate-java:
+    name: Build & Validate Java Project
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interop/java-kmip-validator
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Compile Java Validator
+        run: |
+          mkdir -p build/classes
+          javac -d build/classes \
+            src/main/java/org/kmipkit/validator/models/*.java \
+            src/main/java/org/kmipkit/validator/*.java \
+            src/test/java/org/kmipkit/validator/*.java
+
+      - name: Run Unit Tests
+        run: |
+          java -cp build/classes org.kmipkit.validator.ValidatorTest
+
+      - name: Validate Against Cosmian Profile
+        run: |
+          java -cp build/classes org.kmipkit.validator.Main run \
+            --capabilities ../shared/profiles/cosmian-kms.json \
+            --output-dir ./results
+
+      - name: Verify Output Reports Generated
+        run: |
+          test -f results/results.json
+          test -f results/report.md
+          test -f results/report.html
