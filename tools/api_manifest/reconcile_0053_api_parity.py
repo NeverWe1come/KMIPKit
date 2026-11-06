@@ -59,6 +59,23 @@ TRAIT_PROJECTION_REASON = (
     "This exact compiler-visible Rust trait projection is language-level behavior "
     "of the separately mapped KMIPKit model and has no independent foreign API route."
 )
+JAVA_BRIDGE_EXCLUSION_REASON = (
+    "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; "
+    "applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. "
+    "The bridge member has no independent product-level capability."
+)
+JAVA_BRIDGE_EXCLUSION_METHODS = frozenset(
+    {
+        "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRawTtlv",
+        "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHeaderTtlv",
+    }
+)
+JAVA_BRIDGE_APPROVAL = {
+    "kind": "feature-specification",
+    "path": "specs/043-public-api-bindings/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation",
+}
 
 
 class ReconciliationError(ValueError):
@@ -1231,6 +1248,60 @@ def add_public_declarations(
     return result
 
 
+def add_approved_exclusions(
+    manifest: dict[str, Any], exclusions: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Add only the two exact KMIPKIT-0043 JNI bridge exclusions discovered by 0053."""
+    if not isinstance(exclusions, list):
+        raise ReconciliationError("approved exclusions must be a list")
+    result = copy.deepcopy(manifest)
+    current = result.get("approvedExclusions")
+    if not isinstance(current, list):
+        raise ReconciliationError("manifest lacks its approved exclusion inventory")
+    by_export = {
+        (row.get("packageId"), row.get("exportName")): row
+        for row in current
+        if isinstance(row, dict)
+    }
+    seen: set[tuple[str, str]] = set()
+    for exclusion in exclusions:
+        if not isinstance(exclusion, dict) or set(exclusion) != {
+            "packageId",
+            "exportName",
+            "reason",
+            "approvalSource",
+            "evidence",
+            "candidateSpecId",
+        }:
+            raise ReconciliationError("approved JNI exclusion has missing or extra fields")
+        package_id = exclusion.get("packageId")
+        export_name = exclusion.get("exportName")
+        key = (package_id, export_name)
+        if (
+            package_id != "java-kmipkit"
+            or export_name not in JAVA_BRIDGE_EXCLUSION_METHODS
+            or exclusion.get("reason") != JAVA_BRIDGE_EXCLUSION_REASON
+            or exclusion.get("approvalSource") != JAVA_BRIDGE_APPROVAL
+            or exclusion.get("candidateSpecId") != "KMIPKIT-0043"
+            or not isinstance(exclusion.get("evidence"), str)
+            or not all(
+                requirement in exclusion["evidence"]
+                for requirement in ("KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021")
+            )
+        ):
+            raise ReconciliationError("JNI exclusion is not an exact approved bridge route")
+        if key in seen:
+            raise ReconciliationError("approved JNI exclusions must be unique")
+        seen.add(key)
+        existing = by_export.get(key)
+        if existing is not None and existing != exclusion:
+            raise ReconciliationError("approved JNI exclusion conflicts with its reviewed record")
+        if existing is None:
+            current.append(copy.deepcopy(exclusion))
+            by_export[key] = exclusion
+    return result
+
+
 def _synchronize_capability_mappings(manifest: dict[str, Any]) -> dict[str, Any]:
     """Rebuild capability route lists from their exact ready declarations."""
     result = copy.deepcopy(manifest)
@@ -1403,6 +1474,9 @@ def main() -> int:
         result = add_additional_functions(result, route_data.get("functions", []))
         result = add_public_declarations(
             result, route_data.get("publicDeclarations", [])
+        )
+        result = add_approved_exclusions(
+            result, route_data.get("approvedExclusions", [])
         )
         result = _synchronize_capability_mappings(result)
     except (OSError, json.JSONDecodeError, ReconciliationError) as error:
