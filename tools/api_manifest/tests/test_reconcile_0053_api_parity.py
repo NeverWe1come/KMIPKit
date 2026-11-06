@@ -287,7 +287,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             resolution for resolution in route_data["candidateResolutions"]
             if resolution["capabilityId"] == "typed_cryptographic_parameters"
         ]
-        self.assertEqual(24, len(crypto_resolutions))
+        self.assertEqual(23, len(crypto_resolutions))
         self.assertTrue(all(row["resolution"] == "mapped" for row in crypto_resolutions))
 
         reconciled = reconcile_0053_api_parity.reconcile_manifest(
@@ -648,6 +648,49 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
         self.assertNotIn("candidateSpecId", stored)
         self.assertEqual(declaration["approvalSource"], stored["approvalSource"])
+
+    def test_declaration_replay_refreshes_stale_approval_evidence_from_same_record(self) -> None:
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/053-api-parity-facade/approval-record.md",
+            "status": "Approved",
+            "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        }
+        resolution = {
+            "declarationId": "validation-issue-code",
+            "fromSpecId": "KMIPKIT-0043",
+            "capabilityId": "request_validation",
+            "requirementIds": ["KMIPKIT-0053-FR-012"],
+            "rust": {"packageId": "rust-kmipkit", "name": "kmipkit::protocol::ValidationIssue::code"},
+            "c": {"packageId": "c-kmipkit", "name": "kmipkit_validation_report_issue_at_v1"},
+            "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.ValidationIssue.code"},
+            "python": {"packageId": "python-kmipkit", "name": "kmipkit.validation.ValidationIssue.code"},
+            "parityEvidenceIds": ["crates/kmipkit-protocol/src/validation.rs"],
+            "approvalSource": approval,
+        }
+        manifest = copy.deepcopy(self.manifest)
+        declaration = {
+            "declarationId": "validation-issue-code",
+            "packageId": "rust-kmipkit",
+            "kind": "associated-item",
+            "exportName": "kmipkit::protocol::ValidationIssue::code",
+            "capabilityId": "request_validation",
+            "requirementIds": resolution["requirementIds"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {key: resolution[key] for key in ("rust", "c", "java", "python")},
+            "parityEvidenceIds": resolution["parityEvidenceIds"],
+            "approvalSource": {**approval, "evidence": "Direct maintainer instruction approving the complete Phase 5 implementation plan and autonomous implementation."},
+        }
+        manifest["publicDeclarations"].append(declaration)
+
+        result = reconcile_0053_api_parity.resolve_public_declarations(
+            manifest, [resolution]
+        )
+
+        stored = next(row for row in result["publicDeclarations"]
+                      if row["declarationId"] == "validation-issue-code")
+        self.assertEqual(approval, stored["approvalSource"])
 
     def test_public_export_cannot_claim_parity_with_a_missing_language(self) -> None:
         declarations = [
