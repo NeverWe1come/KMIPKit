@@ -174,7 +174,7 @@ changes to this table.
 | `ttlv_wire_codec` | declared | A four-language mapping is recorded; complete parity verification is still pending. |
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
 | `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
-| `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled; operation mappings outside this verified inventory remain incomplete and blocked APIs stay unavailable. The verified inventory does not claim KMIP conformance or release readiness. |
+| `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled, and all 56 client operation API mappings are verified. The verified inventory does not claim KMIP conformance, interoperability, or release readiness. |
 | `vendor_extension_registry` | declared | Exact shared mappings include Rust drop, C release, Java close, and Python close for native handles; parity verification remains pending. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |

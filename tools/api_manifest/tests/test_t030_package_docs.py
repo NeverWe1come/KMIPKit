@@ -239,9 +239,9 @@ class PackageDocumentationContractTests(unittest.TestCase):
                     "los mapeos de la capacidad siguen incompletos", guide.lower()
                 )
                 operation_mapping_claim = (
-                    "all 56 client operation API mappings are verified"
+                    "all 56 client operation api mappings are verified"
                     if language == "English"
-                    else "los 56 mapeos de API de operaciones cliente están verificados"
+                    else "los 56 mapeos de api de operaciones cliente están verificados"
                 )
                 self.assertIn(operation_mapping_claim, guide.lower())
                 self.assertNotIn(
