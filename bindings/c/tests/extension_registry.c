@@ -28,60 +28,11 @@
 /* T076 declarations remain test-local while Java/Python parity is blocked.
  * They exercise the binary symbols but are not public-header or readiness
  * evidence. */
-struct kmipkit_byte_span_v1_t {
-    const uint8_t *data;
-    uint64_t length;
-};
-struct kmipkit_transport_input_v1_t {
-    uint32_t source_kind;
-    uint32_t encoding;
-    struct kmipkit_byte_span_v1_t data;
-};
-struct kmipkit_timeout_limit_v1_t {
-    uint32_t kind;
-    uint32_t reserved;
-    uint64_t seconds;
-    uint32_t nanoseconds;
-    uint32_t reserved2;
-};
-struct kmipkit_transport_config_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t endpoint_kind;
-    uint32_t trust_kind;
-    uint32_t flags;
-    uint32_t reserved;
-    struct kmipkit_byte_span_v1_t endpoint;
-    uint16_t endpoint_port;
-    uint16_t reserved2;
-    const struct kmipkit_transport_input_v1_t *client_certificates;
-    uint64_t client_certificate_count;
-    struct kmipkit_transport_input_v1_t client_private_key;
-    const struct kmipkit_transport_input_v1_t *trust_certificates;
-    uint64_t trust_certificate_count;
-    const struct kmipkit_transport_input_v1_t *revocation_lists;
-    uint64_t revocation_list_count;
-    struct kmipkit_byte_span_v1_t tls_server_name;
-    struct kmipkit_byte_span_v1_t target_uri;
-    struct kmipkit_timeout_limit_v1_t connect_timeout;
-    struct kmipkit_timeout_limit_v1_t write_timeout;
-    struct kmipkit_timeout_limit_v1_t read_timeout;
-    struct kmipkit_timeout_limit_v1_t total_timeout;
-    uint64_t max_request_bytes;
-};
 struct kmipkit_transport_config_t;
 struct kmipkit_client_t;
 struct kmipkit_client_batch_t;
 struct kmipkit_client_batch_response_t;
 struct kmipkit_client_batch_item_response_t;
-struct kmipkit_client_batch_item_metadata_v1_t {
-    uint32_t struct_size;
-    uint32_t abi_version;
-    uint32_t outcome_kind;
-    uint32_t result_status;
-    uint32_t has_result_reason;
-    uint32_t result_reason;
-};
 extern int32_t kmipkit_extension_registry_limits_v1_default_values(
     kmipkit_extension_registry_limits_v1_t *limits);
 extern int32_t kmipkit_client_extension_registry_create_v1(
@@ -92,9 +43,6 @@ extern int32_t kmipkit_client_extension_registry_create_v1(
 extern int32_t kmipkit_client_configuration_create(
     struct kmipkit_client_extension_registry_t *registry,
     struct kmipkit_client_configuration_t **out_configuration);
-extern int32_t kmipkit_transport_config_create_v1(
-    const struct kmipkit_transport_config_v1_t *configuration,
-    struct kmipkit_transport_config_t **out_configuration);
 extern void kmipkit_transport_config_release(struct kmipkit_transport_config_t *handle);
 extern int32_t kmipkit_client_create(
     struct kmipkit_client_configuration_t *configuration,
@@ -141,17 +89,14 @@ extern int32_t kmipkit_client_batch_response_item_at(
     struct kmipkit_client_batch_response_t *response,
     uint64_t index,
     struct kmipkit_client_batch_item_response_t **out_item);
-extern int32_t kmipkit_client_batch_item_response_metadata_v1(
-    struct kmipkit_client_batch_item_response_t *item,
-    struct kmipkit_client_batch_item_metadata_v1_t *out_metadata);
 extern int32_t kmipkit_client_batch_item_response_unique_batch_item_id(
     struct kmipkit_client_batch_item_response_t *item,
     uint8_t *out_present,
-    struct kmipkit_byte_span_v1_t *out_value);
+    kmipkit_byte_span_v1_t *out_value);
 extern int32_t kmipkit_client_batch_item_response_pending_correlation_value(
     struct kmipkit_client_batch_item_response_t *item,
     uint8_t *out_present,
-    struct kmipkit_byte_span_v1_t *out_value);
+    kmipkit_byte_span_v1_t *out_value);
 extern void kmipkit_client_batch_item_response_release(
     struct kmipkit_client_batch_item_response_t *handle);
 
@@ -434,7 +379,7 @@ static bool test_t076_transport_config_null_input_contract(void)
 
 static bool test_t076_transport_config_rejects_unknown_abi_version(void)
 {
-    struct kmipkit_transport_config_v1_t input = {0};
+    kmipkit_transport_config_v1_t input = {0};
     struct kmipkit_transport_config_t *configuration = NULL;
     int32_t status = INT32_C(0);
     uint32_t category = UINT32_C(0);
@@ -459,9 +404,9 @@ static bool test_t076_validated_client_reports_delivery_state(
     int argc,
     char **argv)
 {
-    struct kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
-    struct kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
-    struct kmipkit_transport_config_v1_t transport_input = {0};
+    kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
+    kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
+    kmipkit_transport_config_v1_t transport_input = {0};
     kmipkit_extension_registry_limits_v1_t registry_limits = {0};
     struct kmipkit_extension_definition_t **definitions = NULL;
     struct kmipkit_client_extension_registry_t *registry = NULL;
@@ -474,8 +419,8 @@ static bool test_t076_validated_client_reports_delivery_state(
     struct kmipkit_client_batch_response_t *response = NULL;
     struct kmipkit_client_batch_item_response_t *response_item = NULL;
     struct kmipkit_client_batch_item_response_t *response_item_2 = NULL;
-    struct kmipkit_client_batch_item_metadata_v1_t metadata = {0};
-    struct kmipkit_byte_span_v1_t value = {0};
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_byte_span_v1_t value = {0};
     uint64_t response_count = UINT64_C(0);
     uint8_t value_present = UINT8_C(0);
     const char *host = "127.0.0.1";
@@ -741,7 +686,7 @@ static bool test_t076_validated_client_reports_delivery_state(
 
 static bool test_t076_transport_config_rejects_invalid_discriminators(void)
 {
-    struct kmipkit_transport_config_v1_t configuration = {0};
+    kmipkit_transport_config_v1_t configuration = {0};
     struct kmipkit_transport_config_t *out = NULL;
 
     configuration.struct_size = (uint32_t)sizeof(configuration);
@@ -764,7 +709,7 @@ static bool test_t076_transport_config_rejects_invalid_discriminators(void)
                    (int32_t)4);
     REQUIRE(out == NULL);
 
-    configuration.connect_timeout = (struct kmipkit_timeout_limit_v1_t){0};
+    configuration.connect_timeout = (kmipkit_timeout_limit_v1_t){0};
     configuration.reserved = UINT32_C(1);
     REQUIRE_STATUS(kmipkit_transport_config_create_v1(&configuration, &out),
                    (int32_t)4);
