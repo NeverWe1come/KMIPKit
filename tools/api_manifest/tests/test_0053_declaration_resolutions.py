@@ -31,7 +31,9 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
                 "kmipkit::protocol::AttributeDefinition::Value",
             ),
             self._candidate(
-                "variant", "variant", "kmipkit::protocol::UniqueIdentifierValue::TextString"
+                "variant",
+                "variant",
+                "kmipkit::protocol::UniqueIdentifierValue::TextString",
             ),
             self._candidate(
                 "variant-field",
@@ -80,8 +82,14 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
             "languageMappings": {
                 "rust": {"packageId": "rust-kmipkit", "name": export_name},
                 "c": {"packageId": "c-kmipkit", "name": f"kmipkit_{identifier}"},
-                "java": {"packageId": "java-kmipkit", "name": f"org.kmipkit.{identifier}"},
-                "python": {"packageId": "python-kmipkit", "name": f"kmipkit.{identifier}"},
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": f"org.kmipkit.{identifier}",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": f"kmipkit.{identifier}",
+                },
             },
             "evidencePaths": list(self.evidence),
             "approvalSource": copy.deepcopy(self.approval),
@@ -116,16 +124,25 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         mapping = self._mapping(self.candidates[0])
 
         first = self._reconcile([mapping])
-        second = reconcile_0053_api_parity.reconcile_candidate_resolutions(first, [mapping])
+        second = reconcile_0053_api_parity.reconcile_candidate_resolutions(
+            first, [mapping]
+        )
 
         declaration = next(
-            row for row in second["publicDeclarations"] if row["declarationId"] == "mapped-type"
+            row
+            for row in second["publicDeclarations"]
+            if row["declarationId"] == "mapped-type"
         )
         self.assertEqual("verified", declaration["declarationState"])
-        self.assertEqual("kmipkit::protocol::Attribute", declaration["languageMappings"]["rust"]["name"])
+        self.assertEqual(
+            "kmipkit::protocol::Attribute",
+            declaration["languageMappings"]["rust"]["name"],
+        )
         self.assertEqual(first, second)
 
-    def test_requires_stable_candidate_capability_and_exact_export_identity(self) -> None:
+    def test_requires_stable_candidate_capability_and_exact_export_identity(
+        self,
+    ) -> None:
         for field, wrong_value in (
             ("declarationId", "*"),
             ("capabilityId", "*"),
@@ -162,7 +179,10 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
 
         exact = self._exclusion(enum_variant, "rust-enum-variant", ["enum-type"])
         result = self._reconcile([mapped_enum, exact])
-        self.assertEqual("enum-type", result["approvedExclusions"][-1]["counterpartDeclarationIds"][0])
+        self.assertEqual(
+            "enum-type",
+            result["approvedExclusions"][-1]["counterpartDeclarationIds"][0],
+        )
 
     def test_resolution_paths_and_route_names_reject_wildcards(self) -> None:
         mapping = self._mapping(self.candidates[0])
@@ -198,7 +218,9 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             self._reconcile([mapping])
 
-    def test_finishing_all_candidates_updates_only_the_approved_capability(self) -> None:
+    def test_finishing_all_candidates_updates_only_the_approved_capability(
+        self,
+    ) -> None:
         type_declaration = self.candidates[0]
         trait_declaration = self.candidates[1]
         self.manifest["publicDeclarations"] = [type_declaration, trait_declaration]
@@ -210,9 +232,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         capability = result["capabilities"][0]
         self.assertEqual("verified", capability["capabilityState"])
         self.assertEqual("KMIPKIT-0048", capability["ownerSpecId"])
-        self.assertEqual(
-            {"rust", "c", "java", "python"}, set(capability["mappings"])
-        )
+        self.assertEqual({"rust", "c", "java", "python"}, set(capability["mappings"]))
 
     def test_capability_evidence_accumulates_across_resolution_batches(self) -> None:
         first = self.candidates[0]
@@ -233,9 +253,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
 
         capability = final["capabilities"][0]
         self.assertEqual("verified", capability["capabilityState"])
-        self.assertEqual(
-            sorted(set(self.evidence)), capability["parityEvidenceIds"]
-        )
+        self.assertEqual(sorted(set(self.evidence)), capability["parityEvidenceIds"])
 
     def test_requires_complete_mapping_evidence_and_approved_source(self) -> None:
         for field in ("c", "java", "python"):
@@ -251,7 +269,9 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
                 with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
                     self._reconcile([mapping])
 
-    def test_excludes_only_narrow_artifacts_with_exact_mapped_counterparts(self) -> None:
+    def test_excludes_only_narrow_artifacts_with_exact_mapped_counterparts(
+        self,
+    ) -> None:
         trait = self.candidates[1]
         attribute = self.candidates[0]
         mapping = self._mapping(attribute)
@@ -259,17 +279,23 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
 
         result = self._reconcile([mapping, exclusion])
 
-        self.assertNotIn("trait", [row["declarationId"] for row in result["publicDeclarations"]])
+        self.assertNotIn(
+            "trait", [row["declarationId"] for row in result["publicDeclarations"]]
+        )
         self.assertEqual(1, len(result["approvedExclusions"]))
         recorded = result["approvedExclusions"][0]
         self.assertEqual("trait", recorded["declarationId"])
         self.assertEqual(trait["exportName"], recorded["exportName"])
         self.assertEqual(trait["capabilityId"], recorded["capabilityId"])
         self.assertEqual(["mapped-type"], recorded["counterpartDeclarationIds"])
-        replay = reconcile_0053_api_parity.reconcile_candidate_resolutions(result, [mapping, exclusion])
+        replay = reconcile_0053_api_parity.reconcile_candidate_resolutions(
+            result, [mapping, exclusion]
+        )
         self.assertEqual(result, replay)
 
-    def test_rejects_exclusions_for_value_routes_or_unknown_artifact_kinds(self) -> None:
+    def test_rejects_exclusions_for_value_routes_or_unknown_artifact_kinds(
+        self,
+    ) -> None:
         for candidate, artifact in (
             (self.candidates[0], "rust-trait"),
             (self.candidates[1], "capability-wide"),
@@ -286,10 +312,12 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
             with self.subTest(counterpart=counterpart):
                 manifest = copy.deepcopy(self.manifest)
                 if counterpart == "other-capability":
-                    manifest["publicDeclarations"].append({
-                        **self._candidate("other-capability", "type", "Foreign"),
-                        "capabilityId": "other-capability",
-                    })
+                    manifest["publicDeclarations"].append(
+                        {
+                            **self._candidate("other-capability", "type", "Foreign"),
+                            "capabilityId": "other-capability",
+                        }
+                    )
                 exclusion = self._exclusion(trait, "rust-trait", [counterpart])
                 with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
                     reconcile_0053_api_parity.reconcile_candidate_resolutions(
