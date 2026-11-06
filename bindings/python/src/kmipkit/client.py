@@ -1576,7 +1576,7 @@ class Batch(_ClientHandle):
 
 class _BatchItemResultNativeState:
     __slots__ = (
-        "_native_response_extensions",
+        "_native_response_item",
         "_native_usage_allocation_response",
         "_rng_retrieve_response",
         "_rng_seed_response",
@@ -1662,7 +1662,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     )
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "_native_response_extensions", None)
+        object.__setattr__(self, "_native_response_item", None)
         object.__setattr__(self, "_native_usage_allocation_response", None)
         object.__setattr__(self, "_rng_retrieve_response", None)
         object.__setattr__(self, "_rng_seed_response", None)
@@ -1686,7 +1686,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     @property
     def extension_count(self) -> int:
         """Return the number of accepted response Message Extensions in wire order."""
-        item = self._native_response_extensions
+        item = self._native_response_item
         if item is None:
             return 0
         return _client_scalar(
@@ -1703,7 +1703,7 @@ class BatchItemResult(_BatchItemResultNativeState):
         count = self.extension_count
         if position >= count:
             errors.raise_for_status(4)
-        item = self._native_response_extensions
+        item = self._native_response_item
         if item is None:
             errors.raise_for_status(4)
 
@@ -1725,6 +1725,31 @@ class BatchItemResult(_BatchItemResultNativeState):
             except Exception:
                 lib.kmipkit_ttlv_structure_release(output[0])
                 raise
+
+    def raw(self) -> ttlv.Structure | None:
+        """Return an owned copy of the decoded Response Payload, when present.
+
+        Close the returned structure when finished. The copy retains ordered TTLV values but does
+        not reproduce network padding or promise byte-for-byte equality with the received message.
+        """
+        item = self._native_response_item
+        if item is None:
+            errors.raise_for_status(4)
+        return _response_structure(
+            item, lib.kmipkit_client_batch_item_response_raw_ttlv, required=False
+        )
+
+    def response_header_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the ordered Response Header TTLV structure."""
+        item = self._native_response_item
+        if item is None:
+            errors.raise_for_status(4)
+        result = _response_structure(
+            item, lib.kmipkit_client_batch_item_response_header_ttlv, required=True
+        )
+        if result is None:
+            errors.raise_for_status(4)
+        return result
 
     def create_usage_allocation_context(
         self, requested_units: int, usage_limits_unit: int
@@ -2618,13 +2643,15 @@ class BatchResult(_ClientHandle):
 
     def close(self) -> None:
         with _NATIVE_CALL_LOCK:
+            closed_handles: set[int] = set()
             for item in self.items:
-                native_response = item._native_usage_allocation_response
-                if native_response is not None:
-                    native_response.close()
-                native_extensions = item._native_response_extensions
-                if native_extensions is not None:
-                    native_extensions.close()
+                for native_response in (
+                    item._native_response_item,
+                    item._native_usage_allocation_response,
+                ):
+                    if native_response is not None and id(native_response) not in closed_handles:
+                        native_response.close()
+                        closed_handles.add(id(native_response))
             super().close()
 
 
@@ -3788,9 +3815,8 @@ def _batch_result(
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
-                if extension_count[0] > 0:
-                    object.__setattr__(result, "_native_response_extensions", item)
-                    keep_item_handle = True
+                object.__setattr__(result, "_native_response_item", item)
+                keep_item_handle = True
                 items.append(result)
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -3805,13 +3831,15 @@ def _batch_result(
         response.items = tuple(items)
         return response
     except Exception:
+        closed_handles: set[int] = set()
         for item in items:
-            native_response = item._native_usage_allocation_response
-            if native_response is not None:
-                native_response.close()
-            native_extensions = item._native_response_extensions
-            if native_extensions is not None:
-                native_extensions.close()
+            for native_response in (
+                item._native_response_item,
+                item._native_usage_allocation_response,
+            ):
+                if native_response is not None and id(native_response) not in closed_handles:
+                    native_response.close()
+                    closed_handles.add(id(native_response))
         response.close()
         raise
 
@@ -5350,6 +5378,37 @@ def _query_response(item: _ClientBatchItemResponse) -> ttlv.Structure | None:
         )
     except Exception:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+
+
+def _response_structure(
+    item: _ClientBatchItemResponse,
+    function: Any,
+    *,
+    required: bool,
+) -> ttlv.Structure | None:
+    present = ffi.new("uint8_t *")
+    output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = function(item._pointer(), present, output)
+    handle = output[0]
+    if status != 0:
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
+        _raise_abi_status(status)
+    if present[0] not in (0, 1) or (present[0] == 1) != (handle != ffi.NULL):
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if required:
+            errors.raise_for_status(4)
+        return None
+    try:
+        return ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(handle)
         raise
 
 

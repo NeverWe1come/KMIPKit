@@ -1240,6 +1240,14 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_raw_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_payload);
+    int32_t kmipkit_client_batch_item_response_header_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_header);
     int32_t kmipkit_client_batch_item_response_revoke(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,

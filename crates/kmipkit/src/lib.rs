@@ -160,6 +160,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "public_binding_surface"
             | "server_to_client_operations"
             | "endpoint_role_inversion"
+            | "response_ttlv_navigation"
     ))
 }
 

@@ -9113,6 +9113,67 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
     });
 }
 
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseRawTtlv(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_raw_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &response_ttlv);
+        if (status != 0) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || (present == 1 && response_ttlv == nullptr)
+                || (present == 0 && response_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray response_ttlv_handle = make_long_array(
+                env, {to_java_handle(response_ttlv)});
+        if (response_ttlv_handle == nullptr) {
+            env->DeleteLocalRef(fields);
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, response_ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(fields);
+        env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseHeaderTtlv(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* header = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_header_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &header);
+        if (status != 0) {
+            kmipkit_ttlv_structure_release(header);
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (present != 1 || header == nullptr) {
+            kmipkit_ttlv_structure_release(header);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(header);
+    });
+}
+
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseInterop(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jobjectArray>(env, nullptr, [&] {
