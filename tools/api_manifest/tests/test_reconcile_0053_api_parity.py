@@ -557,6 +557,50 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.add_public_declarations(self.manifest, declarations)
 
+    def test_capability_mappings_are_rebuilt_from_all_ready_declarations(self) -> None:
+        packages = [
+            {"id": "rust-kmipkit", "language": "rust"},
+            {"id": "c-kmipkit", "language": "c"},
+            {"id": "java-kmipkit", "language": "java"},
+            {"id": "python-kmipkit", "language": "python"},
+        ]
+        declaration = {
+            "declarationId": "verified-attribute-route",
+            "capabilityId": "typed_object_attributes",
+            "declarationState": "verified",
+            "languageMappings": {
+                "rust": {"packageId": "rust-kmipkit", "name": "Attribute.new"},
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_attribute_new"},
+                "java": {"packageId": "java-kmipkit", "name": "Attribute.new"},
+                "python": {"packageId": "python-kmipkit", "name": "Attribute.new"},
+            },
+        }
+        manifest = {
+            "publicPackages": packages,
+            "publicDeclarations": [declaration],
+            "capabilities": [
+                {
+                    "capabilityId": "typed_object_attributes",
+                    "capabilityState": "verified",
+                    "parityScope": "four-language",
+                    "mappings": {language: [] for language in ("rust", "c", "java", "python")},
+                }
+            ],
+        }
+
+        result = reconcile_0053_api_parity._synchronize_capability_mappings(manifest)
+
+        self.assertEqual(manifest["publicDeclarations"], result["publicDeclarations"])
+        self.assertEqual(
+            {language: [declaration["languageMappings"][language]["name"]]
+             for language in ("rust", "c", "java", "python")},
+            result["capabilities"][0]["mappings"],
+        )
+        self.assertEqual(
+            {language: [] for language in ("rust", "c", "java", "python")},
+            manifest["capabilities"][0]["mappings"],
+        )
+
     def test_public_c_layout_field_can_be_recorded_as_an_exact_c_only_surface(self) -> None:
         declaration = {
             "declarationId": "c-only-layout-field",
