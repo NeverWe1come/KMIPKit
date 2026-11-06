@@ -84,6 +84,15 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         )
         self.assertEqual("python-kmipkit", stale["packageId"])
         self.assertEqual("Approved", stale["approval"]["status"])
+        java_stale = next(
+            row
+            for row in route_data.get("javaStaleMappings", [])
+            if row.get("oldName") == "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+        )
+        self.assertIn(
+            "org.kmipkit.ttlv.KeyBlock.fieldItem",
+            {target["name"] for target in java_stale["observedPublicTargets"]},
+        )
 
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
