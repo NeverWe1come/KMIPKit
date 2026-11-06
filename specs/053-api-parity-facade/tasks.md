@@ -52,10 +52,10 @@
 
 ## Phase 5: US4 foreign validation
 ### Red
-- [ ] T034 [US4] Add C validation issue/report and redaction tests in crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs.
-- [ ] T035 [US4] Add Java validation/no-write tests in bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java.
-- [ ] T036 [US4] Add Python validation/no-write tests in bindings/python/tests/test_validation_parity.py.
-- [ ] T037 [US4] Run red tests and record expected missing report accessors in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T034 [US4] Add C validation issue/report and redaction tests in crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs.
+- [x] T035 [US4] Add Java validation/no-write tests in bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java.
+- [x] T036 [US4] Add Python validation/no-write tests in bindings/python/tests/test_validation_parity.py.
+- [x] T037 [US4] Run red tests and record expected missing report accessors in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
 - [ ] T038 [US4] Expose Rust ValidationReport/Issue through the C ABI in crates/kmipkit-ffi/src/extension_registry/request_validation.rs.
 - [ ] T039 [US4] Add Java validation iteration and request entry points in bindings/java/src/main/java/org/kmipkit/ and bindings/java/native/kmipkit_jni.cpp.

@@ -37,6 +37,9 @@ mod managed_object_0053_tests;
 #[cfg(test)]
 #[path = "../tests/support/parameters_auth_0053_tests.rs"]
 mod parameters_auth_0053_tests;
+#[cfg(test)]
+#[path = "../tests/support/request_validation_0053_tests.rs"]
+mod request_validation_0053_tests;
 
 mod typed_attributes_catalog_generated;
 

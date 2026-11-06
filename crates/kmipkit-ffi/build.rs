@@ -145,4 +145,18 @@ fn main() {
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11")
         .compile("kmipkit_parameters_authentication_consumer");
+
+    let request_validation_consumer =
+        workspace_root.join("bindings/c/tests/request_validation_consumer.c");
+    println!(
+        "cargo:rerun-if-changed={}",
+        request_validation_consumer.display()
+    );
+    cc::Build::new()
+        .file(request_validation_consumer)
+        .include(&consumer_header)
+        .warnings_into_errors(true)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_request_validation_consumer");
 }
