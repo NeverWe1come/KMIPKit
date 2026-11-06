@@ -11,6 +11,9 @@ unsafe extern "C" {
         expected_integer_path_length: u64,
         expected_integer: i32,
     ) -> i32;
+    fn kmipkit_client_abi_consumer_query_typed_fields(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
 }
 
 const QUERY_OPERATION: u32 = 0x0000_0018;
@@ -488,8 +491,17 @@ fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
         b"query-result",
         vec![
             ttlv_enumeration(0x0042_005c, 0x0000_003b),
+            ttlv_item(0x0042_0003, 0x07, b"namespace-a"),
+            ttlv_item(0x0054_1234, 0x07, b"vendor-extension"),
+            ttlv_enumeration(0x0042_005c, 0xf123_4567),
+            ttlv_enumeration(0x0042_0057, 7),
+            ttlv_structure(
+                0x0042_0088,
+                [ttlv_item(0x0054_0001, 0x07, b"server-extension")],
+            ),
+            ttlv_item(0x0042_0003, 0x07, b"namespace-b"),
+            ttlv_item(0x0042_009d, 0x07, b"vendor-a"),
             ttlv_structure(0x0042_015f, []),
-            ttlv_structure(0x0042_0012, [ttlv_integer(0x0042_0057, 7)]),
         ],
     );
 
@@ -527,9 +539,12 @@ fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
         SUCCESS
     );
     assert_eq!(
-        item_count, 3,
-        "known, required, and unknown Query fields are all copied"
+        item_count, 9,
+        "typed standard, repeated, nested vendor, and unknown Query fields are copied"
     );
+    #[cfg(feature = "coverage-c-consumer")]
+    // SAFETY: The compiled C consumer borrows the live response and releases only its own copies.
+    assert_eq!(unsafe { kmipkit_client_abi_consumer_query_typed_fields(query) }, 0);
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(query_ttlv);
 

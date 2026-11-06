@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Red-phase declarations: the official manifest generator will emit these in kmipkit.h. */
+extern int32_t kmipkit_client_batch_item_response_query_field_count(
+        kmipkit_client_batch_item_response_t *item, uint8_t *out_present, uint64_t *out_count);
+extern int32_t kmipkit_client_batch_item_response_query_field_at(
+        kmipkit_client_batch_item_response_t *item, uint64_t index, uint8_t *out_present,
+        uint32_t *out_tag, uint8_t *out_kind, uint32_t *out_enumeration,
+        kmipkit_ttlv_item_t **out_item);
+
 static int response_ttlv_path_integer_matches(
         kmipkit_ttlv_structure_view_t *view,
         const uint32_t *path,
@@ -48,6 +56,179 @@ item_cleanup:
         if (matched) return 1;
     }
     return 0;
+}
+
+static int query_ttlv_text_matches(
+        kmipkit_ttlv_item_view_t *item,
+        uint32_t expected_tag,
+        const char *expected_text) {
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint32_t actual_tag = 0;
+    uint8_t item_type = 0;
+    uint64_t byte_length = 0;
+    size_t expected_length = strlen(expected_text);
+    int matches = 0;
+    if (item == NULL || expected_text == NULL ||
+            kmipkit_ttlv_item_view_tag(item, &tag) != 0 || tag == NULL ||
+            kmipkit_ttlv_tag_value(tag, &actual_tag) != 0 || actual_tag != expected_tag ||
+            kmipkit_ttlv_item_view_type(item, &item_type) != 0 ||
+            item_type != KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING ||
+            kmipkit_ttlv_item_view_value(item, &value) != 0 || value == NULL ||
+            kmipkit_ttlv_value_view_byte_length(value, &byte_length) != 0 ||
+            byte_length != (uint64_t)expected_length) {
+        goto cleanup;
+    }
+    matches = 1;
+    for (size_t index = 0; index < expected_length; ++index) {
+        uint8_t byte = 0;
+        if (kmipkit_ttlv_value_view_byte_at(value, (uint64_t)index, &byte) != 0 ||
+                byte != (uint8_t)expected_text[index]) {
+            matches = 0;
+            break;
+        }
+    }
+cleanup:
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_tag_release(tag);
+    return matches;
+}
+
+int32_t kmipkit_client_abi_consumer_query_typed_fields(
+        kmipkit_client_batch_item_response_t *item) {
+    static const uint32_t expected_tags[] = {
+        UINT32_C(0x0042005c), UINT32_C(0x00420003), UINT32_C(0x00541234),
+        UINT32_C(0x0042005c), UINT32_C(0x00420057), UINT32_C(0x00420088),
+        UINT32_C(0x00420003), UINT32_C(0x0042009d), UINT32_C(0x0042015f)
+    };
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    uint64_t count = 0;
+    int32_t result = 1;
+    uint8_t typed_present = 0;
+    uint64_t typed_count = 0;
+    if (kmipkit_client_batch_item_response_query_field_count(
+                item, &typed_present, &typed_count) != 0 ||
+            typed_present != 1 || typed_count != sizeof(expected_tags) / sizeof(expected_tags[0])) {
+        goto cleanup;
+    }
+    for (uint64_t index = 0; index < typed_count; ++index) {
+        uint8_t field_present = 0;
+        uint32_t field_tag = 0;
+        uint8_t field_kind = 0;
+        uint32_t enumeration = 0;
+        kmipkit_ttlv_item_t *field = NULL;
+        uint8_t expected_kind = (index == 0 || index == 3 || index == 4) ? 1 :
+                ((index == 1 || index == 2 || index == 6 || index == 7) ? 2 :
+                ((index == 5 || index == 8) ? 3 : 4));
+        if (kmipkit_client_batch_item_response_query_field_at(
+                    item, index, &field_present, &field_tag, &field_kind,
+                    &enumeration, &field) != 0 || field_present != 1 ||
+                field_tag != expected_tags[index] || field_kind != expected_kind ||
+                (expected_kind == 1 && field != NULL) ||
+                (expected_kind != 1 && field == NULL)) {
+            kmipkit_ttlv_item_release(field);
+            goto cleanup;
+        }
+        if (expected_kind == 1) {
+            const uint32_t expected_value = index == 0 ? UINT32_C(0x3b) :
+                    (index == 3 ? UINT32_C(0xf1234567) : UINT32_C(7));
+            if (enumeration != expected_value) goto cleanup;
+        } else {
+            kmipkit_ttlv_item_view_t *field_view = NULL;
+            uint8_t item_type = 0;
+            int field_ok = kmipkit_ttlv_item_view_from_item(field, &field_view) == 0 &&
+                    field_view != NULL;
+            if (field_ok && (expected_kind == 2)) {
+                const char *expected_text = index == 1 ? "namespace-a" :
+                        (index == 2 ? "vendor-extension" :
+                        (index == 6 ? "namespace-b" : "vendor-a"));
+                field_ok = query_ttlv_text_matches(field_view, field_tag, expected_text);
+            } else if (field_ok && expected_kind == 3) {
+                field_ok = kmipkit_ttlv_item_view_type(field_view, &item_type) == 0 &&
+                        item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE;
+            } else if (field_ok && expected_kind == 4) {
+                field_ok = query_ttlv_text_matches(
+                        field_view, UINT32_C(0x00541234), "vendor-extension");
+            }
+            kmipkit_ttlv_item_view_release(field_view);
+            kmipkit_ttlv_item_release(field);
+            if (!field_ok) goto cleanup;
+            continue;
+        }
+    }
+    if (item == NULL || kmipkit_client_batch_item_response_query_ttlv(
+                item, &present, &payload) != 0 || present != 1 || payload == NULL ||
+            kmipkit_ttlv_structure_view(payload, &view) != 0 || view == NULL ||
+            kmipkit_ttlv_structure_view_item_count(view, &count) != 0 ||
+            count != sizeof(expected_tags) / sizeof(expected_tags[0])) {
+        goto cleanup;
+    }
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_tag_t *tag = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint32_t actual_tag = 0;
+        uint8_t item_type = 0;
+        uint32_t enumeration = 0;
+        int field_ok = 0;
+        if (kmipkit_ttlv_structure_view_item_at(view, index, &field) != 0 || field == NULL ||
+                kmipkit_ttlv_item_view_tag(field, &tag) != 0 || tag == NULL ||
+                kmipkit_ttlv_tag_value(tag, &actual_tag) != 0 ||
+                actual_tag != expected_tags[index] ||
+                kmipkit_ttlv_item_view_type(field, &item_type) != 0 ||
+                kmipkit_ttlv_item_view_value(field, &value) != 0 || value == NULL) {
+            goto field_cleanup;
+        }
+        if (index == 0 || index == 3 || index == 4) {
+            const uint32_t expected = index == 0 ? UINT32_C(0x3b) :
+                    (index == 3 ? UINT32_C(0xf1234567) : UINT32_C(7));
+            field_ok = item_type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION &&
+                    kmipkit_ttlv_value_view_enumeration(value, &enumeration) == 0 &&
+                    enumeration == expected;
+        } else if (index == 1) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "namespace-a");
+        } else if (index == 2) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "vendor-extension");
+        } else if (index == 5) {
+            kmipkit_ttlv_structure_view_t *nested = NULL;
+            kmipkit_ttlv_item_view_t *nested_field = NULL;
+            uint64_t nested_count = 0;
+            if (item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE &&
+                    kmipkit_ttlv_value_view_structure(value, &nested) == 0 && nested != NULL &&
+                    kmipkit_ttlv_structure_view_item_count(nested, &nested_count) == 0 &&
+                    nested_count == 1 && kmipkit_ttlv_structure_view_item_at(
+                            nested, UINT64_C(0), &nested_field) == 0 && nested_field != NULL) {
+                field_ok = query_ttlv_text_matches(
+                        nested_field, UINT32_C(0x00540001), "server-extension");
+            }
+            kmipkit_ttlv_item_view_release(nested_field);
+            kmipkit_ttlv_structure_view_release(nested);
+        } else if (index == 6) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "namespace-b");
+        } else if (index == 7) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "vendor-a");
+        } else if (index == 8) {
+            uint64_t nested_count = UINT64_MAX;
+            kmipkit_ttlv_structure_view_t *nested = NULL;
+            field_ok = item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE &&
+                    kmipkit_ttlv_value_view_structure(value, &nested) == 0 && nested != NULL &&
+                    kmipkit_ttlv_structure_view_item_count(nested, &nested_count) == 0 &&
+                    nested_count == 0;
+            kmipkit_ttlv_structure_view_release(nested);
+        }
+field_cleanup:
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(field);
+        if (!field_ok) goto cleanup;
+    }
+    result = 0;
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(payload);
+    return result;
 }
 
 int32_t kmipkit_client_abi_consumer_response_ttlv_handles(
