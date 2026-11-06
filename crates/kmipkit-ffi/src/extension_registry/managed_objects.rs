@@ -452,6 +452,61 @@ pub extern "C" fn kmipkit_managed_value_field_read(
     })
 }
 
+/// Returns an independently owned copy of one direct Item child after typed model validation.
+///
+/// `owner_kind` and `context_raw` use the same values as
+/// `kmipkit_managed_value_field_read`. When the field is absent, `out_present` is zero and
+/// `out_item` is null. When present, the caller owns the copied Item and must release it.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_managed_value_field_item_read(
+    owner_kind: u32,
+    context_raw: u32,
+    item: *mut kmipkit_ttlv_item_t,
+    field_tag: u32,
+    out_present: *mut u8,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let out = out_slot!(out_item);
+        // SAFETY: The output pointer was checked and is writable caller-owned storage.
+        unsafe { out_present.write(0) };
+
+        let kind = match owner_kind {
+            FIELD_OWNER_MANAGED_OBJECT => {
+                ManagedValueKind::ManagedObject(ObjectType::from_raw(context_raw))
+            }
+            FIELD_OWNER_KEY_BLOCK if context_raw == 0 => ManagedValueKind::KeyBlock,
+            FIELD_OWNER_KEY_VALUE => {
+                ManagedValueKind::KeyValue(KeyFormatType::from_raw(context_raw))
+            }
+            FIELD_OWNER_KEY_MATERIAL => {
+                ManagedValueKind::KeyMaterial(KeyFormatType::from_raw(context_raw))
+            }
+            FIELD_OWNER_KEY_WRAPPING_DATA if context_raw == 0 => ManagedValueKind::KeyWrappingData,
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let item = try_ffi!(copy_required_item_handle(item));
+        let reader = match ManagedValueReader::try_from_item(kind, item) {
+            Ok(reader) => reader,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let nested = match reader.read_field_item(field_tag) {
+            Ok(nested) => nested,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let Some(nested) = nested else {
+            return SUCCESS;
+        };
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(nested)));
+        // SAFETY: The output pointer was checked and is writable caller-owned storage.
+        unsafe { out_present.write(1) };
+        SUCCESS
+    })
+}
+
 /// Copies an Item after validating it as the selected KMIP managed Object Type.
 ///
 /// Unknown Object Types and Structure tags remain in the generic TTLV model.

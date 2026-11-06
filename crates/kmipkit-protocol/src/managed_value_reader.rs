@@ -192,6 +192,25 @@ impl ManagedValueReader {
         })
     }
 
+    /// Returns an independently owned copy of the first direct child with this raw tag.
+    ///
+    /// The selected model is validated when the reader is constructed. The returned Item keeps
+    /// its complete subtree, including unknown descendants and their original order.
+    pub fn read_field_item(&self, raw_tag: u32) -> Result<Option<Item>, ManagedObjectError> {
+        self.item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return Ok(None);
+            };
+            structure
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == raw_tag)
+                .map(Item::try_clone)
+                .transpose()
+                .map_err(ManagedObjectError::from)
+        })
+    }
+
     /// Reports whether a direct field with this raw tag is present.
     #[must_use]
     pub fn has_field(&self, raw_tag: u32) -> bool {
@@ -338,6 +357,65 @@ mod tests {
         assert!(!format!("{value:?}").contains("secret-canary"));
         assert!(!format!("{reader:?}").contains("secret-canary"));
         assert!(!reader.has_field(0x0054_0001));
+    }
+
+    #[test]
+    fn typed_reader_returns_owned_nested_item_with_repeated_vendor_children() {
+        let vendor_tag = 0x0054_0001;
+        let mut attributes = Structure::new();
+        for value in [b"first".as_slice(), b"second".as_slice()] {
+            attributes
+                .try_push(
+                    kmipkit_ttlv::Item::new(tag(vendor_tag), Value::byte_string(value.to_vec()))
+                        .expect("vendor child"),
+                )
+                .expect("vendor child fits");
+        }
+        let attributes = kmipkit_ttlv::Item::new(tag(0x0042_0125), Value::structure(attributes))
+            .expect("Attributes");
+        let mut key_value = Structure::new();
+        key_value
+            .try_push(
+                crate::KeyMaterial::byte_string(1, b"key-data".to_vec())
+                    .expect("Key Material")
+                    .into_item(),
+            )
+            .expect("Key Material child fits");
+        key_value
+            .try_push(attributes)
+            .expect("Attributes child fits");
+        let item = kmipkit_ttlv::Item::new(tag(0x0042_0045), Value::structure(key_value))
+            .expect("Key Value");
+        let reader = ManagedValueReader::try_from_item(
+            ManagedValueKind::KeyValue(KeyFormatType::from_raw(1)),
+            item,
+        )
+        .expect("Key Value validates");
+
+        let nested = reader
+            .read_field_item(0x0042_0125)
+            .expect("nested item clone succeeds")
+            .expect("Attributes is present");
+        assert_eq!(nested.tag().raw(), 0x0042_0125);
+        nested.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                panic!("Attributes remains a Structure")
+            };
+            assert_eq!(
+                structure
+                    .children()
+                    .iter()
+                    .map(|child| child.tag().raw())
+                    .collect::<Vec<_>>(),
+                [vendor_tag, vendor_tag]
+            );
+        });
+        assert!(
+            reader
+                .read_field_item(0x0054_0002)
+                .expect("missing lookup succeeds")
+                .is_none()
+        );
     }
 
     #[test]

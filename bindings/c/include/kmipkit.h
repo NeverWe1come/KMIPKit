@@ -2921,6 +2921,10 @@ int32_t kmipkit_key_wrapping_data_from_fields(kmipkit_ttlv_item_t ** fields, uin
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_certificate_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Validates the selected managed value with its Rust typed model, then reads one raw-tag field. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. read_kind is 1 presence, 2 TTLV Item Type, 3 Enumeration, 4 Integer, or 5 Byte String/Big Integer bytes. Byte reads accept a null buffer with zero capacity to query length; short buffers fail without partial copies.
+ */
+/* KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009 */
+int32_t kmipkit_managed_value_field_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint32_t read_kind, uint8_t * out_present, uint8_t * out_item_type, uint32_t * out_enumeration, int32_t * out_integer, uint8_t * out_bytes, uint64_t byte_capacity, uint64_t * out_byte_length);
 /* Builds and validates a SymmetricKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
@@ -2977,10 +2981,10 @@ int32_t kmipkit_pgp_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t fiel
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_certificate_request_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
-/* Validates the selected managed value with its Rust typed model, then reads one raw-tag field. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. read_kind is 1 presence, 2 TTLV Item Type, 3 Enumeration, 4 Integer, or 5 Byte String/Big Integer bytes. Byte reads accept a null buffer with zero capacity to query length; short buffers fail without partial copies.
+/* Validates the selected managed value with its Rust typed model, then returns an independently owned copy of the first direct child matching field_tag. The copy retains the complete unknown/vendor subtree and child order; callers release a present output Item. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. Absence returns success with out_present set to zero and out_item set to null.
  */
-/* KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009 */
-int32_t kmipkit_managed_value_field_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint32_t read_kind, uint8_t * out_present, uint8_t * out_item_type, uint32_t * out_enumeration, int32_t * out_integer, uint8_t * out_bytes, uint64_t byte_capacity, uint64_t * out_byte_length);
+/* KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_managed_value_field_item_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint8_t * out_present, kmipkit_ttlv_item_t ** out_item);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

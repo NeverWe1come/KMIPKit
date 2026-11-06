@@ -158,8 +158,8 @@ def test_nested_accessors_return_owned_nodes_with_values_and_vendor_order():
                                 "vendor-one", "vendor-two"
                             ]
                         assert not nested_key_value.closed
-            for item in source_items:
-                assert not item.closed
+            assert not key_value_item.closed
+            assert not format_type.closed
         finally:
             for item in source_items:
                 item.close()
@@ -217,21 +217,39 @@ def test_nested_accessors_return_owned_nodes_with_values_and_vendor_order():
                     assert _child_byte_strings(nested_mac) == [
                         "mac-id", "vendor-one", "vendor-two"
                     ]
+                    assert wrapping.field_item(0x0054_0002) is None
                 assert not wrapping.closed
 
             wrapped_value = _item(
                 0x0042_0045, ttlv.ttlv_value_byte_string(b"wrapped", limits), limits
             )
+            wrapped_format_type = _item(
+                0x0042_0042, ttlv.ttlv_value_enumeration(1), limits
+            )
             wrapping_item = _structure_with_children(
                 0x0042_0046, limits, [method, encryption_info]
             )
-            wrapped_sources = [wrapped_value, wrapping_item]
-            with KeyBlock.from_fields([format_type, wrapped_value, wrapping_item]) as wrapped_block:
+            wrapped_sources = [wrapped_value, wrapped_format_type, wrapping_item]
+            with KeyBlock.from_fields(
+                [wrapped_format_type, wrapped_value, wrapping_item]
+            ) as wrapped_block:
                 nested_wrapped_value = wrapped_block.key_value_item()
-                assert nested_wrapped_value is not None
-                with nested_wrapped_value:
+                nested_wrapping = wrapped_block.key_wrapping_data_item()
+                assert nested_wrapped_value is not None and nested_wrapping is not None
+                with nested_wrapped_value, nested_wrapping:
                     assert _item_type(nested_wrapped_value) is ttlv.ItemType.ByteString
                     assert _item_bytes(nested_wrapped_value) == b"wrapped"
+                    assert _child_tags(nested_wrapping) == [0x0042_009E, 0x0042_0036]
+                    with KeyWrappingData.from_item(nested_wrapping) as typed_wrapping:
+                        nested_encryption = typed_wrapping.encryption_key_information_item()
+                        assert nested_encryption is not None
+                        with nested_encryption:
+                            assert _child_tags(nested_encryption) == [
+                                0x0042_0094, 0x0054_0031, 0x0054_0031
+                            ]
+                            assert _child_byte_strings(nested_encryption) == [
+                                "encryption-id", "vendor-one", "vendor-two"
+                            ]
             for item in wrapped_sources:
                 item.close()
         finally:

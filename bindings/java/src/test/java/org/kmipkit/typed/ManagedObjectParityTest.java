@@ -368,7 +368,7 @@ final class ManagedObjectParityTest {
                         0x00420045, limits, keyMaterial, attributes);
                 TtlvItem format = item(0x00420042, TtlvValue.Enumeration(1), limits);
                 KeyBlock block = KeyBlock.fromFields(List.of(format, keyValueItem));
-                TtlvItem nestedKeyValue = block.keyValueItem()) {
+                TtlvItem nestedKeyValue = block.fieldItem(0x00420045)) {
             assertEquals(TtlvItemType.Structure, itemType(nestedKeyValue));
             assertEquals(List.of(0x00420043, 0x00420125), childTags(nestedKeyValue));
             try (KeyValue typedKeyValue = KeyValue.fromItem(1, nestedKeyValue);
@@ -423,9 +423,16 @@ final class ManagedObjectParityTest {
                         TtlvValue.ByteString("wrapped".getBytes(), limits), limits);
                 KeyBlock wrappedBlock = KeyBlock.fromFields(List.of(format, wrapped, wrappingData));
                 TtlvItem wrappedView = wrappedBlock.keyValueItem();
+                TtlvItem nestedWrapping = wrappedBlock.keyWrappingDataItem();
                 KeyBlock emptyBlock = KeyBlock.fromFields(List.of(format))) {
             assertEquals(TtlvItemType.ByteString, itemType(wrappedView));
             assertArrayEquals("wrapped".getBytes(), byteValue(wrappedView));
+            assertEquals(List.of(0x0042009e, 0x00420036), childTags(nestedWrapping));
+            try (KeyWrappingData typedWrapping = KeyWrappingData.fromItem(nestedWrapping);
+                    TtlvItem nestedEncryption = typedWrapping.encryptionKeyInformationItem()) {
+                assertEquals(List.of(0x00420094), childTags(nestedEncryption));
+                assertEquals(List.of("wrapping-key"), childByteStrings(nestedEncryption));
+            }
             assertNull(emptyBlock.keyValueItem());
         }
     }

@@ -30965,4 +30965,9 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ManagedValueReader::read_field",
     ),
+    (
+        "managed_value_field_item_read:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ManagedValueReader::read_field_item",
+    ),
 ];

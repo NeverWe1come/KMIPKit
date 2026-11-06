@@ -38,7 +38,13 @@ public final class KeyBlock extends ManagedTtlvValue {
     /** Returns the plaintext Structure or wrapped ByteString Key Value type. */
     public TtlvItemType keyValueType() { return fieldType(0x00420045); }
 
+    /** Returns an owned raw Key Value node, preserving plaintext Structure or wrapped bytes. */
+    public TtlvItem keyValueItem() { return fieldItem(0x00420045); }
+
     /** Reports whether this Key Block contains Key Wrapping Data. */
     public boolean hasKeyWrappingData() { return hasField(0x00420046); }
+
+    /** Returns an owned raw Key Wrapping Data Structure when present. */
+    public TtlvItem keyWrappingDataItem() { return fieldItem(0x00420046); }
 
 }

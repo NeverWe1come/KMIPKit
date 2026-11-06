@@ -373,8 +373,7 @@ cleanup:
 
 int32_t kmipkit_0053_managed_nested_nodes_roundtrip(
     kmipkit_ttlv_item_t *key_block,
-    kmipkit_ttlv_item_t *wrapped_key_block,
-    kmipkit_ttlv_item_t *key_wrapping_data) {
+    kmipkit_ttlv_item_t *wrapped_key_block) {
     const uint32_t key_value_children[] = {0x00420043, 0x00420125};
     const uint8_t key_value_types[] = {
         KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE};
@@ -400,6 +399,7 @@ int32_t kmipkit_0053_managed_nested_nodes_roundtrip(
         sizeof(mac_id) - 1, sizeof(vendor_one) - 1, sizeof(vendor_two) - 1};
     kmipkit_ttlv_item_t *key_value = NULL;
     kmipkit_ttlv_item_t *attributes = NULL;
+    kmipkit_ttlv_item_t *key_wrapping_data = NULL;
     kmipkit_ttlv_item_t *encryption_info = NULL;
     kmipkit_ttlv_item_t *mac_info = NULL;
     kmipkit_ttlv_item_t *wrapped_value = NULL;
@@ -436,6 +436,17 @@ int32_t kmipkit_0053_managed_nested_nodes_roundtrip(
     if (status != 0) goto cleanup;
 
     status = kmipkit_managed_value_field_item_read(
+        2, 0, wrapped_key_block, 0x00420046, &present, &key_wrapping_data);
+    if (status != 0 || present != 1 || key_wrapping_data == NULL) goto cleanup;
+    status = check_nested_item(
+        key_wrapping_data, 0x00420046, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE);
+    if (status != 0) goto cleanup;
+
+    status = kmipkit_managed_value_field_item_read(
+        2, 0, key_block, 0x00540002, &present, &wrapped_value);
+    if (status != 0 || present != 0 || wrapped_value != NULL) goto cleanup;
+
+    status = kmipkit_managed_value_field_item_read(
         5, 0, key_wrapping_data, 0x00420036, &present, &encryption_info);
     if (status != 0 || present != 1 || encryption_info == NULL) goto cleanup;
     status = check_nested_item(
@@ -465,13 +476,14 @@ int32_t kmipkit_0053_managed_nested_nodes_roundtrip(
         2, 0, wrapped_key_block, 0x00420045, 5, &present, &item_type,
         NULL, NULL, value_bytes, sizeof(value_bytes), &value_length);
     if (status == 0 && (present != 1 || item_type != KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING
-            || value_length != 7 || value_bytes[0] != 'w' || value_bytes[6] != 'y')) {
+            || value_length != 7 || value_bytes[0] != 'w' || value_bytes[6] != 'd')) {
         status = -1;
     }
 
 cleanup:
     if (key_value != NULL) kmipkit_ttlv_item_release(key_value);
     if (attributes != NULL) kmipkit_ttlv_item_release(attributes);
+    if (key_wrapping_data != NULL) kmipkit_ttlv_item_release(key_wrapping_data);
     if (encryption_info != NULL) kmipkit_ttlv_item_release(encryption_info);
     if (mac_info != NULL) kmipkit_ttlv_item_release(mac_info);
     if (wrapped_value != NULL) kmipkit_ttlv_item_release(wrapped_value);

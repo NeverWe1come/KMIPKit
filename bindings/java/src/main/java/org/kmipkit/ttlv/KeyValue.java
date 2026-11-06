@@ -39,7 +39,13 @@ public final class KeyValue extends ManagedTtlvValue {
     /** Returns the TTLV type used by Key Material for the explicit format. */
     public TtlvItemType keyMaterialType() { return fieldType(0x00420043); }
 
+    /** Returns an owned raw Key Material node when present. */
+    public TtlvItem keyMaterialItem() { return fieldItem(0x00420043); }
+
     /** Reports whether this Key Value contains optional Attributes. */
     public boolean hasAttributes() { return hasField(0x00420125); }
+
+    /** Returns an owned raw Attributes Structure when present. */
+    public TtlvItem attributesItem() { return fieldItem(0x00420125); }
 
 }

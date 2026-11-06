@@ -161,6 +161,9 @@ ffi.cdef(
         uint32_t field_tag, uint32_t read_kind, uint8_t *out_present,
         uint8_t *out_item_type, uint32_t *out_enumeration, int32_t *out_integer,
         uint8_t *out_bytes, uint64_t byte_capacity, uint64_t *out_byte_length);
+    int32_t kmipkit_managed_value_field_item_read(
+        uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t *item,
+        uint32_t field_tag, uint8_t *out_present, kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_key_wrapping_data_from_item(
         kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_attribute_set_try_push(

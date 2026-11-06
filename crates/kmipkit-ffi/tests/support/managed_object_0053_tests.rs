@@ -154,7 +154,6 @@ unsafe extern "C" {
     fn kmipkit_0053_managed_nested_nodes_roundtrip(
         key_block: *mut kmipkit_ttlv_item_t,
         wrapped_key_block: *mut kmipkit_ttlv_item_t,
-        key_wrapping_data: *mut kmipkit_ttlv_item_t,
     ) -> i32;
 }
 
@@ -838,17 +837,12 @@ fn compiled_c_consumer_navigates_owned_nested_key_nodes_and_vendor_fields() {
 
     let key_block_handle = make_handle(Kind::Item, HandleValue::Item(key_block));
     let wrapped_block_handle = make_handle(Kind::Item, HandleValue::Item(wrapped_key_block));
-    let wrapping_handle = make_handle(Kind::Item, HandleValue::Item(wrapping_data));
     // SAFETY: All parent handles remain live during the C traversal. The C consumer releases each returned owned child Item.
     let status = unsafe {
-        kmipkit_0053_managed_nested_nodes_roundtrip(
-            key_block_handle,
-            wrapped_block_handle,
-            wrapping_handle,
-        )
+        kmipkit_0053_managed_nested_nodes_roundtrip(key_block_handle, wrapped_block_handle)
     };
     assert_eq!(status, SUCCESS);
-    for handle in [key_block_handle, wrapped_block_handle, wrapping_handle] {
+    for handle in [key_block_handle, wrapped_block_handle] {
         assert!(reference_handle(handle, Kind::Item).is_ok());
         kmipkit_ttlv_item_release(handle);
     }

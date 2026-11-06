@@ -29,8 +29,14 @@ public final class KeyWrappingData extends ManagedTtlvValue {
     /** Reports whether Encryption Key Information is present. */
     public boolean hasEncryptionKeyInformation() { return hasField(0x00420036); }
 
+    /** Returns an owned raw Encryption Key Information Structure when present. */
+    public TtlvItem encryptionKeyInformationItem() { return fieldItem(0x00420036); }
+
     /** Reports whether MAC/Signature Key Information is present. */
     public boolean hasMacSignatureKeyInformation() { return hasField(0x0042004e); }
+
+    /** Returns an owned raw MAC/Signature Key Information Structure when present. */
+    public TtlvItem macSignatureKeyInformationItem() { return fieldItem(0x0042004e); }
 
     /** Returns a caller-owned copy of optional MAC/Signature bytes. */
     public byte[] macSignature() { return readBytesField(0x0042004d); }

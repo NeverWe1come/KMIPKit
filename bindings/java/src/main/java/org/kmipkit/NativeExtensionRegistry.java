@@ -437,6 +437,8 @@ public final class NativeExtensionRegistry {
     public static native long managedValueFieldRead(
             int ownerKind, int contextRaw, long item, int fieldTag, int readKind,
             byte[] outBytes, long[] outByteLength);
+    public static native long managedValueFieldItemRead(
+            int ownerKind, int contextRaw, long item, int fieldTag);
     public static native void attributeSetTryPush(long attributes, long item);
     public static native void attributeSetTryPushTyped(
             long attributes, int expectedTag, long item);

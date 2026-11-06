@@ -109,6 +109,31 @@ class ManagedTtlvItem(ttlv.TtlvItem):
         """Report whether a direct child with this raw tag is present."""
         return self._native_field_read(raw_tag, 1)[0]
 
+    @synchronized_native_call
+    def field_item(self, raw_tag: int) -> ttlv.TtlvItem | None:
+        """Return an independently owned raw Item for a direct child, if present."""
+        self._pointer()
+        output = _client_ffi.new("kmipkit_ttlv_item_t **")
+        present = _client_ffi.new("uint8_t *")
+        status = int(
+            _client_lib.kmipkit_managed_value_field_item_read(
+                self._owner_kind,
+                self._context_raw,
+                extensions._client_native_item(self),
+                raw_tag,
+                present,
+                output,
+            )
+        )
+        errors.raise_for_status(status)
+        if not present[0]:
+            return None
+        if output[0] == _client_ffi.NULL:
+            errors.raise_for_status(4)
+        address = int(_client_ffi.cast("uintptr_t", output[0]))
+        handle = ttlv.ffi.cast("kmipkit_ttlv_item_t *", address)
+        return _wrap_owned_handle(ttlv.TtlvItem, handle)
+
     def _native_field_read(
         self,
         raw_tag: int,
@@ -361,6 +386,10 @@ class KeyBlock(ManagedTtlvItem):
     def key_value_type(self) -> ttlv.ItemType:
         return self.field_type(0x0042_0045)
 
+    def key_value_item(self) -> ttlv.TtlvItem | None:
+        """Return an owned raw Key Value node, retaining wrapped values as ByteString."""
+        return self.field_item(0x0042_0045)
+
     @property
     def cryptographic_algorithm(self) -> int:
         return self.field_enumeration(0x0042_0028)
@@ -372,6 +401,10 @@ class KeyBlock(ManagedTtlvItem):
     @property
     def has_key_wrapping_data(self) -> bool:
         return self.has_field(0x0042_0046)
+
+    def key_wrapping_data_item(self) -> ttlv.TtlvItem | None:
+        """Return an owned raw Key Wrapping Data Structure when present."""
+        return self.field_item(0x0042_0046)
 
 
 class KeyValue(ManagedTtlvItem):
@@ -399,9 +432,17 @@ class KeyValue(ManagedTtlvItem):
     def key_material_type(self) -> ttlv.ItemType:
         return self.field_type(0x0042_0043)
 
+    def key_material_item(self) -> ttlv.TtlvItem | None:
+        """Return an owned raw Key Material node when present."""
+        return self.field_item(0x0042_0043)
+
     @property
     def has_attributes(self) -> bool:
         return self.has_field(0x0042_0125)
+
+    def attributes_item(self) -> ttlv.TtlvItem | None:
+        """Return an owned raw Attributes Structure when present."""
+        return self.field_item(0x0042_0125)
 
 
 class KeyMaterial(ManagedTtlvItem):
@@ -511,9 +552,17 @@ class KeyWrappingData(ManagedTtlvItem):
     def has_encryption_key_information(self) -> bool:
         return self.has_field(0x0042_0036)
 
+    def encryption_key_information_item(self) -> ttlv.TtlvItem | None:
+        """Return an owned raw Encryption Key Information Structure when present."""
+        return self.field_item(0x0042_0036)
+
     @property
     def has_mac_signature_key_information(self) -> bool:
         return self.has_field(0x0042_004E)
+
+    def mac_signature_key_information_item(self) -> ttlv.TtlvItem | None:
+        """Return an owned raw MAC/Signature Key Information Structure when present."""
+        return self.field_item(0x0042_004E)
 
     @property
     def mac_signature(self) -> bytes:

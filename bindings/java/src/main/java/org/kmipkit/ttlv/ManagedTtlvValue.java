@@ -39,6 +39,13 @@ abstract class ManagedTtlvValue implements AutoCloseable {
                 ownerKind, contextRaw, value, wantedTag, readKind, null, null));
     }
 
+    /** Returns an independently owned raw child Item when its raw tag is present. */
+    public final TtlvItem fieldItem(int wantedTag) {
+        long nested = handle.withValue(value -> NativeExtensionRegistry.managedValueFieldItemRead(
+                ownerKind, contextRaw, value, wantedTag));
+        return nested == 0 ? null : TtlvItem.fromNative(nested);
+    }
+
     /** Reads one direct child by raw tag using the selected typed value kind. */
     public final Object readField(int rawTag, int readKind) {
         return switch (readKind) {

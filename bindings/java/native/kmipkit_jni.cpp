@@ -12468,6 +12468,34 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_managedValueFie
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_managedValueFieldItemRead(
+        JNIEnv* env, jclass, jint owner_kind, jint context_raw, jlong raw_item,
+        jint field_tag) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* item = from_java_handle<kmipkit_ttlv_item_t>(raw_item);
+        if (item == nullptr || owner_kind < 1 || owner_kind > 5) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+
+        uint8_t present = 0;
+        kmipkit_ttlv_item_t* nested = nullptr;
+        const int32_t status = kmipkit_managed_value_field_item_read(
+                static_cast<uint32_t>(owner_kind), static_cast<uint32_t>(context_raw), item,
+                static_cast<uint32_t>(field_tag), &present, &nested);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (present == 0) return static_cast<jlong>(0);
+        if (nested == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(nested);
+    });
+}
+
 JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTryPush(
         JNIEnv* env, jclass, jlong raw_attributes, jlong raw_item) {
     guarded<int>(env, 0, [&] {
