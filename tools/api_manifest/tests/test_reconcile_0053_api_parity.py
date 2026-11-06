@@ -692,6 +692,45 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                       if row["declarationId"] == "validation-issue-code")
         self.assertEqual(approval, stored["approvalSource"])
 
+    def test_additional_export_replay_refreshes_approval_evidence_from_same_record(self) -> None:
+        declaration = {
+            "declarationId": "approved-candidate-export",
+            "packageId": "c-kmipkit",
+            "kind": "c-symbol",
+            "exportName": "kmipkit_approved_candidate",
+            "capabilityId": "typed_object_attributes",
+            "requirementIds": ["KMIPKIT-0053-FR-002"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "rust": {"packageId": "rust-kmipkit", "name": "test::rust"},
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_approved_candidate"},
+                "java": {"packageId": "java-kmipkit", "name": "Test.approvedCandidate"},
+                "python": {"packageId": "python-kmipkit", "name": "kmipkit.test.approved_candidate"},
+            },
+            "parityEvidenceIds": ["tests/consumer.c"],
+            "candidateSpecId": "KMIPKIT-0053",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+            },
+        }
+        manifest = copy.deepcopy(self.manifest)
+        stale = copy.deepcopy(declaration)
+        stale["candidateSpecId"] = None
+        stale["approvalSource"]["evidence"] = "Direct maintainer instruction approving the complete Phase 5 implementation plan and autonomous implementation."
+        manifest["publicDeclarations"].append(stale)
+
+        result = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [declaration]
+        )
+
+        stored = next(row for row in result["publicDeclarations"]
+                      if row["declarationId"] == "approved-candidate-export")
+        self.assertEqual(declaration["approvalSource"], stored["approvalSource"])
+
     def test_public_export_cannot_claim_parity_with_a_missing_language(self) -> None:
         declarations = [
             {
