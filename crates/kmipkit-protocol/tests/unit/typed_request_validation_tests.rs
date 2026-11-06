@@ -148,6 +148,42 @@ fn attribute_mutation_validation_rejects_usage_limits_count_for_add_and_modify()
     );
 }
 
+#[test]
+fn attribute_mutation_validation_rejects_source_prohibited_attributes() {
+    let initial_date = || {
+        crate::NewAttribute::new(schema_item(0x0042_0039, Value::integer(1)))
+    };
+    let add = AddAttributeRequest::new(None, initial_date());
+    let modify = ModifyAttributeRequest::new(None, None, initial_date());
+    let set = crate::SetAttributeRequest::new(None, initial_date());
+    let adjust = AdjustAttributeRequest::new(
+        None,
+        crate::AttributeReference::tag(0x0042_0039),
+        crate::AdjustmentType::INCREMENT,
+        None,
+    );
+    let delete = DeleteAttributeRequest::new(
+        None,
+        Some(crate::CurrentAttribute::new(schema_item(
+            0x0042_0094,
+            Value::text_string("identifier".to_owned()),
+        ))),
+        None,
+    );
+
+    for report in [
+        add.validate(),
+        modify.validate(),
+        set.validate(),
+        adjust.validate(),
+        delete.validate(),
+    ] {
+        assert!(report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R282"
+        }));
+    }
+}
+
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
     assert_eq!(T::SCHEMA, expected);
 }
