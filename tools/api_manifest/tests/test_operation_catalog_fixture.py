@@ -173,14 +173,26 @@ class OperationCatalogFixtureTests(unittest.TestCase):
 
         c_consumer_source = C_ABI_CONSUMER.read_text(encoding="utf-8")
         extra_routes = (
-            ("Interop", "interop_constructor_is_callable_from_c", "kmipkit_client_batch_item_interop"),
+            (
+                "Interop",
+                "interop_constructor_is_callable_from_c",
+                "kmipkit_client_batch_item_interop",
+            ),
             (
                 "Join Split Key",
                 "join_split_key_constructor_pairs_each_identifier_with_its_threshold",
                 "kmipkit_client_batch_item_join_split_key",
             ),
-            ("Logout", "logout_constructor_is_callable_from_c", "kmipkit_client_batch_item_logout"),
-            ("PKCS#11", "pkcs11_constructor_is_callable_from_c", "kmipkit_client_batch_item_pkcs11"),
+            (
+                "Logout",
+                "logout_constructor_is_callable_from_c",
+                "kmipkit_client_batch_item_logout",
+            ),
+            (
+                "PKCS#11",
+                "pkcs11_constructor_is_callable_from_c",
+                "kmipkit_client_batch_item_pkcs11",
+            ),
         )
         extra_ids: list[str] = []
         for operation_name, helper_name, constructor in extra_routes:

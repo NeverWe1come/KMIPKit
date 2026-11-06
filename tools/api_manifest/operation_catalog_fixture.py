@@ -57,10 +57,14 @@ def operation_catalog_rows(
         name = operation["name"]
         element = normative_values.get(name)
         if element is None:
-            raise ValueError(f"no normative KMIP Operation value for {operation_id} ({name})")
+            raise ValueError(
+                f"no normative KMIP Operation value for {operation_id} ({name})"
+            )
         wire_value = element.get("wire_value", "")
         if not isinstance(wire_value, str) or not _HEX_VALUE.fullmatch(wire_value):
-            raise ValueError(f"invalid normative KMIP Operation value for {operation_id}: {wire_value}")
+            raise ValueError(
+                f"invalid normative KMIP Operation value for {operation_id}: {wire_value}"
+            )
         operation_suffix = operation_id.removeprefix("KMIPKIT-ELEM-OP-C2S-")
         expected_element_id = (
             f"{OPERATION_VALUE_ID_PREFIX}{operation_suffix}-{wire_value.upper()}"
@@ -71,7 +75,9 @@ def operation_catalog_rows(
                 f"expected {expected_element_id}, got {element.get('element_id')}"
             )
         if element.get("scope_state") != "client_1_0":
-            raise ValueError(f"normative KMIP Operation is outside client 1.0 scope: {operation_id}")
+            raise ValueError(
+                f"normative KMIP Operation is outside client 1.0 scope: {operation_id}"
+            )
         rows.append((operation_id, name, int(wire_value, 16)))
 
     raw_values = [raw for _, _, raw in rows]
