@@ -109,6 +109,10 @@ impl ValidateKmipRequest for crate::DeleteAttributeRequest {
     fn validate(&self) -> ValidationReport {
         let mut report = ValidationReport::default();
         if let Some(current) = self.current_attribute() {
+            report.append(validate_vendor_attribute_shape(
+                current.item(),
+                "Current Attribute",
+            ));
             report.append(validate_attribute_item_mutation(
                 current.item(),
                 crate::attribute::ClientAttributeMutation::Delete,
@@ -137,11 +141,14 @@ impl ValidateKmipRequest for crate::SetAttributeRequest {
     const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::SetAttribute;
 
     fn validate(&self) -> ValidationReport {
-        validate_attribute_item_mutation(
+        let mut report =
+            validate_vendor_attribute_shape(self.new_attribute().item(), "New Attribute");
+        report.append(validate_attribute_item_mutation(
             self.new_attribute().item(),
             crate::attribute::ClientAttributeMutation::Set,
             "New Attribute",
-        )
+        ));
+        report
     }
 }
 
@@ -150,8 +157,11 @@ impl ValidateKmipRequest for crate::AddAttributeRequest {
 
     fn validate(&self) -> ValidationReport {
         let attribute = self.new_attribute().item();
-        let mut report =
-            validate_usage_limits_count(attribute, "New Attribute.Usage Limits.Usage Limits Count");
+        let mut report = validate_vendor_attribute_shape(attribute, "New Attribute");
+        report.append(validate_usage_limits_count(
+            attribute,
+            "New Attribute.Usage Limits.Usage Limits Count",
+        ));
         report.append(validate_attribute_item_mutation(
             attribute,
             crate::attribute::ClientAttributeMutation::Add,
@@ -166,9 +176,16 @@ impl ValidateKmipRequest for crate::ModifyAttributeRequest {
 
     fn validate(&self) -> ValidationReport {
         let attribute = self.new_attribute().item();
-        let mut report =
-            validate_usage_limits_count(attribute, "New Attribute.Usage Limits.Usage Limits Count");
+        let mut report = validate_vendor_attribute_shape(attribute, "New Attribute");
+        report.append(validate_usage_limits_count(
+            attribute,
+            "New Attribute.Usage Limits.Usage Limits Count",
+        ));
         if let Some(current) = self.current_attribute() {
+            report.append(validate_vendor_attribute_shape(
+                current.item(),
+                "Current Attribute",
+            ));
             report.append(validate_attribute_item_mutation(
                 current.item(),
                 crate::attribute::ClientAttributeMutation::Modify,
@@ -237,6 +254,36 @@ fn validate_attribute_item_mutation(
     source_section.map_or_else(ValidationReport::default, |reference| {
         attribute_mutation_issue(field, item.tag().raw(), reference)
     })
+}
+
+fn validate_vendor_attribute_shape(
+    item: &kmipkit_ttlv::Item,
+    field: &'static str,
+) -> ValidationReport {
+    const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
+    if item.tag().raw() != VENDOR_ATTRIBUTE {
+        return ValidationReport::default();
+    }
+    let valid = item.with_value(|value| match value {
+        kmipkit_ttlv::ValueView::Structure(structure) => {
+            crate::attribute::validate_vendor_attribute(&structure).is_ok()
+        }
+        _ => false,
+    });
+    if valid {
+        return ValidationReport::default();
+    }
+    crate::validation::issue_report(
+        "KMIPKIT-0051-R283",
+        crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field)
+            .field("Vendor Attribute"),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: "§4.60, Table 150",
+        },
+    )
 }
 
 fn validate_attribute_reference_mutation(
