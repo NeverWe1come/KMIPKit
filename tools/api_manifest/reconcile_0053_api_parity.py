@@ -59,23 +59,6 @@ TRAIT_PROJECTION_REASON = (
     "This exact compiler-visible Rust trait projection is language-level behavior "
     "of the separately mapped KMIPKit model and has no independent foreign API route."
 )
-JAVA_BRIDGE_EXCLUSION_REASON = (
-    "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; "
-    "applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. "
-    "The bridge member has no independent product-level capability."
-)
-JAVA_BRIDGE_EXCLUSION_METHODS = frozenset(
-    {
-        "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRawTtlv",
-        "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHeaderTtlv",
-    }
-)
-JAVA_BRIDGE_APPROVAL = {
-    "kind": "feature-specification",
-    "path": "specs/043-public-api-bindings/spec.md",
-    "status": "Approved",
-    "evidence": "**Status**: Approved for implementation",
-}
 CFFI_BRIDGE_EXCLUSION = (
     "kmipkit_ttlv_value_view_copy_bytes",
     "This exact exported C symbol is an internal block-copy bridge used by the Java JNI and Python CFFI adapters; "
@@ -1204,10 +1187,32 @@ def add_public_declarations(
             raise ReconciliationError(
                 f"public declaration ID already has another definition: {identifier}"
             )
-        if key in by_export and by_export[key] != declaration:
-            raise ReconciliationError(
-                f"public export already has another declaration: {export_name}"
+        existing_export = by_export.get(key)
+        if existing_export is not None:
+            exact_route_match = all(
+                existing_export.get(field) == declaration.get(field)
+                for field in (
+                    "packageId", "kind", "exportName", "capabilityId",
+                    "declarationState", "parityScope", "languageMappings",
+                    "approvalSource",
+                )
             )
+            if not exact_route_match:
+                raise ReconciliationError(
+                    f"public export already has another declaration: {export_name}"
+                )
+            canonical = copy.deepcopy(existing_export)
+            canonical["requirementIds"] = sorted(
+                set(existing_export.get("requirementIds", [])) | set(requirements)
+            )
+            canonical["parityEvidenceIds"] = sorted(
+                set(existing_export.get("parityEvidenceIds", [])) | set(evidence)
+            )
+            existing_export["requirementIds"] = canonical["requirementIds"]
+            existing_export["parityEvidenceIds"] = canonical["parityEvidenceIds"]
+            del additions_by_id[identifier]
+            additions_by_id[canonical["declarationId"]] = canonical
+            additions_by_export[key] = canonical
     for identifier, declaration in additions_by_id.items():
         if identifier not in by_id:
             current.append(copy.deepcopy(declaration))
@@ -1218,8 +1223,6 @@ def add_public_declarations(
         row.get("capabilityId"): row for row in capabilities if isinstance(row, dict)
     }
     for declaration in additions_by_id.values():
-        if declaration["declarationId"] in by_id:
-            continue
         capability_id = declaration.get("capabilityId")
         capability = capabilities_by_id.get(capability_id)
         if capability is None:
@@ -1253,17 +1256,66 @@ def add_public_declarations(
         set(result.get("requirementIds", []))
         | {
             requirement
-            for row in declarations
+            for row in additions_by_id.values()
             for requirement in row.get("requirementIds", [])
         }
     )
     return result
 
 
+def remove_public_declarations(
+    manifest: dict[str, Any], removals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Remove only exact declarations explicitly corrected by the owning 0053 audit."""
+    if not isinstance(removals, list):
+        raise ReconciliationError("public declaration removals must be a list")
+    result = copy.deepcopy(manifest)
+    declarations = result.get("publicDeclarations")
+    if not isinstance(declarations, list):
+        raise ReconciliationError("manifest lacks its public declaration inventory")
+    required = {
+        "declarationId", "packageId", "exportName", "reason", "candidateSpecId",
+        "approvalSource", "evidencePaths",
+    }
+    seen: set[str] = set()
+    for removal in removals:
+        if not isinstance(removal, dict) or set(removal) != required:
+            raise ReconciliationError("public declaration removal has missing or extra fields")
+        if removal.get("candidateSpecId") != SPEC_ID:
+            raise ReconciliationError("public declaration removal must be owned by KMIPKIT-0053")
+        identifier = removal.get("declarationId")
+        package_id = removal.get("packageId")
+        export_name = removal.get("exportName")
+        reason = removal.get("reason")
+        if (
+            not isinstance(identifier, str) or not identifier.strip()
+            or not isinstance(package_id, str) or not package_id.strip()
+            or not isinstance(export_name, str) or not export_name.strip()
+            or any(char in export_name for char in "*?")
+            or not isinstance(reason, str) or not reason.strip()
+            or identifier in seen
+        ):
+            raise ReconciliationError("public declaration removal must identify one exact route")
+        seen.add(identifier)
+        _validate_resolution_evidence(removal)
+        if removal["approvalSource"].get("path") != APPROVAL_RECORD_PATH:
+            raise ReconciliationError("public declaration removal needs the 0053 approval record")
+        matched_id = [row for row in declarations if row.get("declarationId") == identifier]
+        if matched_id and (
+            len(matched_id) != 1
+            or matched_id[0].get("packageId") != package_id
+            or matched_id[0].get("exportName") != export_name
+        ):
+            raise ReconciliationError("public declaration removal does not match its exact reviewed target")
+        declarations = [row for row in declarations if row.get("declarationId") != identifier]
+    result["publicDeclarations"] = declarations
+    return result
+
+
 def add_approved_exclusions(
     manifest: dict[str, Any], exclusions: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    """Add only the exact JNI and CFFI bridge exclusions reviewed for 0053."""
+    """Add exact, evidence-backed exclusions from the reviewed public export audits."""
     if not isinstance(exclusions, list):
         raise ReconciliationError("approved exclusions must be a list")
     result = copy.deepcopy(manifest)
@@ -1277,26 +1329,34 @@ def add_approved_exclusions(
     }
     seen: set[tuple[str, str]] = set()
     for exclusion in exclusions:
-        if not isinstance(exclusion, dict) or set(exclusion) != {
-            "packageId",
-            "exportName",
-            "reason",
-            "approvalSource",
-            "evidence",
-            "candidateSpecId",
-        }:
-            raise ReconciliationError("approved JNI exclusion has missing or extra fields")
+        required = {"packageId", "exportName", "reason", "approvalSource", "evidence"}
+        allowed = required | {
+            "candidateSpecId", "declarationId", "declarationKind", "artifactKind",
+            "counterpartDeclarationIds", "evidencePaths", "rustArtifactKind", "identity",
+            "condition", "ownerExportName", "ownerDeclarationId", "exclusionScope",
+            "exclusionCategory", "precedent",
+        }
+        if (
+            not isinstance(exclusion, dict)
+            or not required <= set(exclusion)
+            or not set(exclusion) <= allowed
+        ):
+            raise ReconciliationError("approved export exclusion has missing or extra fields")
         package_id = exclusion.get("packageId")
         export_name = exclusion.get("exportName")
+        if (
+            package_id not in set.union(*LANGUAGE_PACKAGES.values())
+            or not isinstance(export_name, str)
+            or not export_name.strip()
+            or any(char in export_name for char in "*?")
+            or not isinstance(exclusion.get("reason"), str)
+            or not exclusion["reason"].strip()
+            or not isinstance(exclusion.get("evidence"), str)
+            or not exclusion["evidence"].strip()
+        ):
+            raise ReconciliationError("approved export exclusion must identify one exact route")
         key = (package_id, export_name)
-        if package_id == "java-kmipkit" and export_name in JAVA_BRIDGE_EXCLUSION_METHODS:
-            expected = (
-                JAVA_BRIDGE_EXCLUSION_REASON,
-                JAVA_BRIDGE_APPROVAL,
-                "KMIPKIT-0043",
-                ("KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"),
-            )
-        elif package_id == "c-kmipkit" and export_name == CFFI_BRIDGE_EXCLUSION[0]:
+        if package_id == "c-kmipkit" and export_name == CFFI_BRIDGE_EXCLUSION[0]:
             expected = (
                 CFFI_BRIDGE_EXCLUSION[1],
                 CFFI_BRIDGE_EXCLUSION[2],
@@ -1305,17 +1365,67 @@ def add_approved_exclusions(
             )
         else:
             expected = None
-        if (
-            expected is None
-            or exclusion.get("reason") != expected[0]
-            or exclusion.get("approvalSource") != expected[1]
-            or exclusion.get("candidateSpecId") != expected[2]
-            or not isinstance(exclusion.get("evidence"), str)
-            or not all(reference in exclusion["evidence"] for reference in expected[3])
-        ):
-            raise ReconciliationError("JNI exclusion is not an exact approved bridge route")
+        if expected is not None:
+            if (
+                exclusion.get("reason") != expected[0]
+                or exclusion.get("approvalSource") != expected[1]
+                or exclusion.get("candidateSpecId") != expected[2]
+                or not all(reference in exclusion["evidence"] for reference in expected[3])
+            ):
+                raise ReconciliationError("CFFI exclusion is not the exact approved bridge route")
+        else:
+            approval = exclusion.get("approvalSource")
+            if (
+                not isinstance(approval, dict)
+                or approval.get("status") != "Approved"
+                or not isinstance(approval.get("path"), str)
+                or not approval["path"].startswith("specs/")
+                or ".." in PurePosixPath(approval["path"]).parts
+                or "\\" in approval["path"]
+                or not (Path.cwd() / approval["path"]).is_file()
+            ):
+                raise ReconciliationError("export exclusion needs an exact approved source")
+            candidate_spec = exclusion.get("candidateSpecId")
+            if candidate_spec not in {None, "KMIPKIT-0004", SPEC_ID}:
+                raise ReconciliationError("export exclusion has an unsupported owner specification")
+            if candidate_spec == SPEC_ID and approval["path"] not in {
+                APPROVAL_RECORD_PATH,
+                "specs/052-response-navigation/spec.md",
+            }:
+                raise ReconciliationError("KMIPKIT-0053 exclusion source is not an approved in-scope specification")
+            if candidate_spec == "KMIPKIT-0004" and approval["path"] != "specs/004-generic-ttlv-model/spec.md":
+                raise ReconciliationError("prior ModelError exclusion must cite its owning approved specification")
+            if candidate_spec is None:
+                raise ReconciliationError("non-legacy export exclusions need an exact owning specification")
+            evidence_paths = exclusion.get("evidencePaths")
+            if evidence_paths is not None:
+                if not isinstance(evidence_paths, list) or not evidence_paths or len(evidence_paths) != len(set(evidence_paths)):
+                    raise ReconciliationError("export exclusions need unique evidence paths")
+                for path in evidence_paths:
+                    parsed = PurePosixPath(path) if isinstance(path, str) else None
+                    if (
+                        parsed is None or parsed.is_absolute() or ".." in parsed.parts
+                        or "\\" in path or any(char in path for char in "*?")
+                        or not (Path.cwd() / path).is_file()
+                    ):
+                        raise ReconciliationError("export exclusion evidence must reference exact repository files")
+            rust_kind = exclusion.get("rustArtifactKind")
+            if rust_kind is not None:
+                if rust_kind not in {
+                    "rust-trait-implementation-member",
+                    "rust-conditional-trait-implementation-member",
+                    "exact-route",
+                    "ownership-transfer-helper",
+                }:
+                    raise ReconciliationError("Rust exclusion uses an unsupported export-audit category")
+                if package_id not in LANGUAGE_PACKAGES["rust"]:
+                    raise ReconciliationError("Rust artifact exclusions must use a Rust package")
+                if "trait-implementation-member" in rust_kind and not exclusion.get("identity"):
+                    raise ReconciliationError("Rust trait implementation exclusion needs its exact Rustdoc identity")
+                if "conditional-trait-implementation-member" in rust_kind and not exclusion.get("condition"):
+                    raise ReconciliationError("conditional Rust trait implementation exclusion needs its exact condition")
         if key in seen:
-            raise ReconciliationError("approved JNI exclusions must be unique")
+            raise ReconciliationError("approved export exclusions must be unique")
         seen.add(key)
         existing = by_export.get(key)
         if existing is not None and existing != exclusion:
@@ -1493,6 +1603,9 @@ def main() -> int:
         )
         result = resolve_public_declarations(
             result, route_data.get("declarationResolutions", [])
+        )
+        result = remove_public_declarations(
+            result, route_data.get("removePublicDeclarations", [])
         )
         result = add_additional_types(result, route_data.get("types", []))
         result = add_additional_functions(result, route_data.get("functions", []))
