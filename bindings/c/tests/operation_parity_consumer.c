@@ -32,6 +32,9 @@ extern int kmipkit_client_abi_c_consumer_build_modify_attribute(
 extern int kmipkit_client_abi_c_consumer_build_set_attribute_request(
     kmipkit_client_batch_item_t **out_item);
 extern int kmipkit_client_abi_c_consumer_main(int argc, char **argv);
+extern int kmipkit_test_client_batch_item_encoded_operation(
+    kmipkit_client_batch_item_t *item,
+    uint32_t *out_operation);
 
 static int append_required_constructor_result(
         kmipkit_client_batch_t *batch,
@@ -40,10 +43,13 @@ static int append_required_constructor_result(
         uint64_t *created_count,
         uint64_t invoked_count) {
     uint32_t operation = UINT32_MAX;
+    uint32_t encoded_operation = UINT32_MAX;
     return status == 0 && item != NULL && *item != NULL &&
         invoked_count < sizeof(EXPECTED_BATCH_OPERATIONS) / sizeof(EXPECTED_BATCH_OPERATIONS[0]) &&
         kmipkit_client_batch_item_operation(*item, &operation) == 0 &&
         operation == EXPECTED_BATCH_OPERATIONS[invoked_count] &&
+        kmipkit_test_client_batch_item_encoded_operation(*item, &encoded_operation) == 0 &&
+        encoded_operation == EXPECTED_BATCH_OPERATIONS[invoked_count] &&
         kmipkit_client_batch_add_item(batch, item) == 0 && *item == NULL &&
         (++*created_count, 1);
 }
