@@ -3,12 +3,19 @@ use super::*;
 
 /// Validates one Item with the protocol AttributeSet's catalog-backed rules.
 pub(super) fn validate_typed_item(expected_tag: u32, item: Item) -> FfiResult<Item> {
-    if item.tag().raw() != expected_tag
-        || !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag)
-    {
+    if !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag) {
         return Err(ERROR_INVALID_INPUT);
     }
-    let attributes = AttributeSet::try_new([item]).map_err(|_| ERROR_INVALID_INPUT)?;
+    if item.tag().raw() != expected_tag {
+        return Err(ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH);
+    }
+    let attributes = match AttributeSet::try_new([item]) {
+        Ok(attributes) => attributes,
+        Err(kmipkit_protocol::AttributeSetError::AttributeTtlvTypeMismatch) => {
+            return Err(ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH);
+        }
+        Err(_) => return Err(ERROR_INVALID_INPUT),
+    };
     attributes
         .into_items()
         .into_iter()

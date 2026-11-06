@@ -625,6 +625,14 @@ void throw_status(
     case KMIPKIT_ERROR_INVALID_INPUT:
         throw_invalid_input(env);
         break;
+    case KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH:
+        throw_java(env, "org/kmipkit/ttlv/TypedAttributeTagMismatchException",
+                   "typed attribute tag does not match the selected standard attribute");
+        break;
+    case KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH:
+        throw_java(env, "org/kmipkit/ttlv/TypedAttributeValueTypeMismatchException",
+                   "typed attribute value type is not permitted for the selected standard attribute");
+        break;
     case KMIPKIT_ERROR_SHARED_OWNER:
         throw_invalid_input(env);
         break;

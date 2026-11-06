@@ -36,3 +36,32 @@ Added five C ABI routes for value construction/readback and typed set append/cou
 ## Caveats
 
 Rust builds on this Windows host emit non-fatal AWS-LC `stdalign_check.c` and missing NASM warnings. Cargo, Maven/JNI, and maturin complete successfully despite those diagnostics. Full workspace suites and cross-platform runs were outside this focused task group. The worktree also contains pre-existing/unrelated untracked `bindings/java/target/` and `bindings/python/uv.lock`; neither is included in these commits.
+
+## Review round 1
+
+### Changes
+
+- Added additive, stable C statuses 12 (`KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH`) and 13 (`KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH`). The FFI now distinguishes tag mismatch from catalogued TTLV value-type mismatch while retaining status 4 for unknown/non-catalogued tags and other invalid input.
+- Added Java `TypedAttributeTagMismatchException` and `TypedAttributeValueTypeMismatchException` mappings through JNI. Both remain subclasses of `InvalidInputException`; JNI supplies fixed, redacted messages. Added Python error types with matching status IDs that subclass `InvalidInputError`.
+- Corrected Rust routes for construction, readback, typed insertion, and typed set iteration. The count and indexed-read adapters now map to the exact `AttributeSet::typed` iterator route (the Rust API used to count occurrences or select `nth`). Marked the exact Rust model and error declarations ready with four-language evidence and synchronized the typed-attribute capability inventory.
+- Updated the approved 0053 route input to carry the new error categories and corrected Rust routes, keeping reconciliation repeatable. Added explicit preservation assertions for unknown child tags and their original order within an Application Specific Information Structure.
+
+### Red evidence
+
+- The new manifest regression expected typed Rust routes and two error categories; the pre-fix inventory still pointed to generic constructors and exposed no typed mismatch classifications.
+- The new FFI assertions expected distinct statuses 12/13 while the old path returned 4. A fixture initially used the wrong raw Name tag (`0x42000a`); it was corrected to the catalogued Name tag `0x420053` before final verification.
+- Python and Java parity tests initially lacked the two typed exception mappings. The first JNI run also exposed that `ThrowNew` requires a `(String)` constructor; the exception classes were updated to the native bridge signature.
+
+### Green verification
+
+- `cargo test -p kmipkit-ffi --lib --features coverage-c-consumer typed_attribute_0053_tests` — 9 passed, including mismatch classification, redaction, Structure child order, 62 catalogued attribute constructions/readbacks, and `compiled_c_consumer_accepts_all_sixty_two_catalogued_attribute_types`. This links and executes the compiled C consumer.
+- `cargo test -p kmipkit-protocol attribute -- --quiet` — 235 protocol unit tests, 2 guide examples, and 3 redaction tests passed.
+- From `bindings/python`: `uv run --python 3.12 --project . --with pytest==8.4.2 --with cffi==1.17.1 --reinstall-package kmipkit python -m pytest -q tests/test_typed_attribute_parity.py` — 11 passed. Rebuilt the release native library first with `cargo build --release -p kmipkit-ffi`; pytest loads `bindings/python/src/kmipkit/_native_ffi/_native_ffi.dll`, whose SHA-256 matched `target/release/kmipkit_ffi.dll` (`3d00c03e3b043f1a2d4bb645410e8203fe4f07906a9b9611137f6ae616cead7c`).
+- `mvn -q -f bindings/java/pom.xml -Dtest=TypedAttributeParityTest test` — 9 passed; Maven rebuilt and loaded the JNI library.
+- `python -B -m unittest tools.api_manifest.tests.test_reconcile_0053_api_parity -v` — 16 passed.
+- `python -B tools/api_manifest/reconcile_0053_api_parity.py --write` — reconciled the approved route source (`+0 functions`); `python -B tools/api_manifest/generate.py --write` — generated 12 public API outputs.
+- `python -B tools/api_manifest/generate.py --check` — all 12 generated outputs verified.
+- `python -B tools/normative_catalog/generate_attribute_types.py --check` — all five catalog outputs verified.
+- `cargo fmt --all --check` and `git diff --check` — passed.
+
+The Windows AWS-LC build emits non-fatal `stdalign_check.c` and missing NASM warnings; all focused builds and test suites listed above completed successfully.

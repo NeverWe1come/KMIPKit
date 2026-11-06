@@ -41,6 +41,18 @@ class InvalidInputError(KmipKitError):
     category = "invalid_input"
 
 
+class TypedAttributeTagMismatchError(InvalidInputError):
+    """A typed direct attribute Item has a different tag from its marker."""
+
+    category = "typed_attribute_tag_mismatch"
+
+
+class TypedAttributeValueTypeMismatchError(InvalidInputError):
+    """A typed direct attribute Item uses a TTLV type outside its catalog encoding."""
+
+    category = "typed_attribute_value_type_mismatch"
+
+
 class InvalidExtensionSchemaError(KmipKitError):
     """An extension schema or value does not satisfy its constraints."""
 
@@ -221,6 +233,8 @@ _ERROR_TYPES: dict[int, type[KmipKitError]] = {
     6: ResourceLimitError,
     7: KmipKitError,
     _SHARED_OWNER_STATUS: InvalidInputError,
+    12: TypedAttributeTagMismatchError,
+    13: TypedAttributeValueTypeMismatchError,
 }
 
 

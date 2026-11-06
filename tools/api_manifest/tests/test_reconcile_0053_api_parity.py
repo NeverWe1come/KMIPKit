@@ -138,10 +138,10 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual(660, len(candidates))
+        self.assertEqual(654, len(candidates))
         self.assertEqual(
             {
-                "typed_object_attributes": 285,
+                "typed_object_attributes": 279,
                 "typed_managed_objects_and_key_material": 351,
             "typed_cryptographic_parameters": 24,
             },
@@ -409,6 +409,34 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertTrue(any(row["exportName"] == "kmipkit_typed_attribute_from_item"
                             and row["declarationState"] == "verified"
                             for row in manifest["publicDeclarations"]))
+
+    def test_typed_attribute_error_statuses_and_rust_routes_are_specific(self) -> None:
+        manifest = self.manifest_for_repository()
+        declarations = {row["declarationId"]: row for row in manifest["publicDeclarations"]}
+        expected_rust_routes = {
+            "typed_attribute_from_value:c": "kmipkit_protocol::Attribute<D>::new",
+            "typed_attribute_value:c": "kmipkit_protocol::Attribute<D>::with_value",
+            "attribute_set_try_push_typed:c": "kmipkit_protocol::AttributeSet::try_push_typed",
+            "attribute_set_typed_count:c": "kmipkit_protocol::AttributeSet::typed",
+            "attribute_set_typed_at:c": "kmipkit_protocol::AttributeSet::typed",
+        }
+        for declaration_id, expected in expected_rust_routes.items():
+            with self.subTest(declaration_id=declaration_id):
+                route = declarations[declaration_id]["languageMappings"]["rust"]
+                self.assertEqual("rust-kmipkit-protocol", route["packageId"])
+                self.assertEqual(expected, route["name"])
+
+        errors = {row["id"]: row for row in manifest["errorCategories"]}
+        self.assertEqual(
+            (12, "KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH"),
+            (errors["typed_attribute_tag_mismatch"]["cValue"],
+             errors["typed_attribute_tag_mismatch"]["cCode"]),
+        )
+        self.assertEqual(
+            (13, "KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH"),
+            (errors["typed_attribute_value_type_mismatch"]["cValue"],
+             errors["typed_attribute_value_type_mismatch"]["cCode"]),
+        )
 
     @staticmethod
     def manifest_for_repository() -> dict:

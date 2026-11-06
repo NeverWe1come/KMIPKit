@@ -1,9 +1,11 @@
 use super::*;
 
 const ACTIVATION_DATE_TAG: u32 = 0x0042_0001;
-const NAME_TAG: u32 = 0x0042_000a;
+const NAME_TAG: u32 = 0x0042_0053;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const VENDOR_TAG: u32 = 0x0054_0001;
+const TAG_MISMATCH_STATUS: i32 = 12;
+const VALUE_TYPE_MISMATCH_STATUS: i32 = 13;
 
 #[link(name = "kmipkit_typed_attribute_parity_consumer", kind = "static")]
 unsafe extern "C" {
@@ -129,6 +131,23 @@ fn catalog_value(tag: u32, kind: &str) -> Value {
             }
             Value::structure(structure)
         }
+        "Structure" if tag == 0x0042_0004 => {
+            let mut structure = Structure::new();
+            for (child_tag, value) in [
+                (0x0054_0001, Value::text_string("first unknown".to_owned())),
+                (0x0042_000a, Value::text_string("known child".to_owned())),
+                (0x0054_0001, Value::text_string("second unknown".to_owned())),
+            ] {
+                let child_tag = RawTag::new(child_tag)
+                    .expect("Structure child tag fits")
+                    .try_checked()
+                    .expect("Structure child tag is allocated");
+                structure
+                    .try_push(Item::new(child_tag, value).expect("Structure child is valid"))
+                    .expect("Structure remains within limits");
+            }
+            Value::structure(structure)
+        }
         "Structure" => Value::structure(Structure::new()),
         "TextString" | "UniqueIdentifier" => Value::text_string("attribute-value".to_owned()),
         _ => panic!("catalogued attribute has an unsupported test value kind: {kind}"),
@@ -249,20 +268,23 @@ fn typed_attribute_from_item_rejects_mismatched_tag_wrong_type_and_unknown_tag()
             NAME_TAG,
             ACTIVATION_DATE_TAG,
             Value::date_time(1_700_000_000),
+            TAG_MISMATCH_STATUS,
         ),
         (
             NAME_TAG,
             NAME_TAG,
             Value::text_string("sensitive name".to_owned()),
+            VALUE_TYPE_MISMATCH_STATUS,
         ),
         (
             VENDOR_TAG,
             VENDOR_TAG,
             Value::byte_string(b"vendor".to_vec()),
+            ERROR_INVALID_INPUT,
         ),
     ];
 
-    for (expected_tag, item_tag, value) in cases {
+    for (expected_tag, item_tag, value, expected_status) in cases {
         let source = make_handle(
             Kind::Item,
             HandleValue::Item(
@@ -280,7 +302,10 @@ fn typed_attribute_from_item_rejects_mismatched_tag_wrong_type_and_unknown_tag()
 
         let status = call_compiled_c_consumer(expected_tag, source, &raw mut typed);
 
-        assert_eq!(status, ERROR_INVALID_INPUT);
+        assert_eq!(
+            status, expected_status,
+            "expected tag {expected_tag:#010x}, item tag {item_tag:#010x}"
+        );
         assert!(typed.is_null());
         assert!(reference_handle(source, Kind::Item).is_ok());
         kmipkit_ttlv_item_release(source);
@@ -418,13 +443,65 @@ fn typed_attribute_debug_and_rejected_value_redact_sensitive_contents() {
     let mut rejected = ptr::null_mut();
     assert_eq!(
         call_compiled_c_value_constructor(ACTIVATION_DATE_TAG, invalid, &raw mut rejected),
-        ERROR_INVALID_INPUT
+        VALUE_TYPE_MISMATCH_STATUS
     );
     assert!(rejected.is_null());
     assert!(reference_handle(invalid, Kind::Value).is_ok());
     kmipkit_ttlv_value_release(invalid);
     kmipkit_ttlv_value_release(copied);
     kmipkit_ttlv_item_release(typed);
+    kmipkit_ttlv_value_release(source);
+}
+
+#[test]
+fn application_specific_structure_roundtrip_preserves_unknown_child_order_and_values() {
+    let source_value = catalog_value(0x0042_0004, "Structure");
+    let source = make_handle(Kind::Value, HandleValue::Value(source_value));
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        call_compiled_c_value_constructor(0x0042_0004, source, &raw mut item),
+        SUCCESS
+    );
+    let mut copied = ptr::null_mut();
+    assert_eq!(
+        call_compiled_c_value_reader(0x0042_0004, item, &raw mut copied),
+        SUCCESS
+    );
+    let expected_owner = reference_handle(source, Kind::Value).expect("input value remains owned");
+    let copied_owner = reference_handle(copied, Kind::Value).expect("readback is owned");
+    let (HandleValue::Value(expected), HandleValue::Value(actual)) =
+        (&expected_owner.value, &copied_owner.value)
+    else {
+        panic!("typed Structure construction and readback produce Values");
+    };
+    assert!(
+        expected.with_value(|expected| actual.with_value(|actual| values_match(actual, expected)))
+    );
+    let children = actual.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(|child| {
+                let tag = child.tag().raw();
+                let text = child.with_value(|value| match value {
+                    ValueView::TextString(text) => Some(text.to_owned()),
+                    _ => None,
+                });
+                (tag, text)
+            })
+            .collect::<Vec<_>>(),
+        _ => Vec::new(),
+    });
+    assert_eq!(
+        children,
+        [
+            (0x0054_0001, Some("first unknown".to_owned())),
+            (0x0042_000a, Some("known child".to_owned())),
+            (0x0054_0001, Some("second unknown".to_owned())),
+        ]
+    );
+    kmipkit_ttlv_value_release(copied);
+    kmipkit_ttlv_item_release(item);
     kmipkit_ttlv_value_release(source);
 }
 

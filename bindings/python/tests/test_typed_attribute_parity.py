@@ -75,6 +75,18 @@ def _value_for(attribute: StandardAttribute, limits: ttlv.CodecLimits) -> ttlv.V
                 structure, 0x0042_000B,
                 ttlv.ttlv_value_byte_string(b"\x01", limits), limits,
             )
+        elif attribute is StandardAttribute.APPLICATION_SPECIFIC_INFORMATION:
+            for raw_tag, text in (
+                (0x0054_0001, b"first unknown"),
+                (0x0042_000A, b"known child"),
+                (0x0054_0001, b"second unknown"),
+            ):
+                structure = _append(
+                    structure,
+                    raw_tag,
+                    ttlv.ttlv_value_text_string(text, limits),
+                    limits,
+                )
         return ttlv.ttlv_value_structure(structure, limits)
     raise AssertionError(f"unhandled catalogued attribute kind: {kind}")
 
@@ -117,12 +129,27 @@ def _assert_catalog_value(attribute: StandardAttribute, actual: ttlv.TtlvValueVi
         assert ttlv.ttlv_value_view_interval(actual) == 7
     elif kind == "Structure":
         with ttlv.ttlv_value_view_structure(actual) as structure:
-            expected_children = 3 if attribute is StandardAttribute.VENDOR_ATTRIBUTE else 0
+            expected_children = (
+                3
+                if attribute in (
+                    StandardAttribute.VENDOR_ATTRIBUTE,
+                    StandardAttribute.APPLICATION_SPECIFIC_INFORMATION,
+                )
+                else 0
+            )
             assert ttlv.ttlv_structure_view_item_count(structure) == expected_children
             expected = (
-                (0x0042_009D, b"KMIPKit.TestVendor_1"),
-                (0x0042_000A, b"Opaque.Attribute"),
-                (0x0042_000B, b"\x01"),
+                (
+                    (0x0054_0001, b"first unknown"),
+                    (0x0042_000A, b"known child"),
+                    (0x0054_0001, b"second unknown"),
+                )
+                if attribute is StandardAttribute.APPLICATION_SPECIFIC_INFORMATION
+                else (
+                    (0x0042_009D, b"KMIPKit.TestVendor_1"),
+                    (0x0042_000A, b"Opaque.Attribute"),
+                    (0x0042_000B, b"\x01"),
+                )
             )
             for index, (expected_tag, expected_value) in enumerate(expected[:expected_children]):
                 with ttlv.ttlv_structure_view_item_at(structure, index) as child:
@@ -233,9 +260,9 @@ def test_typed_attribute_rejects_wrong_tag_and_value_type_without_exposing_value
         ttlv.ttlv_value_date_time(17),
     )
     try:
-        with pytest.raises(errors.InvalidInputError):
+        with pytest.raises(errors.TypedAttributeTagMismatchError):
             TypedAttribute.from_item(StandardAttribute.NAME, wrong_tag)
-        with pytest.raises(errors.InvalidInputError):
+        with pytest.raises(errors.TypedAttributeValueTypeMismatchError):
             TypedAttribute.from_item(StandardAttribute.NAME, wrong_type)
     finally:
         wrong_tag.close()
@@ -302,7 +329,7 @@ def test_typed_attribute_repr_and_validation_error_redact_sensitive_value():
     marker = b"typed-attribute-private-marker"
     value = ttlv.ttlv_value_text_string(marker, ttlv.codec_limits_defaults())
     with value:
-        with pytest.raises(errors.InvalidInputError) as caught:
+        with pytest.raises(errors.TypedAttributeValueTypeMismatchError) as caught:
             TypedAttribute.create(StandardAttribute.ACTIVATION_DATE, value)
         assert marker.decode() not in str(caught.value)
 

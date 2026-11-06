@@ -29,6 +29,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "server_generated_creation",
     "ttlv_wire_codec",
     "typed_message_model",
+    "typed_object_attributes",
     "usage_allocation_guard",
     "vendor_extension_registry",
 ];
@@ -29903,6 +29904,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0048-kmipkit-protocol-1a7b31f9119cf2bd6892",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::named_values_generated::values::enumeration::wrapping_method::name",
+    ),
+    (
+        "kmipkit-0048-kmipkit-protocol-77cae7a61ae568589f67",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Attribute<D>::new",
+    ),
+    (
+        "kmipkit-0048-kmipkit-protocol-a4ccace207a26d25e562",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Attribute<D>::with_value",
+    ),
+    (
+        "kmipkit-0048-kmipkit-protocol-69954dea601306779b00",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeSet::try_push_typed",
+    ),
+    (
+        "kmipkit-0048-kmipkit-protocol-73da32895a5e519570b1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeSet::typed",
+    ),
+    (
+        "kmipkit-0048-kmipkit-protocol-72f9c1117392564cfcdb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeValueError::TagMismatch",
+    ),
+    (
+        "kmipkit-0048-kmipkit-protocol-b5d5550ce940bbc19a8a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeValueError::ValueTypeMismatch",
     ),
     (
         "kmipkit-0050-kmipkit-ea8b8bc39216e7122940",

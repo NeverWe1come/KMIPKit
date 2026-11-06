@@ -14,6 +14,8 @@ import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
+import org.kmipkit.ttlv.TypedAttributeTagMismatchException;
+import org.kmipkit.ttlv.TypedAttributeValueTypeMismatchException;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.TtlvItemType;
@@ -75,7 +77,9 @@ final class TypedAttributeParityTest {
             case "Interval" -> assertEquals(7, actual.interval());
             case "Structure" -> {
                 try (TtlvStructureView structure = actual.structure()) {
-                    assertEquals(attribute == StandardAttribute.VENDOR_ATTRIBUTE ? 3 : 0,
+                    boolean hasChildren = attribute == StandardAttribute.VENDOR_ATTRIBUTE
+                            || attribute == StandardAttribute.APPLICATION_SPECIFIC_INFORMATION;
+                    assertEquals(hasChildren ? 3 : 0,
                             structure.itemCount());
                     if (attribute == StandardAttribute.VENDOR_ATTRIBUTE) {
                         assertStructureChild(structure, 0, 0x0042_009d,
@@ -83,6 +87,13 @@ final class TypedAttributeParityTest {
                         assertStructureChild(structure, 1, 0x0042_000a,
                                 "Opaque.Attribute".getBytes());
                         assertStructureChild(structure, 2, 0x0042_000b, new byte[] {1});
+                    } else if (attribute == StandardAttribute.APPLICATION_SPECIFIC_INFORMATION) {
+                        assertStructureChild(structure, 0, 0x0054_0001,
+                                "first unknown".getBytes());
+                        assertStructureChild(structure, 1, 0x0042_000a,
+                                "known child".getBytes());
+                        assertStructureChild(structure, 2, 0x0054_0001,
+                                "second unknown".getBytes());
                     }
                 }
             }
@@ -179,9 +190,9 @@ final class TypedAttributeParityTest {
         TtlvItem wrongType = item(StandardAttribute.NAME,
                 TtlvValue.DateTime(17), limits);
         try (wrongTag; wrongType) {
-            assertThrows(InvalidInputException.class,
+            assertThrows(TypedAttributeTagMismatchException.class,
                     () -> TypedAttribute.fromItem(StandardAttribute.NAME, wrongTag));
-            assertThrows(InvalidInputException.class,
+            assertThrows(TypedAttributeValueTypeMismatchException.class,
                     () -> TypedAttribute.fromItem(StandardAttribute.NAME, wrongType));
         }
 
@@ -293,7 +304,10 @@ final class TypedAttributeParityTest {
             case "Interval" -> TtlvValue.Interval(7);
             case "Structure" -> TtlvValue.structure(
                     attribute == StandardAttribute.VENDOR_ATTRIBUTE
-                            ? vendorAttribute(limits) : TtlvStructure.create(), limits);
+                            ? vendorAttribute(limits)
+                            : attribute == StandardAttribute.APPLICATION_SPECIFIC_INFORMATION
+                                    ? applicationSpecificInformation(limits)
+                                    : TtlvStructure.create(), limits);
             case "TextString", "UniqueIdentifier" -> TtlvValue.TextString(
                     "attribute-value".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
             default -> throw new AssertionError("unhandled catalogued attribute type");
@@ -309,6 +323,16 @@ final class TypedAttributeParityTest {
         structure = append(structure, 0x0042_000b,
                 TtlvValue.ByteString(new byte[] {1}, limits), limits);
         return structure;
+    }
+
+    private static TtlvStructure applicationSpecificInformation(CodecLimits limits) {
+        TtlvStructure structure = TtlvStructure.create();
+        structure = append(structure, 0x0054_0001,
+                TtlvValue.TextString("first unknown".getBytes(), limits), limits);
+        structure = append(structure, 0x0042_000a,
+                TtlvValue.TextString("known child".getBytes(), limits), limits);
+        return append(structure, 0x0054_0001,
+                TtlvValue.TextString("second unknown".getBytes(), limits), limits);
     }
 
     private static TtlvStructure append(

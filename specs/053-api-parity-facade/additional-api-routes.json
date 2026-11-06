@@ -950,7 +950,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ],
         "documentation": [
           "Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned."
@@ -975,7 +977,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "python": {
@@ -996,7 +1000,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "ordering": "not-applicable"
@@ -1609,7 +1615,8 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_value_type_mismatch"
         ],
         "documentation": [
           "Constructs and validates an owned typed Item from a catalogued tag and copied TTLV Value; caller retains the Value."
@@ -1634,7 +1641,8 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "python": {
@@ -1655,7 +1663,8 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "ordering": "not-applicable"
@@ -1717,7 +1726,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ],
         "documentation": [
           "Returns an independently owned TTLV Value after validating the typed Item."
@@ -1742,7 +1753,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "python": {
@@ -1763,7 +1776,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "ordering": "not-applicable"
@@ -1824,7 +1839,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ],
         "documentation": [
           "Validates and appends one typed Item while preserving insertion order and caller ownership."
@@ -1853,7 +1870,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "python": {
@@ -1874,7 +1893,9 @@
         "errorCategories": [
           "invalid_input",
           "resource_limit",
-          "internal"
+          "internal",
+          "typed_attribute_tag_mismatch",
+          "typed_attribute_value_type_mismatch"
         ]
       },
       "ordering": "not-applicable"
@@ -13071,7 +13092,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::try_new"
+          "name": "kmipkit_protocol::Attribute<D>::new"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13118,7 +13139,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::try_new"
+          "name": "kmipkit_protocol::Attribute<D>::new"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13165,7 +13186,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::try_new"
+          "name": "kmipkit_protocol::Attribute<D>::new"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13211,8 +13232,8 @@
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::Attribute<D>::from_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::Attribute<D>::with_value"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13258,8 +13279,8 @@
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::Attribute<D>::from_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::Attribute<D>::with_value"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13305,8 +13326,8 @@
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::Attribute<D>::from_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::Attribute<D>::with_value"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13353,7 +13374,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::try_push"
+          "name": "kmipkit_protocol::AttributeSet::try_push_typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13400,7 +13421,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::try_push"
+          "name": "kmipkit_protocol::AttributeSet::try_push_typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13447,7 +13468,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::try_push"
+          "name": "kmipkit_protocol::AttributeSet::try_push_typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13494,7 +13515,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::as_items"
+          "name": "kmipkit_protocol::AttributeSet::typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13541,7 +13562,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::as_items"
+          "name": "kmipkit_protocol::AttributeSet::typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13588,7 +13609,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::as_items"
+          "name": "kmipkit_protocol::AttributeSet::typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13635,7 +13656,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::as_items"
+          "name": "kmipkit_protocol::AttributeSet::typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13682,7 +13703,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::as_items"
+          "name": "kmipkit_protocol::AttributeSet::typed"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -13729,7 +13750,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AttributeSet::as_items"
+          "name": "kmipkit_protocol::AttributeSet::typed"
         },
         "c": {
           "packageId": "c-kmipkit",

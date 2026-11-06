@@ -1285,6 +1285,8 @@ void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
 #define KMIPKIT_ERROR_TRANSPORT ((int32_t)9)
 #define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
 #define KMIPKIT_ERROR_SHARED_OWNER ((int32_t)11)
+#define KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH ((int32_t)12)
+#define KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ((int32_t)13)
 
 /* Creates a typed KMIP 2.1 Derive Key request from §6.1.14, Table 205. Source Unique Identifiers are required, ordered, and may repeat; unknown Object Type and Derivation Method values are preserved. Derivation Parameters and Attributes are borrowed and copied by the call. The source array is bounded to 100,000 identifiers and 16 MiB of aggregate Text String bytes.
  */
