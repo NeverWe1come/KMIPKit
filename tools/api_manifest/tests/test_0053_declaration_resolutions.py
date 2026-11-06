@@ -74,6 +74,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         return {
             "declarationId": identifier,
             "capabilityId": "typed_object_attributes",
+            "packageId": candidate["packageId"],
             "exportName": export_name,
             "resolution": "mapped",
             "languageMappings": {
@@ -95,6 +96,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         return {
             "declarationId": candidate["declarationId"],
             "capabilityId": candidate["capabilityId"],
+            "packageId": candidate["packageId"],
             "exportName": candidate["exportName"],
             "resolution": "excluded",
             "exclusion": {
@@ -169,6 +171,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         recorded = result["approvedExclusions"][0]
         self.assertEqual("trait", recorded["declarationId"])
         self.assertEqual(trait["exportName"], recorded["exportName"])
+        self.assertEqual(trait["capabilityId"], recorded["capabilityId"])
         self.assertEqual(["mapped-type"], recorded["counterpartDeclarationIds"])
         replay = reconcile_0053_api_parity.reconcile_candidate_resolutions(result, [mapping, exclusion])
         self.assertEqual(result, replay)

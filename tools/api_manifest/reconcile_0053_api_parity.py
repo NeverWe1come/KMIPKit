@@ -6,7 +6,7 @@ import argparse
 import copy
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 SPEC_ID = "KMIPKIT-0053"
@@ -17,6 +17,41 @@ LANGUAGE_PACKAGES = {
     "python": {"python-kmipkit"},
 }
 REQUIRED_LANGUAGES = frozenset(LANGUAGE_PACKAGES)
+DECLARATION_RESOLUTION_COMMON_FIELDS = frozenset({
+    "declarationId",
+    "capabilityId",
+    "packageId",
+    "exportName",
+    "resolution",
+    "evidencePaths",
+    "approvalSource",
+})
+TYPE_SYSTEM_EXCLUSION_REASONS = {
+    "rust-trait": (
+        "This Rust trait is a compile-time abstraction; its runtime behavior is "
+        "exercised through the exact mapped declarations listed as counterparts."
+    ),
+    "rust-associated-type": (
+        "This Rust associated type is a compile-time value contract; its values "
+        "are represented by the exact mapped typed-value declarations listed as counterparts."
+    ),
+    "rust-generic-type": (
+        "This Rust generic type parameterization has no distinct foreign runtime type; "
+        "the exact mapped foreign wrapper listed as counterpart preserves its behavior."
+    ),
+    "rust-enum-variant": (
+        "This Rust enum variant is a type-system representation detail; its runtime "
+        "value is represented by the exact mapped parent model listed as counterpart."
+    ),
+    "rust-enum-field": (
+        "This Rust enum payload field is a type-system representation detail; its runtime "
+        "value is represented by the exact mapped parent model listed as counterpart."
+    ),
+    "rust-module": (
+        "This Rust module is a namespace boundary only; its runtime API is represented by "
+        "the exact mapped declarations listed as counterparts."
+    ),
+}
 TRAIT_PROJECTION_REASON = (
     "This exact compiler-visible Rust trait projection is language-level behavior "
     "of the separately mapped KMIPKit model and has no independent foreign API route."
@@ -91,6 +126,425 @@ def _validate_exclusion(declaration: dict[str, Any], route: dict[str, Any]) -> d
         "evidence": "; ".join(evidence),
         "candidateSpecId": SPEC_ID,
     }
+
+
+def _validate_resolution_identity(
+    declaration: dict[str, Any], resolution: dict[str, Any]
+) -> None:
+    if (
+        resolution.get("declarationId") != declaration.get("declarationId")
+        or resolution.get("capabilityId") != declaration.get("capabilityId")
+        or resolution.get("packageId") != declaration.get("packageId")
+        or resolution.get("exportName") != declaration.get("exportName")
+    ):
+        raise ReconciliationError(
+            "candidate resolution must repeat the exact declaration ID, capability, and export name"
+        )
+    if declaration.get("candidateSpecId") != SPEC_ID or declaration.get("declarationState") != "blocked":
+        raise ReconciliationError("only blocked KMIPKIT-0053 candidates may be resolved")
+
+
+def _validate_resolution_evidence(resolution: dict[str, Any]) -> list[str]:
+    evidence = resolution.get("evidencePaths")
+    if not isinstance(evidence, list) or not evidence or any(
+        not isinstance(path, str) or not path.strip() for path in evidence
+    ):
+        raise ReconciliationError("every declaration resolution needs unique evidence paths")
+    if len(evidence) != len(set(evidence)):
+        raise ReconciliationError("every declaration resolution needs unique evidence paths")
+    for path in evidence:
+        parsed = PurePosixPath(path)
+        if parsed.is_absolute() or ".." in parsed.parts or any(char in path for char in "*?"):
+            raise ReconciliationError("evidence paths must be exact repository-relative paths")
+
+    approval = resolution.get("approvalSource")
+    if (
+        not isinstance(approval, dict)
+        or set(approval) != {"kind", "path", "status", "evidence"}
+        or any(not isinstance(value, str) or not value.strip() for value in approval.values())
+        or approval.get("kind") != "feature-specification"
+        or approval.get("status") != "Approved"
+    ):
+        raise ReconciliationError("every declaration resolution needs an approved feature source")
+    return evidence
+
+
+def _candidate_parent(
+    declaration: dict[str, Any], declarations_by_export: dict[tuple[str, str], dict[str, Any]]
+) -> dict[str, Any] | None:
+    export_name = declaration.get("exportName")
+    if not isinstance(export_name, str) or "::" not in export_name:
+        return None
+    parent_name = export_name.rsplit("::", maxsplit=1)[0]
+    return declarations_by_export.get((declaration.get("packageId", ""), parent_name))
+
+
+def _validate_type_system_exclusion(
+    declaration: dict[str, Any],
+    resolution: dict[str, Any],
+    declarations_by_export: dict[tuple[str, str], dict[str, Any]],
+) -> tuple[dict[str, Any], list[str]]:
+    exclusion = resolution.get("exclusion")
+    if not isinstance(exclusion, dict) or set(exclusion) != {
+        "artifactKind",
+        "counterpartDeclarationIds",
+    }:
+        raise ReconciliationError("an exact type-system exclusion needs an artifact and counterpart IDs")
+    artifact_kind = exclusion.get("artifactKind")
+    if artifact_kind not in TYPE_SYSTEM_EXCLUSION_REASONS:
+        raise ReconciliationError("the exclusion kind is not an approved Rust type-system artifact")
+
+    declaration_kind = declaration.get("kind")
+    export_name = declaration.get("exportName", "")
+    valid_artifact = False
+    parent: dict[str, Any] | None = None
+    if artifact_kind == "rust-trait":
+        valid_artifact = declaration_kind == "trait"
+    elif artifact_kind == "rust-associated-type":
+        valid_artifact = (
+            declaration_kind == "associated-item"
+            and export_name.rsplit("::", maxsplit=1)[-1] in {"Value", "ValueView"}
+        )
+        parent = _candidate_parent(declaration, declarations_by_export)
+        valid_artifact = valid_artifact and parent is not None and parent.get("kind") == "trait"
+    elif artifact_kind == "rust-generic-type":
+        valid_artifact = declaration_kind == "type" and "<" in export_name and ">" in export_name
+    elif artifact_kind == "rust-enum-variant":
+        valid_artifact = declaration_kind == "variant"
+        parent = _candidate_parent(declaration, declarations_by_export)
+        valid_artifact = (
+            valid_artifact
+            and parent is not None
+            and parent.get("kind") == "type"
+            and not str(parent.get("exportName", "")).endswith("Error")
+        )
+    elif artifact_kind == "rust-enum-field":
+        valid_artifact = declaration_kind == "field"
+        parent = _candidate_parent(declaration, declarations_by_export)
+        enum_type = _candidate_parent(parent, declarations_by_export) if parent is not None else None
+        valid_artifact = (
+            valid_artifact
+            and parent is not None
+            and parent.get("kind") == "variant"
+            and enum_type is not None
+            and enum_type.get("kind") == "type"
+            and not str(enum_type.get("exportName", "")).endswith("Error")
+        )
+    elif artifact_kind == "rust-module":
+        valid_artifact = declaration_kind == "module"
+    if not valid_artifact:
+        raise ReconciliationError("the exclusion does not match this exact Rust type-system declaration")
+
+    counterpart_ids = exclusion.get("counterpartDeclarationIds")
+    if (
+        not isinstance(counterpart_ids, list)
+        or not counterpart_ids
+        or any(not isinstance(identifier, str) or not identifier or any(c in identifier for c in "*?")
+               for identifier in counterpart_ids)
+    ):
+        raise ReconciliationError("type-system exclusions require exact counterpart declaration IDs")
+    if len(counterpart_ids) != len(set(counterpart_ids)):
+        raise ReconciliationError("type-system exclusions require unique counterpart declaration IDs")
+    return exclusion, counterpart_ids
+
+
+def _required_parent_counterpart(
+    declaration: dict[str, Any],
+    artifact_kind: str,
+    declarations_by_export: dict[tuple[str, str], dict[str, Any]],
+) -> str | None:
+    if artifact_kind == "rust-enum-variant":
+        parent = _candidate_parent(declaration, declarations_by_export)
+        return parent.get("declarationId") if parent is not None else None
+    if artifact_kind == "rust-enum-field":
+        variant = _candidate_parent(declaration, declarations_by_export)
+        enum_type = _candidate_parent(variant, declarations_by_export) if variant is not None else None
+        return enum_type.get("declarationId") if enum_type is not None else None
+    return None
+
+
+def _resolution_exclusion_record(
+    declaration: dict[str, Any],
+    resolution: dict[str, Any],
+    exclusion: dict[str, Any],
+    evidence: list[str],
+) -> dict[str, Any]:
+    artifact_kind = exclusion["artifactKind"]
+    return {
+        "declarationId": declaration["declarationId"],
+        "capabilityId": declaration["capabilityId"],
+        "packageId": declaration["packageId"],
+        "exportName": declaration["exportName"],
+        "declarationKind": declaration["kind"],
+        "artifactKind": artifact_kind,
+        "reason": TYPE_SYSTEM_EXCLUSION_REASONS[artifact_kind],
+        "counterpartDeclarationIds": list(exclusion["counterpartDeclarationIds"]),
+        "approvalSource": copy.deepcopy(resolution["approvalSource"]),
+        "evidence": "; ".join(evidence),
+        "evidencePaths": list(evidence),
+        "candidateSpecId": SPEC_ID,
+    }
+
+
+def reconcile_candidate_resolutions(
+    manifest: dict[str, Any], resolutions: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Resolve exact KMIPKIT-0053 candidates by route mapping or narrow type-system exclusion."""
+    if not isinstance(resolutions, list):
+        raise ReconciliationError("candidate resolutions must be a list")
+    result = copy.deepcopy(manifest)
+    declarations = result.get("publicDeclarations")
+    if not isinstance(declarations, list):
+        raise ReconciliationError("manifest lacks publicDeclarations")
+    candidates = [row for row in declarations if row.get("candidateSpecId") == SPEC_ID]
+    candidates_by_id = {row.get("declarationId"): row for row in candidates}
+    all_by_id = {row.get("declarationId"): row for row in declarations}
+    by_export = {
+        (row.get("packageId", ""), row.get("exportName", "")): row
+        for row in declarations
+    }
+    identifiers = [row.get("declarationId") for row in resolutions if isinstance(row, dict)]
+    if len(identifiers) != len(resolutions) or any(
+        not isinstance(identifier, str) or not identifier or any(c in identifier for c in "*?")
+        for identifier in identifiers
+    ):
+        raise ReconciliationError("each resolution needs one exact stable declaration ID")
+    if len(identifiers) != len(set(identifiers)):
+        raise ReconciliationError("a declaration may be resolved only once per reconciliation")
+
+    mapping_ids: set[str] = set()
+    exclusion_records: list[dict[str, Any]] = []
+    for resolution in resolutions:
+        if not isinstance(resolution, dict):
+            raise ReconciliationError("candidate resolution has missing or unrecognized fields")
+        resolution_kind = resolution.get("resolution")
+        expected_fields = DECLARATION_RESOLUTION_COMMON_FIELDS | (
+            {"languageMappings"} if resolution_kind == "mapped" else {"exclusion"}
+        )
+        if set(resolution) != expected_fields:
+            raise ReconciliationError("candidate resolution has missing or unrecognized fields")
+        identifier = resolution["declarationId"]
+        declaration = candidates_by_id.get(identifier)
+        if declaration is None:
+            existing = all_by_id.get(identifier)
+            if existing is not None and existing.get("declarationState") == "verified":
+                _validate_resolution_identity_existing(existing, resolution)
+                route = _mapping_route_from_resolution(resolution)
+                mappings = _validate_mapping(existing, route)
+                if (
+                    resolution_kind != "mapped"
+                    or mappings["rust"]["name"] != existing.get("exportName")
+                    or mappings != existing.get("languageMappings")
+                    or resolution.get("evidencePaths") != existing.get("parityEvidenceIds")
+                    or resolution.get("approvalSource") != existing.get("approvalSource")
+                ):
+                    raise ReconciliationError("replayed mapped resolution differs from verified declaration")
+                mapping_ids.add(identifier)
+                continue
+            existing_exclusion = next(
+                (row for row in result.get("approvedExclusions", [])
+                 if row.get("declarationId") == identifier),
+                None,
+            )
+            if existing_exclusion is not None:
+                _validate_resolution_identity_existing(existing_exclusion, resolution)
+                expected = _resolution_exclusion_replay_record(resolution)
+                if existing_exclusion != expected:
+                    raise ReconciliationError("replayed exclusion differs from approved record")
+                for counterpart_id in expected["counterpartDeclarationIds"]:
+                    counterpart = all_by_id.get(counterpart_id)
+                    if (
+                        counterpart is None
+                        or counterpart.get("declarationState") != "verified"
+                        or counterpart.get("capabilityId") != existing_exclusion.get("capabilityId")
+                    ):
+                        raise ReconciliationError("replayed exclusion counterpart is no longer mapped")
+                continue
+            raise ReconciliationError("candidate resolution references no exact 0053 candidate")
+
+        _validate_resolution_identity(declaration, resolution)
+        evidence = _validate_resolution_evidence(resolution)
+        if resolution_kind == "mapped":
+            route = _mapping_route_from_resolution(resolution)
+            mappings = _validate_mapping(declaration, route)
+            if (
+                mappings["rust"]["packageId"] != declaration["packageId"]
+                or mappings["rust"]["name"] != declaration["exportName"]
+            ):
+                raise ReconciliationError("Rust mapping must exactly match the candidate export")
+            updated = copy.deepcopy(declaration)
+            updated["declarationState"] = "verified"
+            updated["languageMappings"] = mappings
+            updated["parityEvidenceIds"] = evidence
+            updated["approvalSource"] = copy.deepcopy(resolution["approvalSource"])
+            updated.pop("candidateSpecId", None)
+            updated.pop("blockedReason", None)
+            all_by_id[identifier] = updated
+            by_export[(updated["packageId"], updated["exportName"])] = updated
+            mapping_ids.add(identifier)
+        elif resolution_kind == "excluded":
+            exclusion, _ = _validate_type_system_exclusion(declaration, resolution, by_export)
+            exclusion_records.append(
+                _resolution_exclusion_record(declaration, resolution, exclusion, evidence)
+            )
+        else:
+            raise ReconciliationError("resolution must be mapped or excluded")
+
+    for resolution in resolutions:
+        if resolution["resolution"] != "excluded":
+            continue
+        declaration_id = resolution["declarationId"]
+        declaration = candidates_by_id.get(declaration_id)
+        if declaration is None:
+            continue
+        exclusion, counterpart_ids = _validate_type_system_exclusion(
+            declaration, resolution, by_export
+        )
+        required_parent = _required_parent_counterpart(
+            declaration, exclusion["artifactKind"], by_export
+        )
+        if required_parent is not None and required_parent not in counterpart_ids:
+            raise ReconciliationError("enum-shape exclusion must name its exact mapped parent model")
+        for counterpart_id in counterpart_ids:
+            counterpart = all_by_id.get(counterpart_id)
+            if counterpart is None or counterpart.get("capabilityId") != declaration["capabilityId"]:
+                raise ReconciliationError("exclusion counterpart must be an exact same-capability declaration")
+            if counterpart.get("declarationState") != "verified" or counterpart_id not in mapping_ids:
+                raise ReconciliationError("exclusion counterpart must have an exact verified four-language mapping")
+
+    processed_candidate_ids = set(identifiers) & set(candidates_by_id)
+    result["publicDeclarations"] = [
+        row for row in declarations if row.get("declarationId") not in processed_candidate_ids
+    ] + [
+        all_by_id[identifier]
+        for identifier in identifiers
+        if identifier in mapping_ids and identifier in processed_candidate_ids
+    ]
+
+    existing_exclusions = result.setdefault("approvedExclusions", [])
+    existing_exclusion_ids = {row.get("declarationId") for row in existing_exclusions}
+    for exclusion in exclusion_records:
+        if exclusion["declarationId"] in existing_exclusion_ids:
+            raise ReconciliationError("candidate exclusion already exists in approvedExclusions")
+        existing_exclusions.append(exclusion)
+        existing_exclusion_ids.add(exclusion["declarationId"])
+
+    capabilities = result.get("capabilities")
+    if not isinstance(capabilities, list):
+        raise ReconciliationError("manifest lacks capabilities")
+    capability_by_id = {row.get("capabilityId"): row for row in capabilities}
+    for capability_id in {resolution["capabilityId"] for resolution in resolutions}:
+        capability = capability_by_id.get(capability_id)
+        if capability is None:
+            raise ReconciliationError("candidate capability is missing from manifest")
+        unresolved = any(
+            row.get("candidateSpecId") == SPEC_ID and row.get("capabilityId") == capability_id
+            for row in result["publicDeclarations"]
+        )
+        if unresolved or capability.get("capabilityState") == "verified":
+            continue
+        if capability.get("capabilityState") != "blocked":
+            raise ReconciliationError("candidate capability is not blocked pending reconciliation")
+        mapped_rows = [
+            row for row in result["publicDeclarations"]
+            if row.get("capabilityId") == capability_id and row.get("declarationState") == "verified"
+        ]
+        if not mapped_rows:
+            raise ReconciliationError("a capability cannot be verified by exclusions without mapped behavior")
+        capability["capabilityState"] = "verified"
+        capability["mappings"] = {
+            language: sorted({row["languageMappings"][language]["name"] for row in mapped_rows})
+            for language in sorted(REQUIRED_LANGUAGES)
+        }
+        mapped_resolution = next(
+            (resolution for resolution in resolutions
+             if resolution["resolution"] == "mapped"
+             and resolution["capabilityId"] == capability_id),
+            None,
+        )
+        if mapped_resolution is not None:
+            capability["ownerSpecId"] = SPEC_ID
+            capability["approvalEvidence"] = copy.deepcopy(mapped_resolution["approvalSource"])
+            capability["parityEvidenceIds"] = sorted({
+                path for resolution in resolutions
+                if resolution["resolution"] == "mapped"
+                and resolution["capabilityId"] == capability_id
+                for path in resolution["evidencePaths"]
+            })
+        capability.pop("candidateSpecId", None)
+        capability.pop("blockedReason", None)
+    return result
+
+
+def _mapping_route_from_resolution(resolution: dict[str, Any]) -> dict[str, Any]:
+    mappings = resolution.get("languageMappings")
+    if not isinstance(mappings, dict):
+        raise ReconciliationError("mapped candidate needs all four exact language mappings")
+    return {
+        **mappings,
+        "parityEvidenceIds": resolution.get("evidencePaths"),
+        "approvalSource": resolution.get("approvalSource"),
+    }
+
+
+def _validate_resolution_identity_existing(
+    declaration: dict[str, Any], resolution: dict[str, Any]
+) -> None:
+    if (
+        resolution.get("declarationId") != declaration.get("declarationId")
+        or resolution.get("capabilityId") != declaration.get("capabilityId")
+        or resolution.get("packageId") != declaration.get("packageId")
+        or resolution.get("exportName") != declaration.get("exportName")
+    ):
+        raise ReconciliationError("replayed resolution identity does not match its exact record")
+
+
+def _resolution_exclusion_replay_record(resolution: dict[str, Any]) -> dict[str, Any]:
+    exclusion = resolution.get("exclusion")
+    if not isinstance(exclusion, dict) or set(exclusion) != {
+        "artifactKind",
+        "counterpartDeclarationIds",
+    }:
+        raise ReconciliationError("replayed exclusion is incomplete")
+    artifact_kind = exclusion.get("artifactKind")
+    if artifact_kind not in TYPE_SYSTEM_EXCLUSION_REASONS:
+        raise ReconciliationError("replayed exclusion kind is not approved")
+    evidence = _validate_resolution_evidence(resolution)
+    counterpart_ids = exclusion.get("counterpartDeclarationIds")
+    if (
+        not isinstance(counterpart_ids, list)
+        or not counterpart_ids
+        or any(not isinstance(identifier, str) or not identifier or any(char in identifier for char in "*?")
+               for identifier in counterpart_ids)
+    ):
+        raise ReconciliationError("replayed exclusion needs exact counterpart IDs")
+    if len(counterpart_ids) != len(set(counterpart_ids)):
+        raise ReconciliationError("replayed exclusion needs unique exact counterpart IDs")
+    return {
+        "declarationId": resolution["declarationId"],
+        "capabilityId": resolution["capabilityId"],
+        "packageId": resolution["packageId"],
+        "exportName": resolution["exportName"],
+        "declarationKind": _replayed_exclusion_declaration_kind(artifact_kind),
+        "artifactKind": artifact_kind,
+        "reason": TYPE_SYSTEM_EXCLUSION_REASONS[artifact_kind],
+        "counterpartDeclarationIds": list(counterpart_ids),
+        "approvalSource": copy.deepcopy(resolution["approvalSource"]),
+        "evidence": "; ".join(evidence),
+        "evidencePaths": list(evidence),
+        "candidateSpecId": SPEC_ID,
+    }
+
+
+def _replayed_exclusion_declaration_kind(artifact_kind: str) -> str:
+    return {
+        "rust-trait": "trait",
+        "rust-associated-type": "associated-item",
+        "rust-generic-type": "type",
+        "rust-enum-variant": "variant",
+        "rust-enum-field": "field",
+        "rust-module": "module",
+    }[artifact_kind]
 
 
 def reconcile_manifest(
@@ -477,6 +931,9 @@ def main() -> int:
         result = manifest
         if "candidateRoutes" in route_data:
             result = reconcile_manifest(result, route_data["candidateRoutes"])
+        result = reconcile_candidate_resolutions(
+            result, route_data.get("candidateResolutions", [])
+        )
         result = resolve_public_declarations(result, route_data.get("declarationResolutions", []))
         result = add_additional_types(result, route_data.get("types", []))
         result = add_additional_functions(result, route_data.get("functions", []))
