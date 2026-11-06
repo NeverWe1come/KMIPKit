@@ -266,7 +266,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(preexisting_outputs, [])
 
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 44 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 48 * 1024 * 1024)
 
     def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -602,6 +602,16 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
         self.assertIn(helper_include, public_header)
         self.assertNotIn(helper_include, internal_header)
+
+    def test_standard_attribute_catalog_is_included_in_public_header(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+        public_header = generate.render_c_header(manifest)
+        internal_header = generate.render_internal_c_header(manifest)
+
+        include = '#include "kmipkit_standard_attributes_generated.h"'
+        self.assertIn(include, public_header)
+        self.assertNotIn(include, internal_header)
 
     def test_declared_c_symbol_signature_is_emitted_from_its_declaration(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
