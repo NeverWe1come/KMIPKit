@@ -119,14 +119,19 @@ class OperationBindingMatrixTests(unittest.TestCase):
         python_test = _read(
             ROOT / "bindings" / "python" / "tests" / "test_operation_binding_parity_0053.py"
         )
+        fixture_test = _read(
+            ROOT / "tools" / "api_manifest" / "tests" / "test_operation_catalog_fixture.py"
+        )
 
-        # The C fixture compares each encoded request operation to the pinned
-        # KMIP operation values. The 48 generic batch constructors plus four
-        # existing specialized constructors and four explicit async operations
-        # account for the complete 56-operation client catalog.
+        # The C matrix compares its 48 route values to the normative fixture;
+        # four additional C consumer routes complete the synchronous join.
         expected_values = c_source.split("static const uint32_t EXPECTED_BATCH_OPERATIONS[] = {", 1)[1]
         expected_values = expected_values.split("};", 1)[0]
         self.assertEqual(expected_values.count("UINT32_C("), 48)
+        self.assertIn(
+            "test_c_route_matrix_joins_to_normative_values_including_four_extra_routes",
+            fixture_test,
+        )
         self.assertIn("invoked_count != UINT64_C(52)", c_source)
         self.assertIn("async_operation_routes_are_callable()", c_source)
         self.assertIn("compiled_c_consumer_invokes_all_56_client_operation_routes", c_test)
