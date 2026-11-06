@@ -748,9 +748,26 @@ def expand_java_stale_mappings(
                 ),
                 None,
             )
-            if existing is not None and existing != clone:
-                raise ResolutionError(
-                    f"Java wrapper route conflicts with an existing declaration: {target_name}"
+            if existing is not None:
+                exact_route_match = all(
+                    existing.get(field) == clone.get(field)
+                    for field in (
+                        "declarationId", "packageId", "kind", "exportName",
+                        "capabilityId", "declarationState", "parityScope",
+                        "languageMappings", "approvalSource",
+                    )
+                )
+                if not exact_route_match:
+                    raise ResolutionError(
+                        f"Java wrapper route conflicts with an existing declaration: {target_name}"
+                    )
+                existing["requirementIds"] = sorted(
+                    set(existing.get("requirementIds", []))
+                    | set(clone.get("requirementIds", []))
+                )
+                existing["parityEvidenceIds"] = sorted(
+                    set(existing.get("parityEvidenceIds", []))
+                    | set(clone.get("parityEvidenceIds", []))
                 )
             if existing is None:
                 declarations.append(clone)
