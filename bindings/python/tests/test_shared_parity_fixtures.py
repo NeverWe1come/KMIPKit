@@ -6,6 +6,7 @@ import ast
 import gc
 import inspect
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -570,6 +571,8 @@ def test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library(
             "the Python package build requires the pinned maturin tool"
         )
         maturin_path = Path(path_executable)
+    build_environment = os.environ.copy()
+    build_environment["CARGO_TARGET_DIR"] = str(tmp_path / "cargo-target")
     result = subprocess.run(
         [
             str(maturin_path),
@@ -586,6 +589,7 @@ def test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library(
         encoding="utf-8",
         errors="replace",
         text=True,
+        env=build_environment,
     )
     assert result.returncode == 0, f"Python wheel build failed:\n{result.stdout}\n{result.stderr}"
 
