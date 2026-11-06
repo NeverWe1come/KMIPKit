@@ -504,7 +504,7 @@ fn lifecycle_preflight_leaves_remote_object_state_to_the_server() {
         RecoverRequest::new(None).validate(),
     ];
 
-    assert!(reports.iter().all(|report| report.is_valid()));
+    assert!(reports.iter().all(crate::ValidationReport::is_valid));
 }
 
 #[test]
@@ -536,7 +536,7 @@ fn remaining_typed_requests_keep_table_valid_construction_paths_open() {
         RngSeedRequest::new(SecretBytes::new(vec![0x01])).validate(),
     ];
 
-    assert!(reports.iter().all(|report| report.is_valid()));
+    assert!(reports.iter().all(crate::ValidationReport::is_valid));
 }
 
 #[test]

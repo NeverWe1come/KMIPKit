@@ -19,7 +19,7 @@ Static audit of all 189 operation-field rows, current Rust request models/serial
 - **O**: Arbitrary managed-object `Item`; raw constructor does not guarantee selected object tag/schema.
 - **F**: Fixed serializer-only value; no caller input.
 
-These are limited invariants, not completeness marks or proof that the fixed tag matches OASIS; the final section identifies two current tag mismatches. Generic TTLV construction does not imply a known KMIP schema. Unknown tags/future values on accepted extensible paths remain open.
+These are limited invariants, not completeness marks or proof that the fixed tag matches OASIS. The final section records two tag mismatches found during T003 and corrected before T020; their literal-value regressions are linked from `traceability.md`. Generic TTLV construction does not imply a known KMIP schema. Unknown tags/future values on accepted extensible paths remain open.
 
 ## Shared schema and local boundary
 
@@ -232,7 +232,7 @@ Types are exact stored Rust field types except explicit nested projections/seria
 | R116 | MacVerify / Unique Identifier | `MacVerifyRequest.identifier` | `Option<UniqueIdentifier>` | U |
 | R117 | MacVerify / Cryptographic Parameters | `MacVerifyRequest.parameters` | `Option<Structure>` | R; CP |
 | R118 | MacVerify / Data | `MacVerifyRequest.data` | `Option<OperationData>` | D |
-| R119 | MacVerify / MAC Data | `MacVerifyRequest.mac_data` | `Option<SecretBytes>` | S; current tag mismatch, see final section |
+| R119 | MacVerify / MAC Data | `MacVerifyRequest.mac_data` | `Option<SecretBytes>` | S; tag correction is covered by independent OASIS-literal request/response tests |
 | R120 | MacVerify / Correlation Value | `MacVerifyRequest.correlation` | `Option<SecretBytes>` | S |
 | R121 | MacVerify / Init Indicator | `MacVerifyRequest.init` | `Option<bool>` | S |
 | R122 | MacVerify / Final Indicator | `MacVerifyRequest.final_part` | `Option<bool>` | S |
@@ -279,7 +279,7 @@ Types are exact stored Rust field types except explicit nested projections/seria
 | R163 | RekeyKeyPair / Public Protection Storage Masks | `RekeyKeyPairRequest.public_protection_storage_masks` | `Option<Structure>` | R; MASKS |
 | R164 | ReProvision / Certificate Request | `ReProvisionRequest.certificate_request` | `Option<Structure>` | R; CERTREQ |
 | R165 | ReProvision / Certificate | `ReProvisionRequest.certificate` | `Option<Structure>` | R; CERT |
-| R166 | RngRetrieve / Data Length | `RngRetrieveRequest.data_length` | `i32` | S; current tag mismatch, see final section |
+| R166 | RngRetrieve / Data Length | `RngRetrieveRequest.data_length` | `i32` | S; tag correction is covered by independent OASIS-literal request/response tests |
 | R167 | RngSeed / Data | `RngSeedRequest.data` | `SecretBytes` | S |
 | R168 | SetAttribute / Unique Identifier | `SetAttributeRequest.unique_identifier` | `Option<String>` | US |
 | R169 | SetAttribute / New Attribute | `SetAttributeRequest.new_attribute -> NewAttribute.item: Item` | `NewAttribute` | N; NEW |
@@ -356,13 +356,13 @@ The index gives each operation's nearest test file. Named tests below prove only
 
 All R001-R189 occur once; all 54 field-bearing operation models have serializer/test pointers. GetConstraints/Ping account for the other two operations. Extra raw surfaces outside those field rows are explicitly covered: DerivationParameters/Interop/Log/Pkcs11/Validate extensions, Current/New Attribute direct Items, AttributeSet nested values, typed ManagedObject/CP/Ticket raw acceptance. Header Authentication/Credential belongs to the cross-cutting header audit, not an invented field in Login/DelegatedLogin Tables199/253.
 
-## Current serializer/source mismatches (not proposed matrix replacements)
+## T003 serializer/source mismatches and resolution
 
-These are current implementation defects. Keep source-backed row tags and correct the serializers/readers with test-first commits T020–T022; tests must use pinned-source tag values independently of production constants.
+These are historical implementation defects recorded during T003. Commit `8f8c824df` corrected the shared Rust tags before T020; the existing operation tests use independent OASIS-literal expected tags and cover both request encoding and response reading.
 
 | Field use | Current code | Pinned source | Implication |
 |---|---|---|---|
-| R119 MacVerify / MAC Data | `mac_verify.rs` uses shared `cryptographic_operation::MAC_DATA = 0x4200C4`; MAC response parsing in `mac.rs` also uses it. | §11.56 Table 487 MAC Data = 0x4200C6; §7.20 Table 372 defines Byte String. | Correct the shared field tag to 0x4200C6; this also restores parsing of the same MAC Data field in the existing MAC response reader without adding response validation rules. |
-| R166 RngRetrieve / Data Length | `rng_retrieve.rs::DATA_LENGTH = 0x4200D5`; `rng_seed.rs` uses the same wrong value for the RNG Seed response Data Length reader. | §11.56 Table 487 Data Length = 0x4200C4; §7.10 Table 362 defines Integer; §6.1.50 Table 320 contains the RNG Seed response field. | Correct the shared Data Length tag to 0x4200C4 for the RNG Retrieve request and RNG Seed response reader. |
+| R119 MacVerify / MAC Data | Before `8f8c824df`, shared `cryptographic_operation::MAC_DATA` was `0x4200C4`; it is now `0x4200C6` for request serialization and MAC response parsing. | §11.56 Table 487 MAC Data = 0x4200C6; §7.20 Table 372 defines Byte String. | Resolved. Independent test literals: `mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order`; `mac_operation_tests.rs::successful_response_exposes_identifier_mac_data_and_unknown_generic_fields`. |
+| R166 RngRetrieve / Data Length | Before `8f8c824df`, the request and RNG Seed response reader used `0x4200D5`; both now use `0x4200C4`. | §11.56 Table 487 Data Length = 0x4200C4; §7.10 Table 362 defines Integer; §6.1.50 Table 320 contains the RNG Seed response field. | Resolved. Independent test literals: `rng_retrieve_operation_tests.rs::request_encodes_required_table_316_data_length_as_integer`; `rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields`. |
 
 The scan compared identifiable per-operation/shared Rust constants against exact matching Table487 field names. It is not exhaustive proof of polymorphic objects or arbitrary extension tags. Reported mismatches were manually rechecked in the named source modules.
