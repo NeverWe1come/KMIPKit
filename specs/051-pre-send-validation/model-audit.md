@@ -118,7 +118,7 @@ Types are exact stored Rust field types except explicit nested projections/seria
 | R002 | AddAttribute / Unique Identifier | `AddAttributeRequest.unique_identifier` | `Option<String>` | US |
 | R003 | AddAttribute / New Attribute | `AddAttributeRequest.new_attribute -> NewAttribute.item: Item` | `NewAttribute` | N; NEW |
 | R004 | AdjustAttribute / Unique Identifier | `AdjustAttributeRequest.unique_identifier` | `Option<String>` | US |
-| R005 | AdjustAttribute / Attribute Reference | `AdjustAttributeRequest.attribute_reference` | `AttributeReference` | AR; REF |
+| R005 | AdjustAttribute / Attribute Reference | `AdjustAttributeRequest.attribute_reference` | `AttributeReference` | AR; REF; `AdjustAttributeRequest::validate` enforces the §5.5 Table 161 Vendor Identification alphabet; `typed_request_validation_tests::attribute_reference_mutation_validation_rejects_invalid_vendor_identification` verifies indexed diagnostics and redaction |
 | R006 | AdjustAttribute / Adjustment Type | `AdjustAttributeRequest.adjustment_type` | `AdjustmentType` | S |
 | R007 | AdjustAttribute / Adjustment Value | `AdjustAttributeRequest.adjustment_value` | `Option<Value>` | R; ADJUST |
 | R008 | Archive / Unique Identifier | `ArchiveRequest.unique_identifier` | `Option<UniqueIdentifier>` | U |
@@ -164,7 +164,7 @@ Types are exact stored Rust field types except explicit nested projections/seria
 | R048 | DelegatedLogin / Rights | `DelegatedLoginRequest.rights` | `Structure` | R; RIGHTS |
 | R049 | DeleteAttribute / Unique Identifier | `DeleteAttributeRequest.unique_identifier` | `Option<String>` | US |
 | R050 | DeleteAttribute / Current Attribute | `DeleteAttributeRequest.current_attribute -> CurrentAttribute.item: Item` | `Option<CurrentAttribute>` | N; CURRENT |
-| R051 | DeleteAttribute / Attribute Reference | `DeleteAttributeRequest.attribute_reference` | `Option<AttributeReference>` | AR; REF |
+| R051 | DeleteAttribute / Attribute Reference | `DeleteAttributeRequest.attribute_reference` | `Option<AttributeReference>` | AR; REF; `DeleteAttributeRequest::validate` enforces the §5.5 Table 161 Vendor Identification alphabet when present; `typed_request_validation_tests::attribute_reference_mutation_validation_rejects_invalid_vendor_identification` verifies diagnostics and redaction |
 | R052 | DeriveKey / Object Type | `DeriveKeyRequest.object_type` | `ObjectType` | S |
 | R053 | DeriveKey / Unique Identifier | `DeriveKeyRequest.unique_identifiers` | `Vec<UniqueIdentifier>` | U |
 | R054 | DeriveKey / Derivation Method | `DeriveKeyRequest.derivation_method` | `DerivationMethod` | S |
