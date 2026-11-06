@@ -5,6 +5,7 @@ from __future__ import annotations
 from enum import IntEnum
 
 from . import errors
+from ._client_ffi import ffi as _client_ffi, lib as _client_lib
 from ._ffi import ffi, lib
 from ._handles import (
     NativeHandle,
@@ -422,6 +423,28 @@ def ttlv_value_view_byte_at(view: TtlvValueView, index: int) -> int:
         _invoke(lib.kmipkit_ttlv_value_view_byte_at, view._pointer(), index, output)
     )
     return int(output[0])
+
+
+def ttlv_value_view_bytes(view: TtlvValueView) -> bytes:
+    """Returns caller-owned bytes copied from a BigInteger, ByteString, or TextString view.
+
+    Python-owned byte objects cannot be zeroized by KMIPKit.
+    """
+    length = ttlv_value_view_byte_length(view)
+    if length == 0:
+        return b""
+    output = _client_ffi.new("uint8_t[]", length)
+    address = int(ffi.cast("uintptr_t", view._pointer()))
+    client_view = _client_ffi.cast("kmipkit_ttlv_value_view_t *", address)
+    errors.raise_for_status(
+        _invoke(
+            _client_lib.kmipkit_ttlv_value_view_copy_bytes,
+            client_view,
+            output,
+            length,
+        )
+    )
+    return bytes(_client_ffi.buffer(output, length))
 
 
 __all__ = [

@@ -63,6 +63,14 @@ public final class TtlvValueView implements AutoCloseable {
         return handle.withValue(value -> NativeExtensionRegistry.ttlvValueViewByteAt(value, index));
     }
 
+    /**
+     * Returns a caller-owned copy of the complete BigInteger, ByteString, or TextString bytes.
+     * Java-owned byte arrays cannot be zeroized by KMIPKit.
+     */
+    public byte[] bytes() {
+        return handle.withValue(NativeExtensionRegistry::ttlvValueViewBytes);
+    }
+
     long handle() {
         return handle.get();
     }

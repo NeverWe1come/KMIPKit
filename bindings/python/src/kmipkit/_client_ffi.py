@@ -23,7 +23,6 @@ ffi.cdef(
     typedef unsigned long long uintptr_t;
 
     int32_t kmipkit_credential_type_from_raw(uint32_t raw, uint32_t *out_raw);
-
     typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;
@@ -50,6 +49,9 @@ ffi.cdef(
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
     typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
+    typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
+    int32_t kmipkit_ttlv_value_view_copy_bytes(
+        kmipkit_ttlv_value_view_t *view, uint8_t *buffer, uint64_t capacity);
     typedef struct kmipkit_authentication_t kmipkit_authentication_t;
     typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
     typedef struct kmipkit_cryptographic_parameters_fields_v1_t {

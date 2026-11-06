@@ -1760,11 +1760,7 @@ class QueryResponse:
                         errors.raise_for_status(4)
                     value = ttlv.ttlv_item_view_value(item)
                     try:
-                        length = ttlv.ttlv_value_view_byte_length(value)
-                        raw = bytes(
-                            ttlv.ttlv_value_view_byte_at(value, offset)
-                            for offset in range(length)
-                        )
+                        raw = ttlv.ttlv_value_view_bytes(value)
                     finally:
                         value.close()
                     result.append(raw.decode("utf-8", errors="strict"))

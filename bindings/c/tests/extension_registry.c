@@ -26,6 +26,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern int32_t kmipkit_ttlv_value_view_copy_bytes(
+    kmipkit_ttlv_value_view_t *view, uint8_t *buffer, uint64_t capacity);
+
 /* These assertions verify that generated internal-header consumers observe
  * the exact T076 metadata carrier layout. */
 _Static_assert(sizeof(struct kmipkit_client_batch_item_metadata_v1_t) == 24,
@@ -2316,8 +2319,8 @@ static bool ttlv_value_matches_text(kmipkit_ttlv_value_t *value,
     kmipkit_ttlv_value_view_t *view = NULL;
     uint8_t item_type = 0U;
     uint64_t actual_length = 0U;
-    uint64_t index;
     bool matches = true;
+    uint8_t *actual = NULL;
 
     if (kmipkit_ttlv_value_view(value, &view) != KMIPKIT_SUCCESS ||
         kmipkit_ttlv_value_view_type(view, &item_type) != KMIPKIT_SUCCESS ||
@@ -2328,16 +2331,24 @@ static bool ttlv_value_matches_text(kmipkit_ttlv_value_t *value,
         goto cleanup;
     }
 
-    for (index = 0U; index < expected_length; ++index) {
-        uint8_t actual_byte = 0U;
-        if (kmipkit_ttlv_value_view_byte_at(view, index, &actual_byte) != KMIPKIT_SUCCESS ||
-            actual_byte != expected[index]) {
+    if (expected_length > (uint64_t)SIZE_MAX) {
+        matches = false;
+        goto cleanup;
+    }
+    if (expected_length != 0U) {
+        actual = (uint8_t *)malloc((size_t)expected_length);
+        if (actual == NULL) {
             matches = false;
-            break;
+            goto cleanup;
         }
+    }
+    if (kmipkit_ttlv_value_view_copy_bytes(view, actual, expected_length) != KMIPKIT_SUCCESS ||
+        (expected_length != 0U && memcmp(actual, expected, (size_t)expected_length) != 0)) {
+        matches = false;
     }
 
 cleanup:
+    free(actual);
     kmipkit_ttlv_value_view_release(view);
     return matches;
 }

@@ -1535,10 +1535,7 @@ def is_recognized(recognition: ExtensionRecognition) -> bool:
 
 
 def _view_bytes(view: ttlv.TtlvValueView) -> bytes:
-    return bytes(
-        ttlv.ttlv_value_view_byte_at(view, index)
-        for index in range(ttlv.ttlv_value_view_byte_length(view))
-    )
+    return ttlv.ttlv_value_view_bytes(view)
 
 
 def _view_scalar(view: ttlv.TtlvValueView, item_type: ttlv.ItemType) -> object:

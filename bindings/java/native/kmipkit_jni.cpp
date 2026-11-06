@@ -21,6 +21,9 @@
 #include <utility>
 #include <vector>
 
+extern "C" int32_t kmipkit_ttlv_value_view_copy_bytes(
+        kmipkit_ttlv_value_view_t* view, uint8_t* buffer, uint64_t capacity);
+
 // Shared T076 layouts and declarations come from the generated internal
 // header; this bridge retains ABI assertions and Java-specific adapters.
 typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
@@ -6604,6 +6607,39 @@ JNIEXPORT jshort JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueViewB
                         static_cast<uint64_t>(index), &value);
             })) return static_cast<jshort>(0);
         return static_cast<jshort>(value);
+    });
+}
+
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueViewBytes(
+        JNIEnv* env, jclass, jlong raw_view) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        auto* view = from_java_handle<kmipkit_ttlv_value_view_t>(raw_view);
+        uint64_t length = 0;
+        if (!check_status(env, [&] {
+                return kmipkit_ttlv_value_view_byte_length(view, &length);
+            })) return static_cast<jbyteArray>(nullptr);
+        if (length > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "byte length exceeds Java array limits");
+            return static_cast<jbyteArray>(nullptr);
+        }
+
+        std::vector<uint8_t> copied(static_cast<size_t>(length));
+        if (!check_status(env, [&] {
+                return kmipkit_ttlv_value_view_copy_bytes(view, copied.data(), length);
+            })) return static_cast<jbyteArray>(nullptr);
+
+        jbyteArray result = env->NewByteArray(static_cast<jsize>(length));
+        if (result == nullptr) return static_cast<jbyteArray>(nullptr);
+        if (length != 0) {
+            env->SetByteArrayRegion(
+                    result, 0, static_cast<jsize>(length),
+                    reinterpret_cast<const jbyte*>(copied.data()));
+            if (env->ExceptionCheck()) {
+                env->DeleteLocalRef(result);
+                return static_cast<jbyteArray>(nullptr);
+            }
+        }
+        return result;
     });
 }
 

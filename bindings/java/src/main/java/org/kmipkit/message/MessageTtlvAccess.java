@@ -133,11 +133,7 @@ final class MessageTtlvAccess {
         if (length < 0 || length > Integer.MAX_VALUE) {
             throw new ResourceLimitException("KMIP message field exceeds Java array limits");
         }
-        byte[] bytes = new byte[(int) length];
-        for (int index = 0; index < bytes.length; index++) {
-            bytes[index] = (byte) value.byteAt(index);
-        }
-        return bytes;
+        return value.bytes();
     }
 
     private static String decodeText(byte[] bytes) {

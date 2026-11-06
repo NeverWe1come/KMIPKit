@@ -650,6 +650,7 @@ public final class NativeExtensionRegistry {
     public static native long ttlvValueViewDateTimeExtended(long valueView);
     public static native long ttlvValueViewByteLength(long valueView);
     public static native short ttlvValueViewByteAt(long valueView, long index);
+    public static native byte[] ttlvValueViewBytes(long valueView);
     public static native long ttlvStructureViewItemCount(long structureView);
     public static native long[] requestMessageFromTtlv(long structure);
     public static native long requestMessageTtlv(long message);

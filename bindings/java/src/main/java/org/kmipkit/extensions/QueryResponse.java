@@ -171,9 +171,7 @@ public final class QueryResponse implements AutoCloseable {
                 if (item.itemType() != TtlvItemType.TextString) {
                     throw new InvalidInputException("Rust Query text field had an invalid TTLV type");
                 }
-                int length = Math.toIntExact(value.byteLength());
-                byte[] bytes = new byte[length];
-                for (int offset = 0; offset < length; offset++) bytes[offset] = (byte) value.byteAt(offset);
+                byte[] bytes = value.bytes();
                 result.add(new String(bytes, StandardCharsets.UTF_8));
             }
         }
