@@ -69,6 +69,21 @@ public final class QueryResponse implements AutoCloseable {
         return fields.size();
     }
 
+    /** Returns every raw tag in original TTLV wire order, including repeated and vendor tags. */
+    public List<Integer> rawFieldTags() {
+        ensureOpen();
+        return fields.stream().map(field -> field.tag).toList();
+    }
+
+    /** Returns unknown and vendor-defined raw tags in original TTLV wire order. */
+    public List<Integer> unknownFieldTags() {
+        ensureOpen();
+        return fields.stream()
+                .filter(field -> field.kind == QueryResponseFieldKind.UNKNOWN)
+                .map(field -> field.tag)
+                .toList();
+    }
+
     /** Returns one Rust-classified field at its decoded wire-order index. */
     public QueryResponseField fieldAt(long index) {
         ensureOpen();
