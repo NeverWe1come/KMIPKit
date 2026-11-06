@@ -437,6 +437,10 @@ class SharedRustInventoryTests(unittest.TestCase):
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),
             0,
         )
+        self.assertEqual(
+            sum("crate root is not an exported declaration" in row["blockedReason"] for row in blocked),
+            2,
+        )
         for row in blocked:
             source = next(
                 declaration

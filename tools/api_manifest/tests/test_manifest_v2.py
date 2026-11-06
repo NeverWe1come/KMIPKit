@@ -6769,7 +6769,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 re.MULTILINE,
             )
         )
-        self.assertEqual(header_ttlv_macros, ready_by_kind["macro"])
+        header_encoding_macros = set(
+            re.findall(r"^#define (KMIPKIT_WIRE_ENCODING_\w+)", header, re.MULTILINE)
+        )
+        self.assertEqual(header_ttlv_macros | header_encoding_macros, ready_by_kind["macro"])
         header_error_macros = set(
             re.findall(r"^#define (KMIPKIT_ERROR_\w+)", header, re.MULTILINE)
         )
@@ -6786,6 +6789,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if item.get("stableCHeaderCode", False)
         )
         self.assertEqual(header_error_macros, manifest_error_macros)
+        manifest_encoding_macros = {
+            item["exportName"]
+            for item in declarations
+            if item["kind"] == "macro"
+            and item["declarationState"] in {"declared", "verified"}
+            and item["exportName"].startswith("KMIPKIT_WIRE_ENCODING_")
+        }
+        self.assertEqual(header_encoding_macros, manifest_encoding_macros)
 
     def test_c_header_only_declares_ready_manifest_entries(self) -> None:
         header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
