@@ -511,7 +511,9 @@ where
     }
 
     if let Err(error) = wait_for_sender_ready(sender, write_timeout, total_deadline).await {
-        control.cancel();
+        if error.kind() == io::ErrorKind::TimedOut {
+            control.cancel();
+        }
         return Err(error);
     }
     if !control.commit_dispatch() {

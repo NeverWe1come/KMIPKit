@@ -37,6 +37,15 @@ impl SecretBuffer {
         Ok(Self::with_observer(copy_secret_bytes(bytes)?, observer))
     }
 
+    #[allow(dead_code)]
+    pub(crate) fn try_clone(&self) -> io::Result<Self> {
+        #[cfg(test)]
+        if let Some(observer) = &self.observer {
+            return Self::try_copy_from_slice_with_observer_for_test(&self.bytes, observer.clone());
+        }
+        Self::try_copy_from_slice(&self.bytes)
+    }
+
     pub(crate) fn read_from<R: Read>(reader: R) -> io::Result<Self> {
         Self::read_from_owned(reader, Self::new(Vec::new()))
     }
