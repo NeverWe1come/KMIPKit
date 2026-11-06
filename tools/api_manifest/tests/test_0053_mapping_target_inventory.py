@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+import re
 from pathlib import Path
 
 from tools.api_manifest import generate
@@ -34,6 +35,49 @@ class MappingTargetInventoryTests(unittest.TestCase):
         generate._validate_ready_mapping_targets(
             self.manifest["publicDeclarations"], packages, c_release_functions
         )
+
+    def test_named_c_attribute_tags_map_to_the_same_four_language_attributes(self) -> None:
+        declarations = self.manifest["publicDeclarations"]
+        c_tags = [
+            row for row in declarations
+            if row.get("declarationId", "").startswith("KMIPKIT-0053:c-standard-attribute:")
+            and row.get("exportName") != "KMIPKIT_STANDARD_ATTRIBUTE_TAG"
+        ]
+        self.assertEqual(62, len(c_tags))
+        for declaration in c_tags:
+            suffix = declaration["exportName"].removeprefix(
+                "KMIPKIT_STANDARD_ATTRIBUTE_"
+            )
+            marker = "".join(
+                part.title() for part in re.split(r"[_-]+", suffix.lower())
+            )
+            mappings = declaration["languageMappings"]
+            self.assertEqual("four-language", declaration["parityScope"])
+            self.assertEqual(
+                {"packageId": "c-kmipkit", "name": declaration["exportName"]},
+                mappings["c"],
+            )
+            self.assertEqual(
+                {
+                    "packageId": "rust-kmipkit",
+                    "name": f"kmipkit::protocol::attribute::typed::{marker}",
+                },
+                mappings["rust"],
+            )
+            self.assertEqual(
+                {
+                    "packageId": "java-kmipkit",
+                    "name": f"org.kmipkit.ttlv.StandardAttribute.{suffix}",
+                },
+                mappings["java"],
+            )
+            self.assertEqual(
+                {
+                    "packageId": "python-kmipkit",
+                    "name": f"kmipkit.typed_attributes.StandardAttribute.{suffix}",
+                },
+                mappings["python"],
+            )
 
 
 if __name__ == "__main__":
