@@ -1168,6 +1168,7 @@ def add_public_declarations(
     java_stale_mappings: list[dict[str, Any]] | None = None,
     python_kind_corrections: list[dict[str, Any]] | None = None,
     rust_kind_corrections: list[dict[str, Any]] | None = None,
+    language_mapping_corrections: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Add exact declarations, applying only approved Python path corrections."""
     if not isinstance(declarations, list):
@@ -1300,6 +1301,14 @@ def add_public_declarations(
         if key in rust_kind_routes:
             raise ReconciliationError("Rust kind corrections must have unique exports")
         rust_kind_routes[key] = correction
+    reviewed_mapping_routes: dict[tuple[str, str], dict[str, Any]] = {}
+    for correction in language_mapping_corrections or []:
+        if not isinstance(correction, dict):
+            raise ReconciliationError("language mapping correction must be an object")
+        key = correction.get("declarationId"), correction.get("language")
+        if key in reviewed_mapping_routes:
+            raise ReconciliationError("language mapping corrections must be unique")
+        reviewed_mapping_routes[key] = correction
     stale_java_routes: dict[tuple[str, str, str], dict[str, Any]] = {}
     java_stale_keys = {
         "packageId", "declarationId", "capabilityId", "oldName",
@@ -1657,7 +1666,26 @@ def add_public_declarations(
                         raise ReconciliationError(
                             f"public export already has another declaration: {export_name}"
                         )
-                    if language == "python":
+                    reviewed_mapping = reviewed_mapping_routes.get(
+                        (identifier, language)
+                    )
+                    reviewed_mapping_matches = (
+                        reviewed_mapping is not None
+                        and reviewed_mapping.get("from") == old_route
+                        and reviewed_mapping.get("to") == new_route
+                        and reviewed_mapping.get("capabilityId")
+                        == declaration.get("capabilityId")
+                        and set(reviewed_mapping.get("requirementIds", []))
+                        <= set(declaration.get("requirementIds", []))
+                        and reviewed_mapping.get("approvalSource")
+                        == declaration.get("approvalSource")
+                        and isinstance(reviewed_mapping.get("evidencePaths"), list)
+                        and bool(reviewed_mapping["evidencePaths"])
+                    )
+                    if reviewed_mapping_matches:
+                        correction_matches = True
+                        corrected_evidence.update(reviewed_mapping["evidencePaths"])
+                    elif language == "python":
                         correction = stale_python_routes.get(
                             ("python-kmipkit", old_route.get("name"))
                         )
@@ -1706,6 +1734,16 @@ def add_public_declarations(
                     set(existing_export.get("parityEvidenceIds", []))
                     | corrected_evidence
                 )
+            for field in ("cValue", "cValueType"):
+                if field not in declaration:
+                    continue
+                existing_value = existing_export.get(field)
+                declared_value = declaration[field]
+                if existing_value not in {None, declared_value}:
+                    raise ReconciliationError(
+                        f"public export has conflicting {field}: {export_name}"
+                    )
+                existing_export[field] = declared_value
             canonical = copy.deepcopy(existing_export)
             if canonical.get("candidateSpecId") == SPEC_ID:
                 canonical.pop("candidateSpecId", None)
@@ -2411,6 +2449,7 @@ def main() -> int:
             route_data.get("javaStaleMappings", []),
             route_data.get("pythonKindCorrections", []),
             route_data.get("rustKindCorrections", []),
+            route_data.get("languageMappingCorrections", []),
         )
         result = apply_language_mapping_corrections(
             result, route_data.get("languageMappingCorrections", [])
