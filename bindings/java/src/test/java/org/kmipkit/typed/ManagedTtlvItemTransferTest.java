@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.kmipkit.extensions.RegisterRequest;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.RegisterRequest;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.ManagedObject;
 import org.kmipkit.ttlv.RawTag;
@@ -21,19 +22,23 @@ final class ManagedTtlvItemTransferTest {
     @Test
     void transfersTypedObjectIntoRegisterRequestAsItsDirectStructureItem() {
         CodecLimits limits = CodecLimits.defaults();
-        TtlvItem certificateType = item(0x0042_001d, TtlvValue.Enumeration(2), limits);
-        TtlvItem certificateValue = item(
-                0x0042_001e, TtlvValue.ByteString(new byte[] {0x43, 0x45, 0x52, 0x54}, limits), limits);
-        try (certificateType;
-                certificateValue;
-                ManagedObject object = ManagedObject.certificate(List.of(certificateType, certificateValue));
+        TtlvItem opaqueDataType = item(0x0042_0059, TtlvValue.Enumeration(2), limits);
+        TtlvItem opaqueDataValue = item(
+                0x0042_005a, TtlvValue.ByteString(new byte[] {0x4f, 0x50, 0x41, 0x51}, limits), limits);
+        try (opaqueDataType;
+                opaqueDataValue;
+                ManagedObject object = ManagedObject.opaqueObject(List.of(opaqueDataType, opaqueDataValue));
                 TtlvStructure attributes = TtlvStructure.create()) {
             TtlvItem item = object.intoItem();
             assertThrows(InvalidInputException.class, object::view);
-            try (item; TtlvItemView view = item.view(); Tag tag = view.tag()) {
-                assertEquals(0x0042_0013, tag.raw());
-                try (RegisterRequest request = RegisterRequest.create(1, attributes, item)) {
-                    assertNotNull(request);
+            try (item) {
+                try (TtlvItemView view = item.view(); Tag tag = view.tag()) {
+                    assertEquals(0x0042_005b, tag.raw());
+                }
+                try (RegisterRequest request = RegisterRequest.create(8, attributes, item);
+                        ClientBatchItem batchItem = ClientBatchItem.register(request)) {
+                    assertEquals(3, batchItem.operation());
+                    assertNotNull(batchItem);
                 }
             }
         }

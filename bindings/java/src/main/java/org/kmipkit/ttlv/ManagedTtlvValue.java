@@ -99,6 +99,11 @@ abstract class ManagedTtlvValue implements AutoCloseable {
                 NativeTtlvCodec.itemViewFromItem(value), this));
     }
 
+    /** Consumes this typed wrapper and transfers its complete TTLV node to a generic item. */
+    public final TtlvItem intoItem() {
+        return TtlvItem.fromNative(handle.transfer());
+    }
+
     @Override
     public final void close() {
         handle.close();
