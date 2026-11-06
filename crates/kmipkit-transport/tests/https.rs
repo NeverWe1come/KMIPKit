@@ -2455,3 +2455,105 @@ fn accept_before_deadline(listener: &TcpListener) -> io::Result<(TcpStream, Sock
         }
     }
 }
+
+fn spawn_idle_closed_keepalive_peer(
+    listener: TcpListener,
+    config: Arc<ServerConfig>,
+) -> thread::JoinHandle<usize> {
+    thread::spawn(move || {
+        let mut connections_accepted = 0;
+        if let Ok((stream1, _)) = accept_before_deadline(&listener) {
+            connections_accepted += 1;
+            let _ = stream1.set_nonblocking(false);
+            let _ = stream1.set_read_timeout(Some(PEER_TIMEOUT));
+            let _ = stream1.set_write_timeout(Some(PEER_TIMEOUT));
+            if let Ok(connection) = ServerConnection::new(Arc::clone(&config)) {
+                let mut tls = StreamOwned::new(connection, stream1);
+                let _ = read_request(&mut tls);
+                let response = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 4\r\n\r\none\n";
+                let _ = tls.write_all(response);
+                let _ = tls.flush();
+            }
+        }
+        thread::sleep(Duration::from_millis(50));
+        if let Ok((stream2, _)) = accept_before_deadline(&listener) {
+            connections_accepted += 1;
+            let _ = stream2.set_nonblocking(false);
+            let _ = stream2.set_read_timeout(Some(PEER_TIMEOUT));
+            let _ = stream2.set_write_timeout(Some(PEER_TIMEOUT));
+            if let Ok(connection) = ServerConnection::new(config) {
+                let mut tls = StreamOwned::new(connection, stream2);
+                let _ = read_request(&mut tls);
+                let response = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 4\r\n\r\ntwo\n";
+                let _ = tls.write_all(response);
+                let _ = tls.flush();
+            }
+        }
+        connections_accepted
+    })
+}
+
+#[test]
+fn idle_closed_keepalive_connection_reconnects_transparently() {
+    let pki = EphemeralPki::generate().expect("the test PKI is valid");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_idle_closed_keepalive_peer(listener.into_inner(), server_config(&pki));
+    let mut adapter = public_local_https_adapter(&pki, address);
+
+    let first = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the first HTTPS exchange succeeds");
+    assert_eq!(first.as_bytes(), b"one\n");
+
+    thread::sleep(Duration::from_millis(100));
+
+    let second = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the second exchange reconnects transparently on idle close");
+    assert_eq!(second.as_bytes(), b"two\n");
+
+    let accepted = peer.join().expect("peer finishes");
+    assert_eq!(accepted, 2, "peer accepted exactly two connections");
+}
+
+fn spawn_abort_mid_exchange_peer(
+    listener: TcpListener,
+    config: Arc<ServerConfig>,
+) -> thread::JoinHandle<usize> {
+    thread::spawn(move || {
+        let mut connections_accepted = 0;
+        if let Ok((stream, _)) = accept_before_deadline(&listener) {
+            connections_accepted += 1;
+            let _ = stream.set_nonblocking(false);
+            let _ = stream.set_read_timeout(Some(PEER_TIMEOUT));
+            let _ = stream.set_write_timeout(Some(PEER_TIMEOUT));
+            if let Ok(connection) = ServerConnection::new(config) {
+                let mut tls = StreamOwned::new(connection, stream);
+                let _ = read_request(&mut tls);
+            }
+        }
+        thread::sleep(Duration::from_millis(200));
+        connections_accepted
+    })
+}
+
+#[test]
+fn dispatched_request_never_retries_on_connection_failure() {
+    let pki = EphemeralPki::generate().expect("the test PKI is valid");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_abort_mid_exchange_peer(listener.into_inner(), server_config(&pki));
+    let mut adapter = public_local_https_adapter(&pki, address);
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("abrupt disconnection after dispatch fails closed");
+    assert!(
+        error.delivery_state() == RequestDeliveryState::PossiblySent
+            || error.delivery_state() == RequestDeliveryState::ResponseStarted
+    );
+
+    let accepted = peer.join().expect("peer completes");
+    assert_eq!(accepted, 1, "no automatic retry was performed");
+}
