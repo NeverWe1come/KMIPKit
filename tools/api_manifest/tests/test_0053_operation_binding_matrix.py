@@ -109,6 +109,47 @@ class OperationBindingMatrixTests(unittest.TestCase):
                         f"{operation['name']} has no {language} behavior evidence",
                     )
 
+    def test_runtime_operation_identity_and_response_matrices_cover_all_56(self) -> None:
+        c_source = _read(ROOT / "bindings" / "c" / "tests" / "operation_parity_consumer.c")
+        c_test = _read(ROOT / "crates" / "kmipkit-ffi" / "tests" / "operation_parity_0053.rs")
+        java_test = _read(
+            ROOT / "bindings" / "java" / "src" / "test" / "java" / "org" / "kmipkit"
+            / "extensions" / "OperationFacadeParityMatrixTest.java"
+        )
+        python_test = _read(
+            ROOT / "bindings" / "python" / "tests" / "test_operation_binding_parity_0053.py"
+        )
+
+        # The C fixture compares each encoded request operation to the pinned
+        # KMIP operation values. The 48 generic batch constructors plus four
+        # existing specialized constructors and four explicit async operations
+        # account for the complete 56-operation client catalog.
+        expected_values = c_source.split("static const uint32_t EXPECTED_BATCH_OPERATIONS[] = {", 1)[1]
+        expected_values = expected_values.split("};", 1)[0]
+        self.assertEqual(expected_values.count("UINT32_C("), 48)
+        self.assertIn("invoked_count != UINT64_C(52)", c_source)
+        self.assertIn("async_operation_routes_are_callable()", c_source)
+        self.assertIn("compiled_c_consumer_invokes_all_56_client_operation_routes", c_test)
+
+        # Java crosses the JNI ABI for each builder, then checks the raw
+        # operation identity returned by Rust against the generated KMIP 2.1
+        # Operation constants. Its response list covers the same operation set.
+        self.assertIn("assertEquals(56, exercised.size())", java_test)
+        self.assertIn(
+            "assertEquals(operationRaw(route.operation()), readBack.operation()",
+            java_test,
+        )
+        self.assertEqual(java_test.count('result("'), 52)
+        self.assertEqual(java_test.count("new AsyncResponseAccessor("), 4)
+        self.assertIn("assertEquals(exercisedOperations, allResponseOperations)", java_test)
+
+        # Python checks the precise C ABI entrypoint used by each public builder
+        # and keeps async dispatch separate from synchronous batch operations.
+        self.assertIn("test_request_entrypoint_matrix_accounts_for_all_56_operations", python_test)
+        self.assertIn("set(_BATCH_OPERATION_CASES) | set(_ASYNC_OPERATION_CASES)", python_test)
+        self.assertIn("test_batch_operation_builder_invokes_its_native_request_entrypoint", python_test)
+        self.assertIn("test_async_operation_entrypoint_calls_native_method", python_test)
+
     def test_mapped_foreign_route_names_exist_in_public_source_surfaces(self) -> None:
         for operation in self.operations:
             for language in ("rust", "c", "java", "python"):
