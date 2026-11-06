@@ -209,6 +209,17 @@ def _normalize_python_audit(document: dict[str, Any]) -> dict[str, Any]:
         corrected_name = _exact_name(
             correction.get("correctedName"), "corrected Python export"
         )
+        _exact_name(correction.get("capabilityId"), "stale Python capability")
+        requirements = correction.get("requirementIds")
+        if not isinstance(requirements, list) or not requirements or any(
+            not isinstance(requirement, str) or not requirement.strip()
+            for requirement in requirements
+        ):
+            raise ResolutionError("stale Python routes need stable requirement IDs")
+        _evidence(correction)
+        _approval(correction)
+        if not isinstance(correction.get("reason"), str) or not correction["reason"].strip():
+            raise ResolutionError("stale Python route corrections need a specific reason")
         if package_id != "python-kmipkit":
             raise ResolutionError(
                 f"stale Python route uses an unsupported package: {old_name}"
@@ -816,6 +827,9 @@ def main() -> int:
             rust_document.get("kindCorrections", []),
         )
         result = merge_declarations(route_data, declarations, exclusions)
+        result["pythonStaleMappings"] = copy.deepcopy(
+            python_document.get("staleMappings", [])
+        )
         content = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         current = route_path.read_text(encoding="utf-8")
     except (OSError, json.JSONDecodeError, ResolutionError) as error:

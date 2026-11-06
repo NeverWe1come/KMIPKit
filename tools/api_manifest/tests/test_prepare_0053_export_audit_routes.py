@@ -352,6 +352,13 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
                     "packageId": "python-kmipkit",
                     "name": "QueryResponse.field_count",
                     "correctedName": "kmipkit.client.QueryResponse.field_count",
+                    "capabilityId": "response_ttlv_navigation",
+                    "requirementIds": ["KMIPKIT-0053-FR-008"],
+                    "evidencePaths": [
+                        "bindings/python/tests/test_query_response_typed_fields.py"
+                    ],
+                    "approval": APPROVAL,
+                    "reason": "Corrects the exact Python package export path.",
                 }
             ],
             "kindCorrections": [
