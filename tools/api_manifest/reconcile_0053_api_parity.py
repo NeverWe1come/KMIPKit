@@ -12,7 +12,12 @@ from typing import Any
 SPEC_ID = "KMIPKIT-0053"
 APPROVAL_RECORD_PATH = "specs/053-api-parity-facade/approval-record.md"
 LANGUAGE_PACKAGES = {
-    "rust": {"rust-kmipkit", "rust-kmipkit-protocol", "rust-kmipkit-client"},
+    "rust": {
+        "rust-kmipkit",
+        "rust-kmipkit-ttlv",
+        "rust-kmipkit-protocol",
+        "rust-kmipkit-client",
+    },
     "c": {"c-kmipkit"},
     "java": {"java-kmipkit"},
     "python": {"python-kmipkit"},
@@ -836,7 +841,6 @@ def reconcile_manifest(
         declaration["languageMappings"] = mappings
         declaration["parityEvidenceIds"] = route["parityEvidenceIds"]
         declaration["approvalSource"] = route["approvalSource"]
-        declaration.pop("candidateSpecId", None)
         declaration.pop("blockedReason", None)
         verified.append(declaration)
         language_names = by_capability.setdefault(
@@ -1103,11 +1107,211 @@ def add_additional_types(
 
 
 def add_public_declarations(
-    manifest: dict[str, Any], declarations: list[dict[str, Any]]
+    manifest: dict[str, Any],
+    declarations: list[dict[str, Any]],
+    python_stale_mappings: list[dict[str, Any]] | None = None,
+    java_stale_mappings: list[dict[str, Any]] | None = None,
+    python_kind_corrections: list[dict[str, Any]] | None = None,
+    rust_kind_corrections: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Add exact, evidenced four-language declarations idempotently."""
+    """Add exact declarations, applying only approved Python path corrections."""
     if not isinstance(declarations, list):
         raise ReconciliationError("additional public declarations must be a list")
+    stale_python_routes: dict[tuple[str, str], dict[str, Any]] = {}
+    stale_keys = {
+        "packageId", "name", "correctedName", "capabilityId", "requirementIds",
+        "evidencePaths", "approval", "reason",
+    }
+    for correction in python_stale_mappings or []:
+        if not isinstance(correction, dict) or set(correction) != stale_keys:
+            raise ReconciliationError("Python stale route correction has missing or extra fields")
+        if correction.get("packageId") != "python-kmipkit":
+            raise ReconciliationError("only exact Python export path corrections are supported")
+        old_name = correction.get("name")
+        corrected_name = correction.get("correctedName")
+        capability_id = correction.get("capabilityId")
+        if not all(
+            isinstance(value, str) and value.strip()
+            for value in (old_name, corrected_name, capability_id, correction.get("reason"))
+        ) or any(any(marker in value for marker in "*?") for value in (old_name, corrected_name)):
+            raise ReconciliationError("Python stale route correction needs exact names and a reason")
+        requirements = correction.get("requirementIds")
+        evidence = correction.get("evidencePaths")
+        approval = correction.get("approval")
+        if (
+            not isinstance(requirements, list)
+            or not requirements
+            or any(not isinstance(value, str) or not value.strip() for value in requirements)
+            or len(requirements) != len(set(requirements))
+            or not isinstance(evidence, list)
+            or not evidence
+            or any(not isinstance(value, str) or not value.strip() for value in evidence)
+            or len(evidence) != len(set(evidence))
+            or not isinstance(approval, dict)
+            or approval.get("status") != "Approved"
+        ):
+            raise ReconciliationError("Python stale route correction needs approved traceability")
+        key = ("python-kmipkit", old_name)
+        if key in stale_python_routes:
+            raise ReconciliationError("Python stale route corrections must have unique old paths")
+        stale_python_routes[key] = correction
+    python_kind_routes: dict[tuple[str, str], dict[str, Any]] = {}
+    kind_correction_keys = {
+        "packageId", "name", "fromKind", "toKind", "capabilityId",
+        "requirementIds", "evidencePaths", "approval", "reason",
+    }
+    for correction in python_kind_corrections or []:
+        if not isinstance(correction, dict) or set(correction) != kind_correction_keys:
+            raise ReconciliationError("Python kind correction has missing or extra fields")
+        if correction.get("packageId") != "python-kmipkit":
+            raise ReconciliationError("only exact Python export kind corrections are supported")
+        export_name = correction.get("name")
+        if (
+            not isinstance(export_name, str)
+            or not export_name.strip()
+            or any(marker in export_name for marker in "*?")
+            or not isinstance(correction.get("fromKind"), str)
+            or not correction["fromKind"].strip()
+            or not isinstance(correction.get("toKind"), str)
+            or not correction["toKind"].strip()
+            or not isinstance(correction.get("capabilityId"), str)
+            or not correction["capabilityId"].strip()
+            or not isinstance(correction.get("reason"), str)
+            or not correction["reason"].strip()
+            or not isinstance(correction.get("approval"), dict)
+            or correction["approval"].get("status") != "Approved"
+        ):
+            raise ReconciliationError("Python kind correction needs an exact approved route")
+        requirements = correction.get("requirementIds")
+        evidence_paths = correction.get("evidencePaths")
+        if (
+            not isinstance(requirements, list)
+            or not requirements
+            or any(not isinstance(value, str) or not value.strip() for value in requirements)
+            or len(requirements) != len(set(requirements))
+            or not isinstance(evidence_paths, list)
+            or not evidence_paths
+            or any(
+                not isinstance(path, str)
+                or not path.strip()
+                or Path(path).is_absolute()
+                or "\\" in path
+                or ".." in Path(path).parts
+                or not Path(path).is_file()
+                for path in evidence_paths
+            )
+        ):
+            raise ReconciliationError("Python kind correction needs approved traceability")
+        key = ("python-kmipkit", export_name)
+        if key in python_kind_routes:
+            raise ReconciliationError("Python kind corrections must have unique exports")
+        python_kind_routes[key] = correction
+    rust_kind_routes: dict[tuple[str, str], dict[str, Any]] = {}
+    rust_kind_keys = {
+        "packageId", "exportName", "manifestKind", "observedKind", "reason",
+        "evidencePaths",
+    }
+    for correction in rust_kind_corrections or []:
+        if not isinstance(correction, dict) or set(correction) != rust_kind_keys:
+            raise ReconciliationError("Rust kind correction has missing or extra fields")
+        package_id = correction.get("packageId")
+        export_name = correction.get("exportName")
+        evidence_paths = correction.get("evidencePaths")
+        if (
+            package_id not in LANGUAGE_PACKAGES["rust"]
+            or not isinstance(export_name, str)
+            or not export_name.strip()
+            or any(marker in export_name for marker in "*?")
+            or not isinstance(correction.get("manifestKind"), str)
+            or not correction["manifestKind"].strip()
+            or not isinstance(correction.get("observedKind"), str)
+            or not correction["observedKind"].strip()
+            or not isinstance(correction.get("reason"), str)
+            or not correction["reason"].strip()
+            or not isinstance(evidence_paths, list)
+            or not evidence_paths
+            or any(
+                not isinstance(path, str)
+                or not path.strip()
+                or Path(path).is_absolute()
+                or "\\" in path
+                or ".." in Path(path).parts
+                or not Path(path).is_file()
+                for path in evidence_paths
+            )
+        ):
+            raise ReconciliationError("Rust kind correction needs exact source evidence")
+        key = (package_id, export_name)
+        if key in rust_kind_routes:
+            raise ReconciliationError("Rust kind corrections must have unique exports")
+        rust_kind_routes[key] = correction
+    stale_java_routes: dict[tuple[str, str, str], dict[str, Any]] = {}
+    java_stale_keys = {
+        "packageId", "declarationId", "capabilityId", "oldName",
+        "observedPublicTargets", "requirementIds", "reason", "evidencePaths",
+        "approval", "name",
+    }
+    for correction in java_stale_mappings or []:
+        if not isinstance(correction, dict) or set(correction) != java_stale_keys:
+            raise ReconciliationError("Java stale route correction has missing or extra fields")
+        if (
+            correction.get("packageId") != "java-kmipkit"
+            or correction.get("name") != correction.get("oldName")
+        ):
+            raise ReconciliationError("only exact Java base-wrapper route corrections are supported")
+        old_name = correction.get("oldName")
+        capability_id = correction.get("capabilityId")
+        reason = correction.get("reason")
+        approval = correction.get("approval")
+        targets = correction.get("observedPublicTargets")
+        requirements = correction.get("requirementIds")
+        evidence_paths = correction.get("evidencePaths")
+        if (
+            not isinstance(old_name, str)
+            or not old_name.strip()
+            or any(marker in old_name for marker in "*?")
+            or not isinstance(capability_id, str)
+            or not capability_id.strip()
+            or not isinstance(reason, str)
+            or not reason.strip()
+            or not isinstance(approval, dict)
+            or approval.get("status") != "Approved"
+            or not isinstance(requirements, list)
+            or not requirements
+            or any(not isinstance(value, str) or not value.strip() for value in requirements)
+            or not isinstance(evidence_paths, list)
+            or not evidence_paths
+            or any(
+                not isinstance(path, str)
+                or not path.strip()
+                or Path(path).is_absolute()
+                or "\\" in path
+                or ".." in Path(path).parts
+                or not Path(path).is_file()
+                for path in evidence_paths
+            )
+            or not isinstance(targets, list)
+            or not targets
+        ):
+            raise ReconciliationError("Java stale route correction needs approved exact evidence")
+        target_names: set[str] = set()
+        for target in targets:
+            if (
+                not isinstance(target, dict)
+                or set(target) != {"owner", "name"}
+                or not isinstance(target.get("owner"), str)
+                or not isinstance(target.get("name"), str)
+                or not target["owner"].strip()
+                or not target["name"].strip()
+                or any(marker in target["name"] for marker in "*?")
+            ):
+                raise ReconciliationError("Java stale route targets must be exact public names")
+            target_names.add(target["name"])
+        for target_name in target_names:
+            key = ("java-kmipkit", old_name, target_name)
+            if key in stale_java_routes:
+                raise ReconciliationError("Java stale route corrections must be unique")
+            stale_java_routes[key] = correction
     result = copy.deepcopy(manifest)
     current = result.get("publicDeclarations")
     if not isinstance(current, list):
@@ -1181,25 +1385,245 @@ def add_public_declarations(
             raise ReconciliationError(
                 "additional declaration needs stable requirement IDs"
             )
+        candidate_spec_id = declaration.get("candidateSpecId")
+        if candidate_spec_id is not None:
+            approval_source = declaration.get("approvalSource")
+            if (
+                candidate_spec_id != SPEC_ID
+                or not isinstance(approval_source, dict)
+                or approval_source.get("path") != APPROVAL_RECORD_PATH
+                or not any(
+                    isinstance(requirement, str)
+                    and requirement.startswith(f"{SPEC_ID}-FR-")
+                    for requirement in requirements
+                )
+            ):
+                raise ReconciliationError(
+                    "additional declaration needs exact KMIPKIT-0053 approval and requirement traceability"
+                )
         additions_by_id[identifier] = declaration
         additions_by_export[key] = declaration
-        if identifier in by_id and by_id[identifier] != declaration:
-            raise ReconciliationError(
-                f"public declaration ID already has another definition: {identifier}"
-            )
+        existing_id = by_id.get(identifier)
         existing_export = by_export.get(key)
-        if existing_export is not None:
-            exact_route_match = all(
-                existing_export.get(field) == declaration.get(field)
-                for field in (
-                    "packageId", "kind", "exportName", "capabilityId",
-                    "declarationState", "parityScope", "languageMappings",
-                    "approvalSource",
+        if existing_id is not None and existing_id is not existing_export:
+            old_export_name = existing_id.get("exportName")
+            existing_mappings = existing_id.get("languageMappings")
+            candidate_mappings = declaration.get("languageMappings")
+            python_correction = stale_python_routes.get(
+                (package_id, old_export_name)
+            )
+            other_languages_match = (
+                isinstance(existing_mappings, dict)
+                and isinstance(candidate_mappings, dict)
+                and all(
+                    existing_mappings.get(language) == candidate_mappings.get(language)
+                    for language in REQUIRED_LANGUAGES - {"python"}
                 )
             )
-            if not exact_route_match:
+            valid_python_rename = (
+                python_correction is not None
+                and package_id == "python-kmipkit"
+                and existing_id.get("packageId") == package_id
+                and existing_id.get("capabilityId") == declaration.get("capabilityId")
+                and existing_id.get("capabilityId") == python_correction.get("capabilityId")
+                and existing_id.get("kind") == declaration.get("kind")
+                and existing_id.get("declarationState") == declaration.get("declarationState")
+                and existing_id.get("parityScope") == declaration.get("parityScope")
+                and existing_id.get("approvalSource") == declaration.get("approvalSource")
+                and python_correction.get("correctedName") == export_name
+                and isinstance(existing_mappings, dict)
+                and isinstance(candidate_mappings, dict)
+                and existing_mappings.get("python", {}).get("name") == old_export_name
+                and candidate_mappings.get("python", {}).get("name") == export_name
+                and other_languages_match
+                and set(python_correction.get("requirementIds", []))
+                <= set(declaration.get("requirementIds", []))
+            )
+            if valid_python_rename:
+                old_key = (existing_id.get("packageId"), old_export_name)
+                by_export.pop(old_key, None)
+                existing_id["exportName"] = export_name
+                existing_id["languageMappings"]["python"] = copy.deepcopy(
+                    candidate_mappings["python"]
+                )
+                existing_id["requirementIds"] = sorted(
+                    set(existing_id.get("requirementIds", [])) | set(requirements)
+                )
+                existing_id["parityEvidenceIds"] = sorted(
+                    set(existing_id.get("parityEvidenceIds", []))
+                    | set(evidence)
+                    | set(python_correction.get("evidencePaths", []))
+                )
+                existing_export = existing_id
+                by_export[key] = existing_export
+            else:
+                java_correction = stale_java_routes.get(
+                    ("java-kmipkit", old_export_name, export_name)
+                )
+                valid_java_rename = (
+                    java_correction is not None
+                    and existing_id.get("packageId") == "java-kmipkit"
+                    and package_id == "java-kmipkit"
+                    and existing_id.get("kind") == declaration.get("kind")
+                    and existing_id.get("capabilityId") == declaration.get("capabilityId")
+                    and existing_id.get("declarationState") == declaration.get("declarationState")
+                    and existing_id.get("parityScope") == declaration.get("parityScope")
+                    and existing_id.get("approvalSource") == declaration.get("approvalSource")
+                    and java_correction.get("approval") == declaration.get("approvalSource")
+                    and existing_id.get("languageMappings", {}).get("java", {}).get("name")
+                    == java_correction.get("oldName")
+                    and declaration.get("languageMappings", {}).get("java", {}).get("name")
+                    == export_name
+                    and isinstance(existing_mappings, dict)
+                    and isinstance(candidate_mappings, dict)
+                    and all(
+                        existing_mappings.get(language) == candidate_mappings.get(language)
+                        for language in REQUIRED_LANGUAGES - {"java"}
+                    )
+                    and set(java_correction.get("requirementIds", []))
+                    <= set(declaration.get("requirementIds", []))
+                )
+                if not valid_java_rename:
+                    raise ReconciliationError(
+                        f"public declaration ID already has another definition: {identifier}"
+                    )
+                old_key = (existing_id.get("packageId"), old_export_name)
+                by_export.pop(old_key, None)
+                existing_id["exportName"] = export_name
+                existing_id["languageMappings"]["java"] = copy.deepcopy(
+                    candidate_mappings["java"]
+                )
+                existing_id["requirementIds"] = sorted(
+                    set(existing_id.get("requirementIds", [])) | set(requirements)
+                )
+                existing_id["parityEvidenceIds"] = sorted(
+                    set(existing_id.get("parityEvidenceIds", []))
+                    | set(evidence)
+                    | set(java_correction.get("evidencePaths", []))
+                )
+                existing_export = existing_id
+                by_export[key] = existing_export
+        if existing_export is not None:
+            corrected_evidence: set[str] = set()
+            if existing_export.get("kind") != declaration.get("kind"):
+                kind_correction = python_kind_routes.get(
+                    (package_id, export_name)
+                )
+                rust_correction = rust_kind_routes.get((package_id, export_name))
+                python_kind_correction_matches = (
+                    package_id == "python-kmipkit"
+                    and kind_correction is not None
+                    and existing_export.get("kind") == kind_correction.get("fromKind")
+                    and declaration.get("kind") == kind_correction.get("toKind")
+                    and existing_export.get("capabilityId")
+                    == declaration.get("capabilityId")
+                    == kind_correction.get("capabilityId")
+                    and set(kind_correction.get("requirementIds", []))
+                    <= set(declaration.get("requirementIds", []))
+                )
+                rust_kind_correction_matches = (
+                    package_id in LANGUAGE_PACKAGES["rust"]
+                    and rust_correction is not None
+                    and existing_export.get("kind") == rust_correction.get("manifestKind")
+                    and declaration.get("kind") == rust_correction.get("observedKind")
+                )
+                if not (
+                    python_kind_correction_matches or rust_kind_correction_matches
+                ):
+                    raise ReconciliationError(
+                        f"public export already has another declaration: {export_name}"
+                    )
+                existing_export["kind"] = declaration["kind"]
+                correction_paths = (
+                    kind_correction["evidencePaths"]
+                    if python_kind_correction_matches
+                    else rust_correction["evidencePaths"]
+                )
+                corrected_evidence.update(correction_paths)
+            exact_route_shape = all(
+                existing_export.get(field) == declaration.get(field)
+                for field in (
+                    "packageId", "exportName", "capabilityId",
+                    "declarationState", "parityScope", "approvalSource",
+                )
+            )
+            if not exact_route_shape:
                 raise ReconciliationError(
                     f"public export already has another declaration: {export_name}"
+                )
+            if candidate_spec_id is not None:
+                existing_candidate = existing_export.get("candidateSpecId")
+                if existing_candidate not in {None, candidate_spec_id}:
+                    raise ReconciliationError(
+                        f"public export already has another approval owner: {export_name}"
+                    )
+                existing_export["candidateSpecId"] = candidate_spec_id
+            existing_mappings = existing_export.get("languageMappings")
+            candidate_mappings = declaration.get("languageMappings")
+            if existing_mappings != candidate_mappings:
+                if not isinstance(existing_mappings, dict) or not isinstance(
+                    candidate_mappings, dict
+                ):
+                    raise ReconciliationError(
+                        f"public export already has another declaration: {export_name}"
+                    )
+                for language in REQUIRED_LANGUAGES:
+                    old_route = existing_mappings.get(language)
+                    new_route = candidate_mappings.get(language)
+                    if old_route == new_route:
+                        continue
+                    if not isinstance(old_route, dict) or not isinstance(new_route, dict):
+                        raise ReconciliationError(
+                            f"public export already has another declaration: {export_name}"
+                        )
+                    if language == "python":
+                        correction = stale_python_routes.get(
+                            ("python-kmipkit", old_route.get("name"))
+                        )
+                        correction_matches = (
+                            correction is not None
+                            and old_route.get("packageId") == "python-kmipkit"
+                            and new_route.get("packageId") == "python-kmipkit"
+                            and new_route.get("name") == correction.get("correctedName")
+                            and correction.get("capabilityId")
+                            == declaration.get("capabilityId")
+                            and set(correction.get("requirementIds", []))
+                            <= set(declaration.get("requirementIds", []))
+                        )
+                        if correction_matches:
+                            corrected_evidence.update(correction["evidencePaths"])
+                    elif language == "java":
+                        correction = stale_java_routes.get(
+                            (
+                                "java-kmipkit",
+                                old_route.get("name"),
+                                new_route.get("name"),
+                            )
+                        )
+                        correction_matches = (
+                            correction is not None
+                            and old_route.get("packageId") == "java-kmipkit"
+                            and new_route.get("packageId") == "java-kmipkit"
+                            and correction.get("capabilityId")
+                            == declaration.get("capabilityId")
+                            and correction.get("approval")
+                            == declaration.get("approvalSource")
+                            and set(correction.get("requirementIds", []))
+                            <= set(declaration.get("requirementIds", []))
+                        )
+                        if correction_matches:
+                            corrected_evidence.update(correction["evidencePaths"])
+                    else:
+                        correction_matches = False
+                    if not correction_matches:
+                        raise ReconciliationError(
+                            f"public export already has another declaration: {export_name}"
+                        )
+                    existing_mappings[language] = copy.deepcopy(new_route)
+            if corrected_evidence:
+                existing_export["parityEvidenceIds"] = sorted(
+                    set(existing_export.get("parityEvidenceIds", []))
+                    | corrected_evidence
                 )
             canonical = copy.deepcopy(existing_export)
             canonical["requirementIds"] = sorted(
@@ -1260,6 +1684,155 @@ def add_public_declarations(
             for requirement in row.get("requirementIds", [])
         }
     )
+    return result
+
+
+def apply_language_mapping_corrections(
+    manifest: dict[str, Any], corrections: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
+    """Apply reviewed, declaration-specific mapping corrections to listed exports."""
+    result = copy.deepcopy(manifest)
+    declarations = result.get("publicDeclarations")
+    packages = result.get("publicPackages")
+    if not isinstance(declarations, list) or not isinstance(packages, list):
+        raise ReconciliationError(
+            "mapping corrections need the public declaration and package inventories"
+        )
+    package_languages = {
+        row.get("id"): row.get("language")
+        for row in packages
+        if isinstance(row, dict)
+    }
+    by_id: dict[str, dict[str, Any]] = {}
+    by_export: dict[tuple[str, str], dict[str, Any]] = {}
+    for declaration in declarations:
+        if not isinstance(declaration, dict):
+            raise ReconciliationError("public declaration inventory contains a non-object")
+        identifier = declaration.get("declarationId")
+        key = declaration.get("packageId"), declaration.get("exportName")
+        if not isinstance(identifier, str) or not identifier or identifier in by_id:
+            raise ReconciliationError("public declaration IDs must be unique for mapping corrections")
+        if not all(isinstance(value, str) and value for value in key) or key in by_export:
+            raise ReconciliationError("public export paths must be unique for mapping corrections")
+        by_id[identifier] = declaration
+        by_export[key] = declaration
+
+    correction_keys = {
+        "declarationId", "language", "from", "to", "capabilityId",
+        "requirementIds", "evidencePaths", "reason", "approvalSource",
+    }
+    seen: set[tuple[str, str]] = set()
+    for correction in corrections or []:
+        if not isinstance(correction, dict) or set(correction) != correction_keys:
+            raise ReconciliationError(
+                "language mapping correction has missing or extra fields"
+            )
+        declaration_id = correction.get("declarationId")
+        language = correction.get("language")
+        identity = (declaration_id, language)
+        if identity in seen:
+            raise ReconciliationError("language mapping corrections must be unique")
+        seen.add(identity)
+        if language not in LANGUAGE_PACKAGES:
+            raise ReconciliationError("language mapping correction uses an unsupported language")
+        declaration = by_id.get(declaration_id)
+        if declaration is None:
+            raise ReconciliationError(
+                f"language mapping correction references an unknown declaration: {declaration_id}"
+            )
+        if (
+            declaration.get("declarationState") not in {"declared", "verified"}
+            or declaration.get("capabilityId") != correction.get("capabilityId")
+        ):
+            raise ReconciliationError(
+                "language mapping correction does not match a ready declaration capability"
+            )
+        for route_key in ("from", "to"):
+            route = correction.get(route_key)
+            if (
+                not isinstance(route, dict)
+                or set(route) != {"packageId", "name"}
+                or route.get("packageId") not in LANGUAGE_PACKAGES[language]
+                or not isinstance(route.get("name"), str)
+                or not route["name"].strip()
+                or any(marker in route["name"] for marker in "*?")
+            ):
+                raise ReconciliationError(
+                    f"language mapping correction {route_key} route must be exact"
+                )
+        requirements = correction.get("requirementIds")
+        evidence = correction.get("evidencePaths")
+        reason = correction.get("reason")
+        approval = correction.get("approvalSource")
+        if (
+            not isinstance(requirements, list)
+            or not requirements
+            or any(
+                not isinstance(value, str)
+                or not value.startswith(f"{SPEC_ID}-FR-")
+                for value in requirements
+            )
+            or len(requirements) != len(set(requirements))
+            or not isinstance(evidence, list)
+            or not evidence
+            or len(evidence) != len(set(evidence))
+            or any(
+                not isinstance(path, str)
+                or not path.strip()
+                or Path(path).is_absolute()
+                or "\\" in path
+                or ".." in Path(path).parts
+                or not (Path.cwd() / path).is_file()
+                for path in evidence
+            )
+            or not isinstance(reason, str)
+            or not reason.strip()
+            or not isinstance(approval, dict)
+            or set(approval) != {"kind", "path", "status", "evidence"}
+            or approval.get("kind") != "feature-specification"
+            or approval.get("path") != APPROVAL_RECORD_PATH
+            or approval.get("status") != "Approved"
+            or any(
+                not isinstance(value, str) or not value.strip()
+                for value in approval.values()
+            )
+        ):
+            raise ReconciliationError(
+                "language mapping correction needs exact approved traceability"
+            )
+        mappings = declaration.get("languageMappings")
+        if not isinstance(mappings, dict) or language not in mappings:
+            raise ReconciliationError("language mapping correction lacks its current route")
+        current = mappings[language]
+        old_route = correction["from"]
+        new_route = correction["to"]
+        if current not in (old_route, new_route):
+            raise ReconciliationError(
+                f"language mapping correction source differs from the exact current route: {declaration_id}"
+            )
+        target = by_export.get((new_route["packageId"], new_route["name"]))
+        if (
+            target is None
+            or package_languages.get(target.get("packageId")) != language
+            or target.get("declarationState") not in {"declared", "verified"}
+        ):
+            raise ReconciliationError(
+                f"language mapping correction target is not an exact listed export: {new_route['name']}"
+            )
+        if current == old_route:
+            mappings[language] = copy.deepcopy(new_route)
+        candidate_spec = declaration.get("candidateSpecId")
+        if candidate_spec not in {None, SPEC_ID}:
+            raise ReconciliationError(
+                f"language mapping correction conflicts with another approval owner: {declaration_id}"
+            )
+        declaration["candidateSpecId"] = SPEC_ID
+        declaration["requirementIds"] = sorted(
+            set(declaration.get("requirementIds", [])) | set(requirements)
+        )
+        declaration["parityEvidenceIds"] = sorted(
+            set(declaration.get("parityEvidenceIds", [])) | set(evidence)
+        )
     return result
 
 
@@ -1331,7 +1904,7 @@ def add_approved_exclusions(
     for exclusion in exclusions:
         required = {"packageId", "exportName", "reason", "approvalSource", "evidence"}
         allowed = required | {
-            "candidateSpecId", "declarationId", "declarationKind", "artifactKind",
+            "candidateSpecId", "declarationId", "capabilityId", "declarationKind", "artifactKind",
             "counterpartDeclarationIds", "evidencePaths", "rustArtifactKind", "identity",
             "condition", "ownerExportName", "ownerDeclarationId", "exclusionScope",
             "exclusionCategory", "precedent",
@@ -1355,6 +1928,45 @@ def add_approved_exclusions(
             or not exclusion["evidence"].strip()
         ):
             raise ReconciliationError("approved export exclusion must identify one exact route")
+        capability_id = exclusion.get("capabilityId")
+        if capability_id is not None:
+            capabilities = result.get("capabilities")
+            matching_capabilities = [
+                row
+                for row in capabilities or []
+                if isinstance(row, dict) and row.get("capabilityId") == capability_id
+            ]
+            if (
+                not isinstance(capability_id, str)
+                or not capability_id.strip()
+                or len(matching_capabilities) != 1
+            ):
+                raise ReconciliationError("export exclusion must reference one exact capability")
+            counterpart_ids = exclusion.get("counterpartDeclarationIds")
+            if counterpart_ids is not None:
+                declarations = result.get("publicDeclarations")
+                declarations_by_id = {
+                    row.get("declarationId"): row
+                    for row in declarations or []
+                    if isinstance(row, dict)
+                }
+                if (
+                    not isinstance(counterpart_ids, list)
+                    or not counterpart_ids
+                    or any(
+                        not isinstance(identifier, str)
+                        for identifier in counterpart_ids
+                    )
+                    or len(counterpart_ids) != len(set(counterpart_ids))
+                    or any(
+                        declarations_by_id.get(identifier, {}).get("capabilityId")
+                        != capability_id
+                        for identifier in counterpart_ids
+                    )
+                ):
+                    raise ReconciliationError(
+                        "export exclusion capability must match its exact counterpart declarations"
+                    )
         key = (package_id, export_name)
         if package_id == "c-kmipkit" and export_name == CFFI_BRIDGE_EXCLUSION[0]:
             expected = (
@@ -1429,11 +2041,56 @@ def add_approved_exclusions(
         seen.add(key)
         existing = by_export.get(key)
         if existing is not None and existing != exclusion:
-            raise ReconciliationError("approved JNI exclusion conflicts with its reviewed record")
+            if not _is_exact_legacy_model_error_approval_correction(existing, exclusion):
+                raise ReconciliationError(
+                    f"approved export exclusion conflicts with its reviewed record: {export_name}"
+                )
+            current[current.index(existing)] = copy.deepcopy(exclusion)
+            by_export[key] = exclusion
         if existing is None:
             current.append(copy.deepcopy(exclusion))
             by_export[key] = exclusion
     return result
+
+
+def _is_exact_legacy_model_error_approval_correction(
+    previous: dict[str, Any], corrected: dict[str, Any]
+) -> bool:
+    """Permit only the reviewed 0004 approval-source shape correction."""
+    expected_routes = {
+        ("rust-kmipkit", "kmipkit::ttlv::ModelError::UnsupportedValue"),
+        ("rust-kmipkit-ttlv", "kmipkit_ttlv::ModelError::UnsupportedValue"),
+    }
+    key = (previous.get("packageId"), previous.get("exportName"))
+    if key not in expected_routes or key != (
+        corrected.get("packageId"), corrected.get("exportName")
+    ):
+        return False
+    expected_old_approval = {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "requirementIds": ["KMIPKIT-0004-FR-013"],
+    }
+    expected_new_approval = {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": (
+            "KMIPKIT-0004-FR-013 approves excluding these exact local ModelError "
+            "variants from the cross-language public route inventory."
+        ),
+    }
+    if (
+        previous.get("candidateSpecId") != "KMIPKIT-0004"
+        or corrected.get("candidateSpecId") != "KMIPKIT-0004"
+        or previous.get("approvalSource") != expected_old_approval
+        or corrected.get("approvalSource") != expected_new_approval
+    ):
+        return False
+    normalized_previous = copy.deepcopy(previous)
+    normalized_previous["approvalSource"] = expected_new_approval
+    return normalized_previous == corrected
 
 
 def _synchronize_capability_mappings(manifest: dict[str, Any]) -> dict[str, Any]:
@@ -1610,7 +2267,15 @@ def main() -> int:
         result = add_additional_types(result, route_data.get("types", []))
         result = add_additional_functions(result, route_data.get("functions", []))
         result = add_public_declarations(
-            result, route_data.get("publicDeclarations", [])
+            result,
+            route_data.get("publicDeclarations", []),
+            route_data.get("pythonStaleMappings", []),
+            route_data.get("javaStaleMappings", []),
+            route_data.get("pythonKindCorrections", []),
+            route_data.get("rustKindCorrections", []),
+        )
+        result = apply_language_mapping_corrections(
+            result, route_data.get("languageMappingCorrections", [])
         )
         result = add_approved_exclusions(
             result, route_data.get("approvedExclusions", [])
