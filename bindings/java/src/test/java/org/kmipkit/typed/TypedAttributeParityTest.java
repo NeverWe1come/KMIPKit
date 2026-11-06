@@ -54,35 +54,39 @@ final class TypedAttributeParityTest {
                     TypedAttribute typed = TypedAttribute.create(attribute, value);
                     TtlvValue copied = typed.value();
                     TtlvValueView actual = copied.view()) {
-                assertEquals(expectedType(attribute), actual.itemType(), attribute.name());
-                switch (attribute.valueKind()) {
-                    case "Enumeration" -> assertEquals(0xffff_ffffL, actual.enumeration());
-                    case "Integer" -> assertEquals(7, actual.integer());
-                    case "Boolean" -> assertEquals(true, actual.booleanValue());
-                    case "BigInteger", "ByteString" -> assertBytes(actual, new byte[] {1});
-                    case "TextString" -> assertBytes(actual, "attribute-value".getBytes(
-                            java.nio.charset.StandardCharsets.UTF_8));
-                    case "DateTime" -> assertEquals(1_700_000_000L, actual.dateTime());
-                    case "DateTimeExtended" -> assertEquals(1_700_000_000L,
-                            actual.dateTimeExtended());
-                    case "Interval" -> assertEquals(7, actual.interval());
-                    case "Structure" -> {
-                        try (TtlvStructureView structure = actual.structure()) {
-                            assertEquals(attribute == StandardAttribute.VENDOR_ATTRIBUTE ? 3 : 0,
-                                    structure.itemCount());
-                            if (attribute == StandardAttribute.VENDOR_ATTRIBUTE) {
-                                assertStructureChild(structure, 0, 0x0042_009d,
-                                        "KMIPKit.TestVendor_1".getBytes());
-                                assertStructureChild(structure, 1, 0x0042_000a,
-                                        "Opaque.Attribute".getBytes());
-                                assertStructureChild(structure, 2, 0x0042_000b,
-                                        new byte[] {1});
-                            }
-                        }
+                assertCatalogValue(attribute, actual);
+            }
+        }
+    }
+
+    private static void assertCatalogValue(
+            StandardAttribute attribute, TtlvValueView actual) {
+        assertEquals(expectedType(attribute), actual.itemType(), attribute.name());
+        switch (attribute.valueKind()) {
+            case "Enumeration" -> assertEquals(0xffff_ffffL, actual.enumeration());
+            case "Integer" -> assertEquals(7, actual.integer());
+            case "Boolean" -> assertEquals(true, actual.booleanValue());
+            case "BigInteger", "ByteString" -> assertBytes(actual, new byte[] {1});
+            case "TextString" -> assertBytes(actual, "attribute-value".getBytes(
+                    java.nio.charset.StandardCharsets.UTF_8));
+            case "DateTime" -> assertEquals(1_700_000_000L, actual.dateTime());
+            case "DateTimeExtended" -> assertEquals(1_700_000_000L,
+                    actual.dateTimeExtended());
+            case "Interval" -> assertEquals(7, actual.interval());
+            case "Structure" -> {
+                try (TtlvStructureView structure = actual.structure()) {
+                    assertEquals(attribute == StandardAttribute.VENDOR_ATTRIBUTE ? 3 : 0,
+                            structure.itemCount());
+                    if (attribute == StandardAttribute.VENDOR_ATTRIBUTE) {
+                        assertStructureChild(structure, 0, 0x0042_009d,
+                                "KMIPKit.TestVendor_1".getBytes());
+                        assertStructureChild(structure, 1, 0x0042_000a,
+                                "Opaque.Attribute".getBytes());
+                        assertStructureChild(structure, 2, 0x0042_000b, new byte[] {1});
                     }
-                    default -> { }
                 }
             }
+            default -> { }
         }
     }
 

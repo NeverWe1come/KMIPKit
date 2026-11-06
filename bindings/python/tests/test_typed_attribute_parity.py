@@ -95,6 +95,50 @@ def _expected_item_type(kind: str) -> ttlv.ItemType:
     }[kind]
 
 
+def _assert_catalog_value(attribute: StandardAttribute, actual: ttlv.TtlvValueView) -> None:
+    kind = attribute.value_kind
+    assert ttlv.ttlv_value_view_type(actual) == _expected_item_type(kind), attribute.name
+    if kind == "Enumeration":
+        assert ttlv.ttlv_value_view_enumeration(actual) == 0xFFFF_FFFF
+    elif kind == "BigInteger":
+        assert _view_bytes(actual) == b"\x01"
+    elif kind == "Integer":
+        assert ttlv.ttlv_value_view_integer(actual) == 7
+    elif kind == "Boolean":
+        assert ttlv.ttlv_value_view_boolean(actual) is True
+    elif kind in ("ByteString", "TextString"):
+        expected = b"\x01" if kind == "ByteString" else b"attribute-value"
+        assert _view_bytes(actual) == expected
+    elif kind == "DateTime":
+        assert ttlv.ttlv_value_view_date_time(actual) == 1_700_000_000
+    elif kind == "DateTimeExtended":
+        assert ttlv.ttlv_value_view_date_time_extended(actual) == 1_700_000_000
+    elif kind == "Interval":
+        assert ttlv.ttlv_value_view_interval(actual) == 7
+    elif kind == "Structure":
+        with ttlv.ttlv_value_view_structure(actual) as structure:
+            expected_children = 3 if attribute is StandardAttribute.VENDOR_ATTRIBUTE else 0
+            assert ttlv.ttlv_structure_view_item_count(structure) == expected_children
+            expected = (
+                (0x0042_009D, b"KMIPKit.TestVendor_1"),
+                (0x0042_000A, b"Opaque.Attribute"),
+                (0x0042_000B, b"\x01"),
+            )
+            for index, (expected_tag, expected_value) in enumerate(expected[:expected_children]):
+                with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                    with ttlv.ttlv_item_view_tag(child) as tag:
+                        assert ttlv.tag_value(tag) == expected_tag
+                    with ttlv.ttlv_item_view_value(child) as child_value:
+                        assert _view_bytes(child_value) == expected_value
+
+
+def _view_bytes(value: ttlv.TtlvValueView) -> bytes:
+    return bytes(
+        ttlv.ttlv_value_view_byte_at(value, index)
+        for index in range(ttlv.ttlv_value_view_byte_length(value))
+    )
+
+
 def test_catalog_exposes_all_sixty_two_direct_attributes_with_unique_tags():
     assert len(StandardAttribute) == 62
     assert len({attribute.tag for attribute in StandardAttribute}) == 62
@@ -120,48 +164,7 @@ def test_typed_attribute_constructs_and_reads_actual_catalogued_values():
             value = _value_for(attribute, limits)
             with value, TypedAttribute.create(attribute, value) as typed:
                 with typed.value as copied, ttlv.ttlv_value_view(copied) as actual:
-                    assert ttlv.ttlv_value_view_type(actual) == _expected_item_type(
-                        attribute.value_kind
-                    ), attribute.name
-                    if attribute.value_kind == "Enumeration":
-                        assert ttlv.ttlv_value_view_enumeration(actual) == 0xFFFF_FFFF
-                    elif attribute.value_kind == "BigInteger":
-                        assert bytes(ttlv.ttlv_value_view_byte_at(actual, index)
-                                     for index in range(ttlv.ttlv_value_view_byte_length(actual))) == b"\x01"
-                    elif attribute.value_kind == "Integer":
-                        assert ttlv.ttlv_value_view_integer(actual) == 7
-                    elif attribute.value_kind == "Boolean":
-                        assert ttlv.ttlv_value_view_boolean(actual) is True
-                    elif attribute.value_kind in ("ByteString", "TextString"):
-                        expected = b"\x01" if attribute.value_kind == "ByteString" else b"attribute-value"
-                        assert bytes(ttlv.ttlv_value_view_byte_at(actual, index)
-                                     for index in range(ttlv.ttlv_value_view_byte_length(actual))) == expected
-                    elif attribute.value_kind == "DateTime":
-                        assert ttlv.ttlv_value_view_date_time(actual) == 1_700_000_000
-                    elif attribute.value_kind == "DateTimeExtended":
-                        assert ttlv.ttlv_value_view_date_time_extended(actual) == 1_700_000_000
-                    elif attribute.value_kind == "Interval":
-                        assert ttlv.ttlv_value_view_interval(actual) == 7
-                    elif attribute.value_kind == "Structure":
-                        with ttlv.ttlv_value_view_structure(actual) as structure:
-                            expected = 3 if attribute is StandardAttribute.VENDOR_ATTRIBUTE else 0
-                            assert ttlv.ttlv_structure_view_item_count(structure) == expected
-                            if expected:
-                                for index, (expected_tag, expected_value) in enumerate((
-                                    (0x0042_009D, b"KMIPKit.TestVendor_1"),
-                                    (0x0042_000A, b"Opaque.Attribute"),
-                                    (0x0042_000B, b"\x01"),
-                                )):
-                                    with ttlv.ttlv_structure_view_item_at(structure, index) as child:
-                                        with ttlv.ttlv_item_view_tag(child) as tag:
-                                            assert ttlv.tag_value(tag) == expected_tag
-                                        with ttlv.ttlv_item_view_value(child) as child_value:
-                                            assert bytes(
-                                                ttlv.ttlv_value_view_byte_at(child_value, offset)
-                                                for offset in range(
-                                                    ttlv.ttlv_value_view_byte_length(child_value)
-                                                )
-                                            ) == expected_value
+                    _assert_catalog_value(attribute, actual)
 
 
 @pytest.mark.parametrize("variant", ["open-enumeration", "integer"])
