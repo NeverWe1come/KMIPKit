@@ -10,17 +10,17 @@
 - [x] T002 Add client tests for raw Response Payload and Response Header views, distinguishing absent payload from present empty Structure and preserving child order/repetition (`R057`, `R058`, `P002`, `P003`).
 - [ ] T003 Add a client response fixture with vendor tags at arbitrary nested depth, including Key Block and Server Information, and assert traversal and value preservation without exposing Debug values (`R004`, `R005`, `R059`, `R060`, `P006`).
 - [x] T004 Add async typed-reader tests for Cancel, Poll, Process, and Query Asynchronous Requests for matching and mismatching outcomes; preserve the unresolved Table 286 payload generically (`R001`, `P005`).
-- [ ] T005 Add response ownership/lifetime tests proving raw Rust views borrow the result owner and the retained message tree is zeroized when its last owner is dropped (`R007`, `R009`, `P001`, `P004`).
+- [x] T005 Add response ownership/lifetime tests proving raw Rust views borrow the result owner and the retained message tree is zeroized when its last owner is dropped (`R007`, `R009`, `P001`, `P004`). Borrowing is compile-fail tested at the Item/Structure boundary; reordered batch items prove one shared `Arc<ResponseMessage>`, each associated raw payload remains readable, and the final weak reference cannot upgrade after the result owners drop. The retained TTLV owner recursively zeroizes payloads on drop.
 - [ ] T006 Add C, Java, and Python consumer tests for owned raw payload/header copies, explicit release/close, nested vendor tags, empty/absent payload, and redaction (`R007`–`R009`).
 - [x] T007 Run the focused tests and record the expected Red failures before production implementation. The protocol accessor test failed to compile for the absent `.raw()` methods; the client compile reported all absent async readers and client raw methods.
 
 ## Phase 2: Green — Rust and TTLV surface
 
 - [x] T008 Add a direct borrowed `Item::as_structure()` accessor and API documentation; do not change value ownership or formatting.
-- [ ] T009 Add direct ordered raw access to `ResponseHeaderView` and `ResponseBatchItemView` while preserving existing callback accessors.
-- [ ] T010 Retain one shared `Arc<ResponseMessage>` and response-item index in high-level batch results; implement `ClientBatchItemResponse::raw()` and batch response header access without cloning a payload per result.
-- [ ] T011 Add direct `ClientOperationOutcome::raw()` and typed readers for Cancel, Poll, Process, and Query Asynchronous Requests, returning `None` for a different operation.
-- [ ] T012 Run focused Rust/TTLV tests and verify Red tests turn Green without changing response validation or asynchronous semantics.
+- [x] T009 Add direct ordered raw access to `ResponseHeaderView` and `ResponseBatchItemView` while preserving existing callback accessors.
+- [x] T010 Retain one shared `Arc<ResponseMessage>` and response-item index in high-level batch results; implement `ClientBatchItemResponse::raw()` and batch response header access without cloning a payload per result.
+- [x] T011 Add direct `ClientOperationOutcome::raw()` and typed readers for Cancel, Poll, Process, and Query Asynchronous Requests, returning `None` for a different operation.
+- [x] T012 Run focused Rust/TTLV tests and verify Red tests turn Green without changing response validation or asynchronous semantics.
 
 ## Phase 3: Green — C, Java, and Python consumers
 

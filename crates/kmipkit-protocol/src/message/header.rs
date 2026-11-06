@@ -178,6 +178,16 @@ impl<'a> ResponseHeaderView<'a> {
         self.with_header(callback)
     }
 
+    /// Borrows the original ordered Response Header TTLV Structure.
+    ///
+    /// Unknown fields and repeated values remain in source order. The view
+    /// cannot outlive the owning Response Message.
+    #[must_use]
+    pub fn raw(self) -> Option<StructureView<'a>> {
+        self.message
+            .root_item_structure(self.message.header_index())
+    }
+
     /// Returns the raw signed Protocol Version Major/Minor pair.
     #[must_use]
     pub fn protocol_version(self) -> super::ProtocolVersion {

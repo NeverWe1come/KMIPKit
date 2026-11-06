@@ -299,8 +299,29 @@ fn request_batch_and_extension_accessors_preserve_order_and_values() {
 #[test]
 fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
     let message = response();
-    let header = message.header().raw().expect("validated Response Header exists");
+    let header = message
+        .header()
+        .raw()
+        .expect("validated Response Header exists");
     assert_eq!(header.children().len(), 9);
+    assert_eq!(
+        header
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        [
+            PROTOCOL_VERSION,
+            TIME_STAMP,
+            NONCE,
+            SERVER_HASHED_PASSWORD,
+            ATTESTATION_TYPE,
+            ATTESTATION_TYPE,
+            CLIENT_CORRELATION_VALUE,
+            SERVER_CORRELATION_VALUE,
+            BATCH_COUNT,
+        ]
+    );
     let mut items = message.batch_items();
     let failure = items.next().expect("failure item exists");
     let success = items.next().expect("success item exists");
@@ -335,7 +356,11 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
     );
 
     assert_eq!(success.operation(), Some(8));
-    assert!(success.raw().is_some_and(|payload| payload.children().is_empty()));
+    assert!(
+        success
+            .raw()
+            .is_some_and(|payload| payload.children().is_empty())
+    );
     assert_eq!(
         success.with_response_payload(|payload| payload.children().len()),
         Some(0)
@@ -357,7 +382,11 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
     );
 
     assert_eq!(pending.operation(), Some(9));
-    assert!(pending.raw().is_some_and(|payload| payload.children().is_empty()));
+    assert!(
+        pending
+            .raw()
+            .is_some_and(|payload| payload.children().is_empty())
+    );
     assert_eq!(
         pending
             .result_status()
