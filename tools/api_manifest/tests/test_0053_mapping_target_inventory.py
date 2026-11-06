@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 import re
+import copy
 from pathlib import Path
 
 from tools.api_manifest import generate
@@ -54,6 +55,9 @@ class MappingTargetInventoryTests(unittest.TestCase):
             mappings = declaration["languageMappings"]
             self.assertEqual("four-language", declaration["parityScope"])
             self.assertEqual(
+                "standard-attribute-tag-value", declaration["mappingSemantics"]
+            )
+            self.assertEqual(
                 {"packageId": "c-kmipkit", "name": declaration["exportName"]},
                 mappings["c"],
             )
@@ -78,6 +82,36 @@ class MappingTargetInventoryTests(unittest.TestCase):
                 },
                 mappings["python"],
             )
+
+    def test_standard_attribute_tag_mapping_semantics_reject_unrelated_routes(self) -> None:
+        packages = {
+            package["id"]: package["language"]
+            for package in self.manifest["publicPackages"]
+        }
+        c_release_functions = set()
+        declaration = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("declarationId")
+            == "KMIPKIT-0053:c-standard-attribute:activation-date"
+        )
+        for key, value in (
+            ("capabilityId", "client_execution"),
+            ("parityScope", "c-only"),
+            ("kind", "function"),
+        ):
+            declarations = copy.deepcopy(self.manifest["publicDeclarations"])
+            target = next(
+                row for row in declarations
+                if row.get("declarationId") == declaration["declarationId"]
+            )
+            target[key] = value
+            with self.subTest(field=key):
+                with self.assertRaisesRegex(
+                    generate.ManifestError, "standard attribute tag mapping"
+                ):
+                    generate._validate_ready_mapping_targets(
+                        declarations, packages, c_release_functions
+                    )
 
 
 if __name__ == "__main__":
