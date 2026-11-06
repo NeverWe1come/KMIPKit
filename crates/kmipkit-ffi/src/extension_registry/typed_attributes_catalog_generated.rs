@@ -69,6 +69,7 @@ pub(super) fn is_catalogued_attribute_tag(raw_tag: u32) -> bool {
 }
 
 /// Catalogued direct-attribute tag and source TTLV value kind.
+#[cfg(test)]
 pub(super) const ATTRIBUTE_DEFINITIONS: &[(u32, &str)] = &[
     (0x42_00_01, "DateTime"),
     (0x42_00_04, "Structure"),

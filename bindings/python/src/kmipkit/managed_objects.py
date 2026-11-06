@@ -35,6 +35,13 @@ class ManagedTtlvItem(ttlv.TtlvItem):
         super().__init__(handle, _token=_token)
         self._metadata = metadata
 
+    def _metadata_value(self) -> int:
+        self._pointer()
+        metadata = self._metadata
+        if metadata is None:
+            errors.raise_for_status(4)
+        return metadata
+
     def __repr__(self) -> str:
         state = "closed" if self.closed else "open"
         return f"{type(self).__name__}({state}, value=[REDACTED])"
@@ -47,15 +54,23 @@ class ManagedObject(ManagedTtlvItem):
     @synchronized_native_call
     def from_item(cls, object_type: int, item: ttlv.TtlvItem) -> Self:
         """Copy and validate a managed object; unknown object values stay generic."""
-        if not isinstance(object_type, int) or isinstance(object_type, bool) or not 0 <= object_type <= 0xFFFF_FFFF:
+        if (
+            not isinstance(object_type, int)
+            or isinstance(object_type, bool)
+            or not 0 <= object_type <= 0xFFFF_FFFF
+        ):
             errors.raise_for_status(4)
-        return _from_item(cls, _client_lib.kmipkit_managed_object_from_item, item, object_type, metadata=object_type)  # type: ignore[return-value]
+        return _from_item(
+            cls,
+            _client_lib.kmipkit_managed_object_from_item,
+            item,
+            object_type,
+            metadata=object_type,
+        )  # type: ignore[return-value]
 
     @property
     def object_type(self) -> int:
-        self._pointer()
-        assert self._metadata is not None
-        return self._metadata
+        return self._metadata_value()
 
 
 class KeyBlock(ManagedTtlvItem):
@@ -79,9 +94,7 @@ class KeyValue(ManagedTtlvItem):
 
     @property
     def format_raw(self) -> int:
-        self._pointer()
-        assert self._metadata is not None
-        return self._metadata
+        return self._metadata_value()
 
 
 class KeyMaterial(ManagedTtlvItem):
@@ -96,9 +109,7 @@ class KeyMaterial(ManagedTtlvItem):
 
     @property
     def format_raw(self) -> int:
-        self._pointer()
-        assert self._metadata is not None
-        return self._metadata
+        return self._metadata_value()
 
 
 class KeyWrappingData(ManagedTtlvItem):

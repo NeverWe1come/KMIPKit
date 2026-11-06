@@ -35,7 +35,7 @@
 - [x] T021 [US2] Add Java closeable owners, views, fallback values and JNI conversion in bindings/java/src/main/java/org/kmipkit/managed/ and bindings/java/native/kmipkit_jni.cpp.
 - [x] T022 [US2] Add Python closeable owners/views and CFFI conversions in bindings/python/src/kmipkit/managed_objects.py and bindings/python/src/kmipkit/_client_ffi.py.
 - [x] T023 [US2] Verify exact tags/order/types, unknown fallback, failure cleanup, and zeroization; record results in specs/053-api-parity-facade/implementation-evidence.md.
-- [ ] T024 [US2] Refactor common managed-value conversion and rerun `bindings/c/tests/managed_object_parity_consumer.c`, `bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java`, and `bindings/python/tests/test_managed_object_parity.py`.
+- [x] T024 [US2] Refactor common managed-value conversion and rerun `bindings/c/tests/managed_object_parity_consumer.c`, `bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java`, and `bindings/python/tests/test_managed_object_parity.py`.
 
 ## Phase 4: US3 Cryptographic Parameters and Authentication
 ### Red

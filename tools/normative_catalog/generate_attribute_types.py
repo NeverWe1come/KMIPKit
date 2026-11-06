@@ -529,6 +529,7 @@ def render_typed_ffi_rust(catalog: dict[str, Any]) -> str:
         "}",
         "",
         "/// Catalogued direct-attribute tag and source TTLV value kind.",
+        "#[cfg(test)]",
         "pub(super) const ATTRIBUTE_DEFINITIONS: &[(u32, &str)] = &[",
         entries,
         "];",
