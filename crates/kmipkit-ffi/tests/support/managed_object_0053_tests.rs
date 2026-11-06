@@ -49,6 +49,12 @@ unsafe extern "C" {
         field_count: u64,
         out_item: *mut *mut kmipkit_ttlv_item_t,
     ) -> i32;
+    fn kmipkit_0053_key_material_from_fields(
+        format_raw: u32,
+        fields: *const *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
 }
 
 fn tag(raw: u32) -> kmipkit_ttlv::Tag {
@@ -353,6 +359,53 @@ fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values
     assert!(source_handles
         .iter()
         .all(|source| reference_handle(*source, Kind::Item).is_ok()));
+    kmipkit_ttlv_item_release(output_handle);
+    for source in source_handles {
+        kmipkit_ttlv_item_release(source);
+    }
+}
+
+#[test]
+fn compiled_c_consumer_builds_transparent_rsa_public_material_in_schema_order() {
+    let exponent = Item::new(
+        tag(0x0042_006c),
+        Value::big_integer(vec![1, 0, 1]),
+    )
+    .expect("public exponent");
+    let modulus = Item::new(tag(0x0042_0052), Value::big_integer(vec![0x80, 0x01]))
+        .expect("modulus");
+    let source_handles = [
+        make_handle(Kind::Item, HandleValue::Item(exponent)),
+        make_handle(Kind::Item, HandleValue::Item(modulus)),
+    ];
+    let mut output_handle = ptr::null_mut();
+    // SAFETY: Both input handles are live and the pointer array and output slot are valid.
+    let status = unsafe {
+        kmipkit_0053_key_material_from_fields(
+            11,
+            source_handles.as_ptr(),
+            source_handles.len() as u64,
+            &raw mut output_handle,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    let output = reference_handle(output_handle, Kind::Item).expect("typed RSA material");
+    let HandleValue::Item(item) = &output.value else {
+        panic!("output is an Item")
+    };
+    item.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            panic!("RSA material is a Structure")
+        };
+        assert_eq!(
+            structure
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            [0x0042_0052, 0x0042_006c]
+        );
+    });
     kmipkit_ttlv_item_release(output_handle);
     for source in source_handles {
         kmipkit_ttlv_item_release(source);

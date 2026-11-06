@@ -172,6 +172,29 @@ final class ManagedObjectParityTest {
         }
     }
 
+    @Test
+    void buildsTransparentRsaPublicMaterialInSchemaOrder() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvItem exponent = item(0x0042006c,
+                TtlvValue.BigInteger(new byte[] {1, 0, 1}, limits), limits);
+        TtlvItem modulus = item(0x00420052,
+                TtlvValue.BigInteger(new byte[] {(byte) 0x80, 1}, limits), limits);
+        try (exponent; modulus;
+                KeyMaterial material = KeyMaterial.fromFields(11, List.of(exponent, modulus));
+                TtlvItemView itemView = material.view();
+                TtlvValueView valueView = itemView.value();
+                TtlvStructureView structure = valueView.structure()) {
+            assertEquals(11, material.formatRaw());
+            List<Integer> tags = new java.util.ArrayList<>();
+            for (long index = 0; index < structure.itemCount(); index++) {
+                try (TtlvItemView field = structure.itemAt(index); Tag tag = field.tag()) {
+                    tags.add(tag.raw());
+                }
+            }
+            assertEquals(List.of(0x00420052, 0x0042006c), tags);
+        }
+    }
+
     private static TtlvItem item(int rawTag, TtlvValue value, CodecLimits limits) {
         try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, value, limits);

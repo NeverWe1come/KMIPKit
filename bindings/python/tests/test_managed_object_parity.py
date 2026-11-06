@@ -199,3 +199,32 @@ def test_certificate_from_fields_orders_known_fields_and_reads_named_values():
         certificate_type.close()
         vendor_repeat.close()
 
+
+def test_transparent_rsa_public_fields_are_typed_and_reordered():
+    with ttlv.codec_limits_defaults() as limits:
+        exponent = _item(
+            0x0042_006C,
+            ttlv.ttlv_value_big_integer(b"\x01\x00\x01", limits),
+            limits,
+        )
+        modulus = _item(
+            0x0042_0052,
+            ttlv.ttlv_value_big_integer(b"\x80\x01", limits),
+            limits,
+        )
+    try:
+        with KeyMaterial.from_fields(11, [exponent, modulus]) as material:
+            assert material.format_raw == 11
+            with ttlv.ttlv_item_view_from_item(material) as item_view:
+                with ttlv.ttlv_item_view_value(item_view) as value_view:
+                    with ttlv.ttlv_value_view_structure(value_view) as structure:
+                        tags = []
+                        for index in range(ttlv.ttlv_structure_view_item_count(structure)):
+                            with ttlv.ttlv_structure_view_item_at(structure, index) as field:
+                                with ttlv.ttlv_item_view_tag(field) as tag:
+                                    tags.append(ttlv.tag_value(tag))
+            assert tags == [0x0042_0052, 0x0042_006C]
+    finally:
+        exponent.close()
+        modulus.close()
+
