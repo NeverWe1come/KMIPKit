@@ -109,6 +109,10 @@ impl ValidateKmipRequest for crate::DeleteAttributeRequest {
     fn validate(&self) -> ValidationReport {
         let mut report = ValidationReport::default();
         if let Some(current) = self.current_attribute() {
+            report.append(validate_catalogued_attribute_type(
+                current.item(),
+                "Current Attribute",
+            ));
             report.append(validate_vendor_attribute_shape(
                 current.item(),
                 "Current Attribute",
@@ -143,6 +147,10 @@ impl ValidateKmipRequest for crate::SetAttributeRequest {
     fn validate(&self) -> ValidationReport {
         let mut report =
             validate_vendor_attribute_shape(self.new_attribute().item(), "New Attribute");
+        report.append(validate_catalogued_attribute_type(
+            self.new_attribute().item(),
+            "New Attribute",
+        ));
         report.append(validate_attribute_item_mutation(
             self.new_attribute().item(),
             crate::attribute::ClientAttributeMutation::Set,
@@ -158,6 +166,10 @@ impl ValidateKmipRequest for crate::AddAttributeRequest {
     fn validate(&self) -> ValidationReport {
         let attribute = self.new_attribute().item();
         let mut report = validate_vendor_attribute_shape(attribute, "New Attribute");
+        report.append(validate_catalogued_attribute_type(
+            attribute,
+            "New Attribute",
+        ));
         report.append(validate_usage_limits_count(
             attribute,
             "New Attribute.Usage Limits.Usage Limits Count",
@@ -177,11 +189,19 @@ impl ValidateKmipRequest for crate::ModifyAttributeRequest {
     fn validate(&self) -> ValidationReport {
         let attribute = self.new_attribute().item();
         let mut report = validate_vendor_attribute_shape(attribute, "New Attribute");
+        report.append(validate_catalogued_attribute_type(
+            attribute,
+            "New Attribute",
+        ));
         report.append(validate_usage_limits_count(
             attribute,
             "New Attribute.Usage Limits.Usage Limits Count",
         ));
         if let Some(current) = self.current_attribute() {
+            report.append(validate_catalogued_attribute_type(
+                current.item(),
+                "Current Attribute",
+            ));
             report.append(validate_vendor_attribute_shape(
                 current.item(),
                 "Current Attribute",
@@ -282,6 +302,31 @@ fn validate_vendor_attribute_shape(
         crate::ValidationSourceRef::Oasis {
             document: "KMIP v2.1",
             reference: "§4.60, Table 150",
+        },
+    )
+}
+
+fn validate_catalogued_attribute_type(
+    item: &kmipkit_ttlv::Item,
+    field: &'static str,
+) -> ValidationReport {
+    if crate::attribute::validate_catalogued_item_type(item).is_ok() {
+        return ValidationReport::default();
+    }
+    let Some((attribute_name, source_section)) =
+        crate::attribute::catalogued_attribute_type_source(item.tag().raw())
+    else {
+        return ValidationReport::default();
+    };
+    crate::validation::issue_report(
+        "KMIPKIT-0051-R284",
+        crate::ValidationPath::root()
+            .field("Request Payload")
+            .field(field)
+            .field(attribute_name),
+        crate::ValidationSourceRef::Oasis {
+            document: "KMIP v2.1",
+            reference: source_section,
         },
     )
 }
