@@ -1152,6 +1152,13 @@ fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
         .expect("second exchange succeeds after hot reload");
     assert_eq!(second_response.as_bytes(), b"second");
 
+    // Corrupt key to test reload error in HTTPS
+    key_file.overwrite(b"invalid-key-data");
+    let err = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .unwrap_err();
+    assert_eq!(err.delivery_state(), RequestDeliveryState::NotSent);
+
     drop(adapter);
     let peer = peer.join().expect("the bounded reconnect peer completes");
     assert_eq!(peer.accepted_connections, 2);

@@ -252,10 +252,10 @@ fn config_tracks_file_backed_credentials() {
     let cert_path =
         std::env::temp_dir().join(format!("test-policy-cert-{}.pem", std::process::id()));
     let key_path = std::env::temp_dir().join(format!("test-policy-key-{}.pem", std::process::id()));
-    std::fs::write(&cert_path, cert_pem).unwrap();
-    std::fs::write(&key_path, key_pem).unwrap();
+    std::fs::write(&cert_path, &cert_pem).unwrap();
+    std::fs::write(&key_path, &key_pem).unwrap();
 
-    let config = TransportConfig::builder(crate::Endpoint::raw_tls("localhost", 5696))
+    let mut config = TransportConfig::builder(crate::Endpoint::raw_tls("localhost", 5696))
         .client_identity(crate::ClientIdentity::new(
             crate::CertificateInput::from_pem_file(&cert_path).unwrap(),
             crate::PrivateKeyInput::from_pem_file(&key_path).unwrap(),
@@ -266,9 +266,95 @@ fn config_tracks_file_backed_credentials() {
         .build()
         .unwrap();
 
-    assert!(config.has_tracked_files());
-    let _ = std::fs::remove_file(cert_path);
-    let _ = std::fs::remove_file(key_path);
+    // In-memory config has no tracked files
+    let mut mem_config = TransportConfig::builder(crate::Endpoint::raw_tls("localhost", 5696))
+        .client_identity(crate::ClientIdentity::new(
+            crate::CertificateInput::from_pem(cert_pem.clone()),
+            crate::PrivateKeyInput::from_pem(key_pem.clone()),
+        ))
+        .trust_source(crate::TrustSource::certificate_authorities(vec![
+            crate::CertificateInput::from_pem(pem("CERTIFICATE", pki.ca.der().as_ref())),
+        ]))
+        .build()
+        .unwrap();
+    assert!(!mem_config.files_have_changed());
+    assert!(!mem_config.reload_file_sources().unwrap());
+
+    // File-backed config initially unchanged
+    assert!(!config.files_have_changed());
+    let mut client = tls::build_client_config(&config).unwrap();
+    assert_eq!(client.generation(), 0);
+    assert!(!client.refresh_if_changed(&mut config).unwrap());
+    assert_eq!(client.generation(), 0);
+    assert!(!config.reload_file_sources().unwrap());
+
+    // 1. Rotate to valid new identity
+    let pki2 = TestPki::generate(SERVER_NAME, false);
+    let rotated_cert_pem = pem("CERTIFICATE", pki2.client.der().as_ref());
+    let rotated_key_pem = pem("PRIVATE KEY", &pki2.client_key.serialize_der());
+    std::fs::write(&cert_path, &rotated_cert_pem).unwrap();
+    std::fs::write(&key_path, &rotated_key_pem).unwrap();
+    assert!(config.files_have_changed());
+    assert!(client.refresh_if_changed(&mut config).unwrap());
+    assert_eq!(client.generation(), 1);
+    assert!(!config.files_have_changed());
+
+    // 2. Corrupt cert file
+    std::fs::write(&cert_path, b"invalid pem data").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+    assert_eq!(
+        client.refresh_if_changed(&mut config).unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 3. Restore valid cert, corrupt key file
+    std::fs::write(&cert_path, &rotated_cert_pem).unwrap();
+    std::fs::write(&key_path, b"invalid pem key").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 4. Truncate cert file
+    std::fs::write(&cert_path, b"").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 5. Restore valid cert, truncate key file
+    std::fs::write(&cert_path, &rotated_cert_pem).unwrap();
+    std::fs::write(&key_path, b"").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 6. Cert changed on disk, but key file is missing when reloading
+    std::fs::write(&cert_path, &cert_pem).unwrap();
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 7. Key changed on disk, but cert file is missing when reloading
+    std::fs::write(&key_path, &key_pem).unwrap();
+    let _ = std::fs::remove_file(&cert_path);
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // Clean up temporary files
+    let _ = std::fs::remove_file(&cert_path);
+    let _ = std::fs::remove_file(&key_path);
 }
 
 #[test]

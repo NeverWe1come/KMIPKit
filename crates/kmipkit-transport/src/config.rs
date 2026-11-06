@@ -191,41 +191,22 @@ pub(crate) fn compute_sha256(bytes: &[u8]) -> [u8; 32] {
     out
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum FileEncoding {
-    Pem,
-    Der,
-}
-
 #[derive(Clone)]
 pub(crate) struct TrackedFileSource {
     path: std::path::PathBuf,
-    encoding: FileEncoding,
     last_sha256: [u8; 32],
 }
 
 impl TrackedFileSource {
-    pub(crate) fn new(path: std::path::PathBuf, encoding: FileEncoding, bytes: &[u8]) -> Self {
+    pub(crate) fn new(path: std::path::PathBuf, bytes: &[u8]) -> Self {
         Self {
             path,
-            encoding,
             last_sha256: compute_sha256(bytes),
         }
     }
 
     pub(crate) fn has_changed_on_disk(&self) -> bool {
         std::fs::read(&self.path).is_ok_and(|bytes| compute_sha256(&bytes) != self.last_sha256)
-    }
-}
-
-impl fmt::Debug for TrackedFileSource {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("TrackedFileSource")
-            .field("path", &"[REDACTED]")
-            .field("encoding", &self.encoding)
-            .field("last_sha256", &"[REDACTED]")
-            .finish_non_exhaustive()
     }
 }
 
@@ -262,7 +243,7 @@ impl CertificateInput {
     pub fn from_pem_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
         let path_ref = path.as_ref();
         let bytes = std::fs::read(path_ref).map_err(|_| TransportConfigError::InvalidCredential)?;
-        let tracked = TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Pem, &bytes);
+        let tracked = TrackedFileSource::new(path_ref.to_path_buf(), &bytes);
         Ok(Self {
             bytes: CertificateBytes::Pem(Zeroizing::new(bytes)),
             tracked: Some(tracked),
@@ -280,7 +261,6 @@ impl CertificateInput {
 
     /// Reads one DER-encoded certificate from the selected path.
     ///
-    /// The path is retained internally to support hot-reload upon disk rotation.
     /// File errors use the same redacted category as malformed certificate input.
     ///
     /// # Errors
@@ -288,13 +268,8 @@ impl CertificateInput {
     /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
     /// be read.
     pub fn from_der_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
-        let path_ref = path.as_ref();
-        let bytes = std::fs::read(path_ref).map_err(|_| TransportConfigError::InvalidCredential)?;
-        let tracked = TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Der, &bytes);
-        Ok(Self {
-            bytes: CertificateBytes::Der(vec![Zeroizing::new(bytes)]),
-            tracked: Some(tracked),
-        })
+        let bytes = std::fs::read(path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        Ok(Self::from_der(vec![bytes]))
     }
 
     fn parse(self) -> Result<Vec<CertificateDer<'static>>, TransportConfigError> {
@@ -434,8 +409,7 @@ impl PrivateKeyInput {
             std::fs::File::open(path_ref).map_err(|_| TransportConfigError::InvalidCredential)?;
         let bytes =
             SecretBuffer::read_from(file).map_err(|_| TransportConfigError::InvalidCredential)?;
-        let tracked =
-            TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Pem, bytes.as_slice());
+        let tracked = TrackedFileSource::new(path_ref.to_path_buf(), bytes.as_slice());
         Ok(Self {
             bytes: PrivateKeyBytes::Pem(bytes),
             tracked: Some(tracked),
@@ -453,7 +427,6 @@ impl PrivateKeyInput {
 
     /// Reads a DER-encoded unencrypted private key from the selected path.
     ///
-    /// The path is retained internally to support hot-reload upon disk rotation.
     /// File errors use the same redacted category as malformed key input.
     ///
     /// # Errors
@@ -461,17 +434,11 @@ impl PrivateKeyInput {
     /// Returns [`TransportConfigError::InvalidCredential`] if the file cannot
     /// be read.
     pub fn from_der_file(path: impl AsRef<Path>) -> Result<Self, TransportConfigError> {
-        let path_ref = path.as_ref();
         let file =
-            std::fs::File::open(path_ref).map_err(|_| TransportConfigError::InvalidCredential)?;
+            std::fs::File::open(path).map_err(|_| TransportConfigError::InvalidCredential)?;
         let bytes =
             SecretBuffer::read_from(file).map_err(|_| TransportConfigError::InvalidCredential)?;
-        let tracked =
-            TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Der, bytes.as_slice());
-        Ok(Self {
-            bytes: PrivateKeyBytes::Der(bytes),
-            tracked: Some(tracked),
-        })
+        Ok(Self::from_der(bytes.as_slice().to_vec()))
     }
 
     #[cfg(test)]
@@ -547,10 +514,13 @@ impl ClientIdentity {
     pub(crate) fn take_tracked(
         &mut self,
     ) -> (Option<TrackedFileSource>, Option<TrackedFileSource>) {
-        (
+        match (
             self.certificate_chain.tracked.take(),
             self.private_key.tracked.take(),
-        )
+        ) {
+            (Some(cert), Some(key)) => (Some(cert), Some(key)),
+            _ => (None, None),
+        }
     }
 
     fn parse(self, provider: &CryptoProvider) -> Result<CertifiedKey, TransportConfigError> {
@@ -591,16 +561,6 @@ impl TrustSource {
     #[must_use]
     pub const fn platform() -> Self {
         Self::Platform
-    }
-
-    pub(crate) fn take_tracked(&mut self) -> Vec<TrackedFileSource> {
-        match self {
-            Self::CertificateAuthorities(certificates) => certificates
-                .iter_mut()
-                .filter_map(|cert| cert.tracked.take())
-                .collect(),
-            Self::Platform => Vec::new(),
-        }
     }
 
     fn load(self) -> Result<RootCertStore, TransportConfigError> {
@@ -825,7 +785,6 @@ pub struct TransportConfig {
     enable_sni: bool,
     tracked_cert: Option<TrackedFileSource>,
     tracked_key: Option<TrackedFileSource>,
-    tracked_ca: Vec<TrackedFileSource>,
 }
 
 impl TransportConfig {
@@ -892,23 +851,11 @@ impl TransportConfig {
         self.enable_sni
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn has_tracked_files(&self) -> bool {
-        self.tracked_cert.is_some() || self.tracked_key.is_some() || !self.tracked_ca.is_empty()
-    }
-
     pub(crate) fn files_have_changed(&self) -> bool {
-        self.tracked_cert
-            .as_ref()
-            .is_some_and(TrackedFileSource::has_changed_on_disk)
-            || self
-                .tracked_key
-                .as_ref()
-                .is_some_and(TrackedFileSource::has_changed_on_disk)
-            || self
-                .tracked_ca
-                .iter()
-                .any(TrackedFileSource::has_changed_on_disk)
+        match (&self.tracked_cert, &self.tracked_key) {
+            (Some(cert), Some(key)) => cert.has_changed_on_disk() || key.has_changed_on_disk(),
+            _ => false,
+        }
     }
 
     pub(crate) fn reload_file_sources(&mut self) -> Result<bool, TransportConfigError> {
@@ -916,84 +863,38 @@ impl TransportConfig {
             return Ok(false);
         }
 
-        let mut new_identity = None;
-        let mut new_tracked_cert = None;
-        let mut new_tracked_key = None;
+        let (Some(tracked_c), Some(tracked_k)) = (&self.tracked_cert, &self.tracked_key) else {
+            return Ok(false);
+        };
+        let cert_bytes =
+            std::fs::read(&tracked_c.path).map_err(|_| TransportConfigError::InvalidCredential)?;
+        let key_file = std::fs::File::open(&tracked_k.path)
+            .map_err(|_| TransportConfigError::InvalidCredential)?;
+        let key_bytes = SecretBuffer::read_from(key_file)
+            .map_err(|_| TransportConfigError::InvalidCredential)?;
 
-        if let (Some(tracked_c), Some(tracked_k)) = (&self.tracked_cert, &self.tracked_key) {
-            let cert_bytes = std::fs::read(&tracked_c.path)
-                .map_err(|_| TransportConfigError::InvalidCredential)?;
-            let key_file = std::fs::File::open(&tracked_k.path)
-                .map_err(|_| TransportConfigError::InvalidCredential)?;
-            let key_bytes = SecretBuffer::read_from(key_file)
-                .map_err(|_| TransportConfigError::InvalidCredential)?;
+        let cert_der = parse_certificate_pem_bytes(&cert_bytes)?;
+        let key_der = parse_private_key_pem_bytes(key_bytes.as_slice())?;
 
-            let cert_der = parse_certificate_bytes(&cert_bytes, tracked_c.encoding)?;
-            let key_der = parse_private_key_bytes(key_bytes.as_slice(), tracked_k.encoding)?;
+        let certified = CertifiedKey::from_der(cert_der, key_der, &self.crypto_provider)
+            .map_err(|_| TransportConfigError::InvalidCredential)?;
 
-            let certified = CertifiedKey::from_der(cert_der, key_der, &self.crypto_provider)
-                .map_err(|_| TransportConfigError::InvalidCredential)?;
-
-            new_identity = Some(Arc::new(certified));
-            new_tracked_cert = Some(TrackedFileSource::new(
-                tracked_c.path.clone(),
-                tracked_c.encoding,
-                &cert_bytes,
-            ));
-            new_tracked_key = Some(TrackedFileSource::new(
-                tracked_k.path.clone(),
-                tracked_k.encoding,
-                key_bytes.as_slice(),
-            ));
-        }
-
-        let mut new_trust = None;
-        let mut new_tracked_ca = Vec::new();
-        if !self.tracked_ca.is_empty() {
-            let mut roots = RootCertStore::empty();
-            for tracked in &self.tracked_ca {
-                let ca_bytes =
-                    std::fs::read(&tracked.path).map_err(|_| TransportConfigError::InvalidTrust)?;
-                let ca_certs = parse_certificate_bytes(&ca_bytes, tracked.encoding)
-                    .map_err(|_| TransportConfigError::InvalidTrust)?;
-                for cert in ca_certs {
-                    roots
-                        .add(cert)
-                        .map_err(|_| TransportConfigError::InvalidTrust)?;
-                }
-                new_tracked_ca.push(TrackedFileSource::new(
-                    tracked.path.clone(),
-                    tracked.encoding,
-                    &ca_bytes,
-                ));
-            }
-            new_trust = Some(Arc::new(roots));
-        }
-
-        if let Some(id) = new_identity {
-            self.identity = id;
-            self.tracked_cert = new_tracked_cert;
-            self.tracked_key = new_tracked_key;
-        }
-        if let Some(tr) = new_trust {
-            self.trust = tr;
-            self.tracked_ca = new_tracked_ca;
-        }
-
+        self.identity = Arc::new(certified);
+        self.tracked_cert = Some(TrackedFileSource::new(tracked_c.path.clone(), &cert_bytes));
+        self.tracked_key = Some(TrackedFileSource::new(
+            tracked_k.path.clone(),
+            key_bytes.as_slice(),
+        ));
         Ok(true)
     }
 }
 
-fn parse_certificate_bytes(
+fn parse_certificate_pem_bytes(
     bytes: &[u8],
-    encoding: FileEncoding,
 ) -> Result<Vec<CertificateDer<'static>>, TransportConfigError> {
-    let certificates = match encoding {
-        FileEncoding::Pem => CertificateDer::pem_slice_iter(bytes)
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| TransportConfigError::InvalidCredential)?,
-        FileEncoding::Der => vec![CertificateDer::from(bytes.to_vec())],
-    };
+    let certificates = CertificateDer::pem_slice_iter(bytes)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| TransportConfigError::InvalidCredential)?;
     if certificates.is_empty()
         || certificates
             .iter()
@@ -1004,32 +905,19 @@ fn parse_certificate_bytes(
     Ok(certificates)
 }
 
-fn parse_private_key_bytes(
+fn parse_private_key_pem_bytes(
     bytes: &[u8],
-    encoding: FileEncoding,
 ) -> Result<PrivateKeyDer<'static>, TransportConfigError> {
-    let key = match encoding {
-        FileEncoding::Pem => {
-            let mut keys = PrivateKeyDer::pem_slice_iter(bytes)
-                .map(|key| key.map(SecretPrivateKeyDer::new))
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| TransportConfigError::InvalidCredential)?;
-            if keys.len() != 1 {
-                return Err(TransportConfigError::InvalidCredential);
-            }
-            keys.pop()
-                .and_then(SecretPrivateKeyDer::into_inner)
-                .ok_or(TransportConfigError::InvalidCredential)?
-        }
-        FileEncoding::Der => {
-            let key = PrivateKeyDer::try_from(bytes)
-                .map_err(|_| TransportConfigError::InvalidCredential)?;
-            SecretPrivateKeyDer::new(key.clone_key())
-                .into_inner()
-                .ok_or(TransportConfigError::InvalidCredential)?
-        }
-    };
-    Ok(key)
+    let mut keys = PrivateKeyDer::pem_slice_iter(bytes)
+        .map(|key| key.map(SecretPrivateKeyDer::new))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| TransportConfigError::InvalidCredential)?;
+    if keys.len() != 1 {
+        return Err(TransportConfigError::InvalidCredential);
+    }
+    keys.pop()
+        .and_then(SecretPrivateKeyDer::into_inner)
+        .ok_or(TransportConfigError::InvalidCredential)
 }
 
 impl fmt::Debug for TransportConfig {
@@ -1133,9 +1021,8 @@ impl TransportConfigBuilder {
             (false, None) => None,
         };
         let mut identity_input = self.identity.ok_or(TransportConfigError::MissingIdentity)?;
-        let mut trust_source = self.trust.ok_or(TransportConfigError::MissingTrust)?;
+        let trust_source = self.trust.ok_or(TransportConfigError::MissingTrust)?;
         let (tracked_cert, tracked_key) = identity_input.take_tracked();
-        let tracked_ca = trust_source.take_tracked();
         let (tls_server_name, enable_sni) = self.endpoint.server_name(self.tls_server_name)?;
         let crypto_provider = crate::tls::aws_lc_crypto_provider();
         let identity = Arc::new(identity_input.parse(&crypto_provider)?);
@@ -1157,7 +1044,6 @@ impl TransportConfigBuilder {
             enable_sni,
             tracked_cert,
             tracked_key,
-            tracked_ca,
         })
     }
 }
