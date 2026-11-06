@@ -31,11 +31,11 @@
 - [x] T018 [US2] Add Python object dispatch/material/extension/redaction/context tests in bindings/python/tests/test_managed_object_parity.py.
 - [x] T019 [US2] Run focused red consumers and record failures in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
-- [ ] T020 [US2] Add C ABI typed field construction/read APIs for nine objects, KeyBlock, KeyValue, material and wrapping forms in crates/kmipkit-ffi/src/extension_registry/managed_objects.rs; current APIs primarily validate generic Items.
-- [ ] T021 [US2] Add Java typed field constructors/readers, closeable owners, fallback values and JNI conversion in bindings/java/src/main/java/org/kmipkit/managed/ and bindings/java/native/kmipkit_jni.cpp.
-- [ ] T022 [US2] Add Python typed field constructors/readers, closeable owners, fallback values and CFFI conversions in bindings/python/src/kmipkit/managed_objects.py and bindings/python/src/kmipkit/_client_ffi.py.
-- [ ] T023 [US2] Verify typed object/key field values, formats, order, unknown fallback, failure cleanup, and secret cleanup; record results in specs/053-api-parity-facade/implementation-evidence.md.
-- [ ] T024 [US2] Refactor common managed-value conversion and rerun the C, Java, and Python managed-object suites after field APIs are complete.
+- [x] T020 [US2] Add C ABI typed field construction/read APIs for nine objects, KeyBlock, KeyValue, material and wrapping forms in crates/kmipkit-ffi/src/extension_registry/managed_objects.rs; current APIs primarily validate generic Items.
+- [x] T021 [US2] Add Java typed field constructors/readers, closeable owners, fallback values and JNI conversion in bindings/java/src/main/java/org/kmipkit/managed/ and bindings/java/native/kmipkit_jni.cpp.
+- [x] T022 [US2] Add Python typed field constructors/readers, closeable owners, fallback values and CFFI conversions in bindings/python/src/kmipkit/managed_objects.py and bindings/python/src/kmipkit/_client_ffi.py.
+- [x] T023 [US2] Verify typed object/key field values, formats, order, unknown fallback, failure cleanup, and secret cleanup; record results in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T024 [US2] Refactor common managed-value conversion and rerun the C, Java, and Python managed-object suites after field APIs are complete.
 
 ## Phase 4: US3 Cryptographic Parameters and Authentication
 ### Red
@@ -89,8 +89,8 @@
 ## Converged work from implementation review
 - [x] T060 [US1] Add named typed constructors/readers for all applicable KMIPKIT-0048 attributes and typed `AttributeSet` insert/read/iteration across C, Java, and Python, retaining generic Item access and repeated values.
 - [x] T061 [US1] Add behavior tests that round-trip each attribute's actual value, not only its tag and TTLV type, through the typed foreign APIs.
-- [ ] T062 [US2] Add typed constructors/readers for the nine managed-object fields and nested KeyBlock/KeyValue/KeyMaterial/wrapping structures across C, Java, and Python, retaining unknown TTLV children.
-- [ ] T063 [US2] Add behavior tests for object/key field values, key format/material variants, wrapping metadata, ownership, and cleanup guarantees across C, Java, and Python.
+- [x] T062 [US2] Add typed constructors/readers for the nine managed-object fields and nested KeyBlock/KeyValue/KeyMaterial/wrapping structures across C, Java, and Python, retaining unknown TTLV children.
+- [x] T063 [US2] Add behavior tests for object/key field values, key format/material variants, wrapping metadata, ownership, and cleanup guarantees across C, Java, and Python.
 - [ ] T064 [US5] Expose normal Query's typed fields in C, Java, and Python with raw access retained for unknown/vendor fields and exact order/repetition preservation.
 - [ ] T065 [US5] Replace route-only checks with assertions of encoded operation identity for every synchronous factory and concrete typed response values for each operation family.
 

@@ -107,149 +107,72 @@ class ManagedTtlvItem(ttlv.TtlvItem):
 
     def has_field(self, raw_tag: int) -> bool:
         """Report whether a direct child with this raw tag is present."""
-        self._pointer()
-        item_handle = extensions._client_native_item(self)
-        present = _client_ffi.new("uint8_t *")
-        status = int(
-            _client_lib.kmipkit_managed_value_field_read(
-                self._owner_kind,
-                self._context_raw,
-                item_handle,
-                raw_tag,
-                1,
-                present,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                0,
-                _client_ffi.NULL,
-            )
-        )
-        errors.raise_for_status(status)
-        return bool(present[0])
+        return self._native_field_read(raw_tag, 1)[0]
 
-    def field_type(self, raw_tag: int) -> ttlv.ItemType:
-        """Return the first direct child's TTLV type for this raw tag."""
+    def _native_field_read(
+        self,
+        raw_tag: int,
+        read_kind: int,
+        output: Any = None,
+        byte_capacity: int = 0,
+    ) -> tuple[bool, ttlv.ItemType | None, int, int, int]:
         self._pointer()
         item_handle = extensions._client_native_item(self)
         present = _client_ffi.new("uint8_t *")
         item_type = _client_ffi.new("uint8_t *")
+        enumeration = _client_ffi.new("uint32_t *")
+        integer = _client_ffi.new("int32_t *")
+        byte_length = _client_ffi.new("uint64_t *")
+        output_bytes = _client_ffi.NULL if output is None else output
         status = int(
             _client_lib.kmipkit_managed_value_field_read(
                 self._owner_kind,
                 self._context_raw,
                 item_handle,
                 raw_tag,
-                2,
+                read_kind,
                 present,
                 item_type,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                0,
-                _client_ffi.NULL,
-            )
-        )
-        errors.raise_for_status(status)
-        return ttlv.ItemType(item_type[0])
-
-    def field_enumeration(self, raw_tag: int) -> int:
-        """Read a direct child's raw Enumeration value."""
-        self._pointer()
-        item_handle = extensions._client_native_item(self)
-        present = _client_ffi.new("uint8_t *")
-        enumeration = _client_ffi.new("uint32_t *")
-        status = int(
-            _client_lib.kmipkit_managed_value_field_read(
-                self._owner_kind,
-                self._context_raw,
-                item_handle,
-                raw_tag,
-                3,
-                present,
-                _client_ffi.NULL,
                 enumeration,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                0,
-                _client_ffi.NULL,
-            )
-        )
-        errors.raise_for_status(status)
-        return int(enumeration[0])
-
-    def field_integer(self, raw_tag: int) -> int:
-        """Read a direct child's Integer value."""
-        self._pointer()
-        item_handle = extensions._client_native_item(self)
-        present = _client_ffi.new("uint8_t *")
-        integer = _client_ffi.new("int32_t *")
-        status = int(
-            _client_lib.kmipkit_managed_value_field_read(
-                self._owner_kind,
-                self._context_raw,
-                item_handle,
-                raw_tag,
-                4,
-                present,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
                 integer,
-                _client_ffi.NULL,
-                0,
-                _client_ffi.NULL,
-            )
-        )
-        errors.raise_for_status(status)
-        return int(integer[0])
-
-    def field_bytes(self, raw_tag: int) -> bytes:
-        """Copy a direct Byte String or Big Integer field into Python-owned bytes."""
-        self._pointer()
-        item_handle = extensions._client_native_item(self)
-        present = _client_ffi.new("uint8_t *")
-        byte_length = _client_ffi.new("uint64_t *")
-        status = int(
-            _client_lib.kmipkit_managed_value_field_read(
-                self._owner_kind,
-                self._context_raw,
-                item_handle,
-                raw_tag,
-                5,
-                present,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                0,
+                output_bytes,
+                byte_capacity,
                 byte_length,
             )
         )
         errors.raise_for_status(status)
-        length = int(byte_length[0])
+        is_present = bool(present[0])
+        return (
+            is_present,
+            ttlv.ItemType(item_type[0]) if is_present else None,
+            int(enumeration[0]),
+            int(integer[0]),
+            int(byte_length[0]),
+        )
+
+    def field_type(self, raw_tag: int) -> ttlv.ItemType:
+        """Return the first direct child's TTLV type for this raw tag."""
+        _, item_type, _, _, _ = self._native_field_read(raw_tag, 2)
+        if item_type is None:
+            errors.raise_for_status(4)
+        return item_type
+
+    def field_enumeration(self, raw_tag: int) -> int:
+        """Read a direct child's raw Enumeration value."""
+        return self._native_field_read(raw_tag, 3)[2]
+
+    def field_integer(self, raw_tag: int) -> int:
+        """Read a direct child's Integer value."""
+        return self._native_field_read(raw_tag, 4)[3]
+
+    def field_bytes(self, raw_tag: int) -> bytes:
+        """Copy a direct Byte String or Big Integer field into Python-owned bytes."""
+        length = self._native_field_read(raw_tag, 5)[4]
         if length > 0x7FFF_FFFF:
             errors.raise_for_status(6)
         output = _client_ffi.new("uint8_t[]", length) if length else _client_ffi.NULL
-        copied_length = _client_ffi.new("uint64_t *")
-        status = int(
-            _client_lib.kmipkit_managed_value_field_read(
-                self._owner_kind,
-                self._context_raw,
-                item_handle,
-                raw_tag,
-                5,
-                present,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                _client_ffi.NULL,
-                output,
-                length,
-                copied_length,
-            )
-        )
-        errors.raise_for_status(status)
-        if int(copied_length[0]) != length:
+        copied_length = self._native_field_read(raw_tag, 5, output, length)[4]
+        if copied_length != length:
             errors.raise_for_status(4)
         return bytes(_client_ffi.buffer(output, length)) if length else b""
 
