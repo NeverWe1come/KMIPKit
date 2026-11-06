@@ -704,7 +704,7 @@ fn validate_request_validation_rejects_an_empty_chain() {
     assert!(!report.is_valid());
     assert_eq!(
         report.issues()[0].source().to_string(),
-        "KMIP v2.1 §6.1.57, Table 340"
+        "KMIPKIT-0051-P006"
     );
 }
 
