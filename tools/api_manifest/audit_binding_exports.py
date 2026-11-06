@@ -574,6 +574,33 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     return _report(records, issues)
 
 
+def _declared_c_record_fields(
+    manifest: dict[str, Any], package_rows: list[dict[str, Any]]
+) -> list[dict[str, str]]:
+    """Return record members declared by an included public C type layout."""
+    declared_types = {
+        row["exportName"] for row in package_rows
+        if row.get("kind") == "type" and row.get("declarationState") in {"declared", "verified"}
+    }
+    recorded_names = {row["exportName"] for row in package_rows}
+    declarations: list[dict[str, str]] = []
+    for type_record in manifest.get("types", []):
+        c_record = type_record.get("c", {})
+        c_name = c_record.get("name")
+        if c_record.get("kind") != "record" or c_name not in declared_types:
+            continue
+        for field in c_record.get("fields", []):
+            export_name = f"{c_name}.{field['name']}"
+            if export_name not in recorded_names:
+                declarations.append({
+                    "packageId": "c-kmipkit",
+                    "exportName": export_name,
+                    "kind": "field",
+                })
+                recorded_names.add(export_name)
+    return declarations
+
+
 def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     if package == "c-kmipkit":
@@ -583,27 +610,8 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             row for row in package_rows
             if row.get("declarationState") != "blocked" or row.get("kind") == "c-symbol"
         ]
-        # Versioned C ABI record fields are fully described by the type layout
-        # in the manifest. They need no duplicate publicDeclarations rows.
-        declared_c_types = {
-            row["exportName"] for row in package_rows
-            if row.get("kind") == "type" and row.get("declarationState") in {"declared", "verified"}
-        }
-        recorded_names = {row["exportName"] for row in package_rows}
-        for type_record in manifest.get("types", []):
-            c_record = type_record.get("c", {})
-            c_name = c_record.get("name")
-            if c_record.get("kind") != "record" or c_name not in declared_c_types:
-                continue
-            for field in c_record.get("fields", []):
-                export_name = f"{c_name}.{field['name']}"
-                if export_name not in recorded_names:
-                    package_rows.append({
-                        "packageId": package,
-                        "exportName": export_name,
-                        "kind": "field",
-                    })
-                    recorded_names.add(export_name)
+        # Record layouts are the authoritative C field inventory.
+        package_rows.extend(_declared_c_record_fields(manifest, package_rows))
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
