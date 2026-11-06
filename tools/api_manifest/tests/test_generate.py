@@ -268,6 +268,14 @@ class ManifestGeneratorCliTests(unittest.TestCase):
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
         self.assertEqual(generate.MAX_MANIFEST_BYTES, 48 * 1024 * 1024)
 
+    def test_manifest_schema_accepts_exact_test_support_exclusions(self) -> None:
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        exclusion_categories = schema["$defs"]["approvedExclusion"]["properties"][
+            "exclusionCategory"
+        ]["enum"]
+
+        self.assertIn("test-support", exclusion_categories)
+
     def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
