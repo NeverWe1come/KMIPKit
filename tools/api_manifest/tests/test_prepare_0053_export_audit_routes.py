@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import unittest
+import json
+from pathlib import Path
 
 from tools.api_manifest import prepare_0053_export_audit_routes
 
@@ -16,6 +18,50 @@ APPROVAL = {
 
 
 class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
+    def test_real_export_audits_merge_with_exact_previously_reviewed_routes(self) -> None:
+        root = prepare_0053_export_audit_routes.ROOT
+        route_path = root / prepare_0053_export_audit_routes.ROUTE_PATH
+        manifest_path = root / prepare_0053_export_audit_routes.MANIFEST_PATH
+        route_data = json.loads(route_path.read_text(encoding="utf-8"))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        documents = prepare_0053_export_audit_routes._read_documents(root)
+        declarations, exclusions = prepare_0053_export_audit_routes.compile_documents(
+            documents, manifest["publicDeclarations"]
+        )
+        route_data = prepare_0053_export_audit_routes.remove_reviewed_declarations(
+            route_data, route_data.get("removePublicDeclarations", [])
+        )
+        route_data = prepare_0053_export_audit_routes.expand_java_stale_mappings(
+            route_data, documents[0].get("staleMappings", [])
+        )
+        python_document = next(
+            document
+            for document in documents
+            if document.get("packageId") == "python-kmipkit"
+        )
+        route_data = prepare_0053_export_audit_routes.normalize_python_stale_mappings(
+            route_data, python_document.get("staleMappings", [])
+        )
+        rust_document = next(
+            document for document in documents if "functionalRoutes" in document
+        )
+        route_data = prepare_0053_export_audit_routes.apply_kind_corrections(
+            route_data,
+            python_document.get("kindCorrections", []),
+            rust_document.get("kindCorrections", []),
+        )
+
+        merged = prepare_0053_export_audit_routes.merge_declarations(
+            route_data, declarations, exclusions
+        )
+
+        keys = [
+            (row["packageId"], row["exportName"])
+            for row in merged["publicDeclarations"]
+        ]
+        self.assertEqual(len(keys), len(set(keys)))
+        self.assertGreater(len(merged["publicDeclarations"]), len(route_data["publicDeclarations"]))
+
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
             "formatVersion": 1,
