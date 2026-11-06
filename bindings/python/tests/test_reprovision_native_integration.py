@@ -135,17 +135,30 @@ def _request_payloads(encoded: bytes) -> list[list[_TtlvSpan]]:
 
 
 def _marker_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
-    with (
-        ttlv.raw_tag_from_raw(0x541101) as raw_tag,
-        ttlv.raw_tag_try_checked(raw_tag) as tag,
-        ttlv.ttlv_value_byte_string(b"certificate-request-fixture", limits) as value,
-        ttlv.ttlv_item_create(tag, value, limits) as item,
-    ):
-        structure = ttlv.ttlv_structure_create()
-        try:
-            return ttlv.ttlv_structure_with_item(structure, item, limits)
-        finally:
-            structure.close()
+    structure = ttlv.ttlv_structure_create()
+    fields = (
+        (0x420019, "enumeration", 1),
+        (0x420140, "byte_string", b"certificate-request-fixture"),
+        (0x541101, "byte_string", b"vendor-certificate-request-data"),
+    )
+    try:
+        for raw_tag_value, value_kind, raw_value in fields:
+            value = (
+                ttlv.ttlv_value_enumeration(raw_value)
+                if value_kind == "enumeration"
+                else ttlv.ttlv_value_byte_string(raw_value, limits)
+            )
+            with (
+                ttlv.raw_tag_from_raw(raw_tag_value) as raw_tag,
+                ttlv.raw_tag_try_checked(raw_tag) as tag,
+                value,
+                ttlv.ttlv_item_create(tag, value, limits) as item,
+            ):
+                structure = ttlv.ttlv_structure_with_item(structure, item, limits)
+        return structure
+    except Exception:
+        structure.close()
+        raise
 
 
 def test_reprovision_sends_parameterless_and_certificate_request_items() -> None:
@@ -190,7 +203,7 @@ def test_reprovision_sends_parameterless_and_certificate_request_items() -> None
         certificate_request = payloads[1][0]
         assert tuple(
             field.tag for field in _children(received[0], certificate_request)
-        ) == (0x541101,)
+    ) == (0x420019, 0x420140, 0x541101)
         assert failures.empty() and result is not None
         assert all(item.operation == 0x35 and item.result_status == 0 for item in result.items)
         reprovision_response = result.items[0].reprovision_response
