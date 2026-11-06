@@ -998,6 +998,59 @@ fn usage_limits_new_attribute_is_rejected_only_for_add_and_modify() {
 }
 
 #[test]
+fn usage_limits_total_and_unit_can_be_added_or_modified_without_client_set_count() {
+    let total_and_unit = || {
+        item(
+            USAGE_LIMITS,
+            Value::structure(structure([
+                item(USAGE_LIMITS_TOTAL, Value::long_integer(9)),
+                item(USAGE_LIMITS_UNIT, Value::enumeration(1)),
+            ])),
+        )
+    };
+    let requests = [
+        (
+            ADD_ATTRIBUTE_OPERATION,
+            ClientRequest::add_attribute(AddAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                NewAttribute::new(total_and_unit()),
+            )),
+        ),
+        (
+            MODIFY_ATTRIBUTE_OPERATION,
+            ClientRequest::modify_attribute(ModifyAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                None,
+                NewAttribute::new(total_and_unit()),
+            )),
+        ),
+    ];
+
+    for (operation, request) in requests {
+        let (_response, fake, captured_request) = run_once(request, operation);
+        assert_one_exchange(&fake, &captured_request, "Usage Limits without Count");
+    }
+}
+
+#[test]
+fn original_creation_date_add_without_profile_context_reaches_the_server() {
+    let request = ClientRequest::add_attribute(AddAttributeRequest::new(
+        Some(OBJECT_IDENTIFIER.to_owned()),
+        NewAttribute::new(item(
+            0x0042_00BC,
+            Value::date_time(1_700_000_000),
+        )),
+    ));
+
+    let (_response, fake, captured_request) = run_once(request, ADD_ATTRIBUTE_OPERATION);
+    assert_one_exchange(
+        &fake,
+        &captured_request,
+        "§4.38 permits Add when Original Creation Date may be absent",
+    );
+}
+
+#[test]
 fn every_inspectable_vendor_attribute_y_value_and_name_reference_is_rejected() {
     assert!(VENDOR_ATTRIBUTE_POLICY.matches_vendor_identification("y"));
     assert_eq!(VENDOR_ATTRIBUTE_POLICY.equals, VENDOR_CREATED_IDENTIFIER);
