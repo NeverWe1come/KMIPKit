@@ -710,6 +710,38 @@ fn get_validation_checks_the_supplied_key_wrapping_specification() {
 }
 
 #[test]
+fn get_attributes_validation_rejects_invalid_vendor_identification() {
+    let request = crate::GetAttributesRequest::try_new(
+        None,
+        [crate::AttributeReference::name(
+            "vendor/with-invalid-character",
+            "Private Attribute",
+        )],
+    )
+    .expect("the request model preserves the supplied name reference");
+
+    let report = request.validate();
+
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R078"
+            && issue.path().to_string()
+                == "Request Payload.Attribute Reference[0].Vendor Identification"
+            && issue.source().to_string() == "KMIP v2.1 §5.5, Table 161"
+    }));
+    assert!(!format!("{report:?}").contains("vendor/with-invalid-character"));
+
+    let valid_request = crate::GetAttributesRequest::try_new(
+        None,
+        [crate::AttributeReference::name(
+            "KMIPKit.Vendor_1",
+            "Private Attribute",
+        )],
+    )
+    .expect("the request model preserves valid name references");
+    assert!(valid_request.validate().is_valid());
+}
+
+#[test]
 fn export_validation_checks_the_supplied_key_wrapping_specification() {
     const WRAPPING_METHOD: u32 = 0x0042_009E;
 
