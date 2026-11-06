@@ -65,9 +65,9 @@
 
 ## Phase 6: US5 operation and response parity (56 operations)
 ### Red
-- [ ] T043 [US5] Generate operation/typed-response compile matrices for all 56 entries in tools/api_manifest/tests/test_0053_operation_binding_matrix.py.
+- [x] T043 [US5] Generate operation/typed-response compile matrices for all 56 entries in tools/api_manifest/tests/test_0053_operation_binding_matrix.py.
 - [x] T044 [US5] Add async pending/correlation and raw payload presence tests in crates/kmipkit-ffi/tests/support/response_parity_0053_tests.rs, bindings/java/src/test/, and bindings/python/tests/.
-- [ ] T045 [US5] Run matrix red tests and record missing routes in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T045 [US5] Run matrix red tests and record missing routes in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
 - [ ] T046 [US5] Add only evidenced missing C operation/option/result routes in crates/kmipkit-ffi/src/extension_registry/client_abi.rs.
 - [ ] T047 [US5] Add only evidenced missing Java operation/options/response/async accessors in bindings/java/src/main/java/org/kmipkit/ and bindings/java/native/kmipkit_jni.cpp.
