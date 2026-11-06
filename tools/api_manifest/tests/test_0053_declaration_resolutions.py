@@ -170,6 +170,27 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             self._reconcile([mapping])
 
+    def test_approval_source_must_be_approved_and_exact(self) -> None:
+        for source in (
+            {**self.approval, "status": "Draft"},
+            {**self.approval, "path": "specs/*/approval-record.md"},
+            {**self.approval, "path": "../approval-record.md"},
+        ):
+            with self.subTest(source=source):
+                mapping = self._mapping(self.candidates[0])
+                mapping["approvalSource"] = source
+                with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+                    self._reconcile([mapping])
+
+    def test_duplicate_candidate_ids_in_the_manifest_are_rejected(self) -> None:
+        duplicate = copy.deepcopy(self.candidates[0])
+        self.manifest["publicDeclarations"].append(duplicate)
+
+        with self.assertRaisesRegex(
+            reconcile_0053_api_parity.ReconciliationError, "candidate IDs must be unique"
+        ):
+            self._reconcile([self._mapping(self.candidates[0])])
+
         mapping = self._mapping(self.candidates[0])
         mapping["evidencePaths"] = ["bindings/tests/*_test.py"]
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
