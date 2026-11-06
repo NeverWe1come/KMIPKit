@@ -200,6 +200,81 @@ class ManifestTraceabilityUnionTests(unittest.TestCase):
         self.assertEqual(corrected_name, declaration["languageMappings"]["java"]["name"])
         self.assertNotIn(old_name, [row["exportName"] for row in reconciled["publicDeclarations"]])
 
+    def test_python_export_kind_changes_only_with_exact_approved_correction(self) -> None:
+        export_name = "kmipkit.client.QueryResponse.field_count"
+        mappings = {
+            "rust": {
+                "packageId": "rust-kmipkit-protocol",
+                "name": "kmipkit_protocol::QueryResponse::response_field_count",
+            },
+            "c": {"packageId": "c-kmipkit", "name": "kmipkit_client_batch_item_response_query_field_count"},
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.QueryResponse.fieldCount",
+            },
+            "python": {"packageId": "python-kmipkit", "name": export_name},
+        }
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/052-response-navigation/spec.md",
+            "status": "Approved",
+            "evidence": "Approved response navigation route.",
+        }
+        correction_approval = {
+            "kind": "feature-specification",
+            "path": "specs/053-api-parity-facade/approval-record.md",
+            "status": "Approved",
+            "evidence": "Maintainer-approved KMIPKIT-0053 scope.",
+        }
+        existing = {
+            "declarationId": "T064:query-field-count:python",
+            "packageId": "python-kmipkit",
+            "kind": "field",
+            "exportName": export_name,
+            "capabilityId": "response_ttlv_navigation",
+            "requirementIds": ["KMIPKIT-0053-FR-008"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": mappings,
+            "parityEvidenceIds": [
+                "bindings/python/tests/test_query_response_typed_fields.py"
+            ],
+            "approvalSource": approval,
+        }
+        candidate = {**existing, "kind": "python-export"}
+        correction = {
+            "packageId": "python-kmipkit",
+            "name": export_name,
+            "fromKind": "field",
+            "toKind": "python-export",
+            "capabilityId": "response_ttlv_navigation",
+            "requirementIds": ["KMIPKIT-0053-FR-008"],
+            "evidencePaths": [
+                "bindings/python/tests/test_query_response_typed_fields.py"
+            ],
+            "approval": correction_approval,
+            "reason": "The inspected public export is callable, not a data field.",
+        }
+        manifest = {
+            "requirementIds": ["KMIPKIT-0053-FR-008"],
+            "publicDeclarations": [existing],
+            "capabilities": [
+                {
+                    "capabilityId": "response_ttlv_navigation",
+                    "mappings": {language: [mappings[language]["name"]] for language in mappings},
+                    "requirementIds": ["KMIPKIT-0053-FR-008"],
+                    "parityEvidenceIds": existing["parityEvidenceIds"],
+                }
+            ],
+        }
+
+        reconciled = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [candidate], python_kind_corrections=[correction]
+        )
+
+        self.assertEqual("python-export", reconciled["publicDeclarations"][0]["kind"])
+        self.assertEqual(existing["declarationId"], reconciled["publicDeclarations"][0]["declarationId"])
+
     def test_exact_existing_export_corrects_approved_java_wrapper_route(self) -> None:
         old_name = "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
         corrected_name = "org.kmipkit.ttlv.KeyBlock.fieldItem"
