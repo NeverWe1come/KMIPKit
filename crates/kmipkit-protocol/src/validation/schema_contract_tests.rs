@@ -143,6 +143,40 @@ fn contains_rule(report: &ValidationReport, rule_id: &str) -> bool {
         .any(|issue| issue.code().as_str() == rule_id)
 }
 
+fn assert_ordered_fields(
+    schema: RequestPayloadSchema,
+    descriptor: &super::RequestSchemaDescriptor,
+) -> usize {
+    let mut pair_count = 0;
+    for (first_index, first) in descriptor.fields.iter().enumerate() {
+        let Some(first_tag) = exact_tag(first) else {
+            continue;
+        };
+        for second in descriptor.fields.iter().skip(first_index + 1) {
+            let Some(second_tag) = exact_tag(second) else {
+                continue;
+            };
+            if first_tag == second_tag {
+                continue;
+            }
+            pair_count += 1;
+            let reversed = structure([
+                item(second_tag, value_for(accepted_type(second))),
+                item(first_tag, value_for(accepted_type(first))),
+            ]);
+            let report = validate_structure_with_descriptor(&reversed.view(), descriptor);
+            assert!(
+                contains_rule(&report, first.rule_id),
+                "{schema:?} reversed {} after {} reports {}",
+                first.name,
+                second.name,
+                first.rule_id
+            );
+        }
+    }
+    pair_count
+}
+
 #[test]
 fn every_supported_payload_field_enforces_its_descriptor_contract() {
     let mut field_count = 0;
@@ -216,32 +250,7 @@ fn every_supported_payload_field_enforces_its_descriptor_contract() {
             }
         }
 
-        for (first_index, first) in descriptor.fields.iter().enumerate() {
-            let Some(first_tag) = exact_tag(first) else {
-                continue;
-            };
-            for second in descriptor.fields.iter().skip(first_index + 1) {
-                let Some(second_tag) = exact_tag(second) else {
-                    continue;
-                };
-                if first_tag == second_tag {
-                    continue;
-                }
-                ordered_pair_count += 1;
-                let reversed = structure([
-                    item(second_tag, value_for(accepted_type(second))),
-                    item(first_tag, value_for(accepted_type(first))),
-                ]);
-                let report = validate_structure_with_descriptor(&reversed.view(), &descriptor);
-                assert!(
-                    contains_rule(&report, first.rule_id),
-                    "{schema:?} reversed {} after {} reports {}",
-                    first.name,
-                    second.name,
-                    first.rule_id
-                );
-            }
-        }
+        ordered_pair_count += assert_ordered_fields(schema, &descriptor);
     }
 
     assert_eq!(field_count, 189, "all operation field rules are visited");

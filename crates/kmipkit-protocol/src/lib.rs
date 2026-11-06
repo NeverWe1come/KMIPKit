@@ -1,4 +1,10 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
+//!
+//! Client request models implement [`ValidateKmipRequest`] for borrowed,
+//! value-free local validation. Generic TTLV Structures require an explicit
+//! [`ValidationSchema`] with [`validate_structure`]; the validator never
+//! guesses an operation schema from tags. Unknown tags, future values, and
+//! extensions remain available to the caller.
 #![forbid(unsafe_code)]
 
 #[cfg(test)]

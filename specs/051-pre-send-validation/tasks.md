@@ -69,17 +69,17 @@ description: "Dependency-ordered KMIPKIT-0051 implementation tasks"
 
 **Independent Test**: Unknown tags and future enum/mask values round-trip unchanged; report, Display, and Debug output omit test secret canaries and encoded request bytes.
 
-- [ ] T029 [P] [US3] Add Red tests for unknown tags, future enum and mask values, repeated extensions, credential/key canaries, and raw-body non-disclosure in `crates/kmipkit-protocol/tests/unit/validation_redaction_tests.rs` and `crates/kmipkit-client/tests/unit/request_validation_tests.rs`.
-- [ ] T030 [US3] Implement lossless validation traversal and value-free report/error formatting in `crates/kmipkit-protocol/src/validation/` and `crates/kmipkit-client/src/execute.rs` without rejecting an item solely because its value/tag is unknown.
-- [ ] T031 [US3] Refactor diagnostics and extension traversal while keeping all redaction and preservation tests green in the validation modules and focused test files.
+- [x] T029 [P] [US3] Add preservation and redaction regression tests for unknown tags, future enum and mask values, repeated extensions, credential/key canaries, and raw-body non-disclosure in `crates/kmipkit-protocol/tests/unit/validation_redaction_tests.rs` and `crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs`. The existing implementation was already correct, so these characterization tests passed against the pre-change production code; no behavior gap was manufactured to create a failing production test.
+- [x] T030 [US3] Audit lossless validation traversal and value-free report/error formatting in `crates/kmipkit-protocol/src/validation/` and `crates/kmipkit-client/src/execute.rs`. No production edit was warranted: schema validation borrows `StructureView`, ignores unrecognized tags, preserves caller-owned values, reports metadata only, and client validation discards source errors before returning `NotSent`.
+- [x] T031 [US3] Add a descriptor-driven regression suite in `crates/kmipkit-protocol/src/validation/schema_contract_tests.rs` covering requiredness, accepted TTLV types, cardinality and ordering across all 189 field descriptors; retain operation-specific and dynamic-object checks in their existing tests. No diagnostic/traversal refactor was needed because the audit and regression tests found no behavior defect.
 
 ## Phase 6: Polish and cross-cutting verification
 
 **Purpose**: Close traceability, docs, source audit, and applicable quality checks.
 
-- [ ] T032 Complete `specs/051-pre-send-validation/gap-matrix.md` with each audited field rule and its stable ID, implementation path, and executable test; complete 100% field-rule and functional-requirement mappings in `specs/051-pre-send-validation/traceability.md`.
-- [ ] T033 Document Rust validation APIs, explicit schema use, server-side boundaries, and `NotSent` behavior in `docs/architecture/public-api.md`, crate rustdoc, and `docs/user-guide/en/` plus `docs/user-guide/es/`.
-- [ ] T034 Run focused protocol/client validation tests, `cargo fmt --all --check`, workspace Clippy and tests, `python -B -m unittest scripts.tests.test_requirement_traceability -v`, `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v`, API manifest generation `--check`, and public Rust export audit; record exact results in `specs/051-pre-send-validation/traceability.md` and the draft PR description.
+- [x] T032 Complete `specs/051-pre-send-validation/gap-matrix.md` with each audited field rule and its stable ID, implementation path, and executable test; complete 100% field-rule and functional-requirement mappings in `specs/051-pre-send-validation/traceability.md`. All R001–R189 rows link the descriptor-driven contract test and their operation/model evidence; R190–R284 link the condition-specific or nested-schema validators and tests; FR and project-policy rows are mapped.
+- [x] T033 Document Rust validation APIs, explicit schema use, server-side boundaries, and `NotSent` behavior in `docs/architecture/public-api.md`, crate rustdoc, and the English and Spanish client guides.
+- [x] T034 Run focused protocol/client validation tests, `cargo fmt --all --check`, workspace Clippy and tests, `python -B -m unittest scripts.tests.test_requirement_traceability -v`, `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v`, API manifest generation `--check`, and public Rust export audit; record exact results in `specs/051-pre-send-validation/traceability.md` and the draft PR description. Final results are recorded in `traceability.md`; the Rust export report is `specs/043-public-api-bindings/reports/rust-export-report-2026-11-06.json`.
 
 ## Dependencies and execution order
 
@@ -92,7 +92,7 @@ description: "Dependency-ordered KMIPKIT-0051 implementation tasks"
 
 ## Commit and implementation strategy
 
-- Preserve distinct Red, Green, and Refactor commits for each TDD group: T004–T006; T007–T010; each operation-family triplet T014–T016, T017–T019, T020–T022, T023–T025; T026–T028; and T029–T031.
+- Preserve distinct Red, Green, and Refactor commits for each TDD group: T004–T006; T007–T010; each operation-family triplet T014–T016, T017–T019, T020–T022, T023–T025; and T026–T028. For T029–T031 the audited preservation/redaction behavior pre-existed, so the regression tests passed against the production baseline; no artificial failing behavior was introduced. The characterization and descriptor-contract tests are recorded in separate test commits, followed by the traceability/documentation evidence.
 - Each Red commit contains only tests/spec evidence and records the intended failing command/output. Each Green commit contains the minimum production change needed to pass. Each Refactor commit keeps tests green and does not add behavior.
 - No test in the matrix may be marked complete from serializer existence alone; cite the tested rule or a source-backed invariant that makes an invalid state unconstructible.
 - The API-only validation behavior does not establish Baseline Client conformance or server acceptance.

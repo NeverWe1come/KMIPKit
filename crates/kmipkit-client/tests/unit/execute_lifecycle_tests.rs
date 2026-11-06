@@ -14,6 +14,7 @@
 
 use std::cell::{Cell, RefCell};
 use std::error::Error;
+use std::fmt::Write as _;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
@@ -363,11 +364,10 @@ fn invalid_typed_request_is_not_encoded_or_written() {
     assert_eq!(fake.borrow().write_call_count(), 0);
     let display = error.to_string();
     let debug = format!("{error:?}");
-    let canary_hex = CANARY
-        .as_bytes()
-        .iter()
-        .map(|byte| format!("{byte:02X}"))
-        .collect::<String>();
+    let mut canary_hex = String::new();
+    for byte in CANARY.as_bytes() {
+        write!(&mut canary_hex, "{byte:02X}").expect("writing to a String is infallible");
+    }
     assert!(!display.contains(CANARY));
     assert!(!debug.contains(CANARY));
     assert!(!display.contains(&canary_hex));

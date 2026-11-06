@@ -700,6 +700,12 @@ impl ClientRequest {
     }
 
     /// Validates this typed request without consuming or encoding it.
+    ///
+    /// The report contains only stable codes, field paths, severity, and a
+    /// normative or project-policy source. It describes locally decidable
+    /// request constraints; it does not establish server capability,
+    /// authorization, object state, or policy. [`Client::execute`] runs the
+    /// same checks before encoding and reports a rejected request as `NotSent`.
     #[must_use]
     pub fn validation_report(&self) -> ValidationReport {
         match self {

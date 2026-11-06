@@ -798,7 +798,7 @@ fn ffi_rng_seed_response_preserves_zero_data_length_and_generic_ttlv() {
         ))),
         0x26,
         b"rng-seed-success",
-        vec![ttlv_item(0x0042_00d5, 0x02, &0_i32.to_be_bytes())],
+        vec![ttlv_item(0x0042_00c4, 0x02, &0_i32.to_be_bytes())],
     );
     let mut present = 0;
     let mut data_length_present = 0;
@@ -934,7 +934,7 @@ fn ffi_rng_response_getters_hide_fields_from_the_other_operation() {
         ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(b"seed".to_vec()))),
         0x26,
         b"rng-seed-getter-cross-operation",
-        vec![ttlv_item(0x0042_00d5, 0x02, &0_i32.to_be_bytes())],
+        vec![ttlv_item(0x0042_00c4, 0x02, &0_i32.to_be_bytes())],
     );
     for (item, expect_retrieve) in [(retrieve_item, true), (seed_item, false)] {
         let mut present = 9;
@@ -1025,7 +1025,7 @@ fn ffi_rng_response_c_consumer_rejects_overlapping_output_regions() {
         ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(b"seed".to_vec()))),
         0x26,
         b"rng-seed-overlapping-output-consumer",
-        vec![ttlv_item(0x0042_00d5, 0x02, &0_i32.to_be_bytes())],
+        vec![ttlv_item(0x0042_00c4, 0x02, &0_i32.to_be_bytes())],
     );
 
     // SAFETY: the compiled C consumer receives live, independently owned handles and only uses
@@ -1346,11 +1346,11 @@ fn successful_crypto_response_ttlv_cases() -> [SuccessfulCryptoResponseTtlvCase;
                 b"mac-ttlv-success",
                 vec![
                     ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                    ttlv_item(0x0042_00c4, 0x08, b"mac-data"),
+                    ttlv_item(0x0042_00c6, 0x08, b"mac-data"),
                     unknown.clone(),
                 ],
             ),
-            &[0x0042_0094, 0x0042_00c4, 0x0054_0001],
+            &[0x0042_0094, 0x0042_00c6, 0x0054_0001],
         ),
         (
             kmipkit_client_batch_item_response_mac_verify_ttlv,
@@ -1793,7 +1793,7 @@ fn ffi_successful_mac_response_getter_returns_typed_fields() {
         b"mac-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_item(0x0042_00c4, 0x08, b"mac-response-data"),
+            ttlv_item(0x0042_00c6, 0x08, b"mac-response-data"),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],
     );
@@ -5815,17 +5815,42 @@ fn ffi_guarded_execution_rejects_a_retained_item_owner_before_transport() {
 }
 
 fn import_test_request() -> ClientRequest {
-    let object = Item::new(
-        RawTag::new(0x0042_008f)
-            .expect("Symmetric Key tag fits the KMIP tag field")
-            .try_checked()
-            .expect("Symmetric Key is allocated in KMIP 2.1"),
-        Value::structure(Structure::new()),
-    )
-    .expect("valid generic Any Object test item builds");
+    fn item(tag: u32, value: Value) -> Item {
+        Item::new(
+            RawTag::new(tag)
+                .expect("KMIP tag fits the TTLV tag field")
+                .try_checked()
+                .expect("KMIP tag is allocated"),
+            value,
+        )
+        .expect("valid KMIP object test item builds")
+    }
+
+    let mut key_value = Structure::new();
+    key_value
+        .try_push(item(
+            0x0042_0043,
+            Value::byte_string(b"import-key-material".to_vec()),
+        ))
+        .expect("Key Material fits the Key Value structure");
+    let mut key_block = Structure::new();
+    key_block
+        .try_push(item(0x0042_0042, Value::enumeration(1)))
+        .expect("Key Format Type fits the Key Block structure");
+    key_block
+        .try_push(item(0x0042_0045, Value::structure(key_value)))
+        .expect("Key Value fits the Key Block structure");
+    let mut secret_data = Structure::new();
+    secret_data
+        .try_push(item(0x0042_0086, Value::enumeration(1)))
+        .expect("Secret Data Type fits the Secret Data object");
+    secret_data
+        .try_push(item(0x0042_0040, Value::structure(key_block)))
+        .expect("Key Block fits the Secret Data object");
+    let object = item(0x0042_0085, Value::structure(secret_data));
     ClientRequest::import(ImportRequest::new(
         UniqueIdentifier::TextString("request-import-id".to_owned()),
-        ObjectType::from_raw(u32::MAX),
+        ObjectType::from_raw(7),
         AttributeSet::new(),
         object,
     ))

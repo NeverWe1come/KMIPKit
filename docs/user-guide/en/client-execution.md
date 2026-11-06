@@ -369,6 +369,35 @@ rejects a response that exceeds its configured limit before decoding it.
 Production connect, write, read, and total
 deadlines are described in the [transport guide](production-transports.md).
 
+## Local request validation
+
+KMIPKit validates each typed client request before encoding it or calling the
+transport. You can inspect the same local result without sending the request:
+
+```rust
+use kmipkit_client::ClientRequest;
+
+let request = ClientRequest::discover_versions();
+let report = request.validation_report();
+assert!(report.is_valid());
+```
+
+The report contains stable rule codes, field paths, severity, and the exact
+OASIS or KMIPKit policy reference. It never includes request values. The
+validator borrows your request and does not encode or clone credentials or key
+material for diagnostics. If a request fails local validation,
+`Client::execute` returns a sanitized validation error with `NotSent`; the
+transport receives no exchange and no request bytes.
+
+For generic TTLV, select the request or nested structure schema explicitly
+when you want KMIP field checks. KMIPKit does not guess a schema from matching
+tags. It preserves unknown tags, future Enumeration values, unknown bit-mask
+bits, and vendor extensions while checking known fields. Field order follows
+the relevant structure description in KMIP v2.1 §10.1.2, not numeric tag
+order. A successful local report does not predict server capabilities,
+authorization, object state, or policy and is not a claim of profile
+conformance.
+
 ## Errors, delivery state, and redaction
 
 Local `ClientError` values distinguish validation, protocol, and transport

@@ -111,7 +111,7 @@ pub struct QueryRequest {
 impl QueryRequest {
     /// Creates a Query request with the supplied ordered Query Functions.
     ///
-    /// The list can be checked with [`ValidateKmipRequest::validate`] and is
+    /// The list can be checked with [`crate::ValidateKmipRequest::validate`] and is
     /// validated again when encoded so invalid requests fail before
     /// transmission.
     #[must_use]
