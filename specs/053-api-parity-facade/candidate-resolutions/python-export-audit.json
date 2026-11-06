@@ -5207,15 +5207,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::KeyMaterial::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_key_material_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedObject.fromFields"
+          "name": "org.kmipkit.ttlv.KeyMaterial.fromFields"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6287,15 +6287,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::KeyValue::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_key_value_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedObject.fromFields"
+          "name": "org.kmipkit.ttlv.KeyValue.fromFields"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7260,11 +7260,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::Certificate::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_certificate_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -7305,11 +7305,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::CertificateRequest::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_certificate_request_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -7800,7 +7800,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::ManagedObject::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -8070,11 +8070,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::OpaqueObject::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_opaque_object_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -8115,11 +8115,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::PgpKey::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_pgp_key_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -8250,11 +8250,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::PrivateKey::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_private_key_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -8295,11 +8295,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::PublicKey::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_public_key_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -8340,11 +8340,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::SecretData::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_secret_data_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -8430,11 +8430,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::SplitKey::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_split_key_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -8610,11 +8610,11 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedObject::try_from_item"
+          "name": "kmipkit::protocol::SymmetricKey::try_from_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_object_from_fields"
+          "name": "kmipkit_symmetric_key_from_fields"
         },
         "java": {
           "packageId": "java-kmipkit",
