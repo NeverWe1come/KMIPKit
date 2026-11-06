@@ -21,8 +21,10 @@ use crate::tls::{self, TlsClientConfig};
 #[path = "wire_framing.rs"]
 mod wire_framing;
 #[cfg(test)]
+use crate::worker::WorkerSpawnerForTest;
+#[cfg(test)]
 use crate::worker::WorkerTask;
-use crate::worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
+use crate::worker::{ClientWorker, ExchangeControl, WorkerError, ensure_client_worker};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
@@ -47,10 +49,6 @@ use std::{
     net::SocketAddr,
     sync::{Mutex, MutexGuard},
 };
-
-#[cfg(test)]
-type WorkerSpawnerForTest =
-    Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 const RESPONSE_HEADER_LEN: usize = 8;
 const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x7B];
@@ -127,38 +125,6 @@ impl RawTlsTransport {
     ///
     /// # Errors
     ///
-    fn ensure_worker(
-        &mut self,
-        total_deadline: Option<Instant>,
-    ) -> Result<&ClientWorker, TransportError> {
-        if self.worker.is_none() {
-            #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
-                None => ClientWorker::start_until(total_deadline),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start_until(total_deadline);
-            self.worker = Some(worker.map_err(|error| match error {
-                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
-                error => safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                ),
-            })?);
-        }
-        self.worker.as_ref().ok_or_else(|| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("transport worker is unavailable"),
-            )
-        })
-    }
-
-    /// # Errors
-    ///
     /// Returns a redacted error with request-delivery state. A too-large
     /// request or response limit smaller than a TTLV header is rejected before
     /// request dispatch. No dependency or endpoint text is retained.
@@ -196,7 +162,12 @@ impl RawTlsTransport {
                 )
             })?;
 
-        self.ensure_worker(total_deadline)?;
+        ensure_client_worker(
+            &mut self.worker,
+            #[cfg(test)]
+            &mut self.worker_spawner,
+            total_deadline,
+        )?;
 
         #[cfg(test)]
         let request_owner = if let Some(observer) = self.observer.clone() {
@@ -233,7 +204,13 @@ impl RawTlsTransport {
         let response_allocation_observer = self.response_allocation_observer.clone();
         #[cfg(test)]
         let candidate_event_observer = self.candidate_event_observer.clone();
-        let worker = self.ensure_worker(total_deadline)?;
+        let worker = self.worker.as_ref().ok_or_else(|| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("transport worker is unavailable"),
+            )
+        })?;
 
         worker
             .exchange(total_deadline, move |control| async move {

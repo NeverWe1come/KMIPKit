@@ -32,8 +32,10 @@ use crate::secret::SecretBufferObserver;
 use crate::timeout::DeadlineIoControl;
 use crate::timeout::{DeadlineIo, send_request_when_ready};
 #[cfg(test)]
+use crate::worker::WorkerSpawnerForTest;
+#[cfg(test)]
 use crate::worker::WorkerTask;
-use crate::worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
+use crate::worker::{ClientWorker, ExchangeControl, WorkerError, ensure_client_worker};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
@@ -154,9 +156,6 @@ mod request_tests;
 #[cfg(test)]
 #[path = "../tests/unit/https_response_tests.rs"]
 mod response_tests;
-#[cfg(test)]
-type WorkerSpawnerForTest =
-    Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 impl HttpsTransport {
     /// Creates an HTTPS adapter from a validated HTTPS configuration.
@@ -197,34 +196,23 @@ impl HttpsTransport {
         })
     }
 
-    fn ensure_worker(
-        &mut self,
-        total_deadline: Option<Instant>,
-    ) -> Result<&ClientWorker, TransportError> {
-        if self.worker.is_none() {
-            #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
-                None => ClientWorker::start_until(total_deadline),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start_until(total_deadline);
-            self.worker = Some(worker.map_err(|error| match error {
-                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
-                error => safe_error(
+    fn refresh_credentials_if_changed(&mut self) -> Result<(), TransportError> {
+        let refreshed = self
+            .tls
+            .refresh_if_changed(&mut self.configuration)
+            .map_err(|error| {
+                safe_error(
                     RequestDeliveryState::NotSent,
                     TransportCauseCategory::Other,
                     error,
-                ),
-            })?);
+                )
+            })?;
+        if refreshed {
+            self.http1_tls_config = build_http1_tls_config(self.tls.rustls_config_arc());
+            let mut lock = lock_https_connection(&self.connection);
+            *lock = None;
         }
-        self.worker.as_ref().ok_or_else(|| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("transport worker is unavailable"),
-            )
-        })
+        Ok(())
     }
 
     /// Exchanges caller bytes using encoding and timeout options for this request.
@@ -271,7 +259,12 @@ impl HttpsTransport {
                 )
             })?;
 
-        self.ensure_worker(total_deadline)?;
+        ensure_client_worker(
+            &mut self.worker,
+            #[cfg(test)]
+            &mut self.worker_spawner,
+            total_deadline,
+        )?;
 
         let request_owner = Self::stage_request_owner(
             request,
@@ -279,21 +272,7 @@ impl HttpsTransport {
             self.observer.clone(),
         )?;
 
-        let refreshed = self
-            .tls
-            .refresh_if_changed(&mut self.configuration)
-            .map_err(|error| {
-                safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                )
-            })?;
-        if refreshed {
-            self.http1_tls_config = build_http1_tls_config(self.tls.rustls_config_arc());
-            let mut lock = lock_https_connection(&self.connection);
-            *lock = None;
-        }
+        self.refresh_credentials_if_changed()?;
 
         let route = self.route.clone();
         let resolver = self.resolver.clone();
@@ -310,7 +289,13 @@ impl HttpsTransport {
         let driver_cleanup_gate = self.driver_cleanup_gate.take();
         #[cfg(test)]
         let cancel_before_finish_for_test = std::mem::take(&mut self.cancel_before_finish_for_test);
-        let worker = self.ensure_worker(total_deadline)?;
+        let worker = self.worker.as_ref().ok_or_else(|| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("transport worker is unavailable"),
+            )
+        })?;
 
         worker
             .exchange(total_deadline, move |control| async move {

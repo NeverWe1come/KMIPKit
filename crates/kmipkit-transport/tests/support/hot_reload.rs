@@ -35,35 +35,25 @@ impl Drop for TempFile {
 }
 
 pub fn pem(label: &str, bytes: &[u8]) -> Vec<u8> {
-    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut encoded = Vec::with_capacity(bytes.len().div_ceil(3) * 4 + label.len() * 2 + 64);
-    encoded.extend_from_slice(format!("-----BEGIN {label}-----\n").as_bytes());
-    let mut column = 0;
-    for group in bytes.chunks(3) {
-        let first = group[0];
-        let second = group.get(1).copied().unwrap_or_default();
-        let third = group.get(2).copied().unwrap_or_default();
-        let indexes = [
-            usize::from(first >> 2),
-            usize::from(((first & 0x03) << 4) | (second >> 4)),
-            usize::from(((second & 0x0f) << 2) | (third >> 6)),
-            usize::from(third & 0x3f),
-        ];
-        for (index, value) in indexes.into_iter().enumerate() {
-            let padding = (index == 2 && group.len() < 2) || (index == 3 && group.len() < 3);
-            encoded.push(if padding { b'=' } else { ALPHABET[value] });
-            column += 1;
-            if column == 64 {
-                encoded.push(b'\n');
-                column = 0;
-            }
-        }
+    const B64: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = format!("-----BEGIN {label}-----\n").into_bytes();
+    for c in bytes.chunks(3) {
+        let b = [c[0], *c.get(1).unwrap_or(&0), *c.get(2).unwrap_or(&0)];
+        out.push(B64[(b[0] >> 2) as usize]);
+        out.push(B64[(((b[0] & 3) << 4) | (b[1] >> 4)) as usize]);
+        out.push(if c.len() > 1 {
+            B64[(((b[1] & 15) << 2) | (b[2] >> 6)) as usize]
+        } else {
+            b'='
+        });
+        out.push(if c.len() > 2 {
+            B64[(b[2] & 63) as usize]
+        } else {
+            b'='
+        });
     }
-    if column != 0 {
-        encoded.push(b'\n');
-    }
-    encoded.extend_from_slice(format!("-----END {label}-----\n").as_bytes());
-    encoded
+    out.extend_from_slice(format!("\n-----END {label}-----\n").as_bytes());
+    out
 }
 
 pub fn server_config_with_multiple_roots(
