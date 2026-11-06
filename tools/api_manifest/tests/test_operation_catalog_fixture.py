@@ -7,6 +7,8 @@ import re
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.operation_catalog_fixture import render_fixture
+
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "tests" / "fixtures" / "api" / "operation_catalog_parity.tsv"
@@ -22,9 +24,15 @@ class OperationCatalogFixtureTests(unittest.TestCase):
             for operation in manifest["operations"]
             if operation.get("scope") == "client_1_0"
         ]
+        self.assertEqual(
+            FIXTURE.read_text(encoding="utf-8"),
+            render_fixture(manifest, PYTHON_VALUES.read_text(encoding="utf-8")),
+        )
         expected_ids = {operation["operationId"] for operation in operations}
         rows: list[tuple[str, int]] = []
-        for line in FIXTURE.read_text(encoding="utf-8").splitlines()[1:]:
+        lines = FIXTURE.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(lines[0], "operationId\toperationRaw")
+        for line in lines[1:]:
             operation_id, raw = line.split("\t")
             rows.append((operation_id, int(raw)))
 

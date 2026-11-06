@@ -134,11 +134,12 @@ class OperationBindingMatrixTests(unittest.TestCase):
         # Java crosses the JNI ABI for each builder, then checks the raw
         # operation identity returned by Rust against the generated KMIP 2.1
         # Operation constants. Its response list covers the same operation set.
-        self.assertIn("assertEquals(56, exercised.size())", java_test)
+        self.assertIn("assertEquals(operationRawValues.keySet(), exercised)", java_test)
         self.assertIn(
-            "assertEquals(operationRaw(route.operation()), readBack.operation()",
+            "assertEquals(operationRawValues.get(route.operationId()), readBack.operation()",
             java_test,
         )
+        self.assertIn("operation_catalog_parity.tsv", java_test)
         self.assertEqual(java_test.count('result("'), 52)
         self.assertEqual(java_test.count("new AsyncResponseAccessor("), 4)
         self.assertIn("assertEquals(exercisedOperations, allResponseOperations)", java_test)
@@ -146,7 +147,10 @@ class OperationBindingMatrixTests(unittest.TestCase):
         # Python checks the precise C ABI entrypoint used by each public builder
         # and keeps async dispatch separate from synchronous batch operations.
         self.assertIn("test_request_entrypoint_matrix_accounts_for_all_56_operations", python_test)
-        self.assertIn("set(_BATCH_OPERATION_CASES) | set(_ASYNC_OPERATION_CASES)", python_test)
+        self.assertIn(
+            "set(batch_route_ids) | set(async_route_ids) == set(operation_raw_values)",
+            python_test,
+        )
         self.assertIn("test_batch_operation_builder_invokes_its_native_request_entrypoint", python_test)
         self.assertIn("test_async_operation_entrypoint_calls_native_method", python_test)
 

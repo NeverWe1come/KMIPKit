@@ -4,10 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -34,42 +38,45 @@ final class OperationFacadeParityMatrixTest {
 
     @Test
     void allFiftySixClientOperationsConstructARequestOrReachTheTypedBatchApi() {
+        Map<String, Long> operationRawValues = operationFixture();
         Set<String> exercised = new HashSet<>();
         for (BatchRoute route : batchRoutes()) {
-            assertTrue(exercised.add(route.operation()), route.operation());
+            assertTrue(exercised.add(route.operationId()), route.operationId());
             try (ClientBatch batch = ClientBatch.create();
                     ClientBatchItem item = route.factory().get()) {
-                assertSame(batch, batch.add(item), route.operation());
-                assertEquals(1, batch.itemCount(), route.operation());
+                assertSame(batch, batch.add(item), route.operationId());
+                assertEquals(1, batch.itemCount(), route.operationId());
                 try (ClientBatchItem readBack = batch.itemAt(0)) {
-                    assertEquals(0, readBack.extensionCount(), route.operation());
-                    assertEquals(operationRaw(route.operation()), readBack.operation(), route.operation());
+                    assertEquals(0, readBack.extensionCount(), route.operationId());
+                    assertEquals(operationRawValues.get(route.operationId()), readBack.operation(),
+                            route.operationId());
                 }
             }
         }
 
         for (AsyncRoute route : asyncRoutes()) {
-            assertTrue(exercised.add(route.operation()), route.operation());
+            assertTrue(exercised.add(route.operationId()), route.operationId());
             route.constructAndReadPayload().run();
         }
 
         assertEquals(56, exercised.size());
+        assertEquals(operationRawValues.keySet(), exercised);
         assertResponseAccessorMatrix(exercised);
     }
 
     private static void assertResponseAccessorMatrix(Set<String> exercisedOperations) {
         Set<String> batchResponseOperations = new HashSet<>();
         for (BatchResponseAccessor route : batchResponseAccessors()) {
-            assertTrue(batchResponseOperations.add(route.operation()), route.operation());
-            assertTrue(exercisedOperations.contains(route.operation()), route.operation());
-            assertTrue(route.accessor() != null, route.operation());
+            assertTrue(batchResponseOperations.add(route.operationId()), route.operationId());
+            assertTrue(exercisedOperations.contains(route.operationId()), route.operationId());
+            assertTrue(route.accessor() != null, route.operationId());
         }
 
         Set<String> asyncResponseOperations = new HashSet<>();
         for (AsyncResponseAccessor route : asyncResponseAccessors()) {
-            assertTrue(asyncResponseOperations.add(route.operation()), route.operation());
-            assertTrue(exercisedOperations.contains(route.operation()), route.operation());
-            assertTrue(route.accessor() != null, route.operation());
+            assertTrue(asyncResponseOperations.add(route.operationId()), route.operationId());
+            assertTrue(exercisedOperations.contains(route.operationId()), route.operationId());
+            assertTrue(route.accessor() != null, route.operationId());
         }
 
         Set<String> allResponseOperations = new HashSet<>(batchResponseOperations);
@@ -80,67 +87,67 @@ final class OperationFacadeParityMatrixTest {
     /** Compile-time route map; result mapping and value assertions live in the operation tests. */
     private static List<BatchResponseAccessor> batchResponseAccessors() {
         return List.of(
-                result("Activate", ClientBatchItemResult::activateResponse),
-                result("Add Attribute", ClientBatchItemResult::addAttributeResponse),
-                result("Adjust Attribute", ClientBatchItemResult::adjustAttributeResponse),
-                result("Archive", ClientBatchItemResult::archiveResponse),
-                result("Certify", ClientBatchItemResult::certifyResponse),
-                result("Check", ClientBatchItemResult::checkResponse),
-                result("Create", ClientBatchItemResult::createResponse),
-                result("Create Key Pair", ClientBatchItemResult::createKeyPairResponse),
-                result("Create Split Key", ClientBatchItemResult::createSplitKeyUniqueIdentifiers),
-                result("Decrypt", ClientBatchItemResult::decryptResponse),
-                result("Delegated Login", ClientBatchItemResult::delegatedLoginResponse),
-                result("Delete Attribute", ClientBatchItemResult::deleteAttributeResponse),
-                result("Derive Key", ClientBatchItemResult::deriveKeyResponse),
-                result("Destroy", ClientBatchItemResult::destroyResponse),
-                result("Discover Versions", ClientBatchItemResult::supportedVersions),
-                result("Encrypt", ClientBatchItemResult::encryptResponse),
-                result("Export", ClientBatchItemResult::exportResponse),
-                result("Get", ClientBatchItemResult::getResponse),
-                result("Get Attributes", ClientBatchItemResult::getAttributesResponse),
-                result("Get Attribute List", ClientBatchItemResult::getAttributeListResponse),
-                result("Get Constraints", ClientBatchItemResult::getConstraintsResponse),
-                result("Get Usage Allocation", ClientBatchItemResult::getUsageAllocationResponse),
-                result("Hash", ClientBatchItemResult::hashResponse),
-                result("Import", ClientBatchItemResult::importResponse),
-                result("Interop", ClientBatchItemResult::interopResponse),
-                result("Join Split Key", ClientBatchItemResult::joinSplitKeyResponse),
-                result("Locate", ClientBatchItemResult::locateResponse),
-                result("Log", ClientBatchItemResult::logResponse),
-                result("Login", ClientBatchItemResult::loginResponse),
-                result("Logout", ClientBatchItemResult::logoutResponse),
-                result("MAC", ClientBatchItemResult::macResponse),
-                result("MAC Verify", ClientBatchItemResult::macVerifyResponse),
-                result("Modify Attribute", ClientBatchItemResult::modifyAttributeResponse),
-                result("Obtain Lease", ClientBatchItemResult::obtainLeaseResponse),
-                result("Ping", ClientBatchItemResult::pingResponse),
-                result("PKCS#11", ClientBatchItemResult::pkcs11Response),
-                result("Query", ClientBatchItemResult::queryResponse),
-                result("Re-certify", ClientBatchItemResult::recertifyResponse),
-                result("Recover", ClientBatchItemResult::recoverResponse),
-                result("Register", ClientBatchItemResult::registerResponse),
-                result("Re-key", ClientBatchItemResult::rekeyResponse),
-                result("Re-key Key Pair", ClientBatchItemResult::rekeyKeyPairResponse),
-                result("Re-Provision", ClientBatchItemResult::reprovisionResponse),
-                result("Revoke", ClientBatchItemResult::revokeResponse),
-                result("RNG Retrieve", ClientBatchItemResult::rngRetrieveResponse),
-                result("RNG Seed", ClientBatchItemResult::rngSeedResponse),
-                result("Set Attribute", ClientBatchItemResult::setAttributeResponse),
-                result("Set Constraints", ClientBatchItemResult::setConstraintsResponse),
-                result("Set Defaults", ClientBatchItemResult::setDefaultsResponse),
-                result("Sign", ClientBatchItemResult::signResponse),
-                result("Signature Verify", ClientBatchItemResult::signatureVerifyResponse),
-                result("Validate", ClientBatchItemResult::validateResponse));
+                result("KMIPKIT-ELEM-OP-C2S-ACTIVATE", ClientBatchItemResult::activateResponse),
+                result("KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE", ClientBatchItemResult::addAttributeResponse),
+                result("KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE", ClientBatchItemResult::adjustAttributeResponse),
+                result("KMIPKIT-ELEM-OP-C2S-ARCHIVE", ClientBatchItemResult::archiveResponse),
+                result("KMIPKIT-ELEM-OP-C2S-CERTIFY", ClientBatchItemResult::certifyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-CHECK", ClientBatchItemResult::checkResponse),
+                result("KMIPKIT-ELEM-OP-C2S-CREATE", ClientBatchItemResult::createResponse),
+                result("KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR", ClientBatchItemResult::createKeyPairResponse),
+                result("KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY", ClientBatchItemResult::createSplitKeyUniqueIdentifiers),
+                result("KMIPKIT-ELEM-OP-C2S-DECRYPT", ClientBatchItemResult::decryptResponse),
+                result("KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN", ClientBatchItemResult::delegatedLoginResponse),
+                result("KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE", ClientBatchItemResult::deleteAttributeResponse),
+                result("KMIPKIT-ELEM-OP-C2S-DERIVE-KEY", ClientBatchItemResult::deriveKeyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-DESTROY", ClientBatchItemResult::destroyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS", ClientBatchItemResult::supportedVersions),
+                result("KMIPKIT-ELEM-OP-C2S-ENCRYPT", ClientBatchItemResult::encryptResponse),
+                result("KMIPKIT-ELEM-OP-C2S-EXPORT", ClientBatchItemResult::exportResponse),
+                result("KMIPKIT-ELEM-OP-C2S-GET", ClientBatchItemResult::getResponse),
+                result("KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", ClientBatchItemResult::getAttributesResponse),
+                result("KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST", ClientBatchItemResult::getAttributeListResponse),
+                result("KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS", ClientBatchItemResult::getConstraintsResponse),
+                result("KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION", ClientBatchItemResult::getUsageAllocationResponse),
+                result("KMIPKIT-ELEM-OP-C2S-HASH", ClientBatchItemResult::hashResponse),
+                result("KMIPKIT-ELEM-OP-C2S-IMPORT", ClientBatchItemResult::importResponse),
+                result("KMIPKIT-ELEM-OP-C2S-INTEROP", ClientBatchItemResult::interopResponse),
+                result("KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", ClientBatchItemResult::joinSplitKeyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-LOCATE", ClientBatchItemResult::locateResponse),
+                result("KMIPKIT-ELEM-OP-C2S-LOG", ClientBatchItemResult::logResponse),
+                result("KMIPKIT-ELEM-OP-C2S-LOGIN", ClientBatchItemResult::loginResponse),
+                result("KMIPKIT-ELEM-OP-C2S-LOGOUT", ClientBatchItemResult::logoutResponse),
+                result("KMIPKIT-ELEM-OP-C2S-MAC", ClientBatchItemResult::macResponse),
+                result("KMIPKIT-ELEM-OP-C2S-MAC-VERIFY", ClientBatchItemResult::macVerifyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE", ClientBatchItemResult::modifyAttributeResponse),
+                result("KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE", ClientBatchItemResult::obtainLeaseResponse),
+                result("KMIPKIT-ELEM-OP-C2S-PING", ClientBatchItemResult::pingResponse),
+                result("KMIPKIT-ELEM-OP-C2S-PKCS-11", ClientBatchItemResult::pkcs11Response),
+                result("KMIPKIT-ELEM-OP-C2S-QUERY", ClientBatchItemResult::queryResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RE-CERTIFY", ClientBatchItemResult::recertifyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RECOVER", ClientBatchItemResult::recoverResponse),
+                result("KMIPKIT-ELEM-OP-C2S-REGISTER", ClientBatchItemResult::registerResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RE-KEY", ClientBatchItemResult::rekeyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR", ClientBatchItemResult::rekeyKeyPairResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RE-PROVISION", ClientBatchItemResult::reprovisionResponse),
+                result("KMIPKIT-ELEM-OP-C2S-REVOKE", ClientBatchItemResult::revokeResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE", ClientBatchItemResult::rngRetrieveResponse),
+                result("KMIPKIT-ELEM-OP-C2S-RNG-SEED", ClientBatchItemResult::rngSeedResponse),
+                result("KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE", ClientBatchItemResult::setAttributeResponse),
+                result("KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", ClientBatchItemResult::setConstraintsResponse),
+                result("KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS", ClientBatchItemResult::setDefaultsResponse),
+                result("KMIPKIT-ELEM-OP-C2S-SIGN", ClientBatchItemResult::signResponse),
+                result("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", ClientBatchItemResult::signatureVerifyResponse),
+                result("KMIPKIT-ELEM-OP-C2S-VALIDATE", ClientBatchItemResult::validateResponse));
     }
 
     private static List<AsyncResponseAccessor> asyncResponseAccessors() {
         return List.of(
-                new AsyncResponseAccessor("Cancel", AsyncOperationOutcome::metadataV1),
-                new AsyncResponseAccessor("Poll", AsyncOperationOutcome::metadataV1),
-                new AsyncResponseAccessor("Process", AsyncOperationOutcome::metadataV1),
+                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-CANCEL", AsyncOperationOutcome::metadataV1),
+                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-POLL", AsyncOperationOutcome::metadataV1),
+                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-PROCESS", AsyncOperationOutcome::metadataV1),
                 new AsyncResponseAccessor(
-                        "Query Asynchronous Requests", AsyncOperationOutcome::responsePayloadTtlv));
+                        "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", AsyncOperationOutcome::responsePayloadTtlv));
     }
 
     /** Compile-checks every synchronous typed result getter against one response item. */
@@ -205,109 +212,109 @@ final class OperationFacadeParityMatrixTest {
 
     private static List<BatchRoute> batchRoutes() {
         return List.of(
-                route("Activate", () -> ClientBatchItem.activate(null)),
-                route("Add Attribute", () -> withCommentAttribute(ClientBatchItem::addAttribute)),
-                route("Adjust Attribute", () -> ClientBatchItem.adjustAttribute(
+                route("KMIPKIT-ELEM-OP-C2S-ACTIVATE", () -> ClientBatchItem.activate(null)),
+                route("KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE", () -> withCommentAttribute(ClientBatchItem::addAttribute)),
+                route("KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE", () -> ClientBatchItem.adjustAttribute(
                         null, AttributeReference.tag(StandardAttribute.COMMENT.tag()), 1, null)),
-                route("Archive", () -> ClientBatchItem.archive(null)),
-                route("Certify", () -> ClientBatchItem.certify(null, null, null, null, null)),
-                route("Check", () -> ClientBatchItem.check(null, null, null, null)),
-                route("Create", () -> withStructure(attributes ->
+                route("KMIPKIT-ELEM-OP-C2S-ARCHIVE", () -> ClientBatchItem.archive(null)),
+                route("KMIPKIT-ELEM-OP-C2S-CERTIFY", () -> ClientBatchItem.certify(null, null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-CHECK", () -> ClientBatchItem.check(null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-CREATE", () -> withStructure(attributes ->
                         ClientBatchItem.create(0, attributes, null))),
-                route("Create Key Pair", () -> ClientBatchItem.createKeyPair(
+                route("KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR", () -> ClientBatchItem.createKeyPair(
                         null, null, null, null, null, null)),
-                route("Create Split Key", () -> withStructure(attributes ->
+                route("KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY", () -> withStructure(attributes ->
                         ClientBatchItem.createSplitKey(0, null, 1, 1, 0,
                                 null, attributes, null))),
-                route("Decrypt", () -> ClientBatchItem.decrypt(
+                route("KMIPKIT-ELEM-OP-C2S-DECRYPT", () -> ClientBatchItem.decrypt(
                         null, null, null, null, null, null, null, null, null)),
-                route("Delegated Login", () -> withStructure(rights ->
+                route("KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN", () -> withStructure(rights ->
                         ClientBatchItem.delegatedLogin(rights, null, null, null, null))),
-                route("Delete Attribute", ClientBatchItem::deleteAttribute),
-                route("Derive Key", () -> withTwoStructures((parameters, attributes) ->
+                route("KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE", ClientBatchItem::deleteAttribute),
+                route("KMIPKIT-ELEM-OP-C2S-DERIVE-KEY", () -> withTwoStructures((parameters, attributes) ->
                         ClientBatchItem.deriveKey(0, List.of(UniqueIdentifier.textString("matrix")),
                                 0, parameters, attributes))),
-                route("Destroy", () -> ClientBatchItem.destroy(null)),
-                route("Discover Versions", ClientBatchItem::discoverVersions),
-                route("Encrypt", () -> ClientBatchItem.encrypt(
+                route("KMIPKIT-ELEM-OP-C2S-DESTROY", () -> ClientBatchItem.destroy(null)),
+                route("KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS", ClientBatchItem::discoverVersions),
+                route("KMIPKIT-ELEM-OP-C2S-ENCRYPT", () -> ClientBatchItem.encrypt(
                         null, null, null, null, null, null, null, null)),
-                route("Export", () -> ClientBatchItem.export(null, null, null, null, null)),
-                route("Get", () -> ClientBatchItem.get(null, null, null, null, null)),
-                route("Get Attributes", () -> ClientBatchItem.getAttributes(null, List.of())),
-                route("Get Attribute List", ClientBatchItem::getAttributeList),
-                route("Get Constraints", ClientBatchItem::getConstraints),
-                route("Get Usage Allocation", () -> ClientBatchItem.getUsageAllocation(null, 1)),
-                route("Hash", () -> withStructure(parameters ->
+                route("KMIPKIT-ELEM-OP-C2S-EXPORT", () -> ClientBatchItem.export(null, null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-GET", () -> ClientBatchItem.get(null, null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", () -> ClientBatchItem.getAttributes(null, List.of())),
+                route("KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST", ClientBatchItem::getAttributeList),
+                route("KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS", ClientBatchItem::getConstraints),
+                route("KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION", () -> ClientBatchItem.getUsageAllocation(null, 1)),
+                route("KMIPKIT-ELEM-OP-C2S-HASH", () -> withStructure(parameters ->
                         ClientBatchItem.hash(parameters, null, null, null, null))),
-                route("Import", OperationFacadeParityMatrixTest::importObject),
-                route("Interop", () -> ClientBatchItem.interop(0, new byte[] {0x41})),
-                route("Join Split Key", () -> {
+                route("KMIPKIT-ELEM-OP-C2S-IMPORT", OperationFacadeParityMatrixTest::importObject),
+                route("KMIPKIT-ELEM-OP-C2S-INTEROP", () -> ClientBatchItem.interop(0, new byte[] {0x41})),
+                route("KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", () -> {
                     try (SplitKeyReference reference = new SplitKeyReference(
                             UniqueIdentifier.textString("matrix"), 1)) {
                         return ClientBatchItem.joinSplitKey(0, List.of(reference));
                     }
                 }),
-                route("Locate", () -> withStructure(attributes ->
+                route("KMIPKIT-ELEM-OP-C2S-LOCATE", () -> withStructure(attributes ->
                         ClientBatchItem.locate(null, null, null, null, attributes))),
-                route("Log", () -> ClientBatchItem.log("matrix".getBytes(StandardCharsets.UTF_8))),
-                route("Login", () -> ClientBatchItem.login(null, null, null, null)),
-                route("Logout", () -> {
+                route("KMIPKIT-ELEM-OP-C2S-LOG", () -> ClientBatchItem.log("matrix".getBytes(StandardCharsets.UTF_8))),
+                route("KMIPKIT-ELEM-OP-C2S-LOGIN", () -> ClientBatchItem.login(null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-LOGOUT", () -> {
                     try (TtlvStructure ticket = ticket()) {
                         return ClientBatchItem.logout(ticket);
                     }
                 }),
-                route("MAC", () -> ClientBatchItem.mac(null, null, null, null, null, null)),
-                route("MAC Verify", () -> ClientBatchItem.macVerify(
+                route("KMIPKIT-ELEM-OP-C2S-MAC", () -> ClientBatchItem.mac(null, null, null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-MAC-VERIFY", () -> ClientBatchItem.macVerify(
                         null, null, null, null, null, null, null)),
-                route("Modify Attribute", () -> withCommentAttribute(item ->
+                route("KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE", () -> withCommentAttribute(item ->
                         ClientBatchItem.modifyAttribute(null, null, item))),
-                route("Obtain Lease", () -> ClientBatchItem.obtainLease(null)),
-                route("Ping", ClientBatchItem::ping),
-                route("PKCS#11", () -> withStructure(function ->
+                route("KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE", () -> ClientBatchItem.obtainLease(null)),
+                route("KMIPKIT-ELEM-OP-C2S-PING", ClientBatchItem::ping),
+                route("KMIPKIT-ELEM-OP-C2S-PKCS-11", () -> withStructure(function ->
                         ClientBatchItem.pkcs11(function, null, null, null))),
-                route("Query", () -> ClientBatchItem.query(new int[] {0}, null)),
-                route("Re-certify", () -> ClientBatchItem.recertify(
+                route("KMIPKIT-ELEM-OP-C2S-QUERY", () -> ClientBatchItem.query(new int[] {0}, null)),
+                route("KMIPKIT-ELEM-OP-C2S-RE-CERTIFY", () -> ClientBatchItem.recertify(
                         null, null, null, null, null, null, null)),
-                route("Recover", () -> ClientBatchItem.recover(null)),
-                route("Register", OperationFacadeParityMatrixTest::register),
-                route("Re-key", () -> ClientBatchItem.rekey(null, null, null, null)),
-                route("Re-key Key Pair", () -> ClientBatchItem.rekeyKeyPair(
+                route("KMIPKIT-ELEM-OP-C2S-RECOVER", () -> ClientBatchItem.recover(null)),
+                route("KMIPKIT-ELEM-OP-C2S-REGISTER", OperationFacadeParityMatrixTest::register),
+                route("KMIPKIT-ELEM-OP-C2S-RE-KEY", () -> ClientBatchItem.rekey(null, null, null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR", () -> ClientBatchItem.rekeyKeyPair(
                         null, null, null, null, null, null, null, null)),
-                route("Re-Provision", () -> ClientBatchItem.reprovision(null, null)),
-                route("Revoke", OperationFacadeParityMatrixTest::revoke),
-                route("RNG Retrieve", () -> ClientBatchItem.rngRetrieve(0)),
-                route("RNG Seed", () -> ClientBatchItem.rngSeed(new byte[] {0x01})),
-                route("Set Attribute", () -> withCommentAttribute(ClientBatchItem::setAttribute)),
-                route("Set Constraints", () -> withStructure(ClientBatchItem::setConstraints)),
-                route("Set Defaults", ClientBatchItem::setDefaults),
-                route("Sign", () -> ClientBatchItem.sign(
+                route("KMIPKIT-ELEM-OP-C2S-RE-PROVISION", () -> ClientBatchItem.reprovision(null, null)),
+                route("KMIPKIT-ELEM-OP-C2S-REVOKE", OperationFacadeParityMatrixTest::revoke),
+                route("KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE", () -> ClientBatchItem.rngRetrieve(0)),
+                route("KMIPKIT-ELEM-OP-C2S-RNG-SEED", () -> ClientBatchItem.rngSeed(new byte[] {0x01})),
+                route("KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE", () -> withCommentAttribute(ClientBatchItem::setAttribute)),
+                route("KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", () -> withStructure(ClientBatchItem::setConstraints)),
+                route("KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS", ClientBatchItem::setDefaults),
+                route("KMIPKIT-ELEM-OP-C2S-SIGN", () -> ClientBatchItem.sign(
                         null, null, null, null, null, null, null)),
-                route("Signature Verify", () -> ClientBatchItem.signatureVerify(
+                route("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", () -> ClientBatchItem.signatureVerify(
                         null, null, null, null, null, null, null, null)),
-                route("Validate", () -> ClientBatchItem.validate(List.of(), List.of(), null)));
+                route("KMIPKIT-ELEM-OP-C2S-VALIDATE", () -> ClientBatchItem.validate(List.of(), List.of(), null)));
     }
 
     private static List<AsyncRoute> asyncRoutes() {
         return List.of(
-                new AsyncRoute("Cancel", () -> {
+                new AsyncRoute("KMIPKIT-ELEM-OP-C2S-CANCEL", () -> {
                     try (CancelRequest request = CancelRequest.create(CORRELATION);
                             TtlvStructure payload = request.toTtlvPayload()) {
                         assertCorrelationPayload(payload, CORRELATION_VALUE_TAG, CORRELATION);
                     }
                 }),
-                new AsyncRoute("Poll", () -> {
+                new AsyncRoute("KMIPKIT-ELEM-OP-C2S-POLL", () -> {
                     try (PollRequest request = PollRequest.create(CORRELATION);
                             TtlvStructure payload = request.toTtlvPayload()) {
                         assertCorrelationPayload(payload, CORRELATION_VALUE_TAG, CORRELATION);
                     }
                 }),
-                new AsyncRoute("Process", () -> {
+                new AsyncRoute("KMIPKIT-ELEM-OP-C2S-PROCESS", () -> {
                     try (ProcessRequest request = ProcessRequest.create(CORRELATION);
                             TtlvStructure payload = request.toTtlvPayload()) {
                         assertCorrelationPayload(payload, CORRELATION_VALUE_TAG, CORRELATION);
                     }
                 }),
-                new AsyncRoute("Query Asynchronous Requests", () -> {
+                new AsyncRoute("KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", () -> {
                     try (QueryAsyncRequestsRequest request = QueryAsyncRequestsRequest.create();
                             QueryAsyncRequestsRequest withCorrelations = request.withCorrelationValues(
                                     List.of(CORRELATION, SECOND_CORRELATION));
@@ -315,7 +322,7 @@ final class OperationFacadeParityMatrixTest {
                                     List.of(0x1aL));
                             TtlvStructure payload = filtered.toTtlvPayload();
                             TtlvStructureView view = payload.view()) {
-                        assertEquals(2, view.itemCount(), "Query Asynchronous Requests");
+                        assertEquals(2, view.itemCount(), "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS");
                         assertTagAt(view, 0, CORRELATION_VALUES_TAG);
                         assertNestedByteStringItems(view, 0, CORRELATION_VALUE_TAG,
                                 List.of(CORRELATION, SECOND_CORRELATION));
@@ -481,28 +488,39 @@ final class OperationFacadeParityMatrixTest {
         }
     }
 
-    private static BatchRoute route(String operation, Supplier<ClientBatchItem> factory) {
-        return new BatchRoute(operation, factory);
+    private static BatchRoute route(String operationId, Supplier<ClientBatchItem> factory) {
+        return new BatchRoute(operationId, factory);
     }
 
-    private static long operationRaw(String operation) {
-        String fieldName = operation.replaceAll("[^A-Za-z0-9]+", "_")
-                .toUpperCase(Locale.ROOT);
+    private static Map<String, Long> operationFixture() {
+        Path fixture = Path.of("..", "..", "tests", "fixtures", "api",
+                "operation_catalog_parity.tsv");
         try {
-            return org.kmipkit.protocol.KmipValues.Operation.class
-                    .getField(fieldName).getLong(null);
-        } catch (ReflectiveOperationException exception) {
-            throw new AssertionError("missing KMIP 2.1 Operation value: " + operation, exception);
+            List<String> lines = Files.readAllLines(fixture, StandardCharsets.UTF_8);
+            if (lines.isEmpty() || !lines.get(0).equals("operationId\toperationRaw")) {
+                throw new AssertionError("invalid shared KMIP Operation fixture header: " + fixture);
+            }
+            Map<String, Long> values = new HashMap<>();
+            for (String line : lines.subList(1, lines.size())) {
+                String[] columns = line.split("\\t", -1);
+                if (columns.length != 2 || values.putIfAbsent(
+                        columns[0], Long.parseLong(columns[1])) != null) {
+                    throw new AssertionError("invalid or duplicate operation fixture row: " + line);
+                }
+            }
+            return Map.copyOf(values);
+        } catch (IOException exception) {
+            throw new AssertionError("unable to read shared KMIP Operation fixture: " + fixture, exception);
         }
     }
 
-    private record BatchRoute(String operation, Supplier<ClientBatchItem> factory) { }
+    private record BatchRoute(String operationId, Supplier<ClientBatchItem> factory) { }
 
-    private record AsyncRoute(String operation, Runnable constructAndReadPayload) { }
+    private record AsyncRoute(String operationId, Runnable constructAndReadPayload) { }
 
     private record BatchResponseAccessor(
-            String operation, Function<ClientBatchItemResult, ?> accessor) { }
+            String operationId, Function<ClientBatchItemResult, ?> accessor) { }
 
     private record AsyncResponseAccessor(
-            String operation, Function<AsyncOperationOutcome, ?> accessor) { }
+            String operationId, Function<AsyncOperationOutcome, ?> accessor) { }
 }
