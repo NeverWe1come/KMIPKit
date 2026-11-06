@@ -883,6 +883,8 @@ class BindingExportAuditTests(unittest.TestCase):
             "usageAllocationContextAllocatedUnits", "usageAllocationContextAvailableUnits",
             "usageAllocationContextReservedUnits", "usageAllocationContextUniqueIdentifier",
             "clientBatchItemResponsePing", "clientBatchItemResponseQueryTtlv",
+            "clientBatchItemResponseRawTtlv",
+            "clientBatchItemResponseHeaderTtlv",
             "clientBatchItemResponsePkcs11", "clientBatchItemResponseRecertify",
             "clientBatchItemResponseEncrypt", "clientBatchItemResponseDecrypt",
             "clientBatchItemResponseLogin", "clientBatchItemResponseObtainLease",
@@ -1085,6 +1087,8 @@ class BindingExportAuditTests(unittest.TestCase):
                 for reference_group in (
                     "KMIPKIT-0043-FR-008/010/021/022",
                     "KMIPKIT-0043-FR-004/005/010/021/022",
+                    "KMIPKIT-0052-FR-006",
+                    "KMIPKIT-0052-FR-007",
                 )
             )
             self.assertTrue(

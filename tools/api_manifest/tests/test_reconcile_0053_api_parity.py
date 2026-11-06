@@ -601,51 +601,22 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             manifest["capabilities"][0]["mappings"],
         )
 
-    def test_adds_only_exact_approved_java_bridge_exclusions_idempotently(self) -> None:
-        reason = (
-            "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; "
-            "applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. "
-            "The bridge member has no independent product-level capability."
-        )
-        approval = {
-            "kind": "feature-specification",
-            "path": "specs/043-public-api-bindings/spec.md",
-            "status": "Approved",
-            "evidence": "**Status**: Approved for implementation",
-        }
-        exclusions = [
-            {
-                "packageId": "java-kmipkit",
-                "exportName": f"org.kmipkit.NativeExtensionRegistry.{name}",
-                "reason": reason,
-                "approvalSource": approval,
-                "evidence": (
-                    "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. "
-                    "The exact method is an internal raw-handle JNI bridge; supported callers use the typed response facade."
-                ),
-                "candidateSpecId": "KMIPKIT-0043",
-            }
-            for name in (
-                "clientBatchItemResponseRawTtlv",
-                "clientBatchItemResponseHeaderTtlv",
-            )
-        ]
+    def test_adds_only_the_exact_internal_CFFI_bridge_exclusion_idempotently(self) -> None:
         c_name, c_reason, c_approval, c_approval_evidence = (
             reconcile_0053_api_parity.CFFI_BRIDGE_EXCLUSION
         )
-        exclusions.append(
-            {
-                "packageId": "c-kmipkit",
-                "exportName": c_name,
-                "reason": c_reason,
-                "approvalSource": c_approval,
-                "evidence": (
-                    f"{c_approval_evidence} The exact symbol is called from "
-                    "bindings/java/native/kmipkit_jni.cpp and bindings/python/src/kmipkit/ttlv.py."
-                ),
-                "candidateSpecId": "KMIPKIT-0053",
-            }
-        )
+        exclusion = {
+            "packageId": "c-kmipkit",
+            "exportName": c_name,
+            "reason": c_reason,
+            "approvalSource": c_approval,
+            "evidence": (
+                f"{c_approval_evidence} The exact symbol is called from "
+                "bindings/java/native/kmipkit_jni.cpp and bindings/python/src/kmipkit/ttlv.py."
+            ),
+            "candidateSpecId": "KMIPKIT-0053",
+        }
+        exclusions = [exclusion]
 
         first = reconcile_0053_api_parity.add_approved_exclusions(
             {"approvedExclusions": []}, exclusions
@@ -655,7 +626,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertEqual(exclusions, first["approvedExclusions"])
         self.assertEqual(first, second)
         broad = copy.deepcopy(exclusions[0])
-        broad["exportName"] = "org.kmipkit.NativeExtensionRegistry.*"
+        broad["exportName"] = "kmipkit_ttlv_value_view_*"
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.add_approved_exclusions(
                 {"approvedExclusions": []}, [broad]
