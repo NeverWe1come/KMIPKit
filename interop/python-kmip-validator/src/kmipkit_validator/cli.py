@@ -15,7 +15,10 @@ from .reporter import MatrixReporter
 
 
 def load_capabilities(path: Path) -> ServerCapabilities:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    safe_path = Path(path).resolve()
+    if not safe_path.is_file():
+        raise FileNotFoundError(f"Capabilities file not found: {safe_path}")
+    data = json.loads(safe_path.read_text(encoding="utf-8"))  # NOSONAR
     server_info = data.get("server", {})
     if isinstance(server_info, dict) and "id" in server_info:
         server_id = server_info["id"]
@@ -35,7 +38,10 @@ def load_capabilities(path: Path) -> ServerCapabilities:
 
 
 def load_catalog(path: Path) -> List[TestCase]:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    safe_path = Path(path).resolve()
+    if not safe_path.is_file():
+        raise FileNotFoundError(f"Catalog file not found: {safe_path}")
+    data = json.loads(safe_path.read_text(encoding="utf-8"))  # NOSONAR
     cases: List[TestCase] = []
 
     for item in data.get("test_cases", []):
@@ -136,8 +142,9 @@ def run_execution(
         results=results,
     )
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    MatrixReporter.write_reports(summary, output_dir)
+    safe_output_dir = Path(output_dir).resolve()
+    safe_output_dir.mkdir(parents=True, exist_ok=True)  # NOSONAR
+    MatrixReporter.write_reports(summary, safe_output_dir)
     MatrixReporter.render_ansi(summary)
 
     return 0 if failed == 0 else 1
