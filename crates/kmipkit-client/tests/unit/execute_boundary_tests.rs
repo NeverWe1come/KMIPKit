@@ -2470,10 +2470,13 @@ fn is_exact_raw_response_accessor(
 ) -> bool {
     let approved_owner_and_name = matches!(
         (impl_type, signature.ident.to_string().as_str()),
-        (Some("ClientBatchItemResponse"), "raw")
-            | (Some("ClientOperationOutcome"), "raw")
-            | (Some("ClientBatchItemResponse"), "response_header_raw")
-            | (Some("ClientBatchResponse"), "response_header_raw")
+        (
+            Some("ClientBatchItemResponse" | "ClientOperationOutcome"),
+            "raw"
+        ) | (
+            Some("ClientBatchItemResponse" | "ClientBatchResponse"),
+            "response_header_raw"
+        )
     );
     if !execute_root_scope
         || !approved_owner_and_name

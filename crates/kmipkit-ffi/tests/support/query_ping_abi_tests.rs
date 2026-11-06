@@ -675,128 +675,107 @@ fn ffi_batch_response_exposes_owned_raw_payload_and_header_ttlv() {
     assert_eq!(payload_present, 0);
     assert!(payload.is_null());
     kmipkit_client_batch_item_response_release(ping);
+}
 
-    #[cfg(feature = "coverage-c-consumer")]
-    {
-        let query = successful_response_item(
-            ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
-            QUERY_OPERATION,
-            b"compiled-c-consumer",
-            vec![
-                ttlv_enumeration(0x0042_005c, 0x0000_003b),
-                ttlv_structure(0x0042_015f, []),
-                ttlv_structure(0x0042_0012, [ttlv_integer(0x0042_0057, 7)]),
-            ],
-        );
-        // SAFETY: The C consumer takes ownership of this live result handle and releases it.
-        assert_eq!(
-            unsafe {
-                kmipkit_client_abi_consumer_response_ttlv_handles(
-                    query,
-                    1,
-                    3,
-                    ptr::null(),
-                    0,
-                    0,
-                )
-            },
-            0
-        );
+#[cfg(feature = "coverage-c-consumer")]
+#[test]
+fn compiled_c_consumer_navigates_response_vendor_ttlv_in_nested_structures() {
+    let query = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        QUERY_OPERATION,
+        b"compiled-c-consumer",
+        vec![
+            ttlv_enumeration(0x0042_005c, 0x0000_003b),
+            ttlv_structure(0x0042_015f, []),
+            ttlv_structure(0x0042_0012, [ttlv_integer(0x0042_0057, 7)]),
+        ],
+    );
+    // SAFETY: The C consumer takes ownership of this live result handle and releases it.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(query, 1, 3, ptr::null(), 0, 0)
+        },
+        0
+    );
 
-        let server_information_path = [0x0042_0088, 0x0054_0001, 0x0054_0002];
-        let server_information = successful_response_item(
-            ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(3)])),
-            QUERY_OPERATION,
-            b"c-server-information",
-            vec![
-                ttlv_structure(
-                    0x0042_0088,
-                    [ttlv_structure(
-                        0x0054_0001,
-                        [ttlv_integer(0x0054_0002, 0x1234)],
-                    )],
-                ),
-                ttlv_structure(0x0042_015f, []),
-            ],
-        );
-        // SAFETY: The C consumer takes ownership and releases the result handle.
-        assert_eq!(
-            unsafe {
-                kmipkit_client_abi_consumer_response_ttlv_handles(
-                    server_information,
-                    1,
-                    2,
-                    server_information_path.as_ptr(),
-                    server_information_path.len() as u64,
-                    0x1234,
-                )
-            },
-            0
-        );
+    let server_information_path = [0x0042_0088, 0x0054_0001, 0x0054_0002];
+    let server_information = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(3)])),
+        QUERY_OPERATION,
+        b"c-server-information",
+        vec![
+            ttlv_structure(
+                0x0042_0088,
+                [ttlv_structure(
+                    0x0054_0001,
+                    [ttlv_integer(0x0054_0002, 0x1234)],
+                )],
+            ),
+            ttlv_structure(0x0042_015f, []),
+        ],
+    );
+    // SAFETY: The C consumer takes ownership and releases the result handle.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(
+                server_information,
+                1,
+                2,
+                server_information_path.as_ptr(),
+                server_information_path.len() as u64,
+                0x1234,
+            )
+        },
+        0
+    );
 
-        let key_block_path = [
-            0x0042_008f,
-            0x0042_0040,
-            0x0054_0001,
-            0x0054_0002,
-        ];
-        let get_response = successful_response_item(
-            ClientRequest::get(GetRequest::new().with_unique_identifier(
-                kmipkit_protocol::UniqueIdentifier::TextString("c-get-request".to_owned()),
-            )),
-            0x0000_000a,
-            b"c-key-block",
-            vec![
-                ttlv_enumeration(0x0042_0057, 2),
-                ttlv_item(0x0042_0094, 0x07, b"c-get-object"),
-                ttlv_structure(
-                    0x0042_008f,
-                    [ttlv_structure(
-                        0x0042_0040,
-                        [
-                            ttlv_enumeration(0x0042_0042, 1),
-                            ttlv_structure(
-                                0x0042_0045,
-                                [ttlv_item(0x0042_0043, 0x08, b"key-material")],
-                            ),
-                            ttlv_structure(
-                                0x0054_0001,
-                                [ttlv_integer(0x0054_0002, 0x5678)],
-                            ),
-                        ],
-                    )],
-                ),
-            ],
-        );
-        // SAFETY: The C consumer takes ownership and releases the result handle.
-        assert_eq!(
-            unsafe {
-                kmipkit_client_abi_consumer_response_ttlv_handles(
-                    get_response,
-                    1,
-                    3,
-                    key_block_path.as_ptr(),
-                    key_block_path.len() as u64,
-                    0x5678,
-                )
-            },
-            0
-        );
+    let key_block_path = [0x0042_008f, 0x0042_0040, 0x0054_0001, 0x0054_0002];
+    let get_response = successful_response_item(
+        ClientRequest::get(GetRequest::new().with_unique_identifier(
+            kmipkit_protocol::UniqueIdentifier::TextString("c-get-request".to_owned()),
+        )),
+        0x0000_000a,
+        b"c-key-block",
+        vec![
+            ttlv_enumeration(0x0042_0057, 2),
+            ttlv_item(0x0042_0094, 0x07, b"c-get-object"),
+            ttlv_structure(
+                0x0042_008f,
+                [ttlv_structure(
+                    0x0042_0040,
+                    [
+                        ttlv_enumeration(0x0042_0042, 1),
+                        ttlv_structure(
+                            0x0042_0045,
+                            [ttlv_item(0x0042_0043, 0x08, b"key-material")],
+                        ),
+                        ttlv_structure(0x0054_0001, [ttlv_integer(0x0054_0002, 0x5678)]),
+                    ],
+                )],
+            ),
+        ],
+    );
+    // SAFETY: The C consumer takes ownership and releases the result handle.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(
+                get_response,
+                1,
+                3,
+                key_block_path.as_ptr(),
+                key_block_path.len() as u64,
+                0x5678,
+            )
+        },
+        0
+    );
 
-        let failure = failed_query_without_payload_item();
-        // SAFETY: The C consumer takes ownership of this live result handle and releases it.
-        assert_eq!(
-            unsafe {
-                kmipkit_client_abi_consumer_response_ttlv_handles(
-                    failure,
-                    0,
-                    0,
-                    ptr::null(),
-                    0,
-                    0,
-                )
-            },
-            0
-        );
-    }
+    let failure = failed_query_without_payload_item();
+    // SAFETY: The C consumer takes ownership of this live result handle and releases it.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_consumer_response_ttlv_handles(failure, 0, 0, ptr::null(), 0, 0)
+        },
+        0
+    );
 }
