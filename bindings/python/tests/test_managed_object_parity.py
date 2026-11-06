@@ -633,8 +633,8 @@ def test_typed_readers_cover_every_transparent_key_format():
             (11, 0x0042_006C, "big", b"e", "public_exponent"),
             (12, 0x0042_009F, "big", b"x", "x"),
             (13, 0x0042_00A0, "big", b"y", "y"),
-            (14, 0x0042_0075, "enum", 0x8000_0014, "recommended_curve"),
-            (15, 0x0042_0072, "bytes", b"point", "q_string"),
+            (0x14, 0x0042_0075, "enum", 0x8000_0014, "recommended_curve"),
+            (0x15, 0x0042_0072, "bytes", b"point", "q_string"),
         ]
         fields_by_format = {
             7: [(0x0042_003F, "bytes", b"sym")],
@@ -668,11 +668,11 @@ def test_typed_readers_cover_every_transparent_key_format():
                 (0x0042_0037, "big", b"g"),
                 (0x0042_00A0, "big", b"y"),
             ],
-            14: [
+            0x14: [
                 (0x0042_0075, "enum", 0x8000_0014),
                 (0x0042_002E, "big", b"d"),
             ],
-            15: [
+            0x15: [
                 (0x0042_0075, "enum", 0x8000_0015),
                 (0x0042_0072, "bytes", b"point"),
             ],
@@ -703,4 +703,16 @@ def test_typed_readers_cover_every_transparent_key_format():
             finally:
                 for field in fields:
                     field.close()
+
+
+def test_oasis_hexadecimal_transparent_ec_formats_and_reserved_values():
+    with pytest.raises(errors.InvalidInputError):
+        KeyMaterial.from_fields(0x14, [])
+    with pytest.raises(errors.InvalidInputError):
+        KeyMaterial.from_fields(0x15, [])
+
+    with KeyMaterial.from_fields(14, []) as reserved_private:
+        assert reserved_private.format_raw() == 14
+    with KeyMaterial.from_fields(15, []) as reserved_public:
+        assert reserved_public.format_raw() == 15
 

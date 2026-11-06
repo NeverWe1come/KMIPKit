@@ -407,7 +407,7 @@ fn compiled_c_consumer_reads_all_nine_known_object_types() {
 }
 
 #[test]
-fn compiled_c_consumer_reads_transparent_fields_for_formats_seven_through_fifteen() {
+fn compiled_c_consumer_reads_transparent_fields_for_assigned_key_formats() {
     let cases = [
         (
             7,
@@ -488,7 +488,7 @@ fn compiled_c_consumer_reads_transparent_fields_for_formats_seven_through_fiftee
             &[4][..],
         ),
         (
-            14,
+            0x14,
             0x0042_0075,
             3,
             vec![
@@ -499,7 +499,7 @@ fn compiled_c_consumer_reads_transparent_fields_for_formats_seven_through_fiftee
             &[][..],
         ),
         (
-            15,
+            0x15,
             0x0042_0072,
             5,
             vec![
@@ -515,8 +515,8 @@ fn compiled_c_consumer_reads_transparent_fields_for_formats_seven_through_fiftee
     for (format_raw, field_tag, read_kind, fields, expected_bytes) in cases {
         let material = transparent_material_item(format_raw, fields);
         let (item_type, expected_enumeration) = match (format_raw, read_kind) {
-            (14, 3) => (5, 0x8000_0014),
-            (7 | 15, 5) => (8, 0),
+            (0x14, 3) => (5, 0x8000_0014),
+            (7 | 0x15, 5) => (8, 0),
             (_, 5) => (4, 0),
             _ => (0, 0),
         };
@@ -1072,6 +1072,114 @@ fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values
     kmipkit_ttlv_item_release(output_handle);
     for source in source_handles {
         kmipkit_ttlv_item_release(source);
+    }
+}
+
+#[test]
+fn compiled_c_consumer_uses_oasis_hexadecimal_transparent_ec_format_values() {
+    for format_raw in [0x14, 0x15] {
+        let mut output = ptr::null_mut();
+        // SAFETY: A null field array is valid with a zero count; output is a writable slot.
+        let status = unsafe {
+            kmipkit_0053_key_material_from_fields(
+                format_raw,
+                ptr::null_mut(),
+                0,
+                &raw mut output,
+            )
+        };
+        assert_eq!(status, ERROR_INVALID_INPUT);
+        assert!(output.is_null());
+    }
+
+    for reserved_format in [14, 15] {
+        let mut output = ptr::null_mut();
+        // SAFETY: A null field array is valid with a zero count; output is a writable slot.
+        let status = unsafe {
+            kmipkit_0053_key_material_from_fields(
+                reserved_format,
+                ptr::null_mut(),
+                0,
+                &raw mut output,
+            )
+        };
+        assert_eq!(status, SUCCESS);
+        assert!(!output.is_null());
+        kmipkit_ttlv_item_release(output);
+    }
+}
+
+#[test]
+fn ffi_builder_dispatches_ec_formats_at_oasis_hex_values_and_preserves_reserved_values() {
+    let ec_cases = [
+        (
+            0x14,
+            vec![
+                Item::new(tag(0x0042_0075), Value::enumeration(0x8000_0014))
+                    .expect("EC recommended curve"),
+                Item::new(tag(0x0042_002e), Value::big_integer(vec![0x21]))
+                    .expect("EC private scalar"),
+            ],
+        ),
+        (
+            0x15,
+            vec![
+                Item::new(tag(0x0042_0075), Value::enumeration(0x8000_0015))
+                    .expect("EC recommended curve"),
+                Item::new(tag(0x0042_0072), Value::byte_string(vec![0x04, 0x22]))
+                    .expect("EC public point"),
+            ],
+        ),
+    ];
+
+    for (format, fields) in ec_cases {
+        let mut handles: Vec<*mut kmipkit_ttlv_item_t> = fields
+            .into_iter()
+            .map(|item| make_handle(Kind::Item, HandleValue::Item(item)))
+            .collect();
+        let mut output = ptr::null_mut();
+        // SAFETY: Every field handle is live and the output slot is writable.
+        let status = unsafe {
+            crate::extension_registry::managed_objects::kmipkit_key_material_from_fields(
+                format,
+                handles.as_mut_ptr(),
+                handles.len() as u64,
+                &raw mut output,
+            )
+        };
+        assert_eq!(status, SUCCESS, "assigned EC format {format:#x}");
+        assert!(!output.is_null());
+        kmipkit_ttlv_item_release(output);
+        for handle in handles {
+            kmipkit_ttlv_item_release(handle);
+        }
+    }
+
+    for reserved_format in [14, 15] {
+        let vendor_item = Item::new(
+            tag(0x54ff_0001),
+            Value::byte_string(vec![0x31, 0x32]),
+        )
+        .expect("vendor extension item");
+        let vendor_handle = make_handle(Kind::Item, HandleValue::Item(vendor_item));
+        let mut handles = [vendor_handle];
+        let mut output = ptr::null_mut();
+        // SAFETY: The extension handle is live and the output slot is writable.
+        let status = unsafe {
+            crate::extension_registry::managed_objects::kmipkit_key_material_from_fields(
+                reserved_format,
+                handles.as_mut_ptr(),
+                handles.len() as u64,
+                &raw mut output,
+            )
+        };
+        assert_eq!(
+            status, SUCCESS,
+            "reserved format {reserved_format:#x} remains a generic structure"
+        );
+        assert!(!output.is_null());
+        kmipkit_ttlv_item_release(output);
+        kmipkit_ttlv_item_release(vendor_handle);
     }
 }
 

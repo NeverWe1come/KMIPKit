@@ -501,7 +501,7 @@ final class ManagedObjectParityTest {
         try (TtlvItem curve = item(0x00420075,
                      TtlvValue.Enumeration(0x80000014L), limits);
                 TtlvItem d = item(0x0042002e, TtlvValue.BigInteger(new byte[] {26}, limits), limits);
-                KeyMaterial material = KeyMaterial.fromFields(14, List.of(curve, d))) {
+                KeyMaterial material = KeyMaterial.fromFields(0x14, List.of(curve, d))) {
             assertEquals(0x80000014L, material.recommendedCurve());
             assertArrayEquals(new byte[] {26}, material.d());
         }
@@ -509,9 +509,20 @@ final class ManagedObjectParityTest {
                      TtlvValue.Enumeration(0x80000015L), limits);
                 TtlvItem qString = item(0x00420072,
                      TtlvValue.ByteString(new byte[] {27, 28}, limits), limits);
-                KeyMaterial material = KeyMaterial.fromFields(15, List.of(curve, qString))) {
+                KeyMaterial material = KeyMaterial.fromFields(0x15, List.of(curve, qString))) {
             assertEquals(0x80000015L, material.recommendedCurve());
             assertArrayEquals(new byte[] {27, 28}, material.qString());
+        }
+    }
+
+    @Test
+    void usesOasisHexadecimalTransparentEcFormatValuesAndLeavesReservedValuesGeneric() {
+        assertThrows(InvalidInputException.class, () -> KeyMaterial.fromFields(0x14, List.of()));
+        assertThrows(InvalidInputException.class, () -> KeyMaterial.fromFields(0x15, List.of()));
+        try (KeyMaterial reservedEcPrivate = KeyMaterial.fromFields(14, List.of());
+                KeyMaterial reservedEcPublic = KeyMaterial.fromFields(15, List.of())) {
+            assertEquals(14, reservedEcPrivate.formatRaw());
+            assertEquals(15, reservedEcPublic.formatRaw());
         }
     }
 
