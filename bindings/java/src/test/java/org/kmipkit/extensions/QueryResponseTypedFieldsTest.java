@@ -40,6 +40,14 @@ final class QueryResponseTypedFieldsTest {
         TtlvStructure payload = queryPayload();
         try (QueryResponse response = QueryResponse.fromClassifiedPayload(payload, classifiedFields())) {
             assertEquals(17, response.fieldCount());
+            assertEquals(List.of(
+                    OPERATION, APPLICATION_NAMESPACE, UNKNOWN_VENDOR_TAG, OPERATION, OBJECT_TYPE,
+                    SERVER_INFORMATION, APPLICATION_NAMESPACE, EXTENSION_INFORMATION,
+                    ATTESTATION_TYPE, RNG_PARAMETERS, PROFILE_INFORMATION,
+                    VALIDATION_INFORMATION, CAPABILITY_INFORMATION, CLIENT_REGISTRATION_METHOD,
+                    DEFAULTS_INFORMATION, PROTECTION_STORAGE_MASKS, VENDOR_IDENTIFICATION),
+                    response.rawFieldTags());
+            assertEquals(List.of(UNKNOWN_VENDOR_TAG), response.unknownFieldTags());
             assertEquals(QueryResponseFieldKind.ENUMERATION, response.fieldAt(0).kind());
             assertEquals(0x3bL, response.fieldAt(0).enumeration().orElseThrow());
             QueryResponseField unknown = response.fieldAt(2);
