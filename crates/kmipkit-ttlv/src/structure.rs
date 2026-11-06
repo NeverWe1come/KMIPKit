@@ -97,10 +97,10 @@ impl Structure {
     }
 }
 
-impl StructureView<'_> {
+impl<'a> StructureView<'a> {
     /// Returns the child items in their original insertion order.
     #[must_use]
-    pub const fn children(&self) -> &[Item] {
+    pub const fn children(&self) -> &'a [Item] {
         self.children
     }
 
