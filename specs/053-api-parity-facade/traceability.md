@@ -12,6 +12,7 @@ Exact source tables are inherited from specs 048–052 and reference the pinned 
 | KMIPKIT-0053-R006 | §6.1 tables for 56 supported operations and async rules in specs/050-parameters-auth-client/gap-matrix.md | Preserve operation identity, request/options, response association and async correlation. | C ABI/JNI/CFFI wrappers. | 56-operation matrix and no-retry tests. |
 | KMIPKIT-0053-R007 | §8.5 Table 398; §8.6 Table 399; §§9.13, 10.1.2; §11.56; specs/052-response-navigation/traceability.md | Preserve response presence, order, repetitions, unknown/vendor values at arbitrary depth. | KMIPKIT-0052 handles and wrappers. | Absent/empty/Pending and nested 0x54xxxx tests in four languages. |
 | KMIPKIT-0053-R008 | §11.36 Table 470; KMIPKIT-0053-FR-007 | Every typed request builder exposes the exact KMIP Operation Enumeration it will send. | `ClientBatchItem::operation`, C ABI, Java accessor, and Python property. | C and Java compare every synchronous builder with the generated OASIS Operation values; Python verifies the live ABI result. |
+| KMIPKIT-0053-R009 | §11.25 Table 461; §§3.11–3.12 Tables 25–26 | Dispatch Transparent EC Private/Public Key material only for Key Format Type 0x14/0x15; other raw values remain generic. | `key_material.rs::validate_key_material_item` and the C, Java, and Python typed readers. | Correct raw codes accept well-formed models and reject malformed EC Structures; reserved 0x0E/0x0F remain generic. |
 
 ## Project Decisions
 - P001: Rust remains the sole protocol/model/validation implementation.
