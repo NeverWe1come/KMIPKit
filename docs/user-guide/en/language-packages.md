@@ -198,9 +198,18 @@ changes to this table.
 | `named_protocol_values` | declared | Assigned KMIP 2.1 Enumeration and Bit Mask values have catalog-backed names in Rust, C, Java, and Python. This maps names and lookups; it does not claim server support or cryptographic suitability. |
 | `hashed_password_timestamp_sequence` | declared | A locally owned timestamp sequence for Hashed Password credentials is mapped across the four languages; server validation remains authoritative. |
 | `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
+| `named_protocol_mask_single_bit_lookup` | declared | Catalog-backed names are available for assigned single-bit mask flags; unknown bits remain preserved. |
+| `typed_object_attributes` | verified | The 62 applicable typed attributes have four-language construction and read routes while generic TTLV preserves repeated and unknown values. |
+| `typed_managed_objects_and_key_material` | blocked | Rust typed models exist, but four-language route reconciliation is incomplete; do not treat this capability as available. |
+| `typed_cryptographic_parameters` | blocked | Rust typed parameters exist, but four-language route reconciliation is incomplete; do not treat this capability as available. |
+| `request_message_authentication` | verified | Caller-owned Authentication is attached to one Request Message header and applies to that message's ordered Batch Items. |
+| `response_ttlv_navigation` | verified | Typed response access and owned generic TTLV navigation preserve nested, repeated, unknown, and vendor fields across the four languages. |
+| `request_validation` | verified | Schema-aware validation reports locally detectable issues before transmission; invalid requests remain `NotSent`. |
+| `request_validation_c_abi` | verified | C exposes the shared request-validation report and preserves the Rust validator's issue metadata and delivery behavior. |
+| `client_operation_identity` | verified | Synchronous client operation routes retain the KMIP operation value through their public binding and response-item interfaces. |
 
-Of the **56** KMIP `client_1_0` operation rows, **0 / 56** remain `blocked` or
-`declared`; all **56** API mappings are `verified`:
+Of the **56** KMIP `client_1_0` operation rows, **0 / 56** are `blocked`.
+**0** rows are `declared`: none. **56** operation mappings are `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
 Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
@@ -210,8 +219,8 @@ Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults, and
 Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
 MAC Verify, Poll, Process, Query Asynchronous Requests, Sign, and Signature
-Verify. These statuses describe API mappings only; they do not establish full
-operation conformance or server interoperability. The asynchronous APIs follow
+Verify. These verified states describe four-language API mappings only; they do
+not establish full operation parity, KMIP conformance, or server interoperability. The asynchronous APIs follow
 the approved KMIPKIT-0009 scope; Process Table 278 catalog and review-checklist
 work remains tracked separately. Do not infer operation availability from
 types or implementation code elsewhere in the repository. Logout sends the caller-supplied

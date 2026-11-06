@@ -282,7 +282,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 for statement in required_scope[language]:
                     self.assertIn(statement, normalized_guide)
 
-    def test_public_api_reference_marks_async_followups_declared(self) -> None:
+    def test_public_api_reference_matches_async_followup_manifest_states(self) -> None:
         reference = (ROOT / "docs/architecture/public-api.md").read_text(
             encoding="utf-8"
         )
@@ -305,8 +305,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
 
         for operation_name in asynchronous_followups:
             with self.subTest(operation=operation_name):
-                self.assertEqual("declared", operations[operation_name]["apiState"])
-                self.assertEqual("declared", documented_states.get(operation_name))
+                expected_state = operations[operation_name]["apiState"]
+                self.assertEqual(expected_state, documented_states.get(operation_name))
 
     def test_public_api_reference_lists_every_verified_rust_operation(self) -> None:
         reference = (ROOT / "docs/architecture/public-api.md").read_text(

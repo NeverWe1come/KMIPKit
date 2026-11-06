@@ -202,9 +202,18 @@ tabla.
 | `named_protocol_values` | declared | Los valores Enumeration y Bit Mask asignados de KMIP 2.1 tienen nombres basados en el catálogo en Rust, C, Java y Python. Esto acredita nombres y consultas; no afirma que el servidor los admita ni que sean criptográficamente apropiados. |
 | `hashed_password_timestamp_sequence` | declared | Una secuencia local de marcas de tiempo para credenciales Hashed Password está mapeada en cuatro lenguajes; la validación del servidor sigue siendo la autoridad. |
 | `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `named_protocol_mask_single_bit_lookup` | declared | Los indicadores de un solo bit asignados tienen nombres basados en el catálogo; los bits desconocidos se conservan. |
+| `typed_object_attributes` | verified | Los 62 atributos tipados aplicables tienen rutas de construcción y lectura en los cuatro lenguajes; el TTLV genérico conserva valores repetidos y desconocidos. |
+| `typed_managed_objects_and_key_material` | blocked | Existen modelos tipados en Rust, pero la reconciliación de rutas en los cuatro lenguajes está incompleta; no se debe tratar esta capacidad como disponible. |
+| `typed_cryptographic_parameters` | blocked | Existen parámetros tipados en Rust, pero la reconciliación de rutas en los cuatro lenguajes está incompleta; no se debe tratar esta capacidad como disponible. |
+| `request_message_authentication` | verified | La autenticación propiedad del llamador se adjunta a la cabecera de un único Request Message y se aplica a sus Batch Items ordenados. |
+| `response_ttlv_navigation` | verified | El acceso tipado a respuestas y la navegación TTLV genérica propia conservan campos anidados, repetidos, desconocidos y de fabricante en los cuatro lenguajes. |
+| `request_validation` | verified | La validación con esquema informa de los problemas comprobables localmente antes del envío; las peticiones no válidas permanecen en `NotSent`. |
+| `request_validation_c_abi` | verified | C expone el informe compartido de validación y conserva los metadatos de incidencia y entrega del validador Rust. |
+| `client_operation_identity` | verified | Las rutas de operaciones cliente síncronas conservan el valor Operation KMIP en la API pública y en los elementos de respuesta. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** siguen en
-estado `blocked` o `declared`; los **56 mapeos de API** están `verified`:
+De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** están
+`blocked`. **0** filas están en estado `declared`: ninguna. **56** mapeos de operación están en estado `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
 Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
@@ -214,8 +223,9 @@ Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults y
 Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
 MAC Verify, Poll, Process, Query Asynchronous Requests, Sign y Signature
-Verify. Estos estados describen solo los mapeos de API; no acreditan la
-conformidad completa de las operaciones ni la interoperabilidad con servidores.
+Verify. Estos estados verificados describen solo los mapeos de API de los
+cuatro lenguajes; no acreditan la paridad completa de operaciones, la
+conformidad KMIP ni la interoperabilidad con servidores.
 Las API asíncronas siguen el alcance aprobado de KMIPKIT-0009; el trabajo
 separado sobre el catálogo y la revisión de Process Table 278 continúa
 registrado independientemente. No se debe inferir que una operación está
