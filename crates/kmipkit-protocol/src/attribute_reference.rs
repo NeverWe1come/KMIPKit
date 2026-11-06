@@ -112,7 +112,7 @@ impl AttributeReference {
                 vendor_identification,
                 attribute_name,
             } => {
-                if !valid_vendor_identification(vendor_identification) {
+                if !vendor_identification_is_valid(vendor_identification) {
                     return Err(malformed_reference());
                 }
                 let mut fields = Structure::new();
@@ -181,7 +181,7 @@ fn parse_name_reference(
         })
         .ok_or_else(malformed_reference)?;
 
-    if !valid_vendor_identification(&vendor_identification) {
+    if !vendor_identification_is_valid(&vendor_identification) {
         return Err(malformed_reference());
     }
 
@@ -191,7 +191,7 @@ fn parse_name_reference(
     ))
 }
 
-fn valid_vendor_identification(value: &str) -> bool {
+pub(crate) fn vendor_identification_is_valid(value: &str) -> bool {
     value
         .chars()
         .all(|character| character.is_ascii_alphanumeric() || matches!(character, '_' | '.'))

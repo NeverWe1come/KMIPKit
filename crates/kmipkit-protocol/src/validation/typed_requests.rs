@@ -2,12 +2,11 @@
 
 use crate::{
     ActivateRequest, ArchiveRequest, CancelRequest, CheckRequest, DelegatedLoginRequest,
-    DestroyRequest, DiscoverVersionsRequest, GetAttributeListRequest, GetAttributesRequest,
-    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, ImportRequest,
-    JoinSplitKeyRequest, LocateRequest, LoginRequest, LogoutRequest, ObtainLeaseRequest,
-    PingRequest, Pkcs11Request, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
-    QueryRequest, RecoverRequest, RngRetrieveRequest, RngSeedRequest, SetConstraintsRequest,
-    SetDefaultsRequest, ValidationReport,
+    DestroyRequest, DiscoverVersionsRequest, GetAttributeListRequest, GetConstraintsRequest,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, JoinSplitKeyRequest, LocateRequest,
+    LoginRequest, LogoutRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest,
+    ProcessRequest, QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest,
+    RngSeedRequest, SetConstraintsRequest, SetDefaultsRequest, ValidationReport,
 };
 
 use super::schema::RequestPayloadSchema;
@@ -68,7 +67,6 @@ impl_typed_request_validation! {
     DestroyRequest => Destroy,
     DiscoverVersionsRequest => DiscoverVersions,
     GetAttributeListRequest => GetAttributeList,
-    GetAttributesRequest => GetAttributes,
     GetConstraintsRequest => GetConstraints,
     GetUsageAllocationRequest => GetUsageAllocation,
     LocateRequest => Locate,
@@ -301,6 +299,34 @@ impl ValidateKmipRequest for GetRequest {
             crate::NestedStructureSchema::KeyWrappingSpecification,
             "Key Wrapping Specification",
         )
+    }
+}
+
+impl ValidateKmipRequest for crate::GetAttributesRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::GetAttributes;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        for (index, reference) in self.attribute_references().iter().enumerate() {
+            let Some((vendor_identification, _)) = reference.name_parts() else {
+                continue;
+            };
+            if !crate::attribute_reference::vendor_identification_is_valid(vendor_identification) {
+                report.append(crate::validation::issue_report(
+                    "KMIPKIT-0051-R078",
+                    crate::ValidationPath::root()
+                        .field("Request Payload")
+                        .field("Attribute Reference")
+                        .index(index)
+                        .field("Vendor Identification"),
+                    crate::ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§5.5, Table 161",
+                    },
+                ));
+            }
+        }
+        report
     }
 }
 
