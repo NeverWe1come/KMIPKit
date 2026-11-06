@@ -6229,6 +6229,65 @@ final class ClientFacadeTlsIntegrationTest {
         return structure(0x42007b, header, responseItem);
     }
 
+    private static byte[] getAttributeListMinimalResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "minimal-attribute-list-object".getBytes(StandardCharsets.UTF_8)),
+                enumeration(0x42013b, 0x42002f));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x0c),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] exportResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] attributes = structure(0x420125, enumeration(0x42001d, 1));
+        byte[] anyObject = structure(0x42008f,
+                structure(0x420040,
+                        item(0x420045, 8, "KMIPKit-export-fixture".getBytes(StandardCharsets.US_ASCII))));
+        byte[] payload = structure(0x42007c,
+                enumeration(0x420057, 7),
+                item(0x420094, 7, "export-fixture".getBytes(StandardCharsets.UTF_8)),
+                attributes,
+                anyObject);
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 43),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] getResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] object = structure(0x42008f,
+                structure(0x420040,
+                        item(0x420045, 8,
+                                "KMIPKit-get-fixture".getBytes(StandardCharsets.US_ASCII))));
+        byte[] payload = structure(0x42007c,
+                enumeration(0x420057, 2),
+                item(0x420094, 2, integer(-17)),
+                object);
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 10),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
     private static byte[] lifecycleSuccessResponseMessage() throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));

@@ -11,6 +11,12 @@ from kmipkit import client, errors, ttlv
 from kmipkit._client_ffi import ffi
 
 
+def _released_correlation_view() -> memoryview:
+    value = memoryview(b"correlation")
+    value.release()
+    return value
+
+
 @pytest.mark.parametrize(
     "source",
     [
@@ -31,6 +37,59 @@ def test_correlation_staging_is_wipeable_for_all_buffer_inputs(source) -> None:
 
     assert isinstance(raw, bytearray)
     assert raw == bytearray(len(expected))
+
+
+@pytest.mark.parametrize(
+    "source_factory",
+    [
+        pytest.param(lambda: object(), id="not-a-buffer"),
+        pytest.param(_released_correlation_view, id="released-memoryview"),
+    ],
+)
+def test_poll_rejects_invalid_correlation_before_native_call(
+    monkeypatch, source_factory
+) -> None:
+    native_calls: list[object] = []
+    client_handle = object.__new__(client.Client)
+    limits = ttlv.codec_limits_defaults()
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_poll=lambda *args: native_calls.append(args)
+        ),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client_handle.execute_poll(source_factory(), limits)
+    finally:
+        limits.close()
+
+    assert native_calls == []
+
+
+def test_poll_wipes_staged_correlation_if_native_buffer_creation_fails(monkeypatch):
+    staged_values: list[bytearray] = []
+
+    class FailingBufferBridge:
+        NULL = ffi.NULL
+
+        @staticmethod
+        def from_buffer(_ctype, staged: bytearray):
+            staged_values.append(staged)
+            raise BufferError("buffer bridge unavailable")
+
+    client_handle = object.__new__(client.Client)
+    limits = ttlv.codec_limits_defaults()
+    monkeypatch.setattr(client, "ffi", FailingBufferBridge)
+    try:
+        with pytest.raises(BufferError, match="buffer bridge unavailable"):
+            client_handle.execute_poll(b"correlation-secret", limits)
+    finally:
+        limits.close()
+
+    assert staged_values == [bytearray(len(b"correlation-secret"))]
 
 
 def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(

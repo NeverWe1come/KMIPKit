@@ -60,6 +60,7 @@ import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 
 final class NativeBridgeCoverageTest {
@@ -188,6 +189,10 @@ final class NativeBridgeCoverageTest {
                 "discoverVersionsResponseMessage", new Class<?>[] {int.class}, 1);
         byte[] getAttributeListResponse = (byte[]) invokeTlsFixture(
                 "getAttributeListResponseMessage", new Class<?>[0]);
+        byte[] getAttributeListMinimalResponse = (byte[]) invokeTlsFixture(
+                "getAttributeListMinimalResponseMessage", new Class<?>[0]);
+        byte[] exportResponse = (byte[]) invokeTlsFixture("exportResponseMessage", new Class<?>[0]);
+        byte[] getResponse = (byte[]) invokeTlsFixture("getResponseMessage", new Class<?>[0]);
         byte[] joinSplitKeyResponse = (byte[]) invokeTlsFixture(
                 "joinSplitKeyResponseMessage", new Class<?>[0]);
         byte[] getAttributesResponse = (byte[]) invokeTlsFixture("getAttributesResponseMessage", new Class<?>[0]);
@@ -199,6 +204,7 @@ final class NativeBridgeCoverageTest {
         FutureTask<?> peer = new FutureTask<>(() -> invokeTlsFixture(
                 "serveResponses", new Class<?>[] {SSLServerSocket.class, byte[][].class},
                 listener, (Object) new byte[][] {discoverVersionsResponse, getAttributeListResponse,
+                        getAttributeListMinimalResponse, exportResponse, getResponse,
                         joinSplitKeyResponse, getAttributesResponse, locateResponse,
                         recertifyResponse, obtainLeaseResponse, rekeyResponse}));
         Thread peerThread = new Thread(peer, "kmipkit-native-response-mapper-fixture");
@@ -240,6 +246,53 @@ final class NativeBridgeCoverageTest {
                     assertEquals("attribute-list-object", typed.uniqueIdentifier().text());
                     assertEquals(2, typed.attributeReferences().size());
                     assertResponseMappers(result, "getAttributeListResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.getAttributeList(
+                        UniqueIdentifier.textString("minimal-attribute-list-object"))
+                        .withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0);
+                        ClientBatchItemResult.GetAttributeListResponse typed =
+                                result.getAttributeListResponse().orElseThrow()) {
+                    assertEquals("minimal-attribute-list-object", typed.uniqueIdentifier().text());
+                    assertEquals(List.of(AttributeReference.tag(0x42002f)),
+                            typed.attributeReferences());
+                    assertResponseMappers(result, "getAttributeListResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.export(UniqueIdentifier.textString("export-fixture"),
+                        null, null, null, null)
+                        .withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0);
+                        ClientBatchItemResult.ExportResponse typed = result.exportResponse().orElseThrow()) {
+                    assertEquals(7, typed.objectTypeRaw().orElseThrow());
+                    assertEquals("export-fixture", typed.uniqueIdentifier().orElseThrow().text());
+                    assertTrue(typed.attributes().isPresent());
+                    assertTrue(typed.anyObject().isPresent());
+                    assertResponseMappers(result, "exportResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.get(UniqueIdentifier.integer(-17),
+                        null, null, null, null)
+                        .withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0);
+                        ClientBatchItemResult.GetResponse typed = result.getResponse().orElseThrow();
+                        TtlvStructureView object = typed.object().orElseThrow().view()) {
+                    assertEquals(2, typed.objectTypeRaw().orElseThrow());
+                    assertEquals(UniqueIdentifier.Kind.INTEGER,
+                            typed.uniqueIdentifier().orElseThrow().kind());
+                    assertEquals(-17, typed.uniqueIdentifier().orElseThrow().number());
+                    assertEquals(1, object.itemCount());
+                    assertResponseMappers(result, "getResponse");
                 }
             }
 
@@ -307,7 +360,7 @@ final class NativeBridgeCoverageTest {
                     assertResponseMappers(pending, null);
                 }
             }
-            assertEquals(8, ((List<?>) peer.get(12, TimeUnit.SECONDS)).size());
+            assertEquals(11, ((List<?>) peer.get(12, TimeUnit.SECONDS)).size());
         } finally {
             listener.close();
         }

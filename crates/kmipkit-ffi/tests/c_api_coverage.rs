@@ -23,6 +23,11 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() -> i32;
     fn kmipkit_client_abi_c_consumer_exercises_attribute_request_models() -> i32;
     fn kmipkit_client_abi_c_consumer_exercises_batch_header_fields() -> i32;
+    fn kmipkit_client_abi_c_consumer_rejects_attribute_output_headers() -> i32;
+    fn kmipkit_client_abi_c_consumer_query_span_copy_budget() -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_variable_ttlv_value_inputs() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_import_request_validation() -> i32;
+    fn kmipkit_client_abi_c_consumer_maps_message_validation_error_kind() -> i32;
 }
 
 #[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
@@ -116,6 +121,41 @@ fn compiled_c_consumer_exercises_owned_attribute_request_models() {
 fn compiled_c_consumer_exercises_client_batch_header_fields() {
     // SAFETY: The C consumer owns the batch and uses live, writable scalar outputs.
     let status = unsafe { kmipkit_client_abi_c_consumer_exercises_batch_header_fields() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_malformed_attribute_output_headers() {
+    // SAFETY: The C consumer owns each request, item, and initialized output record.
+    let status = unsafe { kmipkit_client_abi_c_consumer_rejects_attribute_output_headers() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_enforces_total_async_correlation_copy_budget() {
+    // SAFETY: The C consumer owns the query models and the two allocated input buffers.
+    let status = unsafe { kmipkit_client_abi_c_consumer_query_span_copy_budget() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_validates_variable_ttlv_value_inputs() {
+    // SAFETY: The C consumer releases each value view, value, and codec-limits handle it creates.
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_variable_ttlv_value_inputs() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_import_request_validation() {
+    // SAFETY: The C consumer retains borrowed input structures and releases every handle it owns.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_import_request_validation() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_maps_message_validation_error_kind() {
+    // SAFETY: The C consumer owns the malformed request and its validation error handles.
+    let status = unsafe { kmipkit_client_abi_c_consumer_maps_message_validation_error_kind() };
     assert_eq!(status, 1);
 }
 

@@ -193,6 +193,57 @@ def test_profile_validation_types_expose_caller_owned_state() -> None:
     assert "object-7" not in repr(state)
 
 
+def test_profile_validation_models_reject_invalid_caller_state() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileValidationSelection(("profile-a", object()))
+    with pytest.raises(errors.ResourceLimitError):
+        client.ProfileValidationSelection(("x" * 4_097,))
+    with pytest.raises(errors.ResourceLimitError):
+        client.ProfileValidationSelection(tuple("profile" for _ in range(4_097)))
+
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileObjectState(object())
+    with pytest.raises(errors.ResourceLimitError):
+        client.ProfileObjectState("é" * 2_049)
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileObjectState("object-7").with_usage_limits_present(1)
+
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileValidationContext(object())
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileValidationContext(((0, object()),))
+    state = client.ProfileObjectState("object-7")
+    with pytest.raises(errors.ResourceLimitError):
+        client.ProfileValidationContext(((0, state),) * 100_001)
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileValidationContext().with_object_state(
+            True, state
+        )
+    with pytest.raises(errors.InvalidInputError):
+        client.ProfileValidationContext().with_object_state(0, object())
+
+
+def test_profile_validation_records_preserve_empty_selection_and_context() -> None:
+    selection_record, context_record, options_record, owners, wipe_buffers = (
+        client._profile_validation_records(
+            client.ProfileValidationSelection(()),
+            client.ProfileValidationContext(),
+            None,
+        )
+    )
+
+    assert selection_record.profile_id_count == 0
+    assert selection_record.profile_id_data == client.ffi.NULL
+    assert selection_record.profile_id_offsets == client.ffi.NULL
+    assert selection_record.profile_id_lengths == client.ffi.NULL
+    assert context_record != client.ffi.NULL
+    assert context_record.object_state_count == 0
+    assert context_record.object_states == client.ffi.NULL
+    assert options_record == client.ffi.NULL
+    assert owners == []
+    assert wipe_buffers == []
+
+
 def test_profile_validation_result_exposes_all_rust_backed_validators() -> None:
     assert callable(client.ProfileValidationSelection.validate)
     result_type = client.ProfileValidationResult
@@ -228,7 +279,12 @@ def test_client_cffi_declares_the_profile_validation_result_abi() -> None:
 
 def test_profile_validation_records_copy_tri_state_context_into_one_call() -> None:
     selection = client.ProfileValidationSelection(("baseline_client",))
-    state = client.ProfileObjectState("caller-object-id").with_usage_limits_present(True)
+    state = (
+        client.ProfileObjectState("caller-object-id")
+        .with_usage_limits_present(True)
+        .with_usage_limits_total(100)
+        .with_usage_limits_count(7)
+    )
     context = client.ProfileValidationContext().with_object_state(3, state)
     selection_record, context_record, options_record, owners, wipe_buffers = (
         client._profile_validation_records(selection, context, None)
@@ -243,8 +299,10 @@ def test_profile_validation_records_copy_tri_state_context_into_one_call() -> No
     ) == b"baseline_client"
     assert context_record.object_state_count == 1
     assert context_record.object_states[0].batch_item_index == 3
-    assert context_record.object_states[0].known_fields == 2
+    assert context_record.object_states[0].known_fields == 98
     assert context_record.object_states[0].boolean_values == 2
+    assert context_record.object_states[0].usage_limits_total == 100
+    assert context_record.object_states[0].usage_limits_count == 7
     assert options_record == client.ffi.NULL
     assert owners
     assert len(wipe_buffers) == 1
@@ -551,11 +609,19 @@ def test_profile_context_bytes_are_wiped_after_a_validation_error(monkeypatch):
         result.close()
 
 
+@pytest.mark.parametrize(
+    ("profile_ids", "expected_error"),
+    [
+        (("profile\x00secret",), errors.InvalidInputError),
+        (("",), errors.InvalidInputError),
+        (tuple("profile" for _ in range(100_001)), errors.ResourceLimitError),
+    ],
+)
 def test_profile_result_releases_native_handle_when_returned_ids_are_invalid(
-    monkeypatch,
+    monkeypatch, profile_ids, expected_error
 ):
     native = _ProfileValidationLib()
-    native.profile_ids = ("profile\x00secret",)
+    native.profile_ids = profile_ids
     result_pointer = client.ffi.cast("kmipkit_profile_validation_result_t *", 101)
 
     def stable_result_pointer(slot, _address: int):
@@ -565,7 +631,7 @@ def test_profile_result_releases_native_handle_when_returned_ids_are_invalid(
     monkeypatch.setattr(client, "lib", native)
     monkeypatch.setattr(_handles, "lib", native)
 
-    with pytest.raises(errors.InvalidInputError):
+    with pytest.raises(expected_error):
         client.ProfileValidationSelection(("profile-a",)).validate()
 
     assert native.released == [result_pointer]
