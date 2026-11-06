@@ -3214,6 +3214,8 @@ macro_rules! read_handle {
 #[allow(unsafe_code)]
 pub(super) mod client_abi;
 
+mod typed_attributes;
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_extension_identity_create(
     vendor_identifier_data: *const u8,
