@@ -266,6 +266,35 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertEqual(2, sum(name.endswith("CryptographicParametersBuilder::with_extension")
                                  for name in remaining_names))
 
+    def test_managed_object_java_routes_match_exported_camel_case_methods(self) -> None:
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        expected = {
+            "certificate_from_fields": "certificate",
+            "symmetric_key_from_fields": "symmetricKey",
+            "public_key_from_fields": "publicKey",
+            "private_key_from_fields": "privateKey",
+            "split_key_from_fields": "splitKey",
+            "secret_data_from_fields": "secretData",
+            "opaque_object_from_fields": "opaqueObject",
+            "pgp_key_from_fields": "pgpKey",
+            "certificate_request_from_fields": "certificateRequest",
+        }
+        routes = {
+            route["id"]: route
+            for route in route_data["functions"]
+            if route["id"] in expected
+        }
+
+        self.assertEqual(set(expected), set(routes))
+        self.assertEqual(
+            expected,
+            {route_id: route["java"]["method"] for route_id, route in routes.items()},
+        )
+
     def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
         route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
         additions = json.loads(route_path.read_text(encoding="utf-8"))["functions"]

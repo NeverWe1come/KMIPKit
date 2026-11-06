@@ -42,6 +42,51 @@ def _structure_with_children(
     return _item(raw_tag, value, limits)
 
 
+def _item_type(item: ttlv.TtlvItem) -> ttlv.ItemType:
+    with ttlv.ttlv_item_view_from_item(item) as view:
+        return ttlv.ttlv_item_view_type(view)
+
+
+def _item_bytes(item: ttlv.TtlvItem) -> bytes:
+    with ttlv.ttlv_item_view_from_item(item) as item_view:
+        with ttlv.ttlv_item_view_value(item_view) as value_view:
+            return bytes(
+                ttlv.ttlv_value_view_byte_at(value_view, index)
+                for index in range(ttlv.ttlv_value_view_byte_length(value_view))
+            )
+
+
+def _child_tags(item: ttlv.TtlvItem) -> list[int]:
+    with ttlv.ttlv_item_view_from_item(item) as item_view:
+        with ttlv.ttlv_item_view_value(item_view) as value_view:
+            with ttlv.ttlv_value_view_structure(value_view) as structure:
+                tags = []
+                for index in range(ttlv.ttlv_structure_view_item_count(structure)):
+                    with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                        with ttlv.ttlv_item_view_tag(child) as tag:
+                            tags.append(ttlv.tag_value(tag))
+                return tags
+
+
+def _child_byte_strings(item: ttlv.TtlvItem) -> list[str]:
+    with ttlv.ttlv_item_view_from_item(item) as item_view:
+        with ttlv.ttlv_item_view_value(item_view) as value_view:
+            with ttlv.ttlv_value_view_structure(value_view) as structure:
+                values = []
+                for index in range(ttlv.ttlv_structure_view_item_count(structure)):
+                    with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                        with ttlv.ttlv_item_view_value(child) as child_value:
+                            values.append(_item_bytes_from_value(child_value).decode())
+                return values
+
+
+def _item_bytes_from_value(value_view: ttlv.TtlvValueView) -> bytes:
+    return bytes(
+        ttlv.ttlv_value_view_byte_at(value_view, index)
+        for index in range(ttlv.ttlv_value_view_byte_length(value_view))
+    )
+
+
 def test_managed_object_unknown_type_roundtrips_without_losing_generic_ttlv():
     source = _structure_item(0x0054_0001)
     with source, ManagedObject.from_item(0x8000_0001, source) as managed:
@@ -76,6 +121,122 @@ def test_key_wrappers_validate_and_retain_owned_generic_items():
         with ttlv.ttlv_item_view_from_item(material) as view:
             with ttlv.ttlv_item_view_tag(view) as tag:
                 assert ttlv.tag_value(tag) == 0x0042_0043
+
+
+def test_nested_accessors_return_owned_nodes_with_values_and_vendor_order():
+    with ttlv.codec_limits_defaults() as limits:
+        key_material = _item(
+            0x0042_0043, ttlv.ttlv_value_byte_string(b"key-data", limits), limits
+        )
+        vendor_one = _item(
+            0x0054_0031, ttlv.ttlv_value_byte_string(b"vendor-one", limits), limits
+        )
+        vendor_two = _item(
+            0x0054_0031, ttlv.ttlv_value_byte_string(b"vendor-two", limits), limits
+        )
+        attributes = _structure_with_children(0x0042_0125, limits, [vendor_one, vendor_two])
+        key_value_item = _structure_with_children(
+            0x0042_0045, limits, [key_material, attributes]
+        )
+        format_type = _item(0x0042_0042, ttlv.ttlv_value_enumeration(1), limits)
+        source_items = [key_material, vendor_one, vendor_two, attributes, key_value_item, format_type]
+        try:
+            with KeyBlock.from_fields([format_type, key_value_item]) as block:
+                nested_key_value = block.key_value_item()
+                assert isinstance(nested_key_value, ttlv.TtlvItem)
+                with nested_key_value:
+                    assert _item_type(nested_key_value) is ttlv.ItemType.Structure
+                    assert _child_tags(nested_key_value) == [0x0042_0043, 0x0042_0125]
+                    with KeyValue.from_item(1, nested_key_value) as typed_key_value:
+                        nested_material = typed_key_value.key_material_item()
+                        nested_attributes = typed_key_value.attributes_item()
+                        assert nested_material is not None and nested_attributes is not None
+                        with nested_material, nested_attributes:
+                            assert _item_bytes(nested_material) == b"key-data"
+                            assert _child_tags(nested_attributes) == [0x0054_0031, 0x0054_0031]
+                            assert _child_byte_strings(nested_attributes) == [
+                                "vendor-one", "vendor-two"
+                            ]
+                        assert not nested_key_value.closed
+            for item in source_items:
+                assert not item.closed
+        finally:
+            for item in source_items:
+                item.close()
+
+        method = _item(0x0042_009E, ttlv.ttlv_value_enumeration(0x8000_0020), limits)
+        encryption_id = _item(
+            0x0042_0094, ttlv.ttlv_value_text_string(b"encryption-id", limits), limits
+        )
+        mac_id = _item(0x0042_0094, ttlv.ttlv_value_text_string(b"mac-id", limits), limits)
+        encryption_vendor_one = _item(
+            0x0054_0031, ttlv.ttlv_value_byte_string(b"vendor-one", limits), limits
+        )
+        encryption_vendor_two = _item(
+            0x0054_0031, ttlv.ttlv_value_byte_string(b"vendor-two", limits), limits
+        )
+        mac_vendor_one = _item(
+            0x0054_0031, ttlv.ttlv_value_byte_string(b"vendor-one", limits), limits
+        )
+        mac_vendor_two = _item(
+            0x0054_0031, ttlv.ttlv_value_byte_string(b"vendor-two", limits), limits
+        )
+        encryption_info = _structure_with_children(
+            0x0042_0036,
+            limits,
+            [encryption_id, encryption_vendor_one, encryption_vendor_two],
+        )
+        mac_info = _structure_with_children(
+            0x0042_004E, limits, [mac_id, mac_vendor_one, mac_vendor_two]
+        )
+        wrap_sources = [
+            method,
+            encryption_id,
+            mac_id,
+            encryption_vendor_one,
+            encryption_vendor_two,
+            mac_vendor_one,
+            mac_vendor_two,
+            encryption_info,
+            mac_info,
+        ]
+        try:
+            with KeyWrappingData.from_fields(
+                [method, encryption_info, mac_info]
+            ) as wrapping:
+                nested_encryption = wrapping.encryption_key_information_item()
+                nested_mac = wrapping.mac_signature_key_information_item()
+                assert nested_encryption is not None and nested_mac is not None
+                with nested_encryption, nested_mac:
+                    expected_tags = [0x0042_0094, 0x0054_0031, 0x0054_0031]
+                    assert _child_tags(nested_encryption) == expected_tags
+                    assert _child_byte_strings(nested_encryption) == [
+                        "encryption-id", "vendor-one", "vendor-two"
+                    ]
+                    assert _child_tags(nested_mac) == expected_tags
+                    assert _child_byte_strings(nested_mac) == [
+                        "mac-id", "vendor-one", "vendor-two"
+                    ]
+                assert not wrapping.closed
+
+            wrapped_value = _item(
+                0x0042_0045, ttlv.ttlv_value_byte_string(b"wrapped", limits), limits
+            )
+            wrapping_item = _structure_with_children(
+                0x0042_0046, limits, [method, encryption_info]
+            )
+            wrapped_sources = [wrapped_value, wrapping_item]
+            with KeyBlock.from_fields([format_type, wrapped_value, wrapping_item]) as wrapped_block:
+                nested_wrapped_value = wrapped_block.key_value_item()
+                assert nested_wrapped_value is not None
+                with nested_wrapped_value:
+                    assert _item_type(nested_wrapped_value) is ttlv.ItemType.ByteString
+                    assert _item_bytes(nested_wrapped_value) == b"wrapped"
+            for item in wrapped_sources:
+                item.close()
+        finally:
+            for item in wrap_sources:
+                item.close()
 
 
 def test_dispatches_all_nine_known_object_types_and_reads_key_structures():

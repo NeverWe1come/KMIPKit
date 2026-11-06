@@ -3,6 +3,7 @@ package org.kmipkit.typed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -354,6 +355,82 @@ final class ManagedObjectParityTest {
     }
 
     @Test
+    void navigatesOwnedNestedKeyNodesAndPreservesVendorChildren() {
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvItem keyMaterial = item(0x00420043,
+                     TtlvValue.ByteString("key-data".getBytes(), limits), limits);
+                TtlvItem vendorOne = item(0x00540031,
+                     TtlvValue.ByteString("vendor-one".getBytes(), limits), limits);
+                TtlvItem vendorTwo = item(0x00540031,
+                     TtlvValue.ByteString("vendor-two".getBytes(), limits), limits);
+                TtlvItem attributes = structureItem(0x00420125, limits, vendorOne, vendorTwo);
+                TtlvItem keyValueItem = structureItem(
+                        0x00420045, limits, keyMaterial, attributes);
+                TtlvItem format = item(0x00420042, TtlvValue.Enumeration(1), limits);
+                KeyBlock block = KeyBlock.fromFields(List.of(format, keyValueItem));
+                TtlvItem nestedKeyValue = block.keyValueItem()) {
+            assertEquals(TtlvItemType.Structure, itemType(nestedKeyValue));
+            assertEquals(List.of(0x00420043, 0x00420125), childTags(nestedKeyValue));
+            try (KeyValue typedKeyValue = KeyValue.fromItem(1, nestedKeyValue);
+                    TtlvItem nestedMaterial = typedKeyValue.keyMaterialItem();
+                    TtlvItem nestedAttributes = typedKeyValue.attributesItem()) {
+                assertArrayEquals("key-data".getBytes(), byteValue(nestedMaterial));
+                assertEquals(List.of(0x00540031, 0x00540031), childTags(nestedAttributes));
+                assertEquals(List.of("vendor-one", "vendor-two"), childByteStrings(nestedAttributes));
+            }
+        }
+
+        try (TtlvItem method = item(0x0042009e,
+                     TtlvValue.Enumeration(0x80000020L), limits);
+                TtlvItem encryptionId = item(0x00420094,
+                     TtlvValue.TextString("encryption-id".getBytes(), limits), limits);
+                TtlvItem encryptionVendorOne = item(0x00540031,
+                     TtlvValue.ByteString("vendor-one".getBytes(), limits), limits);
+                TtlvItem encryptionVendorTwo = item(0x00540031,
+                     TtlvValue.ByteString("vendor-two".getBytes(), limits), limits);
+                TtlvItem encryptionInfo = structureItem(
+                        0x00420036, limits, encryptionId, encryptionVendorOne, encryptionVendorTwo);
+                TtlvItem macId = item(0x00420094,
+                     TtlvValue.TextString("mac-id".getBytes(), limits), limits);
+                TtlvItem macVendorOne = item(0x00540031,
+                     TtlvValue.ByteString("vendor-one".getBytes(), limits), limits);
+                TtlvItem macVendorTwo = item(0x00540031,
+                     TtlvValue.ByteString("vendor-two".getBytes(), limits), limits);
+                TtlvItem macInfo = structureItem(
+                        0x0042004e, limits, macId, macVendorOne, macVendorTwo);
+                KeyWrappingData wrapping = KeyWrappingData.fromFields(
+                        List.of(method, encryptionInfo, macInfo));
+                TtlvItem nestedEncryption = wrapping.encryptionKeyInformationItem();
+                TtlvItem nestedMac = wrapping.macSignatureKeyInformationItem()) {
+            assertEquals(
+                    List.of(0x00420094, 0x00540031, 0x00540031), childTags(nestedEncryption));
+            assertEquals(
+                    List.of("encryption-id", "vendor-one", "vendor-two"),
+                    childByteStrings(nestedEncryption));
+            assertEquals(
+                    List.of(0x00420094, 0x00540031, 0x00540031), childTags(nestedMac));
+            assertEquals(
+                    List.of("mac-id", "vendor-one", "vendor-two"), childByteStrings(nestedMac));
+        }
+
+        try (TtlvItem method = item(0x0042009e, TtlvValue.Enumeration(1), limits);
+                TtlvItem uniqueId = item(0x00420094,
+                        TtlvValue.TextString("wrapping-key".getBytes(), limits), limits);
+                TtlvItem keyInfo = structureItem(0x00420036, limits, uniqueId);
+                TtlvItem wrappingData = structureItem(0x00420046, limits, method, keyInfo);
+                TtlvItem format = item(0x00420042, TtlvValue.Enumeration(1), limits);
+                TtlvItem wrapped = item(0x00420045,
+                        TtlvValue.ByteString("wrapped".getBytes(), limits), limits);
+                KeyBlock wrappedBlock = KeyBlock.fromFields(List.of(format, wrapped, wrappingData));
+                TtlvItem wrappedView = wrappedBlock.keyValueItem();
+                KeyBlock emptyBlock = KeyBlock.fromFields(List.of(format))) {
+            assertEquals(TtlvItemType.ByteString, itemType(wrappedView));
+            assertArrayEquals("wrapped".getBytes(), byteValue(wrappedView));
+            assertNull(emptyBlock.keyValueItem());
+        }
+    }
+
+    @Test
     void typedReadersCoverEveryTransparentKeyFormat() {
         CodecLimits limits = CodecLimits.defaults();
         try (TtlvItem key = item(0x0042003f,
@@ -449,5 +526,58 @@ final class ManagedObjectParityTest {
     private static TtlvItem keyBlock(CodecLimits limits) {
         return structureItem(0x00420040, limits,
                 item(0x00420042, TtlvValue.Enumeration(1), limits));
+    }
+
+    private static TtlvItemType itemType(TtlvItem item) {
+        try (TtlvItemView view = item.view()) {
+            return view.itemType();
+        }
+    }
+
+    private static List<Integer> childTags(TtlvItem item) {
+        try (TtlvItemView view = item.view();
+                TtlvValueView value = view.value();
+                TtlvStructureView structure = value.structure()) {
+            List<Integer> tags = new java.util.ArrayList<>();
+            for (long index = 0; index < structure.itemCount(); index++) {
+                try (TtlvItemView child = structure.itemAt(index); Tag tag = child.tag()) {
+                    tags.add(tag.raw());
+                }
+            }
+            return tags;
+        }
+    }
+
+    private static List<String> childByteStrings(TtlvItem item) {
+        try (TtlvItemView view = item.view();
+                TtlvValueView value = view.value();
+                TtlvStructureView structure = value.structure()) {
+            List<String> values = new java.util.ArrayList<>();
+            for (long index = 0; index < structure.itemCount(); index++) {
+                try (TtlvItemView child = structure.itemAt(index);
+                        TtlvValueView childValue = child.value()) {
+                    values.add(bytes(childValue));
+                }
+            }
+            return values;
+        }
+    }
+
+    private static byte[] byteValue(TtlvItem item) {
+        try (TtlvItemView view = item.view(); TtlvValueView value = view.value()) {
+            return byteArray(value);
+        }
+    }
+
+    private static String bytes(TtlvValueView value) {
+        return new String(byteArray(value));
+    }
+
+    private static byte[] byteArray(TtlvValueView value) {
+        byte[] bytes = new byte[(int) value.byteLength()];
+        for (int index = 0; index < bytes.length; index++) {
+            bytes[index] = (byte) value.byteAt(index);
+        }
+        return bytes;
     }
 }

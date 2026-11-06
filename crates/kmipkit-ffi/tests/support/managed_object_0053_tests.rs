@@ -151,6 +151,11 @@ unsafe extern "C" {
         field_tag: u32,
         expected_byte_length: u64,
     ) -> i32;
+    fn kmipkit_0053_managed_nested_nodes_roundtrip(
+        key_block: *mut kmipkit_ttlv_item_t,
+        wrapped_key_block: *mut kmipkit_ttlv_item_t,
+        key_wrapping_data: *mut kmipkit_ttlv_item_t,
+    ) -> i32;
 }
 
 fn tag(raw: u32) -> kmipkit_ttlv::Tag {
@@ -172,6 +177,14 @@ fn transparent_material_item(format_raw: u32, fields: impl IntoIterator<Item = I
     KeyMaterial::structure(format_raw, structure)
         .expect("transparent material matches its model")
         .into_item()
+}
+
+fn structure_item_with_fields(raw_tag: u32, fields: impl IntoIterator<Item = Item>) -> Item {
+    let mut structure = Structure::new();
+    for field in fields {
+        structure.try_push(field).expect("nested field fits");
+    }
+    Item::new(tag(raw_tag), Value::structure(structure)).expect("nested structure Item")
 }
 
 fn all_objects() -> [(u32, Item); 9] {
@@ -748,6 +761,97 @@ fn compiled_c_consumer_reads_typed_managed_fields_by_owner_and_tag() {
         &[],
         SUCCESS,
     );
+}
+
+#[test]
+fn compiled_c_consumer_navigates_owned_nested_key_nodes_and_vendor_fields() {
+    let key_material = KeyMaterial::byte_string(1, b"key-data".to_vec())
+        .expect("raw Key Material")
+        .into_item();
+    let attributes = structure_item_with_fields(
+        0x0042_0125,
+        [
+            Item::new(tag(0x0054_0031), Value::byte_string(b"vendor-one".to_vec()))
+                .expect("first vendor attribute"),
+            Item::new(tag(0x0054_0031), Value::byte_string(b"vendor-two".to_vec()))
+                .expect("repeated vendor attribute"),
+        ],
+    );
+    let key_value = structure_item_with_fields(0x0042_0045, [key_material, attributes]);
+    let key_block = structure_item_with_fields(
+        0x0042_0040,
+        [
+            Item::new(tag(0x0042_0042), Value::enumeration(1)).expect("Key Format Type"),
+            key_value,
+        ],
+    );
+    let key_block = KeyBlock::try_from_item(key_block)
+        .expect("valid plaintext Key Block")
+        .try_into_item()
+        .expect("Key Block Item");
+
+    let key_information = |outer_tag: u32, unique_id: &[u8]| {
+        structure_item_with_fields(
+            outer_tag,
+            [
+                Item::new(
+                    tag(0x0042_0094),
+                    Value::text_string(String::from_utf8(unique_id.to_vec()).expect("UTF-8 id")),
+                )
+                .expect("Unique Identifier"),
+                Item::new(tag(0x0054_0031), Value::byte_string(b"vendor-one".to_vec()))
+                    .expect("first vendor child"),
+                Item::new(tag(0x0054_0031), Value::byte_string(b"vendor-two".to_vec()))
+                    .expect("repeated vendor child"),
+            ],
+        )
+    };
+    let wrapping_data = structure_item_with_fields(
+        0x0042_0046,
+        [
+            Item::new(tag(0x0042_009e), Value::enumeration(0x8000_0020))
+                .expect("open Wrapping Method"),
+            key_information(0x0042_0036, b"encryption-id"),
+            key_information(0x0042_004e, b"mac-id"),
+        ],
+    );
+    let wrapping_data = KeyWrappingData::try_from_item(wrapping_data)
+        .expect("valid wrapping data")
+        .into_item()
+        .expect("Key Wrapping Data Item");
+
+    let wrapped_key_block = structure_item_with_fields(
+        0x0042_0040,
+        [
+            Item::new(tag(0x0042_0042), Value::enumeration(1)).expect("Key Format Type"),
+            Item::new(tag(0x0042_0045), Value::byte_string(b"wrapped".to_vec()))
+                .expect("wrapped Key Value"),
+            wrapping_data
+                .try_clone()
+                .expect("preserve wrapping data for wrapped Key Block"),
+        ],
+    );
+    let wrapped_key_block = KeyBlock::try_from_item(wrapped_key_block)
+        .expect("valid wrapped Key Block")
+        .try_into_item()
+        .expect("wrapped Key Block Item");
+
+    let key_block_handle = make_handle(Kind::Item, HandleValue::Item(key_block));
+    let wrapped_block_handle = make_handle(Kind::Item, HandleValue::Item(wrapped_key_block));
+    let wrapping_handle = make_handle(Kind::Item, HandleValue::Item(wrapping_data));
+    // SAFETY: All parent handles remain live during the C traversal. The C consumer releases each returned owned child Item.
+    let status = unsafe {
+        kmipkit_0053_managed_nested_nodes_roundtrip(
+            key_block_handle,
+            wrapped_block_handle,
+            wrapping_handle,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    for handle in [key_block_handle, wrapped_block_handle, wrapping_handle] {
+        assert!(reference_handle(handle, Kind::Item).is_ok());
+        kmipkit_ttlv_item_release(handle);
+    }
 }
 
 #[test]
