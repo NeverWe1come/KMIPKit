@@ -14,9 +14,39 @@ ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "tests" / "fixtures" / "api" / "operation_catalog_parity.tsv"
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 PYTHON_VALUES = ROOT / "bindings" / "python" / "src" / "kmipkit" / "protocol_values.py"
+NORMATIVE_CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+
+
+def _python_operation_values() -> dict[str, int]:
+    python_values = PYTHON_VALUES.read_text(encoding="utf-8")
+    operation_enum = python_values[python_values.index("class Operation"):]
+    operation_enum = operation_enum[:operation_enum.find("\nclass ", 1)]
+    return {
+        name: int(raw, 16)
+        for name, raw in re.findall(
+            r"^    ([A-Z][A-Z0-9_]*) = 0x([0-9a-fA-F]+)$",
+            operation_enum,
+            re.MULTILINE,
+        )
+    }
 
 
 class OperationCatalogFixtureTests(unittest.TestCase):
+    def test_language_enum_mismatch_is_reported_against_normative_catalog(self) -> None:
+        from tools.api_manifest.operation_catalog_fixture import find_language_value_mismatches
+
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        catalog = json.loads(NORMATIVE_CATALOG.read_text(encoding="utf-8"))
+        operation_values = _python_operation_values()
+        operation_values["ACTIVATE"] += 1
+
+        mismatches = find_language_value_mismatches(manifest, catalog, operation_values)
+
+        self.assertEqual(len(mismatches), 1)
+        self.assertIn("KMIPKIT-ELEM-OP-C2S-ACTIVATE", mismatches[0])
+        self.assertIn("0x00000012", mismatches[0])
+        self.assertIn("0x00000013", mismatches[0])
+
     def test_fixture_keys_every_client_operation_and_uses_its_raw_enum_value(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         operations = [
