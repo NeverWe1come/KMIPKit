@@ -20,6 +20,25 @@ const FIELD_READ_ENUMERATION: u32 = 3;
 const FIELD_READ_INTEGER: u32 = 4;
 const FIELD_READ_BYTES: u32 = 5;
 
+fn managed_value_kind(owner_kind: u32, context_raw: u32) -> Option<ManagedValueKind> {
+    match owner_kind {
+        FIELD_OWNER_MANAGED_OBJECT => Some(ManagedValueKind::ManagedObject(ObjectType::from_raw(
+            context_raw,
+        ))),
+        FIELD_OWNER_KEY_BLOCK if context_raw == 0 => Some(ManagedValueKind::KeyBlock),
+        FIELD_OWNER_KEY_VALUE => Some(ManagedValueKind::KeyValue(KeyFormatType::from_raw(
+            context_raw,
+        ))),
+        FIELD_OWNER_KEY_MATERIAL => Some(ManagedValueKind::KeyMaterial(KeyFormatType::from_raw(
+            context_raw,
+        ))),
+        FIELD_OWNER_KEY_WRAPPING_DATA if context_raw == 0 => {
+            Some(ManagedValueKind::KeyWrappingData)
+        }
+        _ => None,
+    }
+}
+
 fn copy_field_items(
     fields: *mut *mut kmipkit_ttlv_item_t,
     field_count: u64,
@@ -374,19 +393,8 @@ pub extern "C" fn kmipkit_managed_value_field_read(
         if !output_is_valid || (out_bytes.is_null() && byte_capacity != 0) {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let kind = match owner_kind {
-            FIELD_OWNER_MANAGED_OBJECT => {
-                ManagedValueKind::ManagedObject(ObjectType::from_raw(context_raw))
-            }
-            FIELD_OWNER_KEY_BLOCK if context_raw == 0 => ManagedValueKind::KeyBlock,
-            FIELD_OWNER_KEY_VALUE => {
-                ManagedValueKind::KeyValue(KeyFormatType::from_raw(context_raw))
-            }
-            FIELD_OWNER_KEY_MATERIAL => {
-                ManagedValueKind::KeyMaterial(KeyFormatType::from_raw(context_raw))
-            }
-            FIELD_OWNER_KEY_WRAPPING_DATA if context_raw == 0 => ManagedValueKind::KeyWrappingData,
-            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Some(kind) = managed_value_kind(owner_kind, context_raw) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let item = try_ffi!(copy_required_item_handle(item));
         let reader = match ManagedValueReader::try_from_item(kind, item) {
@@ -474,19 +482,8 @@ pub extern "C" fn kmipkit_managed_value_field_item_read(
         // SAFETY: The output pointer was checked and is writable caller-owned storage.
         unsafe { out_present.write(0) };
 
-        let kind = match owner_kind {
-            FIELD_OWNER_MANAGED_OBJECT => {
-                ManagedValueKind::ManagedObject(ObjectType::from_raw(context_raw))
-            }
-            FIELD_OWNER_KEY_BLOCK if context_raw == 0 => ManagedValueKind::KeyBlock,
-            FIELD_OWNER_KEY_VALUE => {
-                ManagedValueKind::KeyValue(KeyFormatType::from_raw(context_raw))
-            }
-            FIELD_OWNER_KEY_MATERIAL => {
-                ManagedValueKind::KeyMaterial(KeyFormatType::from_raw(context_raw))
-            }
-            FIELD_OWNER_KEY_WRAPPING_DATA if context_raw == 0 => ManagedValueKind::KeyWrappingData,
-            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Some(kind) = managed_value_kind(owner_kind, context_raw) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let item = try_ffi!(copy_required_item_handle(item));
         let reader = match ManagedValueReader::try_from_item(kind, item) {
