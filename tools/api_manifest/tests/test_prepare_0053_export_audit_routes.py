@@ -18,6 +18,40 @@ APPROVAL = {
 
 
 class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
+    def test_replaces_only_the_exact_legacy_model_error_approval_record(self) -> None:
+        previous = {
+            "declarationId": "KMIPKIT-0053:exclude:legacy-model-error",
+            "packageId": "rust-kmipkit",
+            "exportName": "kmipkit::ttlv::ModelError::UnsupportedValue",
+            "reason": "The approved KMIPKIT-0004 policy excludes this local error variant.",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/004-generic-ttlv-model/spec.md",
+                "status": "Approved",
+                "requirementIds": ["KMIPKIT-0004-FR-013"],
+            },
+            "evidence": "Exact prior approved route evidence.",
+            "evidencePaths": ["specs/004-generic-ttlv-model/spec.md"],
+            "candidateSpecId": "KMIPKIT-0004",
+        }
+        corrected = {
+            **previous,
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/004-generic-ttlv-model/spec.md",
+                "status": "Approved",
+                "evidence": "KMIPKIT-0004-FR-013 approves excluding these exact local ModelError variants from the cross-language public route inventory.",
+            },
+        }
+
+        merged = prepare_0053_export_audit_routes.merge_declarations(
+            {"publicDeclarations": [], "approvedExclusions": [previous]},
+            [],
+            [corrected],
+        )
+
+        self.assertEqual([corrected], merged["approvedExclusions"])
+
     def test_real_export_audits_merge_with_exact_previously_reviewed_routes(self) -> None:
         root = prepare_0053_export_audit_routes.ROOT
         route_path = root / prepare_0053_export_audit_routes.ROUTE_PATH
@@ -131,6 +165,21 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         )
 
         self.assertEqual([], unknown)
+        expected = {
+            "org.kmipkit.ttlv.TtlvValueView.bytes": "generic_ttlv_model",
+            "org.kmipkit.ttlv.TypedAttribute.close": "typed_object_attributes",
+            "org.kmipkit.ttlv.TypedAttribute.view": "typed_object_attributes",
+            "org.kmipkit.ttlv.TypedAttribute.attribute": "typed_object_attributes",
+            "kmipkit.StandardAttribute.tag": "typed_object_attributes",
+            "kmipkit.TypedAttribute": "typed_object_attributes",
+            "kmipkit.ttlv.ttlv_value_view_bytes": "generic_ttlv_model",
+            "kmipkit.typed_attributes.TypedAttribute.attribute": "typed_object_attributes",
+            "kmipkit.typed_attributes.TypedAttribute.view": "typed_object_attributes",
+            "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.__init__": "typed_cryptographic_parameters",
+        }
+        actual = {row["exportName"]: row["capabilityId"] for row in declarations}
+        for export_name, capability_id in expected.items():
+            self.assertEqual(capability_id, actual[export_name], export_name)
 
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
