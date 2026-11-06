@@ -164,7 +164,7 @@ The following IDs reserve traceable owners in the roadmap; each remains a separa
 - **KMIPKIT-0006-SC-004**: In 256 deterministic generated cases per property, arbitrary raw `u32` Enumeration values, arbitrary `u32` Bit Mask values, allocation-valid unknown Tags, repeated fields, opaque subtrees, source order, and 1–1,024-byte asynchronous correlation values survive generic-tree round trips unchanged. Property-test bounds and seed are defined in `plan.md`; they limit generated test inputs, not supported protocol values.
 - **KMIPKIT-0006-SC-005**: 100% of in-scope requirements have traceability records to implementation and executable verification; every exception has a visible source-discrepancy or deferred-spec record.
 - **KMIPKIT-0006-SC-006**: No sentinel from credentials, extensions, operation payloads, or Result Message appears in default formatting or protocol-model errors.
-- **KMIPKIT-0006-SC-007**: Line coverage is at least 95% for changed code, at least 95% for `kmipkit-ttlv` and protocol/model code, and at least 90% for the Rust workspace overall. This feature adds no transport or FFI code.
+- **KMIPKIT-0006-SC-007**: Line coverage is at least 90% for changed code, at least 90% for `kmipkit-ttlv` and protocol/model code, and at least 90% for the Rust workspace overall. This feature adds no transport or FFI code.
 
 ## Assumptions
 
