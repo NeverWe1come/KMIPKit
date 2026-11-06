@@ -325,6 +325,17 @@ fn resumed_handshake_does_not_reinvoke_the_full_handshake_trust_verifier() {
 }
 
 #[test]
+fn client_config_strictly_disables_0rtt_early_data_for_security() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let configuration = transport_config(&pki, &pki, None, Vec::new());
+    let client = tls::build_client_config(&configuration).expect("valid client config builds");
+    assert!(
+        !client.rustls_config().enable_early_data,
+        "TLS 1.3 0-RTT early data must be disabled per AGENTS.md §8"
+    );
+}
+
+#[test]
 fn ssl_cert_file_override_and_loader_errors_are_isolated_in_child_processes() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let bundle = temporary_path(".pem");
