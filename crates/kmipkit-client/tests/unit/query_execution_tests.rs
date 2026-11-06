@@ -160,13 +160,16 @@ fn query_raw_response_navigates_vendor_ttlv_nested_inside_server_information() {
         0,
         None,
         None,
-        Some(test_structure([test_item(
-            SERVER_INFORMATION,
-            kmipkit_ttlv::Value::structure(server_information),
-        ), test_item(
-            PROTECTION_STORAGE_MASKS,
-            kmipkit_ttlv::Value::structure(test_structure([])),
-        )])),
+        Some(test_structure([
+            test_item(
+                SERVER_INFORMATION,
+                kmipkit_ttlv::Value::structure(server_information),
+            ),
+            test_item(
+                PROTECTION_STORAGE_MASKS,
+                kmipkit_ttlv::Value::structure(test_structure([])),
+            ),
+        ])),
     );
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response,

@@ -297,7 +297,7 @@ fn request_batch_and_extension_accessors_preserve_order_and_values() {
 }
 
 #[test]
-fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
+fn response_header_raw_preserves_order_unknown_fields_and_repetitions() {
     let message = response();
     let header = message
         .header()
@@ -322,10 +322,12 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
             BATCH_COUNT,
         ]
     );
-    let mut items = message.batch_items();
-    let failure = items.next().expect("failure item exists");
-    let success = items.next().expect("success item exists");
-    let pending = items.next().expect("pending item exists");
+}
+
+#[test]
+fn failure_response_payload_raw_is_absent() {
+    let message = response();
+    let failure = message.batch_items().next().expect("failure item exists");
 
     assert_eq!(failure.operation(), Some(7));
     assert_eq!(
@@ -354,7 +356,12 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
         failure.with_asynchronous_correlation_value(<[u8]>::to_vec),
         None
     );
+}
 
+#[test]
+fn success_response_payload_raw_preserves_empty_structure_and_extensions() {
+    let message = response();
+    let success = message.batch_items().nth(1).expect("success item exists");
     assert_eq!(success.operation(), Some(8));
     assert!(
         success
@@ -380,7 +387,12 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
         extension.with_vendor_extension(|value| value.children().len()),
         Some(1)
     );
+}
 
+#[test]
+fn pending_response_payload_raw_preserves_empty_shape_and_correlation() {
+    let message = response();
+    let pending = message.batch_items().nth(2).expect("pending item exists");
     assert_eq!(pending.operation(), Some(9));
     assert!(
         pending

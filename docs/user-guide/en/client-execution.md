@@ -219,6 +219,38 @@ message. Accordingly, the shared success and Pending fixtures omit it, while
 `creation.result-message-on-failure.v1` checks exact text and UTF-8 preservation
 on an Operation Failed result.
 
+## Navigating response TTLV
+
+Each high-level batch response item exposes `raw()` for its decoded Response
+Payload and `response_header_raw()` for the common Response Header. Rust returns
+borrowed `StructureView`s tied to the response item. `None` means the server
+sent no Response Payload; a present empty Structure remains an empty view.
+Use the ordered child items and `Item::as_structure()` to reach any nested
+Structure, including vendor extensions inside a Get `KeyBlock` or Query Server
+Information. Unknown tags, repeated items, item types, values, and source order
+remain available.
+
+C exposes `kmipkit_client_batch_item_response_raw_ttlv` and
+`kmipkit_client_batch_item_response_header_ttlv`. The returned Structure
+handles are owned copies; release them with `kmipkit_ttlv_structure_release`.
+The raw payload function reports an absent payload with `out_present = 0` and a
+null handle. Java's `ClientBatchItemResult.raw()` returns
+`Optional<TtlvStructure>` and `responseHeaderTtlv()` returns an owned
+`TtlvStructure`; close each structure when finished. Python's `BatchItemResult`
+provides `raw()` and `response_header_ttlv()` as owned `ttlv.Structure` values;
+use their context managers or call `close()`.
+
+Foreign-language structures are independent copies and remain usable after
+the response result is closed. KMIPKit zeroizes its owned copies on release.
+Copies or values made by application code remain the application's
+responsibility; Java and Python runtimes do not promise deterministic wiping of
+external copies. Default formatting and errors redact response values. Read
+secret-bearing fields only when needed and do not log them.
+
+`raw()` exposes the decoded TTLV tree, not the received wire bytes. The decoder
+discards padding, so the API does not promise byte-for-byte reproduction of a
+network response.
+
 `Client::new` constructs a production client from an immutable client
 configuration and a validated `TransportConfig`. It accepts raw TTLV over TLS
 or TTLV over HTTPS/HTTP 1.1; it does not accept caller-implemented transports

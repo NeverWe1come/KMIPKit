@@ -228,6 +228,44 @@ descriptivo de error. Por eso los fixtures compartidos de éxito y Pending lo
 omiten y `creation.result-message-on-failure.v1` comprueba el texto y UTF-8
 exactos en una respuesta Operation Failed.
 
+## Navegar por el TTLV de las respuestas
+
+Cada elemento de respuesta de un lote expone `raw()` para el Response Payload
+decodificado y `response_header_raw()` para el Response Header común. Rust
+devuelve vistas `StructureView` prestadas, ligadas a la vida del elemento de
+respuesta. `None` significa que el servidor no envió Response Payload; una
+Structure presente pero vacía sigue siendo una vista vacía. Recorre los
+elementos ordenados y usa `Item::as_structure()` para llegar a cualquier
+Structure anidada, incluidas las extensiones de fabricante dentro del
+`KeyBlock` de Get o de Server Information de Query. Se conservan los tags
+desconocidos, elementos repetidos, tipos, valores y el orden de origen.
+
+C ofrece `kmipkit_client_batch_item_response_raw_ttlv` y
+`kmipkit_client_batch_item_response_header_ttlv`. Las estructuras devueltas son
+copias propiedad del llamador; libéralas con `kmipkit_ttlv_structure_release`.
+La función del payload indica que está ausente con `out_present = 0` y un handle
+nulo. `ClientBatchItemResult.raw()` en Java devuelve
+`Optional<TtlvStructure>` y `responseHeaderTtlv()` devuelve un `TtlvStructure`
+propietario; cierra cada estructura al terminar. `BatchItemResult` de Python
+ofrece `raw()` y `response_header_ttlv()` como estructuras `ttlv.Structure`
+propias; usa sus gestores de contexto o llama a `close()`.
+
+Las estructuras de los otros lenguajes son copias independientes y siguen
+disponibles tras cerrar el resultado de respuesta. KMIPKit pone a cero sus
+copias propias al liberarlas. Las copias o valores que cree la aplicación son
+responsabilidad de esta; los runtimes de Java y Python no garantizan el borrado
+determinista de las copias externas. El formato predeterminado y los errores
+ocultan los valores de las respuestas. Lee los campos que puedan contener
+secretos solo cuando haga falta y no los registres en logs.
+
+`raw()` expone el árbol TTLV decodificado, no los bytes recibidos. El decoder
+descarta el padding, así que la API no promete reproducir byte por byte la
+respuesta de red.
+
+`raw()` expone el árbol TTLV decodificado, no los bytes recibidos por la red. El
+decoder descarta el padding, por lo que la API no promete reproducir una
+respuesta byte por byte.
+
 `Client::new` construye un cliente de producción a partir de una configuración
 inmutable del cliente y un `TransportConfig` validado. Acepta TTLV sobre TLS
 directo o TTLV sobre HTTPS/HTTP 1.1; no acepta transportes implementados por el

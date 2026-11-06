@@ -2732,6 +2732,14 @@ int32_t kmipkit_attribute_set_is_empty(kmipkit_attribute_set_t * attributes, uin
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-006, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_attribute_set_into_items(kmipkit_attribute_set_t * attributes, kmipkit_ttlv_structure_t ** out_items);
+/* Copies the optional raw Response Payload as an independently owned TTLV structure.
+ */
+/* KMIPKIT-0052-FR-002, KMIPKIT-0052-FR-003, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_batch_item_response_raw_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_structure);
+/* Copies the common raw Response Header as an independently owned TTLV structure.
+ */
+/* KMIPKIT-0052-FR-006, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_batch_item_response_header_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_structure);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.
