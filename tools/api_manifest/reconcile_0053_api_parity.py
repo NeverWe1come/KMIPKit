@@ -1231,6 +1231,54 @@ def add_public_declarations(
     return result
 
 
+def _synchronize_capability_mappings(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild capability route lists from their exact ready declarations."""
+    result = copy.deepcopy(manifest)
+    declarations = result.get("publicDeclarations")
+    capabilities = result.get("capabilities")
+    packages = result.get("publicPackages")
+    if not all(isinstance(value, list) for value in (declarations, capabilities, packages)):
+        raise ReconciliationError(
+            "capability mapping synchronization requires declarations, capabilities, and packages"
+        )
+    package_languages = {
+        package.get("id"): package.get("language")
+        for package in packages
+        if isinstance(package, dict)
+    }
+    for capability in capabilities:
+        if not isinstance(capability, dict):
+            raise ReconciliationError("capability mapping record must be an object")
+        scope = capability.get("parityScope")
+        languages = (
+            ("rust",)
+            if scope == "rust-only-adr"
+            else ("c",)
+            if scope == "c-only"
+            else tuple(sorted(REQUIRED_LANGUAGES))
+        )
+        capability_mappings = capability.get("mappings")
+        if not isinstance(capability_mappings, dict):
+            raise ReconciliationError("capability mappings must be an object")
+        for language in languages:
+            capability_mappings[language] = sorted(
+                {
+                    declaration["languageMappings"][language]["name"]
+                    for declaration in declarations
+                    if isinstance(declaration, dict)
+                    and declaration.get("capabilityId") == capability.get("capabilityId")
+                    and declaration.get("declarationState") in {"declared", "verified"}
+                    and isinstance(declaration.get("languageMappings"), dict)
+                    and language in declaration["languageMappings"]
+                    and isinstance(declaration["languageMappings"][language], dict)
+                    and package_languages.get(
+                        declaration["languageMappings"][language].get("packageId")
+                    ) == language
+                }
+            )
+    return result
+
+
 def resolve_public_declarations(
     manifest: dict[str, Any], resolutions: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -1356,6 +1404,7 @@ def main() -> int:
         result = add_public_declarations(
             result, route_data.get("publicDeclarations", [])
         )
+        result = _synchronize_capability_mappings(result)
     except (OSError, json.JSONDecodeError, ReconciliationError) as error:
         print(f"KMIPKIT-0053 manifest reconciliation failed: {error}", file=sys.stderr)
         return 2
