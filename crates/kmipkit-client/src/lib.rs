@@ -57,6 +57,7 @@ mod execute;
 
 /// Internal verification hooks enabled only for repository test consumers.
 #[cfg(feature = "test-support")]
+#[doc(hidden)]
 pub mod test_support {
     use crate::ClientBatchItem;
     use kmipkit_protocol::ProtocolError;
