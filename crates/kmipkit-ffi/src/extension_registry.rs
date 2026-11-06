@@ -10463,6 +10463,53 @@ pub extern "C" fn kmipkit_ttlv_value_view_byte_length(
     })
 }
 
+/// Copies all bytes from a BigInteger, ByteString, or TextString value view.
+///
+/// `capacity` must be at least the byte length reported by
+/// `kmipkit_ttlv_value_view_byte_length`. A null buffer is accepted only when
+/// the value is empty. On any error, this function leaves the buffer untouched.
+/// TextString bytes are copied as their original UTF-8 encoding; ByteString and
+/// BigInteger bytes are copied unchanged. For a non-empty value, the caller
+/// must provide `capacity` writable bytes that do not overlap the value's
+/// backing storage.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_value_view_copy_bytes(
+    view: *mut kmipkit_ttlv_value_view_t,
+    buffer: *mut u8,
+    capacity: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let view = read_handle!(view, ValueView);
+        let HandleValue::ValueView(value) = &view.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let length = try_ffi!(extract_value(value, |value| match value {
+            ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) =>
+                u64::try_from(bytes.len()).ok(),
+            ValueView::TextString(text) => u64::try_from(text.len()).ok(),
+            _ => None,
+        }));
+        if capacity < length || (length != 0 && buffer.is_null()) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if length != 0 {
+            try_ffi!(value.with_value(|value| {
+                let bytes = match value {
+                    ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) => bytes,
+                    ValueView::TextString(text) => text.as_bytes(),
+                    _ => return Err(ERROR_INVALID_INPUT),
+                };
+                // SAFETY: For non-empty values, the C contract requires `buffer` to point to
+                // `capacity` writable bytes that do not overlap the retained TTLV value. The
+                // required byte length was checked against `capacity` before this copy.
+                unsafe { ptr::copy_nonoverlapping(bytes.as_ptr(), buffer, bytes.len()) };
+                Ok(())
+            }));
+        }
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_ttlv_value_view_byte_at(
     view: *mut kmipkit_ttlv_value_view_t,
