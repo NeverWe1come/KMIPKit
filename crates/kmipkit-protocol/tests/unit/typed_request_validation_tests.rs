@@ -853,8 +853,7 @@ fn derive_key_validation_checks_known_derivation_parameter_extensions() {
 
     assert!(report.issues().iter().any(|issue| {
         issue.code().as_str() == "KMIPKIT-0051-R225"
-            && issue.path().to_string()
-                == "Request Payload.Derivation Parameters.Iteration Count"
+            && issue.path().to_string() == "Request Payload.Derivation Parameters.Iteration Count"
             && issue.source().to_string() == "KMIP v2.1 §7.12, Table 364"
     }));
     assert!(!format!("{report:?}").contains("secret-canary"));

@@ -148,8 +148,7 @@ impl ValidateKmipRequest for ImportRequest {
             || !crate::managed_object::object_tag_matches_type(
                 self.object_type(),
                 object.tag().raw(),
-            )
-        {
+            ) {
             crate::validation::request_issue_report(
                 "KMIPKIT-0051-R092",
                 "Any Object",
@@ -161,17 +160,19 @@ impl ValidateKmipRequest for ImportRequest {
         } else {
             ValidationReport::default()
         };
-        report.append(object.with_value(|value| match value {
-            kmipkit_ttlv::ValueView::Structure(object_structure) => {
-                super::nested::validate_managed_object(
-                    &object_structure,
-                    object.tag().raw(),
-                    &crate::ValidationPath::root()
-                        .field("Request Payload")
-                        .field("Any Object"),
-                )
+        report.append(object.with_value(|value| {
+            match value {
+                kmipkit_ttlv::ValueView::Structure(object_structure) => {
+                    super::nested::validate_managed_object(
+                        &object_structure,
+                        object.tag().raw(),
+                        &crate::ValidationPath::root()
+                            .field("Request Payload")
+                            .field("Any Object"),
+                    )
+                }
+                _ => ValidationReport::default(),
             }
-            _ => ValidationReport::default(),
         }));
         report
     }

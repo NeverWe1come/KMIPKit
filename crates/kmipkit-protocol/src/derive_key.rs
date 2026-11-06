@@ -3,7 +3,9 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ItemType, ModelError, RawTag, Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{
+    Item, ItemType, ModelError, RawTag, Structure, StructureView, Value, ValueView,
+};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
@@ -375,17 +377,9 @@ impl DerivationParameters {
                     ItemType::ByteString,
                     "KMIPKIT-0051-R222",
                 ),
-                DERIVATION_DATA => (
-                    "Derivation Data",
-                    ItemType::ByteString,
-                    "KMIPKIT-0051-R223",
-                ),
+                DERIVATION_DATA => ("Derivation Data", ItemType::ByteString, "KMIPKIT-0051-R223"),
                 SALT => ("Salt", ItemType::ByteString, "KMIPKIT-0051-R224"),
-                ITERATION_COUNT => (
-                    "Iteration Count",
-                    ItemType::Integer,
-                    "KMIPKIT-0051-R225",
-                ),
+                ITERATION_COUNT => ("Iteration Count", ItemType::Integer, "KMIPKIT-0051-R225"),
                 _ => continue,
             };
             let path = crate::ValidationPath::root()
@@ -405,11 +399,7 @@ impl DerivationParameters {
             } else {
                 code
             };
-            report.append(crate::validation::issue_report(
-                issue_code,
-                path,
-                source,
-            ));
+            report.append(crate::validation::issue_report(issue_code, path, source));
         }
         report
     }
