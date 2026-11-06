@@ -291,6 +291,8 @@ fn each_explicit_operation_call_performs_one_exchange_without_retry() {
         assert_eq!(response.items.len(), 1);
         assert_eq!(response.items[0].outcome().operation(), fixture.operation);
         assert_eq!(response.items[0].outcome().result().status().raw(), SUCCESS);
+        assert!(response.items[0].raw().is_some());
+        assert!(response.items[0].response_header_raw().is_some());
     }
 
     assert_eq!(state.borrow().requests.len(), OperationFixture::ALL.len());

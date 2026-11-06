@@ -299,6 +299,8 @@ fn request_batch_and_extension_accessors_preserve_order_and_values() {
 #[test]
 fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
     let message = response();
+    let header = message.header().raw().expect("validated Response Header exists");
+    assert_eq!(header.children().len(), 9);
     let mut items = message.batch_items();
     let failure = items.next().expect("failure item exists");
     let success = items.next().expect("success item exists");
@@ -326,12 +328,14 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
         Some("failure detail".to_owned())
     );
     assert_eq!(failure.with_response_payload(|_| ()), None);
+    assert!(failure.raw().is_none());
     assert_eq!(
         failure.with_asynchronous_correlation_value(<[u8]>::to_vec),
         None
     );
 
     assert_eq!(success.operation(), Some(8));
+    assert!(success.raw().is_some_and(|payload| payload.children().is_empty()));
     assert_eq!(
         success.with_response_payload(|payload| payload.children().len()),
         Some(0)
@@ -353,6 +357,7 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
     );
 
     assert_eq!(pending.operation(), Some(9));
+    assert!(pending.raw().is_some_and(|payload| payload.children().is_empty()));
     assert_eq!(
         pending
             .result_status()
