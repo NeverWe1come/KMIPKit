@@ -99,6 +99,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     def test_reconciles_exact_four_language_routes_and_capabilities(self) -> None:
         result = reconcile_0053_api_parity.reconcile_manifest(self.manifest, self.routes)
+        replay = reconcile_0053_api_parity.reconcile_manifest(result, self.routes)
 
         self.assertEqual("blocked", self.manifest["publicDeclarations"][0]["declarationState"])
         for declaration in result["publicDeclarations"]:
@@ -113,6 +114,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertEqual("verified", capability_states["typed_object_attributes"])
         self.assertEqual("verified", capability_states["request_message_authentication"])
         self.assertEqual("blocked", capability_states["request_validation"])
+        self.assertEqual(result, replay)
         for original, capability in zip(self.manifest["capabilities"], result["capabilities"], strict=True):
             self.assertEqual(original["ownerSpecId"], capability["ownerSpecId"])
             if capability["capabilityState"] == "verified":
@@ -139,6 +141,32 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                         for row in result["capabilities"]}
         self.assertEqual("verified", capabilities["typed_object_attributes"])
         self.assertEqual("blocked", capabilities["request_message_authentication"])
+
+    def test_ignores_unrouted_verified_declarations_with_declared_capability(self) -> None:
+        manifest = copy.deepcopy(self.manifest)
+        declaration = copy.deepcopy(manifest["publicDeclarations"][0])
+        declaration.update(
+            {
+                "declarationId": "previously-verified-unrouted",
+                "declarationState": "verified",
+                "candidateSpecId": "KMIPKIT-0053",
+                "capabilityId": "generic_ttlv_model",
+            }
+        )
+        manifest["publicDeclarations"].append(declaration)
+        manifest["capabilities"].append(
+            {
+                "capabilityId": "generic_ttlv_model",
+                "capabilityState": "declared",
+                "ownerSpecId": "KMIPKIT-0047",
+            }
+        )
+
+        result = reconcile_0053_api_parity.reconcile_manifest(manifest, self.routes)
+
+        states = {row["capabilityId"]: row["capabilityState"]
+                  for row in result["capabilities"]}
+        self.assertEqual("declared", states["generic_ttlv_model"])
 
     def test_rejects_a_general_exclusion_for_typed_capabilities(self) -> None:
         routes = copy.deepcopy(self.routes)
@@ -584,6 +612,43 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             ),
         )
 
+    def test_approved_verified_addition_is_not_left_as_an_unresolved_candidate(self) -> None:
+        declaration = {
+            "declarationId": "approved-candidate-export",
+            "packageId": "c-kmipkit",
+            "kind": "c-symbol",
+            "exportName": "kmipkit_approved_candidate",
+            "capabilityId": "typed_object_attributes",
+            "requirementIds": ["KMIPKIT-0053-FR-002"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "rust": {"packageId": "rust-kmipkit", "name": "test::rust"},
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_approved_candidate"},
+                "java": {"packageId": "java-kmipkit", "name": "Test.approvedCandidate"},
+                "python": {"packageId": "python-kmipkit", "name": "kmipkit.test.approved_candidate"},
+            },
+            "parityEvidenceIds": ["tests/consumer.c"],
+            "candidateSpecId": "KMIPKIT-0053",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Maintainer-approved four-language parity scope.",
+            },
+        }
+
+        result = reconcile_0053_api_parity.add_public_declarations(
+            self.manifest, [declaration]
+        )
+        stored = next(
+            row for row in result["publicDeclarations"]
+            if row["declarationId"] == "approved-candidate-export"
+        )
+
+        self.assertNotIn("candidateSpecId", stored)
+        self.assertEqual(declaration["approvalSource"], stored["approvalSource"])
+
     def test_public_export_cannot_claim_parity_with_a_missing_language(self) -> None:
         declarations = [
             {
@@ -918,6 +983,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         )
         self.assertEqual(correction["to"], source["languageMappings"]["rust"])
         self.assertIn("KMIPKIT-0053-FR-012", source["requirementIds"])
+        self.assertNotIn("candidateSpecId", source)
         self.assertEqual(result, replay)
 
     def test_mapping_correction_rejects_an_unlisted_target(self) -> None:
@@ -975,6 +1041,50 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             reconcile_0053_api_parity.apply_language_mapping_corrections(
                 manifest, [correction]
             )
+
+    def test_verified_0053_export_is_not_an_unresolved_candidate_on_replay(self) -> None:
+        manifest = {
+            "publicDeclarations": [{
+                "declarationId": "already-imported-export",
+                "capabilityId": "typed_managed_objects_and_key_material",
+                "candidateSpecId": "KMIPKIT-0053",
+                "declarationState": "verified",
+            }],
+            "capabilities": [{
+                "capabilityId": "typed_managed_objects_and_key_material",
+                "capabilityState": "verified",
+            }],
+        }
+
+        reconcile_0053_api_parity._finalize_candidate_capabilities(
+            manifest,
+            [{"capabilityId": "typed_managed_objects_and_key_material"}],
+        )
+
+        self.assertEqual(
+            "verified", manifest["capabilities"][0]["capabilityState"]
+        )
+
+    def test_reconciliation_replay_accepts_verified_candidates_on_verified_capabilities(self) -> None:
+        manifest = {
+            "publicDeclarations": [{
+                "declarationId": "already-imported-export",
+                "capabilityId": "typed_managed_objects_and_key_material",
+                "candidateSpecId": "KMIPKIT-0053",
+                "declarationState": "verified",
+            }],
+            "capabilities": [{
+                "capabilityId": "typed_managed_objects_and_key_material",
+                "capabilityState": "verified",
+            }],
+            "approvedExclusions": [],
+        }
+
+        result = reconcile_0053_api_parity.reconcile_candidate_resolutions(
+            manifest, []
+        )
+
+        self.assertEqual(manifest, result)
 
 
 if __name__ == "__main__":
