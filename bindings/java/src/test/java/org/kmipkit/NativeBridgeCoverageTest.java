@@ -268,12 +268,24 @@ final class NativeBridgeCoverageTest {
         byte[] recertifyResponse = (byte[]) invokeTlsFixture("recertifyResponseMessage", new Class<?>[0]);
         byte[] obtainLeaseResponse = (byte[]) invokeTlsFixture("obtainLeaseResponseMessage", new Class<?>[0]);
         byte[] rekeyResponse = (byte[]) invokeTlsFixture("rekeyResponseMessage", new Class<?>[0]);
+        byte[] lifecycleResponse = (byte[]) invokeTlsFixture("lifecycleSuccessResponseMessage", new Class<?>[0]);
+        byte[] setConstraintsResponse = (byte[]) invokeTlsFixture("setConstraintsResponseMessage", new Class<?>[0]);
+        byte[] setDefaultsResponse = (byte[]) invokeTlsFixture("setDefaultsResponseMessage", new Class<?>[0]);
+        byte[] validateResponse = (byte[]) invokeTlsFixture("validateResponseMessage",
+                new Class<?>[] {long.class, byte[].class}, 1L, new byte[] {0x01, 0x02});
+        byte[] rngResponse = (byte[]) invokeTlsFixture("rngOperationResponseMessage", new Class<?>[0]);
+        byte[] splitKeyResponse = (byte[]) invokeTlsFixture("createSplitKeyResponseMessage",
+                new Class<?>[] {int.class}, 3);
+        byte[] rekeyKeyPairResponse = (byte[]) invokeTlsFixture(
+                "rekeyKeyPairResponseMessage", new Class<?>[0]);
         FutureTask<?> peer = new FutureTask<>(() -> invokeTlsFixture(
                 "serveResponses", new Class<?>[] {SSLServerSocket.class, byte[][].class},
                 listener, (Object) new byte[][] {discoverVersionsResponse, getAttributeListResponse,
                         getAttributeListMinimalResponse, exportResponse, getResponse,
                         joinSplitKeyResponse, getAttributesResponse, locateResponse,
-                        recertifyResponse, obtainLeaseResponse, rekeyResponse}));
+                        recertifyResponse, obtainLeaseResponse, rekeyResponse, lifecycleResponse,
+                        setConstraintsResponse, setDefaultsResponse, validateResponse, rngResponse,
+                        splitKeyResponse, rekeyKeyPairResponse}));
         Thread peerThread = new Thread(peer, "kmipkit-native-response-mapper-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -431,7 +443,112 @@ final class NativeBridgeCoverageTest {
                     assertResponseMappers(pending, null);
                 }
             }
-            assertEquals(11, ((List<?>) peer.get(12, TimeUnit.SECONDS)).size());
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.activate(UniqueIdentifier.textString("activate-source"))
+                                .withUniqueBatchItemId(batchItemId(0)))
+                        .add(ClientBatchItem.archive(UniqueIdentifier.textString("archive-source"))
+                                .withUniqueBatchItemId(batchItemId(1)))
+                        .add(ClientBatchItem.destroy(UniqueIdentifier.textString("destroy-source"))
+                                .withUniqueBatchItemId(batchItemId(2)))
+                        .add(ClientBatchItem.recover(UniqueIdentifier.textString("recover-source"))
+                                .withUniqueBatchItemId(batchItemId(3)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult activate = response.itemAt(0);
+                        ClientBatchItemResult archive = response.itemAt(1);
+                        ClientBatchItemResult destroy = response.itemAt(2);
+                        ClientBatchItemResult recover = response.itemAt(3)) {
+                    assertResponseMappers(activate, "activateResponse");
+                    assertResponseMappers(archive, "archiveResponse");
+                    assertResponseMappers(destroy, "destroyResponse");
+                    assertResponseMappers(recover, "recoverResponse");
+                }
+            }
+
+            try (TtlvStructure constraints = TtlvStructure.create();
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.asynchronousIndicator(1)
+                        .add(ClientBatchItem.setConstraints(constraints).withUniqueBatchItemId(batchItemId(0)))
+                        .add(ClientBatchItem.setConstraints(constraints).withUniqueBatchItemId(batchItemId(1)))
+                        .add(ClientBatchItem.setConstraints(constraints).withUniqueBatchItemId(batchItemId(2)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult success = response.itemAt(0);
+                        ClientBatchItemResult failure = response.itemAt(1);
+                        ClientBatchItemResult pending = response.itemAt(2)) {
+                    assertResponseMappers(success, "setConstraintsResponse");
+                    assertResponseMappers(failure, null);
+                    assertResponseMappers(pending, null);
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.asynchronousIndicator(1)
+                        .add(ClientBatchItem.setDefaults().withUniqueBatchItemId(batchItemId(0)))
+                        .add(ClientBatchItem.setDefaults().withUniqueBatchItemId(batchItemId(1)))
+                        .add(ClientBatchItem.setDefaults().withUniqueBatchItemId(batchItemId(2)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult success = response.itemAt(0);
+                        ClientBatchItemResult failure = response.itemAt(1);
+                        ClientBatchItemResult pending = response.itemAt(2)) {
+                    assertResponseMappers(success, "setDefaultsResponse");
+                    assertResponseMappers(failure, null);
+                    assertResponseMappers(pending, null);
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.validate(List.of(),
+                                List.of(UniqueIdentifier.textString("validate-chain")), null)
+                        .withUniqueBatchItemId(batchItemId(0)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "validateResponse");
+                }
+            }
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.rngRetrieve(-17).withUniqueBatchItemId(batchItemId(0)))
+                        .add(ClientBatchItem.rngSeed(new byte[0]).withUniqueBatchItemId(batchItemId(1)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult retrieve = response.itemAt(0);
+                        ClientBatchItemResult seed = response.itemAt(1)) {
+                    assertResponseMappers(retrieve, "rngRetrieveResponse");
+                    assertResponseMappers(seed, "rngSeedResponse");
+                }
+            }
+
+            try (TtlvStructure attributes = TtlvStructure.create();
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.createSplitKey(7, null, 2, 2, 1, null, attributes, null));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult result = response.itemAt(0)) {
+                    assertResponseMappers(result, "createSplitKeyUniqueIdentifiers");
+                }
+            }
+
+            try (TtlvStructure createAttributes = TtlvStructure.create();
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.asynchronousIndicator(1)
+                        .add(ClientBatchItem.create(4, createAttributes, null)
+                                .withUniqueBatchItemId(batchItemId(0)))
+                        .add(ClientBatchItem.rekeyKeyPair(null, null, null, null, null, null, null, null)
+                                .withUniqueBatchItemId(batchItemId(1)))
+                        .add(ClientBatchItem.rekeyKeyPair(null, null, null, null, null, null, null, null)
+                                .withUniqueBatchItemId(batchItemId(2)))
+                        .add(ClientBatchItem.rekeyKeyPair(null, null, null, null, null, null, null, null)
+                                .withUniqueBatchItemId(batchItemId(3)));
+                try (ClientBatchResponse response = client.execute(batch, DEFAULT_CODEC_LIMITS);
+                        ClientBatchItemResult create = response.itemAt(0);
+                        ClientBatchItemResult success = response.itemAt(1);
+                        ClientBatchItemResult failure = response.itemAt(2);
+                        ClientBatchItemResult pending = response.itemAt(3)) {
+                    assertResponseMappers(create, "createResponse");
+                    assertResponseMappers(success, "rekeyKeyPairResponse");
+                    assertResponseMappers(failure, null);
+                    assertResponseMappers(pending, null);
+                }
+            }
+            assertEquals(18, ((List<?>) peer.get(12, TimeUnit.SECONDS)).size());
         } finally {
             listener.close();
         }
@@ -527,7 +644,7 @@ final class NativeBridgeCoverageTest {
         return (byte[]) invokeTlsFixture("uniqueBatchItemId", new Class<?>[] {int.class}, index);
     }
 
-    private static void assertResponseMappers(ClientBatchItemResult result, String expectedGetter)
+    static void assertResponseMappers(ClientBatchItemResult result, String expectedGetter)
             throws Exception {
         for (ResponseGetter getter : responseGetters()) {
             Optional<?> mapped = getter.invoke().apply(result);

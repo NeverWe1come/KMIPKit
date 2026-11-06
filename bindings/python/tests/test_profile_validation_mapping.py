@@ -332,6 +332,137 @@ def test_client_exposes_explicit_profile_exchange_methods() -> None:
     assert callable(client.Client.execute_with_profiles_and_context_and_options)
 
 
+def test_profile_exchange_dispatches_all_context_and_option_combinations(monkeypatch):
+    class ProfileExchangeLib:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, tuple[object, ...]]] = []
+            self.released: list[tuple[str, object]] = []
+            self.context_bytes: list[bytes] = []
+            self.raise_on_next_call = False
+
+        def _execute(self, name: str, *arguments: object) -> int:
+            self.calls.append((name, arguments))
+            if name in {"context", "context_and_options"}:
+                context = arguments[4]
+                state = context.object_states[0]
+                self.context_bytes.append(
+                    client.ffi.buffer(
+                        state.unique_identifier_data,
+                        int(state.unique_identifier_length),
+                    )[:]
+                )
+            if self.raise_on_next_call:
+                self.raise_on_next_call = False
+                raise TypeError("native argument conversion failed")
+            arguments[-1][0] = client.ffi.cast(
+                "kmipkit_client_batch_response_t *", 3
+            )
+            return 0
+
+        def kmipkit_client_execute_with_profiles(self, *arguments: object) -> int:
+            return self._execute("plain", *arguments)
+
+        def kmipkit_client_execute_with_profiles_and_options_v1(
+            self, *arguments: object
+        ) -> int:
+            return self._execute("options", *arguments)
+
+        def kmipkit_client_execute_with_profiles_and_context(
+            self, *arguments: object
+        ) -> int:
+            return self._execute("context", *arguments)
+
+        def kmipkit_client_execute_with_profiles_and_context_and_options_v1(
+            self, *arguments: object
+        ) -> int:
+            return self._execute("context_and_options", *arguments)
+
+        def kmipkit_client_release(self, handle: object) -> None:
+            self.released.append(("client", handle))
+
+        def kmipkit_client_batch_release(self, handle: object) -> None:
+            self.released.append(("batch", handle))
+
+    native = ProfileExchangeLib()
+    result = object()
+    monkeypatch.setattr(client, "lib", native)
+    monkeypatch.setattr(client, "_batch_result", lambda _response, _limits: result)
+    original_records = client._profile_validation_records
+    wipe_buffers: list[tuple[object, int]] = []
+
+    def capture_wipe_buffers(*arguments: object):
+        records = original_records(*arguments)
+        wipe_buffers.extend(records[4])
+        return records
+
+    monkeypatch.setattr(client, "_profile_validation_records", capture_wipe_buffers)
+    client_handle = _handles._wrap_owned_handle(
+        client.Client, client.ffi.cast("kmipkit_client_t *", 1)
+    )
+    batch = _handles._wrap_owned_handle(
+        client.Batch, client.ffi.cast("kmipkit_client_batch_t *", 2)
+    )
+    limits = ttlv.codec_limits_defaults()
+    selection = client.ProfileValidationSelection(("profile-a",))
+    context = client.ProfileValidationContext().with_object_state(
+        0, client.ProfileObjectState("context-sensitive-identifier")
+    )
+    options = client.RequestOptions()
+
+    try:
+        assert client_handle.execute_with_profiles(batch, limits, selection) is result
+        assert (
+            client_handle.execute_with_profiles_and_options(
+                batch, limits, selection, options
+            )
+            is result
+        )
+        assert (
+            client_handle.execute_with_profiles_and_context(
+                batch, limits, selection, context
+            )
+            is result
+        )
+        assert (
+            client_handle.execute_with_profiles_and_context_and_options(
+                batch, limits, selection, context, options
+            )
+            is result
+        )
+
+        assert [name for name, _arguments in native.calls] == [
+            "plain",
+            "options",
+            "context",
+            "context_and_options",
+        ]
+        assert [len(arguments) for _name, arguments in native.calls] == [5, 6, 6, 7]
+        assert native.context_bytes == [
+            b"context-sensitive-identifier",
+            b"context-sensitive-identifier",
+        ]
+        assert len(wipe_buffers) == 2
+        for buffer, length in wipe_buffers:
+            assert client.ffi.buffer(buffer, length)[:] == bytes(length)
+        assert not batch.closed, "unconsumed native batches must be restored to their wrapper"
+
+        native.raise_on_next_call = True
+        with pytest.raises(errors.InvalidInputError):
+            client_handle.execute_with_profiles_and_context(
+                batch, limits, selection, context
+            )
+        assert not batch.closed, "a failed native call must restore the batch handle"
+        assert native.context_bytes[-1] == b"context-sensitive-identifier"
+        buffer, length = wipe_buffers[-1]
+        assert client.ffi.buffer(buffer, length)[:] == bytes(length)
+    finally:
+        batch.close()
+        limits.close()
+        client_handle.close()
+
+    assert [kind for kind, _handle in native.released] == ["batch", "client"]
+
+
 def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() -> None:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
