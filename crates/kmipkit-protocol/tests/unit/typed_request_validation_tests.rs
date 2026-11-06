@@ -318,12 +318,19 @@ fn attribute_mutation_validation_rejects_malformed_vendor_attributes() {
         set.validate(),
         delete.validate(),
     ];
-    assert!(reports.iter().all(|report| {
-        report.issues().iter().any(|issue| {
+    let expected_paths = [
+        "Request Payload.New Attribute.Vendor Attribute",
+        "Request Payload.Current Attribute.Vendor Attribute",
+        "Request Payload.New Attribute.Vendor Attribute",
+        "Request Payload.Current Attribute.Vendor Attribute",
+    ];
+    for (report, expected_path) in reports.iter().zip(expected_paths) {
+        assert!(report.issues().iter().any(|issue| {
             issue.code().as_str() == "KMIPKIT-0051-R283"
+                && issue.path().to_string() == expected_path
                 && issue.source().to_string() == "KMIP v2.1 §4.60, Table 150"
-        })
-    }));
+        }));
+    }
     assert!(!format!("{reports:?}").contains("SECRET_ATTRIBUTE_CANARY"));
 }
 
