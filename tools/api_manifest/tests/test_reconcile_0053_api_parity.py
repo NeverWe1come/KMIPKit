@@ -1311,13 +1311,19 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             "evidence": "Exact QueryResponse route exclusion.",
             "candidateSpecId": "KMIPKIT-0020",
         }
+        unrelated_exclusion = {
+            "packageId": "rust-kmipkit",
+            "exportName": "<T as core::fmt::Debug>::fmt",
+            "candidateSpecId": "KMIPKIT-0053",
+        }
         manifest = {
-            "approvedExclusions": [old_exclusion],
+            "approvedExclusions": [old_exclusion, unrelated_exclusion],
             "publicDeclarations": [{
                 "declarationId": "KMIPKIT-0053:rust-query-response",
                 "packageId": "rust-kmipkit",
                 "exportName": "kmipkit::protocol::QueryResponse",
                 "candidateSpecId": "KMIPKIT-0053",
+            "declarationState": "verified",
             }],
         }
         removal = {
@@ -1330,7 +1336,10 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "path": "specs/053-api-parity-facade/approval-record.md",
                 "status": "Approved",
                 "evidence": (
-                    "KMIPKIT-0053 approves typed results and final Rust/C/Java/Python parity."
+                    "KMIPKIT-0053 approves typed results and final Rust/C/Java/Python parity, "
+                    "superseding only the prior KMIPKIT-0020 Rust-only exclusions for the exact "
+                    "QueryResponse and QueryResponseField declarations listed in "
+                    "additional-api-routes.json."
                 ),
             },
             "evidencePaths": [
@@ -1343,7 +1352,11 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             manifest, [removal]
         )
 
-        self.assertEqual([], result["approvedExclusions"])
+        self.assertEqual([unrelated_exclusion], result["approvedExclusions"])
+        replay = reconcile_0053_api_parity.remove_approved_exclusions(
+            result, [removal]
+        )
+        self.assertEqual(result, replay)
 
     def test_query_exclusion_supersession_requires_exact_owner_and_route(self) -> None:
         manifest = {
@@ -1375,7 +1388,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "kind": "feature-specification",
                 "path": "specs/053-api-parity-facade/approval-record.md",
                 "status": "Approved",
-                "evidence": "KMIPKIT-0053 approves typed results and final parity.",
+                "evidence": (
+                    "KMIPKIT-0053 approves typed results and final Rust/C/Java/Python parity, "
+                    "superseding only the prior KMIPKIT-0020 Rust-only exclusions for the exact "
+                    "QueryResponse and QueryResponseField declarations listed in "
+                    "additional-api-routes.json."
+                ),
             },
             "evidencePaths": [
                 "specs/053-api-parity-facade/spec.md",
