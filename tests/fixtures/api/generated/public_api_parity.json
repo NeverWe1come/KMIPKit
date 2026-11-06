@@ -265866,6 +265866,512 @@
         "requestBoundary": "not-applicable",
         "returnType": "Result<Attribute<D>, AttributeValueError>"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a TTLV Item after validating it as a KMIP ManagedObject value. The input remains caller-owned."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "object_type",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_managed_object_from_item"
+      },
+      "id": "managed_object_from_item",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_managedObjectFromItem",
+        "method": "managedObjectFromItem",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "object_type",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_managed_object_from_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "ManagedObject.from_item",
+        "module": "kmipkit.managed_objects",
+        "parameters": [
+          {
+            "name": "object_type",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "ManagedObject"
+      },
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::ManagedObject",
+        "name": "try_from_item",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "object_type",
+            "type": "u32"
+          },
+          {
+            "name": "item",
+            "type": "Item"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<ManagedObject, ManagedObjectError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a TTLV Item after validating it as a KMIP KeyBlock value. The input remains caller-owned."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_key_block_from_item"
+      },
+      "id": "key_block_from_item",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_keyBlockFromItem",
+        "method": "keyBlockFromItem",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_key_block_from_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "KeyBlock.from_item",
+        "module": "kmipkit.managed_objects",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "KeyBlock"
+      },
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::KeyBlock",
+        "name": "try_from_item",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "Item"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<KeyBlock, ManagedObjectError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a TTLV Item after validating it as a KMIP KeyValue value. The input remains caller-owned."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "format_raw",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_key_value_from_item"
+      },
+      "id": "key_value_from_item",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_keyValueFromItem",
+        "method": "keyValueFromItem",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "formatRaw",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_key_value_from_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "KeyValue.from_item",
+        "module": "kmipkit.managed_objects",
+        "parameters": [
+          {
+            "name": "format_raw",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "KeyValue"
+      },
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::KeyValue",
+        "name": "try_from_item",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "Item"
+          },
+          {
+            "name": "format",
+            "type": "KeyFormatType"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<KeyValue, ManagedObjectError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a TTLV Item after validating it as a KMIP KeyMaterial value. The input remains caller-owned."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "format_raw",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_key_material_from_item"
+      },
+      "id": "key_material_from_item",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_keyMaterialFromItem",
+        "method": "keyMaterialFromItem",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "formatRaw",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_key_material_from_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "KeyMaterial.from_item",
+        "module": "kmipkit.managed_objects",
+        "parameters": [
+          {
+            "name": "format_raw",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "KeyMaterial"
+      },
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::KeyMaterial",
+        "name": "try_from_item",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "Item"
+          },
+          {
+            "name": "format",
+            "type": "KeyFormatType"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<KeyMaterial, ManagedObjectError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a TTLV Item after validating it as a KMIP KeyWrappingData value. The input remains caller-owned."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_key_wrapping_data_from_item"
+      },
+      "id": "key_wrapping_data_from_item",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_keyWrappingDataFromItem",
+        "method": "keyWrappingDataFromItem",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_key_wrapping_data_from_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "KeyWrappingData.from_item",
+        "module": "kmipkit.managed_objects",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "KeyWrappingData"
+      },
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::KeyWrappingData",
+        "name": "try_from_item",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "Item"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<KeyWrappingData, ManagedObjectError>"
+      }
     }
   ],
   "languages": [
@@ -825888,6 +826394,1076 @@
       "requirementIds": [
         "KMIPKIT-0048-FR-001",
         "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "kmipkit-0049-kmipkit-a4d65771ed37ba7894f8",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::ManagedObject::try_from_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_managed_object_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.ManagedObject.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.ManagedObject.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::ManagedObject::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-004",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "kmipkit-0049-kmipkit-0230e868d216da32c662",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::KeyBlock::try_from_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_block_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyBlock.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyBlock.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyBlock::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-004",
+        "KMIPKIT-0049-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "kmipkit-0049-kmipkit-e93c1d30588f2bca71e5",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::KeyValue::try_from_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_value_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyValue.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyValue.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyValue::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-004",
+        "KMIPKIT-0049-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "kmipkit-0049-kmipkit-207f0a319594419dc14b",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::KeyMaterial::try_from_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_material_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyMaterial.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyMaterial.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyMaterial::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-004",
+        "KMIPKIT-0049-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "kmipkit-0049-kmipkit-e4d34ef7ef1eda6eed24",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::KeyWrappingData::try_from_item",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_wrapping_data_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyWrappingData.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyWrappingData.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyWrappingData::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-004",
+        "KMIPKIT-0049-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "managed_object_from_item:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_managed_object_from_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_managed_object_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.ManagedObject.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.ManagedObject.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::ManagedObject::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "managed_object_from_item:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.ManagedObject.fromItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_managed_object_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.ManagedObject.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.ManagedObject.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::ManagedObject::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "managed_object_from_item:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.managed_objects.ManagedObject.from_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_managed_object_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.ManagedObject.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.ManagedObject.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::ManagedObject::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_block_from_item:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_key_block_from_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_block_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyBlock.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyBlock.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyBlock::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_block_from_item:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.KeyBlock.fromItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_block_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyBlock.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyBlock.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyBlock::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_block_from_item:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.managed_objects.KeyBlock.from_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_block_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyBlock.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyBlock.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyBlock::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_value_from_item:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_key_value_from_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_value_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyValue.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyValue.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyValue::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_value_from_item:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.KeyValue.fromItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_value_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyValue.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyValue.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyValue::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_value_from_item:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.managed_objects.KeyValue.from_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_value_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyValue.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyValue.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyValue::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_material_from_item:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_key_material_from_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_material_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyMaterial.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyMaterial.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyMaterial::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_material_from_item:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.KeyMaterial.fromItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_material_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyMaterial.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyMaterial.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyMaterial::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_material_from_item:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.managed_objects.KeyMaterial.from_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_material_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyMaterial.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyMaterial.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyMaterial::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_wrapping_data_from_item:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_key_wrapping_data_from_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_wrapping_data_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyWrappingData.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyWrappingData.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyWrappingData::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_wrapping_data_from_item:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.KeyWrappingData.fromItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_wrapping_data_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyWrappingData.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyWrappingData.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyWrappingData::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_managed_objects_and_key_material",
+      "declarationId": "key_wrapping_data_from_item:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.managed_objects.KeyWrappingData.from_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_key_wrapping_data_from_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.KeyWrappingData.fromItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.managed_objects.KeyWrappingData.from_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::KeyWrappingData::try_from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
+        "bindings/c/tests/managed_object_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+        "bindings/python/tests/test_managed_object_parity.py",
+        "crates/kmipkit-protocol/tests/managed_objects.rs",
+        "crates/kmipkit-protocol/tests/key_structures.rs",
+        "crates/kmipkit-protocol/tests/key_material.rs",
+        "crates/kmipkit-protocol/tests/key_wrapping.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0049-FR-001",
+        "KMIPKIT-0049-FR-002",
+        "KMIPKIT-0049-FR-003",
+        "KMIPKIT-0049-FR-005",
+        "KMIPKIT-0049-FR-007",
+        "KMIPKIT-0053-FR-003",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
         "KMIPKIT-0053-FR-012"
       ]
     }

@@ -30396,4 +30396,29 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit",
         "kmipkit::protocol::Attribute<D>::from_item",
     ),
+    (
+        "kmipkit-0049-kmipkit-a4d65771ed37ba7894f8",
+        "rust-kmipkit",
+        "kmipkit::protocol::ManagedObject::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-0230e868d216da32c662",
+        "rust-kmipkit",
+        "kmipkit::protocol::KeyBlock::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-e93c1d30588f2bca71e5",
+        "rust-kmipkit",
+        "kmipkit::protocol::KeyValue::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-207f0a319594419dc14b",
+        "rust-kmipkit",
+        "kmipkit::protocol::KeyMaterial::try_from_item",
+    ),
+    (
+        "kmipkit-0049-kmipkit-e4d34ef7ef1eda6eed24",
+        "rust-kmipkit",
+        "kmipkit::protocol::KeyWrappingData::try_from_item",
+    ),
 ];

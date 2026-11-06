@@ -31,10 +31,10 @@
 - [x] T018 [US2] Add Python object dispatch/material/extension/redaction/context tests in bindings/python/tests/test_managed_object_parity.py.
 - [x] T019 [US2] Run focused red consumers and record failures in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
-- [ ] T020 [US2] Add C ABI owners/views for nine objects, KeyBlock, KeyValue, material and wrapping forms in crates/kmipkit-ffi/src/extension_registry/managed_objects.rs.
-- [ ] T021 [US2] Add Java closeable owners, views, fallback values and JNI conversion in bindings/java/src/main/java/org/kmipkit/managed/ and bindings/java/native/kmipkit_jni.cpp.
-- [ ] T022 [US2] Add Python closeable owners/views and CFFI conversions in bindings/python/src/kmipkit/managed_objects.py and bindings/python/src/kmipkit/_client_ffi.py.
-- [ ] T023 [US2] Verify exact tags/order/types, unknown fallback, failure cleanup, and zeroization; record results in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T020 [US2] Add C ABI owners/views for nine objects, KeyBlock, KeyValue, material and wrapping forms in crates/kmipkit-ffi/src/extension_registry/managed_objects.rs.
+- [x] T021 [US2] Add Java closeable owners, views, fallback values and JNI conversion in bindings/java/src/main/java/org/kmipkit/managed/ and bindings/java/native/kmipkit_jni.cpp.
+- [x] T022 [US2] Add Python closeable owners/views and CFFI conversions in bindings/python/src/kmipkit/managed_objects.py and bindings/python/src/kmipkit/_client_ffi.py.
+- [x] T023 [US2] Verify exact tags/order/types, unknown fallback, failure cleanup, and zeroization; record results in specs/053-api-parity-facade/implementation-evidence.md.
 - [ ] T024 [US2] Refactor common managed-value conversion and rerun `bindings/c/tests/managed_object_parity_consumer.c`, `bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java`, and `bindings/python/tests/test_managed_object_parity.py`.
 
 ## Phase 4: US3 Cryptographic Parameters and Authentication

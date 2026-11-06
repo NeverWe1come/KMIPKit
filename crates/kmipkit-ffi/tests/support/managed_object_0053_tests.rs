@@ -1,4 +1,8 @@
 use super::*;
+use kmipkit_protocol::{
+    Certificate, CertificateRequest, EncryptionKeyInformation, KeyBlockValue, OpaqueObject, PgpKey,
+    PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
+};
 
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
@@ -41,7 +45,7 @@ unsafe extern "C" {
     ) -> i32;
 }
 
-fn tag(raw: u32) -> RawTag {
+fn tag(raw: u32) -> kmipkit_ttlv::Tag {
     RawTag::new(raw)
         .expect("fixture tag fits")
         .try_checked()
@@ -72,7 +76,12 @@ fn all_objects() -> [(u32, Item); 9] {
                 .expect("opaque object")
                 .into_item(),
         ),
-        (9, PgpKey::try_new(7, key_block()).expect("PGP key").into_item()),
+        (
+            9,
+            PgpKey::try_new(7, key_block())
+                .expect("PGP key")
+                .into_item(),
+        ),
         (
             4,
             PrivateKey::try_new(key_block())
@@ -108,10 +117,7 @@ fn all_objects() -> [(u32, Item); 9] {
 
 fn assert_copied_item(
     source: Item,
-    convert: impl FnOnce(
-        *mut kmipkit_ttlv_item_t,
-        *mut *mut kmipkit_ttlv_item_t,
-    ) -> i32,
+    convert: impl FnOnce(*mut kmipkit_ttlv_item_t, *mut *mut kmipkit_ttlv_item_t) -> i32,
     expected_tag: u32,
 ) {
     let source_handle = make_handle(Kind::Item, HandleValue::Item(source));
@@ -179,7 +185,7 @@ fn compiled_c_consumer_roundtrips_typed_key_components_and_material() {
     let key_block = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("Raw Key Format Type is valid")
         .with_key_value(KeyBlockValue::Plaintext(key_value));
-    let key_block_item = key_block.into_item().expect("valid Key Block");
+    let key_block_item = key_block.try_into_item().expect("valid Key Block");
 
     assert_copied_item(
         material_item,
@@ -226,8 +232,11 @@ fn compiled_c_consumer_reads_wrapping_data_and_rejects_wrong_types() {
         KEY_WRAPPING_DATA,
     );
 
-    let wrong = Item::new(tag(KEY_MATERIAL), Value::text_string("not bytes".to_owned()))
-        .expect("valid but wrong typed material");
+    let wrong = Item::new(
+        tag(KEY_MATERIAL),
+        Value::text_string("not bytes".to_owned()),
+    )
+    .expect("valid but wrong typed material");
     let source = make_handle(Kind::Item, HandleValue::Item(wrong));
     let mut output = ptr::null_mut();
     // SAFETY: Both handles are live test-owned handles and the output slot is valid.
@@ -243,18 +252,20 @@ fn managed_object_unknown_fallback_and_secret_debug_are_safe() {
     let mut structure = Structure::new();
     structure
         .try_push(
-            Item::new(tag(0x0054_0001), Value::byte_string(b"secret-canary".to_vec()))
-                .expect("valid vendor extension"),
+            Item::new(
+                tag(0x0054_0001),
+                Value::byte_string(b"secret-canary".to_vec()),
+            )
+            .expect("valid vendor extension"),
         )
         .expect("extension fits in structure");
-    let item = Item::new(tag(0x0054_0002), Value::structure(structure))
-        .expect("valid vendor object");
+    let item =
+        Item::new(tag(0x0054_0002), Value::structure(structure)).expect("valid vendor object");
     let source = make_handle(Kind::Item, HandleValue::Item(item));
     let mut output = ptr::null_mut();
     // SAFETY: Both handles are live test-owned handles and the output slot is valid.
-    let status = unsafe {
-        kmipkit_0053_managed_object_from_item(0x8000_0001, source, &raw mut output)
-    };
+    let status =
+        unsafe { kmipkit_0053_managed_object_from_item(0x8000_0001, source, &raw mut output) };
     assert_eq!(status, SUCCESS);
     let result = reference_handle(output, Kind::Item).expect("unknown object stays generic");
     let HandleValue::Item(item) = &result.value else {

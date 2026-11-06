@@ -134,11 +134,11 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual(749, len(candidates))
+        self.assertEqual(744, len(candidates))
         self.assertEqual(
             {
                 "typed_object_attributes": 285,
-                "typed_managed_objects_and_key_material": 356,
+                "typed_managed_objects_and_key_material": 351,
                 "typed_cryptographic_parameters": 106,
                 "request_message_authentication": 2,
             },

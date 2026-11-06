@@ -89,16 +89,17 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DeleteAttributeRequest, DerivationMethod, DerivationParameters,
     DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest,
     GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
-    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OpaqueObjectContext, OperationData, PollRequest, ProcessRequest,
-    ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, QueryFunction, QueryRequest,
-    ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, ResponseMessage, ResultStatus, RevocationReason, RevokeRequest,
-    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest,
-    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
+    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyBlock, KeyCompressionType,
+    KeyFormatType, KeyMaterial, KeyValue, KeyWrapType, KeyWrappingData, LocateRequest, LogRequest,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ManagedObject,
+    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OpaqueObjectContext, OperationData, PollRequest, ProcessRequest, ProtocolError,
+    ProtocolErrorKind, QueryAsyncRequestsRequest, QueryFunction, QueryRequest, ReProvisionRequest,
+    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+    ResponseMessage, ResultStatus, RevocationReason, RevokeRequest, RngRetrieveRequest,
+    RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest, SetConstraintsRequest,
+    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
@@ -3218,6 +3219,7 @@ macro_rules! read_handle {
 #[allow(unsafe_code)]
 pub(super) mod client_abi;
 
+mod managed_objects;
 mod typed_attributes;
 
 #[unsafe(no_mangle)]

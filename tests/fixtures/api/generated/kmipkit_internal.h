@@ -2744,6 +2744,26 @@ int32_t kmipkit_client_batch_item_response_header_ttlv(kmipkit_client_batch_item
  */
 /* KMIPKIT-0048-FR-001, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_typed_attribute_from_item(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP ManagedObject value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_managed_object_from_item(uint32_t object_type, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyBlock value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_block_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyValue value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_value_from_item(uint32_t format_raw, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyMaterial value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_material_from_item(uint32_t format_raw, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyWrappingData value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_wrapping_data_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.
