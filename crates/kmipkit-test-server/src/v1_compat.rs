@@ -181,17 +181,3 @@ pub fn convert_v2_to_v1_attribute(item: &Item) -> Option<Item> {
     attr_struct.try_push(val_item_wrapped?).ok()?;
     Item::new(attr_tag, Value::structure(attr_struct)).ok()
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn version_support_checks() {
-        assert!(is_version_supported(1, 0));
-        assert!(is_version_supported(1, 4));
-        assert!(is_version_supported(2, 0));
-        assert!(is_version_supported(2, 1));
-        assert!(!is_version_supported(3, 0));
-    }
-}

@@ -162,7 +162,11 @@ async fn main() {
 
     if print_env {
         if let Some(ref pki_dir) = export_pki {
-            let abs_pki = std::fs::canonicalize(pki_dir).unwrap_or_else(|_| pki_dir.clone());
+            let p = pki_dir.clone();
+            let abs_pki =
+                tokio::task::spawn_blocking(move || std::fs::canonicalize(&p).unwrap_or(p))
+                    .await
+                    .unwrap_or_else(|_| pki_dir.clone());
             println!("\n# KMIP Client Environment Setup:");
             println!("export KMIP_SERVER_ADDR=\"{bound_addr}\"");
             println!("export KMIP_CA_CERT=\"{}/ca.crt\"", abs_pki.display());

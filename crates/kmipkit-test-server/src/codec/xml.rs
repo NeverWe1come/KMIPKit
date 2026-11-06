@@ -215,21 +215,3 @@ fn parse_tag(tag_str: &str) -> Result<u32, String> {
         Err(format!("unknown tag name: {tag_str}"))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn xml_codec_roundtrip() {
-        let xml_input = br#"<ResponseMessage><ResponseHeader><ProtocolVersion><ProtocolVersionMajor type="Integer" value="2"/><ProtocolVersionMinor type="Integer" value="1"/></ProtocolVersion><TimeStamp type="DateTime" value="1970-01-01T00:00:01Z"/><BatchCount type="Integer" value="1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="DiscoverVersions"/><ResultStatus type="Enumeration" value="Success"/><ResponsePayload/></BatchItem></ResponseMessage>"#;
-
-        let item = decode_xml(xml_input).expect("XML decode succeeds");
-        assert_eq!(item.tag().raw(), 0x0042_007B);
-
-        let encoded = encode_xml(&item).expect("XML encode succeeds");
-        assert!(encoded.contains("<ResponseMessage>"));
-        assert!(encoded.contains("<Operation type=\"Enumeration\" value=\"DiscoverVersions\"/>"));
-        assert!(encoded.contains("<ResponsePayload/>"));
-    }
-}

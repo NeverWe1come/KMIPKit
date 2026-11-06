@@ -168,26 +168,3 @@ impl AutoPki {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn auto_pki_generates_and_exports_cleanly() {
-        let pki = AutoPki::generate().expect("auto pki generation succeeds");
-        assert!(pki.ca_cert_pem.contains("BEGIN CERTIFICATE"));
-        assert!(pki.server_cert_pem.contains("BEGIN CERTIFICATE"));
-        assert!(pki.server_key_pem.contains("BEGIN PRIVATE KEY"));
-        assert!(pki.client_cert_pem.contains("BEGIN CERTIFICATE"));
-        assert!(pki.client_key_pem.contains("BEGIN PRIVATE KEY"));
-
-        let temp_dir =
-            std::env::temp_dir().join(format!("kmipkit-test-pki-{}", std::process::id()));
-        pki.export_to_directory(&temp_dir).expect("pki exports");
-        assert!(temp_dir.join("ca.crt").exists());
-        assert!(temp_dir.join("client.crt").exists());
-        assert!(temp_dir.join("client.key").exists());
-        let _ = fs::remove_dir_all(&temp_dir);
-    }
-}

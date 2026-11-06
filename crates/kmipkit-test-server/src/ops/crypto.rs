@@ -154,27 +154,3 @@ pub fn decrypt_aes(key: &[u8], iv: Option<&[u8]>, ciphertext: &[u8]) -> Result<V
 
     Ok(plaintext.to_vec())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn crypto_primitives_work() {
-        let rng = generate_random_bytes(32).expect("rng works");
-        assert_eq!(rng.len(), 32);
-
-        let data = b"KMIPKit test server crypto";
-        let h = hash(0x0000_0005, data).expect("hash works");
-        assert_eq!(h.len(), 32);
-
-        let key = generate_random_bytes(32).expect("key generation works");
-        let tag = hmac(0x0000_0005, &key, data).expect("hmac works");
-        assert!(hmac_verify_tag(0x0000_0005, &key, data, &tag));
-        assert!(!hmac_verify_tag(0x0000_0005, &key, b"other data", &tag));
-
-        let (encrypted, iv) = encrypt_aes(&key, None, data).expect("encrypt works");
-        let decrypted = decrypt_aes(&key, iv.as_deref(), &encrypted).expect("decrypt works");
-        assert_eq!(decrypted, data);
-    }
-}

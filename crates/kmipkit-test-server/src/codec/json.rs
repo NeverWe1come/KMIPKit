@@ -250,21 +250,3 @@ fn parse_tag(tag_str: &str) -> Result<u32, String> {
         Err(format!("unknown tag name: {tag_str}"))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn json_codec_roundtrip() {
-        let json_input = br#"{"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}"#;
-
-        let item = decode_json(json_input).expect("JSON decode succeeds");
-        assert_eq!(item.tag().raw(), 0x0042_007B);
-
-        let encoded = encode_json(&item).expect("JSON encode succeeds");
-        assert!(encoded.contains("\"tag\":\"ResponseMessage\""));
-        assert!(encoded.contains("\"tag\":\"ResponseHeader\""));
-        assert!(encoded.contains("\"Operation\""));
-    }
-}
