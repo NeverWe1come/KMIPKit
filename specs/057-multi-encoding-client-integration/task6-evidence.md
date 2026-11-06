@@ -8,6 +8,7 @@ Date: 2026-11-06
 - **GREEN** — `e8ebf8d44` derives C record field declarations from public `types[].c.fields`, marks the three C wire selectors as `macro`, and regenerates the checked-in API parity outputs. The focused tests and binary C ABI audit then passed.
 - **REFACTOR** — `ad7746319` extracts the C record-layout inventory into `_declared_c_record_fields`; the focused test stayed green.
 - **Follow-up audit baselines** — `109a18a3c` updates exact shared-Rust inventory expectations for the 0057 public surface and teaches the manifest audit test to include the C wire selector macros. The complete API manifest suite passes with these expectations.
+- **Hosted C compile regression and fix** — The first hosted run (`42140440923`) exposed duplicate test-local C record declarations and prototypes that conflicted with the generated internal ABI header. Commit `2370bf1e4` removes those duplicate declarations and uses the generated record typedefs. Strict GCC syntax compilation (`cc -std=c11 -Wall -Wextra -Werror -fsyntax-only`) passed locally. The complete follow-up run (`42141649469`) passed its C consumers, sanitizer, Core, platform coverage, aggregate coverage, script-contract, binding, traceability, security, and SonarCloud checks.
 
 ## Local verification
 
@@ -31,9 +32,9 @@ Date: 2026-11-06
 
 ## External gates still open
 
-- Hosted CI and SonarCloud for the 0057 pull request have not run yet; the draft PR must be opened and all applicable checks reviewed before Task 6 can close.
-- The aggregate coverage gate requires the hosted platform and binding reports above.
+- Hosted CI and SonarCloud for draft PR [#119](https://github.com/NeverWe1come/KMIPKit/pull/119) passed on the follow-up run `42141649469`, including Core on Ubuntu, macOS, and Windows with stable Rust and Rust 1.94, all platform coverage jobs, the selected-scope aggregate coverage gate, and script contracts on all three operating systems.
+- The aggregate coverage gate passed on that run; the local Rust-only percentages above are still not a substitute for its hosted multi-platform and multi-binding reports.
 - Two-independent-implementation KMIP interoperability has not been run. Docker Desktop was unavailable on this host (`docker ps` could not connect to the Linux engine); synthetic peers and OASIS codec vectors are not substitutes for that release gate.
 - The broader Rust export inventory still contains 907 unmatched paths already present on the 0054 base. This PR does not claim those base findings are resolved; their disposition remains a release-level review item.
 
-The OASIS fixture replay boundary and the non-claims around profile support remain documented in [traceability.md](traceability.md). Task 6 is not complete while the hosted gates and independent-server interoperability remain open.
+The OASIS fixture replay boundary and the non-claims around profile support remain documented in [traceability.md](traceability.md). The hosted gates are complete; Task 6 remains open until interoperability against two independent implementations is run.
