@@ -266,6 +266,29 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     /**
+     * Returns the decoded ordered Response Payload as a caller-owned TTLV copy, when present.
+     * Close the returned structure when it is no longer needed. This is not a byte-exact copy of
+     * the received network message.
+     */
+    public Optional<TtlvStructure> raw() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseRawTtlv);
+        return parseOptionalRawTtlv(values);
+    }
+
+    /** Returns a caller-owned TTLV copy of the ordered Response Header. */
+    public TtlvStructure responseHeaderTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long structure = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseHeaderTtlv);
+        if (structure <= 0) {
+            throw new InvalidInputException("native Response Header TTLV is invalid");
+        }
+        return TtlvStructure.fromNative(structure, null);
+    }
+
+    /**
      * Returns the resolved identifier and complete generic TTLV from a successful Get Usage
      * Allocation response. The returned response owns an independent TTLV copy; callers must
      * close it when finished. Closing this batch item does not close the returned response.
@@ -3090,6 +3113,37 @@ public final class ClientBatchItemResult implements AutoCloseable {
         } finally {
             if (!transferred && responseTtlvHandle > 0) {
                 TtlvStructure.fromNative(responseTtlvHandle, null).close();
+            }
+        }
+    }
+
+    static Optional<TtlvStructure> parseOptionalRawTtlv(Object[] values) {
+        long structureHandle = 0;
+        if (values != null && values.length > 1 && values[1] instanceof long[] handles
+                && handles.length == 1 && handles[0] > 0) {
+            structureHandle = handles[0];
+        }
+        boolean transferred = false;
+        try {
+            Object[] tuple = requireTuple(values, 2, "native raw response TTLV is invalid");
+            long[] fields = requireLongArray(tuple[0], 1, "native raw response TTLV is invalid");
+            long[] handles = requireLongArray(tuple[1], 1, "native raw response TTLV is invalid");
+            structureHandle = handles[0] > 0 ? handles[0] : structureHandle;
+            if (!responsePresent(fields)) {
+                if (handles[0] != 0) {
+                    throw new InvalidInputException("absent raw response TTLV contains a structure");
+                }
+                return Optional.empty();
+            }
+            if (handles[0] <= 0) {
+                throw new InvalidInputException("native raw response TTLV is invalid");
+            }
+            TtlvStructure structure = TtlvStructure.fromNative(handles[0], null);
+            transferred = true;
+            return Optional.of(structure);
+        } finally {
+            if (!transferred && structureHandle > 0) {
+                TtlvStructure.fromNative(structureHandle, null).close();
             }
         }
     }

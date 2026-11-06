@@ -4925,6 +4925,62 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_ttlv(
     })
 }
 
+/// Copies the ordered Response Payload for any valid batch result, when present.
+///
+/// The returned structure is caller-owned and remains valid after the result
+/// handle is released. Release it with `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_raw_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let payload = out_slot!(out_payload);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let Some(view) = item.raw() else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(super::clone_structure_view(&view));
+        *payload = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the ordered Response Header for any valid batch result.
+///
+/// The returned structure is caller-owned and remains valid after the result
+/// handle is released. Release it with `kmipkit_ttlv_structure_release`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_header_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_header: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let header = out_slot!(out_header);
+        *present = 0;
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let view = try_ffi!(item.response_header_raw().ok_or(ERROR_INTERNAL));
+        let structure = try_ffi!(super::clone_structure_view(&view));
+        *header = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Reads the raw-preserving Ticket fields for §6.1.12 Delegated Login.
 ///
 /// The returned Ticket Value span is borrowed from `item` and remains valid
