@@ -43,6 +43,12 @@ unsafe extern "C" {
         item: *mut kmipkit_ttlv_item_t,
         out_item: *mut *mut kmipkit_ttlv_item_t,
     ) -> i32;
+    fn kmipkit_0053_managed_object_from_fields(
+        object_type: u32,
+        fields: *const *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
 }
 
 fn tag(raw: u32) -> kmipkit_ttlv::Tag {
@@ -275,4 +281,80 @@ fn managed_object_unknown_fallback_and_secret_debug_are_safe() {
     assert!(!format!("{item:?}").contains("secret-canary"));
     kmipkit_ttlv_item_release(output);
     kmipkit_ttlv_item_release(source);
+}
+
+#[test]
+fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values() {
+    let certificate_value = Item::new(
+        tag(0x0042_001e),
+        Value::byte_string(b"certificate-canary".to_vec()),
+    )
+    .expect("certificate value");
+    let unknown_first = Item::new(
+        tag(0x0054_0010),
+        Value::byte_string(b"vendor-one".to_vec()),
+    )
+    .expect("vendor field");
+    let certificate_type = Item::new(tag(0x0042_001d), Value::enumeration(0x8000_0042))
+        .expect("certificate type");
+    let unknown_repeat = Item::new(
+        tag(0x0054_0010),
+        Value::byte_string(b"vendor-two".to_vec()),
+    )
+    .expect("repeated vendor field");
+    let source_handles = [
+        make_handle(Kind::Item, HandleValue::Item(certificate_value)),
+        make_handle(Kind::Item, HandleValue::Item(unknown_first)),
+        make_handle(Kind::Item, HandleValue::Item(certificate_type)),
+        make_handle(Kind::Item, HandleValue::Item(unknown_repeat)),
+    ];
+    let mut output_handle = ptr::null_mut();
+    // SAFETY: All input handles are live, the pointer array spans four entries, and output is writable.
+    let status = unsafe {
+        kmipkit_0053_managed_object_from_fields(
+            1,
+            source_handles.as_ptr(),
+            source_handles.len() as u64,
+            &raw mut output_handle,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    let output = reference_handle(output_handle, Kind::Item).expect("built certificate");
+    let HandleValue::Item(item) = &output.value else {
+        panic!("output is an Item")
+    };
+    item.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            panic!("certificate is a Structure")
+        };
+        assert_eq!(
+            structure
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            [0x0042_001d, 0x0054_0010, 0x0042_001e, 0x0054_0010]
+        );
+        assert_eq!(
+            structure.children()[0].with_value(|value| match value {
+                ValueView::Enumeration(raw) => *raw,
+                _ => 0,
+            }),
+            0x8000_0042
+        );
+        assert_eq!(
+            structure.children()[2].with_value(|value| match value {
+                ValueView::ByteString(bytes) => bytes.as_slice(),
+                _ => &[],
+            }),
+            b"certificate-canary"
+        );
+    });
+    assert!(source_handles
+        .iter()
+        .all(|source| reference_handle(*source, Kind::Item).is_ok()));
+    kmipkit_ttlv_item_release(output_handle);
+    for source in source_handles {
+        kmipkit_ttlv_item_release(source);
+    }
 }

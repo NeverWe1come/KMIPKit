@@ -159,3 +159,43 @@ def test_dispatches_all_nine_known_object_types_and_reads_key_structures():
                 with ttlv.ttlv_item_view_tag(view) as tag:
                     assert ttlv.tag_value(tag) == 0x0042_0040
 
+
+def test_certificate_from_fields_orders_known_fields_and_reads_named_values():
+    with ttlv.codec_limits_defaults() as limits:
+        certificate_value = _item(
+            0x0042_001E,
+            ttlv.ttlv_value_byte_string(b"certificate-canary", limits),
+            limits,
+        )
+        vendor_first = _item(
+            0x0054_0010, ttlv.ttlv_value_byte_string(b"vendor-one", limits), limits
+        )
+        certificate_type = _item(
+            0x0042_001D, ttlv.ttlv_value_enumeration(0x8000_0042), limits
+        )
+        vendor_repeat = _item(
+            0x0054_0010, ttlv.ttlv_value_byte_string(b"vendor-two", limits), limits
+        )
+    try:
+        with ManagedObject.from_fields(
+            1, [certificate_value, vendor_first, certificate_type, vendor_repeat]
+        ) as managed:
+            assert managed.certificate_type == 0x8000_0042
+            assert managed.certificate_value == b"certificate-canary"
+            with ttlv.ttlv_item_view_from_item(managed) as view:
+                with ttlv.ttlv_item_view_value(view) as value:
+                    with ttlv.ttlv_value_view_structure(value) as structure:
+                        tags = []
+                        for index in range(ttlv.ttlv_structure_view_item_count(structure)):
+                            with ttlv.ttlv_structure_view_item_at(structure, index) as field:
+                                with ttlv.ttlv_item_view_tag(field) as tag:
+                                    tags.append(ttlv.tag_value(tag))
+            assert tags == [0x0042_001D, 0x0054_0010, 0x0042_001E, 0x0054_0010]
+            assert not managed.closed
+        assert all(not field.closed for field in [certificate_value, certificate_type])
+    finally:
+        certificate_value.close()
+        vendor_first.close()
+        certificate_type.close()
+        vendor_repeat.close()
+

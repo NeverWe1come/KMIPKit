@@ -17,8 +17,10 @@ import org.kmipkit.ttlv.KeyValue;
 import org.kmipkit.ttlv.KeyWrappingData;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemView;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 
 final class ManagedObjectParityTest {
     @Test
@@ -136,6 +138,37 @@ final class ManagedObjectParityTest {
                 TtlvItemView keyBlockView = keyBlock.view();
                 Tag keyBlockTag = keyBlockView.tag()) {
             assertEquals(0x00420040, keyBlockTag.raw());
+        }
+    }
+
+    @Test
+    void buildsCertificateInSchemaOrderAndReadsNamedValues() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvItem certificateValue = item(0x0042001e,
+                TtlvValue.ByteString("certificate-canary".getBytes(), limits), limits);
+        TtlvItem vendorFirst = item(0x00540010,
+                TtlvValue.ByteString("vendor-one".getBytes(), limits), limits);
+        TtlvItem certificateType = item(0x0042001d,
+                TtlvValue.Enumeration(0x80000042L), limits);
+        TtlvItem vendorRepeat = item(0x00540010,
+                TtlvValue.ByteString("vendor-two".getBytes(), limits), limits);
+        try (certificateValue; vendorFirst; certificateType; vendorRepeat;
+                ManagedObject managed = ManagedObject.fromFields(1,
+                        List.of(certificateValue, vendorFirst, certificateType, vendorRepeat))) {
+            assertEquals(0x80000042L, managed.certificateType());
+            assertEquals("certificate-canary", new String(managed.certificateValue()));
+            try (TtlvItemView objectView = managed.view();
+                    TtlvValueView objectValue = objectView.value();
+                    TtlvStructureView structure = objectValue.structure()) {
+                assertEquals(4, structure.itemCount());
+                List<Integer> tags = new java.util.ArrayList<>();
+                for (long index = 0; index < structure.itemCount(); index++) {
+                    try (TtlvItemView field = structure.itemAt(index); Tag tag = field.tag()) {
+                        tags.add(tag.raw());
+                    }
+                }
+                assertEquals(List.of(0x0042001d, 0x00540010, 0x0042001e, 0x00540010), tags);
+            }
         }
     }
 
