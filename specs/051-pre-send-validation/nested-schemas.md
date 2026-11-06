@@ -40,9 +40,10 @@ remain in the caller's TTLV tree and are not rejected solely for being unknown.
 
 ## Boundaries
 
-This file records implemented reusable schemas, not closure of all 0051 nested
-validation work. T009a remains open until the remaining audited nested schema
-families have been reconciled and covered by the operation-family tasks.
+This file records implemented reusable schemas. T009a is complete: each of the
+31 public schema identities has a descriptor, and this inventory links each
+audited structure family to its executable evidence. Operation-specific
+validation remains tracked by the family tasks below.
 
 - `Set Constraints` applies constraints to server operations. This API validates
   only the source-defined structure and does not claim that a server supports
