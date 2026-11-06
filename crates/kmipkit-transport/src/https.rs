@@ -496,7 +496,7 @@ async fn exchange_on_worker(
         total_deadline,
         content_type,
     };
-    let (mut session, is_reused) = acquire_https_connection(
+    let mut session = acquire_https_connection(
         &connection_state,
         &settings,
         &control,
@@ -506,19 +506,6 @@ async fn exchange_on_worker(
         driver_cleanup_gate,
     )
     .await?;
-
-    let request_backup = if is_reused {
-        Some(request_owner.try_clone().map_err(|error| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                error,
-            )
-        })?)
-    } else {
-        None
-    };
-
     let result = execute_https_exchange(
         &mut session,
         request_owner,
@@ -529,24 +516,6 @@ async fn exchange_on_worker(
         response_buffer_observer,
     )
     .await;
-
-    if result.is_err()
-        && is_reused
-        && control.delivery_state() == RequestDeliveryState::NotSent
-        && !control.is_finalized()
-    {
-        drop(session);
-        let backup = request_backup.expect("backup exists for reused session");
-        return retry_on_fresh_connection(
-            &settings,
-            &control,
-            backup,
-            max_response_bytes,
-            &connection_state,
-        )
-        .await;
-    }
-
     if result.is_ok() {
         session.io_control.finish_exchange();
         #[cfg(test)]
@@ -565,51 +534,13 @@ async fn exchange_on_worker(
     result
 }
 
-async fn retry_on_fresh_connection(
-    settings: &HttpsExchangeSettings,
-    control: &ExchangeControl,
-    backup: SecretBuffer,
-    max_response_bytes: usize,
-    connection_state: &StdMutex<Option<HttpsConnection>>,
-) -> Result<TransportResponse, TransportError> {
-    let mut fresh_session = connect_https_connection(
-        settings,
-        control.clone(),
-        #[cfg(test)]
-        None,
-        #[cfg(test)]
-        None,
-    )
-    .await?;
-    let retry_result = execute_https_exchange(
-        &mut fresh_session,
-        backup,
-        settings,
-        max_response_bytes,
-        control,
-        #[cfg(test)]
-        None,
-    )
-    .await;
-    if retry_result.is_ok() {
-        fresh_session.io_control.finish_exchange();
-        if fresh_session.is_reusable() {
-            let (completed, _) = control.finish();
-            if completed {
-                *lock_https_connection(connection_state) = Some(fresh_session);
-            }
-        }
-    }
-    retry_result
-}
-
 async fn acquire_https_connection(
     connection_state: &StdMutex<Option<HttpsConnection>>,
     settings: &HttpsExchangeSettings,
     control: &ExchangeControl,
     #[cfg(test)] mut abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] mut cleanup_gate: Option<DriverCleanupGateForTest>,
-) -> Result<(HttpsConnection, bool), TransportError> {
+) -> Result<HttpsConnection, TransportError> {
     // Give the idle HTTP/1 driver a chance to reject bytes queued after the
     // previous response before this exchange can dispatch its request.
     tokio::task::yield_now().await;
@@ -636,7 +567,7 @@ async fn acquire_https_connection(
                         error,
                     )
                 })?;
-            return Ok((existing, true));
+            return Ok(existing);
         }
         existing.set_cleanup_context(
             control.clone(),
@@ -646,7 +577,7 @@ async fn acquire_https_connection(
             None,
         );
     }
-    let conn = connect_https_connection(
+    connect_https_connection(
         settings,
         control.clone(),
         #[cfg(test)]
@@ -654,8 +585,7 @@ async fn acquire_https_connection(
         #[cfg(test)]
         cleanup_gate,
     )
-    .await?;
-    Ok((conn, false))
+    .await
 }
 
 async fn connect_https_connection(
