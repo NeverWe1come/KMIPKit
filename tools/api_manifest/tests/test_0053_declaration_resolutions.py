@@ -187,7 +187,8 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         self.manifest["publicDeclarations"].append(duplicate)
 
         with self.assertRaisesRegex(
-            reconcile_0053_api_parity.ReconciliationError, "candidate IDs must be unique"
+            reconcile_0053_api_parity.ReconciliationError,
+            "candidate declaration IDs must be unique",
         ):
             self._reconcile([self._mapping(self.candidates[0])])
 

@@ -344,6 +344,14 @@ def reconcile_candidate_resolutions(
     if not isinstance(declarations, list):
         raise ReconciliationError("manifest lacks publicDeclarations")
     candidates = [row for row in declarations if row.get("candidateSpecId") == SPEC_ID]
+    candidate_identifiers = [row.get("declarationId") for row in candidates]
+    if any(
+        not isinstance(identifier, str) or not identifier or any(char in identifier for char in "*?")
+        for identifier in candidate_identifiers
+    ):
+        raise ReconciliationError("every candidate needs one exact stable declaration ID")
+    if len(candidate_identifiers) != len(set(candidate_identifiers)):
+        raise ReconciliationError("candidate declaration IDs must be unique")
     candidates_by_id = {row.get("declarationId"): row for row in candidates}
     all_by_id = {row.get("declarationId"): row for row in declarations}
     by_export = {
