@@ -2,7 +2,7 @@
 
 use std::fmt::{self, Debug};
 
-use crate::{ItemType, ModelError, Tag, Value, ValueView};
+use crate::{ItemType, ModelError, StructureView, Tag, Value, ValueView};
 
 /// A typed KMIP item with an allocation-checked tag.
 pub struct Item {
@@ -69,6 +69,19 @@ impl Item {
     /// cannot return a reference borrowed from the item.
     pub fn with_value<R>(&self, callback: impl for<'a> FnOnce(ValueView<'a>) -> R) -> R {
         callback(self.value.as_view())
+    }
+
+    /// Borrows this item's value as an ordered Structure when its Item Type is
+    /// Structure.
+    ///
+    /// The returned view retains child order, repeated tags, unknown values,
+    /// and nested structures. It borrows this Item and cannot outlive it.
+    #[must_use]
+    pub fn as_structure(&self) -> Option<StructureView<'_>> {
+        match self.value.as_view() {
+            ValueView::Structure(structure) => Some(structure),
+            _ => None,
+        }
     }
 
     pub(crate) fn zeroize_payloads(&mut self) {
