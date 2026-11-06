@@ -702,10 +702,7 @@ fn revoke_validation_rejects_compromise_date_for_unrelated_reason() {
 fn validate_request_validation_rejects_an_empty_chain() {
     let report = ValidateRequest::new().validate();
     assert!(!report.is_valid());
-    assert_eq!(
-        report.issues()[0].source().to_string(),
-        "KMIPKIT-0051-P006"
-    );
+    assert_eq!(report.issues()[0].source().to_string(), "KMIPKIT-0051-P006");
 }
 
 #[test]
@@ -1077,6 +1074,20 @@ fn login_validation_checks_optional_usage_limits_structure() {
             && issue.source().to_string() == "KMIP v2.1 §7.40, Table 392"
     }));
     assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
+fn delegated_login_validation_checks_known_rights_members() {
+    let operations = schema_structure([schema_item(
+        0x0042_005c,
+        Value::byte_string(b"not-an-operation-enumeration".to_vec()),
+    )]);
+    let right = schema_structure([schema_item(0x0042_014f, Value::structure(operations))]);
+    let rights = schema_structure([schema_item(0x0042_0150, Value::structure(right))]);
+    let request = DelegatedLoginRequest::new(rights);
+
+    let report = request.validate();
+    assert!(report_has_code(&report, "KMIPKIT-0051-R246"));
 }
 
 #[test]
