@@ -594,6 +594,66 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
             for row in first["publicDeclarations"]
         ))
 
+    def test_java_wrapper_expansion_merges_exact_existing_evidence_idempotently(self) -> None:
+        old = "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+        target = "org.kmipkit.ttlv.KeyBlock.fieldItem"
+        mappings = {
+            "rust": {"packageId": "rust-kmipkit-protocol", "name": "kmipkit_protocol::ManagedValueReader::read_field_item"},
+            "c": {"packageId": "c-kmipkit", "name": "kmipkit_managed_value_field_item_read"},
+            "java": {"packageId": "java-kmipkit", "name": old},
+            "python": {"packageId": "python-kmipkit", "name": "kmipkit.managed_objects.ManagedTtlvItem.field_item"},
+        }
+        canonical = {
+            "declarationId": "managed-field-item:java",
+            "packageId": "java-kmipkit",
+            "kind": "java-member",
+            "exportName": old,
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0053-FR-003"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": mappings,
+            "parityEvidenceIds": ["bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java"],
+            "approvalSource": APPROVAL,
+        }
+        wrapper = {
+            **canonical,
+            "declarationId": "managed-field-item:java:wrapper:keyblock",
+            "exportName": target,
+            "languageMappings": {
+                **mappings,
+                "java": {"packageId": "java-kmipkit", "name": target},
+            },
+            "parityEvidenceIds": ["bindings/java/src/main/java/org/kmipkit/ttlv/KeyBlock.java"],
+        }
+        source = {
+            "publicDeclarations": [canonical, wrapper],
+            "javaStaleMappings": [
+                {
+                    "declarationId": canonical["declarationId"],
+                    "oldName": old,
+                    "observedPublicTargets": [
+                        {"name": old, "owner": "ManagedTtlvValue"},
+                        {"name": target, "owner": "KeyBlock"},
+                    ],
+                }
+            ],
+        }
+
+        first = prepare_0053_export_audit_routes.expand_java_stale_mappings(source)
+        second = prepare_0053_export_audit_routes.expand_java_stale_mappings(first)
+
+        expanded = next(row for row in first["publicDeclarations"] if row["exportName"] == target)
+        self.assertEqual(wrapper["declarationId"], expanded["declarationId"])
+        self.assertEqual(
+            [
+                "bindings/java/src/main/java/org/kmipkit/ttlv/KeyBlock.java",
+                "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+            ],
+            expanded["parityEvidenceIds"],
+        )
+        self.assertEqual(first, second)
+
     def test_normalizes_python_stale_paths_in_all_manifest_rows_idempotently(self) -> None:
         old = "KeyBlock.from_fields"
         corrected = "kmipkit.managed_objects.KeyBlock.from_fields"
