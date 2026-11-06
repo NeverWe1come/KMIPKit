@@ -63,6 +63,20 @@ final class ParametersAuthenticationParityTest {
         }
     }
 
+    @Test
+    void failedAuthenticationAttachmentKeepsTheCallerOwnerLive() {
+        Credential credential = Credential.fromTtlv(credentialStructure());
+        Authentication authentication = Authentication.create(List.of(credential));
+        ClientBatch closedBatch = ClientBatch.create();
+        closedBatch.close();
+        try {
+            assertThrows(InvalidInputException.class, () -> closedBatch.setAuthentication(authentication));
+            assertEquals(1, authentication.credentials().size());
+        } finally {
+            authentication.close();
+        }
+    }
+
     private static TtlvStructure credentialStructure() {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure credential = TtlvStructure.create();

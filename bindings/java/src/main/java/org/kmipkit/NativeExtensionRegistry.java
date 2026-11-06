@@ -88,6 +88,7 @@ public final class NativeExtensionRegistry {
     public static final int GET_ATTRIBUTE_LIST_REQUEST = 66;
     public static final int ATTRIBUTE_SET = 67;
     public static final int HASHED_PASSWORD_TIMESTAMP_SEQUENCE = 68;
+    public static final int CRYPTOGRAPHIC_PARAMETERS = 69;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -150,6 +151,10 @@ public final class NativeExtensionRegistry {
 
     public static native int authenticationCreate(long[] credentials, long[] outAuthentication);
     public static native int authenticationFromTtlv(long structure, long[] outAuthentication);
+    public static native long cryptographicParametersFromFields(
+            boolean[] present, long[] values, byte[] pSource);
+    public static native long cryptographicParametersFromTtlv(long structure);
+    public static native long cryptographicParametersIntoTtlv(long parameters);
     public static native long authenticationCredentialCount(long authentication);
     public static native long authenticationCredentialAt(long authentication, long index);
     public static native long authenticationTtlvView(long authentication);
@@ -443,6 +448,7 @@ public final class NativeExtensionRegistry {
     public static native void clientBatchAddItem(long batch, long item);
     public static native long clientBatchItemAt(long batch, long index);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
+    public static native void clientBatchSetAuthentication(long batch, long authentication);
     public static native void clientBatchSetRequestTimestamp(long batch, long timestamp);
     public static native java.util.OptionalLong clientBatchRequestTimestamp(long batch);
     public static native void clientBatchSetOrderOption(long batch, boolean enabled);

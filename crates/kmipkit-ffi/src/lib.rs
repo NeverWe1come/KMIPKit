@@ -285,6 +285,10 @@ pub struct kmipkit_authentication_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_cryptographic_parameters_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_credential_view_t {
     _private: [u8; 0],
 }
@@ -597,6 +601,51 @@ pub struct kmipkit_profile_validation_selection_v1_t {
     pub profile_id_offsets: *const u64,
     pub profile_id_lengths: *const u64,
     pub profile_id_count: u64,
+}
+
+/// Versioned input for constructing KMIP 2.1 Cryptographic Parameters.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_cryptographic_parameters_fields_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub block_cipher_mode_present: u8,
+    pub block_cipher_mode: u32,
+    pub padding_method_present: u8,
+    pub padding_method: u32,
+    pub hashing_algorithm_present: u8,
+    pub hashing_algorithm: u32,
+    pub key_role_type_present: u8,
+    pub key_role_type: u32,
+    pub digital_signature_algorithm_present: u8,
+    pub digital_signature_algorithm: u32,
+    pub cryptographic_algorithm_present: u8,
+    pub cryptographic_algorithm: u32,
+    pub random_iv_present: u8,
+    pub random_iv: u8,
+    pub iv_length_present: u8,
+    pub iv_length: i32,
+    pub tag_length_present: u8,
+    pub tag_length: i32,
+    pub fixed_field_length_present: u8,
+    pub fixed_field_length: i32,
+    pub invocation_field_length_present: u8,
+    pub invocation_field_length: i32,
+    pub counter_length_present: u8,
+    pub counter_length: i32,
+    pub initial_counter_value_present: u8,
+    pub initial_counter_value: i32,
+    pub salt_length_present: u8,
+    pub salt_length: i32,
+    pub mask_generator_present: u8,
+    pub mask_generator: u32,
+    pub mask_generator_hashing_algorithm_present: u8,
+    pub mask_generator_hashing_algorithm: u32,
+    pub p_source_present: u8,
+    pub p_source: *const u8,
+    pub p_source_length: u64,
+    pub trailer_field_present: u8,
+    pub trailer_field: i32,
 }
 
 /// Caller-owned object state for one request batch item.

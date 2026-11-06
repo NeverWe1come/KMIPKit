@@ -49,6 +49,62 @@ ffi.cdef(
     typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+    typedef struct kmipkit_authentication_t kmipkit_authentication_t;
+    typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
+    typedef struct kmipkit_cryptographic_parameters_fields_v1_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint8_t block_cipher_mode_present;
+        uint32_t block_cipher_mode;
+        uint8_t padding_method_present;
+        uint32_t padding_method;
+        uint8_t hashing_algorithm_present;
+        uint32_t hashing_algorithm;
+        uint8_t key_role_type_present;
+        uint32_t key_role_type;
+        uint8_t digital_signature_algorithm_present;
+        uint32_t digital_signature_algorithm;
+        uint8_t cryptographic_algorithm_present;
+        uint32_t cryptographic_algorithm;
+        uint8_t random_iv_present;
+        uint8_t random_iv;
+        uint8_t iv_length_present;
+        int32_t iv_length;
+        uint8_t tag_length_present;
+        int32_t tag_length;
+        uint8_t fixed_field_length_present;
+        int32_t fixed_field_length;
+        uint8_t invocation_field_length_present;
+        int32_t invocation_field_length;
+        uint8_t counter_length_present;
+        int32_t counter_length;
+        uint8_t initial_counter_value_present;
+        int32_t initial_counter_value;
+        uint8_t salt_length_present;
+        int32_t salt_length;
+        uint8_t mask_generator_present;
+        uint32_t mask_generator;
+        uint8_t mask_generator_hashing_algorithm_present;
+        uint32_t mask_generator_hashing_algorithm;
+        uint8_t p_source_present;
+        const uint8_t *p_source;
+        uint64_t p_source_length;
+        uint8_t trailer_field_present;
+        int32_t trailer_field;
+    } kmipkit_cryptographic_parameters_fields_v1_t;
+    int32_t kmipkit_cryptographic_parameters_from_fields_v1(
+        const kmipkit_cryptographic_parameters_fields_v1_t *fields,
+        kmipkit_cryptographic_parameters_t **out_parameters);
+    int32_t kmipkit_cryptographic_parameters_from_ttlv(
+        kmipkit_ttlv_structure_t *structure,
+        kmipkit_cryptographic_parameters_t **out_parameters);
+    int32_t kmipkit_cryptographic_parameters_into_ttlv(
+        kmipkit_cryptographic_parameters_t *parameters,
+        kmipkit_ttlv_structure_t **out_structure);
+    void kmipkit_cryptographic_parameters_release(
+        kmipkit_cryptographic_parameters_t *parameters);
+    int32_t kmipkit_client_batch_set_authentication(
+        kmipkit_client_batch_t *batch, kmipkit_authentication_t *authentication);
     int32_t kmipkit_attribute_set_create(
         kmipkit_ttlv_structure_t *items, kmipkit_attribute_set_t **out_attribute_set);
     int32_t kmipkit_typed_attribute_from_item(

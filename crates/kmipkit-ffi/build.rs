@@ -134,7 +134,10 @@ fn main() {
 
     let parameters_auth_consumer =
         workspace_root.join("bindings/c/tests/authentication_consumer.c");
-    println!("cargo:rerun-if-changed={}", parameters_auth_consumer.display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        parameters_auth_consumer.display()
+    );
     cc::Build::new()
         .file(parameters_auth_consumer)
         .include(&consumer_header)

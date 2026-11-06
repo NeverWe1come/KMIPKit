@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, Self
 from urllib.parse import urlsplit
 
-from . import errors, extensions, ttlv
+from . import credentials, errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import (
@@ -1483,6 +1483,26 @@ class Batch(_ClientHandle):
                 _raise_abi_status(status)
             finally:
                 item._release_ownership_lock()
+        return self
+
+    def set_authentication(self, authentication: credentials.Authentication) -> Self:
+        """Attach and consume Authentication for this Request Message only."""
+        if not isinstance(authentication, credentials.Authentication):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            batch_pointer = self._pointer()
+            authentication_address = int(
+                _base_ffi.cast("uintptr_t", authentication._pointer())
+            )
+            authentication_pointer = ffi.cast(
+                "kmipkit_authentication_t *", authentication_address
+            )
+            _raise_abi_status(
+                lib.kmipkit_client_batch_set_authentication(
+                    batch_pointer, authentication_pointer
+                )
+            )
+            authentication._take()
         return self
 
     @property

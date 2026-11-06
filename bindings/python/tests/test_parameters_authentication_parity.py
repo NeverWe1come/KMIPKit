@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import kmipkit
+import pytest
 from kmipkit import client, credentials, errors, extensions, ttlv
 
 
@@ -88,5 +89,19 @@ def test_authentication_is_attached_to_the_request_batch_and_owned_on_success():
         assert batch.item_count == 2
     finally:
         batch.close()
+        authentication.close()
+
+
+def test_failed_authentication_attachment_keeps_the_caller_owner_live():
+    credential = credentials.Credential.from_ttlv(_credential_structure())
+    authentication = credentials.Authentication.create([credential])
+    batch = client.Batch.create()
+    batch.close()
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            batch.set_authentication(authentication)
+        assert not authentication.closed
+        assert len(authentication.credentials) == 1
+    finally:
         authentication.close()
 

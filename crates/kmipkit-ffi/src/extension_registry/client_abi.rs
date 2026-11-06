@@ -887,6 +887,48 @@ pub extern "C" fn kmipkit_client_batch_create(out_batch: *mut *mut kmipkit_clien
     })
 }
 
+/// Attaches Authentication to this Request Message and takes ownership on success.
+///
+/// Authentication is encoded once in the Request Header and applies to every Batch Item. It is
+/// not stored in Client configuration. If validation fails, the Authentication handle remains
+/// owned by the caller.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_set_authentication(
+    batch: *mut kmipkit_client_batch_t,
+    authentication: *mut kmipkit_authentication_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if authentication.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let batch_handle = read_handle!(batch, ClientBatch);
+        let HandleValue::ClientBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut batch) = batch.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let authentication_handle = match reference_handle(authentication, Kind::Authentication) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        if !matches!(&authentication_handle.value, HandleValue::Authentication(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(authentication_handle);
+        let authentication = match owned_payload(authentication, Kind::Authentication) {
+            Ok(HandleValue::Authentication(authentication)) => authentication,
+            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        batch.authentication = Some(authentication);
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_add_item(
     batch: *mut kmipkit_client_batch_t,

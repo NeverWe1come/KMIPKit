@@ -22,6 +22,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "opaque_register_context",
     "production_transport",
     "public_binding_surface",
+    "request_message_authentication",
     "response_ttlv_navigation",
     "server_generated_creation",
     "ttlv_wire_codec",
@@ -30420,5 +30421,65 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0049-kmipkit-e4d34ef7ef1eda6eed24",
         "rust-kmipkit",
         "kmipkit::protocol::KeyWrappingData::try_from_item",
+    ),
+    (
+        "kmipkit-0050-kmipkit-b6565b2d2c9f0d1dff8a",
+        "rust-kmipkit",
+        "kmipkit::protocol::CryptographicParameters",
+    ),
+    (
+        "kmipkit-0050-kmipkit-protocol-f8458b4e6ac51c6b1c8f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CryptographicParameters",
+    ),
+    (
+        "kmipkit-0050-kmipkit-6c0f8d0af199158a593e",
+        "rust-kmipkit",
+        "kmipkit::protocol::CryptographicParametersBuilder",
+    ),
+    (
+        "kmipkit-0050-kmipkit-protocol-907f003e18f57633c9bc",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CryptographicParametersBuilder",
+    ),
+    (
+        "kmipkit-0050-kmipkit-5d681bf101d8a0a520b4",
+        "rust-kmipkit",
+        "kmipkit::protocol::CryptographicParametersBuilder::build",
+    ),
+    (
+        "kmipkit-0050-kmipkit-protocol-1849664dd94a3af3af26",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CryptographicParametersBuilder::build",
+    ),
+    (
+        "kmipkit-0050-kmipkit-a4559d418c71fc576c7c",
+        "rust-kmipkit",
+        "kmipkit::ClientBatch::with_authentication",
+    ),
+    (
+        "kmipkit-0050-kmipkit-client-f5d662d81ddfda1eeae2",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatch::with_authentication",
+    ),
+    (
+        "kmipkit-0050-kmipkit-f5f20bd7dbb70e73ee6a",
+        "rust-kmipkit",
+        "kmipkit::protocol::CryptographicParameters::into_ttlv",
+    ),
+    (
+        "kmipkit-0050-kmipkit-8fe1aa9fbf3e4631635a",
+        "rust-kmipkit",
+        "kmipkit::protocol::CryptographicParameters::try_from_ttlv",
+    ),
+    (
+        "kmipkit-0050-kmipkit-protocol-0d68433b535ffa236ce4",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CryptographicParameters::into_ttlv",
+    ),
+    (
+        "kmipkit-0050-kmipkit-protocol-14333acf066cce1fd305",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CryptographicParameters::try_from_ttlv",
     ),
 ];

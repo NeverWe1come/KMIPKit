@@ -92,6 +92,10 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             self.assertNotIn("blockedReason", declaration)
             self.assertEqual({"rust", "c", "java", "python"}, set(declaration["languageMappings"]))
         self.assertTrue(all(item["capabilityState"] == "verified" for item in result["capabilities"]))
+        for original, capability in zip(self.manifest["capabilities"], result["capabilities"], strict=True):
+            self.assertEqual(original["ownerSpecId"], capability["ownerSpecId"])
+            self.assertEqual("Approved", capability["approvalEvidence"]["status"])
+            self.assertTrue(capability["parityEvidenceIds"])
 
     def test_rejects_missing_language_or_evidence_mapping(self) -> None:
         routes = copy.deepcopy(self.routes)
@@ -134,13 +138,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual(744, len(candidates))
+        self.assertEqual(732, len(candidates))
         self.assertEqual(
             {
                 "typed_object_attributes": 285,
                 "typed_managed_objects_and_key_material": 351,
-                "typed_cryptographic_parameters": 106,
-                "request_message_authentication": 2,
+                "typed_cryptographic_parameters": 96,
             },
             {
                 capability_id: sum(
@@ -158,6 +161,9 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         ]
         self.assertEqual(1, len(resolved))
         self.assertEqual("verified", resolved[0]["declarationState"])
+        capabilities = {row["capabilityId"]: row["capabilityState"]
+                        for row in manifest["capabilities"]}
+        self.assertEqual("verified", capabilities["request_message_authentication"])
 
     def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
         route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
@@ -171,6 +177,38 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertTrue(
             set(additions[0]["requirementIds"]).issubset(first["requirementIds"])
         )
+
+    def test_additional_types_are_added_once_with_exact_language_routes(self) -> None:
+        manifest = {"requirementIds": [], "types": []}
+        addition = {
+            "id": "CryptographicParametersFieldsV1",
+            "kind": "struct",
+            "requirementIds": ["KMIPKIT-0053-FR-004", "KMIPKIT-0053-FR-011"],
+            "rust": {"module": "kmipkit_ffi", "name": "CryptographicParametersFieldsV1"},
+            "c": {
+                "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+                "kind": "fixed-width-value",
+                "visibility": "public",
+                "versioned": True,
+                "fields": [{"name": "struct_size", "type": "uint32_t"}],
+            },
+            "java": {"package": "org.kmipkit.protocol", "name": "CryptographicParameters.Builder"},
+            "python": {"module": "kmipkit.cryptographic_parameters", "name": "CryptographicParametersBuilder"},
+        }
+
+        first = reconcile_0053_api_parity.add_additional_types(manifest, [addition])
+        second = reconcile_0053_api_parity.add_additional_types(first, [addition])
+
+        self.assertEqual(first, second)
+        self.assertEqual([addition], first["types"])
+        self.assertEqual(addition["requirementIds"], first["requirementIds"])
+
+    def test_additional_type_cannot_redefine_a_public_type(self) -> None:
+        manifest = {"requirementIds": [], "types": [{"id": "Existing", "kind": "opaque-handle"}]}
+        addition = {"id": "Existing", "kind": "struct"}
+
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.add_additional_types(manifest, [addition])
 
     def test_real_typed_attribute_from_item_route_unblocks_generated_c_surface(self) -> None:
         route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")

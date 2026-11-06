@@ -44,11 +44,11 @@
 - [x] T027 [US3] Add Python parameter/auth tests in bindings/python/tests/test_parameters_authentication_parity.py.
 - [x] T028 [US3] Run red tests and record expected missing routes in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
-- [ ] T029 [US3] Add C ABI typed parameters and batch Authentication via Rust in crates/kmipkit-ffi/src/extension_registry/cryptographic_parameters.rs and client_abi.rs.
-- [ ] T030 [US3] Add Java parameter models, batch Authentication, and JNI lifecycle in bindings/java/src/main/java/org/kmipkit/ and bindings/java/native/kmipkit_jni.cpp.
-- [ ] T031 [US3] Add Python parameter models, batch Authentication, and CFFI declarations in bindings/python/src/kmipkit/ and bindings/python/src/kmipkit/_client_ffi.py.
-- [ ] T032 [US3] Verify all 18 fields, future enums, request-header order, batch scope and no global credentials in the consumer tests; record results in `specs/053-api-parity-facade/implementation-evidence.md`.
-- [ ] T033 [US3] Refactor generated parameter/auth routes and capability contracts in tools/api_manifest/reconcile_0053_api_parity.py.
+- [x] T029 [US3] Add C ABI typed parameters and batch Authentication via Rust in crates/kmipkit-ffi/src/extension_registry/cryptographic_parameters.rs and client_abi.rs.
+- [x] T030 [US3] Add Java parameter models, batch Authentication, and JNI lifecycle in bindings/java/src/main/java/org/kmipkit/ and bindings/java/native/kmipkit_jni.cpp.
+- [x] T031 [US3] Add Python parameter models, batch Authentication, and CFFI declarations in bindings/python/src/kmipkit/ and bindings/python/src/kmipkit/_client_ffi.py.
+- [x] T032 [US3] Verify all 18 fields, future enums, request-header order, batch scope and no global credentials in the consumer tests; record results in `specs/053-api-parity-facade/implementation-evidence.md`.
+- [x] T033 [US3] Refactor generated parameter/auth routes and capability contracts in tools/api_manifest/reconcile_0053_api_parity.py.
 
 ## Phase 5: US4 foreign validation
 ### Red

@@ -50,8 +50,9 @@ use crate::{
     kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
     kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
     kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
-    kmipkit_credential_view_t, kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
-    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_credential_view_t, kmipkit_cryptographic_parameters_fields_v1_t,
+    kmipkit_cryptographic_parameters_t, kmipkit_delete_attribute_request_t,
+    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -106,7 +107,8 @@ use kmipkit_protocol::{
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
-    CredentialValidationErrorKind, CredentialValue, DeviceCredential, HashedPasswordCredential,
+    CredentialValidationErrorKind, CredentialValue, CryptographicParameters,
+    CryptographicParametersBuilder, DeviceCredential, HashedPasswordCredential,
     HashedPasswordTimestampSequence, Nonce, UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
@@ -519,6 +521,7 @@ enum Kind {
     Credential,
     CredentialValue,
     Authentication,
+    CryptographicParameters,
     CredentialView,
     AttestationCredential,
     DeviceCredential,
@@ -572,6 +575,7 @@ enum HandleValue {
     Credential(Credential),
     CredentialValue(CredentialValue),
     Authentication(Authentication),
+    CryptographicParameters(CryptographicParameters),
     CredentialView {
         authentication: Arc<Handle>,
         index: usize,
@@ -644,6 +648,7 @@ struct Handle {
 
 struct ClientBatchBuilder {
     items: Vec<ClientBatchItem>,
+    authentication: Option<Authentication>,
     request_time_stamp: Option<i64>,
     batch_order_option: Option<bool>,
     batch_error_continuation_values: Vec<u32>,
@@ -677,6 +682,7 @@ impl ClientBatchBuilder {
     fn new() -> Self {
         Self {
             items: Vec::new(),
+            authentication: None,
             request_time_stamp: None,
             batch_order_option: None,
             batch_error_continuation_values: Vec::new(),
@@ -687,6 +693,9 @@ impl ClientBatchBuilder {
 
     fn into_batch(self) -> ClientBatch {
         let mut batch = ClientBatch::from_items(self.items);
+        if let Some(authentication) = self.authentication {
+            batch = batch.with_authentication(authentication);
+        }
         if let Some(time_stamp) = self.request_time_stamp {
             batch = batch.with_request_time_stamp(time_stamp);
         }
@@ -3222,6 +3231,7 @@ macro_rules! read_handle {
 #[allow(unsafe_code)]
 pub(super) mod client_abi;
 
+mod cryptographic_parameters;
 mod managed_objects;
 mod typed_attributes;
 

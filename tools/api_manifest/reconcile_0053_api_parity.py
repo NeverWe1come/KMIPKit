@@ -188,6 +188,23 @@ def reconcile_manifest(
             language: sorted({row["languageMappings"][language]["name"] for row in all_ready})
             for language in sorted(REQUIRED_LANGUAGES)
         }
+        capability_routes = [
+            routes[row["declarationId"]]
+            for row in candidates
+            if row.get("capabilityId") == capability_id
+            and row["declarationId"] in routes
+            and "exclusion" not in routes[row["declarationId"]]
+        ]
+        if capability_routes:
+            capability.setdefault("ownerSpecId", SPEC_ID)
+            capability["approvalEvidence"] = copy.deepcopy(
+                capability_routes[0]["approvalSource"]
+            )
+            capability["parityEvidenceIds"] = sorted({
+                evidence
+                for route in capability_routes
+                for evidence in route["parityEvidenceIds"]
+            })
         capability.pop("candidateSpecId", None)
         capability.pop("blockedReason", None)
     return result
@@ -246,6 +263,55 @@ def add_additional_functions(
     for identifier, function in additions_by_id.items():
         if identifier not in by_id:
             functions.append(copy.deepcopy(function))
+    result["requirementIds"] = sorted(requirement_ids)
+    return result
+
+
+def add_additional_types(
+    manifest: dict[str, Any], additions: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Add exact, reviewed four-language C ABI type declarations idempotently."""
+    if not isinstance(additions, list):
+        raise ReconciliationError("additional API types must be a list")
+    result = copy.deepcopy(manifest)
+    types = result.get("types")
+    if not isinstance(types, list):
+        raise ReconciliationError("manifest lacks its type inventory")
+    by_id = {row.get("id"): row for row in types}
+    additions_by_id: dict[str, dict[str, Any]] = {}
+    requirement_ids = set(result.get("requirementIds", []))
+    for type_row in additions:
+        if not isinstance(type_row, dict):
+            raise ReconciliationError("additional API type record must be an object")
+        identifier = type_row.get("id")
+        if not isinstance(identifier, str) or not identifier.strip():
+            raise ReconciliationError("additional API type needs a stable ID")
+        if identifier in additions_by_id:
+            raise ReconciliationError("additional API type IDs must be unique")
+        if set(type_row) != {"id", "kind", "requirementIds", "rust", "c", "java", "python"}:
+            raise ReconciliationError("additional API type must define exact Rust, C, Java, and Python mappings")
+        if not isinstance(type_row.get("kind"), str) or not type_row["kind"].strip():
+            raise ReconciliationError("additional API type needs a kind")
+        requirements = type_row.get("requirementIds")
+        if not isinstance(requirements, list) or not requirements or any(
+            not isinstance(requirement, str) or not requirement.strip() for requirement in requirements
+        ):
+            raise ReconciliationError("additional API types need stable requirement IDs")
+        if len(requirements) != len(set(requirements)):
+            raise ReconciliationError("additional API type requirement IDs must be unique")
+        if any(not isinstance(type_row.get(language), dict) or not type_row[language]
+               for language in REQUIRED_LANGUAGES):
+            raise ReconciliationError("additional API type must map every language")
+        c_record = type_row["c"]
+        if not isinstance(c_record.get("name"), str) or not c_record["name"].strip():
+            raise ReconciliationError("additional API type needs an exact public C name")
+        additions_by_id[identifier] = type_row
+        if identifier in by_id and by_id[identifier] != type_row:
+            raise ReconciliationError(f"public type ID already has another definition: {identifier}")
+        requirement_ids.update(requirements)
+    for identifier, type_row in additions_by_id.items():
+        if identifier not in by_id:
+            types.append(copy.deepcopy(type_row))
     result["requirementIds"] = sorted(requirement_ids)
     return result
 
@@ -339,6 +405,7 @@ def main() -> int:
         result = manifest
         if "candidateRoutes" in route_data:
             result = reconcile_manifest(result, route_data["candidateRoutes"])
+        result = add_additional_types(result, route_data.get("types", []))
         result = add_additional_functions(result, route_data.get("functions", []))
         result = add_public_declarations(result, route_data.get("publicDeclarations", []))
     except (OSError, json.JSONDecodeError, ReconciliationError) as error:

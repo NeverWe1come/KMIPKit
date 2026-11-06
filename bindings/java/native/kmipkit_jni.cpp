@@ -1949,6 +1949,40 @@ jobject secret_to_java_ttlv_value(JNIEnv* env, jlong raw_secret,
     return result;
 }
 
+bool cryptographic_parameter_presence(JNIEnv* env, const jboolean* present,
+        size_t index, uint8_t* output) {
+    if (present[index] != JNI_FALSE && present[index] != JNI_TRUE) {
+        throw_invalid_input(env);
+        return false;
+    }
+    *output = static_cast<uint8_t>(present[index]);
+    return true;
+}
+
+bool cryptographic_parameter_enumeration(JNIEnv* env, const jboolean* present,
+        const jlong* values, size_t index, uint8_t* flag, uint32_t* output) {
+    if (!cryptographic_parameter_presence(env, present, index, flag)) return false;
+    if (present[index] == JNI_FALSE) return values[index] == 0;
+    if (values[index] < 0 || static_cast<uint64_t>(values[index]) > UINT32_MAX) {
+        throw_invalid_input(env);
+        return false;
+    }
+    *output = static_cast<uint32_t>(values[index]);
+    return true;
+}
+
+bool cryptographic_parameter_integer(JNIEnv* env, const jboolean* present,
+        const jlong* values, size_t index, uint8_t* flag, int32_t* output) {
+    if (!cryptographic_parameter_presence(env, present, index, flag)) return false;
+    if (present[index] == JNI_FALSE) return values[index] == 0;
+    if (values[index] < INT32_MIN || values[index] > INT32_MAX) {
+        throw_invalid_input(env);
+        return false;
+    }
+    *output = static_cast<int32_t>(values[index]);
+    return true;
+}
+
 } // namespace
 
 extern "C" {
@@ -2292,6 +2326,126 @@ JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_authenticationFr
             return static_cast<jint>(KMIPKIT_ERROR_INTERNAL);
         }
         return static_cast<jint>(0);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersFromFields(
+        JNIEnv* env, jclass, jbooleanArray raw_present, jlongArray raw_values,
+        jbyteArray raw_p_source) {
+    return guarded<jlong>(env, 0, [&] {
+        constexpr jsize kFieldCount = 18;
+        if (raw_present == nullptr || raw_values == nullptr
+                || env->GetArrayLength(raw_present) != kFieldCount
+                || env->GetArrayLength(raw_values) != kFieldCount) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::array<jboolean, kFieldCount> present{};
+        std::array<jlong, kFieldCount> values{};
+        env->GetBooleanArrayRegion(raw_present, 0, kFieldCount, present.data());
+        env->GetLongArrayRegion(raw_values, 0, kFieldCount, values.data());
+        if (env->ExceptionCheck()) return static_cast<jlong>(0);
+
+        kmipkit_cryptographic_parameters_fields_v1_t fields{};
+        fields.struct_size = static_cast<uint32_t>(sizeof(fields));
+        fields.abi_version = 1;
+        if (!cryptographic_parameter_enumeration(env, present.data(), values.data(), 0,
+                    &fields.block_cipher_mode_present, &fields.block_cipher_mode)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 1,
+                    &fields.padding_method_present, &fields.padding_method)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 2,
+                    &fields.hashing_algorithm_present, &fields.hashing_algorithm)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 3,
+                    &fields.key_role_type_present, &fields.key_role_type)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 4,
+                    &fields.digital_signature_algorithm_present,
+                        &fields.digital_signature_algorithm)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 5,
+                    &fields.cryptographic_algorithm_present,
+                        &fields.cryptographic_algorithm)
+                || !cryptographic_parameter_presence(env, present.data(), 6,
+                    &fields.random_iv_present)
+                || values[6] < 0 || values[6] > 1
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 7,
+                    &fields.iv_length_present, &fields.iv_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 8,
+                    &fields.tag_length_present, &fields.tag_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 9,
+                    &fields.fixed_field_length_present, &fields.fixed_field_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 10,
+                    &fields.invocation_field_length_present,
+                        &fields.invocation_field_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 11,
+                    &fields.counter_length_present, &fields.counter_length)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 12,
+                    &fields.initial_counter_value_present,
+                        &fields.initial_counter_value)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 13,
+                    &fields.salt_length_present, &fields.salt_length)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 14,
+                    &fields.mask_generator_present, &fields.mask_generator)
+                || !cryptographic_parameter_enumeration(env, present.data(), values.data(), 15,
+                    &fields.mask_generator_hashing_algorithm_present,
+                        &fields.mask_generator_hashing_algorithm)
+                || !cryptographic_parameter_presence(env, present.data(), 16,
+                    &fields.p_source_present)
+                || !cryptographic_parameter_integer(env, present.data(), values.data(), 17,
+                    &fields.trailer_field_present, &fields.trailer_field)) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        fields.random_iv = static_cast<uint8_t>(values[6]);
+
+        std::vector<uint8_t> p_source;
+        kmipkit::secure::VectorWiper p_source_wiper(p_source);
+        fields.p_source_present = static_cast<uint8_t>(present[16]);
+        if (raw_p_source != nullptr) {
+            const jsize length = env->GetArrayLength(raw_p_source);
+            if (length < 0 || static_cast<uint64_t>(length) > kMaximumTransportInputBytes
+                    || present[16] != JNI_TRUE) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            p_source.resize(static_cast<size_t>(length));
+            if (length > 0) {
+                env->GetByteArrayRegion(raw_p_source, 0, length,
+                        reinterpret_cast<jbyte*>(p_source.data()));
+                if (env->ExceptionCheck()) return static_cast<jlong>(0);
+            }
+        }
+        fields.p_source = p_source.empty() ? nullptr : p_source.data();
+        fields.p_source_length = static_cast<uint64_t>(p_source.size());
+        return return_handle<kmipkit_cryptographic_parameters_t>(env, [&](auto output) {
+            return kmipkit_cryptographic_parameters_from_fields_v1(&fields, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersFromTtlv(
+        JNIEnv* env, jclass, jlong raw_structure) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_structure == 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_cryptographic_parameters_t>(env, [&](auto output) {
+            return kmipkit_cryptographic_parameters_from_ttlv(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_structure), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersIntoTtlv(
+        JNIEnv* env, jclass, jlong raw_parameters) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_parameters == 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_cryptographic_parameters_into_ttlv(
+                    from_java_handle<kmipkit_cryptographic_parameters_t>(raw_parameters), output);
+        });
     });
 }
 
@@ -5322,6 +5476,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_attribute_set_t>(raw_handle)); break;
         case 68: kmipkit_hashed_password_timestamp_sequence_release(
                 from_java_handle<kmipkit_hashed_password_timestamp_sequence_t>(raw_handle)); break;
+        case 69: kmipkit_cryptographic_parameters_release(
+                from_java_handle<kmipkit_cryptographic_parameters_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -6538,6 +6694,21 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetAs
         const int32_t status = kmipkit_client_batch_set_asynchronous_indicator(
                 from_java_handle<kmipkit_client_batch_t>(raw_batch),
                 static_cast<uint32_t>(raw_indicator));
+        if (status != 0) throw_status(env, status);
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetAuthentication(
+        JNIEnv* env, jclass, jlong raw_batch, jlong raw_authentication) {
+    guarded<int>(env, 0, [&] {
+        auto* batch = from_java_handle<kmipkit_client_batch_t>(raw_batch);
+        auto* authentication = from_java_handle<kmipkit_authentication_t>(raw_authentication);
+        if (batch == nullptr || authentication == nullptr) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        const int32_t status = kmipkit_client_batch_set_authentication(batch, authentication);
         if (status != 0) throw_status(env, status);
         return 0;
     });

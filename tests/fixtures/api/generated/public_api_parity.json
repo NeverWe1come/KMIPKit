@@ -223664,6 +223664,45 @@
     },
     {
       "approvalEvidence": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "request_message_authentication",
+      "capabilityState": "verified",
+      "mappings": {
+        "c": [
+          "kmipkit_client_batch_set_authentication"
+        ],
+        "java": [
+          "org.kmipkit.extensions.ClientBatch.setAuthentication"
+        ],
+        "python": [
+          "kmipkit.client.Batch.set_authentication"
+        ],
+        "rust": [
+          "kmipkit::ClientBatch::with_authentication",
+          "kmipkit_client::ClientBatch::with_authentication"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0053",
+      "parityEvidenceIds": [
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py",
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-006",
+        "KMIPKIT-0050-FR-007",
+        "KMIPKIT-0050-FR-008",
+        "KMIPKIT-0050-FR-009"
+      ]
+    },
+    {
+      "approvalEvidence": {
         "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan.",
         "kind": "feature-specification",
         "path": "specs/052-response-navigation/spec.md",
@@ -266371,6 +266410,309 @@
         ],
         "requestBoundary": "not-applicable",
         "returnType": "Result<KeyWrappingData, ManagedObjectError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Builds Cryptographic Parameters from a versioned field record; raw enumerations are preserved and P Source is copied."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "direction": "input",
+            "kind": "versioned-value-pointer",
+            "name": "fields",
+            "ownership": "borrowed",
+            "type": "const kmipkit_cryptographic_parameters_fields_v1_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_parameters",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_cryptographic_parameters_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_cryptographic_parameters_from_fields_v1"
+      },
+      "id": "cryptographic_parameters_from_fields_v1",
+      "java": {
+        "class": "CryptographicParameters.Builder",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersFromFields",
+        "method": "build",
+        "package": "org.kmipkit.protocol",
+        "parameters": [],
+        "returnType": "CryptographicParameters"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_cryptographic_parameters_from_fields_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CryptographicParametersBuilder.build",
+        "module": "kmipkit.cryptographic_parameters",
+        "parameters": [],
+        "returnType": "CryptographicParameters"
+      },
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CryptographicParametersBuilder",
+        "name": "build",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<CryptographicParameters, ProtocolError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies and validates a generic TTLV Structure without consuming the caller handle."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "structure",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_parameters",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_cryptographic_parameters_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_cryptographic_parameters_from_ttlv"
+      },
+      "id": "cryptographic_parameters_from_ttlv",
+      "java": {
+        "class": "CryptographicParameters",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersFromTtlv",
+        "method": "fromTtlv",
+        "package": "org.kmipkit.protocol",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "CryptographicParameters"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_cryptographic_parameters_from_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CryptographicParameters.from_ttlv",
+        "module": "kmipkit.cryptographic_parameters",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "CryptographicParameters"
+      },
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CryptographicParameters",
+        "name": "try_from_ttlv",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "structure",
+            "type": "Structure"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<CryptographicParameters, ProtocolError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Consumes a typed Cryptographic Parameters value into generic TTLV."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "parameters",
+            "ownership": "consumed",
+            "type": "kmipkit_cryptographic_parameters_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_structure",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_cryptographic_parameters_into_ttlv"
+      },
+      "id": "cryptographic_parameters_into_ttlv",
+      "java": {
+        "class": "CryptographicParameters",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersIntoTtlv",
+        "method": "intoTtlv",
+        "package": "org.kmipkit.protocol",
+        "parameters": [],
+        "returnType": "TtlvStructure"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_cryptographic_parameters_into_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "CryptographicParameters.into_ttlv",
+        "module": "kmipkit.cryptographic_parameters",
+        "parameters": [],
+        "returnType": "Structure"
+      },
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::CryptographicParameters",
+        "name": "into_ttlv",
+        "owner": "protocol",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Structure"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Attaches Authentication once to the Request Header for this batch message. The handle is consumed only on success."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "batch",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "authentication",
+            "ownership": "consumed",
+            "type": "kmipkit_authentication_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_set_authentication"
+      },
+      "id": "client_batch_set_authentication",
+      "java": {
+        "class": "ClientBatch",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchSetAuthentication",
+        "method": "setAuthentication",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "authentication",
+            "type": "Authentication"
+          }
+        ],
+        "returnType": "ClientBatch"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_set_authentication",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "function": "Batch.set_authentication",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "authentication",
+            "type": "Authentication"
+          }
+        ],
+        "returnType": "Batch"
+      },
+      "requirementIds": [
+        "KMIPKIT-0053-FR-005",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatch",
+        "name": "with_authentication",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "authentication",
+            "type": "Authentication"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatch"
       }
     }
   ],
@@ -827466,6 +827808,3203 @@
         "KMIPKIT-0053-FR-011",
         "KMIPKIT-0053-FR-012"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-b6565b2d2c9f0d1dff8a",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::CryptographicParameters",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-protocol-f8458b4e6ac51c6b1c8f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicParameters",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-6c0f8d0af199158a593e",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::CryptographicParametersBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-protocol-907f003e18f57633c9bc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicParametersBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-5d681bf101d8a0a520b4",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::CryptographicParametersBuilder::build",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_fields_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CryptographicParametersBuilder::build",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-protocol-1849664dd94a3af3af26",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicParametersBuilder::build",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_fields_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder::build",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "request_message_authentication",
+      "declarationId": "kmipkit-0050-kmipkit-a4559d418c71fc576c7c",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientBatch::with_authentication",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_set_authentication",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatch.setAuthentication",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Batch.set_authentication",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientBatch::with_authentication",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-006",
+        "KMIPKIT-0050-FR-007",
+        "KMIPKIT-0050-FR-008",
+        "KMIPKIT-0050-FR-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "request_message_authentication",
+      "declarationId": "kmipkit-0050-kmipkit-client-f5d662d81ddfda1eeae2",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatch::with_authentication",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_set_authentication",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatch.setAuthentication",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Batch.set_authentication",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_authentication",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-006",
+        "KMIPKIT-0050-FR-007",
+        "KMIPKIT-0050-FR-008",
+        "KMIPKIT-0050-FR-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-f5f20bd7dbb70e73ee6a",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::CryptographicParameters::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CryptographicParameters::into_ttlv",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-8fe1aa9fbf3e4631635a",
+      "declarationState": "verified",
+      "exportName": "kmipkit::protocol::CryptographicParameters::try_from_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CryptographicParameters::try_from_ttlv",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-protocol-0d68433b535ffa236ce4",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicParameters::into_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit-0050-kmipkit-protocol-14333acf066cce1fd305",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::CryptographicParameters::try_from_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0050-FR-002",
+        "KMIPKIT-0050-FR-003",
+        "KMIPKIT-0050-FR-004",
+        "KMIPKIT-0050-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParameters:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParameters:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParameters:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParameters",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersBuilder:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.Builder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersBuilder:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_from_fields_v1:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_from_fields_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_fields_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder::build",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_from_ttlv:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_from_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_into_ttlv:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_into_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "request_message_authentication",
+      "declarationId": "kmipkit_client_batch_set_authentication:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_set_authentication",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_set_authentication",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatch.setAuthentication",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Batch.set_authentication",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_authentication",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-005",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParameters:release",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_from_fields_v1:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.Builder.build",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_fields_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder::build",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_from_fields_v1:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_fields_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder::build",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_from_ttlv:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.fromTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_from_ttlv:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_from_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.fromTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::try_from_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_into_ttlv:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.intoTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "kmipkit_cryptographic_parameters_into_ttlv:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_into_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.intoTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters::into_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "request_message_authentication",
+      "declarationId": "kmipkit_client_batch_set_authentication:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatch.setAuthentication",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_set_authentication",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatch.setAuthentication",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Batch.set_authentication",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_authentication",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-005",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "request_message_authentication",
+      "declarationId": "kmipkit_client_batch_set_authentication:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.Batch.set_authentication",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_set_authentication",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatch.setAuthentication",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Batch.set_authentication",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_authentication",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-005",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParameters:release:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParameters:release:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParameters.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParameters.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParameters",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:struct_size",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.struct_size",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:abi_version",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.abi_version",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:block_cipher_mode_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.block_cipher_mode_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:block_cipher_mode",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.block_cipher_mode",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:padding_method_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.padding_method_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:padding_method",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.padding_method",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:hashing_algorithm_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.hashing_algorithm_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:hashing_algorithm",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.hashing_algorithm",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:key_role_type_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.key_role_type_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:key_role_type",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.key_role_type",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:digital_signature_algorithm_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.digital_signature_algorithm_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:digital_signature_algorithm",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.digital_signature_algorithm",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:cryptographic_algorithm_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.cryptographic_algorithm_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:cryptographic_algorithm",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.cryptographic_algorithm",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:random_iv_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.random_iv_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:random_iv",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.random_iv",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:iv_length_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.iv_length_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:iv_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.iv_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:tag_length_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.tag_length_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:tag_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.tag_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:fixed_field_length_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.fixed_field_length_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:fixed_field_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.fixed_field_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:invocation_field_length_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.invocation_field_length_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:invocation_field_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.invocation_field_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:counter_length_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.counter_length_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:counter_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.counter_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:initial_counter_value_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.initial_counter_value_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:initial_counter_value",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.initial_counter_value",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:salt_length_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.salt_length_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:salt_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.salt_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:mask_generator_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.mask_generator_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:mask_generator",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.mask_generator",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:mask_generator_hashing_algorithm_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.mask_generator_hashing_algorithm_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:mask_generator_hashing_algorithm",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.mask_generator_hashing_algorithm",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:p_source_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.p_source_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:p_source",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.p_source",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:p_source_length",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.p_source_length",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:trailer_field_present",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.trailer_field_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_cryptographic_parameters",
+      "declarationId": "CryptographicParametersFieldsV1:trailer_field",
+      "declarationState": "verified",
+      "exportName": "kmipkit_cryptographic_parameters_fields_v1_t.trailer_field",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CryptographicParametersBuilder",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
     }
   ],
   "publicPackages": [
@@ -831719,6 +835258,220 @@
         "module": "kmipkit_protocol",
         "name": "ProfileValidationResult",
         "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "cryptographic_parameters",
+        "kind": "opaque-handle",
+        "name": "kmipkit_cryptographic_parameters_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_cryptographic_parameters_release"
+      },
+      "id": "CryptographicParameters",
+      "java": {
+        "name": "CryptographicParameters",
+        "package": "org.kmipkit.protocol"
+      },
+      "kind": "opaque-handle",
+      "python": {
+        "module": "kmipkit.cryptographic_parameters",
+        "name": "CryptographicParameters"
+      },
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "CryptographicParameters",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "block_cipher_mode_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "block_cipher_mode",
+            "type": "uint32_t"
+          },
+          {
+            "name": "padding_method_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "padding_method",
+            "type": "uint32_t"
+          },
+          {
+            "name": "hashing_algorithm_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "hashing_algorithm",
+            "type": "uint32_t"
+          },
+          {
+            "name": "key_role_type_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "key_role_type",
+            "type": "uint32_t"
+          },
+          {
+            "name": "digital_signature_algorithm_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "digital_signature_algorithm",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cryptographic_algorithm_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "cryptographic_algorithm",
+            "type": "uint32_t"
+          },
+          {
+            "name": "random_iv_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "random_iv",
+            "type": "uint8_t"
+          },
+          {
+            "name": "iv_length_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "iv_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "tag_length_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "tag_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "fixed_field_length_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "fixed_field_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "invocation_field_length_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "invocation_field_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "counter_length_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "counter_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "initial_counter_value_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "initial_counter_value",
+            "type": "int32_t"
+          },
+          {
+            "name": "salt_length_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "salt_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "mask_generator_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "mask_generator",
+            "type": "uint32_t"
+          },
+          {
+            "name": "mask_generator_hashing_algorithm_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "mask_generator_hashing_algorithm",
+            "type": "uint32_t"
+          },
+          {
+            "name": "p_source_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "p_source",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "p_source_length",
+            "type": "uint64_t"
+          },
+          {
+            "name": "trailer_field_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "trailer_field",
+            "type": "int32_t"
+          }
+        ],
+        "kind": "fixed-width-value",
+        "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+        "versioned": true,
+        "visibility": "public"
+      },
+      "id": "CryptographicParametersFieldsV1",
+      "java": {
+        "name": "CryptographicParametersBuilder",
+        "package": "org.kmipkit.protocol"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.cryptographic_parameters",
+        "name": "CryptographicParametersBuilder"
+      },
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi",
+        "name": "kmipkit_cryptographic_parameters_fields_v1_t",
+        "owner": "ffi"
       }
     }
   ]
