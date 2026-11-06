@@ -3,11 +3,11 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, Structure, StructureView, ValueView, codec::CodecLimits};
+use kmipkit_ttlv::{Item, Structure, StructureView, Tag, ValueView, codec::CodecLimits};
 
 use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 
-use super::definition::{ExtensionDefinition, ExtensionIdentity};
+use super::definition::{ExtensionDefinition, ExtensionIdentity, TtlvPath};
 use super::schema::{
     Cardinality, CompiledOrderEdge, CompiledOrderEdges, ExtensionSchema, SchemaKind,
     checked_usize_counter_add,
@@ -75,6 +75,51 @@ pub fn validate(
     Ok(ValidatedExtensionValue {
         identity: definition.identity.clone(),
         generic_value: value,
+    })
+}
+
+impl ValidatedExtensionValue {
+    /// Visits the value at `path` without copying or formatting the extension payload.
+    ///
+    /// Each path tag selects the first matching child in the retained source
+    /// order, matching the binding view API. A missing tag or a non-Structure
+    /// intermediate value returns a payload-free `InvalidValue` error. The
+    /// closure-scoped view cannot outlive this validated value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `InvalidValue` when a path step cannot be resolved.
+    pub fn with_value_at<R>(
+        &self,
+        path: &TtlvPath,
+        callback: impl for<'a> FnOnce(ValueView<'a>) -> R,
+    ) -> Result<R, ProtocolError> {
+        let structure = self.generic_value.view();
+        with_value_at_tags(&structure, &path.tags, callback)
+    }
+}
+
+fn with_value_at_tags<R>(
+    structure: &StructureView<'_>,
+    tags: &[Tag],
+    callback: impl for<'a> FnOnce(ValueView<'a>) -> R,
+) -> Result<R, ProtocolError> {
+    let Some((tag, remaining)) = tags.split_first() else {
+        return Err(super::categorized_error(ProtocolErrorKind::InvalidValue));
+    };
+    let Some(item) = structure.children().iter().find(|item| item.tag() == *tag) else {
+        return Err(super::categorized_error(ProtocolErrorKind::InvalidValue));
+    };
+
+    item.with_value(|value| {
+        if remaining.is_empty() {
+            return Ok(callback(value));
+        }
+
+        match value {
+            ValueView::Structure(nested) => with_value_at_tags(&nested, remaining, callback),
+            _ => Err(super::categorized_error(ProtocolErrorKind::InvalidValue)),
+        }
     })
 }
 

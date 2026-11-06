@@ -96,7 +96,8 @@ fn request_preserves_all_caller_supplied_integer_values() {
 
 #[test]
 fn successful_response_requires_and_exposes_secret_data_and_unknown_fields() {
-    let output = [0x00, 0x7f, 0x80, 0xff];
+    let output = b"KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL";
+    let unknown_value = "KMIP_RNG_RETRIEVE_UNKNOWN_TTLV_SENTINEL";
     let message = response_message(
         RNG_RETRIEVE_OPERATION,
         SUCCESS,
@@ -104,17 +105,22 @@ fn successful_response_requires_and_exposes_secret_data_and_unknown_fields() {
         None,
         Some(payload([
             (DATA, Value::byte_string(output.to_vec())),
-            (UNKNOWN_VENDOR_TAG, Value::integer(-7)),
+            (
+                UNKNOWN_VENDOR_TAG,
+                Value::text_string(unknown_value.to_owned()),
+            ),
         ])),
     );
     let response = RngRetrieveResponse::try_from_response_item(response_item(&message))
         .expect("Table 317 requires returned Data and preserves unknown members");
 
     assert_eq!(response.result().status().raw(), SUCCESS);
-    output_bytes(response.data(), &output);
+    output_bytes(response.data(), output);
     drop(message);
     assert!(response.with_ttlv(|ttlv| structure_contains_tag(&ttlv, UNKNOWN_VENDOR_TAG)));
-    assert!(!format!("{response:?}").contains("128"));
+    let debug = format!("{response:?}");
+    assert!(!debug.contains("KMIP_RNG_RETRIEVE_RESPONSE_SECRET_SENTINEL"));
+    assert!(!debug.contains(unknown_value));
 }
 
 #[test]

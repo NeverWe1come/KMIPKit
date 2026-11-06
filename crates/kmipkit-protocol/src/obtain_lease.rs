@@ -91,7 +91,7 @@ impl fmt::Debug for ObtainLeaseRequest {
 #[derive(Debug)]
 pub struct ObtainLeaseResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
     unique_identifier: Option<UniqueIdentifier>,
     lease_time: Option<u32>,
     last_change_date: Option<i64>,
@@ -120,9 +120,6 @@ impl ObtainLeaseResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(ObtainLeaseError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Obtain Lease")
-            .map_err(|_| ObtainLeaseError::MalformedResponseItem)?;
-
         let (unique_identifier, lease_time, last_change_date) = if status.raw() == SUCCESS {
             let parsed_payload = item
                 .with_response_payload(|payload| parse_success_payload(&payload))
@@ -134,6 +131,14 @@ impl ObtainLeaseResponse {
             )
         } else {
             (None, None, None)
+        };
+        let response_ttlv = if status.raw() == SUCCESS {
+            Some(
+                common::clone_response_item(item, "Obtain Lease")
+                    .map_err(|_| ObtainLeaseError::MalformedResponseItem)?,
+            )
+        } else {
+            None
         };
 
         Ok(Self {
@@ -169,9 +174,14 @@ impl ObtainLeaseResponse {
         self.last_change_date
     }
 
-    /// Lends the complete ordered generic response batch item.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered generic response batch item on success.
+    ///
+    /// Failure and Pending preserve the common result without retaining the
+    /// response TTLV.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

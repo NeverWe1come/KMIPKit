@@ -227,7 +227,7 @@ impl fmt::Debug for RekeyKeyPairRequest {
 #[derive(Debug)]
 pub struct RekeyKeyPairResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
     private_key_unique_identifier: Option<UniqueIdentifier>,
     public_key_unique_identifier: Option<UniqueIdentifier>,
 }
@@ -254,9 +254,6 @@ impl RekeyKeyPairResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(RekeyKeyPairError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Re-key Key Pair")
-            .map_err(|_| RekeyKeyPairError::MalformedResponseItem)?;
-
         let (private_key_unique_identifier, public_key_unique_identifier) =
             if status.raw() == SUCCESS {
                 let identifiers = item
@@ -266,6 +263,14 @@ impl RekeyKeyPairResponse {
             } else {
                 (None, None)
             };
+        let response_ttlv = if status.raw() == SUCCESS {
+            Some(
+                common::clone_response_item(item, "Re-key Key Pair")
+                    .map_err(|_| RekeyKeyPairError::MalformedResponseItem)?,
+            )
+        } else {
+            None
+        };
 
         Ok(Self {
             result,
@@ -293,9 +298,14 @@ impl RekeyKeyPairResponse {
         self.public_key_unique_identifier.as_ref()
     }
 
-    /// Lends the complete ordered generic response batch item.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered generic response batch item on success.
+    ///
+    /// Failure and Pending preserve the common result without retaining the
+    /// response TTLV.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

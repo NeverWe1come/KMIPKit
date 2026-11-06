@@ -13,6 +13,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const LEASE_TIME: u32 = 0x0042_0049;
@@ -109,7 +110,10 @@ fn successful_response_preserves_identifier_zero_lease_time_date_and_extensions(
     );
     assert_eq!(response.lease_time(), Some(0));
     assert_eq!(response.last_change_date(), Some(1_700_000_000));
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -197,6 +201,29 @@ fn failure_preserves_table_270_reason_without_typed_success_values() {
     assert!(response.unique_identifier().is_none());
     assert!(response.lease_time().is_none());
     assert!(response.last_change_date().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 270 remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        OBTAIN_LEASE_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-lease-response".to_owned()),
+        )])),
+    );
+    let pending = ObtainLeaseResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]

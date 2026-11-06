@@ -12,5 +12,8 @@ kmipkit-protocol.workspace = true
 kmipkit-transport.workspace = true
 kmipkit-ttlv.workspace = true
 
+[dev-dependencies]
+serde_json.workspace = true
+
 [lints]
 workspace = true

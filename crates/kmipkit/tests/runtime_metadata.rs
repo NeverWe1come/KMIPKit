@@ -10,6 +10,10 @@ fn public_version_matches_the_synchronized_package_version() {
 #[test]
 fn capability_query_matches_manifest_ready_capabilities() {
     assert_eq!(
+        kmipkit::capability_is_available("client_profile_readiness"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("ffi_runtime_metadata"),
         Ok(true)
     );
@@ -30,12 +34,48 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("usage_allocation_guard"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("opaque_register_context"),
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("server_generated_creation"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("typed_message_model"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("credential_ttlv_parity"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("credential_type_parity"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("credential_validation_error_parity"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("credential_secret_parity"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("nonce_ttlv_parity"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("hashed_password_timestamp_sequence"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("public_binding_surface"),
-        Ok(false)
+        Ok(true)
     );
     assert_eq!(
         kmipkit::capability_is_available("unknown_capability"),

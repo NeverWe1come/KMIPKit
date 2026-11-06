@@ -53,7 +53,7 @@ description: "Implementation task list for KMIP 2.1 PKCS#11 forwarding"
 **Purpose**: Close traceability, security, parity, documentation, and quality gates.
 
 - [x] T018 Update implementation and verification references for the PKCS#11 operation and fields in specification/catalog/kmip-2.1.json; regenerate specification/catalog/coverage-report.md with python tools/normative_catalog/report.py --write, then validate the catalog and report.
-- [ ] T019 After KMIPKIT-0043's approved capability mapping is present on the active release branch, add the Rust operation to specification/api/public-api.json, implement mapped C/Java/Python adapters and parity tests, regenerate only with python tools/api_manifest/generate.py --write, and verify with --check; leave this task gated while 0043 is unavailable.
+- [x] T019 Add the Rust operation to `specification/api/public-api.json`, implement the mapped C/Java/Python adapters, and verify shared-fixture parity under the KMIPKIT-0043 T057 mapping. The direct human instruction dated 2026-10-20 authorized implementation of the still-approved-for-implementation contract; `formalAcceptance` remains false. Generated outputs use only the pinned `python -B tools/api_manifest/generate.py --write` tool. Release integration, profile/interoperability evidence, and T022 remain separate gates.
 - [x] T020 Update specs/026-pkcs11/traceability.md and specs/026-pkcs11/quickstart.md with actual test names/results, catalog IDs, redaction evidence, and unavailable official fixture status; do not claim profile support or interoperability.
 - [x] T021 Verify sentinel Function/Correlation/Input/Output values are absent from Debug, Display, and sanitized errors in crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs and crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs.
 - [ ] T022 Run required checks from specs/026-pkcs11/quickstart.md; record command/results and enforce the documented coverage and 100% traceability gates. Before 1.0, exercise PKCS#11 against at least two independent KMIP server implementations and record evidence in docs/development/kmip-interoperability.md; unsupported cases remain SKIP/N/A, not passing evidence.
@@ -92,10 +92,12 @@ T001–T018 and T020–T021 are complete for the Rust increment. Their source,
 TDD, named-test, generated-report and diagnostic evidence is recorded in
 `traceability.md` and `implementation-evidence.md`.
 
-- **T019 BLOCKED**: origin/release/1.0.0 at
-  `a0846037eb9930b24d9b9e3d8c63b2e66b438d1a` does not contain the approved
-  KMIPKIT-0043 capability mapping. No binding mapping was invented; existing
-  API-manifest outputs remain checked and unchanged.
+- **T019 COMPLETE on the KMIPKIT-0043 feature branch**: Rust, public C ABI,
+  Java/JNI, and Python/CFFI mappings now consume the same response fixture.
+  The owner's status remains **Approved for implementation**; the direct human
+  implementation authorization dated 2026-10-20 is separately recorded and
+  `formalAcceptance` remains `false`. This does not claim that the feature
+  branch has been integrated into `release/1.0.0`.
 - **T022 OPEN**: full local tests/coverage/security and actual CI platform/
   adapter/C-consumer/aggregate gates passed; results are recorded in the evidence
   file. Real exchanges against two independent PKCS#11-capable KMIP 2.1 servers

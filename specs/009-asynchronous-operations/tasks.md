@@ -10,6 +10,12 @@ implementation, the reviewer-owned checklists still had 20 requirements, 16
 protocol-review, and 8 readiness items unchecked. Autonomous continuation was
 explicitly authorized implementation without further approval prompts. T001 records that authorization and does not claim that a human reviewed or approved the specification or reviewer-owned checklists; checklist files remain unchanged and their owners retain review responsibility.
 
+**Approval follow-up (2026-10-29):** The maintainer explicitly approved this
+specification for implementation. The approval is recorded in
+[`approval-record.md`](approval-record.md) and reflected in `spec.md`. The
+reviewer-owned checklists remain unchanged and unchecked; the approval does
+not claim formal KMIP conformance or complete normative traceability.
+
 The distinct TDD commits are `94864d4` (protocol Red), `191d489` (protocol
 Green), `5a0220d` (client Red), `fc3c295` (client Green), and `b1a3986`
 (Refactor).

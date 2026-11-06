@@ -458,6 +458,33 @@ fn get_attribute_list_sends_only_uid_and_preserves_typed_response_once() {
 }
 
 #[test]
+fn high_level_get_attribute_list_executes_one_request_without_retries() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(
+            GET_ATTRIBUTE_LIST_OPERATION,
+            0,
+            None,
+            None,
+            Some(attribute_list_response_payload()),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .get_attribute_list(
+            GetAttributeListRequest::new(Some(OBJECT_IDENTIFIER.to_owned())),
+            &CodecLimits::defaults(),
+        )
+        .expect("the high-level method returns the typed response item");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(
+        completed_get_attribute_list(result.outcome()).attribute_references(),
+        Some(&[AttributeReference::name(VENDOR, ATTRIBUTE_NAME_SENTINEL)][..])
+    );
+}
+
+#[test]
 fn get_attributes_preserves_table_225_failures_and_does_not_retry() {
     for reason in TABLE_225_REASONS {
         let request = GetAttributesRequest::try_new(Some(OBJECT_IDENTIFIER.to_owned()), [])

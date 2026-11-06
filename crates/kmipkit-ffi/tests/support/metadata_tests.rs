@@ -1,9 +1,44 @@
 use super::*;
+use std::collections::BTreeSet;
 
 const ERROR_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
+// Every extension-registry C symbol now has an approved public API mapping.
+const BLOCKED_C_SYMBOLS: [&str; 0] = [];
+
+fn starts_inside_shared_panic_boundary(body: &str) -> bool {
+    body.trim_start().starts_with("ffi_entrypoint(||")
+}
+
+fn macro_generated_c_exports(source: &str, macro_name: &str) -> Vec<(String, bool)> {
+    let definition_marker = format!("macro_rules! {macro_name}");
+    let invocation_marker = format!("{macro_name}!(");
+    let macro_body = source
+        .split_once(&definition_marker)
+        .map_or("", |(_, definition)| {
+            definition.split("};").next().unwrap_or("")
+        });
+    let starts_inside_panic_boundary = macro_body
+        .split_once("pub extern \"C\" fn $name")
+        .and_then(|(_, signature)| signature.split_once("-> i32 {"))
+        .is_some_and(|(_, body)| {
+            macro_body.contains("#[unsafe(no_mangle)]") && starts_inside_shared_panic_boundary(body)
+        });
+
+    source
+        .split(&invocation_marker)
+        .skip(1)
+        .filter_map(|invocation| {
+            let symbol = invocation
+                .trim_start()
+                .split(|character: char| character.is_whitespace() || character == ',')
+                .next()?;
+            (!symbol.is_empty()).then(|| (symbol.to_owned(), starts_inside_panic_boundary))
+        })
+        .collect()
+}
 
 #[test]
 fn version_query_matches_the_package_version_and_stable_abi() {
@@ -35,12 +70,29 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     assert_eq!(
         crate::public_api_generated::C_AVAILABLE_CAPABILITIES,
         &[
+            "api_level_discovery",
+            "client_asynchronous_operations",
+            "client_batch_model",
             "client_execution",
+            "client_profile_readiness",
+            "client_profile_validation",
+            "credential_secret_parity",
+            "credential_ttlv_parity",
+            "credential_type_parity",
+            "credential_validation_error_parity",
+            "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
             "generic_ttlv_model",
+            "hashed_password_timestamp_sequence",
+            "nonce_ttlv_parity",
             "opaque_register_context",
+            "production_transport",
+            "public_binding_surface",
+            "server_generated_creation",
             "ttlv_wire_codec",
+            "typed_message_model",
+            "usage_allocation_guard",
             "vendor_extension_registry",
             "wire_encoding_selection",
         ]
@@ -51,12 +103,10 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "Rust facade omitted ready manifest capability {capability}"
         );
     }
-    for unavailable in ["public_binding_surface", "rust_transport_exchange"] {
-        assert!(
-            matches!(kmipkit::capability_is_available(unavailable), Ok(false)),
-            "Rust facade advertised a capability outside its mapped surface: {unavailable}"
-        );
-    }
+    assert!(matches!(
+        kmipkit::capability_is_available("rust_transport_exchange"),
+        Ok(false)
+    ));
 
     let mut available = u8::MAX;
     let generic_ttlv = b"generic_ttlv_model";
@@ -70,7 +120,18 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
     );
     assert_eq!(available, 1);
 
-    let blocked = b"public_binding_surface";
+    let public_binding_surface = b"public_binding_surface";
+    assert_eq!(
+        kmipkit_capability_is_available(
+            public_binding_surface.as_ptr(),
+            public_binding_surface.len() as u64,
+            &raw mut available,
+        ),
+        SUCCESS
+    );
+    assert_eq!(available, 1);
+
+    let blocked = b"rust_transport_exchange";
     assert_eq!(
         kmipkit_capability_is_available(blocked.as_ptr(), blocked.len() as u64, &raw mut available,),
         SUCCESS
@@ -315,28 +376,99 @@ fn panic_boundary_records_internal_error_for_void_exports() {
 
 #[test]
 fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
+    const INTERNAL_C_SYMBOLS: [&str; 6] = [
+        "kmipkit_client_batch_item_response_metadata_v1",
+        "kmipkit_client_batch_item_response_release",
+        "kmipkit_client_execute_with_options_and_error_ttlv_v1",
+        "kmipkit_last_error_clear",
+        "kmipkit_transport_config_create_v1",
+        "kmipkit_transport_config_release",
+    ];
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../specification/api/public-api.json"
+    ))
+    .expect("the approved public API manifest is valid JSON");
+    let declarations = manifest["publicDeclarations"]
+        .as_array()
+        .expect("the approved manifest lists public declarations");
+    let manifest_symbols: BTreeSet<&str> = declarations
+        .iter()
+        .filter(|declaration| {
+            declaration["packageId"] == "c-kmipkit"
+                && declaration["kind"] == "c-symbol"
+                && declaration["declarationState"] != "blocked"
+        })
+        .filter_map(|declaration| declaration["exportName"].as_str())
+        .collect();
+    let blocked_symbols: BTreeSet<&str> = declarations
+        .iter()
+        .filter(|declaration| {
+            declaration["packageId"] == "c-kmipkit"
+                && declaration["kind"] == "c-symbol"
+                && declaration["declarationState"] == "blocked"
+        })
+        .filter_map(|declaration| declaration["exportName"].as_str())
+        .collect();
+    assert_eq!(
+        blocked_symbols,
+        BLOCKED_C_SYMBOLS.into_iter().collect(),
+        "review blocked C symbols when their manifest state changes"
+    );
+
     let sources = [
         include_str!("../../src/extension_registry.rs"),
         include_str!("../../src/extension_registry/client_abi.rs"),
+        include_str!("../../src/extension_registry/credential_secrets.rs"),
     ];
-    let exports: Vec<bool> = sources
+    let mut exports: Vec<(String, bool)> = sources
         .into_iter()
         .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
         .filter_map(|declaration| {
-            let function_start = declaration.find("pub extern \"C\" fn")?;
+            let function_start = declaration
+                .find("pub unsafe extern \"C\" fn")
+                .or_else(|| declaration.find("pub extern \"C\" fn"))?;
             let function = &declaration[function_start..];
+            let symbol = function
+                .split("extern \"C\" fn ")
+                .nth(1)?
+                .split('(')
+                .next()?
+                .to_owned();
             let body_start = function.find('{')?;
-            Some(
-                function[body_start + 1..]
-                    .trim_start()
-                    .starts_with("ffi_entrypoint(||"),
-            )
+            Some((
+                symbol,
+                starts_inside_shared_panic_boundary(&function[body_start + 1..]),
+            ))
         })
+        .filter(|(symbol, _)| symbol != "$name")
         .collect();
+    exports.extend(macro_generated_c_exports(
+        sources[0],
+        "lifecycle_batch_item_constructor",
+    ));
+    exports.extend(macro_generated_c_exports(
+        sources[1],
+        "lifecycle_response_identifier",
+    ));
 
-    assert_eq!(exports.len(), 157, "update the count when adding C exports");
+    let source_symbols: BTreeSet<&str> =
+        exports.iter().map(|(symbol, _)| symbol.as_str()).collect();
+    let expected_symbols: BTreeSet<&str> = manifest_symbols
+        .into_iter()
+        .chain(blocked_symbols)
+        .chain(INTERNAL_C_SYMBOLS)
+        .collect();
+    assert_eq!(
+        source_symbols, expected_symbols,
+        "Rust C exports must match approved manifest symbols and the explicit blocked/internal lists"
+    );
+    assert_eq!(
+        exports.len(),
+        source_symbols.len(),
+        "duplicate C export symbol"
+    );
     assert!(
-        exports.iter().all(|uses_boundary| *uses_boundary),
+        exports.iter().all(|(_, uses_boundary)| *uses_boundary),
         "every exported C function must enter the shared panic boundary first"
     );
 }

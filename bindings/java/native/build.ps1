@@ -6,10 +6,16 @@ $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..\..'
 $javaExecutable = (Get-Command javac -ErrorAction Stop).Source
 $javaHome = Split-Path -Parent (Split-Path -Parent $javaExecutable)
 $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+$cargoTargetDirectory = Join-Path $repositoryRoot 'target'
 $nativeOutput = Join-Path $PSScriptRoot '..\target\native'
-$rustLibrary = Join-Path $repositoryRoot 'target\debug\kmipkit_ffi.lib'
+$env:CARGO_TARGET_DIR = $cargoTargetDirectory
+$rustLibrary = Join-Path $cargoTargetDirectory 'debug\kmipkit_ffi.lib'
 $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
 $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
+$clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
+$responseIdentifierTestSource = Join-Path $PSScriptRoot 'tests\response_identifier_validation_test.cpp'
+$responseBridgeTestSource = Join-Path $PSScriptRoot 'tests\response_bridge_test.cpp'
+$responseSecretArrayScopeTestSource = Join-Path $PSScriptRoot 'tests\response_secret_array_scope_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
 $internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
 
@@ -29,7 +35,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "cargo build failed with exit code $LASTEXITCODE."
 }
 if (-not (Test-Path -LiteralPath $rustLibrary -PathType Leaf)) {
-    throw 'Cargo did not produce target\debug\kmipkit_ffi.lib for the JNI link.'
+    throw "Cargo did not produce '$rustLibrary' for the JNI link."
 }
 
 $zeroizingTestObject = Join-Path $nativeOutput 'zeroizing_bytes_test.obj'
@@ -47,6 +53,112 @@ if ($LASTEXITCODE -ne 0) {
 & $zeroizingTestExecutable
 if ($LASTEXITCODE -ne 0) {
     throw "JNI scratch zeroization test failed with exit code $LASTEXITCODE."
+}
+
+$clientBatchItemTransferTestObject = Join-Path $nativeOutput 'client_batch_item_transfer_test.obj'
+$clientBatchItemTransferTestExecutable = Join-Path $nativeOutput 'client_batch_item_transfer_test.exe'
+$clientBatchItemTransferTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$clientBatchItemTransferTestCompiler += ' /Fo' + '"' + $clientBatchItemTransferTestObject + '"'
+$clientBatchItemTransferTestCompiler += ' ' + '"' + $clientBatchItemTransferTestSource + '"'
+$clientBatchItemTransferTestCompiler += ' /Fe:' + '"' + $clientBatchItemTransferTestExecutable + '"'
+$clientBatchItemTransferTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$clientBatchItemTransferTestCommand += $clientBatchItemTransferTestCompiler
+& $env:ComSpec /d /s /c $clientBatchItemTransferTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI client batch item transfer test compile failed with exit code $LASTEXITCODE."
+}
+& $clientBatchItemTransferTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI client batch item transfer test failed with exit code $LASTEXITCODE."
+}
+
+$nativeHandleTransferTestSource = Join-Path $PSScriptRoot 'tests\native_handle_transfer_test.cpp'
+$nativeHandleTransferTestObject = Join-Path $nativeOutput 'native_handle_transfer_test.obj'
+$nativeHandleTransferTestExecutable = Join-Path $nativeOutput 'native_handle_transfer_test.exe'
+$nativeHandleTransferTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$nativeHandleTransferTestCompiler += ' /Fo' + '"' + $nativeHandleTransferTestObject + '"'
+$nativeHandleTransferTestCompiler += ' ' + '"' + $nativeHandleTransferTestSource + '"'
+$nativeHandleTransferTestCompiler += ' /Fe:' + '"' + $nativeHandleTransferTestExecutable + '"'
+$nativeHandleTransferTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$nativeHandleTransferTestCommand += $nativeHandleTransferTestCompiler
+& $env:ComSpec /d /s /c $nativeHandleTransferTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI native handle transfer test compile failed with exit code $LASTEXITCODE."
+}
+& $nativeHandleTransferTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI native handle transfer test failed with exit code $LASTEXITCODE."
+}
+
+$responseIdentifierTestObject = Join-Path $nativeOutput 'response_identifier_validation_test.obj'
+$responseIdentifierTestExecutable = Join-Path $nativeOutput 'response_identifier_validation_test.exe'
+$responseIdentifierTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseIdentifierTestCompiler += ' /I' + '"' + $internalHeader + '"'
+$responseIdentifierTestCompiler += ' /Fo' + '"' + $responseIdentifierTestObject + '"'
+$responseIdentifierTestCompiler += ' ' + '"' + $responseIdentifierTestSource + '"'
+$responseIdentifierTestCompiler += ' /Fe:' + '"' + $responseIdentifierTestExecutable + '"'
+$responseIdentifierTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseIdentifierTestCommand += $responseIdentifierTestCompiler
+& $env:ComSpec /d /s /c $responseIdentifierTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response identifier validation test compile failed with exit code $LASTEXITCODE."
+}
+& $responseIdentifierTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response identifier validation test failed with exit code $LASTEXITCODE."
+}
+
+$responseBridgeTestObject = Join-Path $nativeOutput 'response_bridge_test.obj'
+$responseBridgeTestExecutable = Join-Path $nativeOutput 'response_bridge_test.exe'
+$responseBridgeTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseBridgeTestCompiler += ' /I' + '"' + $internalHeader + '"'
+$responseBridgeTestCompiler += ' /Fo' + '"' + $responseBridgeTestObject + '"'
+$responseBridgeTestCompiler += ' ' + '"' + $responseBridgeTestSource + '"'
+$responseBridgeTestCompiler += ' /Fe:' + '"' + $responseBridgeTestExecutable + '"'
+$responseBridgeTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseBridgeTestCommand += $responseBridgeTestCompiler
+& $env:ComSpec /d /s /c $responseBridgeTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response bridge test compile failed with exit code $LASTEXITCODE."
+}
+& $responseBridgeTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response bridge test failed with exit code $LASTEXITCODE."
+}
+
+$responseSecretArrayScopeTestObject = Join-Path $nativeOutput 'response_secret_array_scope_test.obj'
+$responseSecretArrayScopeTestExecutable = Join-Path $nativeOutput 'response_secret_array_scope_test.exe'
+$responseSecretArrayScopeTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseSecretArrayScopeTestCompiler += ' /Fo' + '"' + $responseSecretArrayScopeTestObject + '"'
+$responseSecretArrayScopeTestCompiler += ' ' + '"' + $responseSecretArrayScopeTestSource + '"'
+$responseSecretArrayScopeTestCompiler += ' /Fe:' + '"' + $responseSecretArrayScopeTestExecutable + '"'
+$responseSecretArrayScopeTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseSecretArrayScopeTestCommand += $responseSecretArrayScopeTestCompiler
+& $env:ComSpec /d /s /c $responseSecretArrayScopeTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response secret-array scope test compile failed with exit code $LASTEXITCODE."
+}
+& $responseSecretArrayScopeTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response secret-array scope test failed with exit code $LASTEXITCODE."
+}
+
+$responseArrayConversionTestSource = Join-Path $PSScriptRoot 'tests\response_array_conversion_test.cpp'
+$responseArrayConversionTestObject = Join-Path $nativeOutput 'response_array_conversion_test.obj'
+$responseArrayConversionTestExecutable = Join-Path $nativeOutput 'response_array_conversion_test.exe'
+$responseArrayConversionTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseArrayConversionTestCompiler += ' /Fo' + '"' + $responseArrayConversionTestObject + '"'
+$responseArrayConversionTestCompiler += ' ' + '"' + $responseArrayConversionTestSource + '"'
+$responseArrayConversionTestCompiler += ' /Fe:' + '"' + $responseArrayConversionTestExecutable + '"'
+$responseArrayConversionTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseArrayConversionTestCommand += $responseArrayConversionTestCompiler
+& $env:ComSpec /d /s /c $responseArrayConversionTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response array conversion test compile failed with exit code $LASTEXITCODE."
+}
+& $responseArrayConversionTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response array conversion test failed with exit code $LASTEXITCODE."
 }
 
 $jniInclude = Join-Path $javaHome 'include'

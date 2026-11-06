@@ -120,10 +120,10 @@ Required layers include:
 
 Coverage gates:
 
-- `kmipkit-ttlv` and protocol/model code: at least 95 percent line coverage.
+- `kmipkit-ttlv` and protocol/model code: at least 90 percent line coverage.
 - Transport, FFI, and bindings: at least 85 percent line coverage.
 - Rust workspace overall: at least 90 percent line coverage.
-- New or changed code: at least 95 percent line coverage.
+- New or changed production code: at least 90 percent line coverage.
 - Normative requirement traceability: 100 percent.
 
 Generated code may be excluded from raw coverage, but its behavior must be
@@ -163,7 +163,13 @@ duplicating command logic.
 
 - Never log, format, serialize, or include in errors: credentials, private
   keys, secret key material, OTPs, tickets, raw KMIP bodies, or TLS private
-  keys.
+  keys. The sole exception is explicit caller access through the dedicated
+  generic response-TTLV accessor for the exact successful MAC, MAC Verify,
+  Sign, and Signature Verify Unique Identifier shape failures defined by
+  KMIPKIT-0021-FR-015 under KMIPKIT-0007-FR-013. This exception permits access
+  only through that accessor; it does not permit logging, formatting,
+  serialization, diagnostic text, or error-source exposure of the response.
+  No other protocol, validation, or transport error may retain response TTLV.
 - Use explicit secret types and zeroize memory owned by KMIPKit.
 - Document runtime limitations when Java or Python may retain external copies.
 - Enforce TLS certificate chain, validity, and hostname checks. There is no

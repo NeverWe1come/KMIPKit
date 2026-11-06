@@ -73,6 +73,7 @@ pub struct ProtocolError {
     kind: ProtocolErrorKind,
     cause: ProtocolCauseCategory,
     tag_path: Option<Vec<kmipkit_ttlv::Tag>>,
+    retain_generic_response: bool,
 }
 
 impl ProtocolError {
@@ -81,11 +82,17 @@ impl ProtocolError {
     where
         E: Error + 'static,
     {
+        let retain_generic_response = (&source as &dyn Error)
+            .downcast_ref::<crate::cryptographic_operation::CryptographicOperationError>()
+            .is_some_and(
+                crate::cryptographic_operation::CryptographicOperationError::retains_generic_response,
+            );
         drop(source);
         Self {
             kind,
             cause,
             tag_path: None,
+            retain_generic_response,
         }
     }
 
@@ -99,6 +106,7 @@ impl ProtocolError {
             kind,
             cause,
             tag_path: Some(tag_path),
+            retain_generic_response: false,
         }
     }
 
@@ -108,6 +116,7 @@ impl ProtocolError {
             kind,
             cause,
             tag_path: None,
+            retain_generic_response: false,
         }
     }
 
@@ -121,6 +130,15 @@ impl ProtocolError {
     #[must_use]
     pub const fn cause_category(&self) -> ProtocolCauseCategory {
         self.cause
+    }
+
+    /// Reports the internal client-retention marker for an approved response-shape error.
+    ///
+    /// This is a cross-crate implementation bridge and is hidden from generated API docs.
+    #[doc(hidden)]
+    #[must_use]
+    pub const fn retains_generic_response(&self) -> bool {
+        self.retain_generic_response
     }
 }
 

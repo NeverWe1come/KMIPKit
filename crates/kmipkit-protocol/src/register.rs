@@ -201,12 +201,13 @@ impl fmt::Debug for RegisterRequest {
 /// A typed Register result from §6.1.43, Table 292.
 ///
 /// The required Unique Identifier remains in its original KMIP wire form.
-/// The complete generic response item is retained for callback-scoped
-/// inspection, including unknown or future fields.
+/// Successful results retain the complete generic response item for
+/// callback-scoped inspection, including unknown or future fields. Failure
+/// and Pending results retain only their common result.
 #[derive(Debug)]
 pub struct RegisterResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
     unique_identifier: Option<UniqueIdentifier>,
 }
 
@@ -230,13 +231,18 @@ impl RegisterResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(RegisterError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Register")
-            .map_err(|_| RegisterError::MalformedResponseItem)?;
-
         let unique_identifier = if status.raw() == SUCCESS {
             Some(
                 item.with_response_payload(|payload| parse_success_identifier(&payload))
                     .ok_or(RegisterError::MalformedSuccessPayload)??,
+            )
+        } else {
+            None
+        };
+        let response_ttlv = if status.raw() == SUCCESS {
+            Some(
+                common::clone_response_item(item, "Register")
+                    .map_err(|_| RegisterError::MalformedResponseItem)?,
             )
         } else {
             None
@@ -261,9 +267,14 @@ impl RegisterResponse {
         self.unique_identifier.as_ref()
     }
 
-    /// Lends the complete ordered generic response batch item.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered generic response batch item on success.
+    ///
+    /// Failure and Pending preserve the common result without retaining the
+    /// response TTLV.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

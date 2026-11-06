@@ -9,7 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.extensions.Client;
+import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
+import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ClientRequestMessageExtension;
@@ -24,6 +28,7 @@ import org.kmipkit.extensions.ExtensionRecognition;
 import org.kmipkit.extensions.ExtensionSchema;
 import org.kmipkit.extensions.RegisteredExtensionValue;
 import org.kmipkit.extensions.TtlvPath;
+import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.ValidatedExtensionValue;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
@@ -35,8 +40,12 @@ import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
 final class JavaFacadeContractTest {
-    private static final List<Class<?>> NATIVE_RESOURCE_TYPES = List.of(
+    private static final List<Class<?>> T021_NATIVE_RESOURCE_TYPES = List.of(
+            Client.class,
+            ClientBatch.class,
             ClientBatchItem.class,
+            ClientBatchItemResult.class,
+            ClientBatchResponse.class,
             ClientConfiguration.class,
             ClientExtensionRegistry.class,
             ClientRequestMessageExtension.class,
@@ -50,6 +59,9 @@ final class JavaFacadeContractTest {
             ExtensionRecognition.class,
             ExtensionSchema.class,
             RegisteredExtensionValue.class,
+            TransportConfiguration.class,
+            TransportConfiguration.Builder.class,
+            TransportConfiguration.TransportInput.class,
             TtlvPath.class,
             ValidatedExtensionValue.class,
             RawTag.class,
@@ -62,19 +74,21 @@ final class JavaFacadeContractTest {
             TtlvValueView.class);
 
     @Test
-    void everyOwnedNativeFacadeTypeIsAutoCloseable() {
-        for (Class<?> type : NATIVE_RESOURCE_TYPES) {
+    void everyT021NativeResourceTypeIsAutoCloseable() {
+        for (Class<?> type : T021_NATIVE_RESOURCE_TYPES) {
             assertTrue(AutoCloseable.class.isAssignableFrom(type),
-                    () -> type.getName() + " must expose deterministic AutoCloseable ownership");
+                    () -> type.getName() + " must expose T021 AutoCloseable ownership");
         }
     }
 
     @Test
-    void everyPublicFacadePackageIsNullMarked() throws IOException {
+    void everyJavaPackageIsNullMarked() throws IOException {
         for (String packageInfo : List.of(
                 "/org/kmipkit/package-info.class",
                 "/org/kmipkit/extensions/package-info.class",
-                "/org/kmipkit/ttlv/package-info.class")) {
+                "/org/kmipkit/ttlv/package-info.class",
+                "/org/kmipkit/generated/package-info.class",
+                "/org/kmipkit/internal/package-info.class")) {
             try (var resource = JavaFacadeContractTest.class.getResourceAsStream(packageInfo)) {
                 assertTrue(resource != null, () -> packageInfo + " must declare JSpecify nullness");
                 String classFile = new String(resource.readAllBytes(), StandardCharsets.ISO_8859_1);

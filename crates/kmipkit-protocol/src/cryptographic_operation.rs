@@ -124,6 +124,7 @@ pub enum CryptographicOperationErrorKind {
 pub struct CryptographicOperationError {
     operation: &'static str,
     kind: CryptographicOperationErrorKind,
+    retain_generic_response: bool,
 }
 
 impl CryptographicOperationError {
@@ -131,7 +132,23 @@ impl CryptographicOperationError {
         operation: &'static str,
         kind: CryptographicOperationErrorKind,
     ) -> Self {
-        Self { operation, kind }
+        Self {
+            operation,
+            kind,
+            retain_generic_response: false,
+        }
+    }
+
+    pub(crate) const fn unique_identifier_shape(operation: &'static str) -> Self {
+        Self {
+            operation,
+            kind: CryptographicOperationErrorKind::MalformedPayload,
+            retain_generic_response: true,
+        }
+    }
+
+    pub(crate) const fn retains_generic_response(&self) -> bool {
+        self.retain_generic_response
     }
 
     /// Returns the safe structural error category.
@@ -352,9 +369,9 @@ pub(crate) fn parse_required_identifier(
     operation: &'static str,
 ) -> Result<(), CryptographicOperationError> {
     if slot.is_some() {
-        return Err(response_shape_error(operation));
+        return Err(unique_identifier_shape_error(operation));
     }
-    *slot = Some(parse_identifier(field).ok_or_else(|| response_shape_error(operation))?);
+    *slot = Some(parse_identifier(field).ok_or_else(|| unique_identifier_shape_error(operation))?);
     Ok(())
 }
 
@@ -430,6 +447,12 @@ pub(crate) fn response_shape_error(operation: &'static str) -> CryptographicOper
     CryptographicOperationError::new(operation, CryptographicOperationErrorKind::MalformedPayload)
 }
 
+pub(crate) fn unique_identifier_shape_error(
+    operation: &'static str,
+) -> CryptographicOperationError {
+    CryptographicOperationError::unique_identifier_shape(operation)
+}
+
 /// Parsed fields shared by successful MAC and Sign operation responses.
 pub(crate) struct ParsedOperationOutputPayload {
     pub(crate) unique_identifier: UniqueIdentifier,
@@ -463,7 +486,8 @@ pub(crate) fn parse_operation_output_payload(
     }
 
     Ok(ParsedOperationOutputPayload {
-        unique_identifier: unique_identifier.ok_or_else(|| response_shape_error(operation))?,
+        unique_identifier: unique_identifier
+            .ok_or_else(|| unique_identifier_shape_error(operation))?,
         output_data,
         correlation_value,
     })

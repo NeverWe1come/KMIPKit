@@ -18,6 +18,11 @@ contains the caller's ordered `Object Group` text attributes. An empty list
 encodes a present empty structure; omitting the builder leaves the field absent.
 KMIPKit does not add groups or deduplicate repeated values.
 
+The Query-specific `ClientBatchItem` builders can check the Query payload
+against caller-selected codec limits before copying or encoding it. Execution
+checks the complete Request Message, including its headers and batch wrappers,
+against the same limits before transport exchange.
+
 ```rust,kmipkit-test
 use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
 use kmipkit_protocol::{QueryFunction, QueryRequest};

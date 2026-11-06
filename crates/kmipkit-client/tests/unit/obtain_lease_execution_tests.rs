@@ -161,7 +161,10 @@ fn obtain_lease_sends_table_268_and_exposes_required_table_269_values_once() {
     );
     assert_eq!(typed.lease_time(), Some(0));
     assert_eq!(typed.last_change_date(), Some(1_700_000_000));
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     assert_eq!(
         request_fields(
             captured

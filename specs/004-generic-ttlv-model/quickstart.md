@@ -52,7 +52,7 @@ cargo test --workspace --all-features
 cargo llvm-cov --workspace --all-features
 ```
 
-Expected result: all commands exit successfully, with at least 95% coverage for changed code and the `kmipkit-ttlv`/protocol-model crates, at least 90% workspace-wide, and at least 85% for transport/FFI only if those paths are affected. Record actual command output and coverage/security results in the implementation PR; the commands above are proposed validation steps, not evidence that they have already passed.
+Expected result: all commands exit successfully, with at least 90% coverage for changed code and the `kmipkit-ttlv`/protocol-model crates, at least 90% workspace-wide, and at least 85% for transport/FFI only if those paths are affected. Record actual command output and coverage/security results in the implementation PR; the commands above are proposed validation steps, not evidence that they have already passed.
 
 ## Later codec validation boundary
 

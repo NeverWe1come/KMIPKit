@@ -10,7 +10,7 @@
 //! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
 //! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
-use kmipkit_protocol::RngRetrieveRequest;
+use kmipkit_protocol::{ProtocolCauseCategory, RngRetrieveRequest};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::ValueView;
@@ -21,6 +21,7 @@ use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::{ClientCauseCategory, ClientErrorCategory};
 
 const RNG_RETRIEVE: u32 = 0x0000_0025;
 const DATA_LENGTH: u32 = 0x0042_00D5;
@@ -107,7 +108,7 @@ fn rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output() 
     let response_view = item.outcome().response();
     assert!(response_view.rng_retrieve().is_some());
     assert!(response_view.rng_seed().is_none());
-    assert!(format!("{response_view:?}").contains("RngRetrieve"));
+    assert_eq!(format!("{response_view:?}"), "RngRetrieve");
     assert!(item.outcome().rng_retrieve_response().is_some());
     assert!(item.outcome().rng_seed_response().is_none());
     assert!(
@@ -201,6 +202,18 @@ fn rng_retrieve_malformed_secret_response_is_not_exposed_in_errors() {
         .rng_retrieve(RngRetrieveRequest::new(16), &CodecLimits::defaults())
         .expect_err("duplicate Table 317 Data is rejected");
 
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(
+        error.cause_category(),
+        Some(ClientCauseCategory::Protocol(
+            ProtocolCauseCategory::InvalidValue
+        ))
+    );
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.response_ttlv().is_none());
     assert!(
         !error
             .to_string()

@@ -31,6 +31,8 @@ one and links both directions.
 - [ADR-0016: Preserve native system name-resolution policy](0016-native-system-name-resolution.md) (Accepted)
 - [ADR-0018: KMIP 2.1 multi-encoding scope for 1.0](0018-multi-encoding-1-0-scope.md) (Accepted)
 
+- [ADR-0017: Single-dependency Rust facade](0017-single-dependency-rust-facade.md) (Accepted)
+
 ## Template
 
 ```text

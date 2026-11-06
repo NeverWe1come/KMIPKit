@@ -10,7 +10,7 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 
 use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
-use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientError, ClientRequest};
+use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientErrorCategory, ClientRequest};
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     DelegatedLoginRequest, LoginRequest, LogoutRequest, SecretBytes, Ticket, TicketType,
@@ -18,8 +18,8 @@ use kmipkit_protocol::{
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
 };
+use kmipkit_ttlv::Structure;
 use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Structure, ValueView};
 
 #[test]
 #[ignore = "requires local Cosmian KMS 5.28.0; see docs/development/kmip-interoperability.md"]
@@ -66,12 +66,6 @@ fn assert_rejected_without_operation(
     request: ClientRequest,
     operation_name: &str,
 ) -> Result<(), Box<dyn Error>> {
-    const FAILURE: u32 = 1;
-    const INVALID_MESSAGE: u32 = 4;
-    const OPERATION: u32 = 0x0042_005C;
-    const RESULT_REASON: u32 = 0x0042_007E;
-    const RESULT_STATUS: u32 = 0x0042_007F;
-
     let Err(error) = client.execute(
         ClientBatch::new(ClientBatchItem::new(request)),
         &CodecLimits::defaults(),
@@ -82,63 +76,12 @@ fn assert_rejected_without_operation(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::ResponseStarted)
     );
-    let response_tags = response_batch_item_tags(&error)
-        .ok_or("failed response did not retain its generic TTLV batch item")?;
-    assert!(response_tags.contains(&RESULT_STATUS));
-    assert!(response_tags.contains(&RESULT_REASON));
-    assert!(!response_tags.contains(&OPERATION));
-    assert_eq!(response_enumeration(&error, RESULT_STATUS), Some(FAILURE));
-    assert_eq!(
-        response_enumeration(&error, RESULT_REASON),
-        Some(INVALID_MESSAGE)
-    );
+    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert!(error.response_ttlv().is_none());
     println!(
-        "Cosmian KMS 5.28.0 {operation_name}: Failure/Invalid Message omitted required Operation; response retained safely"
+        "Cosmian KMS 5.28.0 {operation_name}: malformed Failure response rejected without retaining its body"
     );
     Ok(())
-}
-
-fn response_batch_item_tags(error: &ClientError) -> Option<Vec<u32>> {
-    const BATCH_ITEM: u32 = 0x0042_000F;
-    error.response_ttlv()?.with_ttlv(|root| {
-        let batch_item = root
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == BATCH_ITEM)?;
-        batch_item.with_value(|value| match value {
-            ValueView::Structure(structure) => Some(
-                structure
-                    .children()
-                    .iter()
-                    .map(|field| field.tag().raw())
-                    .collect(),
-            ),
-            _ => None,
-        })
-    })
-}
-
-fn response_enumeration(error: &ClientError, tag: u32) -> Option<u32> {
-    const BATCH_ITEM: u32 = 0x0042_000F;
-    error.response_ttlv()?.with_ttlv(|root| {
-        let batch_item = root
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == BATCH_ITEM)?;
-        batch_item.with_value(|value| {
-            let ValueView::Structure(structure) = value else {
-                return None;
-            };
-            let field = structure
-                .children()
-                .iter()
-                .find(|field| field.tag().raw() == tag)?;
-            field.with_value(|value| match value {
-                ValueView::Enumeration(raw) => Some(*raw),
-                _ => None,
-            })
-        })
-    })
 }
 
 fn client() -> Result<Client, Box<dyn Error>> {

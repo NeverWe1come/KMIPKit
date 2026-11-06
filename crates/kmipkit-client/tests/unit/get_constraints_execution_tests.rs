@@ -222,11 +222,10 @@ fn get_constraints_outcome_exposes_typed_views_and_safe_diagnostics() {
     let outcome_debug = format!("{outcome:?}");
     let view_debug = format!("{view:?}");
     assert!(outcome_debug.starts_with("GetConstraints("));
-    assert!(view_debug.starts_with("GetConstraints("));
-    for formatted in [&outcome_debug, &view_debug] {
-        assert!(formatted.contains("[REDACTED]"), "{formatted}");
-        assert!(!formatted.contains(DEBUG_SENTINEL), "{formatted}");
-    }
+    assert_eq!(view_debug, "GetConstraints");
+    assert!(outcome_debug.contains("[REDACTED]"), "{outcome_debug}");
+    assert!(!outcome_debug.contains(DEBUG_SENTINEL), "{outcome_debug}");
+    assert!(!view_debug.contains(DEBUG_SENTINEL), "{view_debug}");
     assert_eq!(
         outcome.to_string(),
         format!("GetConstraints({})", outcome.result())
@@ -320,7 +319,7 @@ fn pending_keeps_exact_correlation_and_does_not_poll() {
     let view = response.outcome().response();
     assert!(view.get_constraints().is_some());
     assert_eq!(view.result().status().raw(), 2);
-    assert!(format!("{view:?}").starts_with("GetConstraints("));
+    assert_eq!(format!("{view:?}"), "GetConstraints");
     assert!(!format!("{:?}", response.outcome()).contains("A5005AFF"));
 }
 

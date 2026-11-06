@@ -16,6 +16,7 @@ const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const VENDOR_MEMBER: u32 = 0x0054_1234;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const OBJECT_ID: &str = "usage-object-23";
+const DEBUG_IDENTIFIER_SENTINEL: &str = "KMIP_USAGE_ALLOCATION_IDENTIFIER_SENTINEL";
 
 fn response_item(message: &ResponseMessage) -> crate::ResponseBatchItemView<'_> {
     message
@@ -82,6 +83,15 @@ fn table_232_preserves_optional_identifier_and_required_long_integer_count() {
 }
 
 #[test]
+fn request_debug_redacts_explicit_unique_identifier() {
+    let request = GetUsageAllocationRequest::new(9).with_unique_identifier(
+        UniqueIdentifier::TextString(DEBUG_IDENTIFIER_SENTINEL.to_owned()),
+    );
+
+    assert!(!format!("{request:?}").contains(DEBUG_IDENTIFIER_SENTINEL));
+}
+
+#[test]
 fn table_233_requires_resolved_identifier_and_retains_unknown_siblings() {
     let actual = {
         let message = response_message(
@@ -99,6 +109,7 @@ fn table_233_requires_resolved_identifier_and_retains_unknown_siblings() {
         Some(&UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
     );
     assert_eq!(actual.result().status().raw(), 0);
+    assert_eq!(actual.with_ttlv(|_| true), Some(true));
     assert_eq!(
         format!("{actual:?}"),
         "GetUsageAllocationResponse { result: KmipOperationResult { status: ResultStatus(0), reason: None, message: None }, has_unique_identifier: true, response_ttlv: \"[REDACTED]\" }"
@@ -243,6 +254,7 @@ fn table_234_failures_and_unknown_reasons_remain_common_results() {
             Some(ResultReason::from_raw(reason))
         );
         assert!(actual.unique_identifier().is_none());
+        assert!(actual.with_ttlv(|_| true).is_none());
     }
 }
 
@@ -268,15 +280,10 @@ fn pending_response_retains_exact_correlation_without_fabricating_identifier() {
         .expect("Pending uses the common operation result");
     assert_eq!(actual.result().status().raw(), 2);
     assert!(actual.unique_identifier().is_none());
-    actual.with_ttlv(|response| {
-        let pending = response
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_0006)
-            .expect("correlation remains on the full response item");
-        assert!(pending.with_value(|value| matches!(
-            value,
-            ValueView::ByteString(bytes) if *bytes == correlation
-        )));
-    });
+    assert_eq!(
+        response_item(&message).with_asynchronous_correlation_value(<[u8]>::to_vec),
+        Some(correlation.to_vec()),
+        "Pending correlation remains available through its dedicated field"
+    );
+    assert_eq!(actual.with_ttlv(|_| true), None);
 }

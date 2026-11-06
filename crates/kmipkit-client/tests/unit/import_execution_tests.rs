@@ -21,6 +21,8 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const RESULT_REASON: u32 = 0x0042_007E;
+const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const SERVER_REJECTED_OBJECT: u32 = 0xF123_4567;
 
@@ -97,6 +99,37 @@ fn server_error_response() -> Vec<u8> {
     .expect("fixture is a valid KMIP 2.1 response")
 }
 
+fn successful_response() -> Vec<u8> {
+    let version = test_structure([
+        test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        test_item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+    let header = test_structure([
+        test_item(PROTOCOL_VERSION, Value::structure(version)),
+        test_item(TIME_STAMP, Value::date_time(1)),
+        test_item(BATCH_COUNT, Value::integer(1)),
+    ]);
+    let payload = test_structure([
+        test_item(0x0042_0094, Value::text_string("imported-id".to_owned())),
+        test_item(0x0054_0001, Value::enumeration(0xF123_4567)),
+    ]);
+    encode_message_for_test(
+        test_structure([
+            test_item(RESPONSE_HEADER, Value::structure(header)),
+            test_item(
+                BATCH_ITEM,
+                Value::structure(test_structure([
+                    test_item(OPERATION, Value::enumeration(IMPORT_OPERATION)),
+                    test_item(RESULT_STATUS, Value::enumeration(SUCCESS)),
+                    test_item(RESPONSE_PAYLOAD, Value::structure(payload)),
+                ])),
+            ),
+        ]),
+        &CodecLimits::defaults(),
+    )
+    .expect("fixture is a valid KMIP 2.1 success response")
+}
+
 #[test]
 fn explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error() {
     assert_eq!(IMPORT_OPERATION, 0x0000_002A);
@@ -114,6 +147,48 @@ fn explicit_import_sends_supplied_attributes_and_object_once_and_preserves_serve
         response.outcome().result().reason().map(ResultReason::raw),
         Some(SERVER_REJECTED_OBJECT)
     );
+    assert!(request_contains(&request_bytes, b"import-key"));
+    assert!(request_contains(
+        &request_bytes,
+        b"synthetic-wrapped-import-object"
+    ));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn successful_import_preserves_result_identifier_and_unknown_ordered_response_once() {
+    let (mut client, fake, request_bytes) = client_for(ExchangeScript::Success {
+        response: successful_response(),
+        request_write_chunks: vec![5, 9, 17],
+    });
+    let response = client
+        .import(request(), &CodecLimits::defaults())
+        .expect("the successful Import response remains typed");
+    let outcome = response.outcome();
+    let typed = outcome
+        .response()
+        .import()
+        .expect("the result retains its typed Import response");
+
+    assert_eq!(outcome.operation(), ClientOperation::Import);
+    assert_eq!(outcome.result().status().raw(), SUCCESS);
+    assert_eq!(
+        typed.unique_identifier(),
+        Some(&UniqueIdentifier::TextString("imported-id".to_owned()))
+    );
+    assert_eq!(
+        typed.with_ttlv(|view| {
+            let fields = view.children();
+            fields
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()
+        }),
+        vec![OPERATION, RESULT_STATUS, RESPONSE_PAYLOAD]
+    );
+    assert!(typed.with_ttlv(|view| {
+        crate::execute_test_support::structure_contains_tag(&view, 0x0054_0001)
+    }));
     assert!(request_contains(&request_bytes, b"import-key"));
     assert!(request_contains(
         &request_bytes,

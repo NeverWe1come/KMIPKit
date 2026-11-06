@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, TcpStream, UdpSocket};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{
     DnsQueryType, EphemeralPki, LocalDnsFixture, LoopbackTcpListener, PkiFixtureError,
@@ -245,8 +245,8 @@ fn wait_for_question_count(
 }
 
 fn wait_for_active_tcp_requests(fixture: &LocalDnsFixture, expected: usize) {
-    let deadline = std::time::Instant::now() + Duration::from_secs(2);
-    while fixture.active_tcp_requests() < expected && std::time::Instant::now() < deadline {
+    let deadline = Instant::now() + Duration::from_secs(2);
+    while fixture.active_tcp_requests() < expected && Instant::now() < deadline {
         std::thread::sleep(Duration::from_millis(2));
     }
     assert_eq!(fixture.active_tcp_requests(), expected);

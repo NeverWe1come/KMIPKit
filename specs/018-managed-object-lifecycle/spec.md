@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0018-managed-object-lifecycle`
 **Created**: 2026-10-09
-**Status**: Draft for independent human review
+**Status**: Approved for implementation; independent review remains pending
 **Input**: KMIPKit roadmap Phase 2: cover remaining client-initiated KMIP 2.1 operations through bounded, traceable protocol-family specifications.
 
 ## Normative scope

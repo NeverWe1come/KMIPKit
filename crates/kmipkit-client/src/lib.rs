@@ -3,7 +3,7 @@
 //! The typed request enum supports explicit Discover Versions, Activate,
 //! Archive, Certify, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
 //! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
-//! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
+//! Attribute List, Modify Attribute, Set Attribute, Query, Ping, and PKCS#11 operations.
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
 //! Requests. The synchronous [`Client`] is constructed from an immutable client
 //! configuration and validated production transport configuration; callers
@@ -54,11 +54,11 @@
 #[allow(dead_code)] // KMIPKIT-0054 supplies the table before either codec lands.
 pub(crate) mod wire_names_generated;
 
-#[allow(dead_code)] // Private codec is connected by KMIPKIT-0057.
+#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod json_encoding;
-#[allow(dead_code)] // Private codec is connected by KMIPKIT-0057.
+#[allow(dead_code)] // The common error contract is consumed by both codecs.
 mod wire_codec_common;
-#[allow(dead_code)] // Private codec is independently tested before integration.
+#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod xml_codec;
 
 mod error;
@@ -86,7 +86,7 @@ mod execute;
 #[path = "../tests/unit/profile_fixture_replay_tests.rs"]
 mod profile_fixture_replay_tests;
 
-/// Typed opaque PKCS#11 forwarding models.
+/// Typed opaque KMIP 2.1 §6.1.37 PKCS#11 forwarding models.
 pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
 

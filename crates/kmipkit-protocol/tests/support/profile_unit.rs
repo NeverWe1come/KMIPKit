@@ -40,6 +40,69 @@ use crate::profiles_generated::{
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
+#[test]
+fn profile_validation_error_codes_have_exact_stable_strings() {
+    fn expected_code(code: ProfileValidationErrorCode) -> &'static str {
+        match code {
+            ProfileValidationErrorCode::EmptySelection => "empty_selection",
+            ProfileValidationErrorCode::DuplicateProfile => "duplicate_profile",
+            ProfileValidationErrorCode::UnknownProfile => "unknown_profile",
+            ProfileValidationErrorCode::ProfileUnavailable => "profile_unavailable",
+            ProfileValidationErrorCode::ConditionalProfileUnsatisfied => {
+                "conditional_profile_unsatisfied"
+            }
+            ProfileValidationErrorCode::DependencyCycle => "dependency_cycle",
+            ProfileValidationErrorCode::MissingRequirementMetadata => {
+                "missing_requirement_metadata"
+            }
+            ProfileValidationErrorCode::UnresolvedRequirementScope => {
+                "unresolved_requirement_scope"
+            }
+            ProfileValidationErrorCode::MissingRuleMapping => "missing_rule_mapping",
+            ProfileValidationErrorCode::IncompleteRuleMapping => "incomplete_rule_mapping",
+            ProfileValidationErrorCode::RuleMappingMismatch => "rule_mapping_mismatch",
+            ProfileValidationErrorCode::MissingCategoryTest => "missing_category_test",
+            ProfileValidationErrorCode::ConflictingConstraints => "conflicting_constraints",
+            ProfileValidationErrorCode::RequestRuleRejected => "request_rule_rejected",
+            ProfileValidationErrorCode::ResponseRuleRejected => "response_rule_rejected",
+            ProfileValidationErrorCode::TransportConstraintRejected => {
+                "transport_constraint_rejected"
+            }
+            ProfileValidationErrorCode::ProfileStateContextRequired => {
+                "profile_state_context_required"
+            }
+            ProfileValidationErrorCode::ProfileStateBindingMismatch => {
+                "profile_state_binding_mismatch"
+            }
+        }
+    }
+
+    let codes = [
+        ProfileValidationErrorCode::EmptySelection,
+        ProfileValidationErrorCode::DuplicateProfile,
+        ProfileValidationErrorCode::UnknownProfile,
+        ProfileValidationErrorCode::ProfileUnavailable,
+        ProfileValidationErrorCode::ConditionalProfileUnsatisfied,
+        ProfileValidationErrorCode::DependencyCycle,
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        ProfileValidationErrorCode::UnresolvedRequirementScope,
+        ProfileValidationErrorCode::MissingRuleMapping,
+        ProfileValidationErrorCode::IncompleteRuleMapping,
+        ProfileValidationErrorCode::RuleMappingMismatch,
+        ProfileValidationErrorCode::MissingCategoryTest,
+        ProfileValidationErrorCode::ConflictingConstraints,
+        ProfileValidationErrorCode::RequestRuleRejected,
+        ProfileValidationErrorCode::ResponseRuleRejected,
+        ProfileValidationErrorCode::TransportConstraintRejected,
+        ProfileValidationErrorCode::ProfileStateContextRequired,
+        ProfileValidationErrorCode::ProfileStateBindingMismatch,
+    ];
+    assert_eq!(codes.len(), 18);
+    for code in codes {
+        assert_eq!(code.as_str(), expected_code(code));
+    }
+}
+
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
 const PROTOCOL_VERSION_TAG: u32 = 0x0042_0069;
@@ -15529,7 +15592,7 @@ fn readiness_blockers_have_stable_text_and_requirement_ids() {
         ),
         (
             ProfileReadinessBlocker::ProfileUnavailable,
-            "profile is outside the KMIPKit 1.0 client scope",
+            "profile is outside the KMIPKit 1.0 client scope or its evidence is incomplete",
             None,
         ),
     ];
@@ -15612,7 +15675,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(
-        !readiness
+        readiness
             .blockers()
             .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
     );
@@ -15622,7 +15685,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(readiness.target_selected());
-    assert!(readiness.runtime_validation_available());
+    assert!(!readiness.runtime_validation_available());
     assert!(
         readiness
             .blockers()
