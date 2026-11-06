@@ -222,6 +222,28 @@ fn tls13_resumption_uses_new_connections_and_is_bounded_to_sixteen_tickets() {
 }
 
 #[test]
+fn session_store_clear_purges_cached_tickets_and_forces_full_handshake() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let client = tls::build_client_config(&transport_config(&pki, &pki, None, Vec::new()))
+        .expect("the client configuration is valid");
+    let peer = server_config(&pki, false, 2);
+
+    assert_eq!(
+        handshake(&client, Arc::clone(&peer)).expect("the first TLS connection succeeds"),
+        HandshakeKind::Full
+    );
+    assert!(client.cached_ticket_count() > 0);
+
+    client.clear_cached_tickets();
+    assert_eq!(client.cached_ticket_count(), 0);
+
+    assert_eq!(
+        handshake(&client, peer).expect("after clear, connection performs full handshake"),
+        HandshakeKind::Full
+    );
+}
+
+#[test]
 fn each_identity_gets_an_isolated_session_cache() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let other_identity = TestPki::generate("other-client.kmipkit.test", false);

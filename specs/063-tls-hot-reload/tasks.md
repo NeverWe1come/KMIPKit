@@ -3,9 +3,9 @@
 ## Phase 1: RED (Failing Tests)
 
 - [ ] `T001`: Add failing unit test in `crates/kmipkit-transport` asserting `TlsSessionStore::clear()` purges cached tickets and resets ticket count to zero.
-- [ ] `T002`: Add failing unit test in `crates/kmipkit-transport` asserting file-backed `CertificateInput`, `PrivateKeyInput`, and `RevocationListInput` record and retain their file tracking descriptors with redacted paths.
+- [ ] `T002`: Add failing unit test in `crates/kmipkit-transport` asserting file-backed `CertificateInput` and `PrivateKeyInput` record and retain their file tracking descriptors with redacted paths.
 - [ ] `T003`: Add failing integration test in `tests/raw_tls.rs` demonstrating client mTLS certificate and private key rotation on disk without client reconstruction.
-- [ ] `T004`: Add failing integration test in `tests/https.rs` demonstrating CRL rotation on disk invalidating active Keep-Alive connections and rejecting a newly-revoked server certificate as `NotSent`.
+- [ ] `T004`: Add failing integration test in `tests/https.rs` demonstrating credential rotation on disk invalidating active Keep-Alive connections and completing handshake under the new identity.
 - [ ] `T005`: Add failing test asserting mismatched/corrupt key file during rotation fails closed as `NotSent` before network I/O and preserves zeroization.
 
 ## Phase 2: GREEN (Implementation)

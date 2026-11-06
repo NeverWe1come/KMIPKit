@@ -590,6 +590,36 @@ fn configuration_debug_redacts_every_credential_endpoint_and_target_shape() {
     assert!(config_debug.contains("[REDACTED]"));
 }
 
+#[test]
+fn file_backed_inputs_retain_tracked_descriptors_and_redact_paths() {
+    let pki = EphemeralPki::generate().expect("ephemeral client PKI");
+    let client = pki.client_identity();
+    let cert_pem = pem("CERTIFICATE", client.certificate_chain_der()[0]);
+    let key_pem = pem("PRIVATE KEY", client.private_key_der());
+
+    let cert_file = TemporaryCredentialFile::write(&cert_pem);
+    let key_file = TemporaryCredentialFile::write(&key_pem);
+
+    let cert_input = CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file");
+    let key_input = PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file");
+
+    let cert_debug = format!("{cert_input:?}");
+    let key_debug = format!("{key_input:?}");
+
+    assert!(!cert_debug.contains(cert_file.path.to_str().unwrap()));
+    assert!(!key_debug.contains(key_file.path.to_str().unwrap()));
+
+    let config = TransportConfig::builder(Endpoint::raw_tls("localhost", 5696))
+        .client_identity(ClientIdentity::new(cert_input, key_input))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_pem(pem("CERTIFICATE", pki.authority_certificate_der())),
+        ]))
+        .build()
+        .expect("config builds");
+
+    assert!(config.has_tracked_files());
+}
+
 struct TemporaryCredentialFile {
     path: PathBuf,
 }
