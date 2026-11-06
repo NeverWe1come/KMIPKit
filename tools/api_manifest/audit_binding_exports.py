@@ -849,6 +849,29 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         prefix = ".".join(part for part in (source_module, source_name) if part)
         return ".".join([prefix, *parts[1:]])
 
+    def imported_enum_class(
+        module: str, name: str
+    ) -> tuple[str, list[tuple[str, str, int]]] | None:
+        current = (module, name)
+        visited: set[tuple[str, str]] = set()
+        while current not in visited:
+            visited.add(current)
+            class_record = classes.get(f"{current[0]}.{current[1]}")
+            if class_record is not None:
+                source_module, source_name, bases, members = class_record
+                if any(
+                    class_path(base, source_module)
+                    in {"enum.Enum", "enum.IntEnum", "enum.Flag", "enum.IntFlag"}
+                    for base in bases
+                ):
+                    return f"{source_module}.{source_name}", members
+                return None
+            target = imported.get(current)
+            if target is None or not target[1]:
+                return None
+            current = target
+        return None
+
     for qualified, (module, name, bases, direct_members) in sorted(classes.items()):
         if module not in public_modules or name.startswith("_"):
             continue
@@ -900,6 +923,13 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         if target_kind == "module" and not source_name and export_name == source_module:
             continue
         records.append(_record(package, export_name, target_kind, module))
+        enum_class = imported_enum_class(module, name)
+        if enum_class is not None:
+            source_class, members = enum_class
+            records.extend(
+                _record(package, f"{export_name}.{member}", kind, f"inherited:{source_class}:{line}")
+                for member, kind, line in members
+            )
     return _report(records, issues)
 
 
