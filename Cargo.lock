@@ -398,6 +398,7 @@ dependencies = [
 name = "kmipkit-transport"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "bytes",
  "hyper",
  "kmipkit-test-support",

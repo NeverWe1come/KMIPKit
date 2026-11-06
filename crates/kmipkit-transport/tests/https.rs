@@ -21,6 +21,10 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
+#[path = "support/hot_reload.rs"]
+mod hot_reload;
+use hot_reload::{TempFile, pem, server_config_with_multiple_roots};
+
 #[path = "../src/config.rs"]
 #[allow(dead_code)]
 mod config;
@@ -1081,6 +1085,95 @@ fn malformed_http_parser_error_invalidates_the_reusable_session() {
 }
 
 #[test]
+fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
+    let first_pki = EphemeralPki::generate().expect("the first ephemeral test PKI is generated");
+    let second_pki = EphemeralPki::generate().expect("the second ephemeral test PKI is generated");
+
+    let cert_file = TempFile::write(&pem(
+        "CERTIFICATE",
+        first_pki.client_identity().certificate_der(),
+    ));
+    let key_file = TempFile::write(&pem(
+        "PRIVATE KEY",
+        first_pki.client_identity().private_key_der(),
+    ));
+
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+
+    let server_conf =
+        server_config_with_multiple_roots(&first_pki, &[second_pki.authority_certificate_der()]);
+    let peer = spawn_reconnection_response_peer(
+        listener.into_inner(),
+        server_conf,
+        vec![
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 5\r\n\r\nfirst".to_vec(),
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 6\r\n\r\nsecond".to_vec(),
+        ],
+    );
+
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(
+        format!("https://127.0.0.1:{}", address.port()),
+    ))
+    .tls_server_name("server.kmipkit.test")
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            first_pki.authority_certificate_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
+
+    let mut adapter = HttpsTransport::new(config).expect("adapter initializes");
+
+    let first_response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("first exchange succeeds");
+    assert_eq!(first_response.as_bytes(), b"first");
+
+    // Overwrite credential files on disk with second identity
+    cert_file.overwrite(&pem(
+        "CERTIFICATE",
+        second_pki.client_identity().certificate_der(),
+    ));
+    key_file.overwrite(&pem(
+        "PRIVATE KEY",
+        second_pki.client_identity().private_key_der(),
+    ));
+
+    let second_response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("second exchange succeeds after hot reload");
+    assert_eq!(second_response.as_bytes(), b"second");
+
+    // Corrupt key to test reload error in HTTPS
+    key_file.overwrite(b"invalid-key-data");
+    let err = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .unwrap_err();
+    assert_eq!(err.delivery_state(), RequestDeliveryState::NotSent);
+
+    drop(adapter);
+    let peer = peer.join().expect("the bounded reconnect peer completes");
+    assert_eq!(peer.accepted_connections, 2);
+    assert_eq!(peer.client_certificates.len(), 2);
+    assert_eq!(
+        peer.client_certificates[0],
+        first_pki.client_identity().certificate_der()
+    );
+    assert_eq!(
+        peer.client_certificates[1],
+        second_pki.client_identity().certificate_der()
+    );
+}
+
+#[test]
 fn https_enforces_64_headers_and_64_kibibyte_parser_input_boundary() {
     const PARSER_LIMIT: usize = 64 * 1024;
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
@@ -1563,6 +1656,7 @@ struct SequencePeerObservation {
 struct RetryPeerObservation {
     accepted_connections: usize,
     requests: Vec<CapturedRequest>,
+    client_certificates: Vec<Vec<u8>>,
 }
 
 fn spawn_peer(
@@ -1795,6 +1889,9 @@ fn spawn_retry_probe_peer_with_response(
             }
             if let Some(request) = read_request(&mut tls) {
                 observation.requests.push(request);
+                if let Some(cert) = tls.conn.peer_certificates().and_then(|certs| certs.first()) {
+                    observation.client_certificates.push(cert.to_vec());
+                }
                 let _ = tls.write_all(&response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();
@@ -1854,6 +1951,9 @@ fn spawn_reconnection_response_peer(
                     continue;
                 };
                 observation.requests.push(request);
+                if let Some(cert) = tls.conn.peer_certificates().and_then(|certs| certs.first()) {
+                    observation.client_certificates.push(cert.to_vec());
+                }
                 let _ = tls.write_all(&response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();

@@ -30,6 +30,10 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection};
 
+#[path = "support/hot_reload.rs"]
+mod hot_reload;
+use hot_reload::{TempFile, pem};
+
 #[path = "../src/config.rs"]
 #[allow(dead_code)]
 mod config;
@@ -1347,6 +1351,134 @@ fn raw_tls_rejects_server_certificate_revoked_by_caller_crl() {
     );
 }
 
+#[test]
+fn raw_tls_hot_reloads_client_certificate_and_key_from_disk_between_exchanges() {
+    let pki = PolicyPki::generate(SERVER_NAME, false);
+    let (client2_cert_der, client2_key_der) = pki.generate_additional_client(5555);
+
+    let cert_file = TempFile::write(&pem("CERTIFICATE", &pki.client_chain_der()[0]));
+    let key_file = TempFile::write(&pem("PRIVATE KEY", &pki.client_key_der()));
+
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer_config = server_config(&pki, true);
+    let listener = listener.into_inner();
+    let first_peer_config = Arc::clone(&peer_config);
+    let second_peer_config = Arc::clone(&peer_config);
+
+    let peer = thread::spawn(move || {
+        let first = run_peer(
+            &listener,
+            first_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        );
+        let second = run_peer(
+            &listener,
+            second_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        );
+        (first, second)
+    });
+
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        address.port(),
+    ))
+    .tls_server_name(SERVER_NAME)
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            &pki.authority_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
+
+    let mut adapter = RawTlsTransport::new(config).expect("adapter initializes");
+
+    let first_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert!(first_result.is_ok());
+
+    // Rotate credential files on disk to client 2
+    cert_file.overwrite(&pem("CERTIFICATE", &client2_cert_der));
+    key_file.overwrite(&pem("PRIVATE KEY", &client2_key_der));
+
+    let second_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert!(second_result.is_ok());
+
+    let (first_peer, second_peer) = peer.join().expect("peer threads complete");
+    assert_eq!(
+        first_peer.client_certificate,
+        Some(pki.client_chain_der()[0].clone())
+    );
+    assert_eq!(second_peer.client_certificate, Some(client2_cert_der));
+}
+
+#[test]
+fn raw_tls_mismatched_or_corrupt_credential_file_fails_closed_as_not_sent() {
+    let pki = PolicyPki::generate(SERVER_NAME, false);
+    let (client2_cert_der, _client2_key_der) = pki.generate_additional_client(7777);
+
+    let cert_file = TempFile::write(&pem("CERTIFICATE", &pki.client_chain_der()[0]));
+    let key_file = TempFile::write(&pem("PRIVATE KEY", &pki.client_key_der()));
+
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer_config = server_config(&pki, true);
+    let listener = listener.into_inner();
+    let first_peer_config = Arc::clone(&peer_config);
+
+    let peer = thread::spawn(move || {
+        run_peer(
+            &listener,
+            first_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        )
+    });
+
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        address.port(),
+    ))
+    .tls_server_name(SERVER_NAME)
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            &pki.authority_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
+
+    let mut adapter = RawTlsTransport::new(config).expect("adapter initializes");
+
+    let first_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert!(first_result.is_ok());
+    let _ = peer.join();
+
+    // Rotate cert to client 2, but corrupt the private key file
+    cert_file.overwrite(&pem("CERTIFICATE", &client2_cert_der));
+    key_file
+        .overwrite(b"-----BEGIN PRIVATE KEY-----\ncorrupted-garbage\n-----END PRIVATE KEY-----\n");
+
+    let second_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    let error = second_result.expect_err("corrupted key file must fail closed");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+}
+
 fn exchange(
     config: config::TransportConfig,
     request: &[u8],
@@ -1676,6 +1808,7 @@ struct PeerObservation {
     handshake_failed: bool,
     protocol_version: Option<rustls::ProtocolVersion>,
     client_identity_present: bool,
+    client_certificate: Option<Vec<u8>>,
     request_bytes: Vec<u8>,
     closed_after_response: bool,
 }
@@ -1904,6 +2037,9 @@ fn run_peer(
     observation.client_identity_present = connection
         .peer_certificates()
         .is_some_and(|certificates| !certificates.is_empty());
+    observation.client_certificate = connection
+        .peer_certificates()
+        .and_then(|certificates| certificates.first().map(|cert| cert.to_vec()));
     if request_len == 0 {
         return observation;
     }
@@ -2144,6 +2280,18 @@ impl PolicyPki {
             client_key,
             server_serial,
         }
+    }
+
+    fn generate_additional_client(&self, serial: u64) -> (Vec<u8>, Vec<u8>) {
+        let issuer = Issuer::from_params(&self.ca_params, &self.ca_key);
+        let (client, client_key) = policy_leaf(
+            "client.kmipkit.test",
+            ExtendedKeyUsagePurpose::ClientAuth,
+            SerialNumber::from(serial),
+            CertificateValidity::Current,
+            &issuer,
+        );
+        (client.der().to_vec(), client_key.serialize_der())
     }
 
     fn revoking_server_crl_der(&self) -> Vec<u8> {

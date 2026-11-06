@@ -32,8 +32,10 @@ use crate::secret::SecretBufferObserver;
 use crate::timeout::DeadlineIoControl;
 use crate::timeout::{DeadlineIo, send_request_when_ready};
 #[cfg(test)]
+use crate::worker::WorkerSpawnerForTest;
+#[cfg(test)]
 use crate::worker::WorkerTask;
-use crate::worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
+use crate::worker::{ClientWorker, ExchangeControl, WorkerError, ensure_client_worker};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
@@ -154,9 +156,6 @@ mod request_tests;
 #[cfg(test)]
 #[path = "../tests/unit/https_response_tests.rs"]
 mod response_tests;
-#[cfg(test)]
-type WorkerSpawnerForTest =
-    Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 impl HttpsTransport {
     /// Creates an HTTPS adapter from a validated HTTPS configuration.
@@ -195,6 +194,25 @@ impl HttpsTransport {
             #[cfg(test)]
             cancel_before_finish_for_test: false,
         })
+    }
+
+    fn refresh_credentials_if_changed(&mut self) -> Result<(), TransportError> {
+        let refreshed = self
+            .tls
+            .refresh_if_changed(&mut self.configuration)
+            .map_err(|error| {
+                safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
+        if refreshed {
+            self.http1_tls_config = build_http1_tls_config(self.tls.rustls_config_arc());
+            let mut lock = lock_https_connection(&self.connection);
+            *lock = None;
+        }
+        Ok(())
     }
 
     /// Exchanges caller bytes using encoding and timeout options for this request.
@@ -241,29 +259,20 @@ impl HttpsTransport {
                 )
             })?;
 
-        if self.worker.is_none() {
+        ensure_client_worker(
+            &mut self.worker,
             #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
-                None => ClientWorker::start_until(total_deadline),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start_until(total_deadline);
-            self.worker = Some(worker.map_err(|error| match error {
-                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
-                error => safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                ),
-            })?);
-        }
+            &mut self.worker_spawner,
+            total_deadline,
+        )?;
 
         let request_owner = Self::stage_request_owner(
             request,
             #[cfg(test)]
             self.observer.clone(),
         )?;
+
+        self.refresh_credentials_if_changed()?;
 
         let route = self.route.clone();
         let resolver = self.resolver.clone();

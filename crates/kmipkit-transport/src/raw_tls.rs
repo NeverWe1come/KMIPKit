@@ -21,8 +21,10 @@ use crate::tls::{self, TlsClientConfig};
 #[path = "wire_framing.rs"]
 mod wire_framing;
 #[cfg(test)]
+use crate::worker::WorkerSpawnerForTest;
+#[cfg(test)]
 use crate::worker::WorkerTask;
-use crate::worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
+use crate::worker::{ClientWorker, ExchangeControl, WorkerError, ensure_client_worker};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
@@ -47,10 +49,6 @@ use std::{
     net::SocketAddr,
     sync::{Mutex, MutexGuard},
 };
-
-#[cfg(test)]
-type WorkerSpawnerForTest =
-    Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
 
 const RESPONSE_HEADER_LEN: usize = 8;
 const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x7B];
@@ -164,23 +162,12 @@ impl RawTlsTransport {
                 )
             })?;
 
-        if self.worker.is_none() {
+        ensure_client_worker(
+            &mut self.worker,
             #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
-                None => ClientWorker::start_until(total_deadline),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start_until(total_deadline);
-            self.worker = Some(worker.map_err(|error| match error {
-                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
-                error => safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                ),
-            })?);
-        }
+            &mut self.worker_spawner,
+            total_deadline,
+        )?;
 
         #[cfg(test)]
         let request_owner = if let Some(observer) = self.observer.clone() {
@@ -197,6 +184,16 @@ impl RawTlsTransport {
                 error,
             )
         })?;
+
+        self.tls
+            .refresh_if_changed(&mut self.configuration)
+            .map_err(|error| {
+                safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
 
         let host = self.host.clone();
         let port = self.port;
