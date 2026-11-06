@@ -33,11 +33,20 @@ const OPERATION_PENDING: u32 = 2;
 const PERMISSION_DENIED: u32 = 0x0000_0005;
 const PENDING_CORRELATION: &[u8] = b"REPROVISION_PENDING_CORRELATION\xFF";
 
+fn certificate_request_material(marker: &str) -> Structure {
+    test_structure([
+        test_item(0x0042_0019, Value::enumeration(1)),
+        test_item(0x0042_0140, Value::byte_string(marker.as_bytes().to_vec())),
+        test_item(NESTED_VALUE, Value::byte_string(marker.as_bytes().to_vec())),
+    ])
+}
+
 fn certificate_material(marker: &str) -> Structure {
-    test_structure([test_item(
-        NESTED_VALUE,
-        Value::byte_string(marker.as_bytes().to_vec()),
-    )])
+    test_structure([
+        test_item(0x0042_001D, Value::enumeration(1)),
+        test_item(0x0042_001E, Value::byte_string(marker.as_bytes().to_vec())),
+        test_item(NESTED_VALUE, Value::byte_string(marker.as_bytes().to_vec())),
+    ])
 }
 
 fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<u32>) {
@@ -89,7 +98,8 @@ fn request_fields(bytes: &[u8]) -> (Option<u32>, Vec<u32>) {
 fn reprovision_sends_certificate_request_form_and_typed_identifier_once() {
     crate::execute_test_support::assert_lifecycle_request_debug(
         &crate::ClientRequest::reprovision(
-            ReProvisionRequest::new().with_certificate_request(certificate_material("debug-csr")),
+            ReProvisionRequest::new()
+                .with_certificate_request(certificate_request_material("debug-csr")),
         ),
         "ReProvision",
     );
@@ -110,7 +120,8 @@ fn reprovision_sends_certificate_request_form_and_typed_identifier_once() {
 
     let item = client
         .reprovision(
-            ReProvisionRequest::new().with_certificate_request(certificate_material("csr-data")),
+            ReProvisionRequest::new()
+                .with_certificate_request(certificate_request_material("csr-data")),
             &CodecLimits::defaults(),
         )
         .expect("server returns a valid Re-Provision result");
@@ -205,7 +216,7 @@ fn reprovision_sends_both_optional_certificate_fields() {
     client
         .reprovision(
             ReProvisionRequest::new()
-                .with_certificate_request(certificate_material("csr-data"))
+                .with_certificate_request(certificate_request_material("csr-data"))
                 .with_certificate(certificate_material("certificate-data")),
             &CodecLimits::defaults(),
         )

@@ -898,6 +898,14 @@ fn every_generated_unconditional_standard_policy_is_rejected_before_transport() 
             MutationKind::Modify,
             MutationKind::Set,
         ] {
+            if policy.name == "Original Creation Date" && matches!(mutation, MutationKind::Add) {
+                // KMIP v2.1 §4.38 allows this initial assignment through Add
+                // when the attribute was omitted during object creation.
+                let (_response, fake, captured_request) =
+                    run_once(mutation.request(policy), mutation.operation());
+                assert_one_exchange(&fake, &captured_request, &context);
+                continue;
+            }
             assert_payload_free_not_sent(
                 mutation.request(policy),
                 mutation.operation(),
@@ -1036,10 +1044,7 @@ fn usage_limits_total_and_unit_can_be_added_or_modified_without_client_set_count
 fn original_creation_date_add_without_profile_context_reaches_the_server() {
     let request = ClientRequest::add_attribute(AddAttributeRequest::new(
         Some(OBJECT_IDENTIFIER.to_owned()),
-        NewAttribute::new(item(
-            0x0042_00BC,
-            Value::date_time(1_700_000_000),
-        )),
+        NewAttribute::new(item(0x0042_00BC, Value::date_time(1_700_000_000))),
     ));
 
     let (_response, fake, captured_request) = run_once(request, ADD_ATTRIBUTE_OPERATION);
