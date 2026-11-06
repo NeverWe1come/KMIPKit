@@ -701,6 +701,37 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 {"approvedExclusions": []}, [broad]
             )
 
+    def test_corrects_only_the_exact_legacy_model_error_approval_source(self) -> None:
+        previous = {
+            "declarationId": "KMIPKIT-0053:exclude:legacy-model-error",
+            "packageId": "rust-kmipkit",
+            "exportName": "kmipkit::ttlv::ModelError::UnsupportedValue",
+            "reason": "The approved KMIPKIT-0004 policy excludes this local error variant.",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/004-generic-ttlv-model/spec.md",
+                "status": "Approved",
+                "requirementIds": ["KMIPKIT-0004-FR-013"],
+            },
+            "evidence": "Exact prior approved route evidence.",
+            "candidateSpecId": "KMIPKIT-0004",
+        }
+        corrected = {
+            **previous,
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/004-generic-ttlv-model/spec.md",
+                "status": "Approved",
+                "evidence": "KMIPKIT-0004-FR-013 approves excluding these exact local ModelError variants from the cross-language public route inventory.",
+            },
+        }
+
+        result = reconcile_0053_api_parity.add_approved_exclusions(
+            {"approvedExclusions": [previous]}, [corrected]
+        )
+
+        self.assertEqual([corrected], result["approvedExclusions"])
+
     def test_validates_capability_and_counterpart_for_rust_shape_exclusion(self) -> None:
         exclusion = {
             "declarationId": "KMIPKIT-0053:exclude:enum-variant",
@@ -718,7 +749,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "evidence": "Direct maintainer authorization for KMIPKIT-0053.",
             },
             "evidence": "Exact Rust public export audit.",
-            "evidencePaths": ["crates/kmipkit-protocol/src/attributes.rs"],
+            "evidencePaths": ["crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs"],
             "candidateSpecId": "KMIPKIT-0053",
             "rustArtifactKind": "exact-route",
         }
@@ -736,6 +767,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.add_approved_exclusions(
                 manifest, [invalid_capability]
+            )
+        mismatched_counterpart = copy.deepcopy(exclusion)
+        mismatched_counterpart["capabilityId"] = "request_message_authentication"
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.add_approved_exclusions(
+                manifest, [mismatched_counterpart]
             )
 
     def test_removes_only_an_exact_approved_declaration_idempotently(self) -> None:
