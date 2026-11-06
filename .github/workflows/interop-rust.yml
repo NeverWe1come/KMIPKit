@@ -1,0 +1,42 @@
+name: Interop Rust Validator
+
+on:
+  pull_request:
+    paths:
+      - 'interop/rust-kmip-validator/**'
+      - 'interop/shared/**'
+      - '.github/workflows/interop-rust.yml'
+  push:
+    branches:
+      - release/1.0.0
+    paths:
+      - 'interop/rust-kmip-validator/**'
+      - 'interop/shared/**'
+      - '.github/workflows/interop-rust.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-rust:
+    name: Rust KMIP 2.1 Validator Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check code formatting
+        run: cargo fmt --manifest-path interop/rust-kmip-validator/Cargo.toml --check
+
+      - name: Lint with Clippy
+        run: cargo clippy --manifest-path interop/rust-kmip-validator/Cargo.toml --all-targets -- -D warnings
+
+      - name: Run unit and integration tests
+        run: cargo test --manifest-path interop/rust-kmip-validator/Cargo.toml
