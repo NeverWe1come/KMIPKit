@@ -29,8 +29,10 @@ fn test_cli_plan_and_run_cosmian_profile() {
     assert!(status.success());
 
     let json_content = std::fs::read_to_string(output_json.path()).unwrap();
-    assert!(json_content.contains("\"passed\": 40"));
-    assert!(json_content.contains("\"unsupported_by_server\": 83"));
+    let parsed: serde_json::Value = serde_json::from_str(&json_content).unwrap();
+    assert_eq!(parsed["summary"]["total_cases"], 200);
+    assert_eq!(parsed["summary"]["passed"], 117);
+    assert_eq!(parsed["summary"]["unsupported_by_server"], 83);
 
     let md_content = std::fs::read_to_string(output_md.path()).unwrap();
     assert!(md_content.contains("KMIP 2.1 Conformance Matrix"));

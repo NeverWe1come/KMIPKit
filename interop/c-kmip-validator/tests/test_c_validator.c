@@ -53,6 +53,27 @@ int main(void) {
     assert(summary.results[0].status == CASE_STATUS_PASSED);
     assert(summary.results[1].status == CASE_STATUS_UNSUPPORTED_SKIPPED);
 
+    // 4. Test equivalence verifier
+    kmip_normalized_response_t resps[2];
+    memset(resps, 0, sizeof(resps));
+    strncpy(resps[0].status, "Success", sizeof(resps[0].status) - 1);
+    strncpy(resps[0].object_type, "SymmetricKey", sizeof(resps[0].object_type) - 1);
+    strncpy(resps[0].sanitized_payload_hex, "deadbeef", sizeof(resps[0].sanitized_payload_hex) - 1);
+
+    strncpy(resps[1].status, "Success", sizeof(resps[1].status) - 1);
+    strncpy(resps[1].object_type, "SymmetricKey", sizeof(resps[1].object_type) - 1);
+    strncpy(resps[1].sanitized_payload_hex, "deadbeef", sizeof(resps[1].sanitized_payload_hex) - 1);
+
+    char disc[KMIP_MAX_REASONS][KMIP_MAX_NAME_LEN];
+    size_t disc_count = 0;
+    assert(kmip_verify_equivalence(resps, 2, disc, &disc_count) == true);
+    assert(disc_count == 0);
+
+    // Change one to mismatch
+    strncpy(resps[1].status, "OperationFailed", sizeof(resps[1].status) - 1);
+    assert(kmip_verify_equivalence(resps, 2, disc, &disc_count) == false);
+    assert(disc_count > 0);
+
     printf("All C validator tests passed successfully!\n");
     return 0;
 }

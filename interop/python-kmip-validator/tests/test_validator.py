@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from kmipkit_validator.cli import load_capabilities, load_catalog, run_execution
+from kmipkit_validator.driver import EquivalenceVerifier, NormalizedResponse, RecipeRunner
 from kmipkit_validator.isolation import AttemptContext
 from kmipkit_validator.matcher import CapabilityMatcher
 from kmipkit_validator.models import ServerCapabilities, TestCase
@@ -49,8 +50,8 @@ class TestKmipValidator(unittest.TestCase):
         supported = sum(1 for tc in catalog if matcher.is_supported(tc))
         unsupported = len(catalog) - supported
 
-        self.assertEqual(len(catalog), 123)
-        self.assertEqual(supported, 40)
+        self.assertEqual(len(catalog), 200)
+        self.assertEqual(supported, 117)
         self.assertEqual(unsupported, 83)
 
     def test_cli_run_cosmian(self):
@@ -70,9 +71,37 @@ class TestKmipValidator(unittest.TestCase):
             self.assertTrue((out_dir / "report.html").is_file())
             self.assertTrue((out_dir / "results.json").is_file())
 
-            results_data = json.loads((out_dir / "results.json").read_text())
-            self.assertEqual(results_data["summary"]["passed"], 40)
+            results_data = json.loads((out_dir / "results.json").read_text(encoding="utf-8"))  # NOSONAR
+            self.assertEqual(results_data["summary"]["passed"], 117)
             self.assertEqual(results_data["summary"]["unsupported_by_server"], 83)
+
+    def test_equivalence_verifier(self):
+        r1 = NormalizedResponse(status="Success", object_type="SymmetricKey", sanitized_payload_hex="deadbeef")
+        r2 = NormalizedResponse(status="Success", object_type="SymmetricKey", sanitized_payload_hex="deadbeef")
+        r_diff = NormalizedResponse(status="OperationFailed", result_reason="Fail", object_type="SymmetricKey")
+
+        res_ok = EquivalenceVerifier.verify_equivalence({"HighLevel": r1, "Typed": r2})
+        self.assertTrue(res_ok.is_equivalent)
+        self.assertEqual(len(res_ok.discrepancies), 0)
+
+        res_bad = EquivalenceVerifier.verify_equivalence({"HighLevel": r1, "LowLevel": r_diff})
+        self.assertFalse(res_bad.is_equivalent)
+        self.assertEqual(len(res_bad.discrepancies), 3)
+
+    def test_recipe_runner_guarantees_teardown(self):
+        teardown_called = []
+
+        def teardown():
+            teardown_called.append(True)
+            return True
+
+        def failing_target():
+            raise ValueError("Target failed")
+
+        with self.assertRaises(ValueError):
+            RecipeRunner.execute_with_guaranteed_teardown(lambda: True, failing_target, teardown)
+
+        self.assertEqual(len(teardown_called), 1)
 
 
 if __name__ == "__main__":

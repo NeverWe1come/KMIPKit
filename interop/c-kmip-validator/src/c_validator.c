@@ -437,3 +437,69 @@ bool kmip_render_json(const kmip_validation_summary_t *summary, const char *file
     fclose(f);
     return true;
 }
+
+bool kmip_verify_equivalence(
+    const kmip_normalized_response_t *responses,
+    size_t count,
+    char out_discrepancies[KMIP_MAX_REASONS][KMIP_MAX_NAME_LEN],
+    size_t *out_discrepancies_count
+) {
+    if (!responses || !out_discrepancies || !out_discrepancies_count) return false;
+    *out_discrepancies_count = 0;
+    if (count <= 1) return true;
+
+    const kmip_normalized_response_t *base = &responses[0];
+    for (size_t i = 1; i < count; i++) {
+        const kmip_normalized_response_t *cur = &responses[i];
+        if (strcmp(base->status, cur->status) != 0) {
+            if (*out_discrepancies_count < KMIP_MAX_REASONS) {
+                snprintf(out_discrepancies[(*out_discrepancies_count)++], KMIP_MAX_NAME_LEN,
+                         "Response %zu status '%s' differs from baseline '%s'", i, cur->status, base->status);
+            }
+        }
+        if (strcmp(base->result_reason, cur->result_reason) != 0) {
+            if (*out_discrepancies_count < KMIP_MAX_REASONS) {
+                snprintf(out_discrepancies[(*out_discrepancies_count)++], KMIP_MAX_NAME_LEN,
+                         "Response %zu result_reason '%.64s' differs from baseline '%.64s'", i, cur->result_reason, base->result_reason);
+            }
+        }
+        if (strcmp(base->object_type, cur->object_type) != 0) {
+            if (*out_discrepancies_count < KMIP_MAX_REASONS) {
+                snprintf(out_discrepancies[(*out_discrepancies_count)++], KMIP_MAX_NAME_LEN,
+                         "Response %zu object_type '%.64s' differs from baseline '%.64s'", i, cur->object_type, base->object_type);
+            }
+        }
+        if (strcmp(base->sanitized_payload_hex, cur->sanitized_payload_hex) != 0) {
+            if (*out_discrepancies_count < KMIP_MAX_REASONS) {
+                snprintf(out_discrepancies[(*out_discrepancies_count)++], KMIP_MAX_NAME_LEN,
+                         "Response %zu payload differs from baseline", i);
+            }
+        }
+    }
+    return (*out_discrepancies_count == 0);
+}
+
+bool kmip_run_recipe_with_teardown(
+    bool (*setup_fn)(void *user_data),
+    bool (*target_fn)(void *user_data),
+    bool (*teardown_fn)(void *user_data),
+    void *user_data
+) {
+    if (setup_fn && !setup_fn(user_data)) {
+        return false;
+    }
+
+    bool target_ok = false;
+    if (target_fn) {
+        target_ok = target_fn(user_data);
+    }
+
+    /* Teardown is guaranteed to execute */
+    bool teardown_ok = true;
+    if (teardown_fn) {
+        teardown_ok = teardown_fn(user_data);
+    }
+
+    return target_ok && teardown_ok;
+}
+

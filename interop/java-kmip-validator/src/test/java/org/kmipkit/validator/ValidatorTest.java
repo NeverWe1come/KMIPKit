@@ -8,8 +8,11 @@ import org.kmipkit.validator.models.Models.TestCase;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ValidatorTest {
     public static void main(String[] args) {
@@ -18,7 +21,9 @@ public class ValidatorTest {
             testAttemptContextUniqueness();
             testCapabilityMatcher();
             testCosmianProfileParity();
-            System.out.println("All 3 test suites passed successfully!");
+            testEquivalenceVerifier();
+            testRecipeRunnerGuaranteedTeardown();
+            System.out.println("All 5 test suites passed successfully!");
         } catch (Throwable t) {
             System.err.println("Test failure: " + t.getMessage());
             t.printStackTrace();
@@ -89,9 +94,53 @@ public class ValidatorTest {
             }
         }
 
-        assertEquals(123, catalog.size(), "Catalog should contain 123 cases");
-        assertEquals(40, supported, "Cosmian profile should support 40 cases");
+        assertEquals(200, catalog.size(), "Catalog should contain 200 cases");
+        assertEquals(117, supported, "Cosmian profile should support 117 cases");
         assertEquals(83, unsupported, "Cosmian profile should leave 83 unsupported");
-        System.out.println("  [PASS] testCosmianProfileParity (40 supported, 83 unsupported)");
+        System.out.println("  [PASS] testCosmianProfileParity (117 supported, 83 unsupported)");
+    }
+
+    public static void testEquivalenceVerifier() {
+        var r1 = new EquivalenceVerifier.NormalizedResponse("Success", "", "SymmetricKey", "deadbeef");
+        var r2 = new EquivalenceVerifier.NormalizedResponse("Success", "", "SymmetricKey", "deadbeef");
+        var rMismatch = new EquivalenceVerifier.NormalizedResponse("OperationFailed", "GeneralError", "SymmetricKey", "deadbeef");
+
+        Map<String, EquivalenceVerifier.NormalizedResponse> mapOk = new LinkedHashMap<>();
+        mapOk.put("HighLevel", r1);
+        mapOk.put("TypedProtocol", r2);
+
+        var resOk = EquivalenceVerifier.verifyEquivalence(mapOk);
+        assertTrue(resOk.isEquivalent(), "Should be equivalent");
+        assertTrue(resOk.discrepancies().isEmpty(), "No discrepancies");
+
+        Map<String, EquivalenceVerifier.NormalizedResponse> mapBad = new LinkedHashMap<>();
+        mapBad.put("HighLevel", r1);
+        mapBad.put("LowLevel", rMismatch);
+
+        var resBad = EquivalenceVerifier.verifyEquivalence(mapBad);
+        assertTrue(!resBad.isEquivalent(), "Should not be equivalent");
+        assertTrue(resBad.discrepancies().size() == 2, "2 discrepancies expected");
+        System.out.println("  [PASS] testEquivalenceVerifier");
+    }
+
+    public static void testRecipeRunnerGuaranteedTeardown() {
+        AtomicBoolean teardownRun = new AtomicBoolean(false);
+        boolean caught = false;
+        try {
+            RecipeRunner.executeWithGuaranteedTeardown(
+                    () -> true,
+                    () -> { throw new RuntimeException("Target simulation failure"); },
+                    () -> {
+                        teardownRun.set(true);
+                        return true;
+                    }
+            );
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+
+        assertTrue(caught, "Target exception must propagate");
+        assertTrue(teardownRun.get(), "Teardown must execute even when target fails");
+        System.out.println("  [PASS] testRecipeRunnerGuaranteedTeardown");
     }
 }

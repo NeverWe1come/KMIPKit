@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #define KMIP_MAX_NAME_LEN 256
-#define KMIP_MAX_CASES 256
+#define KMIP_MAX_CASES 512
 #define KMIP_MAX_REASONS 8
 
 typedef enum {
@@ -92,5 +92,27 @@ void kmip_render_ansi(const kmip_validation_summary_t *summary);
 bool kmip_render_markdown(const kmip_validation_summary_t *summary, const char *file_path);
 bool kmip_render_html(const kmip_validation_summary_t *summary, const char *file_path);
 bool kmip_render_json(const kmip_validation_summary_t *summary, const char *file_path);
+
+/* Equivalence Verifier & Recipe Runner */
+typedef struct {
+    char status[64];
+    char result_reason[KMIP_MAX_NAME_LEN];
+    char object_type[64];
+    char sanitized_payload_hex[KMIP_MAX_NAME_LEN];
+} kmip_normalized_response_t;
+
+bool kmip_verify_equivalence(
+    const kmip_normalized_response_t *responses,
+    size_t count,
+    char out_discrepancies[KMIP_MAX_REASONS][KMIP_MAX_NAME_LEN],
+    size_t *out_discrepancies_count
+);
+
+bool kmip_run_recipe_with_teardown(
+    bool (*setup_fn)(void *user_data),
+    bool (*target_fn)(void *user_data),
+    bool (*teardown_fn)(void *user_data),
+    void *user_data
+);
 
 #endif /* KMIP_C_VALIDATOR_H */
