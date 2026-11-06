@@ -1293,6 +1293,104 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             result["publicDeclarations"][0]["languageMappings"]["rust"],
         )
 
+    def test_removes_only_exact_query_exclusions_superseded_by_approved_0053_scope(self) -> None:
+        old_exclusion = {
+            "packageId": "rust-kmipkit",
+            "exportName": "kmipkit::protocol::QueryResponse",
+            "reason": (
+                "This exact Rust Query response type/member provides typed field access. "
+                "KMIPKIT-0020 excludes adding its Rust-specific typed Query response model "
+                "to C, Java, or Python."
+            ),
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/020-query-ping/spec.md",
+                "status": "Approved",
+                "evidence": "Earlier Rust-only Query response boundary.",
+            },
+            "evidence": "Exact QueryResponse route exclusion.",
+            "candidateSpecId": "KMIPKIT-0020",
+        }
+        manifest = {
+            "approvedExclusions": [old_exclusion],
+            "publicDeclarations": [{
+                "declarationId": "KMIPKIT-0053:rust-query-response",
+                "packageId": "rust-kmipkit",
+                "exportName": "kmipkit::protocol::QueryResponse",
+                "candidateSpecId": "KMIPKIT-0053",
+            }],
+        }
+        removal = {
+            "declarationId": "KMIPKIT-0053:rust-query-response",
+            "packageId": "rust-kmipkit",
+            "exportName": "kmipkit::protocol::QueryResponse",
+            "supersedesSpecId": "KMIPKIT-0020",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": (
+                    "KMIPKIT-0053 approves typed results and final Rust/C/Java/Python parity."
+                ),
+            },
+            "evidencePaths": [
+                "specs/053-api-parity-facade/spec.md",
+                "specs/053-api-parity-facade/approval-record.md",
+            ],
+        }
+
+        result = reconcile_0053_api_parity.remove_approved_exclusions(
+            manifest, [removal]
+        )
+
+        self.assertEqual([], result["approvedExclusions"])
+
+    def test_query_exclusion_supersession_requires_exact_owner_and_route(self) -> None:
+        manifest = {
+            "approvedExclusions": [{
+                "packageId": "rust-kmipkit",
+                "exportName": "kmipkit::protocol::QueryResponse",
+                "reason": "KMIPKIT-0020 excludes its Rust-specific typed Query response model.",
+                "approvalSource": {
+                    "kind": "feature-specification",
+                    "path": "specs/020-query-ping/spec.md",
+                    "status": "Approved",
+                    "evidence": "Earlier scope.",
+                },
+                "evidence": "Exact route.",
+                "candidateSpecId": "KMIPKIT-0020",
+            }],
+            "publicDeclarations": [{
+                "declarationId": "KMIPKIT-0053:rust-query-response",
+                "packageId": "rust-kmipkit",
+                "exportName": "kmipkit::protocol::QueryResponse",
+            }],
+        }
+        removal = {
+            "declarationId": "KMIPKIT-0053:rust-query-response",
+            "packageId": "rust-kmipkit",
+            "exportName": "kmipkit::protocol::QueryResponse",
+            "supersedesSpecId": "KMIPKIT-0007",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "KMIPKIT-0053 approves typed results and final parity.",
+            },
+            "evidencePaths": [
+                "specs/053-api-parity-facade/spec.md",
+                "specs/053-api-parity-facade/approval-record.md",
+            ],
+        }
+
+        with self.assertRaisesRegex(
+            reconcile_0053_api_parity.ReconciliationError,
+            "exact KMIPKIT-0020 exclusion",
+        ):
+            reconcile_0053_api_parity.remove_approved_exclusions(
+                manifest, [removal]
+            )
+
     def test_verified_0053_export_is_not_an_unresolved_candidate_on_replay(self) -> None:
         manifest = {
             "publicDeclarations": [{
