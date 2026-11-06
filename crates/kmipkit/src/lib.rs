@@ -136,6 +136,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_asynchronous_operations"
             | "client_batch_model"
             | "client_execution"
+            | "client_operation_identity"
             | "client_profile_readiness"
             | "client_profile_validation"
             | "credential_secret_parity"
@@ -149,6 +150,8 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "named_protocol_values"
             | "nonce_ttlv_parity"
             | "production_transport"
+            | "request_message_authentication"
+            | "request_validation"
             | "ttlv_wire_codec"
             | "usage_allocation_guard"
             | "vendor_extension_registry"
@@ -158,6 +161,9 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "typed_message_model"
             | "public_binding_surface"
             | "response_ttlv_navigation"
+            | "typed_cryptographic_parameters"
+            | "typed_managed_objects_and_key_material"
+            | "typed_object_attributes"
     ))
 }
 
