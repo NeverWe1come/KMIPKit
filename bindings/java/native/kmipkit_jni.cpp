@@ -11890,6 +11890,17 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTry
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_typedAttributeFromItem(
+        JNIEnv* env, jclass, jint expected_tag, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_typed_attribute_from_item(
+                    static_cast<uint32_t>(expected_tag),
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item), output);
+        });
+    });
+}
+
 JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTryPush(
         JNIEnv* env, jclass, jlong raw_attributes, jlong raw_item) {
     guarded<int>(env, 0, [&] {

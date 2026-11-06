@@ -19,10 +19,12 @@ from . import (
     profile_catalog,
     protocol_values,
     ttlv,
+    typed_attributes,
 )
 from .extensions import with_extension
 from .credentials import CredentialType, CredentialValue
 from .errors import ProfileValidationDetails, ProfileValidationError
+from .typed_attributes import StandardAttribute, TypedAttribute
 
 __all__ = [
     "client",
@@ -40,5 +42,8 @@ __all__ = [
     "profile_catalog",
     "protocol_values",
     "ttlv",
+    "typed_attributes",
+    "StandardAttribute",
+    "TypedAttribute",
     "with_extension",
 ]

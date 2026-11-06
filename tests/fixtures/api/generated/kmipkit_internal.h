@@ -2740,6 +2740,10 @@ int32_t kmipkit_client_batch_item_response_raw_ttlv(kmipkit_client_batch_item_re
  */
 /* KMIPKIT-0052-FR-006, KMIPKIT-0052-FR-007 */
 int32_t kmipkit_client_batch_item_response_header_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_structure);
+/* Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned.
+ */
+/* KMIPKIT-0048-FR-001, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_typed_attribute_from_item(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

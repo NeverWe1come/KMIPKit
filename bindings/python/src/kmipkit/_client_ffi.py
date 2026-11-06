@@ -51,6 +51,8 @@ ffi.cdef(
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
     int32_t kmipkit_attribute_set_create(
         kmipkit_ttlv_structure_t *items, kmipkit_attribute_set_t **out_attribute_set);
+    int32_t kmipkit_typed_attribute_from_item(
+        uint32_t expected_tag, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_attribute_set_try_push(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_item_t *item);
     int32_t kmipkit_attribute_set_as_items(

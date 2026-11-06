@@ -265768,6 +265768,104 @@
         "requestBoundary": "not-applicable",
         "returnType": "i32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "expected_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_typed_attribute_from_item"
+      },
+      "id": "typed_attribute_from_item",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_typedAttributeFromItem",
+        "method": "typedAttributeFromItem",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "expectedTag",
+            "type": "long"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_typed_attribute_from_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "TypedAttribute.from_item",
+        "module": "kmipkit.typed_attributes",
+        "parameters": [
+          {
+            "name": "expected_tag",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "TypedAttribute"
+      },
+      "requirementIds": [
+        "KMIPKIT-0048-FR-001",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::Attribute",
+        "name": "from_item",
+        "owner": "protocol",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "Item"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<Attribute<D>, AttributeValueError>"
+      }
     }
   ],
   "languages": [

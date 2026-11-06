@@ -1,0 +1,158 @@
+"""Four-language typed direct-attribute behavior for KMIPKIT-0053."""
+
+import pytest
+
+from kmipkit import errors, ttlv
+from kmipkit.attribute_operations import AttributeSet
+from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
+
+
+def _item(attribute: StandardAttribute, value: ttlv.Value) -> ttlv.TtlvItem:
+    with ttlv.raw_tag_from_raw(attribute.tag) as raw_tag:
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        limits = ttlv.codec_limits_defaults()
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            limits.close()
+
+
+def _append(structure: ttlv.Structure, raw_tag: int, value: ttlv.Value,
+            limits: ttlv.CodecLimits) -> ttlv.Structure:
+    with ttlv.raw_tag_from_raw(raw_tag) as raw_tag_handle:
+        tag = ttlv.raw_tag_try_checked(raw_tag_handle)
+        try:
+            item = ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+    return ttlv.ttlv_structure_with_item(structure, item, limits)
+
+
+def _value_for(attribute: StandardAttribute, limits: ttlv.CodecLimits) -> ttlv.Value:
+    kind = attribute.value_kind
+    if kind == "BigInteger":
+        return ttlv.ttlv_value_big_integer(b"\x01", limits)
+    if kind == "Boolean":
+        return ttlv.ttlv_value_boolean(True)
+    if kind == "ByteString":
+        return ttlv.ttlv_value_byte_string(b"\x01", limits)
+    if kind == "DateTime":
+        return ttlv.ttlv_value_date_time(1_700_000_000)
+    if kind == "DateTimeExtended":
+        return ttlv.ttlv_value_date_time_extended(1_700_000_000)
+    if kind == "Enumeration":
+        return ttlv.ttlv_value_enumeration(0xFFFF_FFFF)
+    if kind == "Integer":
+        return ttlv.ttlv_value_integer(7)
+    if kind == "Interval":
+        return ttlv.ttlv_value_interval(7)
+    if kind in ("TextString", "UniqueIdentifier"):
+        return ttlv.ttlv_value_text_string(b"attribute-value", limits)
+    if kind == "Structure":
+        structure = ttlv.ttlv_structure_create()
+        if attribute is StandardAttribute.VENDOR_ATTRIBUTE:
+            structure = _append(
+                structure, 0x0042_009D,
+                ttlv.ttlv_value_text_string(b"KMIPKit.TestVendor_1", limits), limits,
+            )
+            structure = _append(
+                structure, 0x0042_000A,
+                ttlv.ttlv_value_text_string(b"Opaque.Attribute", limits), limits,
+            )
+            structure = _append(
+                structure, 0x0042_000B,
+                ttlv.ttlv_value_byte_string(b"\x01", limits), limits,
+            )
+        return ttlv.ttlv_value_structure(structure, limits)
+    raise AssertionError(f"unhandled catalogued attribute kind: {kind}")
+
+
+def _expected_item_type(kind: str) -> ttlv.ItemType:
+    return {
+        "BigInteger": ttlv.ItemType.BigInteger,
+        "Boolean": ttlv.ItemType.Boolean,
+        "ByteString": ttlv.ItemType.ByteString,
+        "DateTime": ttlv.ItemType.DateTime,
+        "DateTimeExtended": ttlv.ItemType.DateTimeExtended,
+        "Enumeration": ttlv.ItemType.Enumeration,
+        "Integer": ttlv.ItemType.Integer,
+        "Interval": ttlv.ItemType.Interval,
+        "Structure": ttlv.ItemType.Structure,
+        "TextString": ttlv.ItemType.TextString,
+        "UniqueIdentifier": ttlv.ItemType.TextString,
+    }[kind]
+
+
+def test_catalog_exposes_all_sixty_two_direct_attributes_with_unique_tags():
+    assert len(StandardAttribute) == 62
+    assert len({attribute.tag for attribute in StandardAttribute}) == 62
+    assert StandardAttribute.ACTIVATION_DATE.tag == 0x0042_0001
+    assert StandardAttribute.VENDOR_ATTRIBUTE.tag == 0x0042_0008
+
+
+def test_typed_attribute_roundtrips_all_catalogued_source_ttlv_types():
+    with ttlv.codec_limits_defaults() as limits:
+        for attribute in StandardAttribute:
+            source = _item(attribute, _value_for(attribute, limits))
+            with source, TypedAttribute.from_item(attribute, source) as typed:
+                with ttlv.ttlv_item_view_from_item(typed) as item_view:
+                    with ttlv.ttlv_item_view_value(item_view) as value_view:
+                        assert ttlv.ttlv_value_view_type(value_view) == _expected_item_type(
+                            attribute.value_kind
+                        ), attribute.name
+
+
+def test_typed_attribute_copies_and_reads_the_item_without_consuming_source():
+    source = _item(
+        StandardAttribute.ACTIVATION_DATE,
+        ttlv.ttlv_value_date_time(1_700_000_000),
+    )
+    with source, TypedAttribute.from_item(StandardAttribute.ACTIVATION_DATE, source) as typed:
+        copied = typed.as_item()
+        with copied, ttlv.ttlv_item_view_from_item(copied) as view:
+            with ttlv.ttlv_item_view_tag(view) as tag:
+                assert ttlv.tag_value(tag) == StandardAttribute.ACTIVATION_DATE.tag
+            with ttlv.ttlv_item_view_value(view) as value:
+                assert ttlv.ttlv_value_view_date_time(value) == 1_700_000_000
+        assert not source.closed
+
+
+def test_typed_attribute_rejects_wrong_tag_and_value_type_without_exposing_values():
+    wrong_tag = _item(
+        StandardAttribute.ACTIVATION_DATE,
+        ttlv.ttlv_value_date_time(17),
+    )
+    wrong_type = _item(
+        StandardAttribute.NAME,
+        ttlv.ttlv_value_date_time(17),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            TypedAttribute.from_item(StandardAttribute.NAME, wrong_tag)
+        with pytest.raises(errors.InvalidInputError):
+            TypedAttribute.from_item(StandardAttribute.NAME, wrong_type)
+    finally:
+        wrong_tag.close()
+        wrong_type.close()
+
+
+def test_repeatable_standard_attribute_remains_lossless_in_generic_attribute_set():
+    first = _item(
+        StandardAttribute.APPLICATION_SPECIFIC_INFORMATION,
+        ttlv.ttlv_value_structure(ttlv.ttlv_structure_create(), ttlv.codec_limits_defaults()),
+    )
+    second = _item(
+        StandardAttribute.APPLICATION_SPECIFIC_INFORMATION,
+        ttlv.ttlv_value_structure(ttlv.ttlv_structure_create(), ttlv.codec_limits_defaults()),
+    )
+    items = ttlv.ttlv_structure_create()
+    items = ttlv.ttlv_structure_with_item(items, first, ttlv.codec_limits_defaults())
+    items = ttlv.ttlv_structure_with_item(items, second, ttlv.codec_limits_defaults())
+    try:
+        with items, AttributeSet.try_new(items) as attributes:
+            assert attributes.len() == 2
+    finally:
+        first.close()
+        second.close()
+

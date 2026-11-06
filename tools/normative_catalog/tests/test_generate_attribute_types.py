@@ -216,6 +216,9 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
         catalog_bytes = b"catalog"
         expected = render_rust(small_catalog()).encode("utf-8")
         expected_typed = generator.render_typed_rust(small_catalog()).encode("utf-8")
+        expected_typed_ffi = generator.render_typed_ffi_rust(small_catalog()).encode("utf-8")
+        expected_typed_java = generator.render_typed_java(small_catalog()).encode("utf-8")
+        expected_typed_python = generator.render_typed_python(small_catalog()).encode("utf-8")
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -233,6 +236,15 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                     unittest.mock.call(
                         root.resolve(strict=True), generator.TYPED_OUTPUT_PATH, expected_typed
                     ),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_FFI_OUTPUT_PATH, expected_typed_ffi
+                    ),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_JAVA_OUTPUT_PATH, expected_typed_java
+                    ),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_PYTHON_OUTPUT_PATH, expected_typed_python
+                    ),
                 ],
             )
 
@@ -240,7 +252,14 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                 patch.object(
                     generator,
                     "safe_read_bytes",
-                    side_effect=[catalog_bytes, expected, expected_typed],
+                    side_effect=[
+                        catalog_bytes,
+                        expected,
+                        expected_typed,
+                        expected_typed_ffi,
+                        expected_typed_java,
+                        expected_typed_python,
+                    ],
                 ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
                 redirect_stdout(StringIO()),
@@ -251,7 +270,14 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                 patch.object(
                     generator,
                     "safe_read_bytes",
-                    side_effect=[catalog_bytes, expected, b"stale"],
+                    side_effect=[
+                        catalog_bytes,
+                        expected,
+                        b"stale",
+                        expected_typed_ffi,
+                        expected_typed_java,
+                        expected_typed_python,
+                    ],
                 ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
                 redirect_stderr(StringIO()),

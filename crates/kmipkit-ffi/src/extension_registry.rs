@@ -27,9 +27,11 @@ mod ffi_pointer_safety_tests;
 #[path = "../tests/support/profile_readiness_abi_tests.rs"]
 mod profile_readiness_abi_tests;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/typed_attribute_0053_tests.rs"]
 mod typed_attribute_0053_tests;
+
+mod typed_attributes_catalog_generated;
 
 use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,

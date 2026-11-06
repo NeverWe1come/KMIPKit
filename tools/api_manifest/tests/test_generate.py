@@ -241,6 +241,20 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_java_parity_json_chunks_remain_stable_after_an_array_insertion(self) -> None:
+        baseline = [
+            {"id": f"candidate-{index}", "payload": "x" * 32}
+            for index in range(160)
+        ]
+        revised = [*baseline[:73], {"id": "inserted-route", "payload": "new"}, *baseline[73:]]
+
+        before = generate._stable_json_array_chunks(baseline)
+        after = generate._stable_json_array_chunks(revised)
+
+        self.assertLessEqual(len(set(before) - set(after)), 2)
+        self.assertLessEqual(len(set(after) - set(before)), 3)
+        self.assertTrue(all(len(chunk) <= 8_000 for chunk in after))
+
     def test_generation_fixture_starts_without_generated_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))

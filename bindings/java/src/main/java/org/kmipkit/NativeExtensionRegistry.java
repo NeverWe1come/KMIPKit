@@ -404,6 +404,7 @@ public final class NativeExtensionRegistry {
     public static native long attributeRequestToTtlvPayload(int operation, long request);
     public static native long clientBatchItemFromAttributeRequest(int operation, long request);
     public static native long attributeSetTryNew(long items);
+    public static native long typedAttributeFromItem(int expectedTag, long item);
     public static native void attributeSetTryPush(long attributes, long item);
     public static native long attributeSetAsItems(long attributes);
     public static native long attributeSetLen(long attributes);

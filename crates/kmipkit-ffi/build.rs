@@ -103,4 +103,15 @@ fn main() {
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11")
         .compile("kmipkit_credential_secret_abi_c_consumer");
+
+    let typed_attribute_consumer =
+        workspace_root.join("bindings/c/tests/typed_attribute_parity_consumer.c");
+    println!("cargo:rerun-if-changed={}", typed_attribute_consumer.display());
+    cc::Build::new()
+        .file(typed_attribute_consumer)
+        .include(&consumer_header)
+        .warnings_into_errors(true)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_typed_attribute_parity_consumer");
 }

@@ -347,6 +347,9 @@
     "KMIPKIT-0052-FR-005",
     "KMIPKIT-0052-FR-006",
     "KMIPKIT-0052-FR-007",
+    "KMIPKIT-0053-FR-002",
+    "KMIPKIT-0053-FR-011",
+    "KMIPKIT-0053-FR-012",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -46538,6 +46541,104 @@
           "internal"
         ],
         "returnType": "ttlv.Structure"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "typed_attribute_from_item",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-001",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::Attribute",
+        "name": "from_item",
+        "owner": "protocol",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "Item"
+          }
+        ],
+        "returnType": "Result<Attribute<D>, AttributeValueError>"
+      },
+      "c": {
+        "symbol": "kmipkit_typed_attribute_from_item",
+        "parameters": [
+          {
+            "name": "expected_tag",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_ttlv_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit",
+        "class": "NativeExtensionRegistry",
+        "method": "typedAttributeFromItem",
+        "parameters": [
+          {
+            "name": "expectedTag",
+            "type": "long"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_typedAttributeFromItem",
+        "returnType": "long",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "python": {
+        "module": "kmipkit.typed_attributes",
+        "function": "TypedAttribute.from_item",
+        "parameters": [
+          {
+            "name": "expected_tag",
+            "type": "int"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "cffiSymbol": "kmipkit_typed_attribute_from_item",
+        "returnType": "TypedAttribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
       },
       "ordering": "not-applicable"
     }

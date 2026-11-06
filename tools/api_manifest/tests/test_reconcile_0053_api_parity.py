@@ -1,5 +1,7 @@
 import copy
+import json
 import unittest
+from pathlib import Path
 
 from tools.api_manifest import reconcile_0053_api_parity
 
@@ -7,6 +9,8 @@ from tools.api_manifest import reconcile_0053_api_parity
 class Reconcile0053ApiParityTests(unittest.TestCase):
     def setUp(self) -> None:
         self.manifest = {
+            "requirementIds": [],
+            "functions": [],
             "publicDeclarations": [
                 {
                     "declarationId": "rust-attribute-type",
@@ -95,6 +99,101 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.reconcile_manifest(self.manifest, routes)
+
+    def test_repository_inventory_contains_only_the_reviewed_0053_candidate_groups(self) -> None:
+        manifest_path = Path("specification/api/public-api.json")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        candidates = [
+            declaration
+            for declaration in manifest["publicDeclarations"]
+            if declaration.get("candidateSpecId") == "KMIPKIT-0053"
+        ]
+        self.assertEqual(750, len(candidates))
+        self.assertEqual(
+            {
+                "typed_object_attributes": 286,
+                "typed_managed_objects_and_key_material": 356,
+                "typed_cryptographic_parameters": 106,
+                "request_message_authentication": 2,
+            },
+            {
+                capability_id: sum(
+                    declaration["capabilityId"] == capability_id
+                    for declaration in candidates
+                )
+                for capability_id in {
+                    declaration["capabilityId"] for declaration in candidates
+                }
+            },
+        )
+
+    def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
+        route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
+        additions = json.loads(route_path.read_text(encoding="utf-8"))["functions"]
+
+        first = reconcile_0053_api_parity.add_additional_functions(self.manifest, additions)
+        second = reconcile_0053_api_parity.add_additional_functions(first, additions)
+
+        self.assertEqual(1, sum(item["id"] == "typed_attribute_from_item" for item in first["functions"]))
+        self.assertEqual(first, second)
+        self.assertTrue(
+            set(additions[0]["requirementIds"]).issubset(first["requirementIds"])
+        )
+
+    def test_public_four_language_export_is_added_idempotently(self) -> None:
+        declarations = [
+            {
+                "declarationId": "four-language-test-export",
+                "packageId": "c-kmipkit",
+                "kind": "c-symbol",
+                "exportName": "kmipkit_test_export",
+                "capabilityId": "typed_object_attributes",
+                "requirementIds": ["KMIPKIT-0053-FR-002"],
+                "declarationState": "verified",
+                "parityScope": "four-language",
+                "languageMappings": {
+                    "rust": {"packageId": "rust-kmipkit", "name": "test::rust"},
+                    "c": {"packageId": "c-kmipkit", "name": "kmipkit_test_export"},
+                    "java": {"packageId": "java-kmipkit", "name": "Test.export"},
+                    "python": {"packageId": "python-kmipkit", "name": "kmipkit.test.export"},
+                },
+                "parityEvidenceIds": ["tests/consumer.c"],
+            }
+        ]
+
+        first = reconcile_0053_api_parity.add_public_declarations(self.manifest, declarations)
+        second = reconcile_0053_api_parity.add_public_declarations(first, declarations)
+
+        self.assertEqual(first, second)
+        self.assertEqual(
+            "verified",
+            next(
+                row["declarationState"]
+                for row in first["publicDeclarations"]
+                if row["declarationId"] == "four-language-test-export"
+            ),
+        )
+
+    def test_public_export_cannot_claim_parity_with_a_missing_language(self) -> None:
+        declarations = [
+            {
+                "declarationId": "four-language-test-export",
+                "packageId": "c-kmipkit",
+                "exportName": "kmipkit_test_export",
+                "declarationState": "verified",
+                "parityScope": "four-language",
+                "languageMappings": {
+                    "rust": {"packageId": "rust-kmipkit", "name": "test::rust"},
+                    "c": {"packageId": "c-kmipkit", "name": "kmipkit_test_export"},
+                    "java": {"packageId": "java-kmipkit", "name": "Test.export"},
+                },
+                "parityEvidenceIds": ["tests/consumer.c"],
+                "requirementIds": ["KMIPKIT-0053-FR-002"],
+            }
+        ]
+
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.add_public_declarations(self.manifest, declarations)
 
 
 if __name__ == "__main__":

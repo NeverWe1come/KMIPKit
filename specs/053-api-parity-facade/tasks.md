@@ -5,7 +5,7 @@
 
 ## Phase 1: Baseline and contracts
 - [x] T001 Record baseline commit, branch, predecessor PR #123, platform, and approval in specs/053-api-parity-facade/implementation-evidence.md.
-- [ ] T002 Add manifest inventory tests for the 750 candidates, four capabilities, and unowned routes in tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
+- [x] T002 Add manifest inventory tests for the 750 candidates, four capabilities, and unowned routes in tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
 - [ ] T003 Add common ABI ownership, null-output, stale-handle, and redaction tests in crates/kmipkit-ffi/tests/support/api_parity_0053_tests.rs.
 - [ ] T004 Add clean external package consumers for Rust, C, Java, and Python in tests/consumers/0053-parity/.
 - [x] T005 Review the language boundary and ownership contract in specs/053-api-parity-facade/contracts/language-api.md.
@@ -13,15 +13,15 @@
 ## Phase 2: US1 typed attributes (62 applicable definitions)
 ### Red
 - [x] T006 [US1] Add C ABI tests for typed construction/read, invalid tag/type and ownership in crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs.
-- [ ] T007 [US1] Add Java typed owner/view, invalid tag/type, repeat/unknown value, and close tests in bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java.
-- [ ] T008 [US1] Add Python 62-definition, generic roundtrip, repeat, redaction, and close tests in bindings/python/tests/test_typed_attribute_parity.py.
+- [x] T007 [US1] Add Java typed owner/view, invalid tag/type, repeat/unknown value, and close tests in bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java.
+- [x] T008 [US1] Add Python 62-definition, generic roundtrip, repeat, redaction, and close tests in bindings/python/tests/test_typed_attribute_parity.py.
 - [x] T009 [US1] Run the focused red tests and record expected missing-route failures in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
 - [ ] T010 [US1] Add safe C ABI typed attribute construction/read/conversion over KMIPKIT-0048 definitions in crates/kmipkit-ffi/src/extension_registry/typed_attributes.rs.
-- [ ] T011 [US1] Add Java owners/views and JNI transfer for typed attributes in bindings/java/src/main/java/org/kmipkit/typed/ and bindings/java/native/kmipkit_jni.cpp.
-- [ ] T012 [US1] Add Python owners/readers and CFFI declarations in bindings/python/src/kmipkit/typed_attributes.py and bindings/python/src/kmipkit/_client_ffi.py.
+- [x] T011 [US1] Add Java owners/views and JNI transfer for typed attributes in bindings/java/src/main/java/org/kmipkit/typed/ and bindings/java/native/kmipkit_jni.cpp.
+- [x] T012 [US1] Add Python owners/readers and CFFI declarations in bindings/python/src/kmipkit/typed_attributes.py and bindings/python/src/kmipkit/_client_ffi.py.
 - [ ] T013 [US1] Verify the 62-tag matrix, source value types, generic roundtrip, and errors across four languages; record results in specs/053-api-parity-facade/implementation-evidence.md.
-- [ ] T014 [US1] Add deterministic mapping/reconciliation tests for typed attribute routes in tools/api_manifest/reconcile_0053_api_parity.py and tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
+- [x] T014 [US1] Add deterministic mapping/reconciliation tests for typed attribute routes in tools/api_manifest/reconcile_0053_api_parity.py and tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
 - [ ] T015 [US1] Refactor shared attribute conversion/ownership helpers and rerun `bindings/c/tests/`, `bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java`, and `bindings/python/tests/test_typed_attribute_parity.py`.
 
 ## Phase 3: US2 managed objects and key structures

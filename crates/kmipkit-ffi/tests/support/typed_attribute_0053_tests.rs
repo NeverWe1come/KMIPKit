@@ -4,6 +4,25 @@ const ACTIVATION_DATE_TAG: u32 = 0x0042_0001;
 const NAME_TAG: u32 = 0x0042_000a;
 const VENDOR_TAG: u32 = 0x0054_0001;
 
+#[link(name = "kmipkit_typed_attribute_parity_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_0053_typed_attribute_from_item(
+        expected_tag: u32,
+        item: *mut kmipkit_ttlv_item_t,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+}
+
+fn call_compiled_c_consumer(
+    expected_tag: u32,
+    item: *mut kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    // SAFETY: Test-owned live opaque handles are passed to a compiled C consumer
+    // that forwards them to the public ABI without dereferencing their values.
+    unsafe { kmipkit_0053_typed_attribute_from_item(expected_tag, item, out_item) }
+}
+
 #[test]
 fn typed_attribute_from_item_preserves_valid_catalogued_item_and_input_owner() {
     let source = make_handle(
@@ -21,8 +40,7 @@ fn typed_attribute_from_item_preserves_valid_catalogued_item_and_input_owner() {
     );
     let mut typed = ptr::null_mut();
 
-    let status =
-        client_abi::kmipkit_typed_attribute_from_item(ACTIVATION_DATE_TAG, source, &raw mut typed);
+    let status = call_compiled_c_consumer(ACTIVATION_DATE_TAG, source, &raw mut typed);
 
     assert_eq!(status, SUCCESS);
     assert!(!typed.is_null());
@@ -81,8 +99,7 @@ fn typed_attribute_from_item_rejects_mismatched_tag_wrong_type_and_unknown_tag()
         );
         let mut typed = ptr::null_mut();
 
-        let status =
-            client_abi::kmipkit_typed_attribute_from_item(expected_tag, source, &raw mut typed);
+        let status = call_compiled_c_consumer(expected_tag, source, &raw mut typed);
 
         assert_eq!(status, ERROR_INVALID_INPUT);
         assert!(typed.is_null());
@@ -107,8 +124,7 @@ fn typed_attribute_from_item_preflights_null_output_without_consuming_input() {
         ),
     );
 
-    let status =
-        client_abi::kmipkit_typed_attribute_from_item(ACTIVATION_DATE_TAG, source, ptr::null_mut());
+    let status = call_compiled_c_consumer(ACTIVATION_DATE_TAG, source, ptr::null_mut());
 
     assert_eq!(status, ERROR_INVALID_INPUT);
     assert!(reference_handle(source, Kind::Item).is_ok());
