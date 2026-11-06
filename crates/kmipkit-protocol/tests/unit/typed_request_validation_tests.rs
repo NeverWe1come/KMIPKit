@@ -275,6 +275,58 @@ fn attribute_reference_mutation_validation_rejects_invalid_vendor_identification
     assert!(!format!("{adjust_report:?}{delete_report:?}").contains("bad/vendor"));
 }
 
+#[test]
+fn attribute_mutation_validation_rejects_malformed_vendor_attributes() {
+    let malformed_vendor_attribute = || {
+        schema_item(
+            0x0042_0008,
+            Value::structure(schema_structure([
+                schema_item(
+                    0x0042_009D,
+                    Value::text_string("KMIPKit.Vendor_1".to_owned()),
+                ),
+                schema_item(
+                    0x0042_000A,
+                    Value::text_string("SECRET_ATTRIBUTE_CANARY".to_owned()),
+                ),
+            ])),
+        )
+    };
+    let add =
+        AddAttributeRequest::new(None, crate::NewAttribute::new(malformed_vendor_attribute()));
+    let modify = ModifyAttributeRequest::new(
+        None,
+        Some(crate::CurrentAttribute::new(malformed_vendor_attribute())),
+        crate::NewAttribute::new(schema_item(
+            0x0042_00FD,
+            Value::text_string("replacement".to_owned()),
+        )),
+    );
+    let set = crate::SetAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(malformed_vendor_attribute()),
+    );
+    let delete = crate::DeleteAttributeRequest::new(
+        None,
+        Some(crate::CurrentAttribute::new(malformed_vendor_attribute())),
+        None,
+    );
+
+    let reports = [
+        add.validate(),
+        modify.validate(),
+        set.validate(),
+        delete.validate(),
+    ];
+    assert!(reports.iter().all(|report| {
+        report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R283"
+                && issue.source().to_string() == "KMIP v2.1 §4.60, Table 150"
+        })
+    }));
+    assert!(!format!("{reports:?}").contains("SECRET_ATTRIBUTE_CANARY"));
+}
+
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
     assert_eq!(T::SCHEMA, expected);
 }
