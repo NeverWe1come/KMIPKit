@@ -23,6 +23,81 @@ fn call_compiled_c_consumer(
     unsafe { kmipkit_0053_typed_attribute_from_item(expected_tag, item, out_item) }
 }
 
+fn catalog_value(tag: u32, kind: &str) -> Value {
+    match kind {
+        "BigInteger" => Value::big_integer(vec![1]),
+        "Boolean" => Value::boolean(true),
+        "ByteString" => Value::byte_string(vec![1]),
+        "DateTime" => Value::date_time(1_700_000_000),
+        "DateTimeExtended" => Value::date_time_extended(1_700_000_000),
+        "Enumeration" => Value::enumeration(u32::MAX),
+        "Integer" => Value::integer(7),
+        "Interval" => Value::interval(7),
+        "Structure" if tag == 0x0042_0008 => {
+            let mut structure = Structure::new();
+            for (child_tag, value) in [
+                (
+                    0x0042_009d,
+                    Value::text_string("KMIPKit.TestVendor_1".to_owned()),
+                ),
+                (
+                    0x0042_000a,
+                    Value::text_string("Opaque.Attribute".to_owned()),
+                ),
+                (0x0042_000b, Value::byte_string(vec![1])),
+            ] {
+                let child_tag = RawTag::new(child_tag)
+                    .expect("vendor child tag fits")
+                    .try_checked()
+                    .expect("vendor child tag is assigned");
+                structure
+                    .try_push(Item::new(child_tag, value).expect("vendor child is valid"))
+                    .expect("vendor structure remains within limits");
+            }
+            Value::structure(structure)
+        }
+        "Structure" => Value::structure(Structure::new()),
+        "TextString" | "UniqueIdentifier" => Value::text_string("attribute-value".to_owned()),
+        _ => panic!("catalogued attribute has an unsupported test value kind: {kind}"),
+    }
+}
+
+#[test]
+fn compiled_c_consumer_accepts_all_sixty_two_catalogued_attribute_types() {
+    assert_eq!(
+        typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS.len(),
+        62
+    );
+    for (tag, kind) in typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS {
+        let source_item = Item::new(
+            RawTag::new(*tag)
+                .expect("catalog tag fits")
+                .try_checked()
+                .expect("catalog tag is assigned"),
+            catalog_value(*tag, kind),
+        )
+        .expect("catalog item is valid TTLV");
+        let source = make_handle(Kind::Item, HandleValue::Item(source_item));
+        let mut converted = ptr::null_mut();
+
+        let status = call_compiled_c_consumer(*tag, source, &raw mut converted);
+
+        assert_eq!(status, SUCCESS, "attribute tag {tag:#08x} ({kind})");
+        let input = reference_handle(source, Kind::Item).expect("source owner remains valid");
+        let output = reference_handle(converted, Kind::Item).expect("converted Item is owned");
+        let HandleValue::Item(input_item) = &input.value else {
+            panic!("source handle contains Item");
+        };
+        let HandleValue::Item(output_item) = &output.value else {
+            panic!("converted handle contains Item");
+        };
+        assert_eq!(output_item.tag().raw(), *tag);
+        assert_eq!(output_item.item_type(), input_item.item_type());
+        kmipkit_ttlv_item_release(converted);
+        kmipkit_ttlv_item_release(source);
+    }
+}
+
 #[test]
 fn typed_attribute_from_item_preserves_valid_catalogued_item_and_input_owner() {
     let source = make_handle(
