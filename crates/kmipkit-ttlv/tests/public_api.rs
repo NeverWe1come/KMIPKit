@@ -60,10 +60,12 @@ fn item_exposes_a_borrowed_nested_structure_without_copying() {
         .expect("a Structure-valued item exposes its borrowed node");
     assert_eq!(nested_view.children().len(), 1);
     assert_eq!(nested_view.children()[0].tag(), child_tag);
-    assert!(nested_view.children()[0]
-        .with_value(|value| matches!(value, ValueView::Integer(number) if *number == 73)));
+    assert!(
+        nested_view.children()[0]
+            .with_value(|value| matches!(value, ValueView::Integer(number) if *number == 73))
+    );
 
-    let scalar = Item::new(parent_tag, Value::integer(1))
-        .expect("the checked tag and value form an item");
+    let scalar =
+        Item::new(parent_tag, Value::integer(1)).expect("the checked tag and value form an item");
     assert!(scalar.as_structure().is_none());
 }

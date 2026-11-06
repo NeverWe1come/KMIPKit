@@ -6,7 +6,7 @@
 
 ## Phase 1: Red — executable contracts
 
-- [ ] T001 [P] Add a public TTLV test proving an Item containing a Structure returns a borrowed StructureView and non-Structure values return absence (`KMIPKIT-0052-R060`).
+- [x] T001 [P] Add a public TTLV test proving an Item containing a Structure returns a borrowed StructureView and non-Structure values return absence (`KMIPKIT-0052-R060`).
 - [ ] T002 Add client tests for raw Response Payload and Response Header views, distinguishing absent payload from present empty Structure and preserving child order/repetition (`R057`, `R058`, `P002`, `P003`).
 - [ ] T003 Add a client response fixture with vendor tags at arbitrary nested depth, including Key Block and Server Information, and assert traversal and value preservation without exposing Debug values (`R004`, `R005`, `R059`, `R060`, `P006`).
 - [ ] T004 Add async typed-reader tests for Cancel, Poll, Process, and Query Asynchronous Requests for matching and mismatching outcomes; preserve the unresolved Table 286 payload generically (`R001`, `P005`).
@@ -16,7 +16,7 @@
 
 ## Phase 2: Green — Rust and TTLV surface
 
-- [ ] T008 Add a direct borrowed `Item::as_structure()` accessor and API documentation; do not change value ownership or formatting.
+- [x] T008 Add a direct borrowed `Item::as_structure()` accessor and API documentation; do not change value ownership or formatting.
 - [ ] T009 Add direct ordered raw access to `ResponseHeaderView` and `ResponseBatchItemView` while preserving existing callback accessors.
 - [ ] T010 Retain one shared `Arc<ResponseMessage>` and response-item index in high-level batch results; implement `ClientBatchItemResponse::raw()` and batch response header access without cloning a payload per result.
 - [ ] T011 Add direct `ClientOperationOutcome::raw()` and typed readers for Cancel, Poll, Process, and Query Asynchronous Requests, returning `None` for a different operation.
