@@ -2232,3 +2232,85 @@ fn policy_leaf(
         .expect("test leaf certificate signing succeeds");
     (certificate, key)
 }
+
+fn spawn_resumption_peer(
+    listener: TcpListener,
+    config: Arc<ServerConfig>,
+) -> thread::JoinHandle<Vec<Option<rustls::HandshakeKind>>> {
+    thread::spawn(move || {
+        let mut kinds = Vec::new();
+        for _ in 0..2 {
+            let Ok((mut stream, _)) = accept_before_deadline(&listener) else {
+                break;
+            };
+            if stream.set_nonblocking(false).is_err()
+                || stream.set_read_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
+                || stream.set_write_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
+            {
+                break;
+            }
+            let Ok(mut connection) = ServerConnection::new(Arc::clone(&config)) else {
+                break;
+            };
+            let deadline = Instant::now() + PEER_OPERATION_TIMEOUT;
+            while connection.is_handshaking() {
+                if Instant::now() >= deadline || connection.complete_io(&mut stream).is_err() {
+                    break;
+                }
+            }
+            kinds.push(connection.handshake_kind());
+            let mut request_bytes = Vec::new();
+            if !read_plaintext_exact(
+                &mut connection,
+                &mut stream,
+                deadline,
+                fixtures::REQUEST_SENTINEL.len(),
+                &mut request_bytes,
+            ) {
+                break;
+            }
+            if connection.writer().write_all(&RESPONSE_FRAME).is_err() {
+                break;
+            }
+            while connection.wants_write() {
+                if connection.write_tls(&mut stream).is_err() {
+                    break;
+                }
+            }
+            let _ = stream.flush();
+            thread::sleep(Duration::from_millis(50));
+        }
+        kinds
+    })
+}
+
+#[test]
+fn consecutive_raw_tls_exchanges_resume_tls13_session() {
+    let pki = EphemeralPki::generate().expect("the test PKI is valid");
+    let listener = LoopbackTcpListener::bind().expect("the peer binds loopback");
+    let address = listener.local_addr();
+    let server_config = server_config(&pki, true);
+
+    let peer = spawn_resumption_peer(listener.into_inner(), server_config);
+    let mut adapter = RawTlsTransport::new(public_client_config(&pki, address.port(), SERVER_NAME))
+        .expect("the raw TLS adapter initializes");
+
+    let first = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the first raw TLS exchange succeeds");
+    assert_eq!(first.as_bytes(), &RESPONSE_FRAME);
+
+    let second = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the second raw TLS exchange succeeds");
+    assert_eq!(second.as_bytes(), &RESPONSE_FRAME);
+
+    let kinds = peer.join().expect("the peer completes");
+    assert_eq!(
+        kinds,
+        vec![
+            Some(rustls::HandshakeKind::Full),
+            Some(rustls::HandshakeKind::Resumed)
+        ]
+    );
+}
