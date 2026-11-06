@@ -5991,7 +5991,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(exclusions), 40)
         for row in exclusions:
             with self.subTest(export_name=row["exportName"]):
-                self.assertIn("standard and blanket Rust trait implementations", row["reason"])
+                self.assertIn(
+                    "standard and blanket rust trait implementations",
+                    row["reason"].casefold(),
+                )
                 self.assertEqual(
                     row["approvalSource"]["path"],
                     "specs/057-multi-encoding-client-integration/spec.md",
@@ -6761,7 +6764,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         header_ttlv_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|ATTRIBUTE_REFERENCE_KIND|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND|CREDENTIAL_TYPE|CREDENTIAL_VALIDATION_ERROR_KIND|PROFILE_(?:CATALOG|TRANSPORT))_\w+)",
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|ATTRIBUTE_REFERENCE_KIND|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND|CREDENTIAL_TYPE|CREDENTIAL_VALIDATION_ERROR_KIND|PROFILE_(?:CATALOG|TRANSPORT)|WIRE_ENCODING)_\w+)",
                 header,
                 re.MULTILINE,
             )

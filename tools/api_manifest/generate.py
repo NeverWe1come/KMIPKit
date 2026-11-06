@@ -2869,6 +2869,7 @@ def render_c_header(
                 continue
             lines.append(f"#define {const_name} (({name}){value['value']})")
         lines.append("")
+
     for declaration in manifest.get("publicDeclarations", []):
         if (
             declaration.get("packageId") != "c-kmipkit"
@@ -2916,6 +2917,87 @@ def render_c_header(
         )
     if manifest.get("cAbiRecordConstants"):
         lines.append("")
+
+    # Forward declarations make pointer members independent of manifest order.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if ready_c_exports is not None and name not in ready_c_exports:
+            continue
+        if c_type["kind"] == "opaque-handle" or (
+            c_type["kind"] == "fixed-width-value" and c_type.get("fields")
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            emitted.add(name)
+    if emitted:
+        lines.append("")
+
+    c_layouts = _ordered_approved_c_type_layouts(
+        manifest,
+        include_blocked=include_blocked,
+    )
+    for c_type in c_layouts:
+        lines.append(f"typedef struct {c_type['name']} {c_type['name']};")
+    if c_layouts:
+        lines.append("")
+
+    # Preserve the existing generated layout for limit records without explicit fields.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if (
+            c_type["kind"] != "fixed-width-value"
+            or c_type.get("fields")
+            or name in emitted
+            or (ready_c_exports is not None and name not in ready_c_exports)
+        ):
+            continue
+        emitted.add(name)
+        if not _c_value_layout_is_complete(
+            declaration,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=include_blocked or ready_c_exports is None,
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            lines.append("")
+            continue
+        lines.append("typedef struct {")
+        if c_type.get("versioned"):
+            lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
+        for limit in manifest["limits"]:
+            lines.append(f"    uint64_t {limit['cField']};")
+        lines.append(f"}} {name};")
+        lines.append("")
+
+    for declaration in _ordered_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+        approved_layouts=c_layouts,
+    ):
+        c_type = declaration["c"]
+        lines.append(f"struct {c_type['name']} {{")
+        lines.extend(f"    {field['type']} {field['name']};" for field in c_type["fields"])
+        lines.extend(["};", ""])
+    if ready_c_exports is not None:
+        carrier_layout_names = {layout["name"] for layout in c_layouts}
+        emitted_type_names = {
+            declaration["c"]["name"]
+            for declaration in manifest["types"]
+            if declaration["c"]["name"] in ready_c_exports
+        }
+        for c_type in c_layouts:
+            for field in c_type["fields"]:
+                match = _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field["type"])
+                base_type = match.group("base") if match is not None else ""
+                if (
+                    base_type.startswith("kmipkit_")
+                    and base_type not in emitted_type_names
+                    and base_type not in carrier_layout_names
+                ):
+                    raise ManifestError("approved C carrier references a blocked C type")
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         if (

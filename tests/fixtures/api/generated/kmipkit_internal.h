@@ -120,6 +120,395 @@ typedef uint32_t kmipkit_wire_encoding_t;
 /* C ABI record input for kmipkit_transport_config_v1_t.flags: bit set when target_uri is present. */
 #define KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI ((uint32_t)2)
 
+typedef struct kmipkit_extension_identity_t kmipkit_extension_identity_t;
+typedef struct kmipkit_extension_compatibility_t kmipkit_extension_compatibility_t;
+typedef struct kmipkit_ttlv_path_t kmipkit_ttlv_path_t;
+typedef struct kmipkit_extension_discriminator_t kmipkit_extension_discriminator_t;
+typedef struct kmipkit_extension_schema_t kmipkit_extension_schema_t;
+typedef struct kmipkit_extension_information_t kmipkit_extension_information_t;
+typedef struct kmipkit_extension_definition_t kmipkit_extension_definition_t;
+typedef struct kmipkit_client_extension_registry_t kmipkit_client_extension_registry_t;
+typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
+typedef struct kmipkit_validated_extension_value_t kmipkit_validated_extension_value_t;
+typedef struct kmipkit_registered_extension_value_t kmipkit_registered_extension_value_t;
+typedef struct kmipkit_client_request_message_extension_t kmipkit_client_request_message_extension_t;
+typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
+typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
+typedef struct kmipkit_extension_child_rule_t kmipkit_extension_child_rule_t;
+typedef struct kmipkit_extension_order_constraint_t kmipkit_extension_order_constraint_t;
+typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
+typedef struct kmipkit_extension_recognition_t kmipkit_extension_recognition_t;
+typedef struct kmipkit_raw_tag_t kmipkit_raw_tag_t;
+typedef struct kmipkit_tag_t kmipkit_tag_t;
+typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
+typedef struct kmipkit_ttlv_structure_view_t kmipkit_ttlv_structure_view_t;
+typedef struct kmipkit_ttlv_item_view_t kmipkit_ttlv_item_view_t;
+typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
+typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
+typedef struct kmipkit_client_t kmipkit_client_t;
+typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
+typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
+typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
+typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+typedef struct kmipkit_request_options_v1_t kmipkit_request_options_v1_t;
+typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
+typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
+typedef struct kmipkit_unique_identifier_v1_t kmipkit_unique_identifier_v1_t;
+typedef struct kmipkit_client_batch_item_metadata_v2_t kmipkit_client_batch_item_metadata_v2_t;
+typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
+typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
+typedef struct kmipkit_revocation_reason_t kmipkit_revocation_reason_t;
+typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
+typedef struct kmipkit_attribute_reference_v1_t kmipkit_attribute_reference_v1_t;
+typedef struct kmipkit_client_async_operation_metadata_v1_t kmipkit_client_async_operation_metadata_v1_t;
+typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
+typedef struct kmipkit_profile_validation_selection_v1_t kmipkit_profile_validation_selection_v1_t;
+typedef struct kmipkit_profile_object_state_v1_t kmipkit_profile_object_state_v1_t;
+typedef struct kmipkit_profile_validation_context_v1_t kmipkit_profile_validation_context_v1_t;
+typedef struct kmipkit_ttlv_decode_error_v1_t kmipkit_ttlv_decode_error_v1_t;
+typedef struct kmipkit_request_message_t kmipkit_request_message_t;
+typedef struct kmipkit_request_header_view_t kmipkit_request_header_view_t;
+typedef struct kmipkit_request_batch_item_view_t kmipkit_request_batch_item_view_t;
+typedef struct kmipkit_response_message_t kmipkit_response_message_t;
+typedef struct kmipkit_response_header_view_t kmipkit_response_header_view_t;
+typedef struct kmipkit_response_batch_item_view_t kmipkit_response_batch_item_view_t;
+typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t;
+typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
+typedef struct kmipkit_profile_validation_error_t kmipkit_profile_validation_error_t;
+typedef struct kmipkit_profile_validation_error_view_v1_t kmipkit_profile_validation_error_view_v1_t;
+typedef struct kmipkit_credential_t kmipkit_credential_t;
+typedef struct kmipkit_nonce_t kmipkit_nonce_t;
+typedef struct kmipkit_attestation_credential_t kmipkit_attestation_credential_t;
+typedef struct kmipkit_device_credential_t kmipkit_device_credential_t;
+typedef struct kmipkit_authentication_t kmipkit_authentication_t;
+typedef struct kmipkit_credential_view_t kmipkit_credential_view_t;
+typedef struct kmipkit_credential_validation_error_v1_t kmipkit_credential_validation_error_v1_t;
+typedef struct kmipkit_username_and_password_credential_t kmipkit_username_and_password_credential_t;
+typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
+typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
+typedef struct kmipkit_hashed_password_timestamp_sequence_t kmipkit_hashed_password_timestamp_sequence_t;
+typedef struct kmipkit_hashed_password_credential_t kmipkit_hashed_password_credential_t;
+typedef struct kmipkit_credential_value_t kmipkit_credential_value_t;
+typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;
+typedef struct kmipkit_poll_request_t kmipkit_poll_request_t;
+typedef struct kmipkit_process_request_t kmipkit_process_request_t;
+typedef struct kmipkit_query_async_requests_request_t kmipkit_query_async_requests_request_t;
+typedef struct kmipkit_add_attribute_request_t kmipkit_add_attribute_request_t;
+typedef struct kmipkit_adjust_attribute_request_t kmipkit_adjust_attribute_request_t;
+typedef struct kmipkit_delete_attribute_request_t kmipkit_delete_attribute_request_t;
+typedef struct kmipkit_modify_attribute_request_t kmipkit_modify_attribute_request_t;
+typedef struct kmipkit_set_attribute_request_t kmipkit_set_attribute_request_t;
+typedef struct kmipkit_get_attributes_request_t kmipkit_get_attributes_request_t;
+typedef struct kmipkit_get_attribute_list_request_t kmipkit_get_attribute_list_request_t;
+typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
+typedef struct kmipkit_profile_readiness_t kmipkit_profile_readiness_t;
+typedef struct kmipkit_profile_evidence_record_v1_t kmipkit_profile_evidence_record_v1_t;
+typedef struct kmipkit_profile_readiness_view_v1_t kmipkit_profile_readiness_view_v1_t;
+typedef struct kmipkit_profile_readiness_blocker_view_v1_t kmipkit_profile_readiness_blocker_view_v1_t;
+typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row_view_v1_t;
+typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
+typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
+typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
+typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
+typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
+typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
+
+typedef struct {
+    uint64_t max_definitions;
+    uint64_t max_schema_nodes;
+    uint64_t max_child_rules_per_structure;
+    uint64_t max_text_bytes_per_field;
+    uint64_t max_registry_text_bytes;
+    uint64_t max_discriminator_scalar_bytes;
+    uint64_t max_total_discriminator_scalar_bytes;
+    uint64_t max_constraint_members_per_rule;
+    uint64_t max_total_constraint_members;
+    uint64_t max_payload_index_records;
+    uint64_t max_lookup_comparisons;
+    uint64_t max_depth;
+} kmipkit_extension_registry_limits_t;
+
+typedef struct {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t max_definitions;
+    uint64_t max_schema_nodes;
+    uint64_t max_child_rules_per_structure;
+    uint64_t max_text_bytes_per_field;
+    uint64_t max_registry_text_bytes;
+    uint64_t max_discriminator_scalar_bytes;
+    uint64_t max_total_discriminator_scalar_bytes;
+    uint64_t max_constraint_members_per_rule;
+    uint64_t max_total_constraint_members;
+    uint64_t max_payload_index_records;
+    uint64_t max_lookup_comparisons;
+    uint64_t max_depth;
+} kmipkit_extension_registry_limits_v1_t;
+
+struct kmipkit_timeout_limit_v1_t {
+    uint32_t kind;
+    uint32_t reserved;
+    uint64_t seconds;
+    uint32_t nanoseconds;
+    uint32_t reserved2;
+};
+
+struct kmipkit_request_options_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_timeout_limit_v1_t connect_timeout;
+    kmipkit_timeout_limit_v1_t write_timeout;
+    kmipkit_timeout_limit_v1_t read_timeout;
+    kmipkit_timeout_limit_v1_t total_timeout;
+};
+
+struct kmipkit_protocol_version_v1_t {
+    int32_t major;
+    int32_t minor;
+};
+
+struct kmipkit_unique_identifier_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_unique_identifier_kind_t kind;
+    uint32_t reserved;
+    const uint8_t * text_data;
+    uint64_t text_length;
+    uint32_t enumeration_value;
+    int32_t integer_value;
+};
+
+struct kmipkit_client_batch_item_metadata_v2_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+    uint32_t has_result_message;
+    uint32_t reserved;
+    const uint8_t * result_message_data;
+    uint64_t result_message_length;
+};
+
+struct kmipkit_attribute_reference_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t kind;
+    uint32_t reserved;
+    uint32_t tag_value;
+    uint32_t reserved2;
+    const uint8_t * vendor_identification_data;
+    uint64_t vendor_identification_length;
+    const uint8_t * attribute_name_data;
+    uint64_t attribute_name_length;
+};
+
+struct kmipkit_client_async_operation_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+    uint32_t has_cancellation_result;
+    uint32_t cancellation_result;
+    uint32_t has_result_message;
+    uint32_t reserved;
+    const uint8_t * result_message_data;
+    uint64_t result_message_length;
+};
+
+struct kmipkit_profile_validation_selection_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    const uint8_t * profile_id_data;
+    uint64_t profile_id_data_length;
+    const uint64_t * profile_id_offsets;
+    const uint64_t * profile_id_lengths;
+    uint64_t profile_id_count;
+};
+
+struct kmipkit_profile_object_state_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t batch_item_index;
+    const uint8_t * unique_identifier_data;
+    uint64_t unique_identifier_length;
+    uint32_t known_fields;
+    uint32_t boolean_values;
+    int64_t usage_limits_total;
+    int64_t usage_limits_count;
+};
+
+struct kmipkit_profile_validation_context_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    const kmipkit_profile_object_state_v1_t * object_states;
+    uint64_t object_state_count;
+};
+
+struct kmipkit_ttlv_decode_error_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t kind;
+    uint64_t byte_offset;
+};
+
+struct kmipkit_profile_validation_error_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t source_kind;
+    uint32_t batch_item_index_present;
+    uint64_t batch_item_index;
+    const uint8_t * error_code_data;
+    uint64_t error_code_length;
+    const uint8_t * profile_id_data;
+    uint64_t profile_id_length;
+    const uint8_t * requirement_id_data;
+    uint64_t requirement_id_length;
+    const uint8_t * source_id_data;
+    uint64_t source_id_length;
+    const uint8_t * source_locator_data;
+    uint64_t source_locator_length;
+};
+
+struct kmipkit_credential_validation_error_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t kind;
+};
+
+struct kmipkit_byte_span_v1_t {
+    const uint8_t * data;
+    uint64_t length;
+};
+
+struct kmipkit_profile_evidence_record_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t requirement_id;
+    uint8_t passed;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+    uint8_t reserved_4;
+    uint8_t reserved_5;
+    uint8_t reserved_6;
+};
+
+struct kmipkit_profile_readiness_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t profile_id;
+    kmipkit_byte_span_v1_t effective_state;
+    uint8_t target_selected;
+    uint8_t runtime_validation_available;
+    uint8_t requirement_records_complete;
+    uint8_t published_claim;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+    uint64_t blocker_count;
+};
+
+struct kmipkit_profile_readiness_blocker_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t kind;
+    kmipkit_byte_span_v1_t message;
+    uint8_t requirement_id_present;
+    uint8_t profile_id_present;
+    uint8_t test_id_present;
+    uint8_t source_clause_id_present;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+    kmipkit_byte_span_v1_t requirement_id;
+    kmipkit_byte_span_v1_t profile_id;
+    kmipkit_byte_span_v1_t test_id;
+    kmipkit_byte_span_v1_t source_clause_id;
+};
+
+struct kmipkit_profile_catalog_row_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t row_kind;
+    uint32_t reserved;
+    kmipkit_byte_span_v1_t profile_id;
+    kmipkit_byte_span_v1_t name;
+    kmipkit_byte_span_v1_t applicability;
+    kmipkit_byte_span_v1_t claim_state;
+    uint8_t selected_target;
+    uint8_t has_accepted_deviation;
+    uint8_t source_keyword_present;
+    uint8_t source_force_present;
+    uint8_t source_gap_id_present;
+    uint8_t source_locator_present;
+    uint8_t reserved_flag_0;
+    uint8_t reserved_flag_1;
+    kmipkit_byte_span_v1_t requirement_id;
+    kmipkit_byte_span_v1_t source_clause_id;
+    kmipkit_byte_span_v1_t source_keyword;
+    kmipkit_byte_span_v1_t source_force;
+    kmipkit_byte_span_v1_t source_gap_id;
+    kmipkit_byte_span_v1_t source_locator;
+    kmipkit_byte_span_v1_t verification_category;
+    kmipkit_byte_span_v1_t scope_state;
+    kmipkit_byte_span_v1_t test_id;
+    kmipkit_byte_span_v1_t official_case_id;
+    kmipkit_byte_span_v1_t mandatory_status;
+    kmipkit_byte_span_v1_t fixture_availability;
+    kmipkit_byte_span_v1_t text_value;
+};
+
+struct kmipkit_client_batch_item_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+};
+
+struct kmipkit_transport_input_v1_t {
+    uint32_t source_kind;
+    uint32_t encoding;
+    kmipkit_byte_span_v1_t data;
+};
+
+struct kmipkit_transport_config_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t endpoint_kind;
+    uint32_t trust_kind;
+    uint32_t flags;
+    uint32_t reserved;
+    kmipkit_byte_span_v1_t endpoint;
+    uint16_t endpoint_port;
+    uint16_t reserved2;
+    const kmipkit_transport_input_v1_t * client_certificates;
+    uint64_t client_certificate_count;
+    kmipkit_transport_input_v1_t client_private_key;
+    const kmipkit_transport_input_v1_t * trust_certificates;
+    uint64_t trust_certificate_count;
+    const kmipkit_transport_input_v1_t * revocation_lists;
+    uint64_t revocation_list_count;
+    kmipkit_byte_span_v1_t tls_server_name;
+    kmipkit_byte_span_v1_t target_uri;
+    kmipkit_timeout_limit_v1_t connect_timeout;
+    kmipkit_timeout_limit_v1_t write_timeout;
+    kmipkit_timeout_limit_v1_t read_timeout;
+    kmipkit_timeout_limit_v1_t total_timeout;
+    uint64_t max_request_bytes;
+};
+
 /* Releases the library-owned kmipkit_extension_identity_t handle. */
 void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
 /* Releases the library-owned kmipkit_extension_compatibility_t handle. */
