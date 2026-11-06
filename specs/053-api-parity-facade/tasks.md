@@ -17,12 +17,12 @@
 - [x] T008 [US1] Add Python 62-definition, generic roundtrip, repeat, redaction, and close tests in bindings/python/tests/test_typed_attribute_parity.py.
 - [x] T009 [US1] Run the focused red tests and record expected missing-route failures in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
-- [ ] T010 [US1] Add safe C ABI typed attribute construction/read/conversion over KMIPKIT-0048 definitions in crates/kmipkit-ffi/src/extension_registry/typed_attributes.rs. Current from-item wrappers only validate the generic TTLV tag/value kind.
-- [ ] T011 [US1] Add Java owners/views and JNI transfer for typed attributes in bindings/java/src/main/java/org/kmipkit/typed/ and bindings/java/native/kmipkit_jni.cpp, including typed scalar/structure constructors and readers.
-- [ ] T012 [US1] Add Python owners/readers and CFFI declarations in bindings/python/src/kmipkit/typed_attributes.py and bindings/python/src/kmipkit/_client_ffi.py, including typed scalar/structure constructors and readers.
-- [ ] T013 [US1] Verify all 62 attribute definitions, source value types, typed roundtrip, generic fallback, repeated values, and errors across four languages; record results in specs/053-api-parity-facade/implementation-evidence.md.
-- [ ] T014 [US1] Add deterministic mapping/reconciliation tests for every implemented typed attribute route in tools/api_manifest/reconcile_0053_api_parity.py and tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
-- [ ] T015 [US1] Refactor shared attribute conversion/ownership helpers and rerun the C, Java, and Python typed attribute suites after typed field APIs are complete.
+- [x] T010 [US1] Add safe C ABI typed attribute construction/read/conversion over KMIPKIT-0048 definitions in crates/kmipkit-ffi/src/extension_registry/typed_attributes.rs. Current from-item wrappers only validate the generic TTLV tag/value kind.
+- [x] T011 [US1] Add Java owners/views and JNI transfer for typed attributes in bindings/java/src/main/java/org/kmipkit/typed/ and bindings/java/native/kmipkit_jni.cpp, including typed scalar/structure constructors and readers.
+- [x] T012 [US1] Add Python owners/readers and CFFI declarations in bindings/python/src/kmipkit/typed_attributes.py and bindings/python/src/kmipkit/_client_ffi.py, including typed scalar/structure constructors and readers.
+- [x] T013 [US1] Verify all 62 attribute definitions, source value types, typed roundtrip, generic fallback, repeated values, and errors across four languages; record results in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T014 [US1] Add deterministic mapping/reconciliation tests for every implemented typed attribute route in tools/api_manifest/reconcile_0053_api_parity.py and tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
+- [x] T015 [US1] Refactor shared attribute conversion/ownership helpers and rerun the C, Java, and Python typed attribute suites after typed field APIs are complete.
 
 ## Phase 3: US2 managed objects and key structures
 ### Red
@@ -87,8 +87,8 @@
 - [ ] T059 Confirm distinct Red/Green/Refactor commits, push branch, open draft PR against feature/KMIPKIT-0052-typed-responses, and record URL in specs/053-api-parity-facade/implementation-evidence.md.
 
 ## Converged work from implementation review
-- [ ] T060 [US1] Add named typed constructors/readers for all applicable KMIPKIT-0048 attributes and typed `AttributeSet` insert/read/iteration across C, Java, and Python, retaining generic Item access and repeated values.
-- [ ] T061 [US1] Add behavior tests that round-trip each attribute's actual value, not only its tag and TTLV type, through the typed foreign APIs.
+- [x] T060 [US1] Add named typed constructors/readers for all applicable KMIPKIT-0048 attributes and typed `AttributeSet` insert/read/iteration across C, Java, and Python, retaining generic Item access and repeated values.
+- [x] T061 [US1] Add behavior tests that round-trip each attribute's actual value, not only its tag and TTLV type, through the typed foreign APIs.
 - [ ] T062 [US2] Add typed constructors/readers for the nine managed-object fields and nested KeyBlock/KeyValue/KeyMaterial/wrapping structures across C, Java, and Python, retaining unknown TTLV children.
 - [ ] T063 [US2] Add behavior tests for object/key field values, key format/material variants, wrapping metadata, ownership, and cleanup guarantees across C, Java, and Python.
 - [ ] T064 [US5] Expose normal Query's typed fields in C, Java, and Python with raw access retained for unknown/vendor fields and exact order/repetition preservation.
