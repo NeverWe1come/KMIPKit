@@ -354,6 +354,62 @@ class ManifestTraceabilityUnionTests(unittest.TestCase):
         self.assertEqual(corrected_name, declaration["languageMappings"]["python"]["name"])
         self.assertNotIn(old_name, [row["exportName"] for row in reconciled["publicDeclarations"]])
 
+    def test_rust_kind_matches_exact_rustdoc_associated_item_correction(self) -> None:
+        export_name = "kmipkit_protocol::ManagedValueReader::read_field"
+        mappings = {
+            "rust": {"packageId": "rust-kmipkit-protocol", "name": export_name},
+            "c": {"packageId": "c-kmipkit", "name": "kmipkit_managed_value_field_read"},
+            "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.ManagedObject.readField"},
+            "python": {"packageId": "python-kmipkit", "name": "kmipkit.managed_objects.ManagedTtlvItem.field_read"},
+        }
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/053-api-parity-facade/approval-record.md",
+            "status": "Approved",
+            "evidence": "Maintainer-approved KMIPKIT-0053 scope.",
+        }
+        existing = {
+            "declarationId": "managed_value_field_read:rust",
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "function",
+            "exportName": export_name,
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0053-FR-003"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": mappings,
+            "parityEvidenceIds": ["crates/kmipkit-protocol/src/managed_value_reader.rs"],
+            "approvalSource": approval,
+        }
+        candidate = {**existing, "kind": "associated-item"}
+        correction = {
+            "packageId": "rust-kmipkit-protocol",
+            "exportName": export_name,
+            "manifestKind": "function",
+            "observedKind": "associated-item",
+            "reason": "Rustdoc reports the exact method as an associated item.",
+            "evidencePaths": ["crates/kmipkit-protocol/src/managed_value_reader.rs"],
+        }
+        manifest = {
+            "requirementIds": ["KMIPKIT-0053-FR-003"],
+            "publicDeclarations": [existing],
+            "capabilities": [
+                {
+                    "capabilityId": existing["capabilityId"],
+                    "mappings": {language: [mapping["name"]] for language, mapping in mappings.items()},
+                    "requirementIds": existing["requirementIds"],
+                    "parityEvidenceIds": existing["parityEvidenceIds"],
+                }
+            ],
+        }
+
+        reconciled = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [candidate], rust_kind_corrections=[correction]
+        )
+
+        self.assertEqual("associated-item", reconciled["publicDeclarations"][0]["kind"])
+        self.assertEqual(existing["declarationId"], reconciled["publicDeclarations"][0]["declarationId"])
+
     def test_exact_existing_export_corrects_approved_java_wrapper_route(self) -> None:
         old_name = "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
         corrected_name = "org.kmipkit.ttlv.KeyBlock.fieldItem"
