@@ -4990,12 +4990,6 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_ttlv(
     })
 }
 
-/// Query field value categories returned by `query_field_at`.
-const QUERY_FIELD_KIND_ENUMERATION: u8 = 1;
-const QUERY_FIELD_KIND_TEXT_STRING: u8 = 2;
-const QUERY_FIELD_KIND_STRUCTURE: u8 = 3;
-const QUERY_FIELD_KIND_UNKNOWN: u8 = 4;
-
 /// Returns whether this result is a typed Query response and its field count.
 ///
 /// `out_present` is zero when the result belongs to another operation. A
@@ -5094,20 +5088,17 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_field_at(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *tag = field.tag();
-        match field.kind() {
+        let field_kind = field.kind();
+        *kind = field_kind as u8;
+        match field_kind {
             QueryResponseFieldKind::Enumeration => {
-                *kind = QUERY_FIELD_KIND_ENUMERATION;
                 *enumeration = try_ffi!(field.raw_enumeration().ok_or(ERROR_INTERNAL));
             }
-            QueryResponseFieldKind::TextString => {
-                *kind = QUERY_FIELD_KIND_TEXT_STRING;
-            }
-            QueryResponseFieldKind::Structure => {
-                *kind = QUERY_FIELD_KIND_STRUCTURE;
-            }
-            QueryResponseFieldKind::Unknown => *kind = QUERY_FIELD_KIND_UNKNOWN,
+            QueryResponseFieldKind::TextString
+            | QueryResponseFieldKind::Structure
+            | QueryResponseFieldKind::Unknown => {}
         }
-        if *kind != QUERY_FIELD_KIND_ENUMERATION {
+        if field_kind != QueryResponseFieldKind::Enumeration {
             let payload = try_ffi!(query.to_ttlv_payload().map_err(|_| ERROR_INTERNAL));
             let source_item = try_ffi!(payload.view().children().get(index).ok_or(ERROR_INTERNAL));
             let owned_item = try_ffi!(super::clone_item(source_item));

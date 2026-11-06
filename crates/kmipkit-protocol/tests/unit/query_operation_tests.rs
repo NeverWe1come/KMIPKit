@@ -593,6 +593,10 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
             .kind(),
         crate::QueryResponseFieldKind::Unknown
     );
+    assert_eq!(crate::QueryResponseFieldKind::Enumeration as u8, 1);
+    assert_eq!(crate::QueryResponseFieldKind::TextString as u8, 2);
+    assert_eq!(crate::QueryResponseFieldKind::Structure as u8, 3);
+    assert_eq!(crate::QueryResponseFieldKind::Unknown as u8, 4);
     assert!(response.response_field(17).is_none());
     assert_eq!(
         response

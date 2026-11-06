@@ -206,16 +206,17 @@ impl fmt::Debug for QueryRequest {
 }
 
 /// Stable categories produced by the Table 283 Query response classifier.
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum QueryResponseFieldKind {
     /// A KMIP Enumeration represented by its raw `u32` value.
-    Enumeration,
+    Enumeration = 1,
     /// A KMIP Text String represented by its decoded text.
-    TextString,
+    TextString = 2,
     /// A recognized Structure-valued Query response member.
-    Structure,
+    Structure = 3,
     /// An unrecognized field retained as a generic TTLV Item.
-    Unknown,
+    Unknown = 4,
 }
 
 /// A typed Table 283 Query response member.
