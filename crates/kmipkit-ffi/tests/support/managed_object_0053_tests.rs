@@ -1081,12 +1081,7 @@ fn compiled_c_consumer_uses_oasis_hexadecimal_transparent_ec_format_values() {
         let mut output = ptr::null_mut();
         // SAFETY: A null field array is valid with a zero count; output is a writable slot.
         let status = unsafe {
-            kmipkit_0053_key_material_from_fields(
-                format_raw,
-                ptr::null_mut(),
-                0,
-                &raw mut output,
-            )
+            kmipkit_0053_key_material_from_fields(format_raw, ptr::null_mut(), 0, &raw mut output)
         };
         assert_eq!(status, ERROR_INVALID_INPUT);
         assert!(output.is_null());
@@ -1139,8 +1134,9 @@ fn ffi_builder_dispatches_ec_formats_at_oasis_hex_values_and_preserves_reserved_
             .collect();
         let mut output = ptr::null_mut();
         // SAFETY: Every field handle is live and the output slot is writable.
+        // SAFETY: Every field handle is live and the output slot is writable.
         let status = unsafe {
-            crate::extension_registry::managed_objects::kmipkit_key_material_from_fields(
+            kmipkit_0053_key_material_from_fields(
                 format,
                 handles.as_mut_ptr(),
                 handles.len() as u64,
@@ -1156,17 +1152,15 @@ fn ffi_builder_dispatches_ec_formats_at_oasis_hex_values_and_preserves_reserved_
     }
 
     for reserved_format in [14, 15] {
-        let vendor_item = Item::new(
-            tag(0x54ff_0001),
-            Value::byte_string(vec![0x31, 0x32]),
-        )
-        .expect("vendor extension item");
+        let vendor_item = Item::new(tag(0x54ff_01), Value::byte_string(vec![0x31, 0x32]))
+            .expect("vendor extension item");
         let vendor_handle = make_handle(Kind::Item, HandleValue::Item(vendor_item));
         let mut handles = [vendor_handle];
         let mut output = ptr::null_mut();
         // SAFETY: The extension handle is live and the output slot is writable.
+        // SAFETY: The vendor field handle is live and the output slot is writable.
         let status = unsafe {
-            crate::extension_registry::managed_objects::kmipkit_key_material_from_fields(
+            kmipkit_0053_key_material_from_fields(
                 reserved_format,
                 handles.as_mut_ptr(),
                 handles.len() as u64,

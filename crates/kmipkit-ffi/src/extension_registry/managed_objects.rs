@@ -258,7 +258,7 @@ pub extern "C" fn kmipkit_key_material_from_fields(
     out_item: *mut *mut kmipkit_ttlv_item_t,
 ) -> i32 {
     typed_fields_to_item(out_item, fields, field_count, |fields| {
-        if !(7..=15).contains(&format_raw) {
+        if (1..=6).contains(&format_raw) {
             let mut fields = fields.into_iter();
             let Some(item) = fields.next() else {
                 return Err(ManagedObjectError::InvalidStructure);
@@ -266,6 +266,13 @@ pub extern "C" fn kmipkit_key_material_from_fields(
             if fields.next().is_some() {
                 return Err(ManagedObjectError::InvalidStructure);
             }
+            return KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format_raw))
+                .map(KeyMaterial::into_item);
+        }
+        // KMIP 2.1 §11.25, Table 461 assigns transparent EC formats 0x14/0x15;
+        // unassigned values such as 0x0E/0x0F retain generic Structure children.
+        if !matches!(format_raw, 7..=13 | 0x14 | 0x15) {
+            let item = structure_item(KEY_MATERIAL_TAG, fields, &[])?;
             return KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format_raw))
                 .map(KeyMaterial::into_item);
         }
@@ -298,8 +305,8 @@ pub extern "C" fn kmipkit_key_material_from_fields(
                 0x0042_003e,
                 0x0042_00a0,
             ],
-            14 => &[0x0042_0075, 0x0042_002e],
-            15 => &[0x0042_0075, 0x0042_0072],
+            0x14 => &[0x0042_0075, 0x0042_002e],
+            0x15 => &[0x0042_0075, 0x0042_0072],
             _ => &[],
         };
         let item = structure_item(KEY_MATERIAL_TAG, fields, schema_order)?;
