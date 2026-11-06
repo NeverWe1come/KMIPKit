@@ -334,6 +334,39 @@ fn attribute_mutation_validation_rejects_malformed_vendor_attributes() {
     assert!(!format!("{reports:?}").contains("SECRET_ATTRIBUTE_CANARY"));
 }
 
+#[test]
+fn attribute_mutation_validation_rejects_wrong_known_attribute_ttlv_types() {
+    let wrong_activation_date_type = || schema_item(0x0042_0001, Value::integer(1_700_000_000));
+    let add =
+        AddAttributeRequest::new(None, crate::NewAttribute::new(wrong_activation_date_type()));
+    let set = crate::SetAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(wrong_activation_date_type()),
+    );
+    let delete = crate::DeleteAttributeRequest::new(
+        None,
+        Some(crate::CurrentAttribute::new(wrong_activation_date_type())),
+        None,
+    );
+
+    let expected_path = "Request Payload.New Attribute.Activation Date";
+    assert!(add.validate().issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R284"
+            && issue.path().to_string() == expected_path
+            && issue.source().to_string() == "KMIP v2.1 §4.1"
+    }));
+    assert!(set.validate().issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R284"
+            && issue.path().to_string() == expected_path
+            && issue.source().to_string() == "KMIP v2.1 §4.1"
+    }));
+    assert!(delete.validate().issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R284"
+            && issue.path().to_string() == "Request Payload.Current Attribute.Activation Date"
+            && issue.source().to_string() == "KMIP v2.1 §4.1"
+    }));
+}
+
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
     assert_eq!(T::SCHEMA, expected);
 }
