@@ -1,10 +1,11 @@
 # Transportes de producción con TLS y HTTPS
 
-El cliente síncrono de Rust de `KMIPKit` puede usar TTLV sobre TLS directo o
-TTLV sobre HTTPS/HTTP 1.1. El cliente envía únicamente la operación solicitada
-por la aplicación; al construirlo no resuelve el endpoint, no se conecta ni
-envía un Discover Versions oculto. El alcance de protocolo de 1.0 es KMIP 2.1
-con codificación TTLV.
+El cliente síncrono de Rust actual admite TTLV sobre TLS directo o
+HTTPS/HTTP 1.1. El alcance aprobado de 1.0 añade JSON y XML de KMIP 2.1 en
+ambos transportes, con TTLV como formato predeterminado; documentaremos esas
+codificaciones aquí cuando se integren en el cliente. El cliente envía
+únicamente la operación solicitada por la aplicación; al construirlo no
+resuelve el endpoint, no se conecta ni envía un Discover Versions oculto.
 
 ## Elegir un endpoint
 

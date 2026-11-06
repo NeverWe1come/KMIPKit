@@ -1,9 +1,11 @@
 # Production TLS and HTTPS transports
 
-`KMIPKit`'s synchronous Rust client can use raw TTLV over TLS or TTLV over
-HTTPS/HTTP 1.1. The client sends only an operation the application requested;
-construction does not resolve the endpoint, connect, or issue a hidden
-Discover Versions request. The 1.0 protocol scope is KMIP 2.1 with TTLV.
+The current synchronous Rust client supports TTLV over raw TLS or
+HTTPS/HTTP 1.1. The approved 1.0 scope adds KMIP 2.1 JSON and XML over both
+transports, with TTLV as the default; those encodings will be documented here
+after client integration. The client sends only an operation the application
+requested; construction does not resolve the endpoint, connect, or issue a
+hidden Discover Versions request.
 
 ## Choose an endpoint
 
