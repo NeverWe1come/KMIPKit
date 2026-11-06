@@ -131,4 +131,15 @@ fn main() {
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11")
         .compile("kmipkit_typed_attribute_parity_consumer");
+
+    let parameters_auth_consumer =
+        workspace_root.join("bindings/c/tests/authentication_consumer.c");
+    println!("cargo:rerun-if-changed={}", parameters_auth_consumer.display());
+    cc::Build::new()
+        .file(parameters_auth_consumer)
+        .include(&consumer_header)
+        .warnings_into_errors(true)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_parameters_authentication_consumer");
 }

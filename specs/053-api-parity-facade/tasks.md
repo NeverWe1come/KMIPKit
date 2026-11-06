@@ -39,10 +39,10 @@
 
 ## Phase 4: US3 Cryptographic Parameters and Authentication
 ### Red
-- [ ] T025 [US3] Add C Table 59/Auth-header tests in crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs and bindings/c/tests/authentication_consumer.c.
-- [ ] T026 [US3] Add Java parameter/auth tests in bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java.
-- [ ] T027 [US3] Add Python parameter/auth tests in bindings/python/tests/test_parameters_authentication_parity.py.
-- [ ] T028 [US3] Run red tests and record expected missing routes in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T025 [US3] Add C Table 59/Auth-header tests in crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs and bindings/c/tests/authentication_consumer.c.
+- [x] T026 [US3] Add Java parameter/auth tests in bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java.
+- [x] T027 [US3] Add Python parameter/auth tests in bindings/python/tests/test_parameters_authentication_parity.py.
+- [x] T028 [US3] Run red tests and record expected missing routes in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
 - [ ] T029 [US3] Add C ABI typed parameters and batch Authentication via Rust in crates/kmipkit-ffi/src/extension_registry/cryptographic_parameters.rs and client_abi.rs.
 - [ ] T030 [US3] Add Java parameter models, batch Authentication, and JNI lifecycle in bindings/java/src/main/java/org/kmipkit/ and bindings/java/native/kmipkit_jni.cpp.
