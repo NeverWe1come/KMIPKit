@@ -484,6 +484,108 @@ fn every_typed_request_maps_to_its_exact_payload_schema() {
 }
 
 #[test]
+fn lifecycle_preflight_leaves_remote_object_state_to_the_server() {
+    // KMIP v2.1 §6.1.1 Table 164, §6.1.4 Table 173, §6.1.7 Table 183,
+    // §6.1.15 Table 208, and §6.1.42 Table 288 make the identifiers optional.
+    // Activate/Destroy/Recover state and Archive policy depend on remote data;
+    // Check's policy inputs are evaluated against the server's object state.
+    let reports = [
+        ActivateRequest::new(None).validate(),
+        ArchiveRequest::new(None).validate(),
+        CheckRequest::new().validate(),
+        DestroyRequest::new(None).validate(),
+        RecoverRequest::new(None).validate(),
+    ];
+
+    assert!(reports.iter().all(|report| report.is_valid()));
+}
+
+#[test]
+fn remaining_typed_requests_keep_table_valid_construction_paths_open() {
+    // Required fields are guaranteed by these constructors or have valid
+    // caller-supplied values. The audited payload tables provide no additional
+    // stateless cross-field rejection for these requests; server state and
+    // capabilities remain outside client-side validation.
+    let attributes = AttributeSet::try_new([]).expect("empty Locate Attributes are valid");
+    let ticket = crate::Ticket::new(
+        crate::TicketType::LOGIN,
+        SecretBytes::new(b"ticket-secret".to_vec()),
+    )
+    .expect("the typed Ticket constructor creates a valid Ticket");
+    let reports = [
+        crate::CancelRequest::new(b"cancel-correlation").validate(),
+        crate::DiscoverVersionsRequest::new().validate(),
+        GetAttributeListRequest::new(None).validate(),
+        crate::GetConstraintsRequest::new().validate(),
+        GetUsageAllocationRequest::new(0).validate(),
+        LocateRequest::new(attributes).validate(),
+        crate::LogoutRequest::new(ticket).validate(),
+        crate::ObtainLeaseRequest::new().validate(),
+        crate::PingRequest::new().validate(),
+        crate::PollRequest::new(b"poll-correlation").validate(),
+        crate::ProcessRequest::new(b"process-correlation").validate(),
+        crate::QueryAsyncRequestsRequest::new().validate(),
+        RngRetrieveRequest::new(1).validate(),
+        RngSeedRequest::new(SecretBytes::new(vec![0x01])).validate(),
+    ];
+
+    assert!(reports.iter().all(|report| report.is_valid()));
+}
+
+#[test]
+fn encrypt_requires_authenticated_additional_data_on_initial_multipart_request() {
+    // KMIP v2.1 §6.1.17 Table 214: supplied Additional Authenticated Data
+    // MUST be present on the initial Encrypt request in multipart encryption.
+    let continuation = EncryptRequest::new(
+        None,
+        Some(OperationData::ByteString(SecretBytes::new(b"part".to_vec()))),
+    )
+        .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
+        .with_init_indicator(false)
+        .with_final_indicator(false)
+        .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
+
+    assert!(!continuation.validate().is_valid());
+
+    let initial = EncryptRequest::new(None, None)
+        .with_init_indicator(true)
+        .with_final_indicator(false)
+        .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
+    assert!(initial.validate().is_valid());
+}
+
+#[test]
+fn decrypt_requires_authenticated_material_on_initial_multipart_request() {
+    // KMIP v2.1 §6.1.11 Table 196: supplied Additional Authenticated Data
+    // and Authentication Tag MUST be present on the initial Decrypt request.
+    let continuation_with_aad = DecryptRequest::new(
+        None,
+        Some(OperationData::ByteString(SecretBytes::new(b"part".to_vec()))),
+    )
+        .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
+        .with_init_indicator(false)
+        .with_final_indicator(false)
+        .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
+    let continuation_with_tag = DecryptRequest::new(
+        None,
+        Some(OperationData::ByteString(SecretBytes::new(b"part".to_vec()))),
+    )
+        .with_correlation_value(SecretBytes::new(b"stream".to_vec()))
+        .with_init_indicator(false)
+        .with_final_indicator(false)
+        .with_authenticated_encryption_tag(SecretBytes::new(b"tag".to_vec()));
+
+    assert!(!continuation_with_aad.validate().is_valid());
+    assert!(!continuation_with_tag.validate().is_valid());
+
+    let initial = DecryptRequest::new(None, None)
+        .with_init_indicator(true)
+        .with_final_indicator(false)
+        .with_authenticated_encryption_tag(SecretBytes::new(b"tag".to_vec()));
+    assert!(initial.validate().is_valid());
+}
+
+#[test]
 fn create_validation_borrows_and_reports_duplicate_single_instance_attributes() {
     let comment = RawTag::new(0x0042_00fd)
         .expect("Comment is a valid raw tag")
