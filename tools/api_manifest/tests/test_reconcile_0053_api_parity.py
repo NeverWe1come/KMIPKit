@@ -1124,6 +1124,70 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 manifest, [correction]
             )
 
+    def test_mapping_correction_can_record_exact_native_release_semantics(self) -> None:
+        manifest = {
+            "publicPackages": [
+                {"id": "rust-kmipkit", "language": "rust"},
+                {"id": "rust-kmipkit-protocol", "language": "rust"},
+            ],
+            "publicDeclarations": [
+                {
+                    "declarationId": "managed-object-close",
+                    "packageId": "rust-kmipkit",
+                    "kind": "java-member",
+                    "exportName": "org.kmipkit.ttlv.ManagedObject.close",
+                    "capabilityId": "typed_managed_objects_and_key_material",
+                    "requirementIds": ["KMIPKIT-0049-FR-001"],
+                    "declarationState": "verified",
+                    "parityScope": "four-language",
+                    "languageMappings": {
+                        "rust": {
+                            "packageId": "rust-kmipkit",
+                            "name": "core::mem::drop",
+                        }
+                    },
+                },
+                {
+                    "declarationId": "managed-object-type",
+                    "packageId": "rust-kmipkit-protocol",
+                    "kind": "type",
+                    "exportName": "kmipkit_protocol::ManagedObject",
+                    "capabilityId": "typed_managed_objects_and_key_material",
+                    "declarationState": "verified",
+                },
+            ],
+        }
+        correction = {
+            "declarationId": "managed-object-close",
+            "language": "rust",
+            "from": {"packageId": "rust-kmipkit", "name": "core::mem::drop"},
+            "to": {
+                "packageId": "rust-kmipkit-protocol",
+                "name": "kmipkit_protocol::ManagedObject",
+            },
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0053-FR-012"],
+            "evidencePaths": ["crates/kmipkit-protocol/src/managed_object.rs"],
+            "reason": "Rust releases this owned managed-object value when it is dropped.",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer approval of the complete Phase 5 plan.",
+            },
+            "mappingSemantics": "native-handle-release",
+        }
+
+        result = reconcile_0053_api_parity.apply_language_mapping_corrections(
+            manifest, [correction]
+        )
+
+        declaration = result["publicDeclarations"][0]
+        self.assertEqual(
+            correction["to"], declaration["languageMappings"]["rust"]
+        )
+        self.assertEqual("native-handle-release", declaration["mappingSemantics"])
+
     def test_verified_0053_export_is_not_an_unresolved_candidate_on_replay(self) -> None:
         manifest = {
             "publicDeclarations": [{
