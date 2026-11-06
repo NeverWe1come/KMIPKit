@@ -18,6 +18,7 @@ class ExternalConsumerProjectTests(unittest.TestCase):
                 with self.subTest(script=script_name, language=language):
                     self.assertIn(f"{language}/", source)
                     self.assertTrue((CONSUMERS / language).is_dir())
+            self.assertIn("cargo +1.94 run", source)
 
     def test_each_consumer_has_a_minimal_public_package_entrypoint(self) -> None:
         expected = {

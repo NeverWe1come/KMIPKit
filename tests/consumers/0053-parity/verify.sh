@@ -6,7 +6,7 @@ repository_root=$(CDPATH= cd -- "$consumer_root/../../.." && pwd)
 target_dir="$repository_root/target/debug"
 java_native="$repository_root/bindings/java/target/native"
 
-cargo run --locked --manifest-path "$consumer_root/rust/Cargo.toml"
+cargo +1.94 run --locked --manifest-path "$consumer_root/rust/Cargo.toml"
 cargo build --locked -p kmipkit-ffi
 
 cc -std=c11 -Wall -Wextra -Werror \

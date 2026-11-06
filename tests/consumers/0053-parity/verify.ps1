@@ -7,7 +7,7 @@ $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $consumerRoot '..\..\..'
 
 Push-Location $repositoryRoot
 try {
-    cargo run --locked --manifest-path (Join-Path $consumerRoot 'rust\Cargo.toml')
+    cargo +1.94 run --locked --manifest-path (Join-Path $consumerRoot 'rust\Cargo.toml')
     if ($LASTEXITCODE -ne 0) { throw "Rust consumer failed with exit code $LASTEXITCODE." }
 
     cargo build --locked -p kmipkit-ffi
