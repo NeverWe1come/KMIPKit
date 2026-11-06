@@ -333,6 +333,21 @@ class ClientBatchItem(NativeHandle):
         if self._read_only:
             errors.raise_for_status(4)
 
+    @property
+    def operation(self) -> int:
+        """Return the KMIP 2.1 Operation Enumeration selected by this request."""
+        return _scalar(
+            "uint32_t",
+            lib.kmipkit_client_batch_item_operation,
+            self._pointer(),
+        )
+
+    def validation_report(self):
+        """Return the shared Rust validation report for this typed request."""
+        from .validation import validate_request
+
+        return validate_request(self)
+
 
 class RevocationReason(NativeHandle):
     """Owned raw-preserving Revocation Reason Code and optional audit message."""

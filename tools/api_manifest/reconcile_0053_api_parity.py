@@ -343,11 +343,12 @@ def add_public_declarations(
         key = (package_id, export_name)
         if identifier in additions_by_id or key in additions_by_export:
             raise ReconciliationError("additional public declaration IDs and exports must be unique")
-        if declaration.get("declarationState") != "verified" or declaration.get("parityScope") != "four-language":
-            raise ReconciliationError("additional declaration requires verified four-language parity")
+        if declaration.get("declarationState") != "verified" or declaration.get("parityScope") not in {"four-language", "c-only"}:
+            raise ReconciliationError("additional declaration requires verified four-language parity or an exact C-only surface")
         mappings = declaration.get("languageMappings")
-        if not isinstance(mappings, dict) or set(mappings) != REQUIRED_LANGUAGES:
-            raise ReconciliationError("additional declaration must map all four languages")
+        required_languages = {"c"} if declaration["parityScope"] == "c-only" else REQUIRED_LANGUAGES
+        if not isinstance(mappings, dict) or set(mappings) != required_languages:
+            raise ReconciliationError("additional declaration must map all languages in its declared parity scope")
         for language, mapping in mappings.items():
             if (
                 not isinstance(mapping, dict)
@@ -383,6 +384,77 @@ def add_public_declarations(
     return result
 
 
+def resolve_public_declarations(
+    manifest: dict[str, Any], resolutions: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Transfer exact blocked declarations from the shared facade inventory to 0053."""
+    if not isinstance(resolutions, list):
+        raise ReconciliationError("declaration resolutions must be a list")
+    result = copy.deepcopy(manifest)
+    declarations = result.get("publicDeclarations")
+    if not isinstance(declarations, list):
+        raise ReconciliationError("manifest lacks its public declaration inventory")
+    by_id = {row.get("declarationId"): row for row in declarations}
+    seen: set[str] = set()
+    for resolution in resolutions:
+        if not isinstance(resolution, dict):
+            raise ReconciliationError("declaration resolution must be an object")
+        identifier = resolution.get("declarationId")
+        if not isinstance(identifier, str) or identifier in seen:
+            raise ReconciliationError("declaration resolution IDs must be unique")
+        seen.add(identifier)
+        row = by_id.get(identifier)
+        if (
+            row is not None
+            and row.get("declarationState") == "verified"
+            and row.get("capabilityId") == resolution.get("capabilityId")
+            and row.get("requirementIds") == resolution.get("requirementIds")
+            and row.get("parityScope") == "four-language"
+            and row.get("languageMappings") == {
+                language: resolution[language] for language in REQUIRED_LANGUAGES
+            }
+            and row.get("parityEvidenceIds") == resolution.get("parityEvidenceIds")
+            and row.get("approvalSource") == resolution.get("approvalSource")
+        ):
+            continue
+        if (
+            row is None
+            or row.get("declarationState") != "blocked"
+            or row.get("candidateSpecId") != "KMIPKIT-0043"
+            or resolution.get("fromSpecId") != "KMIPKIT-0043"
+        ):
+            raise ReconciliationError("only an exact blocked KMIPKIT-0043 declaration may be transferred")
+        if set(resolution) != {
+            "declarationId", "fromSpecId", "capabilityId", "requirementIds",
+            "rust", "c", "java", "python", "parityEvidenceIds", "approvalSource",
+        }:
+            raise ReconciliationError("declaration resolution has missing or unrecognized fields")
+        requirements = resolution["requirementIds"]
+        if not isinstance(requirements, list) or not requirements or len(requirements) != len(set(requirements)):
+            raise ReconciliationError("declaration resolution needs unique requirement IDs")
+        route = {language: resolution[language] for language in REQUIRED_LANGUAGES}
+        route["parityEvidenceIds"] = resolution["parityEvidenceIds"]
+        route["approvalSource"] = resolution["approvalSource"]
+        mappings = _validate_mapping({"kind": row.get("kind")}, route)
+        for language, mapping in mappings.items():
+            if mapping["packageId"] not in LANGUAGE_PACKAGES[language]:
+                raise ReconciliationError(f"{language} resolution targets an unsupported package")
+        row["capabilityId"] = resolution["capabilityId"]
+        row["requirementIds"] = requirements
+        row["declarationState"] = "verified"
+        row["parityScope"] = "four-language"
+        row["languageMappings"] = mappings
+        row["parityEvidenceIds"] = resolution["parityEvidenceIds"]
+        row["approvalSource"] = resolution["approvalSource"]
+        row.pop("candidateSpecId", None)
+        row.pop("blockedReason", None)
+    result["requirementIds"] = sorted(
+        set(result.get("requirementIds", []))
+        | {requirement for row in resolutions for requirement in row["requirementIds"]}
+    )
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -405,6 +477,7 @@ def main() -> int:
         result = manifest
         if "candidateRoutes" in route_data:
             result = reconcile_manifest(result, route_data["candidateRoutes"])
+        result = resolve_public_declarations(result, route_data.get("declarationResolutions", []))
         result = add_additional_types(result, route_data.get("types", []))
         result = add_additional_functions(result, route_data.get("functions", []))
         result = add_public_declarations(result, route_data.get("publicDeclarations", []))

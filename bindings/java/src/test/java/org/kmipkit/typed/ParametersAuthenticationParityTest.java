@@ -87,6 +87,17 @@ final class ParametersAuthenticationParityTest {
     }
 
     @Test
+    void distinguishesAbsentAndPresentEmptyPSource() {
+        try (CryptographicParameters absent = CryptographicParameters.builder()
+                     .randomIv(false).build();
+                CryptographicParameters presentEmpty = CryptographicParameters.builder()
+                        .randomIv(false).pSource(new byte[0]).build()) {
+            assertEquals(Optional.empty(), absent.pSource());
+            assertEquals(0, presentEmpty.pSource().orElseThrow().length);
+        }
+    }
+
+    @Test
     void authenticationIsAttachedToTheRequestBatchAndConsumedOnlyOnSuccess() {
         Credential credential = Credential.fromTtlv(credentialStructure());
         Authentication authentication = Authentication.create(List.of(credential));

@@ -101,6 +101,9 @@ ffi.cdef(
     int32_t kmipkit_cryptographic_parameters_into_ttlv(
         kmipkit_cryptographic_parameters_t *parameters,
         kmipkit_ttlv_structure_t **out_structure);
+    int32_t kmipkit_cryptographic_parameters_read_fields_v1(
+        kmipkit_cryptographic_parameters_t *parameters,
+        kmipkit_cryptographic_parameters_fields_v1_t *out_fields);
     void kmipkit_cryptographic_parameters_release(
         kmipkit_cryptographic_parameters_t *parameters);
     int32_t kmipkit_client_batch_set_authentication(
@@ -362,6 +365,9 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_count(
         kmipkit_client_batch_t *batch,
         uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_operation(
+        kmipkit_client_batch_item_t *item,
+        uint32_t *out_operation);
     int32_t kmipkit_client_batch_item_at(
         kmipkit_client_batch_t *batch,
         uint64_t index,

@@ -145,6 +145,162 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_from_fields_v1(
     })
 }
 
+/// Copies every present Cryptographic Parameters field into a versioned output record.
+///
+/// P Source is returned as a borrowed read-only span backed by the live typed handle. It remains
+/// valid until that handle is released. Foreign runtimes that copy the span must document that
+/// their copies are outside KMIPKit's zeroization guarantee.
+///
+/// # Safety
+///
+/// `parameters` must be a live handle. `out_fields` must point to an aligned, initialized,
+/// exclusively writable version 1 record for the duration of the call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_cryptographic_parameters_read_fields_v1(
+    parameters: *mut kmipkit_cryptographic_parameters_t,
+    out_fields: *mut kmipkit_cryptographic_parameters_fields_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_fields.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller promises an initialized, exclusively writable v1 record.
+        let output = unsafe { &mut *out_fields };
+        let Ok(expected_size) =
+            u32::try_from(size_of::<kmipkit_cryptographic_parameters_fields_v1_t>())
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if output.struct_size != expected_size || output.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = read_handle!(parameters, CryptographicParameters);
+        let HandleValue::CryptographicParameters(parameters) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+
+        let mut fields = kmipkit_cryptographic_parameters_fields_v1_t {
+            struct_size: expected_size,
+            abi_version: 1,
+            block_cipher_mode_present: 0,
+            block_cipher_mode: 0,
+            padding_method_present: 0,
+            padding_method: 0,
+            hashing_algorithm_present: 0,
+            hashing_algorithm: 0,
+            key_role_type_present: 0,
+            key_role_type: 0,
+            digital_signature_algorithm_present: 0,
+            digital_signature_algorithm: 0,
+            cryptographic_algorithm_present: 0,
+            cryptographic_algorithm: 0,
+            random_iv_present: 0,
+            random_iv: 0,
+            iv_length_present: 0,
+            iv_length: 0,
+            tag_length_present: 0,
+            tag_length: 0,
+            fixed_field_length_present: 0,
+            fixed_field_length: 0,
+            invocation_field_length_present: 0,
+            invocation_field_length: 0,
+            counter_length_present: 0,
+            counter_length: 0,
+            initial_counter_value_present: 0,
+            initial_counter_value: 0,
+            salt_length_present: 0,
+            salt_length: 0,
+            mask_generator_present: 0,
+            mask_generator: 0,
+            mask_generator_hashing_algorithm_present: 0,
+            mask_generator_hashing_algorithm: 0,
+            p_source_present: 0,
+            p_source: ptr::null(),
+            p_source_length: 0,
+            trailer_field_present: 0,
+            trailer_field: 0,
+        };
+        if let Some(value) = parameters.block_cipher_mode() {
+            fields.block_cipher_mode_present = 1;
+            fields.block_cipher_mode = value;
+        }
+        if let Some(value) = parameters.padding_method() {
+            fields.padding_method_present = 1;
+            fields.padding_method = value;
+        }
+        if let Some(value) = parameters.hashing_algorithm() {
+            fields.hashing_algorithm_present = 1;
+            fields.hashing_algorithm = value;
+        }
+        if let Some(value) = parameters.key_role_type() {
+            fields.key_role_type_present = 1;
+            fields.key_role_type = value;
+        }
+        if let Some(value) = parameters.digital_signature_algorithm() {
+            fields.digital_signature_algorithm_present = 1;
+            fields.digital_signature_algorithm = value;
+        }
+        if let Some(value) = parameters.cryptographic_algorithm() {
+            fields.cryptographic_algorithm_present = 1;
+            fields.cryptographic_algorithm = value;
+        }
+        if let Some(value) = parameters.random_iv() {
+            fields.random_iv_present = 1;
+            fields.random_iv = u8::from(value);
+        }
+        if let Some(value) = parameters.iv_length() {
+            fields.iv_length_present = 1;
+            fields.iv_length = value;
+        }
+        if let Some(value) = parameters.tag_length() {
+            fields.tag_length_present = 1;
+            fields.tag_length = value;
+        }
+        if let Some(value) = parameters.fixed_field_length() {
+            fields.fixed_field_length_present = 1;
+            fields.fixed_field_length = value;
+        }
+        if let Some(value) = parameters.invocation_field_length() {
+            fields.invocation_field_length_present = 1;
+            fields.invocation_field_length = value;
+        }
+        if let Some(value) = parameters.counter_length() {
+            fields.counter_length_present = 1;
+            fields.counter_length = value;
+        }
+        if let Some(value) = parameters.initial_counter_value() {
+            fields.initial_counter_value_present = 1;
+            fields.initial_counter_value = value;
+        }
+        if let Some(value) = parameters.salt_length() {
+            fields.salt_length_present = 1;
+            fields.salt_length = value;
+        }
+        if let Some(value) = parameters.mask_generator() {
+            fields.mask_generator_present = 1;
+            fields.mask_generator = value;
+        }
+        if let Some(value) = parameters.mask_generator_hashing_algorithm() {
+            fields.mask_generator_hashing_algorithm_present = 1;
+            fields.mask_generator_hashing_algorithm = value;
+        }
+        if let Some(value) = parameters.with_p_source(|bytes| (bytes.as_ptr(), bytes.len())) {
+            fields.p_source_present = 1;
+            fields.p_source = value.0;
+            fields.p_source_length = match u64::try_from(value.1) {
+                Ok(length) => length,
+                Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+            };
+        }
+        if let Some(value) = parameters.trailer_field() {
+            fields.trailer_field_present = 1;
+            fields.trailer_field = value;
+        }
+        *output = fields;
+        SUCCESS
+    })
+}
+
 /// Copies and validates a generic TTLV Structure as Cryptographic Parameters.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_cryptographic_parameters_from_ttlv(

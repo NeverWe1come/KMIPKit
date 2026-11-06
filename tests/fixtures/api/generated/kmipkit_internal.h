@@ -858,6 +858,8 @@ typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row
 typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
 typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
 typedef struct kmipkit_cryptographic_parameters_fields_v1_t kmipkit_cryptographic_parameters_fields_v1_t;
+typedef struct kmipkit_validation_report_t kmipkit_validation_report_t;
+typedef struct kmipkit_validation_issue_view_v1_t kmipkit_validation_issue_view_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1160,6 +1162,17 @@ struct kmipkit_cryptographic_parameters_fields_v1_t {
     int32_t trailer_field;
 };
 
+struct kmipkit_validation_issue_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t severity;
+    uint32_t source_kind;
+    kmipkit_byte_span_v1_t code;
+    kmipkit_byte_span_v1_t path;
+    kmipkit_byte_span_v1_t source_identifier;
+    kmipkit_byte_span_v1_t source_reference;
+};
+
 struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
@@ -1273,6 +1286,7 @@ void kmipkit_attribute_set_release(kmipkit_attribute_set_t *handle);
 void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
 void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result_t *handle);
 void kmipkit_cryptographic_parameters_release(kmipkit_cryptographic_parameters_t *handle);
+void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -2825,6 +2839,37 @@ int32_t kmipkit_cryptographic_parameters_into_ttlv(kmipkit_cryptographic_paramet
  */
 /* KMIPKIT-0053-FR-005, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_client_batch_set_authentication(kmipkit_client_batch_t * batch, kmipkit_authentication_t * authentication);
+/* Validates a generic TTLV Structure with the shared Rust validator. Empty schema means no inferred schema; known names are RequestPayload/<Operation> or Nested/<Structure>.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_ttlv_structure_validation_report_v1(kmipkit_ttlv_structure_t * structure, const uint8_t * schema, uint64_t schema_length, kmipkit_validation_report_t ** out_report);
+/* Validates a typed request using the same Rust request checks that run before client execution.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_item_validation_report(kmipkit_client_batch_item_t * item, kmipkit_validation_report_t ** out_report);
+/* Returns whether an owned validation report has no error-severity finding.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_validation_report_is_valid(kmipkit_validation_report_t * report, uint8_t * out_is_valid);
+/* Returns the ordered safe issue count for an owned validation report.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_validation_report_issue_count(kmipkit_validation_report_t * report, uint64_t * out_count);
+/* Copies safe code, schema path, severity and source metadata into a caller-versioned view; spans remain borrowed from the report.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_validation_report_issue_at_v1(kmipkit_validation_report_t * report, uint64_t index, kmipkit_validation_issue_view_v1_t * out_issue);
+/* Copies present Table 59 fields into a versioned record. P Source is a borrowed read-only span valid while the Cryptographic Parameters handle remains live.
+ */
+/* KMIPKIT-0053-FR-004, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_cryptographic_parameters_read_fields_v1(kmipkit_cryptographic_parameters_t * parameters, kmipkit_cryptographic_parameters_fields_v1_t * out_fields);
+/* Returns the KMIP 2.1 Operation Enumeration for a typed request batch item.
+ */
+/* KMIPKIT-0053-FR-007 */
+int32_t kmipkit_client_batch_item_operation(kmipkit_client_batch_item_t * item, uint32_t * out_operation);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

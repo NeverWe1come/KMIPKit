@@ -1158,6 +1158,12 @@ impl ClientBatchItem {
         &self.request
     }
 
+    /// Returns the KMIP 2.1 Operation Enumeration for this request.
+    #[must_use]
+    pub const fn operation(&self) -> u32 {
+        self.request.operation()
+    }
+
     /// Lends the optional Unique Batch Item ID.
     #[must_use]
     pub fn unique_batch_item_id(&self) -> Option<&[u8]> {

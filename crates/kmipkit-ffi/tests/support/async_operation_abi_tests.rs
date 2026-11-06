@@ -1,5 +1,12 @@
 use super::*;
 
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validate_present_empty_async_payload(
+        outcome: *mut kmipkit_client_async_operation_outcome_t,
+    ) -> i32;
+}
+
 #[test]
 fn poll_execution_clears_output_before_rejecting_an_invalid_correlation_span() {
     let mut output = ptr::dangling_mut::<crate::kmipkit_client_async_operation_outcome_t>();
@@ -68,6 +75,66 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     assert_pending_metadata(outcome);
     assert_exact_correlation(outcome, &expected_correlation);
     assert_response_payload_is_absent(outcome);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+#[test]
+fn poll_execution_preserves_a_present_empty_success_payload_for_c() {
+    let request_correlation = [0x11, 0x22];
+    let response = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x1a),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(0x0042_007c, []),
+                ],
+            ),
+        ],
+    );
+    let (client, peer) = client_with_one_response(response);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut outcome = ptr::null_mut();
+
+    let status = kmipkit_client_execute_poll(
+        client_handle,
+        request_correlation.as_ptr(),
+        u64::try_from(request_correlation.len()).expect("correlation length fits ABI"),
+        limits_handle,
+        &mut outcome,
+    );
+    peer.join().expect("the one-exchange test peer completes");
+
+    assert_eq!(status, SUCCESS);
+    assert!(!outcome.is_null());
+    // SAFETY: the C consumer borrows this live outcome and validates the owned empty payload copy.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_validate_present_empty_async_payload(outcome) },
+        1
+    );
 
     kmipkit_client_async_operation_outcome_release(outcome);
     kmipkit_codec_limits_release(limits_handle);

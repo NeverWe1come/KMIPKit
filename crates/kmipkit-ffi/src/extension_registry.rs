@@ -31,6 +31,9 @@ mod profile_readiness_abi_tests;
 #[path = "../tests/support/typed_attribute_0053_tests.rs"]
 mod typed_attribute_0053_tests;
 
+#[cfg(test)]
+#[path = "../tests/support/api_parity_0053_tests.rs"]
+mod api_parity_0053_tests;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/managed_object_0053_tests.rs"]
 mod managed_object_0053_tests;
@@ -46,7 +49,7 @@ mod typed_attributes_catalog_generated;
 use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
     kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
-    kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
+    kmipkit_byte_span_v1_t, kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
     kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
     kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
     kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
@@ -80,6 +83,7 @@ use crate::{
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
+    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -115,6 +119,10 @@ use kmipkit_protocol::{
     HashedPasswordTimestampSequence, Nonce, UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
+use kmipkit_protocol::{
+    NestedStructureSchema, RequestPayloadSchema, ValidationIssue, ValidationReport,
+    ValidationSchema, ValidationSeverity, ValidationSourceRef, validate_structure,
+};
 use kmipkit_protocol::{
     ProfileObjectState, ProfileReadiness, ProfileTransport, ProfileValidationContext,
     ProfileValidationError, ProfileValidationResult, ProfileValidationSelection,
@@ -525,6 +533,7 @@ enum Kind {
     CredentialValue,
     Authentication,
     CryptographicParameters,
+    ValidationReport,
     CredentialView,
     AttestationCredential,
     DeviceCredential,
@@ -579,6 +588,7 @@ enum HandleValue {
     CredentialValue(CredentialValue),
     Authentication(Authentication),
     CryptographicParameters(CryptographicParameters),
+    ValidationReport(ValidationReportSnapshot),
     CredentialView {
         authentication: Arc<Handle>,
         index: usize,
@@ -639,6 +649,61 @@ enum HandleValue {
     SplitKeyReference(SplitKeyReference),
 }
 
+struct ValidationReportSnapshot {
+    is_valid: bool,
+    issues: Vec<ValidationIssueSnapshot>,
+}
+
+struct ValidationIssueSnapshot {
+    code: Vec<u8>,
+    path: Vec<u8>,
+    severity: u32,
+    source_kind: u32,
+    source_identifier: Vec<u8>,
+    source_reference: Vec<u8>,
+}
+
+impl ValidationReportSnapshot {
+    fn from_report(report: ValidationReport) -> Self {
+        let issues = report
+            .issues()
+            .iter()
+            .map(ValidationIssueSnapshot::from_issue)
+            .collect();
+        Self {
+            is_valid: report.is_valid(),
+            issues,
+        }
+    }
+}
+
+impl ValidationIssueSnapshot {
+    fn from_issue(issue: &ValidationIssue) -> Self {
+        let (source_kind, source_identifier, source_reference) = match issue.source() {
+            ValidationSourceRef::Oasis {
+                document,
+                reference,
+            } => (1, document, reference),
+            ValidationSourceRef::ProjectRule(identifier) => (2, identifier, ""),
+            _ => (0, "", ""),
+        };
+        let severity = match issue.severity() {
+            ValidationSeverity::Error => 1,
+            ValidationSeverity::Warning => 2,
+            ValidationSeverity::Info => 3,
+            _ => 0,
+        };
+        Self {
+            code: issue.code().as_str().as_bytes().to_vec(),
+            path: issue.path().to_string().into_bytes(),
+            severity,
+            source_kind,
+            source_identifier: source_identifier.as_bytes().to_vec(),
+            source_reference: source_reference.as_bytes().to_vec(),
+        }
+    }
+}
+
 enum MessageExtensionOwner {
     Request(Arc<RequestMessage>),
     Response(Arc<ResponseMessage>),
@@ -666,6 +731,7 @@ struct ClientBatchItemReadback {
 }
 
 struct ClientBatchItemMetadataSnapshot {
+    operation: u32,
     unique_batch_item_id: Option<Vec<u8>>,
     extensions: Vec<(extension::ExtensionIdentity, bool)>,
 }
@@ -3236,6 +3302,7 @@ pub(super) mod client_abi;
 
 mod cryptographic_parameters;
 mod managed_objects;
+mod request_validation;
 mod typed_attributes;
 
 #[unsafe(no_mangle)]

@@ -89,6 +89,7 @@ public final class NativeExtensionRegistry {
     public static final int ATTRIBUTE_SET = 67;
     public static final int HASHED_PASSWORD_TIMESTAMP_SEQUENCE = 68;
     public static final int CRYPTOGRAPHIC_PARAMETERS = 69;
+    public static final int VALIDATION_REPORT = 70;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -155,6 +156,14 @@ public final class NativeExtensionRegistry {
             boolean[] present, long[] values, byte[] pSource);
     public static native long cryptographicParametersFromTtlv(long structure);
     public static native long cryptographicParametersIntoTtlv(long parameters);
+    public static native byte[] cryptographicParametersReadFields(
+            long parameters, boolean[] present, long[] values);
+
+    public static native long validationStructure(long structure, String schema);
+    public static native long validationRequest(long batchItem);
+    public static native boolean validationReportIsValid(long report);
+    public static native long validationReportIssueCount(long report);
+    public static native String[] validationReportIssueAt(long report, long index);
     public static native long authenticationCredentialCount(long authentication);
     public static native long authenticationCredentialAt(long authentication, long index);
     public static native long authenticationTtlvView(long authentication);
@@ -236,6 +245,7 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemOperation(long item);
     public static native long clientBatchItemPing();
     public static native long clientBatchItemQuery(int[] functions, @Nullable byte[][] objectGroups);
     public static native long clientBatchItemQueryWithLimits(

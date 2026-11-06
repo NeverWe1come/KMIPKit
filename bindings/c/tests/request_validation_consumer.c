@@ -18,6 +18,8 @@ int32_t kmipkit_request_validation_c_consumer(void) {
     uint8_t is_valid = 1;
     uint64_t issue_count = 0;
     int32_t status = kmipkit_ttlv_structure_create(&structure);
+    issue.struct_size = (uint32_t) sizeof(issue);
+    issue.abi_version = 1;
 
     if (status == 0) {
         status = kmipkit_ttlv_structure_validation_report_v1(

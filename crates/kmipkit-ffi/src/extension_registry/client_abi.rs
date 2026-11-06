@@ -1000,6 +1000,28 @@ pub extern "C" fn kmipkit_client_batch_item_count(
     })
 }
 
+/// Returns the KMIP 2.1 Operation Enumeration for a typed request batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_operation(
+    item: *mut kmipkit_client_batch_item_t,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let operation = scalar_out!(out_operation);
+        *operation = 0;
+        let handle = read_handle!(item, BatchItem);
+        *operation = match &handle.value {
+            HandleValue::BatchItem(item) => item.operation(),
+            HandleValue::BatchItemReadback(item) if item.owner_index_is_valid() => {
+                item.metadata.operation
+            }
+            HandleValue::BatchItemReadback(_) => return record_ffi_error(ERROR_INTERNAL),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        SUCCESS
+    })
+}
+
 /// Creates an owned, read-only metadata view retaining the batch owner's lifetime.
 ///
 /// The view does not copy request payload bytes or expose request payload access.
@@ -1061,6 +1083,7 @@ pub extern "C" fn kmipkit_client_batch_item_at(
                 owner: Arc::clone(owner),
                 index,
                 metadata: ClientBatchItemMetadataSnapshot {
+                    operation: item.operation(),
                     unique_batch_item_id,
                     extensions,
                 },

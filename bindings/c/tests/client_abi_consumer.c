@@ -3882,6 +3882,30 @@ cleanup:
 
 static int async_response_extension_matches(kmipkit_ttlv_structure_t *extension);
 
+int kmipkit_client_abi_c_consumer_validate_present_empty_async_payload(
+    kmipkit_client_async_operation_outcome_t *outcome) {
+    kmipkit_ttlv_structure_t *payload = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    uint8_t present = UINT8_C(9);
+    uint64_t count = UINT64_MAX;
+    int result = 0;
+
+    if (outcome == 0 ||
+        kmipkit_client_async_operation_outcome_response_payload_ttlv(
+            outcome, &present, &payload) != 0 ||
+        present != UINT8_C(1) || payload == 0 ||
+        kmipkit_ttlv_structure_view(payload, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0) {
+        goto cleanup;
+    }
+    result = count == UINT64_C(0);
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(payload);
+    return result;
+}
+
 static int execute_cancel_payload_request_from_c(
     kmipkit_client_t *client,
     kmipkit_codec_limits_t *limits,

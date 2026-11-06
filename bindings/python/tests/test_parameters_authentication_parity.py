@@ -108,6 +108,14 @@ def test_reads_every_typed_table59_field_without_consuming_the_model():
         assert parameters.trailer_field() == 1
 
 
+def test_distinguishes_absent_and_present_empty_p_source():
+    model = kmipkit.cryptographic_parameters.CryptographicParameters
+    with model.builder().random_iv(False).build() as absent:
+        assert absent.p_source() is None
+    with model.builder().random_iv(False).p_source(b"").build() as present_empty:
+        assert present_empty.p_source() == b""
+
+
 def test_authentication_is_attached_to_the_request_batch_and_owned_on_success():
     credential = credentials.Credential.from_ttlv(_credential_structure())
     authentication = credentials.Authentication.create([credential])

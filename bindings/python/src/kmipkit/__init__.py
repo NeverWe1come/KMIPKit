@@ -21,6 +21,7 @@ from . import (
     protocol_values,
     ttlv,
     typed_attributes,
+    validation,
 )
 from .extensions import with_extension
 from .credentials import CredentialType, CredentialValue
@@ -45,6 +46,7 @@ __all__ = [
     "protocol_values",
     "ttlv",
     "typed_attributes",
+    "validation",
     "StandardAttribute",
     "TypedAttribute",
     "with_extension",

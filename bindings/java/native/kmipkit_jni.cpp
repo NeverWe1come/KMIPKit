@@ -45,6 +45,7 @@ typedef struct kmipkit_response_header_view_t kmipkit_response_header_view_t;
 typedef struct kmipkit_response_batch_item_view_t kmipkit_response_batch_item_view_t;
 typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
 typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
+typedef struct kmipkit_validation_report_t kmipkit_validation_report_t;
 extern "C" int32_t kmipkit_client_batch_set_request_time_stamp(
         kmipkit_client_batch_t* batch, int64_t timestamp);
 extern "C" int32_t kmipkit_client_batch_request_time_stamp(
@@ -642,6 +643,23 @@ void throw_status(
         throw_java(env, "org/kmipkit/KmipException", "native operation failed");
         break;
     }
+}
+
+void throw_client_execution_status(
+        JNIEnv* env, int32_t status,
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr) noexcept {
+    if (status == KMIPKIT_ERROR_INVALID_INPUT) {
+        int32_t native_status = status;
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        if (kmipkit_last_error_get(&native_status, &category, &cause, &delivery) == 0
+                && native_status == status && category == kErrorCategoryValidation) {
+            throw_client_operation_status(env, status, response_ttlv);
+            return;
+        }
+    }
+    throw_status(env, status, response_ttlv);
 }
 
 template <typename Result, typename Function>
@@ -2449,6 +2467,87 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicPa
     });
 }
 
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_cryptographicParametersReadFields(
+        JNIEnv* env, jclass, jlong raw_parameters, jbooleanArray out_present,
+        jlongArray out_values) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        constexpr jsize kFieldCount = 18;
+        if (raw_parameters == 0 || out_present == nullptr || out_values == nullptr
+                || env->GetArrayLength(out_present) != kFieldCount
+                || env->GetArrayLength(out_values) != kFieldCount) {
+            throw_invalid_input(env);
+            return static_cast<jbyteArray>(nullptr);
+        }
+        kmipkit_cryptographic_parameters_fields_v1_t fields{};
+        fields.struct_size = static_cast<uint32_t>(sizeof(fields));
+        fields.abi_version = UINT32_C(1);
+        const int32_t status = kmipkit_cryptographic_parameters_read_fields_v1(
+                from_java_handle<kmipkit_cryptographic_parameters_t>(raw_parameters), &fields);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jbyteArray>(nullptr);
+        }
+
+        const std::array<jboolean, kFieldCount> present = {
+            static_cast<jboolean>(fields.block_cipher_mode_present),
+            static_cast<jboolean>(fields.padding_method_present),
+            static_cast<jboolean>(fields.hashing_algorithm_present),
+            static_cast<jboolean>(fields.key_role_type_present),
+            static_cast<jboolean>(fields.digital_signature_algorithm_present),
+            static_cast<jboolean>(fields.cryptographic_algorithm_present),
+            static_cast<jboolean>(fields.random_iv_present),
+            static_cast<jboolean>(fields.iv_length_present),
+            static_cast<jboolean>(fields.tag_length_present),
+            static_cast<jboolean>(fields.fixed_field_length_present),
+            static_cast<jboolean>(fields.invocation_field_length_present),
+            static_cast<jboolean>(fields.counter_length_present),
+            static_cast<jboolean>(fields.initial_counter_value_present),
+            static_cast<jboolean>(fields.salt_length_present),
+            static_cast<jboolean>(fields.mask_generator_present),
+            static_cast<jboolean>(fields.mask_generator_hashing_algorithm_present),
+            static_cast<jboolean>(fields.p_source_present),
+            static_cast<jboolean>(fields.trailer_field_present),
+        };
+        const std::array<jlong, kFieldCount> values = {
+            static_cast<jlong>(fields.block_cipher_mode),
+            static_cast<jlong>(fields.padding_method),
+            static_cast<jlong>(fields.hashing_algorithm),
+            static_cast<jlong>(fields.key_role_type),
+            static_cast<jlong>(fields.digital_signature_algorithm),
+            static_cast<jlong>(fields.cryptographic_algorithm),
+            static_cast<jlong>(fields.random_iv),
+            static_cast<jlong>(fields.iv_length),
+            static_cast<jlong>(fields.tag_length),
+            static_cast<jlong>(fields.fixed_field_length),
+            static_cast<jlong>(fields.invocation_field_length),
+            static_cast<jlong>(fields.counter_length),
+            static_cast<jlong>(fields.initial_counter_value),
+            static_cast<jlong>(fields.salt_length),
+            static_cast<jlong>(fields.mask_generator),
+            static_cast<jlong>(fields.mask_generator_hashing_algorithm),
+            static_cast<jlong>(fields.p_source_length),
+            static_cast<jlong>(fields.trailer_field),
+        };
+        env->SetBooleanArrayRegion(out_present, 0, kFieldCount, present.data());
+        env->SetLongArrayRegion(out_values, 0, kFieldCount, values.data());
+        if (env->ExceptionCheck()) return static_cast<jbyteArray>(nullptr);
+        if (fields.p_source_present == 0) return static_cast<jbyteArray>(nullptr);
+        if (fields.p_source_length > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
+            return static_cast<jbyteArray>(nullptr);
+        }
+        const jsize source_length = static_cast<jsize>(fields.p_source_length);
+        jbyteArray source = env->NewByteArray(source_length);
+        if (source == nullptr || env->ExceptionCheck()) return static_cast<jbyteArray>(nullptr);
+        if (source_length > 0) {
+            env->SetByteArrayRegion(source, 0, source_length,
+                    reinterpret_cast<const jbyte*>(fields.p_source));
+            if (env->ExceptionCheck()) return static_cast<jbyteArray>(nullptr);
+        }
+        return source;
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_authenticationCredentialCount(
         JNIEnv* env, jclass, jlong raw_authentication) {
     return guarded<jlong>(env, 0, [&] {
@@ -2843,6 +2942,20 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
         return return_handle<kmipkit_client_batch_item_t>(env, [](auto output) {
             return kmipkit_client_batch_item_discover_versions(output);
         });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemOperation(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t operation = 0;
+        const int32_t status = kmipkit_client_batch_item_operation(
+                from_java_handle<kmipkit_client_batch_item_t>(raw_item), &operation);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(operation);
     });
 }
 
@@ -5478,6 +5591,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_hashed_password_timestamp_sequence_t>(raw_handle)); break;
         case 69: kmipkit_cryptographic_parameters_release(
                 from_java_handle<kmipkit_cryptographic_parameters_t>(raw_handle)); break;
+        case 70: kmipkit_validation_report_release(
+                from_java_handle<kmipkit_validation_report_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -6841,7 +6956,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecute(
         kmipkit_ttlv_structure_t* error_response_ttlv = nullptr;
         const int32_t status = kmipkit_client_execute_with_error_ttlv_v1(
                 client, &batch, limits.get(), &response, &error_response_ttlv);
-        if (status != 0) throw_status(env, status, error_response_ttlv);
+        if (status != 0) throw_client_execution_status(env, status, error_response_ttlv);
         else if (error_response_ttlv != nullptr) {
             kmipkit_ttlv_structure_release(error_response_ttlv); // COVERAGE-EXCLUDE: the FFI sets this only on failure.
             throw_invalid_input(env); // COVERAGE-EXCLUDE: success carries no error TTLV.
@@ -6910,7 +7025,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWi
         kmipkit_ttlv_structure_t* error_response_ttlv = nullptr;
         const int32_t status = kmipkit_client_execute_with_options_and_error_ttlv_v1(
                 client, &batch, limits.get(), &options, &response, &error_response_ttlv);
-        if (status != 0) throw_status(env, status, error_response_ttlv);
+        if (status != 0) throw_client_execution_status(env, status, error_response_ttlv);
         else if (error_response_ttlv != nullptr) {
             kmipkit_ttlv_structure_release(error_response_ttlv); // COVERAGE-EXCLUDE: the FFI sets this only on failure.
             throw_invalid_input(env); // COVERAGE-EXCLUDE: success carries no error TTLV.
@@ -12429,6 +12544,122 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_profileValidatio
                     from_java_handle<kmipkit_profile_validation_result_t>(raw_result));
         }
         return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_validationStructure(
+        JNIEnv* env, jclass, jlong raw_structure, jstring raw_schema) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* structure = from_java_handle<kmipkit_ttlv_structure_t>(raw_structure);
+        if (structure == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> schema;
+        if (raw_schema != nullptr && !java_string_to_utf8(env, raw_schema, schema)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_validation_report_t>(env, [&](auto output) {
+            return kmipkit_ttlv_structure_validation_report_v1(
+                    structure, schema.empty() ? nullptr : schema.data(),
+                    static_cast<uint64_t>(schema.size()), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_validationRequest(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* item = from_java_handle<kmipkit_client_batch_item_t>(raw_item);
+        if (item == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_validation_report_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_validation_report(item, output);
+        });
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_validationReportIsValid(
+        JNIEnv* env, jclass, jlong raw_report) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* report = from_java_handle<kmipkit_validation_report_t>(raw_report);
+        uint8_t is_valid = 0;
+        if (report == nullptr || !check_status(env, [&] {
+                return kmipkit_validation_report_is_valid(report, &is_valid);
+            })) {
+            return JNI_FALSE;
+        }
+        return is_valid == 0 ? JNI_FALSE : JNI_TRUE;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_validationReportIssueCount(
+        JNIEnv* env, jclass, jlong raw_report) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* report = from_java_handle<kmipkit_validation_report_t>(raw_report);
+        uint64_t count = 0;
+        if (report == nullptr || !check_status(env, [&] {
+                return kmipkit_validation_report_issue_count(report, &count);
+            }) || count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            if (report != nullptr && !env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_validationReportIssueAt(
+        JNIEnv* env, jclass, jlong raw_report, jlong raw_index) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        auto* report = from_java_handle<kmipkit_validation_report_t>(raw_report);
+        if (report == nullptr || raw_index < 0) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        kmipkit_validation_issue_view_v1_t issue{};
+        issue.struct_size = static_cast<uint32_t>(sizeof(issue));
+        issue.abi_version = 1;
+        if (!check_status(env, [&] {
+                return kmipkit_validation_report_issue_at_v1(
+                        report, static_cast<uint64_t>(raw_index), &issue);
+            })) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        const char* severity = issue.severity == 1 ? "ERROR"
+                : issue.severity == 2 ? "WARNING"
+                : issue.severity == 3 ? "INFO" : "UNKNOWN";
+        jclass string_class = env->FindClass("java/lang/String");
+        if (string_class == nullptr) return static_cast<jobjectArray>(nullptr);
+        jobjectArray result = env->NewObjectArray(5, string_class, nullptr);
+        env->DeleteLocalRef(string_class);
+        if (result == nullptr) return static_cast<jobjectArray>(nullptr);
+        auto set_text = [&](jsize index, const uint8_t* data, uint64_t length) {
+            jstring value = nullptr;
+            if (!utf8_to_java_string(env, data, length, &value)) return false;
+            env->SetObjectArrayElement(result, index, value);
+            env->DeleteLocalRef(value);
+            return !env->ExceptionCheck();
+        };
+        const auto* code = reinterpret_cast<const uint8_t*>(issue.code.data);
+        const auto* path = reinterpret_cast<const uint8_t*>(issue.path.data);
+        const auto* source = reinterpret_cast<const uint8_t*>(issue.source_identifier.data);
+        const auto* reference = reinterpret_cast<const uint8_t*>(issue.source_reference.data);
+        jstring severity_value = env->NewStringUTF(severity);
+        const bool ok = severity_value != nullptr
+                && set_text(0, code, issue.code.length)
+                && set_text(1, path, issue.path.length);
+        if (ok) {
+            env->SetObjectArrayElement(result, 2, severity_value);
+        }
+        if (severity_value != nullptr) env->DeleteLocalRef(severity_value);
+        if (!ok || env->ExceptionCheck()
+                || !set_text(3, source, issue.source_identifier.length)
+                || !set_text(4, reference, issue.source_reference.length)) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        return result;
     });
 }
 

@@ -138,12 +138,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual(732, len(candidates))
+        self.assertEqual(660, len(candidates))
         self.assertEqual(
             {
                 "typed_object_attributes": 285,
                 "typed_managed_objects_and_key_material": 351,
-                "typed_cryptographic_parameters": 96,
+            "typed_cryptographic_parameters": 24,
             },
             {
                 capability_id: sum(
@@ -165,6 +165,107 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                         for row in manifest["capabilities"]}
         self.assertEqual("verified", capabilities["request_message_authentication"])
 
+    def test_reconciles_only_executable_table59_field_getters_and_builder_setters(self) -> None:
+        manifest = json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        field_names = {
+            "block_cipher_mode",
+            "padding_method",
+            "hashing_algorithm",
+            "key_role_type",
+            "digital_signature_algorithm",
+            "cryptographic_algorithm",
+            "random_iv",
+            "iv_length",
+            "tag_length",
+            "fixed_field_length",
+            "invocation_field_length",
+            "counter_length",
+            "initial_counter_value",
+            "salt_length",
+            "mask_generator",
+            "mask_generator_hashing_algorithm",
+            "p_source",
+            "trailer_field",
+        }
+        field_routes = set()
+        operation_setters = set()
+        for declaration in manifest["publicDeclarations"]:
+            if declaration.get("capabilityId") != "typed_cryptographic_parameters":
+                continue
+            export_name = declaration["exportName"]
+            if export_name.endswith("::with_typed_cryptographic_parameters"):
+                operation_setters.add(declaration["declarationId"])
+                continue
+            getter_prefix = (
+                "kmipkit::protocol::CryptographicParameters::",
+                "kmipkit_protocol::CryptographicParameters::",
+            )
+            builder_prefix = (
+                "kmipkit::protocol::CryptographicParametersBuilder::",
+                "kmipkit_protocol::CryptographicParametersBuilder::",
+            )
+            if any(export_name.startswith(prefix) for prefix in getter_prefix):
+                member = export_name.rsplit("::", maxsplit=1)[-1]
+                if member in field_names or member == "with_p_source":
+                    field_routes.add(declaration["declarationId"])
+            elif any(export_name.startswith(prefix) for prefix in builder_prefix):
+                member = export_name.rsplit("::", maxsplit=1)[-1]
+                if member.startswith("with_") and member.removeprefix("with_") in field_names:
+                    field_routes.add(declaration["declarationId"])
+
+        self.assertEqual(72, len(field_routes))
+        mapped_ids = set(route_data["candidateRoutes"])
+        self.assertEqual(field_routes, mapped_ids & field_routes)
+        self.assertFalse(operation_setters & mapped_ids)
+        listed_targets = {
+            (row.get("packageId"), row.get("exportName"))
+            for row in manifest["publicDeclarations"] + route_data["publicDeclarations"]
+        }
+        for declaration_id in field_routes:
+            route = route_data["candidateRoutes"][declaration_id]
+            for language, mapping in route.items():
+                if language in {"rust", "c", "java", "python"}:
+                    self.assertIn((mapping["packageId"], mapping["name"]), listed_targets)
+            evidence = set(route["parityEvidenceIds"])
+            for required_path in (
+                "bindings/c/tests/authentication_consumer.c",
+                "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+                "bindings/python/tests/test_parameters_authentication_parity.py",
+            ):
+                self.assertIn(required_path, evidence)
+            self.assertTrue(
+                any(path.startswith("crates/") for path in evidence),
+                "Table 59 mapping lacks Rust behavior evidence",
+            )
+
+        reconciled = reconcile_0053_api_parity.reconcile_manifest(
+            manifest, route_data["candidateRoutes"]
+        )
+        reconciled = reconcile_0053_api_parity.add_public_declarations(
+            reconciled, route_data["publicDeclarations"]
+        )
+        remaining = [
+            declaration
+            for declaration in reconciled["publicDeclarations"]
+            if declaration.get("candidateSpecId") == "KMIPKIT-0053"
+            and declaration.get("capabilityId") == "typed_cryptographic_parameters"
+        ]
+        self.assertEqual(24, len(remaining))
+        remaining_names = [row["exportName"] for row in remaining]
+        self.assertEqual(18, sum(name.endswith("::with_typed_cryptographic_parameters")
+                                 for name in remaining_names))
+        self.assertEqual(2, sum(name.endswith("CryptographicParameters::with_ttlv")
+                                 for name in remaining_names))
+        self.assertEqual(2, sum(name.endswith("CryptographicParametersBuilder::new")
+                                 for name in remaining_names))
+        self.assertEqual(2, sum(name.endswith("CryptographicParametersBuilder::with_extension")
+                                 for name in remaining_names))
+
     def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
         route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
         additions = json.loads(route_path.read_text(encoding="utf-8"))["functions"]
@@ -177,6 +278,81 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertTrue(
             set(additions[0]["requirementIds"]).issubset(first["requirementIds"])
         )
+
+    def test_resolves_only_exact_blocked_0043_declarations_with_four_language_evidence(self) -> None:
+        manifest = {
+            "requirementIds": [],
+            "publicDeclarations": [{
+                "declarationId": "rust-validation-report",
+                "packageId": "rust-kmipkit",
+                "kind": "type",
+                "exportName": "kmipkit::protocol::ValidationReport",
+                "capabilityId": "public_binding_surface",
+                "requirementIds": ["KMIPKIT-0043-FR-021"],
+                "declarationState": "blocked",
+                "parityScope": "four-language",
+                "candidateSpecId": "KMIPKIT-0043",
+                "blockedReason": "foreign API mapping is pending",
+            }],
+        }
+        resolution = {
+            "declarationId": "rust-validation-report",
+            "fromSpecId": "KMIPKIT-0043",
+            "capabilityId": "request_validation",
+            "requirementIds": ["KMIPKIT-0053-FR-006"],
+            "rust": {"packageId": "rust-kmipkit", "name": "kmipkit::protocol::ValidationReport"},
+            "c": {"packageId": "c-kmipkit", "name": "kmipkit_validation_report_t"},
+            "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.ValidationReport"},
+            "python": {"packageId": "python-kmipkit", "name": "kmipkit.validation.ValidationReport"},
+            "parityEvidenceIds": ["bindings/c/tests/request_validation_consumer.c"],
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct approval of the Phase 5 implementation plan.",
+            },
+        }
+
+        result = reconcile_0053_api_parity.resolve_public_declarations(manifest, [resolution])
+        replay = reconcile_0053_api_parity.resolve_public_declarations(result, [resolution])
+
+        resolved = result["publicDeclarations"][0]
+        self.assertEqual("blocked", manifest["publicDeclarations"][0]["declarationState"])
+        self.assertEqual("verified", resolved["declarationState"])
+        self.assertEqual("request_validation", resolved["capabilityId"])
+        self.assertNotIn("candidateSpecId", resolved)
+        self.assertNotIn("blockedReason", resolved)
+        self.assertEqual({"rust", "c", "java", "python"}, set(resolved["languageMappings"]))
+        self.assertEqual(result, replay)
+
+    def test_refuses_to_transfer_a_declaration_owned_by_any_other_specification(self) -> None:
+        manifest = {
+            "publicDeclarations": [{
+                "declarationId": "unrelated-blocked-export",
+                "declarationState": "blocked",
+                "candidateSpecId": "KMIPKIT-0010",
+            }],
+        }
+        resolution = {
+            "declarationId": "unrelated-blocked-export",
+            "fromSpecId": "KMIPKIT-0043",
+            "capabilityId": "request_validation",
+            "requirementIds": ["KMIPKIT-0053-FR-006"],
+            "rust": {"packageId": "rust-kmipkit", "name": "Rust"},
+            "c": {"packageId": "c-kmipkit", "name": "C"},
+            "java": {"packageId": "java-kmipkit", "name": "Java"},
+            "python": {"packageId": "python-kmipkit", "name": "Python"},
+            "parityEvidenceIds": ["bindings/c/tests/request_validation_consumer.c"],
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct approval of the Phase 5 implementation plan.",
+            },
+        }
+
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.resolve_public_declarations(manifest, [resolution])
 
     def test_additional_types_are_added_once_with_exact_language_routes(self) -> None:
         manifest = {"requirementIds": [], "types": []}
@@ -292,6 +468,37 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.add_public_declarations(self.manifest, declarations)
+
+    def test_public_c_layout_field_can_be_recorded_as_an_exact_c_only_surface(self) -> None:
+        declaration = {
+            "declarationId": "c-only-layout-field",
+            "packageId": "c-kmipkit",
+            "kind": "field",
+            "exportName": "kmipkit_validation_issue_view_v1_t.struct_size",
+            "capabilityId": "request_validation",
+            "requirementIds": ["KMIPKIT-0053-FR-006"],
+            "declarationState": "verified",
+            "parityScope": "c-only",
+            "languageMappings": {
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_validation_issue_view_v1_t.struct_size",
+                }
+            },
+            "parityEvidenceIds": ["bindings/c/tests/request_validation_consumer.c"],
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "The versioned C carrier field is a C ABI layout detail.",
+            },
+        }
+
+        result = reconcile_0053_api_parity.add_public_declarations(
+            self.manifest, [declaration]
+        )
+
+        self.assertIn(declaration, result["publicDeclarations"])
 
 
 if __name__ == "__main__":

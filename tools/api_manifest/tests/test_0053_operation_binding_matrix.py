@@ -88,6 +88,27 @@ class OperationBindingMatrixTests(unittest.TestCase):
                     f"missing operation-specific routes for {operation['name']}",
                 )
 
+    def test_every_operation_has_executable_evidence_in_all_four_languages(self) -> None:
+        language_roots = {
+            "rust": ("crates/",),
+            "c": ("bindings/c/tests/",),
+            "java": ("bindings/java/",),
+            "python": ("bindings/python/",),
+        }
+        for operation in self.operations:
+            evidence = operation.get("parityEvidenceIds", [])
+            with self.subTest(operation=operation["name"]):
+                self.assertTrue(evidence, "operation has no behavior evidence")
+                self.assertTrue(
+                    all((ROOT / path).is_file() for path in evidence),
+                    "operation evidence references a missing file",
+                )
+                for language, roots in language_roots.items():
+                    self.assertTrue(
+                        any(path.startswith(roots) for path in evidence),
+                        f"{operation['name']} has no {language} behavior evidence",
+                    )
+
     def test_mapped_foreign_route_names_exist_in_public_source_surfaces(self) -> None:
         for operation in self.operations:
             for language in ("rust", "c", "java", "python"):

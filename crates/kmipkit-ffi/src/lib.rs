@@ -289,6 +289,10 @@ pub struct kmipkit_cryptographic_parameters_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_validation_report_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_credential_view_t {
     _private: [u8; 0],
 }
@@ -398,6 +402,24 @@ pub struct kmipkit_extension_registry_limits_v1_t {
 pub struct kmipkit_byte_span_v1_t {
     pub data: *const u8,
     pub length: u64,
+}
+
+/// Borrowed safe metadata for one local validation issue. Spans remain valid while the report is open.
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct kmipkit_validation_issue_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// 1 for Error, 2 for Warning, or 3 for Info.
+    pub severity: u32,
+    /// 1 for OASIS, or 2 for a KMIPKit project rule.
+    pub source_kind: u32,
+    pub code: kmipkit_byte_span_v1_t,
+    pub path: kmipkit_byte_span_v1_t,
+    /// OASIS document for source kind 1; project rule identifier for source kind 2.
+    pub source_identifier: kmipkit_byte_span_v1_t,
+    /// Exact OASIS clause for source kind 1; empty for project rules.
+    pub source_reference: kmipkit_byte_span_v1_t,
 }
 
 /// Versioned, redacted profile validation details. UTF-8 pointer/length pairs remain valid while

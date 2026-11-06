@@ -119,6 +119,28 @@ int32_t kmipkit_parameters_authentication_c_consumer_reads(void) {
     }
 
     kmipkit_cryptographic_parameters_release(parameters);
+    if (status != 0) return status;
+    parameters = 0;
+    memset(&input, 0, sizeof(input));
+    memset(&output, 0, sizeof(output));
+    input.struct_size = (uint32_t)sizeof(input);
+    input.abi_version = 1;
+    input.random_iv_present = 1;
+    input.random_iv = 0;
+    input.p_source_present = 1;
+    input.p_source = 0;
+    input.p_source_length = 0;
+    output.struct_size = (uint32_t)sizeof(output);
+    output.abi_version = 1;
+    status = kmipkit_cryptographic_parameters_from_fields_v1(&input, &parameters);
+    if (status == 0) {
+        status = kmipkit_cryptographic_parameters_read_fields_v1(parameters, &output);
+    }
+    if (status == 0 &&
+        (output.p_source_present != 1 || output.p_source_length != 0)) {
+        status = 1;
+    }
+    kmipkit_cryptographic_parameters_release(parameters);
     return status;
 }
 

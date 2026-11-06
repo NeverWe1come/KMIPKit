@@ -517,7 +517,7 @@ final class CryptoOperationsJavaFacadeTest {
                     fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
                 }
             }
-            case "mac" -> fields.add(ttlvItem(0x4200c4, 8, SECRET_MARKER));
+            case "mac" -> fields.add(ttlvItem(0x4200c6, 8, SECRET_MARKER));
             case "macVerify" -> {
                 if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
             }

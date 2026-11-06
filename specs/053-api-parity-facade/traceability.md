@@ -11,6 +11,7 @@ Exact source tables are inherited from specs 048–052 and reference the pinned 
 | KMIPKIT-0053-R005 | §6.1 operation payloads; §§8.1–8.3; §10.1.2; specs/051-pre-send-validation/traceability.md | Reject locally decidable normative violations before I/O; never guess generic schemas; omit values in reports. | All adapters use Rust validation. | Issue parity, NotSent, zero writes, valid-wire stability, redaction. |
 | KMIPKIT-0053-R006 | §6.1 tables for 56 supported operations and async rules in specs/050-parameters-auth-client/gap-matrix.md | Preserve operation identity, request/options, response association and async correlation. | C ABI/JNI/CFFI wrappers. | 56-operation matrix and no-retry tests. |
 | KMIPKIT-0053-R007 | §8.5 Table 398; §8.6 Table 399; §§9.13, 10.1.2; §11.56; specs/052-response-navigation/traceability.md | Preserve response presence, order, repetitions, unknown/vendor values at arbitrary depth. | KMIPKIT-0052 handles and wrappers. | Absent/empty/Pending and nested 0x54xxxx tests in four languages. |
+| KMIPKIT-0053-R008 | §11.36 Table 470; KMIPKIT-0053-FR-007 | Every typed request builder exposes the exact KMIP Operation Enumeration it will send. | `ClientBatchItem::operation`, C ABI, Java accessor, and Python property. | C and Java compare every synchronous builder with the generated OASIS Operation values; Python verifies the live ABI result. |
 
 ## Project Decisions
 - P001: Rust remains the sole protocol/model/validation implementation.

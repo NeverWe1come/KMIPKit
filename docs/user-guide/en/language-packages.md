@@ -2,6 +2,9 @@
 
 For typed Rust managed objects and key material, see
 [Managed objects and key material](managed-objects-and-key-material.md).
+For the corresponding foreign binding names, ownership rules, request
+validation, Authentication, and generic response access, see
+[Typed bindings, validation, and response data](typed-bindings-and-response-data.md).
 
 ## Rust facade
 

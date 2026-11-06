@@ -56,6 +56,12 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(nativeHandle, List.of());
     }
 
+    /** Returns the KMIP 2.1 Operation Enumeration selected by this request. */
+    public long operation() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(NativeExtensionRegistry::clientBatchItemOperation);
+    }
+
     /** Creates the supported Discover Versions request batch item. */
     public static ClientBatchItem discoverVersions() {
         NativeExtensionRegistry.ensureLoaded();
@@ -1617,6 +1623,14 @@ public final class ClientBatchItem implements AutoCloseable {
         return handle.withValue(value ->
                 NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(value, index));
     }
+
+    /** Returns the shared Rust validation report for this typed request. */
+    public ValidationReport validationReport() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(value -> ValidationReport.fromNativeHandle(
+                NativeExtensionRegistry.validationRequest(value)));
+    }
+
     @Override
     public void close() {
         handle.close();

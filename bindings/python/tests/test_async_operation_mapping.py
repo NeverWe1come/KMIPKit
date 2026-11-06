@@ -117,6 +117,50 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
     assert released == [outcome_handle]
 
 
+def test_async_outcome_distinguishes_present_empty_payload_from_absent(monkeypatch) -> None:
+    released: list[object] = []
+    stubs = _outcome_stubs(0x1A, released)
+    empty_payload = ttlv.ttlv_structure_create()
+    payload_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 43)
+    native_payload_addresses: list[int] = []
+
+    def response_payload(_outcome, present, output) -> int:
+        present[0] = 1
+        output[0] = payload_pointer
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                **stubs.__dict__,
+                "kmipkit_client_async_operation_outcome_response_payload_ttlv": response_payload,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda address: native_payload_addresses.append(address) or empty_payload,
+    )
+    outcome = client._wrap_owned_handle(
+        client.AsyncOperationOutcome, stubs.outcome_handle
+    )
+    try:
+        payload = outcome.response_payload_ttlv
+        assert payload is empty_payload
+        assert payload is not None
+        with ttlv.ttlv_structure_view(payload) as view:
+            assert ttlv.ttlv_structure_view_item_count(view) == 0
+        assert native_payload_addresses == [43]
+    finally:
+        outcome.close()
+        empty_payload.close()
+
+    assert released == [stubs.outcome_handle]
+
+
 def test_async_outcome_exposes_owned_generic_response_extension_copy(
     monkeypatch,
 ) -> None:

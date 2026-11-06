@@ -1,6 +1,9 @@
 package org.kmipkit.protocol;
 
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
@@ -39,6 +42,79 @@ public final class CryptographicParameters implements AutoCloseable {
         return TtlvStructure.fromNative(
                 NativeExtensionRegistry.cryptographicParametersIntoTtlv(raw), this);
     }
+
+    /** Returns the raw Block Cipher Mode Enumeration, including future values, when present. */
+    public OptionalLong blockCipherMode() { return enumeration(0); }
+    /** Returns the raw Padding Method Enumeration, including future values, when present. */
+    public OptionalLong paddingMethod() { return enumeration(1); }
+    /** Returns the raw Hashing Algorithm Enumeration, including future values, when present. */
+    public OptionalLong hashingAlgorithm() { return enumeration(2); }
+    /** Returns the raw Key Role Type Enumeration, including future values, when present. */
+    public OptionalLong keyRoleType() { return enumeration(3); }
+    /** Returns the raw Digital Signature Algorithm Enumeration, including future values, when present. */
+    public OptionalLong digitalSignatureAlgorithm() { return enumeration(4); }
+    /** Returns the raw Cryptographic Algorithm Enumeration, including future values, when present. */
+    public OptionalLong cryptographicAlgorithm() { return enumeration(5); }
+    /** Returns Random IV when present. */
+    public Optional<Boolean> randomIv() {
+        Fields fields = readFields();
+        return fields.present()[6] ? Optional.of(fields.values()[6] != 0) : Optional.empty();
+    }
+    /** Returns IV Length when present. */
+    public OptionalInt ivLength() { return integer(7); }
+    /** Returns Tag Length when present. */
+    public OptionalInt tagLength() { return integer(8); }
+    /** Returns Fixed Field Length when present. */
+    public OptionalInt fixedFieldLength() { return integer(9); }
+    /** Returns Invocation Field Length when present. */
+    public OptionalInt invocationFieldLength() { return integer(10); }
+    /** Returns Counter Length when present. */
+    public OptionalInt counterLength() { return integer(11); }
+    /** Returns Initial Counter Value when present. */
+    public OptionalInt initialCounterValue() { return integer(12); }
+    /** Returns Salt Length when present. */
+    public OptionalInt saltLength() { return integer(13); }
+    /** Returns the raw Mask Generator Enumeration, including future values, when present. */
+    public OptionalLong maskGenerator() { return enumeration(14); }
+    /** Returns the raw Mask Generator Hashing Algorithm Enumeration when present. */
+    public OptionalLong maskGeneratorHashingAlgorithm() { return enumeration(15); }
+    /**
+     * Returns a caller-owned P Source copy when present.
+     *
+     * <p>The Java byte array is outside KMIPKit's deterministic zeroization guarantee.
+     */
+    public Optional<byte[]> pSource() {
+        Fields fields = readFields();
+        return fields.present()[16] ? Optional.of(fields.pSource()) : Optional.empty();
+    }
+    /** Returns Trailer Field when present. */
+    public OptionalInt trailerField() { return integer(17); }
+
+    private OptionalLong enumeration(int index) {
+        Fields fields = readFields();
+        return fields.present()[index]
+                ? OptionalLong.of(fields.values()[index])
+                : OptionalLong.empty();
+    }
+
+    private OptionalInt integer(int index) {
+        Fields fields = readFields();
+        return fields.present()[index]
+                ? OptionalInt.of(Math.toIntExact(fields.values()[index]))
+                : OptionalInt.empty();
+    }
+
+    private Fields readFields() {
+        return handle.withValue(raw -> {
+            boolean[] present = new boolean[FIELD_COUNT];
+            long[] values = new long[FIELD_COUNT];
+            byte[] pSource = NativeExtensionRegistry.cryptographicParametersReadFields(
+                    raw, present, values);
+            return new Fields(present, values, pSource == null ? new byte[0] : pSource);
+        });
+    }
+
+    private record Fields(boolean[] present, long[] values, byte[] pSource) {}
 
     @Override
     public void close() {
