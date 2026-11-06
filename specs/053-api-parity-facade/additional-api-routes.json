@@ -67,5 +67,97 @@
       },
       "ordering": "not-applicable"
     }
+  ],
+  "candidateRoutes": {
+    "kmipkit-0048-kmipkit-7ff36f3a6017bfcf719b": {
+      "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::protocol::Attribute<D>::from_item" },
+      "c": { "packageId": "c-kmipkit", "name": "kmipkit_typed_attribute_from_item" },
+      "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.TypedAttribute.fromItem" },
+      "python": { "packageId": "python-kmipkit", "name": "kmipkit.typed_attributes.TypedAttribute.from_item" },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/typed_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    }
+  },
+  "publicDeclarations": [
+    {
+      "declarationId": "typed-attribute-from-item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_typed_attribute_from_item",
+      "capabilityId": "typed_object_attributes",
+      "requirementIds": ["KMIPKIT-0048-FR-001", "KMIPKIT-0053-FR-002", "KMIPKIT-0053-FR-011", "KMIPKIT-0053-FR-012"],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::protocol::Attribute<D>::from_item" },
+        "c": { "packageId": "c-kmipkit", "name": "kmipkit_typed_attribute_from_item" },
+        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.TypedAttribute.fromItem" },
+        "python": { "packageId": "python-kmipkit", "name": "kmipkit.typed_attributes.TypedAttribute.from_item" }
+      },
+      "parityEvidenceIds": ["crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs", "bindings/c/tests/typed_attribute_parity_consumer.c", "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java", "bindings/python/tests/test_typed_attribute_parity.py"],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "typed-attribute-from-item:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.ttlv.TypedAttribute.fromItem",
+      "capabilityId": "typed_object_attributes",
+      "requirementIds": ["KMIPKIT-0048-FR-001", "KMIPKIT-0053-FR-002", "KMIPKIT-0053-FR-012"],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::protocol::Attribute<D>::from_item" },
+        "c": { "packageId": "c-kmipkit", "name": "kmipkit_typed_attribute_from_item" },
+        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.TypedAttribute.fromItem" },
+        "python": { "packageId": "python-kmipkit", "name": "kmipkit.typed_attributes.TypedAttribute.from_item" }
+      },
+      "parityEvidenceIds": ["bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java"],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "typed-attribute-from-item:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.typed_attributes.TypedAttribute.from_item",
+      "capabilityId": "typed_object_attributes",
+      "requirementIds": ["KMIPKIT-0048-FR-001", "KMIPKIT-0053-FR-002", "KMIPKIT-0053-FR-012"],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": { "packageId": "rust-kmipkit", "name": "kmipkit::protocol::Attribute<D>::from_item" },
+        "c": { "packageId": "c-kmipkit", "name": "kmipkit_typed_attribute_from_item" },
+        "java": { "packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.TypedAttribute.fromItem" },
+        "python": { "packageId": "python-kmipkit", "name": "kmipkit.typed_attributes.TypedAttribute.from_item" }
+      },
+      "parityEvidenceIds": ["bindings/python/tests/test_typed_attribute_parity.py"],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    }
   ]
 }

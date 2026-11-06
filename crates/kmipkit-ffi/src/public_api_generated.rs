@@ -30391,4 +30391,9 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit",
         "kmipkit::ClientOperationOutcome::query_async_requests_response",
     ),
+    (
+        "kmipkit-0048-kmipkit-7ff36f3a6017bfcf719b",
+        "rust-kmipkit",
+        "kmipkit::protocol::Attribute<D>::from_item",
+    ),
 ];

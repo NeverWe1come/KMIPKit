@@ -60,6 +60,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "java": {"packageId": "java-kmipkit", "name": "TypedAttribute"},
                 "python": {"packageId": "python-kmipkit", "name": "TypedAttribute"},
                 "parityEvidenceIds": ["bindings/c/tests/typed_attribute_consumer.c"],
+                "approvalSource": {
+                    "kind": "feature-specification",
+                    "path": "specs/048-typed-attributes/approval-record.md",
+                    "status": "Approved",
+                    "evidence": "direct approval of the Phase 5 plan",
+                },
             },
             "rust-authentication": {
                 "rust": {"packageId": "rust-kmipkit", "name": "ClientBatch::with_authentication"},
@@ -67,6 +73,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "java": {"packageId": "java-kmipkit", "name": "ClientBatch.withAuthentication"},
                 "python": {"packageId": "python-kmipkit", "name": "ClientBatch.with_authentication"},
                 "parityEvidenceIds": ["bindings/c/tests/authentication_consumer.c"],
+                "approvalSource": {
+                    "kind": "feature-specification",
+                    "path": "specs/050-cryptographic-parameters/approval-record.md",
+                    "status": "Approved",
+                    "evidence": "direct approval of the Phase 5 plan",
+                },
             },
         }
 
@@ -88,6 +100,20 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.reconcile_manifest(self.manifest, routes)
 
+    def test_reconciles_one_audited_candidate_without_unblocking_unrelated_routes(self) -> None:
+        routes = {"rust-attribute-type": self.routes["rust-attribute-type"]}
+
+        result = reconcile_0053_api_parity.reconcile_manifest(self.manifest, routes)
+
+        states = {row["declarationId"]: row["declarationState"]
+                  for row in result["publicDeclarations"]}
+        self.assertEqual("verified", states["rust-attribute-type"])
+        self.assertEqual("blocked", states["rust-authentication"])
+        capabilities = {row["capabilityId"]: row["capabilityState"]
+                        for row in result["capabilities"]}
+        self.assertEqual("verified", capabilities["typed_object_attributes"])
+        self.assertEqual("blocked", capabilities["request_message_authentication"])
+
     def test_rejects_a_general_exclusion_for_typed_capabilities(self) -> None:
         routes = copy.deepcopy(self.routes)
         routes["rust-attribute-type"] = {
@@ -108,10 +134,10 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual(750, len(candidates))
+        self.assertEqual(749, len(candidates))
         self.assertEqual(
             {
-                "typed_object_attributes": 286,
+                "typed_object_attributes": 285,
                 "typed_managed_objects_and_key_material": 356,
                 "typed_cryptographic_parameters": 106,
                 "request_message_authentication": 2,
@@ -126,6 +152,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 }
             },
         )
+        resolved = [
+            declaration for declaration in manifest["publicDeclarations"]
+            if declaration.get("declarationId") == "kmipkit-0048-kmipkit-7ff36f3a6017bfcf719b"
+        ]
+        self.assertEqual(1, len(resolved))
+        self.assertEqual("verified", resolved[0]["declarationState"])
 
     def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
         route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
@@ -139,6 +171,34 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertTrue(
             set(additions[0]["requirementIds"]).issubset(first["requirementIds"])
         )
+
+    def test_real_typed_attribute_from_item_route_unblocks_generated_c_surface(self) -> None:
+        route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
+        route_data = json.loads(route_path.read_text(encoding="utf-8"))
+        candidate_id = "kmipkit-0048-kmipkit-7ff36f3a6017bfcf719b"
+        self.assertIn(candidate_id, route_data["candidateRoutes"])
+
+        manifest = reconcile_0053_api_parity.reconcile_manifest(
+            self.manifest_for_repository(), route_data["candidateRoutes"]
+        )
+        manifest = reconcile_0053_api_parity.add_additional_functions(
+            manifest, route_data["functions"]
+        )
+        manifest = reconcile_0053_api_parity.add_public_declarations(
+            manifest, route_data["publicDeclarations"]
+        )
+        mapped = next(row for row in manifest["publicDeclarations"]
+                      if row["declarationId"] == candidate_id)
+        self.assertEqual("verified", mapped["declarationState"])
+        self.assertEqual(len(manifest["publicDeclarations"]),
+                         len({row["declarationId"] for row in manifest["publicDeclarations"]}))
+        self.assertTrue(any(row["exportName"] == "kmipkit_typed_attribute_from_item"
+                            and row["declarationState"] == "verified"
+                            for row in manifest["publicDeclarations"]))
+
+    @staticmethod
+    def manifest_for_repository() -> dict:
+        return json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
 
     def test_public_four_language_export_is_added_idempotently(self) -> None:
         declarations = [

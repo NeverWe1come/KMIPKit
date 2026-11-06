@@ -30,8 +30,8 @@ class ReconciliationError(ValueError):
 def _validate_mapping(declaration: dict[str, Any], route: dict[str, Any]) -> dict[str, dict[str, str]]:
     if "exclusion" in route:
         raise ReconciliationError("exclusions cannot be interpreted as language mappings")
-    if set(route) != {*REQUIRED_LANGUAGES, "parityEvidenceIds"}:
-        raise ReconciliationError("each mapped route must name all four languages and evidence")
+    if set(route) != {*REQUIRED_LANGUAGES, "parityEvidenceIds", "approvalSource"}:
+        raise ReconciliationError("each mapped route must name all four languages, evidence, and approval")
     mappings: dict[str, dict[str, str]] = {}
     for language in sorted(REQUIRED_LANGUAGES):
         mapping = route.get(language)
@@ -50,6 +50,15 @@ def _validate_mapping(declaration: dict[str, Any], route: dict[str, Any]) -> dic
         or len(evidence) != len(set(evidence))
     ):
         raise ReconciliationError("every mapping needs unique, non-empty behavior evidence paths")
+    approval = route.get("approvalSource")
+    if (
+        not isinstance(approval, dict)
+        or set(approval) != {"kind", "path", "status", "evidence"}
+        or any(not isinstance(value, str) or not value.strip() for value in approval.values())
+        or approval.get("kind") != "feature-specification"
+        or approval.get("status") != "Approved"
+    ):
+        raise ReconciliationError("every mapping needs exact feature approval evidence")
     return mappings
 
 
@@ -101,20 +110,28 @@ def reconcile_manifest(
         raise ReconciliationError("every candidate needs a stable declarationId")
     if len(candidate_ids) != len(set(candidate_ids)):
         raise ReconciliationError("candidate declaration IDs must be unique")
-    if set(routes) != set(candidate_ids):
-        missing = sorted(set(candidate_ids) - set(routes))
-        extra = sorted(set(routes) - set(candidate_ids))
-        raise ReconciliationError(
-            f"route inventory is incomplete or unowned (missing={len(missing)}, extra={len(extra)})"
-        )
+    candidate_by_id = {row["declarationId"]: row for row in candidates}
+    existing_by_id = {row.get("declarationId"): row for row in declarations}
+    extra = sorted(set(routes) - set(candidate_ids) - set(existing_by_id))
+    if extra:
+        raise ReconciliationError(f"route inventory contains unowned IDs (extra={len(extra)})")
 
     by_capability: dict[str, dict[str, list[str]]] = {}
     verified: list[dict[str, Any]] = []
     exclusions: list[dict[str, Any]] = []
-    for declaration in candidates:
+    for declaration_id, route in routes.items():
+        declaration = candidate_by_id.get(declaration_id)
+        if declaration is None:
+            existing = existing_by_id[declaration_id]
+            expected = route.get("exclusion") if isinstance(route, dict) else None
+            if expected is not None or existing.get("declarationState") != "verified":
+                raise ReconciliationError("replayed routes must match an already verified declaration")
+            mappings = _validate_mapping(existing, route)
+            if mappings != existing.get("languageMappings") or route["parityEvidenceIds"] != existing.get("parityEvidenceIds"):
+                raise ReconciliationError("replayed route differs from its verified declaration")
+            continue
         if declaration.get("declarationState") != "blocked":
-            raise ReconciliationError("0053 candidates must remain blocked until reconciled")
-        route = routes[declaration["declarationId"]]
+            raise ReconciliationError("unreconciled 0053 candidates must remain blocked")
         if not isinstance(route, dict):
             raise ReconciliationError("each route must be an object")
         if "exclusion" in route:
@@ -124,6 +141,7 @@ def reconcile_manifest(
         declaration["declarationState"] = "verified"
         declaration["languageMappings"] = mappings
         declaration["parityEvidenceIds"] = route["parityEvidenceIds"]
+        declaration["approvalSource"] = route["approvalSource"]
         declaration.pop("candidateSpecId", None)
         declaration.pop("blockedReason", None)
         verified.append(declaration)
@@ -134,10 +152,11 @@ def reconcile_manifest(
             language_names[language].append(mapping["name"])
 
     exclusion_keys = {(row["packageId"], row["exportName"]) for row in exclusions}
+    processed_ids = {row["declarationId"] for row in candidates if row["declarationId"] in routes}
     result["publicDeclarations"] = [
         row for row in declarations
-        if row.get("candidateSpecId") != SPEC_ID
-        and (row.get("packageId"), row.get("exportName")) not in exclusion_keys
+        if row.get("declarationId") not in processed_ids
+        if (row.get("packageId"), row.get("exportName")) not in exclusion_keys
     ] + verified
     existing_exclusions = result.setdefault("approvedExclusions", [])
     existing_keys = {(row.get("packageId"), row.get("exportName")) for row in existing_exclusions}
@@ -149,11 +168,24 @@ def reconcile_manifest(
     candidate_capabilities = {row.get("capabilityId") for row in candidates}
     for capability_id in candidate_capabilities:
         capability = capability_rows.get(capability_id)
-        if capability is None or capability.get("capabilityState") != "blocked":
+        if capability is None:
             raise ReconciliationError("each candidate capability must be present and blocked")
+        unresolved = any(
+            row.get("candidateSpecId") == SPEC_ID and row.get("capabilityId") == capability_id
+            for row in result["publicDeclarations"]
+        )
+        if unresolved:
+            continue
+        if capability.get("capabilityState") != "blocked":
+            raise ReconciliationError("candidate capability was already reconciled")
         capability["capabilityState"] = "verified"
+        all_ready = [
+            row for row in result["publicDeclarations"]
+            if row.get("capabilityId") == capability_id
+            and row.get("declarationState") == "verified"
+        ]
         capability["mappings"] = {
-            language: sorted(set(by_capability.get(capability_id, {}).get(language, [])))
+            language: sorted({row["languageMappings"][language]["name"] for row in all_ready})
             for language in sorted(REQUIRED_LANGUAGES)
         }
         capability.pop("candidateSpecId", None)
