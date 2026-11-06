@@ -4686,7 +4686,10 @@ impl Client {
                 error,
             )
         })?;
-        validate_typed_request_preflight(&batch)?;
+        validate_typed_request_preflight(
+            &batch,
+            profiles.is_some_and(ProfileExchangeValidator::includes_original_creation_date_rule),
+        )?;
         validate_request_extension_ownership(&batch, &self.configuration).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -4694,13 +4697,10 @@ impl Client {
                 error,
             )
         })?;
-        let mutation_policy = if let Some(profiles) = profiles {
-            Some(validate_attribute_mutation_policy(
-                &batch,
-                profiles.includes_original_creation_date_rule(),
-            ))
+        let mutation_policy = if profiles.is_some() {
+            Some(validate_attribute_mutation_policy(&batch))
         } else {
-            validate_attribute_mutation_policy(&batch, false)?;
+            validate_attribute_mutation_policy(&batch)?;
             None
         };
         validate_query_batch_limits(&batch, limits)
@@ -6832,15 +6832,27 @@ pub(super) fn validate_batch(
     Ok(options)
 }
 
-fn validate_typed_request_preflight(batch: &ClientBatch) -> Result<(), ClientError> {
+fn validate_typed_request_preflight(
+    batch: &ClientBatch,
+    profile_validates_original_creation_date: bool,
+) -> Result<(), ClientError> {
     for item in &batch.items {
-        item.request.validate_local_shape().map_err(|error| {
-            ClientError::validation(
-                ClientCauseCategory::InvalidInput,
-                RequestDeliveryState::NotSent,
-                error,
-            )
-        })?;
+        let report = item.request.validation_report();
+        let only_profile_owned_creation_date_findings = profile_validates_original_creation_date
+            && !report.is_valid()
+            && report.issues().iter().all(|issue| {
+                issue.code().as_str() == "KMIPKIT-0051-R282"
+                    && issue.path().to_string().ends_with("tag(0x4200bc)")
+            });
+        if !report.is_valid() && !only_profile_owned_creation_date_findings {
+            item.request.validate_local_shape().map_err(|error| {
+                ClientError::validation(
+                    ClientCauseCategory::InvalidInput,
+                    RequestDeliveryState::NotSent,
+                    error,
+                )
+            })?;
+        }
     }
     Ok(())
 }
@@ -6883,13 +6895,12 @@ impl fmt::Display for SourceBackedMutationProhibited {
 
 impl Error for SourceBackedMutationProhibited {}
 
-fn validate_attribute_mutation_policy(
-    batch: &ClientBatch,
-    allow_profile_validated_creation_date_add: bool,
-) -> Result<(), ClientError> {
-    if batch.items.iter().any(|item| {
-        request_mutation_is_prohibited(&item.request, allow_profile_validated_creation_date_add)
-    }) {
+fn validate_attribute_mutation_policy(batch: &ClientBatch) -> Result<(), ClientError> {
+    if batch
+        .items
+        .iter()
+        .any(|item| request_mutation_is_prohibited(&item.request))
+    {
         Err(ClientError::validation(
             ClientCauseCategory::InvalidInput,
             RequestDeliveryState::NotSent,
@@ -6900,21 +6911,10 @@ fn validate_attribute_mutation_policy(
     }
 }
 
-fn request_mutation_is_prohibited(
-    request: &ClientRequest,
-    allow_profile_validated_creation_date_add: bool,
-) -> bool {
-    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
-
+fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
     match request {
         ClientRequest::AddAttribute(request) => {
-            let attribute = request.new_attribute().item();
-            !(allow_profile_validated_creation_date_add
-                && attribute.tag().raw() == ORIGINAL_CREATION_DATE)
-                && new_attribute_is_prohibited(
-                    request.new_attribute(),
-                    ClientAttributeMutation::Add,
-                )
+            new_attribute_is_prohibited(request.new_attribute(), ClientAttributeMutation::Add)
         }
         ClientRequest::AdjustAttribute(request) => attribute_reference_is_prohibited(
             request.attribute_reference(),
@@ -6996,7 +6996,24 @@ fn new_attribute_is_prohibited(
 }
 
 fn attribute_item_is_prohibited(item: &Item, mutation: ClientAttributeMutation) -> bool {
-    client_attribute_mutation_is_prohibited(item.tag().raw(), mutation)
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+
+    let tag = item.tag().raw();
+    if (mutation == ClientAttributeMutation::Add && tag == ORIGINAL_CREATION_DATE)
+        || (matches!(
+            mutation,
+            ClientAttributeMutation::Add | ClientAttributeMutation::Modify
+        ) && tag == USAGE_LIMITS)
+    {
+        // §4.38 permits a later Add of Original Creation Date when it was
+        // omitted during creation; whether it is already present is remote
+        // state. §4.59 reserves only the nested Usage Limits Count member for
+        // Add/Modify, which the typed-request validator checks specifically.
+        return false;
+    }
+
+    client_attribute_mutation_is_prohibited(tag, mutation)
         || vendor_attribute_item_is_prohibited(item, mutation)
 }
 
