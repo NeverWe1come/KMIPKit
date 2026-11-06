@@ -646,6 +646,7 @@ def _finalize_candidate_capabilities(
         unresolved = any(
             row.get("candidateSpecId") == SPEC_ID
             and row.get("capabilityId") == capability_id
+            and row.get("declarationState") == "blocked"
             for row in declarations
         )
         if unresolved and capability.get("capabilityState") == "verified":
@@ -721,6 +722,40 @@ def _validate_resolution_identity_existing(
         raise ReconciliationError(
             "replayed resolution identity does not match its exact record"
         )
+
+
+def _is_approved_source_refresh(
+    old: Any, new: Any, owner_approval_source: Any = None
+) -> bool:
+    """Allow only an exact evidence refresh from the same approved feature record."""
+    same_record = (
+        isinstance(old, dict)
+        and isinstance(new, dict)
+        and set(old) == {"kind", "path", "status", "evidence"}
+        and set(new) == {"kind", "path", "status", "evidence"}
+        and old.get("kind") == new.get("kind") == "feature-specification"
+        and old.get("path") == new.get("path") == APPROVAL_RECORD_PATH
+        and old.get("status") == new.get("status") == "Approved"
+    )
+    owner_record = (
+        isinstance(owner_approval_source, dict)
+        and isinstance(owner_approval_source.get("path"), str)
+        and isinstance(old, dict)
+        and isinstance(new, dict)
+        and set(old) == {"kind", "path", "status", "evidence"}
+        and set(new) == {"kind", "path", "status", "evidence"}
+        and old.get("kind") == new.get("kind") == "feature-specification"
+        and old.get("status") == new.get("status") == "Approved"
+        and new.get("path") == owner_approval_source.get("path")
+        and owner_approval_source.get("status") == "Approved"
+    )
+    if not (same_record or owner_record) or not isinstance(new.get("evidence"), str):
+        return False
+    try:
+        evidence_content = Path(new["path"]).read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return bool(new["evidence"]) and new["evidence"] in evidence_content
 
 
 def _resolution_exclusion_replay_record(resolution: dict[str, Any]) -> dict[str, Any]:
@@ -827,6 +862,18 @@ def reconcile_manifest(
                     "replayed route differs from its verified declaration"
                 )
             continue
+        if declaration.get("declarationState") == "verified":
+            mappings = _validate_mapping(declaration, route)
+            if (
+                mappings != declaration.get("languageMappings")
+                or route["parityEvidenceIds"]
+                != declaration.get("parityEvidenceIds")
+                or route["approvalSource"] != declaration.get("approvalSource")
+            ):
+                raise ReconciliationError(
+                    "replayed route differs from its verified declaration"
+                )
+            continue
         if declaration.get("declarationState") != "blocked":
             raise ReconciliationError(
                 "unreconciled 0053 candidates must remain blocked"
@@ -841,6 +888,7 @@ def reconcile_manifest(
         declaration["languageMappings"] = mappings
         declaration["parityEvidenceIds"] = route["parityEvidenceIds"]
         declaration["approvalSource"] = route["approvalSource"]
+        declaration.pop("candidateSpecId", None)
         declaration.pop("blockedReason", None)
         verified.append(declaration)
         language_names = by_capability.setdefault(
@@ -873,7 +921,11 @@ def reconcile_manifest(
     existing_exclusions.extend(exclusions)
 
     capability_rows = {row.get("capabilityId"): row for row in capabilities}
-    candidate_capabilities = {row.get("capabilityId") for row in candidates}
+    candidate_capabilities = {
+        candidate_by_id[declaration_id].get("capabilityId")
+        for declaration_id in routes
+        if declaration_id in candidate_by_id
+    }
     for capability_id in candidate_capabilities:
         capability = capability_rows.get(capability_id)
         if capability is None:
@@ -883,9 +935,12 @@ def reconcile_manifest(
         unresolved = any(
             row.get("candidateSpecId") == SPEC_ID
             and row.get("capabilityId") == capability_id
+            and row.get("declarationState") == "blocked"
             for row in result["publicDeclarations"]
         )
         if unresolved:
+            continue
+        if capability.get("capabilityState") == "verified":
             continue
         if capability.get("capabilityState") != "blocked":
             raise ReconciliationError("candidate capability was already reconciled")
@@ -1318,6 +1373,11 @@ def add_public_declarations(
         raise ReconciliationError("manifest lacks its public declaration inventory")
     by_id = {row.get("declarationId"): row for row in current}
     by_export = {(row.get("packageId"), row.get("exportName")): row for row in current}
+    capability_sources = {
+        row.get("capabilityId"): row.get("approvalEvidence")
+        for row in result.get("capabilities", [])
+        if isinstance(row, dict)
+    }
     additions_by_id: dict[str, dict[str, Any]] = {}
     additions_by_export: dict[tuple[str, str], dict[str, Any]] = {}
     for declaration in declarations:
@@ -1388,10 +1448,17 @@ def add_public_declarations(
         candidate_spec_id = declaration.get("candidateSpecId")
         if candidate_spec_id is not None:
             approval_source = declaration.get("approvalSource")
+            owner_approval_source = capability_sources.get(
+                declaration.get("capabilityId")
+            )
             if (
                 candidate_spec_id != SPEC_ID
                 or not isinstance(approval_source, dict)
-                or approval_source.get("path") != APPROVAL_RECORD_PATH
+                or approval_source.get("status") != "Approved"
+                or not (
+                    approval_source.get("path") == APPROVAL_RECORD_PATH
+                    or approval_source == owner_approval_source
+                )
                 or not any(
                     isinstance(requirement, str)
                     and requirement.startswith(f"{SPEC_ID}-FR-")
@@ -1544,12 +1611,26 @@ def add_public_declarations(
                 existing_export.get(field) == declaration.get(field)
                 for field in (
                     "packageId", "exportName", "capabilityId",
-                    "declarationState", "parityScope", "approvalSource",
+                    "declarationState", "parityScope",
                 )
             )
             if not exact_route_shape:
                 raise ReconciliationError(
                     f"public export already has another declaration: {export_name}"
+                )
+            if existing_export.get("approvalSource") != declaration.get(
+                "approvalSource"
+            ):
+                if not _is_approved_source_refresh(
+                    existing_export.get("approvalSource"),
+                    declaration.get("approvalSource"),
+                    capability_sources.get(declaration.get("capabilityId")),
+                ):
+                    raise ReconciliationError(
+                        f"public export already has another approval source: {export_name}"
+                    )
+                existing_export["approvalSource"] = copy.deepcopy(
+                    declaration["approvalSource"]
                 )
             if candidate_spec_id is not None:
                 existing_candidate = existing_export.get("candidateSpecId")
@@ -1626,6 +1707,9 @@ def add_public_declarations(
                     | corrected_evidence
                 )
             canonical = copy.deepcopy(existing_export)
+            if canonical.get("candidateSpecId") == SPEC_ID:
+                canonical.pop("candidateSpecId", None)
+                existing_export.pop("candidateSpecId", None)
             canonical["requirementIds"] = sorted(
                 set(existing_export.get("requirementIds", [])) | set(requirements)
             )
@@ -1639,7 +1723,9 @@ def add_public_declarations(
             additions_by_export[key] = canonical
     for identifier, declaration in additions_by_id.items():
         if identifier not in by_id:
-            current.append(copy.deepcopy(declaration))
+            approved = copy.deepcopy(declaration)
+            approved.pop("candidateSpecId", None)
+            current.append(approved)
     capabilities = result.get("capabilities")
     if not isinstance(capabilities, list):
         raise ReconciliationError("manifest lacks its capability inventory")
@@ -1721,9 +1807,16 @@ def apply_language_mapping_corrections(
         "declarationId", "language", "from", "to", "capabilityId",
         "requirementIds", "evidencePaths", "reason", "approvalSource",
     }
+    optional_correction_keys = {
+        "mappingSemantics", "lifecycleSemanticsByLanguage",
+    }
     seen: set[tuple[str, str]] = set()
     for correction in corrections or []:
-        if not isinstance(correction, dict) or set(correction) != correction_keys:
+        if (
+            not isinstance(correction, dict)
+            or not correction_keys <= set(correction)
+            or set(correction) - correction_keys - optional_correction_keys
+        ):
             raise ReconciliationError(
                 "language mapping correction has missing or extra fields"
             )
@@ -1821,12 +1914,48 @@ def apply_language_mapping_corrections(
             )
         if current == old_route:
             mappings[language] = copy.deepcopy(new_route)
+        mapping_semantics = correction.get("mappingSemantics")
+        lifecycle_semantics = correction.get("lifecycleSemanticsByLanguage")
+        if mapping_semantics is not None:
+            if mapping_semantics not in {
+                "native-handle-release",
+                "native-handle-release-managed-java-value",
+                "secret-buffer-wipe",
+            } or declaration.get("mappingSemantics") not in {None, mapping_semantics}:
+                raise ReconciliationError(
+                    "mapping semantics correction must name one exact approved lifecycle"
+                )
+            if lifecycle_semantics is not None and (
+                mapping_semantics != "secret-buffer-wipe"
+                or lifecycle_semantics
+                != {
+                    "rust": "wipe-on-final-owner-drop",
+                    "c": "release-shared-reference-wipe-on-final-owner-drop",
+                    "java": "wipe-owned-copy-on-close",
+                    "python": "wipe-owned-copy-on-close",
+                }
+            ):
+                raise ReconciliationError(
+                    "secret buffer lifecycle correction must describe each language boundary"
+                )
+            if (
+                mapping_semantics == "secret-buffer-wipe"
+                and lifecycle_semantics is None
+                and declaration.get("lifecycleSemanticsByLanguage") is None
+            ):
+                raise ReconciliationError(
+                    "secret buffer lifecycle correction requires ownership semantics"
+                )
+            declaration["mappingSemantics"] = mapping_semantics
+            if lifecycle_semantics is not None:
+                declaration["lifecycleSemanticsByLanguage"] = copy.deepcopy(
+                    lifecycle_semantics
+                )
         candidate_spec = declaration.get("candidateSpecId")
         if candidate_spec not in {None, SPEC_ID}:
             raise ReconciliationError(
                 f"language mapping correction conflicts with another approval owner: {declaration_id}"
             )
-        declaration["candidateSpecId"] = SPEC_ID
         declaration["requirementIds"] = sorted(
             set(declaration.get("requirementIds", [])) | set(requirements)
         )
@@ -2161,7 +2290,7 @@ def resolve_public_declarations(
             raise ReconciliationError("declaration resolution IDs must be unique")
         seen.add(identifier)
         row = by_id.get(identifier)
-        if (
+        exact_verified_replay = (
             row is not None
             and row.get("declarationState") == "verified"
             and row.get("capabilityId") == resolution.get("capabilityId")
@@ -2170,9 +2299,18 @@ def resolve_public_declarations(
             and row.get("languageMappings")
             == {language: resolution[language] for language in REQUIRED_LANGUAGES}
             and row.get("parityEvidenceIds") == resolution.get("parityEvidenceIds")
-            and row.get("approvalSource") == resolution.get("approvalSource")
-        ):
-            continue
+        )
+        if exact_verified_replay:
+            old_approval = row.get("approvalSource")
+            new_approval = resolution.get("approvalSource")
+            if old_approval == new_approval:
+                continue
+            if _is_approved_source_refresh(old_approval, new_approval):
+                row["approvalSource"] = copy.deepcopy(new_approval)
+                continue
+            raise ReconciliationError(
+                "verified declaration replay may only refresh stale evidence from the same approved record"
+            )
         if (
             row is None
             or row.get("declarationState") != "blocked"
