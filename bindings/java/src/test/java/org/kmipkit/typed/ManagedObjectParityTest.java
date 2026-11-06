@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.KeyMaterial;
 import org.kmipkit.ttlv.ManagedObject;
@@ -293,6 +294,29 @@ final class ManagedObjectParityTest {
     }
 
     @Test
+    void composesTypedParametersIntoBothKeyInformationStructuresWithoutLoss() {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] vendorValue = {(byte) 0xca, (byte) 0xfe};
+        try (TtlvItem method = item(0x0042009e, TtlvValue.Enumeration(1), limits);
+                TtlvItem encryptionId = item(0x00420094,
+                        TtlvValue.TextString("encryption-key".getBytes(), limits), limits);
+                TtlvItem encryptionParameters = parametersItem(0x80000033L, vendorValue, limits);
+                TtlvItem encryptionInfo = structureItem(
+                        0x00420036, limits, encryptionId, encryptionParameters);
+                TtlvItem macId = item(0x00420094,
+                        TtlvValue.TextString("mac-key".getBytes(), limits), limits);
+                TtlvItem macParameters = parametersItem(0x80000044L, vendorValue, limits);
+                TtlvItem macInfo = structureItem(0x0042004e, limits, macId, macParameters);
+                KeyWrappingData wrapping = KeyWrappingData.fromFields(
+                        List.of(method, encryptionInfo, macInfo));
+                TtlvItem nestedEncryption = wrapping.encryptionKeyInformationItem();
+                TtlvItem nestedMac = wrapping.macSignatureKeyInformationItem()) {
+            assertNestedParameters(nestedEncryption, "encryption-key", 0x80000033L, vendorValue);
+            assertNestedParameters(nestedMac, "mac-key", 0x80000044L, vendorValue);
+        }
+    }
+
+    @Test
     void readsKeyBlockKeyValueWrappingAndTransparentFields() {
         CodecLimits limits = CodecLimits.defaults();
         try (TtlvItem modulus = item(0x00420052,
@@ -530,6 +554,60 @@ final class ManagedObjectParityTest {
         try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, value, limits);
         }
+    }
+
+    private static TtlvItem parametersItem(long hashingAlgorithm, byte[] vendorValue,
+            CodecLimits limits) {
+        TtlvStructure structure = TtlvStructure.create();
+        structure = TtlvStructure.withItem(structure,
+                item(0x00420038, TtlvValue.Enumeration(hashingAlgorithm), limits), limits);
+        structure = TtlvStructure.withItem(structure,
+                item(0x00540031, TtlvValue.ByteString(vendorValue, limits), limits), limits);
+        TtlvStructure source = structure;
+        try (source; CryptographicParameters typed = CryptographicParameters.fromTtlv(source)) {
+            assertEquals(java.util.OptionalLong.of(hashingAlgorithm), typed.hashingAlgorithm());
+            return item(0x0042002b, TtlvValue.structure(typed.intoTtlv(), limits), limits);
+        }
+    }
+
+    private static void assertNestedParameters(TtlvItem information, String identifier,
+            long hashingAlgorithm, byte[] vendorValue) {
+        assertEquals(List.of(0x00420094, 0x0042002b), childTags(information));
+        try (TtlvItemView infoView = information.view();
+                TtlvValueView infoValue = infoView.value();
+                TtlvStructureView infoFields = infoValue.structure();
+                TtlvItemView idField = infoFields.itemAt(0);
+                TtlvValueView idValue = idField.value();
+                TtlvItemView parametersField = infoFields.itemAt(1);
+                Tag parametersTag = parametersField.tag();
+                TtlvValueView parametersValue = parametersField.value();
+                TtlvStructureView parameterFields = parametersValue.structure();
+                TtlvItemView algorithmField = parameterFields.itemAt(0);
+                Tag algorithmTag = algorithmField.tag();
+                TtlvValueView algorithmValue = algorithmField.value();
+                TtlvItemView vendorField = parameterFields.itemAt(1);
+                Tag vendorTag = vendorField.tag();
+                TtlvValueView vendorFieldValue = vendorField.value()) {
+            assertEquals(identifier, bytes(idValue));
+            assertEquals(0x0042002b, parametersTag.raw());
+            assertEquals(List.of(0x00420038, 0x00540031), childTagsFromView(parameterFields));
+            assertEquals(0x00420038, algorithmTag.raw());
+            assertEquals(hashingAlgorithm, algorithmValue.enumeration());
+            assertEquals(0x00540031, vendorTag.raw());
+            assertArrayEquals(vendorValue, new byte[] {
+                (byte) vendorFieldValue.byteAt(0), (byte) vendorFieldValue.byteAt(1)
+            });
+        }
+    }
+
+    private static List<Integer> childTagsFromView(TtlvStructureView structure) {
+        List<Integer> tags = new java.util.ArrayList<>();
+        for (long index = 0; index < structure.itemCount(); index++) {
+            try (TtlvItemView child = structure.itemAt(index); Tag tag = child.tag()) {
+                tags.add(tag.raw());
+            }
+        }
+        return tags;
     }
 
     private static TtlvItem structureItem(

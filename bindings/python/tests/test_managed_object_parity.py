@@ -3,6 +3,7 @@
 import pytest
 
 from kmipkit import errors, ttlv
+from kmipkit.cryptographic_parameters import CryptographicParameters
 from kmipkit.managed_objects import (
     KeyBlock,
     KeyMaterial,
@@ -85,6 +86,66 @@ def _item_bytes_from_value(value_view: ttlv.TtlvValueView) -> bytes:
         ttlv.ttlv_value_view_byte_at(value_view, index)
         for index in range(ttlv.ttlv_value_view_byte_length(value_view))
     )
+
+
+def _read_structure_fields(
+    structure: ttlv.TtlvStructureView,
+) -> tuple[tuple[int, ttlv.ItemType, int | bytes], ...]:
+    fields = []
+    for index in range(ttlv.ttlv_structure_view_item_count(structure)):
+        with ttlv.ttlv_structure_view_item_at(structure, index) as item:
+            with ttlv.ttlv_item_view_tag(item) as tag:
+                raw_tag = ttlv.tag_value(tag)
+            with ttlv.ttlv_item_view_value(item) as value:
+                kind = ttlv.ttlv_value_view_type(value)
+                if kind is ttlv.ItemType.Enumeration:
+                    field_value: int | bytes = ttlv.ttlv_value_view_enumeration(value)
+                else:
+                    field_value = bytes(
+                        ttlv.ttlv_value_view_byte_at(value, offset)
+                        for offset in range(ttlv.ttlv_value_view_byte_length(value))
+                    )
+            fields.append((raw_tag, kind, field_value))
+    return tuple(fields)
+
+
+def _typed_parameters_item(
+    hashing_algorithm: int, vendor_value: bytes, limits: ttlv.CodecLimits
+) -> ttlv.TtlvItem:
+    source = ttlv.ttlv_structure_create()
+    source = ttlv.ttlv_structure_with_item(
+        source,
+        _item(0x0042_0038, ttlv.ttlv_value_enumeration(hashing_algorithm), limits),
+        limits,
+    )
+    source = ttlv.ttlv_structure_with_item(
+        source,
+        _item(0x0054_0031, ttlv.ttlv_value_byte_string(vendor_value, limits), limits),
+        limits,
+    )
+    try:
+        with CryptographicParameters.from_ttlv(source) as parameters:
+            assert parameters.hashing_algorithm() == hashing_algorithm
+            raw = parameters.into_ttlv()
+            return _item(0x0042_002B, ttlv.ttlv_value_structure(raw, limits), limits)
+    finally:
+        source.close()
+
+
+def _nested_parameters_fields(
+    information: ttlv.TtlvItem, expected_identifier: bytes
+) -> tuple[tuple[int, ttlv.ItemType, int | bytes], ...]:
+    with ttlv.ttlv_item_view_from_item(information) as info_view:
+        with ttlv.ttlv_item_view_value(info_view) as info_value:
+            with ttlv.ttlv_value_view_structure(info_value) as info_fields:
+                assert _child_tags(information) == [0x0042_0094, 0x0042_002B]
+                with ttlv.ttlv_structure_view_item_at(info_fields, 0) as identifier_item:
+                    with ttlv.ttlv_item_view_value(identifier_item) as identifier_value:
+                        assert _item_bytes_from_value(identifier_value) == expected_identifier
+                with ttlv.ttlv_structure_view_item_at(info_fields, 1) as parameters_item:
+                    with ttlv.ttlv_item_view_value(parameters_item) as parameters_value:
+                        with ttlv.ttlv_value_view_structure(parameters_value) as parameters_fields:
+                            return _read_structure_fields(parameters_fields)
 
 
 def test_managed_object_unknown_type_roundtrips_without_losing_generic_ttlv():
@@ -254,6 +315,45 @@ def test_nested_accessors_return_owned_nodes_with_values_and_vendor_order():
                 item.close()
         finally:
             for item in wrap_sources:
+                item.close()
+
+
+def test_typed_parameters_compose_into_both_key_information_structures():
+    vendor_value = b"\xca\xfe"
+    with ttlv.codec_limits_defaults() as limits:
+        method = _item(0x0042_009E, ttlv.ttlv_value_enumeration(1), limits)
+        encryption_id = _item(
+            0x0042_0094, ttlv.ttlv_value_text_string(b"encryption-key", limits), limits
+        )
+        encryption_parameters = _typed_parameters_item(0x8000_0033, vendor_value, limits)
+        encryption_info = _structure_with_children(
+            0x0042_0036, limits, [encryption_id, encryption_parameters]
+        )
+        mac_id = _item(
+            0x0042_0094, ttlv.ttlv_value_text_string(b"mac-key", limits), limits
+        )
+        mac_parameters = _typed_parameters_item(0x8000_0044, vendor_value, limits)
+        mac_info = _structure_with_children(0x0042_004E, limits, [mac_id, mac_parameters])
+        sources = [
+            method, encryption_id, encryption_parameters, encryption_info,
+            mac_id, mac_parameters, mac_info,
+        ]
+        try:
+            with KeyWrappingData.from_fields([method, encryption_info, mac_info]) as wrapping:
+                nested_encryption = wrapping.encryption_key_information_item()
+                nested_mac = wrapping.mac_signature_key_information_item()
+                assert nested_encryption is not None and nested_mac is not None
+                with nested_encryption, nested_mac:
+                    assert _nested_parameters_fields(nested_encryption, b"encryption-key") == (
+                        (0x0042_0038, ttlv.ItemType.Enumeration, 0x8000_0033),
+                        (0x0054_0031, ttlv.ItemType.ByteString, vendor_value),
+                    )
+                    assert _nested_parameters_fields(nested_mac, b"mac-key") == (
+                        (0x0042_0038, ttlv.ItemType.Enumeration, 0x8000_0044),
+                        (0x0054_0031, ttlv.ItemType.ByteString, vendor_value),
+                    )
+        finally:
+            for item in sources:
                 item.close()
 
 

@@ -21,6 +21,47 @@ fn parameters() -> CryptographicParameters {
         .expect("Hashing Algorithm is valid without algorithm-specific requirements")
 }
 
+fn parameters_with_vendor_extension(hashing_algorithm: u32) -> CryptographicParameters {
+    let mut structure = Structure::new();
+    structure
+        .try_push(item(HASHING_ALGORITHM, Value::enumeration(hashing_algorithm)))
+        .expect("Hashing Algorithm fits in Cryptographic Parameters");
+    structure
+        .try_push(item(0x0054_0031, Value::byte_string(vec![0xca, 0xfe])))
+        .expect("vendor extension fits after known Table 59 fields");
+    CryptographicParameters::try_from_ttlv(structure)
+        .expect("known and unknown fields remain valid")
+}
+
+fn key_information_preserves_parameters(
+    fields: &kmipkit_ttlv::StructureView<'_>,
+    identifier: &str,
+    hashing_algorithm: u32,
+) -> bool {
+    let children = fields.children();
+    children.len() == 2
+        && children[0].tag().raw() == 0x0042_0094
+        && children[0].with_value(|value| {
+            matches!(value, ValueView::TextString(value) if value == identifier)
+        })
+        && children[1].tag().raw() == CRYPTOGRAPHIC_PARAMETERS
+        && children[1].with_value(|value| match value {
+            ValueView::Structure(parameters) => {
+                let members = parameters.children();
+                members.len() == 2
+                    && members[0].tag().raw() == HASHING_ALGORITHM
+                    && members[0].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(value) if *value == hashing_algorithm)
+                    })
+                    && members[1].tag().raw() == 0x0054_0031
+                    && members[1].with_value(|value| {
+                        matches!(value, ValueView::ByteString(value) if value == [0xca, 0xfe])
+                    })
+            }
+            _ => false,
+        })
+}
+
 fn typed_parameters_are_present(payload: &Structure) -> bool {
     payload.view().children().iter().any(|field| {
         field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS
@@ -131,27 +172,29 @@ fn typed_parameters_attach_to_every_existing_operation_family() {
 fn typed_parameters_attach_to_key_wrapping_information_structures() {
     let encryption = EncryptionKeyInformation::try_new("wrap-key".to_owned())
         .expect("identifier is valid")
-        .with_typed_cryptographic_parameters(parameters())
+        .with_typed_cryptographic_parameters(parameters_with_vendor_extension(0x8000_0033))
         .expect("typed parameters are structurally valid");
     assert!(
         encryption
-            .with_raw(|structure| structure
-                .children()
-                .iter()
-                .any(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS))
+            .with_raw(|structure| key_information_preserves_parameters(
+                &structure,
+                "wrap-key",
+                0x8000_0033,
+            ))
             .expect("encryption key information remains a structure")
     );
 
     let mac_signature = MacSignatureKeyInformation::try_new("mac-key".to_owned())
         .expect("identifier is valid")
-        .with_typed_cryptographic_parameters(parameters())
+        .with_typed_cryptographic_parameters(parameters_with_vendor_extension(0x8000_0044))
         .expect("typed parameters are structurally valid");
     assert!(
         mac_signature
-            .with_raw(|structure| structure
-                .children()
-                .iter()
-                .any(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS))
+            .with_raw(|structure| key_information_preserves_parameters(
+                &structure,
+                "mac-key",
+                0x8000_0044,
+            ))
             .expect("MAC/signature key information remains a structure")
     );
 

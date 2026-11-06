@@ -59,6 +59,36 @@ def _read_tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
     return tuple(result)
 
 
+def _read_fields(view: ttlv.TtlvStructureView) -> tuple[tuple[int, ttlv.ItemType, int | bytes], ...]:
+    result = []
+    for index in range(ttlv.ttlv_structure_view_item_count(view)):
+        with ttlv.ttlv_structure_view_item_at(view, index) as item:
+            with ttlv.ttlv_item_view_tag(item) as tag:
+                raw_tag = ttlv.tag_value(tag)
+            with ttlv.ttlv_item_view_value(item) as value:
+                kind = ttlv.ttlv_value_view_type(value)
+                if kind is ttlv.ItemType.Enumeration:
+                    field_value: int | bytes = ttlv.ttlv_value_view_enumeration(value)
+                elif kind in (ttlv.ItemType.ByteString, ttlv.ItemType.TextString):
+                    field_value = bytes(
+                        ttlv.ttlv_value_view_byte_at(value, offset)
+                        for offset in range(ttlv.ttlv_value_view_byte_length(value))
+                    )
+                else:
+                    field_value = b""
+            result.append((raw_tag, kind, field_value))
+    return tuple(result)
+
+
+def _item(raw_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
+    with ttlv.raw_tag_from_raw(raw_tag) as raw:
+        tag = ttlv.raw_tag_try_checked(raw)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+
+
 def test_builds_all_table59_fields_in_normative_order_and_preserves_future_enums():
     parameters = kmipkit.cryptographic_parameters.CryptographicParameters.builder()
     parameters.trailer_field(1).p_source(b"Q\x00\xff")
@@ -114,6 +144,36 @@ def test_distinguishes_absent_and_present_empty_p_source():
         assert absent.p_source() is None
     with model.builder().random_iv(False).p_source(b"").build() as present_empty:
         assert present_empty.p_source() == b""
+
+
+def test_from_ttlv_parses_and_preserves_vendor_extension_in_source_order():
+    limits = ttlv.codec_limits_defaults()
+    source = ttlv.ttlv_structure_create()
+    source = ttlv.ttlv_structure_with_item(
+        source,
+        _item(0x0042_0028, ttlv.ttlv_value_enumeration(0x8000_002A), limits),
+        limits,
+    )
+    source = ttlv.ttlv_structure_with_item(
+        source,
+        _item(0x0054_0031, ttlv.ttlv_value_byte_string(b"\xca\xfe", limits), limits),
+        limits,
+    )
+    try:
+        with kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv(source) as typed:
+            assert typed.cryptographic_algorithm() == 0x8000_002A
+            # Parsing copies the generic input, leaving the caller's source available.
+            with ttlv.ttlv_structure_view(source) as source_view:
+                assert _read_tags(source_view) == (0x0042_0028, 0x0054_0031)
+            with typed.into_ttlv() as roundtrip:
+                with ttlv.ttlv_structure_view(roundtrip) as roundtrip_view:
+                    assert _read_fields(roundtrip_view) == (
+                        (0x0042_0028, ttlv.ItemType.Enumeration, 0x8000_002A),
+                        (0x0054_0031, ttlv.ItemType.ByteString, b"\xca\xfe"),
+                    )
+    finally:
+        source.close()
+        limits.close()
 
 
 def test_authentication_is_attached_to_the_request_batch_and_owned_on_success():

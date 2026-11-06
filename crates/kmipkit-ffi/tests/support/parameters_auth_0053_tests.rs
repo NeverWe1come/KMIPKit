@@ -4,6 +4,7 @@ use super::*;
 unsafe extern "C" {
     fn kmipkit_parameters_authentication_c_consumer_parameters() -> i32;
     fn kmipkit_parameters_authentication_c_consumer_reads() -> i32;
+    fn kmipkit_parameters_authentication_c_consumer_from_ttlv() -> i32;
     fn kmipkit_parameters_authentication_c_consumer_attach_authentication(
         batch: *mut kmipkit_client_batch_t,
         authentication: *mut kmipkit_authentication_t,
@@ -24,6 +25,13 @@ fn compiled_c_consumer_builds_all_table_59_parameters_in_source_order() {
 fn compiled_c_consumer_reads_versioned_cryptographic_parameter_fields() {
     // SAFETY: The consumer owns and releases its Cryptographic Parameters handle.
     let status = unsafe { kmipkit_parameters_authentication_c_consumer_reads() };
+    assert_eq!(status, SUCCESS);
+}
+
+#[test]
+fn compiled_c_consumer_parses_and_preserves_generic_vendor_parameters() {
+    // SAFETY: The C consumer owns and releases all handles it creates.
+    let status = unsafe { kmipkit_parameters_authentication_c_consumer_from_ttlv() };
     assert_eq!(status, SUCCESS);
 }
 

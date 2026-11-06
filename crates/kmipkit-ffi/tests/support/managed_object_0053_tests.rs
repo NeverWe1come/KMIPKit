@@ -23,6 +23,7 @@ const FIELD_OWNER_KEY_MATERIAL: u32 = 4;
 
 #[link(name = "kmipkit_managed_object_parity_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_0053_key_information_parameters_consumer() -> i32;
     fn kmipkit_0053_managed_object_from_item(
         object_type: u32,
         item: *mut kmipkit_ttlv_item_t,
@@ -974,6 +975,13 @@ fn compiled_c_consumer_reads_wrapping_data_and_rejects_wrong_types() {
     assert!(output.is_null());
     assert!(reference_handle(source, Kind::Item).is_ok());
     kmipkit_ttlv_item_release(source);
+}
+
+#[test]
+fn compiled_c_consumer_composes_parameters_into_both_key_information_values() {
+    // SAFETY: The C consumer owns and releases every TTLV and typed handle it creates.
+    let status = unsafe { kmipkit_0053_key_information_parameters_consumer() };
+    assert_eq!(status, SUCCESS);
 }
 
 #[test]

@@ -20,9 +20,11 @@ import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemView;
+import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 
 final class ParametersAuthenticationParityTest {
     private static final int[] TABLE_59_TAGS = {
@@ -94,6 +96,49 @@ final class ParametersAuthenticationParityTest {
                         .randomIv(false).pSource(new byte[0]).build()) {
             assertEquals(Optional.empty(), absent.pSource());
             assertEquals(0, presentEmpty.pSource().orElseThrow().length);
+        }
+    }
+
+    @Test
+    void parsesGenericParametersAndRetainsVendorExtensionInSourceOrder() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure input = TtlvStructure.create();
+        input = TtlvStructure.withItem(input,
+                item(0x00420028, TtlvValue.Enumeration(0x8000002aL), limits), limits);
+        input = TtlvStructure.withItem(input,
+                item(0x00540031, TtlvValue.ByteString(new byte[] {(byte) 0xca, (byte) 0xfe}, limits), limits),
+                limits);
+        TtlvStructure source = input;
+        try (source;
+                CryptographicParameters parameters = CryptographicParameters.fromTtlv(source)) {
+            assertEquals(OptionalLong.of(0x8000002aL), parameters.cryptographicAlgorithm());
+
+            // Parsing copies the source structure; it remains caller-owned and readable.
+            try (TtlvStructureView sourceView = source.view()) {
+                assertEquals(2L, sourceView.itemCount());
+            }
+
+            try (TtlvStructure raw = parameters.intoTtlv(); TtlvStructureView view = raw.view()) {
+                assertEquals(2L, view.itemCount());
+                try (TtlvItemView known = view.itemAt(0); Tag knownTag = known.tag();
+                        TtlvValueView knownValue = known.value();
+                        TtlvItemView vendor = view.itemAt(1); Tag vendorTag = vendor.tag();
+                        TtlvValueView vendorValue = vendor.value()) {
+                    assertEquals(0x00420028, knownTag.raw());
+                    assertEquals(0x8000002aL, knownValue.enumeration());
+                    assertEquals(0x00540031, vendorTag.raw());
+                    assertEquals(TtlvItemType.ByteString, vendorValue.itemType());
+                    assertArrayEquals(new byte[] {(byte) 0xca, (byte) 0xfe},
+                            new byte[] {(byte) vendorValue.byteAt(0), (byte) vendorValue.byteAt(1)});
+                }
+            }
+        }
+    }
+
+    private static TtlvItem item(int rawTag, TtlvValue value, CodecLimits limits) {
+        try (org.kmipkit.ttlv.RawTag raw = org.kmipkit.ttlv.RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked()) {
+            return TtlvItem.create(tag, value, limits);
         }
     }
 

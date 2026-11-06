@@ -144,6 +144,148 @@ int32_t kmipkit_parameters_authentication_c_consumer_reads(void) {
     return status;
 }
 
+static int32_t create_enumeration_item(
+        uint32_t raw_tag, uint32_t raw_value, kmipkit_codec_limits_t *limits,
+        kmipkit_ttlv_item_t **out_item) {
+    kmipkit_raw_tag_t *raw = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    int32_t status = kmipkit_ttlv_raw_tag_create(raw_tag, &raw);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw, &tag);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(raw_value, &value);
+    if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, out_item);
+    if (status == 0) value = 0;
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw);
+    return status;
+}
+
+static int32_t create_byte_string_item(
+        uint32_t raw_tag, const uint8_t *bytes, uint64_t length,
+        kmipkit_codec_limits_t *limits, kmipkit_ttlv_item_t **out_item) {
+    kmipkit_raw_tag_t *raw = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    int32_t status = kmipkit_ttlv_raw_tag_create(raw_tag, &raw);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw, &tag);
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(limits, bytes, length, &value);
+    if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, out_item);
+    if (status == 0) value = 0;
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw);
+    return status;
+}
+
+static int32_t append_item(
+        kmipkit_ttlv_structure_t **structure, kmipkit_ttlv_item_t **item,
+        kmipkit_codec_limits_t *limits) {
+    kmipkit_ttlv_structure_t *updated = 0;
+    int32_t status = kmipkit_ttlv_structure_with_item(*structure, *item, limits, &updated);
+    if (status == 0) {
+        *structure = updated;
+        *item = 0;
+    }
+    return status;
+}
+
+int32_t kmipkit_parameters_authentication_c_consumer_from_ttlv(void) {
+    static const uint8_t vendor_bytes[] = {0xca, 0xfe};
+    const uint32_t expected_tags[] = {0x00420028, 0x00540031};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *source = 0;
+    kmipkit_ttlv_structure_t *roundtrip = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_cryptographic_parameters_t *parameters = 0;
+    kmipkit_ttlv_item_t *known = 0;
+    kmipkit_ttlv_item_t *vendor = 0;
+    kmipkit_cryptographic_parameters_fields_v1_t fields = {0};
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&source);
+    if (status == 0) status = create_enumeration_item(
+        expected_tags[0], UINT32_C(0x8000002a), limits, &known);
+    if (status == 0) status = append_item(&source, &known, limits);
+    if (status == 0) status = create_byte_string_item(
+        expected_tags[1], vendor_bytes, sizeof(vendor_bytes), limits, &vendor);
+    if (status == 0) status = append_item(&source, &vendor, limits);
+    if (status == 0) status = kmipkit_cryptographic_parameters_from_ttlv(source, &parameters);
+
+    fields.struct_size = (uint32_t)sizeof(fields);
+    fields.abi_version = 1;
+    if (status == 0) status = kmipkit_cryptographic_parameters_read_fields_v1(parameters, &fields);
+    if (status == 0 && (fields.cryptographic_algorithm_present != 1 ||
+            fields.cryptographic_algorithm != UINT32_C(0x8000002a))) status = -1;
+
+    /* from_ttlv copies the source: the input still has both children in caller order. */
+    if (status == 0) status = kmipkit_ttlv_structure_view(source, &view);
+    uint64_t count = 0;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &count);
+    if (status == 0 && count != 2) status = -1;
+    for (uint64_t index = 0; status == 0 && index < count; ++index) {
+        kmipkit_ttlv_item_view_t *child = 0;
+        kmipkit_tag_t *tag = 0;
+        uint32_t raw_tag = 0;
+        status = kmipkit_ttlv_structure_view_item_at(view, index, &child);
+        if (status == 0) status = kmipkit_ttlv_item_view_tag(child, &tag);
+        if (status == 0) status = kmipkit_ttlv_tag_value(tag, &raw_tag);
+        if (status == 0 && raw_tag != expected_tags[index]) status = -1;
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(child);
+    }
+    kmipkit_ttlv_structure_view_release(view);
+    view = 0;
+
+    if (status == 0) {
+        status = kmipkit_cryptographic_parameters_into_ttlv(parameters, &roundtrip);
+        parameters = 0;
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_view(roundtrip, &view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(view, &count);
+    if (status == 0 && count != 2) status = -1;
+    for (uint64_t index = 0; status == 0 && index < count; ++index) {
+        kmipkit_ttlv_item_view_t *child = 0;
+        kmipkit_tag_t *tag = 0;
+        kmipkit_ttlv_value_view_t *value = 0;
+        uint32_t raw_tag = 0;
+        uint8_t kind = 0;
+        status = kmipkit_ttlv_structure_view_item_at(view, index, &child);
+        if (status == 0) status = kmipkit_ttlv_item_view_tag(child, &tag);
+        if (status == 0) status = kmipkit_ttlv_tag_value(tag, &raw_tag);
+        if (status == 0) status = kmipkit_ttlv_item_view_type(child, &kind);
+        if (status == 0 && raw_tag != expected_tags[index]) status = -1;
+        if (status == 0) status = kmipkit_ttlv_item_view_value(child, &value);
+        if (status == 0 && index == 0) {
+            uint32_t enum_value = 0;
+            if (kind != KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) status = -1;
+            if (status == 0) status = kmipkit_ttlv_value_view_enumeration(value, &enum_value);
+            if (status == 0 && enum_value != UINT32_C(0x8000002a)) status = -1;
+        } else if (status == 0) {
+            uint64_t length = 0;
+            if (kind != KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING) status = -1;
+            if (status == 0) status = kmipkit_ttlv_value_view_byte_length(value, &length);
+            if (status == 0 && length != sizeof(vendor_bytes)) status = -1;
+            for (uint64_t byte_index = 0; status == 0 && byte_index < length; ++byte_index) {
+                uint8_t byte = 0;
+                status = kmipkit_ttlv_value_view_byte_at(value, byte_index, &byte);
+                if (status == 0 && byte != vendor_bytes[byte_index]) status = -1;
+            }
+        }
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(child);
+    }
+
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_cryptographic_parameters_release(parameters);
+    kmipkit_ttlv_structure_release(roundtrip);
+    kmipkit_ttlv_structure_release(source);
+    kmipkit_ttlv_item_release(known);
+    kmipkit_ttlv_item_release(vendor);
+    kmipkit_codec_limits_release(limits);
+    return status;
+}
+
 int32_t kmipkit_parameters_authentication_c_consumer_attach_authentication(
         kmipkit_client_batch_t *batch, kmipkit_authentication_t *authentication) {
     return kmipkit_client_batch_set_authentication(batch, authentication);
