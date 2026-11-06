@@ -247,6 +247,36 @@ fn add_attribute_validation_allows_original_creation_date_when_it_may_be_absent(
     assert!(request.validate().is_valid());
 }
 
+#[test]
+fn attribute_reference_mutation_validation_rejects_invalid_vendor_identification() {
+    let reference = || {
+        crate::AttributeReference::name("bad/vendor", "Private Attribute")
+    };
+    let adjust = crate::AdjustAttributeRequest::new(
+        None,
+        reference(),
+        crate::AdjustmentType::INCREMENT,
+        None,
+    );
+    let delete = crate::DeleteAttributeRequest::new(None, None, Some(reference()));
+
+    let adjust_report = adjust.validate();
+    assert!(adjust_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R005"
+            && issue.path().to_string()
+                == "Request Payload.Attribute Reference.Vendor Identification"
+            && issue.source().to_string() == "KMIP v2.1 §5.5, Table 161"
+    }));
+    let delete_report = delete.validate();
+    assert!(delete_report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R051"
+            && issue.path().to_string()
+                == "Request Payload.Attribute Reference.Vendor Identification"
+            && issue.source().to_string() == "KMIP v2.1 §5.5, Table 161"
+    }));
+    assert!(!format!("{adjust_report:?}{delete_report:?}").contains("bad/vendor"));
+}
+
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
     assert_eq!(T::SCHEMA, expected);
 }
