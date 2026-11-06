@@ -1355,10 +1355,8 @@ impl TempFile {
     fn write(bytes: &[u8]) -> Self {
         static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let id = COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        let path = std::env::temp_dir().join(format!(
-            "kmipkit-raw-tls-{}-{id}.pem",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("kmipkit-raw-tls-{}-{id}.pem", std::process::id()));
         std::fs::write(&path, bytes).expect("write temp file");
         Self { path }
     }
@@ -1437,17 +1435,24 @@ fn raw_tls_hot_reloads_client_certificate_and_key_from_disk_between_exchanges() 
         (first, second)
     });
 
-    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls("127.0.0.1", address.port()))
-        .tls_server_name(SERVER_NAME)
-        .client_identity(kmipkit_transport::ClientIdentity::new(
-            kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file"),
-            kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
-        ))
-        .trust_source(kmipkit_transport::TrustSource::certificate_authorities(vec![
-            kmipkit_transport::CertificateInput::from_pem(pem("CERTIFICATE", &pki.authority_der())),
-        ]))
-        .build()
-        .expect("config builds");
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        address.port(),
+    ))
+    .tls_server_name(SERVER_NAME)
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            &pki.authority_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
 
     let mut adapter = RawTlsTransport::new(config).expect("adapter initializes");
 
@@ -1492,17 +1497,24 @@ fn raw_tls_mismatched_or_corrupt_credential_file_fails_closed_as_not_sent() {
         )
     });
 
-    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls("127.0.0.1", address.port()))
-        .tls_server_name(SERVER_NAME)
-        .client_identity(kmipkit_transport::ClientIdentity::new(
-            kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file"),
-            kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
-        ))
-        .trust_source(kmipkit_transport::TrustSource::certificate_authorities(vec![
-            kmipkit_transport::CertificateInput::from_pem(pem("CERTIFICATE", &pki.authority_der())),
-        ]))
-        .build()
-        .expect("config builds");
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        address.port(),
+    ))
+    .tls_server_name(SERVER_NAME)
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            &pki.authority_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
 
     let mut adapter = RawTlsTransport::new(config).expect("adapter initializes");
 
@@ -1512,7 +1524,8 @@ fn raw_tls_mismatched_or_corrupt_credential_file_fails_closed_as_not_sent() {
 
     // Rotate cert to client 2, but corrupt the private key file
     cert_file.overwrite(&pem("CERTIFICATE", &client2_cert_der));
-    key_file.overwrite(b"-----BEGIN PRIVATE KEY-----\ncorrupted-garbage\n-----END PRIVATE KEY-----\n");
+    key_file
+        .overwrite(b"-----BEGIN PRIVATE KEY-----\ncorrupted-garbage\n-----END PRIVATE KEY-----\n");
 
     let second_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
     let error = second_result.expect_err("corrupted key file must fail closed");

@@ -1088,10 +1088,8 @@ impl TempFile {
     fn write(bytes: &[u8]) -> Self {
         static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let id = COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        let path = std::env::temp_dir().join(format!(
-            "kmipkit-https-{}-{id}.pem",
-            std::process::id()
-        ));
+        let path =
+            std::env::temp_dir().join(format!("kmipkit-https-{}-{id}.pem", std::process::id()));
         std::fs::write(&path, bytes).expect("write temp file");
         Self { path }
     }
@@ -1144,13 +1142,20 @@ fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
     let first_pki = EphemeralPki::generate().expect("the first ephemeral test PKI is generated");
     let second_pki = EphemeralPki::generate().expect("the second ephemeral test PKI is generated");
 
-    let cert_file = TempFile::write(&pem("CERTIFICATE", first_pki.client_identity().certificate_der()));
-    let key_file = TempFile::write(&pem("PRIVATE KEY", first_pki.client_identity().private_key_der()));
+    let cert_file = TempFile::write(&pem(
+        "CERTIFICATE",
+        first_pki.client_identity().certificate_der(),
+    ));
+    let key_file = TempFile::write(&pem(
+        "PRIVATE KEY",
+        first_pki.client_identity().private_key_der(),
+    ));
 
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
     let address = listener.local_addr();
 
-    let server_conf = server_config_with_multiple_roots(&first_pki, &[second_pki.authority_certificate_der()]);
+    let server_conf =
+        server_config_with_multiple_roots(&first_pki, &[second_pki.authority_certificate_der()]);
     let peer = spawn_reconnection_response_peer(
         listener.into_inner(),
         server_conf,
@@ -1160,17 +1165,23 @@ fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
         ],
     );
 
-    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(format!("https://127.0.0.1:{}", address.port())))
-        .tls_server_name("server.kmipkit.test")
-        .client_identity(kmipkit_transport::ClientIdentity::new(
-            kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path).expect("valid cert file"),
-            kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
-        ))
-        .trust_source(kmipkit_transport::TrustSource::certificate_authorities(vec![
-            kmipkit_transport::CertificateInput::from_pem(pem("CERTIFICATE", first_pki.authority_certificate_der())),
-        ]))
-        .build()
-        .expect("config builds");
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(
+        format!("https://127.0.0.1:{}", address.port()),
+    ))
+    .tls_server_name("server.kmipkit.test")
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            first_pki.authority_certificate_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
 
     let mut adapter = HttpsTransport::new(config).expect("adapter initializes");
 
@@ -1180,8 +1191,14 @@ fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
     assert_eq!(first_response.as_bytes(), b"first");
 
     // Overwrite credential files on disk with second identity
-    cert_file.overwrite(&pem("CERTIFICATE", second_pki.client_identity().certificate_der()));
-    key_file.overwrite(&pem("PRIVATE KEY", second_pki.client_identity().private_key_der()));
+    cert_file.overwrite(&pem(
+        "CERTIFICATE",
+        second_pki.client_identity().certificate_der(),
+    ));
+    key_file.overwrite(&pem(
+        "PRIVATE KEY",
+        second_pki.client_identity().private_key_der(),
+    ));
 
     let second_response = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
@@ -1192,8 +1209,14 @@ fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
     let peer = peer.join().expect("the bounded reconnect peer completes");
     assert_eq!(peer.accepted_connections, 2);
     assert_eq!(peer.client_certificates.len(), 2);
-    assert_eq!(peer.client_certificates[0], first_pki.client_identity().certificate_der());
-    assert_eq!(peer.client_certificates[1], second_pki.client_identity().certificate_der());
+    assert_eq!(
+        peer.client_certificates[0],
+        first_pki.client_identity().certificate_der()
+    );
+    assert_eq!(
+        peer.client_certificates[1],
+        second_pki.client_identity().certificate_der()
+    );
 }
 
 #[test]

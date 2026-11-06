@@ -212,6 +212,10 @@ impl TrackedFileSource {
             last_sha256: compute_sha256(bytes),
         }
     }
+
+    pub(crate) fn has_changed_on_disk(&self) -> bool {
+        std::fs::read(&self.path).is_ok_and(|bytes| compute_sha256(&bytes) != self.last_sha256)
+    }
 }
 
 impl fmt::Debug for TrackedFileSource {
@@ -220,8 +224,8 @@ impl fmt::Debug for TrackedFileSource {
             .debug_struct("TrackedFileSource")
             .field("path", &"[REDACTED]")
             .field("encoding", &self.encoding)
-            .field("sha256", &"[REDACTED]")
-            .finish()
+            .field("last_sha256", &"[REDACTED]")
+            .finish_non_exhaustive()
     }
 }
 
@@ -326,7 +330,7 @@ impl fmt::Debug for CertificateInput {
                 },
             )
             .field("bytes", &"[REDACTED]")
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -430,7 +434,8 @@ impl PrivateKeyInput {
             std::fs::File::open(path_ref).map_err(|_| TransportConfigError::InvalidCredential)?;
         let bytes =
             SecretBuffer::read_from(file).map_err(|_| TransportConfigError::InvalidCredential)?;
-        let tracked = TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Pem, bytes.as_slice());
+        let tracked =
+            TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Pem, bytes.as_slice());
         Ok(Self {
             bytes: PrivateKeyBytes::Pem(bytes),
             tracked: Some(tracked),
@@ -461,7 +466,8 @@ impl PrivateKeyInput {
             std::fs::File::open(path_ref).map_err(|_| TransportConfigError::InvalidCredential)?;
         let bytes =
             SecretBuffer::read_from(file).map_err(|_| TransportConfigError::InvalidCredential)?;
-        let tracked = TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Der, bytes.as_slice());
+        let tracked =
+            TrackedFileSource::new(path_ref.to_path_buf(), FileEncoding::Der, bytes.as_slice());
         Ok(Self {
             bytes: PrivateKeyBytes::Der(bytes),
             tracked: Some(tracked),
@@ -518,7 +524,7 @@ impl fmt::Debug for PrivateKeyInput {
                 },
             )
             .field("bytes", &"[REDACTED]")
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -892,28 +898,17 @@ impl TransportConfig {
     }
 
     pub(crate) fn files_have_changed(&self) -> bool {
-        if let Some(tracked) = &self.tracked_cert {
-            if let Ok(bytes) = std::fs::read(&tracked.path) {
-                if compute_sha256(&bytes) != tracked.last_sha256 {
-                    return true;
-                }
-            }
-        }
-        if let Some(tracked) = &self.tracked_key {
-            if let Ok(bytes) = std::fs::read(&tracked.path) {
-                if compute_sha256(&bytes) != tracked.last_sha256 {
-                    return true;
-                }
-            }
-        }
-        for tracked in &self.tracked_ca {
-            if let Ok(bytes) = std::fs::read(&tracked.path) {
-                if compute_sha256(&bytes) != tracked.last_sha256 {
-                    return true;
-                }
-            }
-        }
-        false
+        self.tracked_cert
+            .as_ref()
+            .is_some_and(TrackedFileSource::has_changed_on_disk)
+            || self
+                .tracked_key
+                .as_ref()
+                .is_some_and(TrackedFileSource::has_changed_on_disk)
+            || self
+                .tracked_ca
+                .iter()
+                .any(TrackedFileSource::has_changed_on_disk)
     }
 
     pub(crate) fn reload_file_sources(&mut self) -> Result<bool, TransportConfigError> {
@@ -957,8 +952,8 @@ impl TransportConfig {
         if !self.tracked_ca.is_empty() {
             let mut roots = RootCertStore::empty();
             for tracked in &self.tracked_ca {
-                let ca_bytes = std::fs::read(&tracked.path)
-                    .map_err(|_| TransportConfigError::InvalidTrust)?;
+                let ca_bytes =
+                    std::fs::read(&tracked.path).map_err(|_| TransportConfigError::InvalidTrust)?;
                 let ca_certs = parse_certificate_bytes(&ca_bytes, tracked.encoding)
                     .map_err(|_| TransportConfigError::InvalidTrust)?;
                 for cert in ca_certs {
@@ -1054,7 +1049,7 @@ impl fmt::Debug for TransportConfig {
             .field("revocation_lists", &"[REDACTED]")
             .field("tls_server_name", &"[REDACTED]")
             .field("enable_sni", &self.enable_sni)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 

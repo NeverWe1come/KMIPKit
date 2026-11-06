@@ -197,6 +197,36 @@ impl HttpsTransport {
         })
     }
 
+    fn ensure_worker(
+        &mut self,
+        total_deadline: Option<Instant>,
+    ) -> Result<&ClientWorker, TransportError> {
+        if self.worker.is_none() {
+            #[cfg(test)]
+            let worker = match self.worker_spawner.take() {
+                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
+                None => ClientWorker::start_until(total_deadline),
+            };
+            #[cfg(not(test))]
+            let worker = ClientWorker::start_until(total_deadline);
+            self.worker = Some(worker.map_err(|error| match error {
+                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
+                error => safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                ),
+            })?);
+        }
+        self.worker.as_ref().ok_or_else(|| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("transport worker is unavailable"),
+            )
+        })
+    }
+
     /// Exchanges caller bytes using encoding and timeout options for this request.
     ///
     /// Unspecified timeout phases inherit the validated configuration's
@@ -218,20 +248,7 @@ impl HttpsTransport {
         let exchange_started = Instant::now();
         let policy = self.configuration.timeouts().with_overrides(options);
         let content_type = content_type_for_encoding(options.wire_encoding().unwrap_or_default());
-        if request.len() > self.configuration.max_request_bytes() {
-            return Err(safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("request exceeds configured limit"),
-            ));
-        }
-        if max_response_bytes == 0 {
-            return Err(safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("response limit must be positive"),
-            ));
-        }
+        validate_request_bounds(&self.configuration, request, max_response_bytes)?;
         let total_deadline =
             validated_total_deadline(policy, exchange_started).map_err(|error| {
                 safe_error(
@@ -241,23 +258,7 @@ impl HttpsTransport {
                 )
             })?;
 
-        if self.worker.is_none() {
-            #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
-                None => ClientWorker::start_until(total_deadline),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start_until(total_deadline);
-            self.worker = Some(worker.map_err(|error| match error {
-                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
-                error => safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                ),
-            })?);
-        }
+        self.ensure_worker(total_deadline)?;
 
         let request_owner = Self::stage_request_owner(
             request,
@@ -296,13 +297,7 @@ impl HttpsTransport {
         let driver_cleanup_gate = self.driver_cleanup_gate.take();
         #[cfg(test)]
         let cancel_before_finish_for_test = std::mem::take(&mut self.cancel_before_finish_for_test);
-        let worker = self.worker.as_ref().ok_or_else(|| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("transport worker is unavailable"),
-            )
-        })?;
+        let worker = self.ensure_worker(total_deadline)?;
 
         worker
             .exchange(total_deadline, move |control| async move {
@@ -354,6 +349,28 @@ impl HttpsTransport {
             )
         })
     }
+}
+
+fn validate_request_bounds(
+    configuration: &TransportConfig,
+    request: &[u8],
+    max_response_bytes: usize,
+) -> Result<(), TransportError> {
+    if request.len() > configuration.max_request_bytes() {
+        return Err(safe_error(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            io::Error::other("request exceeds configured limit"),
+        ));
+    }
+    if max_response_bytes == 0 {
+        return Err(safe_error(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            io::Error::other("response limit must be positive"),
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(test)]

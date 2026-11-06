@@ -127,43 +127,10 @@ impl RawTlsTransport {
     ///
     /// # Errors
     ///
-    /// Returns a redacted error with request-delivery state. A too-large
-    /// request or response limit smaller than a TTLV header is rejected before
-    /// request dispatch. No dependency or endpoint text is retained.
-    pub fn exchange_with_options(
+    fn ensure_worker(
         &mut self,
-        request: &[u8],
-        max_response_bytes: usize,
-        options: &RequestOptions,
-    ) -> Result<TransportResponse, TransportError> {
-        let exchange_started = Instant::now();
-        let policy = self.configuration.timeouts().with_overrides(options);
-        let wire_encoding = options.wire_encoding().unwrap_or_default();
-        if request.len() > self.configuration.max_request_bytes() {
-            return Err(safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("request exceeds configured limit"),
-            ));
-        }
-        let minimum_response_bytes = minimum_response_bytes(wire_encoding);
-        if max_response_bytes < minimum_response_bytes {
-            return Err(safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("response limit is smaller than a response frame"),
-            ));
-        }
-
-        let total_deadline =
-            validated_total_deadline(policy, exchange_started).map_err(|error| {
-                safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                )
-            })?;
-
+        total_deadline: Option<Instant>,
+    ) -> Result<&ClientWorker, TransportError> {
         if self.worker.is_none() {
             #[cfg(test)]
             let worker = match self.worker_spawner.take() {
@@ -181,6 +148,46 @@ impl RawTlsTransport {
                 ),
             })?);
         }
+        self.worker.as_ref().ok_or_else(|| {
+            safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("transport worker is unavailable"),
+            )
+        })
+    }
+
+    /// # Errors
+    ///
+    /// Returns a redacted error with request-delivery state. A too-large
+    /// request or response limit smaller than a TTLV header is rejected before
+    /// request dispatch. No dependency or endpoint text is retained.
+    pub fn exchange_with_options(
+        &mut self,
+        request: &[u8],
+        max_response_bytes: usize,
+        options: &RequestOptions,
+    ) -> Result<TransportResponse, TransportError> {
+        let exchange_started = Instant::now();
+        let policy = self.configuration.timeouts().with_overrides(options);
+        let wire_encoding = options.wire_encoding().unwrap_or_default();
+        validate_request_bounds(
+            &self.configuration,
+            request,
+            max_response_bytes,
+            wire_encoding,
+        )?;
+
+        let total_deadline =
+            validated_total_deadline(policy, exchange_started).map_err(|error| {
+                safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
+
+        self.ensure_worker(total_deadline)?;
 
         #[cfg(test)]
         let request_owner = if let Some(observer) = self.observer.clone() {
@@ -217,13 +224,7 @@ impl RawTlsTransport {
         let response_allocation_observer = self.response_allocation_observer.clone();
         #[cfg(test)]
         let candidate_event_observer = self.candidate_event_observer.clone();
-        let worker = self.worker.as_ref().ok_or_else(|| {
-            safe_error(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("transport worker is unavailable"),
-            )
-        })?;
+        let worker = self.ensure_worker(total_deadline)?;
 
         worker
             .exchange(total_deadline, move |control| async move {
@@ -248,6 +249,30 @@ impl RawTlsTransport {
             })
             .map_err(worker_error)
     }
+}
+
+fn validate_request_bounds(
+    configuration: &TransportConfig,
+    request: &[u8],
+    max_response_bytes: usize,
+    wire_encoding: WireEncoding,
+) -> Result<(), TransportError> {
+    if request.len() > configuration.max_request_bytes() {
+        return Err(safe_error(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            io::Error::other("request exceeds configured limit"),
+        ));
+    }
+    let minimum_response_bytes = minimum_response_bytes(wire_encoding);
+    if max_response_bytes < minimum_response_bytes {
+        return Err(safe_error(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            io::Error::other("response limit is smaller than a response frame"),
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(test)]

@@ -251,8 +251,7 @@ fn config_tracks_file_backed_credentials() {
 
     let cert_path =
         std::env::temp_dir().join(format!("test-policy-cert-{}.pem", std::process::id()));
-    let key_path =
-        std::env::temp_dir().join(format!("test-policy-key-{}.pem", std::process::id()));
+    let key_path = std::env::temp_dir().join(format!("test-policy-key-{}.pem", std::process::id()));
     std::fs::write(&cert_path, cert_pem).unwrap();
     std::fs::write(&key_path, key_pem).unwrap();
 
