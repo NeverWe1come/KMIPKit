@@ -7881,6 +7881,104 @@ pub extern "C" fn kmipkit_attribute_set_try_push(
     })
 }
 
+/// Validates a catalogued typed Item before appending it in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_try_push_typed(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(copy_required_item_handle(item));
+        let item = try_ffi!(typed_attributes::validate_typed_item(expected_tag, item));
+        try_ffi!(validate_attribute_set_append_item(&item));
+        let Ok(mut set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        try_ffi!(validate_attribute_set_item_limits(
+            set.as_items().iter().chain(std::iter::once(&item)),
+        ));
+        if let Err(_error) = set.try_push(item) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the number of occurrences of one catalogued typed attribute.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_typed_count(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        if !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = try_ffi!(
+            u64::try_from(
+                set.as_items()
+                    .iter()
+                    .filter(|item| item.tag().raw() == expected_tag)
+                    .count(),
+            )
+            .map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Returns a caller-owned typed Item copy by occurrence index in insertion order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_typed_at(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    occurrence: u64,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        if !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Ok(index) = usize::try_from(occurrence) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = set
+            .as_items()
+            .iter()
+            .filter(|item| item.tag().raw() == expected_tag)
+            .nth(index)
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(item.try_clone().map_err(model_status));
+        let item = try_ffi!(typed_attributes::validate_typed_item(expected_tag, item));
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
+        SUCCESS
+    })
+}
+
 /// Returns an owned generic Structure copy without consuming the `AttributeSet`.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_attribute_set_as_items(

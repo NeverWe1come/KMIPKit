@@ -19,6 +19,10 @@ public final class TtlvValue implements AutoCloseable {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.TTLV_VALUE);
     }
 
+    static TtlvValue fromNative(long nativeHandle) {
+        return new TtlvValue(nativeHandle);
+    }
+
     public static TtlvValue Integer(int value) {
         return new TtlvValue(NativeExtensionRegistry.ttlvValueInteger(value));
     }

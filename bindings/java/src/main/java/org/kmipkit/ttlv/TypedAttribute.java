@@ -26,6 +26,17 @@ public final class TypedAttribute implements AutoCloseable {
                         attribute));
     }
 
+    /** Copies a generic TTLV Value into the attribute's assigned tag after validation. */
+    public static TypedAttribute create(StandardAttribute attribute, TtlvValue value) {
+        if (attribute == null || value == null) {
+            throw new InvalidInputException("typed attribute inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        return value.nativeHandleOwner().withValue(rawValue -> new TypedAttribute(
+                NativeExtensionRegistry.typedAttributeFromValue(attribute.tag(), rawValue),
+                attribute));
+    }
+
     /** Returns the catalogued standard attribute definition. */
     public StandardAttribute attribute() {
         handle.get();
@@ -36,6 +47,12 @@ public final class TypedAttribute implements AutoCloseable {
     public TtlvItem asItem() {
         return handle.withValue(value -> TtlvItem.fromNative(
                 NativeExtensionRegistry.typedAttributeFromItem(attribute.tag(), value)));
+    }
+
+    /** Returns an independently owned generic TTLV Value copy, preserving open values. */
+    public TtlvValue value() {
+        return handle.withValue(value -> TtlvValue.fromNative(
+                NativeExtensionRegistry.typedAttributeValue(attribute.tag(), value)));
     }
 
     /** Creates a read-only TTLV view that retains this typed owner. */

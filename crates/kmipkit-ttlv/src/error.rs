@@ -12,6 +12,8 @@ pub enum ModelError {
     TagNotAllocated,
     /// Appending the item would exceed the local Structure nesting-depth limit.
     StructureDepthExceeded,
+    /// A future value representation is not supported by the current copy operation.
+    UnsupportedValue,
 }
 
 impl Display for ModelError {
@@ -22,6 +24,7 @@ impl Display for ModelError {
             Self::StructureDepthExceeded => {
                 formatter.write_str("Structure nesting exceeds the local depth limit")
             }
+            Self::UnsupportedValue => formatter.write_str("value representation is unsupported"),
         }
     }
 }

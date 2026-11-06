@@ -2870,6 +2870,26 @@ int32_t kmipkit_cryptographic_parameters_read_fields_v1(kmipkit_cryptographic_pa
  */
 /* KMIPKIT-0053-FR-007 */
 int32_t kmipkit_client_batch_item_operation(kmipkit_client_batch_item_t * item, uint32_t * out_operation);
+/* Constructs and validates an owned typed Item from a catalogued tag and copied TTLV Value; caller retains the Value.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_typed_attribute_from_value(uint32_t expected_tag, kmipkit_ttlv_value_t * value, kmipkit_ttlv_item_t ** out_item);
+/* Returns an independently owned TTLV Value after validating the typed Item.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_typed_attribute_value(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_value_t ** out_value);
+/* Validates and appends one typed Item while preserving insertion order and caller ownership.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_attribute_set_try_push_typed(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, kmipkit_ttlv_item_t * item);
+/* Returns the number of occurrences for one catalogued attribute.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_attribute_set_typed_count(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, uint64_t * out_count);
+/* Returns the requested catalogued attribute occurrence as an independently owned Item copy in source order.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_attribute_set_typed_at(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, uint64_t occurrence, kmipkit_ttlv_item_t ** out_item);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

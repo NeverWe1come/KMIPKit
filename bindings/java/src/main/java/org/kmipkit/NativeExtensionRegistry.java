@@ -9,6 +9,8 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.TypedAttribute;
 
 /**
  * Internal JNI bridge for the KMIPKit registry API.
@@ -420,12 +422,19 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemFromAttributeRequest(int operation, long request);
     public static native long attributeSetTryNew(long items);
     public static native long typedAttributeFromItem(int expectedTag, long item);
+    public static native long typedAttributeFromValue(int expectedTag, long value);
+    public static native long typedAttributeValue(int expectedTag, long item);
     public static native long managedObjectFromItem(int objectType, long item);
     public static native long keyBlockFromItem(long item);
     public static native long keyValueFromItem(int formatRaw, long item);
     public static native long keyMaterialFromItem(int formatRaw, long item);
     public static native long keyWrappingDataFromItem(long item);
     public static native void attributeSetTryPush(long attributes, long item);
+    public static native void attributeSetTryPushTyped(
+            long attributes, int expectedTag, long item);
+    public static native long attributeSetTypedCount(long attributes, int expectedTag);
+    public static native TypedAttribute attributeSetTypedAt(
+            long attributes, StandardAttribute attribute, long occurrence);
     public static native long attributeSetAsItems(long attributes);
     public static native long attributeSetLen(long attributes);
     public static native boolean attributeSetIsEmpty(long attributes);

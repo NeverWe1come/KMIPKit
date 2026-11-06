@@ -12187,6 +12187,28 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_typedAttributeF
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_typedAttributeFromValue(
+        JNIEnv* env, jclass, jint expected_tag, jlong raw_value) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_item_t>(env, [&](auto output) {
+            return kmipkit_typed_attribute_from_value(
+                    static_cast<uint32_t>(expected_tag),
+                    from_java_handle<kmipkit_ttlv_value_t>(raw_value), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_typedAttributeValue(
+        JNIEnv* env, jclass, jint expected_tag, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_value_t>(env, [&](auto output) {
+            return kmipkit_typed_attribute_value(
+                    static_cast<uint32_t>(expected_tag),
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_managedObjectFromItem(
         JNIEnv* env, jclass, jint object_type, jlong raw_item) {
     return guarded<jlong>(env, 0, [&] {
@@ -12249,6 +12271,75 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTryP
                     from_java_handle<kmipkit_ttlv_item_t>(raw_item));
         });
         return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTryPushTyped(
+        JNIEnv* env, jclass, jlong raw_attributes, jint expected_tag, jlong raw_item) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] {
+            return kmipkit_attribute_set_try_push_typed(
+                    from_java_handle<kmipkit_attribute_set_t>(raw_attributes),
+                    static_cast<uint32_t>(expected_tag),
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTypedCount(
+        JNIEnv* env, jclass, jlong raw_attributes, jint expected_tag) {
+    return guarded<jlong>(env, 0, [&] {
+        uint64_t count = 0;
+        if (!check_status(env, [&] {
+            return kmipkit_attribute_set_typed_count(
+                    from_java_handle<kmipkit_attribute_set_t>(raw_attributes),
+                    static_cast<uint32_t>(expected_tag), &count);
+        })) return static_cast<jlong>(0);
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_attributeSetTypedAt(
+        JNIEnv* env, jclass, jlong raw_attributes, jobject attribute, jlong occurrence) {
+    return guarded<jobject>(env, nullptr, [&] {
+        if (attribute == nullptr || occurrence < 0) {
+            throw_invalid_input(env);
+            return static_cast<jobject>(nullptr);
+        }
+        jclass attribute_class = env->FindClass("org/kmipkit/ttlv/StandardAttribute");
+        if (attribute_class == nullptr) return static_cast<jobject>(nullptr);
+        jmethodID tag_method = env->GetMethodID(attribute_class, "tag", "()I");
+        if (tag_method == nullptr) return static_cast<jobject>(nullptr);
+        jint expected_tag = env->CallIntMethod(attribute, tag_method);
+        if (env->ExceptionCheck()) return static_cast<jobject>(nullptr);
+
+        kmipkit_ttlv_item_t* item = nullptr;
+        if (!check_status(env, [&] {
+            return kmipkit_attribute_set_typed_at(
+                    from_java_handle<kmipkit_attribute_set_t>(raw_attributes),
+                    static_cast<uint32_t>(expected_tag), static_cast<uint64_t>(occurrence), &item);
+        })) return static_cast<jobject>(nullptr);
+
+        jclass typed_class = env->FindClass("org/kmipkit/ttlv/TypedAttribute");
+        if (typed_class == nullptr) {
+            kmipkit_ttlv_item_release(item);
+            return static_cast<jobject>(nullptr);
+        }
+        jmethodID constructor = env->GetMethodID(
+                typed_class, "<init>", "(JLorg/kmipkit/ttlv/StandardAttribute;)V");
+        if (constructor == nullptr) {
+            kmipkit_ttlv_item_release(item);
+            return static_cast<jobject>(nullptr);
+        }
+        jobject result = env->NewObject(
+                typed_class, constructor, reinterpret_cast<jlong>(item), attribute);
+        if (result == nullptr) kmipkit_ttlv_item_release(item);
+        return result;
     });
 }
 

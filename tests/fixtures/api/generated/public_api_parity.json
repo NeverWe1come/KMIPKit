@@ -267486,6 +267486,554 @@
         "requestBoundary": "not-applicable",
         "returnType": "u32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Constructs and validates an owned typed Item from a catalogued tag and copied TTLV Value; caller retains the Value."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "expected_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "value",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_value_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_typed_attribute_from_value"
+      },
+      "id": "typed_attribute_from_value",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_typedAttributeFromValue",
+        "method": "typedAttributeFromValue",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "expectedTag",
+            "type": "long"
+          },
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_typed_attribute_from_value",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "typed_attributes.TypedAttribute.create",
+        "module": "kmipkit.typed_attributes",
+        "parameters": [
+          {
+            "name": "attribute",
+            "type": "StandardAttribute"
+          },
+          {
+            "name": "value",
+            "type": "Value"
+          }
+        ],
+        "returnType": "TypedAttribute"
+      },
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::typed_attributes",
+        "name": "kmipkit_typed_attribute_from_value",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "expected_tag",
+            "type": "u32"
+          },
+          {
+            "name": "value",
+            "type": "*mut kmipkit_ttlv_value_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_ttlv_item_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns an independently owned TTLV Value after validating the typed Item."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "expected_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_value",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_value_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_typed_attribute_value"
+      },
+      "id": "typed_attribute_value",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_typedAttributeValue",
+        "method": "typedAttributeValue",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "expectedTag",
+            "type": "long"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_typed_attribute_value",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "typed_attributes.TypedAttribute.value",
+        "module": "kmipkit.typed_attributes",
+        "parameters": [
+          {
+            "name": "attribute",
+            "type": "StandardAttribute"
+          },
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "Value"
+      },
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::typed_attributes",
+        "name": "kmipkit_typed_attribute_value",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "expected_tag",
+            "type": "u32"
+          },
+          {
+            "name": "item",
+            "type": "*mut kmipkit_ttlv_item_t"
+          },
+          {
+            "name": "out_value",
+            "type": "*mut *mut kmipkit_ttlv_value_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Validates and appends one typed Item while preserving insertion order and caller ownership."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_attribute_set_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "expected_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_attribute_set_try_push_typed"
+      },
+      "id": "attribute_set_try_push_typed",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_attributeSetTryPushTyped",
+        "method": "attributeSetTryPushTyped",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "long"
+          },
+          {
+            "name": "expectedTag",
+            "type": "long"
+          },
+          {
+            "name": "item",
+            "type": "long"
+          }
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_attribute_set_try_push_typed",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "attribute_operations.AttributeSet.try_push_typed",
+        "module": "kmipkit.attribute_operations",
+        "parameters": [
+          {
+            "name": "attribute",
+            "type": "StandardAttribute"
+          },
+          {
+            "name": "typed",
+            "type": "TypedAttribute"
+          }
+        ],
+        "returnType": "None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_attribute_set_try_push_typed",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "*mut kmipkit_attribute_set_t"
+          },
+          {
+            "name": "expected_tag",
+            "type": "u32"
+          },
+          {
+            "name": "item",
+            "type": "*mut kmipkit_ttlv_item_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the number of occurrences for one catalogued attribute."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_attribute_set_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "expected_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_attribute_set_typed_count"
+      },
+      "id": "attribute_set_typed_count",
+      "java": {
+        "class": "NativeExtensionRegistry",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_attributeSetTypedCount",
+        "method": "attributeSetTypedCount",
+        "package": "org.kmipkit",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "long"
+          },
+          {
+            "name": "expectedTag",
+            "type": "long"
+          }
+        ],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_attribute_set_typed_count",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "attribute_operations.AttributeSet.typed_count",
+        "module": "kmipkit.attribute_operations",
+        "parameters": [
+          {
+            "name": "attribute",
+            "type": "StandardAttribute"
+          }
+        ],
+        "returnType": "int"
+      },
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_attribute_set_typed_count",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "*mut kmipkit_attribute_set_t"
+          },
+          {
+            "name": "expected_tag",
+            "type": "u32"
+          },
+          {
+            "name": "out_count",
+            "type": "*mut u64"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the requested catalogued attribute occurrence as an independently owned Item copy in source order."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_attribute_set_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "expected_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "occurrence",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_attribute_set_typed_at"
+      },
+      "id": "attribute_set_typed_at",
+      "java": {
+        "class": "AttributeSet",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_attributeSetTypedAt",
+        "method": "typedAt",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "attribute",
+            "type": "StandardAttribute"
+          },
+          {
+            "name": "occurrence",
+            "type": "long"
+          }
+        ],
+        "returnType": "TypedAttribute"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_attribute_set_typed_at",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "AttributeSet.typed_at",
+        "module": "kmipkit.attribute_operations",
+        "parameters": [
+          {
+            "name": "attribute",
+            "type": "StandardAttribute"
+          },
+          {
+            "name": "occurrence",
+            "type": "int"
+          }
+        ],
+        "returnType": "TypedAttribute"
+      },
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_attribute_set_typed_at",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "*mut kmipkit_attribute_set_t"
+          },
+          {
+            "name": "expected_tag",
+            "type": "u32"
+          },
+          {
+            "name": "occurrence",
+            "type": "u64"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_ttlv_item_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
     }
   ],
   "languages": [
@@ -840164,6 +840712,711 @@
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0053-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "typed_attribute_from_value:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_typed_attribute_from_value",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_typed_attribute_from_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TypedAttribute.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.typed_attributes.TypedAttribute.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::try_new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "typed_attribute_from_value:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.TypedAttribute.create",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_typed_attribute_from_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TypedAttribute.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.typed_attributes.TypedAttribute.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::try_new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "typed_attribute_from_value:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.typed_attributes.TypedAttribute.create",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_typed_attribute_from_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TypedAttribute.create",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.typed_attributes.TypedAttribute.create",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::try_new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "typed_attribute_value:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_typed_attribute_value",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_typed_attribute_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TypedAttribute.value",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.typed_attributes.TypedAttribute.value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::Attribute<D>::from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "typed_attribute_value:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.ttlv.TypedAttribute.value",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_typed_attribute_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TypedAttribute.value",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.typed_attributes.TypedAttribute.value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::Attribute<D>::from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "typed_attribute_value:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.typed_attributes.TypedAttribute.value",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_typed_attribute_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TypedAttribute.value",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.typed_attributes.TypedAttribute.value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::Attribute<D>::from_item",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_try_push_typed:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_attribute_set_try_push_typed",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_try_push_typed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.tryPushTyped",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.try_push_typed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::try_push",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_try_push_typed:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.AttributeSet.tryPushTyped",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_try_push_typed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.tryPushTyped",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.try_push_typed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::try_push",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_try_push_typed:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.attribute_operations.AttributeSet.try_push_typed",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_try_push_typed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.tryPushTyped",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.try_push_typed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::try_push",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_typed_count:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_attribute_set_typed_count",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_typed_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.typedCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.typed_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::as_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_typed_count:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.AttributeSet.typedCount",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_typed_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.typedCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.typed_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::as_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_typed_count:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.attribute_operations.AttributeSet.typed_count",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_typed_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.typedCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.typed_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::as_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_typed_at:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_attribute_set_typed_at",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_typed_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.typedAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.typed_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::as_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_typed_at:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.AttributeSet.typedAt",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_typed_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.typedAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.typed_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::as_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved"
+      },
+      "capabilityId": "typed_object_attributes",
+      "declarationId": "attribute_set_typed_at:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.attribute_operations.AttributeSet.typed_at",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_attribute_set_typed_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AttributeSet.typedAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.attribute_operations.AttributeSet.typed_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::AttributeSet::as_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/typed_attribute_0053_tests.rs",
+        "bindings/c/tests/typed_attribute_parity_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/typed/TypedAttributeParityTest.java",
+        "bindings/python/tests/test_typed_attribute_parity.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0048-FR-002",
+        "KMIPKIT-0048-FR-003",
+        "KMIPKIT-0053-FR-002",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
       ]
     }
   ],

@@ -2,6 +2,7 @@ use super::*;
 
 const ACTIVATION_DATE_TAG: u32 = 0x0042_0001;
 const NAME_TAG: u32 = 0x0042_000a;
+const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const VENDOR_TAG: u32 = 0x0054_0001;
 
 #[link(name = "kmipkit_typed_attribute_parity_consumer", kind = "static")]
@@ -9,6 +10,32 @@ unsafe extern "C" {
     fn kmipkit_0053_typed_attribute_from_item(
         expected_tag: u32,
         item: *mut kmipkit_ttlv_item_t,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_typed_attribute_from_value(
+        expected_tag: u32,
+        value: *mut kmipkit_ttlv_value_t,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_typed_attribute_value(
+        expected_tag: u32,
+        item: *mut kmipkit_ttlv_item_t,
+        out_value: *mut *mut kmipkit_ttlv_value_t,
+    ) -> i32;
+    fn kmipkit_0053_attribute_set_try_push_typed(
+        attributes: *mut kmipkit_attribute_set_t,
+        expected_tag: u32,
+        item: *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_attribute_set_typed_count(
+        attributes: *mut kmipkit_attribute_set_t,
+        expected_tag: u32,
+        out_count: *mut u64,
+    ) -> i32;
+    fn kmipkit_0053_attribute_set_typed_at(
+        attributes: *mut kmipkit_attribute_set_t,
+        expected_tag: u32,
+        occurrence: u64,
         out_item: *mut *mut kmipkit_ttlv_item_t,
     ) -> i32;
 }
@@ -21,6 +48,52 @@ fn call_compiled_c_consumer(
     // SAFETY: Test-owned live opaque handles are passed to a compiled C consumer
     // that forwards them to the public ABI without dereferencing their values.
     unsafe { kmipkit_0053_typed_attribute_from_item(expected_tag, item, out_item) }
+}
+
+fn call_compiled_c_value_constructor(
+    expected_tag: u32,
+    value: *mut kmipkit_ttlv_value_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    // SAFETY: Test-owned value and output slots remain live during the C call.
+    unsafe { kmipkit_0053_typed_attribute_from_value(expected_tag, value, out_item) }
+}
+
+fn call_compiled_c_value_reader(
+    expected_tag: u32,
+    item: *mut kmipkit_ttlv_item_t,
+    out_value: *mut *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    // SAFETY: Test-owned item and output slots remain live during the C call.
+    unsafe { kmipkit_0053_typed_attribute_value(expected_tag, item, out_value) }
+}
+
+fn call_compiled_c_set_push_typed(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    // SAFETY: The test-owned set and Item handles remain live during the C call.
+    unsafe { kmipkit_0053_attribute_set_try_push_typed(attributes, expected_tag, item) }
+}
+
+fn call_compiled_c_set_typed_count(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    out_count: *mut u64,
+) -> i32 {
+    // SAFETY: The test-owned set and count output slot remain live during the C call.
+    unsafe { kmipkit_0053_attribute_set_typed_count(attributes, expected_tag, out_count) }
+}
+
+fn call_compiled_c_set_typed_at(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    occurrence: u64,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    // SAFETY: The test-owned set and output slot remain live during the C call.
+    unsafe { kmipkit_0053_attribute_set_typed_at(attributes, expected_tag, occurrence, out_item) }
 }
 
 fn catalog_value(tag: u32, kind: &str) -> Value {
@@ -59,6 +132,37 @@ fn catalog_value(tag: u32, kind: &str) -> Value {
         "Structure" => Value::structure(Structure::new()),
         "TextString" | "UniqueIdentifier" => Value::text_string("attribute-value".to_owned()),
         _ => panic!("catalogued attribute has an unsupported test value kind: {kind}"),
+    }
+}
+
+fn values_match(actual: ValueView<'_>, expected: ValueView<'_>) -> bool {
+    match (actual, expected) {
+        (ValueView::Structure(actual), ValueView::Structure(expected)) => {
+            actual.children().len() == expected.children().len()
+                && actual
+                    .children()
+                    .iter()
+                    .zip(expected.children())
+                    .all(|(left, right)| {
+                        left.tag() == right.tag()
+                            && left.with_value(|value| {
+                                right.with_value(|expected| values_match(value, expected))
+                            })
+                    })
+        }
+        (ValueView::Integer(actual), ValueView::Integer(expected)) => actual == expected,
+        (ValueView::LongInteger(actual), ValueView::LongInteger(expected)) => actual == expected,
+        (ValueView::BigInteger(actual), ValueView::BigInteger(expected)) => actual == expected,
+        (ValueView::Enumeration(actual), ValueView::Enumeration(expected)) => actual == expected,
+        (ValueView::Boolean(actual), ValueView::Boolean(expected)) => actual == expected,
+        (ValueView::TextString(actual), ValueView::TextString(expected)) => actual == expected,
+        (ValueView::ByteString(actual), ValueView::ByteString(expected)) => actual == expected,
+        (ValueView::DateTime(actual), ValueView::DateTime(expected)) => actual == expected,
+        (ValueView::Interval(actual), ValueView::Interval(expected)) => actual == expected,
+        (ValueView::DateTimeExtended(actual), ValueView::DateTimeExtended(expected)) => {
+            actual == expected
+        }
+        _ => false,
     }
 }
 
@@ -208,15 +312,17 @@ fn typed_attribute_from_item_preflights_null_output_without_consuming_input() {
 
 #[test]
 fn typed_attribute_value_construction_roundtrips_all_sixty_two_definitions() {
-    assert_eq!(typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS.len(), 62);
+    assert_eq!(
+        typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS.len(),
+        62
+    );
     for (tag, kind) in typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS {
         let source = make_handle(Kind::Value, HandleValue::Value(catalog_value(*tag, kind)));
         let mut item = ptr::null_mut();
-        let status = typed_attributes::kmipkit_typed_attribute_from_value(
-            *tag, source, &raw mut item,
-        );
+        let status = call_compiled_c_value_constructor(*tag, source, &raw mut item);
         assert_eq!(status, SUCCESS, "typed construction {tag:#08x} ({kind})");
-        let source_handle = reference_handle(source, Kind::Value).expect("caller value stays owned");
+        let source_handle =
+            reference_handle(source, Kind::Value).expect("caller value stays owned");
         let HandleValue::Value(source_value) = &source_handle.value else {
             panic!("input handle stores the original TTLV value");
         };
@@ -226,25 +332,100 @@ fn typed_attribute_value_construction_roundtrips_all_sixty_two_definitions() {
         };
         assert_eq!(result_item.tag().raw(), *tag);
         assert_eq!(result_item.item_type(), source_value.item_type());
-        let equal = source_value.with_value(|expected| result_item.with_value(|actual| match (actual, expected) {
-            (ValueView::Enumeration(actual), ValueView::Enumeration(expected)) => actual == expected,
-            (ValueView::Integer(actual), ValueView::Integer(expected)) => actual == expected,
-            (ValueView::DateTime(actual), ValueView::DateTime(expected)) => actual == expected,
-            (ValueView::Interval(actual), ValueView::Interval(expected)) => actual == expected,
-            (ValueView::Boolean(actual), ValueView::Boolean(expected)) => actual == expected,
-            (ValueView::TextString(actual), ValueView::TextString(expected)) => actual == expected,
-            (ValueView::ByteString(actual), ValueView::ByteString(expected)) => actual == expected,
-            (ValueView::BigInteger(actual), ValueView::BigInteger(expected)) => actual == expected,
-            (ValueView::Structure(actual), ValueView::Structure(expected)) => {
-                actual.children().len() == expected.children().len()
-            }
-            (ValueView::DateTimeExtended(actual), ValueView::DateTimeExtended(expected)) => actual == expected,
-            _ => false,
-        }));
+        let mut actual_value_handle = ptr::null_mut();
+        assert_eq!(
+            call_compiled_c_value_reader(*tag, item, &raw mut actual_value_handle),
+            SUCCESS,
+            "typed readback {tag:#08x} ({kind})"
+        );
+        let actual_handle =
+            reference_handle(actual_value_handle, Kind::Value).expect("typed Value is owned");
+        let HandleValue::Value(actual_value) = &actual_handle.value else {
+            panic!("typed value result handle stores a TTLV Value");
+        };
+        let equal = source_value.with_value(|expected| {
+            actual_value.with_value(|actual| values_match(actual, expected))
+        });
         assert!(equal);
+        kmipkit_ttlv_value_release(actual_value_handle);
         kmipkit_ttlv_item_release(item);
         kmipkit_ttlv_value_release(source);
     }
+}
+
+#[test]
+fn unique_identifier_preserves_open_enum_and_integer_values_through_c_abi() {
+    for value in [Value::enumeration(u32::MAX), Value::integer(-23)] {
+        let source = make_handle(Kind::Value, HandleValue::Value(value));
+        let mut item = ptr::null_mut();
+        assert_eq!(
+            call_compiled_c_value_constructor(0x0042_0094, source, &raw mut item),
+            SUCCESS
+        );
+        let mut copied = ptr::null_mut();
+        assert_eq!(
+            call_compiled_c_value_reader(0x0042_0094, item, &raw mut copied),
+            SUCCESS
+        );
+        let owner = reference_handle(copied, Kind::Value).expect("copy remains caller-owned");
+        let HandleValue::Value(value) = &owner.value else {
+            panic!("readback is a TTLV value");
+        };
+        let preserved = value.with_value(|actual| match actual {
+            ValueView::Enumeration(raw) => *raw == u32::MAX,
+            ValueView::Integer(raw) => *raw == -23,
+            _ => false,
+        });
+        assert!(preserved);
+        kmipkit_ttlv_value_release(copied);
+        kmipkit_ttlv_item_release(item);
+        kmipkit_ttlv_value_release(source);
+    }
+}
+
+#[test]
+fn typed_attribute_debug_and_rejected_value_redact_sensitive_contents() {
+    let marker = "typed-attribute-private-marker";
+    let source = make_handle(
+        Kind::Value,
+        HandleValue::Value(Value::text_string(marker.to_owned())),
+    );
+    let mut typed = ptr::null_mut();
+    assert_eq!(
+        call_compiled_c_value_constructor(UNIQUE_IDENTIFIER_TAG, source, &raw mut typed),
+        SUCCESS
+    );
+    let item = reference_handle(typed, Kind::Item).expect("typed item is owned");
+    let HandleValue::Item(item) = &item.value else {
+        panic!("typed result is an Item");
+    };
+    assert!(!format!("{item:?}").contains(marker));
+    let mut copied = ptr::null_mut();
+    assert_eq!(
+        call_compiled_c_value_reader(UNIQUE_IDENTIFIER_TAG, typed, &raw mut copied),
+        SUCCESS
+    );
+    let value = reference_handle(copied, Kind::Value).expect("value copy is owned");
+    let HandleValue::Value(value) = &value.value else {
+        panic!("value readback is a TTLV value");
+    };
+    assert!(!format!("{value:?}").contains(marker));
+
+    let invalid = make_handle(
+        Kind::Value,
+        HandleValue::Value(Value::text_string(marker.to_owned())),
+    );
+    let mut rejected = ptr::null_mut();
+    assert_eq!(
+        call_compiled_c_value_constructor(ACTIVATION_DATE_TAG, invalid, &raw mut rejected),
+        ERROR_INVALID_INPUT
+    );
+    assert!(rejected.is_null());
+    assert!(reference_handle(invalid, Kind::Value).is_ok());
+    kmipkit_ttlv_value_release(invalid);
+    kmipkit_ttlv_value_release(copied);
+    kmipkit_ttlv_item_release(typed);
+    kmipkit_ttlv_value_release(source);
 }
 
 #[test]
@@ -262,36 +443,41 @@ fn typed_attribute_set_supports_typed_insert_read_and_repeated_iteration() {
             Kind::Item,
             HandleValue::Item(
                 Item::new(
-                    RawTag::new(0x0042_0028).expect("fixture tag fits").try_checked().expect("tag is allocated"),
+                    RawTag::new(0x0042_0028)
+                        .expect("fixture tag fits")
+                        .try_checked()
+                        .expect("tag is allocated"),
                     Value::enumeration(value),
                 )
                 .expect("fixture Item is valid"),
             ),
         );
         assert_eq!(
-            client_abi::kmipkit_attribute_set_try_push_typed(
-                attributes, 0x0042_0028, item,
-            ),
+            call_compiled_c_set_push_typed(attributes, 0x0042_0028, item,),
             SUCCESS
         );
         items.push(item);
     }
     let mut count = 0;
     assert_eq!(
-        client_abi::kmipkit_attribute_set_typed_count(attributes, 0x0042_0028, &raw mut count),
+        call_compiled_c_set_typed_count(attributes, 0x0042_0028, &raw mut count),
         SUCCESS
     );
     assert_eq!(count, 2);
     let mut actual = ptr::null_mut();
     assert_eq!(
-        client_abi::kmipkit_attribute_set_typed_at(attributes, 0x0042_0028, 1, &raw mut actual),
+        call_compiled_c_set_typed_at(attributes, 0x0042_0028, 1, &raw mut actual),
         SUCCESS
     );
     let handle = reference_handle(actual, Kind::Item).expect("typed read is caller-owned");
     let HandleValue::Item(item) = &handle.value else {
         panic!("typed read returns an Item");
     };
-    assert!(item.with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == u32::MAX - 1)));
+    assert!(
+        item.with_value(
+            |value| matches!(value, ValueView::Enumeration(raw) if *raw == u32::MAX - 1)
+        )
+    );
     kmipkit_ttlv_item_release(actual);
     for item in items {
         kmipkit_ttlv_item_release(item);

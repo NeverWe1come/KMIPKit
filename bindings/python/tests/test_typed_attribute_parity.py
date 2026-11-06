@@ -18,6 +18,17 @@ def _item(attribute: StandardAttribute, value: ttlv.Value) -> ttlv.TtlvItem:
             limits.close()
 
 
+def _raw_item(raw_tag: int, value: ttlv.Value) -> ttlv.TtlvItem:
+    with ttlv.raw_tag_from_raw(raw_tag) as raw_tag_handle:
+        tag = ttlv.raw_tag_try_checked(raw_tag_handle)
+        limits = ttlv.codec_limits_defaults()
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            limits.close()
+
+
 def _append(structure: ttlv.Structure, raw_tag: int, value: ttlv.Value,
             limits: ttlv.CodecLimits) -> ttlv.Structure:
     with ttlv.raw_tag_from_raw(raw_tag) as raw_tag_handle:
@@ -108,20 +119,64 @@ def test_typed_attribute_constructs_and_reads_actual_catalogued_values():
         for attribute in StandardAttribute:
             value = _value_for(attribute, limits)
             with value, TypedAttribute.create(attribute, value) as typed:
-                with typed.value as actual:
+                with typed.value as copied, ttlv.ttlv_value_view(copied) as actual:
                     assert ttlv.ttlv_value_view_type(actual) == _expected_item_type(
                         attribute.value_kind
                     ), attribute.name
                     if attribute.value_kind == "Enumeration":
                         assert ttlv.ttlv_value_view_enumeration(actual) == 0xFFFF_FFFF
+                    elif attribute.value_kind == "BigInteger":
+                        assert bytes(ttlv.ttlv_value_view_byte_at(actual, index)
+                                     for index in range(ttlv.ttlv_value_view_byte_length(actual))) == b"\x01"
                     elif attribute.value_kind == "Integer":
                         assert ttlv.ttlv_value_view_integer(actual) == 7
                     elif attribute.value_kind == "Boolean":
                         assert ttlv.ttlv_value_view_boolean(actual) is True
+                    elif attribute.value_kind in ("ByteString", "TextString"):
+                        expected = b"\x01" if attribute.value_kind == "ByteString" else b"attribute-value"
+                        assert bytes(ttlv.ttlv_value_view_byte_at(actual, index)
+                                     for index in range(ttlv.ttlv_value_view_byte_length(actual))) == expected
+                    elif attribute.value_kind == "DateTime":
+                        assert ttlv.ttlv_value_view_date_time(actual) == 1_700_000_000
+                    elif attribute.value_kind == "DateTimeExtended":
+                        assert ttlv.ttlv_value_view_date_time_extended(actual) == 1_700_000_000
+                    elif attribute.value_kind == "Interval":
+                        assert ttlv.ttlv_value_view_interval(actual) == 7
                     elif attribute.value_kind == "Structure":
                         with ttlv.ttlv_value_view_structure(actual) as structure:
                             expected = 3 if attribute is StandardAttribute.VENDOR_ATTRIBUTE else 0
                             assert ttlv.ttlv_structure_view_item_count(structure) == expected
+                            if expected:
+                                for index, (expected_tag, expected_value) in enumerate((
+                                    (0x0042_009D, b"KMIPKit.TestVendor_1"),
+                                    (0x0042_000A, b"Opaque.Attribute"),
+                                    (0x0042_000B, b"\x01"),
+                                )):
+                                    with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                                        with ttlv.ttlv_item_view_tag(child) as tag:
+                                            assert ttlv.tag_value(tag) == expected_tag
+                                        with ttlv.ttlv_item_view_value(child) as child_value:
+                                            assert bytes(
+                                                ttlv.ttlv_value_view_byte_at(child_value, offset)
+                                                for offset in range(
+                                                    ttlv.ttlv_value_view_byte_length(child_value)
+                                                )
+                                            ) == expected_value
+
+
+@pytest.mark.parametrize("variant", ["open-enumeration", "integer"])
+def test_unique_identifier_preserves_open_non_text_variants(variant: str):
+    value = (
+        ttlv.ttlv_value_enumeration(0xFFFF_FFFF)
+        if variant == "open-enumeration"
+        else ttlv.ttlv_value_integer(-23)
+    )
+    with value, TypedAttribute.create(StandardAttribute.UNIQUE_IDENTIFIER, value) as typed:
+        with typed.value as copied, ttlv.ttlv_value_view(copied) as actual:
+            if ttlv.ttlv_value_view_type(actual) == ttlv.ItemType.Enumeration:
+                assert ttlv.ttlv_value_view_enumeration(actual) == 0xFFFF_FFFF
+            else:
+                assert ttlv.ttlv_value_view_integer(actual) == -23
 
 
 def test_attribute_set_typed_insert_read_and_iteration_preserve_repeats():
@@ -140,7 +195,7 @@ def test_attribute_set_typed_insert_read_and_iteration_preserve_repeats():
         attributes.try_push_typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, second)
         assert attributes.typed_count(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM) == 2
         with attributes.typed_at(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, 1) as actual:
-            with actual.value as value:
+            with actual.value as copied, ttlv.ttlv_value_view(copied) as value:
                 assert ttlv.ttlv_value_view_enumeration(value) == 0xFFFF_FFFE
         typed = attributes.typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM)
         try:
@@ -202,4 +257,55 @@ def test_repeatable_standard_attribute_remains_lossless_in_generic_attribute_set
     finally:
         first.close()
         second.close()
+
+
+def test_unknown_generic_item_survives_attribute_set_typed_operations():
+    value = ttlv.ttlv_value_text_string(b"opaque-value", ttlv.codec_limits_defaults())
+    with value:
+        item = _raw_item(0x0054_0001, value)
+    structure = ttlv.ttlv_structure_create()
+    structure = ttlv.ttlv_structure_with_item(structure, item, ttlv.codec_limits_defaults())
+    try:
+        with structure, AttributeSet.try_new(structure) as attributes:
+            known_value = ttlv.ttlv_value_text_string(b"known-name", ttlv.codec_limits_defaults())
+            with known_value, TypedAttribute.create(
+                StandardAttribute.UNIQUE_IDENTIFIER, known_value
+            ) as typed:
+                attributes.try_push_typed(StandardAttribute.UNIQUE_IDENTIFIER, typed)
+                assert attributes.typed_count(StandardAttribute.UNIQUE_IDENTIFIER) == 1
+                with attributes.typed_at(StandardAttribute.UNIQUE_IDENTIFIER, 0) as copied_typed:
+                    with copied_typed.value as copied_value, ttlv.ttlv_value_view(copied_value) as view:
+                        assert bytes(
+                            ttlv.ttlv_value_view_byte_at(view, index)
+                            for index in range(ttlv.ttlv_value_view_byte_length(view))
+                        ) == b"known-name"
+            assert attributes.len() == 2
+            with attributes.as_items() as copied, ttlv.ttlv_structure_view(copied) as view:
+                assert ttlv.ttlv_structure_view_item_count(view) == 2
+                with ttlv.ttlv_structure_view_item_at(view, 0) as child:
+                    with ttlv.ttlv_item_view_tag(child) as tag:
+                        assert ttlv.tag_value(tag) == 0x0054_0001
+                    with ttlv.ttlv_item_view_value(child) as actual:
+                        assert bytes(ttlv.ttlv_value_view_byte_at(actual, index)
+                                     for index in range(ttlv.ttlv_value_view_byte_length(actual))) == b"opaque-value"
+                with ttlv.ttlv_structure_view_item_at(view, 1) as child:
+                    with ttlv.ttlv_item_view_tag(child) as tag:
+                        assert ttlv.tag_value(tag) == StandardAttribute.UNIQUE_IDENTIFIER.tag
+    finally:
+        item.close()
+
+
+def test_typed_attribute_repr_and_validation_error_redact_sensitive_value():
+    marker = b"typed-attribute-private-marker"
+    value = ttlv.ttlv_value_text_string(marker, ttlv.codec_limits_defaults())
+    with value:
+        with pytest.raises(errors.InvalidInputError) as caught:
+            TypedAttribute.create(StandardAttribute.ACTIVATION_DATE, value)
+        assert marker.decode() not in str(caught.value)
+
+    value = ttlv.ttlv_value_text_string(marker, ttlv.codec_limits_defaults())
+    with value, TypedAttribute.create(StandardAttribute.UNIQUE_IDENTIFIER, value) as typed:
+        assert marker.decode() not in repr(typed)
+        with typed.value as copied:
+            assert marker.decode() not in repr(copied)
 

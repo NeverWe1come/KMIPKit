@@ -49,6 +49,7 @@ ffi.cdef(
     typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+    typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
     typedef struct kmipkit_authentication_t kmipkit_authentication_t;
     typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
     typedef struct kmipkit_cryptographic_parameters_fields_v1_t {
@@ -112,6 +113,10 @@ ffi.cdef(
         kmipkit_ttlv_structure_t *items, kmipkit_attribute_set_t **out_attribute_set);
     int32_t kmipkit_typed_attribute_from_item(
         uint32_t expected_tag, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_typed_attribute_from_value(
+        uint32_t expected_tag, kmipkit_ttlv_value_t *value, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_typed_attribute_value(
+        uint32_t expected_tag, kmipkit_ttlv_item_t *item, kmipkit_ttlv_value_t **out_value);
     int32_t kmipkit_managed_object_from_item(
         uint32_t object_type, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_key_block_from_item(
@@ -124,6 +129,14 @@ ffi.cdef(
         kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_attribute_set_try_push(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_item_t *item);
+    int32_t kmipkit_attribute_set_try_push_typed(
+        kmipkit_attribute_set_t *attributes, uint32_t expected_tag,
+        kmipkit_ttlv_item_t *item);
+    int32_t kmipkit_attribute_set_typed_count(
+        kmipkit_attribute_set_t *attributes, uint32_t expected_tag, uint64_t *out_count);
+    int32_t kmipkit_attribute_set_typed_at(
+        kmipkit_attribute_set_t *attributes, uint32_t expected_tag, uint64_t occurrence,
+        kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_attribute_set_as_items(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_structure_t **out_items);
     int32_t kmipkit_attribute_set_len(kmipkit_attribute_set_t *attributes, uint64_t *out_count);
@@ -131,7 +144,6 @@ ffi.cdef(
         kmipkit_attribute_set_t *attributes, uint8_t *out_is_empty);
     int32_t kmipkit_attribute_set_into_items(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_structure_t **out_items);
-    typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
     typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
     typedef struct kmipkit_request_message_t kmipkit_request_message_t;
     typedef struct kmipkit_request_header_view_t kmipkit_request_header_view_t;

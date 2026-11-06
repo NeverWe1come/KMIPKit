@@ -52,21 +52,75 @@ final class TypedAttributeParityTest {
         for (StandardAttribute attribute : StandardAttribute.values()) {
             try (TtlvValue value = valueFor(attribute, limits);
                     TypedAttribute typed = TypedAttribute.create(attribute, value);
-                    TtlvValueView actual = typed.value()) {
+                    TtlvValue copied = typed.value();
+                    TtlvValueView actual = copied.view()) {
                 assertEquals(expectedType(attribute), actual.itemType(), attribute.name());
                 switch (attribute.valueKind()) {
                     case "Enumeration" -> assertEquals(0xffff_ffffL, actual.enumeration());
                     case "Integer" -> assertEquals(7, actual.integer());
                     case "Boolean" -> assertEquals(true, actual.booleanValue());
+                    case "BigInteger", "ByteString" -> assertBytes(actual, new byte[] {1});
+                    case "TextString" -> assertBytes(actual, "attribute-value".getBytes(
+                            java.nio.charset.StandardCharsets.UTF_8));
+                    case "DateTime" -> assertEquals(1_700_000_000L, actual.dateTime());
+                    case "DateTimeExtended" -> assertEquals(1_700_000_000L,
+                            actual.dateTimeExtended());
+                    case "Interval" -> assertEquals(7, actual.interval());
                     case "Structure" -> {
                         try (TtlvStructureView structure = actual.structure()) {
                             assertEquals(attribute == StandardAttribute.VENDOR_ATTRIBUTE ? 3 : 0,
                                     structure.itemCount());
+                            if (attribute == StandardAttribute.VENDOR_ATTRIBUTE) {
+                                assertStructureChild(structure, 0, 0x0042_009d,
+                                        "KMIPKit.TestVendor_1".getBytes());
+                                assertStructureChild(structure, 1, 0x0042_000a,
+                                        "Opaque.Attribute".getBytes());
+                                assertStructureChild(structure, 2, 0x0042_000b,
+                                        new byte[] {1});
+                            }
                         }
                     }
                     default -> { }
                 }
             }
+        }
+    }
+
+    @Test
+    void uniqueIdentifierPreservesOpenEnumerationAndIntegerVariants() {
+        try (TtlvValue enumValue = TtlvValue.Enumeration(0xffff_ffffL);
+                TypedAttribute enumAttribute = TypedAttribute.create(
+                        StandardAttribute.UNIQUE_IDENTIFIER, enumValue);
+                TtlvValue copiedEnum = enumAttribute.value();
+                TtlvValueView enumView = copiedEnum.view()) {
+            assertEquals(TtlvItemType.Enumeration, enumView.itemType());
+            assertEquals(0xffff_ffffL, enumView.enumeration());
+        }
+        try (TtlvValue integerValue = TtlvValue.Integer(-23);
+                TypedAttribute integerAttribute = TypedAttribute.create(
+                        StandardAttribute.UNIQUE_IDENTIFIER, integerValue);
+                TtlvValue copiedInteger = integerAttribute.value();
+                TtlvValueView integerView = copiedInteger.view()) {
+            assertEquals(TtlvItemType.Integer, integerView.itemType());
+            assertEquals(-23, integerView.integer());
+        }
+    }
+
+    private static void assertBytes(TtlvValueView value, byte[] expected) {
+        assertEquals(expected.length, value.byteLength());
+        for (int index = 0; index < expected.length; index++) {
+            assertEquals(Byte.toUnsignedInt(expected[index]),
+                    Short.toUnsignedInt(value.byteAt(index)), "byte at " + index);
+        }
+    }
+
+    private static void assertStructureChild(
+            TtlvStructureView structure, long index, int expectedTag, byte[] expectedValue) {
+        try (TtlvItemView child = structure.itemAt(index);
+                Tag tag = child.tag();
+                TtlvValueView value = child.value()) {
+            assertEquals(expectedTag, tag.raw());
+            assertBytes(value, expectedValue);
         }
     }
 
@@ -86,7 +140,8 @@ final class TypedAttributeParityTest {
             assertEquals(2, attributes.typedCount(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM));
             try (TypedAttribute actual = attributes.typedAt(
                             StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, 1);
-                    TtlvValueView value = actual.value()) {
+                    TtlvValue copied = actual.value();
+                    TtlvValueView value = copied.view()) {
                 assertEquals(0xffff_fffeL, value.enumeration());
             }
             var repeated = attributes.typed(StandardAttribute.CRYPTOGRAPHIC_ALGORITHM);
@@ -139,8 +194,69 @@ final class TypedAttributeParityTest {
         }
     }
 
+    @Test
+    void unknownGenericItemSurvivesAttributeSetRoundtrip() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvItem unknown = item(0x0054_0001,
+                TtlvValue.TextString("opaque-value".getBytes(), limits), limits);
+        TtlvStructure empty = TtlvStructure.create();
+        TtlvStructure source = TtlvStructure.withItem(empty, unknown, limits);
+        try (source; AttributeSet attributes = AttributeSet.tryNew(source)) {
+            try (TtlvValue knownValue = TtlvValue.TextString("known-name".getBytes(), limits);
+                    TypedAttribute typed = TypedAttribute.create(
+                            StandardAttribute.UNIQUE_IDENTIFIER, knownValue)) {
+                attributes.tryPushTyped(StandardAttribute.UNIQUE_IDENTIFIER, typed);
+            }
+            assertEquals(1, attributes.typedCount(StandardAttribute.UNIQUE_IDENTIFIER));
+            try (TypedAttribute typed = attributes.typedAt(
+                    StandardAttribute.UNIQUE_IDENTIFIER, 0);
+                    TtlvValue typedValue = typed.value();
+                    TtlvValueView value = typedValue.view()) {
+                assertBytes(value, "known-name".getBytes());
+            }
+            assertEquals(2, attributes.len());
+            try (TtlvStructure copied = attributes.asItems();
+                    TtlvStructureView view = copied.view()) {
+                assertEquals(2, view.itemCount());
+                try (TtlvItemView child = view.itemAt(0); Tag tag = child.tag();
+                        TtlvValueView value = child.value()) {
+                    assertEquals(0x0054_0001, tag.raw());
+                    assertBytes(value, "opaque-value".getBytes());
+                }
+                try (TtlvItemView child = view.itemAt(1); Tag tag = child.tag()) {
+                    assertEquals(StandardAttribute.UNIQUE_IDENTIFIER.tag(), tag.raw());
+                }
+            }
+        }
+    }
+
+    @Test
+    void typedAttributeDiagnosticsRedactSensitiveValues() {
+        byte[] marker = "typed-attribute-private-marker".getBytes();
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvValue invalid = TtlvValue.TextString(marker, limits)) {
+            InvalidInputException error = assertThrows(InvalidInputException.class,
+                    () -> TypedAttribute.create(StandardAttribute.ACTIVATION_DATE, invalid));
+            org.junit.jupiter.api.Assertions.assertFalse(error.getMessage().contains(
+                    "typed-attribute-private-marker"));
+        }
+        try (TtlvValue value = TtlvValue.TextString(marker, limits);
+                TypedAttribute typed = TypedAttribute.create(
+                        StandardAttribute.UNIQUE_IDENTIFIER, value);
+                TtlvValue copied = typed.value()) {
+            org.junit.jupiter.api.Assertions.assertFalse(typed.toString().contains(
+                    "typed-attribute-private-marker"));
+            org.junit.jupiter.api.Assertions.assertFalse(copied.toString().contains(
+                    "typed-attribute-private-marker"));
+        }
+    }
+
     private static TtlvItem item(StandardAttribute attribute, TtlvValue value, CodecLimits limits) {
-        try (RawTag raw = RawTag.fromRaw(attribute.tag()); Tag tag = raw.checked()) {
+        return item(attribute.tag(), value, limits);
+    }
+
+    private static TtlvItem item(int rawValue, TtlvValue value, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(rawValue); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, value, limits);
         }
     }
