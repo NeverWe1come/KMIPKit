@@ -188,7 +188,21 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual([], candidates)
+        self.assertEqual(79, len(candidates))
+        self.assertTrue(
+            all(
+                declaration.get("capabilityId") == "response_ttlv_navigation"
+                and "Query" in declaration.get("exportName", "")
+                and declaration.get("approvalSource", {}).get("path")
+                == "specs/053-api-parity-facade/approval-record.md"
+                and {
+                    "KMIPKIT-0053-FR-008",
+                    "KMIPKIT-0053-FR-012",
+                }
+                <= set(declaration.get("requirementIds", []))
+                for declaration in candidates
+            )
+        )
         resolved = [
             declaration for declaration in manifest["publicDeclarations"]
             if declaration.get("declarationId") == "kmipkit-0048-kmipkit-7ff36f3a6017bfcf719b"
@@ -1507,7 +1521,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             "packageId": "rust-kmipkit",
             "kind": "type",
             "exportName": "kmipkit::protocol::QueryResponse",
-            "capabilityId": "typed_query_response",
+            "capabilityId": "response_ttlv_navigation",
             "requirementIds": ["KMIPKIT-0052-FR-001", "KMIPKIT-0053-FR-008"],
             "declarationState": "verified",
             "parityScope": "four-language",
@@ -1529,7 +1543,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             ],
             "publicDeclarations": [copy.deepcopy(declaration)],
             "capabilities": [{
-                "capabilityId": "typed_query_response",
+                "capabilityId": "response_ttlv_navigation",
                 "ownerSpecId": "KMIPKIT-0052",
                 "approvalEvidence": old_approval,
                 "mappings": {language: [] for language in ("rust", "c", "java", "python")},
