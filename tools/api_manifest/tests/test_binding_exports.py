@@ -51,29 +51,19 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_c_record_fields_are_declared_by_the_manifest_record_layout(self):
         manifest = {
-            "publicDeclarations": [
-                {
-                    "packageId": "c-kmipkit",
-                    "exportName": "kmipkit_probe_v1_t",
-                    "kind": "type",
-                    "declarationState": "declared",
-                }
-            ],
-            "types": [
-                {
-                    "c": {
-                        "name": "kmipkit_probe_v1_t",
-                        "kind": "fixed-width-value",
-                        "fields": [{"name": "value", "type": "uint32_t"}],
-                    }
-                }
-            ],
+            "publicDeclarations": [],
+            "types": [],
             "approvedExclusions": [
                 {
                     "packageId": "c-kmipkit",
-                    "exportName": "kmipkit_probe_v1_t.value",
-                    "reason": "This field is deliberately excluded from parity.",
-                }
+                    "exportName": "kmipkit_probe_v1_t",
+                    "reason": "This exact C carrier has no independent four-language value type.",
+                    "cType": {
+                        "name": "kmipkit_probe_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "value", "type": "uint32_t"}],
+                    },
+                },
             ],
         }
         report = {
