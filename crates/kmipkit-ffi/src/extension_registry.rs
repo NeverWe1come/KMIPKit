@@ -193,6 +193,9 @@ mod validate_abi_tests;
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
 #[cfg(test)]
+#[path = "../tests/support/ttlv_value_view_copy_tests.rs"]
+mod ttlv_value_view_copy_tests;
+#[cfg(test)]
 use self::test_handle_helpers::make_handle;
 
 #[cfg(test)]
