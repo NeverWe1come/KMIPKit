@@ -12,7 +12,17 @@ GUIDES = {
 }
 
 
-class QueryUserGuideParityTests(unittest.TestCase):
+class TypedBindingsUserGuideParityTests(unittest.TestCase):
+    def assert_guide_has_terms(
+        self, language: str, document: str, terms: tuple[str, ...]
+    ) -> None:
+        for term in terms:
+            with self.subTest(language=language, term=term):
+                self.assertTrue(
+                    term in document,
+                    f"{language} guide is missing required term {term!r}",
+                )
+
     def test_each_guide_covers_t052_t053_surfaces_and_bulk_ttlv_copies(self) -> None:
         required_terms = {
             "en": (
@@ -73,12 +83,7 @@ class QueryUserGuideParityTests(unittest.TestCase):
         for language, path in GUIDES.items():
             with self.subTest(language=language):
                 document = path.read_text(encoding="utf-8")
-                for term in required_terms[language]:
-                    with self.subTest(term=term):
-                        self.assertTrue(
-                            term in document,
-                            f"{language} guide is missing required term {term!r}",
-                        )
+                self.assert_guide_has_terms(language, document, required_terms[language])
 
     def test_each_guide_names_typed_query_apis_for_c_java_and_python(self) -> None:
         required_apis = (
@@ -92,9 +97,7 @@ class QueryUserGuideParityTests(unittest.TestCase):
         for language, path in GUIDES.items():
             with self.subTest(language=language):
                 document = path.read_text(encoding="utf-8")
-                for api in required_apis:
-                    with self.subTest(api=api):
-                        self.assertIn(api, document)
+                self.assert_guide_has_terms(language, document, required_apis)
 
     def test_each_guide_explains_query_fallback_and_preservation_contract(self) -> None:
         required_terms = {
@@ -131,9 +134,7 @@ class QueryUserGuideParityTests(unittest.TestCase):
         for language, path in GUIDES.items():
             with self.subTest(language=language):
                 document = path.read_text(encoding="utf-8")
-                for term in required_terms[language]:
-                    with self.subTest(term=term):
-                        self.assertIn(term, document)
+                self.assert_guide_has_terms(language, document, required_terms[language])
 
     def test_local_markdown_links_in_both_guides_resolve(self) -> None:
         link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
