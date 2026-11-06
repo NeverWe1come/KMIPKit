@@ -612,7 +612,7 @@ enum HandleValue {
     ProfileValidationError(ProfileValidationError),
     ProfileValidationResult(ProfileValidationResult),
     ProfileReadiness(ProfileReadiness),
-    TransportConfig(TransportConfig),
+    TransportConfig(Box<TransportConfig>),
     Client(Box<std::sync::Mutex<Client>>),
     ClientBatch(Arc<Mutex<Option<ClientBatchBuilder>>>),
     ClientBatchResponse(Arc<ClientBatchResponse>),

@@ -248,7 +248,20 @@ impl HttpsTransport {
         let exchange_started = Instant::now();
         let policy = self.configuration.timeouts().with_overrides(options);
         let content_type = content_type_for_encoding(options.wire_encoding().unwrap_or_default());
-        validate_request_bounds(&self.configuration, request, max_response_bytes)?;
+        if request.len() > self.configuration.max_request_bytes() {
+            return Err(safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("request exceeds configured limit"),
+            ));
+        }
+        if max_response_bytes == 0 {
+            return Err(safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("response limit must be positive"),
+            ));
+        }
         let total_deadline =
             validated_total_deadline(policy, exchange_started).map_err(|error| {
                 safe_error(
@@ -349,28 +362,6 @@ impl HttpsTransport {
             )
         })
     }
-}
-
-fn validate_request_bounds(
-    configuration: &TransportConfig,
-    request: &[u8],
-    max_response_bytes: usize,
-) -> Result<(), TransportError> {
-    if request.len() > configuration.max_request_bytes() {
-        return Err(safe_error(
-            RequestDeliveryState::NotSent,
-            TransportCauseCategory::Other,
-            io::Error::other("request exceeds configured limit"),
-        ));
-    }
-    if max_response_bytes == 0 {
-        return Err(safe_error(
-            RequestDeliveryState::NotSent,
-            TransportCauseCategory::Other,
-            io::Error::other("response limit must be positive"),
-        ));
-    }
-    Ok(())
 }
 
 #[cfg(test)]

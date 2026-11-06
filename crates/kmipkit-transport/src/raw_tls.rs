@@ -171,12 +171,21 @@ impl RawTlsTransport {
         let exchange_started = Instant::now();
         let policy = self.configuration.timeouts().with_overrides(options);
         let wire_encoding = options.wire_encoding().unwrap_or_default();
-        validate_request_bounds(
-            &self.configuration,
-            request,
-            max_response_bytes,
-            wire_encoding,
-        )?;
+        if request.len() > self.configuration.max_request_bytes() {
+            return Err(safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("request exceeds configured limit"),
+            ));
+        }
+        let minimum_response_bytes = minimum_response_bytes(wire_encoding);
+        if max_response_bytes < minimum_response_bytes {
+            return Err(safe_error(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::other("response limit is smaller than a response frame"),
+            ));
+        }
 
         let total_deadline =
             validated_total_deadline(policy, exchange_started).map_err(|error| {
@@ -249,30 +258,6 @@ impl RawTlsTransport {
             })
             .map_err(worker_error)
     }
-}
-
-fn validate_request_bounds(
-    configuration: &TransportConfig,
-    request: &[u8],
-    max_response_bytes: usize,
-    wire_encoding: WireEncoding,
-) -> Result<(), TransportError> {
-    if request.len() > configuration.max_request_bytes() {
-        return Err(safe_error(
-            RequestDeliveryState::NotSent,
-            TransportCauseCategory::Other,
-            io::Error::other("request exceeds configured limit"),
-        ));
-    }
-    let minimum_response_bytes = minimum_response_bytes(wire_encoding);
-    if max_response_bytes < minimum_response_bytes {
-        return Err(safe_error(
-            RequestDeliveryState::NotSent,
-            TransportCauseCategory::Other,
-            io::Error::other("response limit is smaller than a response frame"),
-        ));
-    }
-    Ok(())
 }
 
 #[cfg(test)]

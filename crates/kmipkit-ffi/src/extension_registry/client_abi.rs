@@ -822,7 +822,7 @@ pub extern "C" fn kmipkit_transport_config_create_v1(
         let configuration = try_ffi!(transport_config_from_v1(configuration));
         *out = try_ffi!(try_make_handle(
             Kind::TransportConfig,
-            HandleValue::TransportConfig(configuration),
+            HandleValue::TransportConfig(Box::new(configuration)),
         ));
         SUCCESS
     })
@@ -858,7 +858,7 @@ pub extern "C" fn kmipkit_client_create(
         )
         .with_wire_encoding(configuration.wire_encoding());
         let transport_configuration = match owned_payload(transport_handle, Kind::TransportConfig) {
-            Ok(HandleValue::TransportConfig(configuration)) => configuration,
+            Ok(HandleValue::TransportConfig(configuration)) => *configuration,
             Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
             Err(status) => return record_ffi_error(status),
         };
