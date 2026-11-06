@@ -36,10 +36,10 @@ pub(crate) mod wire_names_generated;
 
 #[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod json_encoding;
-#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
-mod xml_codec;
 #[allow(dead_code)] // The common error contract is consumed by both codecs.
 mod wire_codec_common;
+#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
+mod xml_codec;
 
 mod error;
 pub mod extension_registry;
