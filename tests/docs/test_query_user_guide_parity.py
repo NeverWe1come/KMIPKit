@@ -15,6 +15,7 @@ GUIDES = {
 class QueryUserGuideParityTests(unittest.TestCase):
     def test_each_guide_names_typed_query_apis_for_c_java_and_python(self) -> None:
         required_apis = (
+            "kmipkit_client_batch_item_response_query_ttlv",
             "kmipkit_client_batch_item_response_query_field_count",
             "kmipkit_client_batch_item_response_query_field_at",
             "ClientBatchItemResult.typedQueryResponse()",
@@ -40,6 +41,9 @@ class QueryUserGuideParityTests(unittest.TestCase):
                 "repeated fields",
                 "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN",
                 "kmipkit_ttlv_item_release",
+                "close()",
+                "context manager",
+                "Close Java",
             ),
             "es": (
                 "rawView()",
@@ -51,6 +55,9 @@ class QueryUserGuideParityTests(unittest.TestCase):
                 "campos repetidos",
                 "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN",
                 "kmipkit_ttlv_item_release",
+                "close()",
+                "context manager",
+                "Cierra",
             ),
         }
 
