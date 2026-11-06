@@ -144,12 +144,97 @@ fn query_sends_one_request_with_repeated_functions_and_ordered_object_groups() {
 }
 
 #[test]
+fn query_element_limit_is_configurable_and_default_rejection_is_not_sent() {
+    let item_count = 100_001;
+    let make_request = || {
+        QueryRequest::new(vec![QueryFunction::OPERATIONS; item_count])
+            .with_object_groups(vec!["group"; item_count])
+    };
+    let response = asynchronous_response_bytes(QUERY, 0, None, None, Some(test_structure([])));
+    let (mut default_client, default_transport, _) = client_for(ExchangeScript::Success {
+        response: response.clone(),
+        request_write_chunks: Vec::new(),
+    });
+    let default_error = default_client
+        .query(make_request(), &CodecLimits::defaults())
+        .expect_err("default element limits reject an oversized Query before transport");
+    assert_eq!(
+        default_error.delivery_state(),
+        Some(RequestDeliveryState::NotSent)
+    );
+    assert_eq!(default_transport.borrow().exchange_count(), 0);
+
+    let limits = CodecLimits::new(16 * 1024 * 1024, 64, 400_000)
+        .expect("the raised element limit is within model bounds");
+    let (mut raised_client, raised_transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let outcome = raised_client
+        .query(make_request(), &limits)
+        .expect("caller-raised limits allow the large Query to reach transport");
+
+    assert_eq!(outcome.outcome().operation(), ClientOperation::Query);
+    assert_eq!(raised_transport.borrow().exchange_count(), 1);
+    assert!(
+        captured
+            .borrow()
+            .as_deref()
+            .is_some_and(|request| request.len() < limits.max_message_bytes())
+    );
+}
+
+#[test]
 fn empty_query_is_not_sent() {
     let (mut client, transport, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
     let error = client
         .query(QueryRequest::new([]), &CodecLimits::defaults())
         .expect_err("an empty Query Function list is rejected locally");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn query_payload_budget_does_not_replace_complete_request_message_limit() {
+    let limits = CodecLimits::new(32, 64, 3).expect("the Query payload fits these limits");
+    let payload_request = QueryRequest::new([QueryFunction::OPERATIONS])
+        .with_object_groups(std::iter::empty::<&str>());
+    assert!(ClientBatchItem::query_with_limits(payload_request, &limits).is_ok());
+
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
+    let error = client
+        .query(
+            QueryRequest::new([QueryFunction::OPERATIONS])
+                .with_object_groups(std::iter::empty::<&str>()),
+            &limits,
+        )
+        .expect_err("the complete Request Message includes wrappers beyond the Query payload");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+
+    let element_limits = CodecLimits::new(1024, 64, 3)
+        .expect("the three-Item Query payload fits the configured element limit");
+    assert!(
+        ClientBatchItem::query_with_limits(
+            QueryRequest::new([QueryFunction::OPERATIONS])
+                .with_object_groups(std::iter::empty::<&str>()),
+            &element_limits,
+        )
+        .is_ok()
+    );
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
+    let error = client
+        .query(
+            QueryRequest::new([QueryFunction::OPERATIONS])
+                .with_object_groups(std::iter::empty::<&str>()),
+            &element_limits,
+        )
+        .expect_err("the complete Request Message contains wrappers beyond the Query payload");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);

@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,17 @@ final class RegisterOpaqueContextParityTest {
         }
 
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.register(null));
+    }
+
+    @Test
+    void protectionStorageMasksCanBeAddedAndSubmitted() {
+        var masks = TtlvStructure.create();
+        var request = RegisterRequest.create(OPAQUE_OBJECT_TYPE, TtlvStructure.create(), opaqueObject())
+                .withProtectionStorageMasks(masks);
+
+        try (masks; var item = ClientBatchItem.register(request)) {
+            assertNotNull(item);
+        }
     }
 
     private static TtlvItem opaqueObject() {

@@ -295,7 +295,7 @@ fn pending_keeps_exact_correlation_and_does_not_poll() {
     let view = outcome.response();
     assert!(view.get_usage_allocation().is_some());
     assert_eq!(view.result().status().raw(), 2);
-    assert!(format!("{view:?}").starts_with("GetUsageAllocation("));
+    assert_eq!(format!("{view:?}"), "GetUsageAllocation");
 }
 
 #[test]
@@ -332,11 +332,10 @@ fn get_usage_allocation_outcome_exposes_typed_views_and_safe_diagnostics() {
     let outcome_debug = format!("{outcome:?}");
     let view_debug = format!("{view:?}");
     assert!(outcome_debug.starts_with("GetUsageAllocation("));
-    assert!(view_debug.starts_with("GetUsageAllocation("));
-    for formatted in [&outcome_debug, &view_debug] {
-        assert!(formatted.contains("[REDACTED]"), "{formatted}");
-        assert!(!formatted.contains(DEBUG_SENTINEL), "{formatted}");
-    }
+    assert_eq!(view_debug, "GetUsageAllocation");
+    assert!(outcome_debug.contains("[REDACTED]"), "{outcome_debug}");
+    assert!(!outcome_debug.contains(DEBUG_SENTINEL), "{outcome_debug}");
+    assert!(!view_debug.contains(DEBUG_SENTINEL), "{view_debug}");
     assert_eq!(
         outcome.to_string(),
         format!("GetUsageAllocation({})", outcome.result())

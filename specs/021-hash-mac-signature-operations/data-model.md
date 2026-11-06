@@ -37,9 +37,9 @@ Request and response table statements describe field occurrence and server outpu
 5. An omitted Unique Identifier remains omitted. The client never resolves an ID Placeholder or substitutes a local identifier.
 6. Each typed call performs one request/response exchange. A later multipart part is a new explicit call built by the caller with the returned Correlation Value when supplied.
 7. Operation result status, reason, allowed Result Message, and any Pending state are preserved by shared response contracts. No retry, poll, or follow-up operation is automatic.
-8. MAC Verify and Signature Verify single-part responses require Validity Indicator in their successful typed shape. On final multipart responses accept either presence or absence because of `KMIPKIT-DISC-048`. On non-final multipart responses, an indicator is a typed response-shape error; generic TTLV remains available for inspection.
+8. MAC Verify and Signature Verify single-part responses require Validity Indicator in their successful typed shape. On final multipart responses accept either presence or absence because of `KMIPKIT-DISC-048`. On non-final multipart responses, an indicator is a typed response-shape error and the error exposes no response TTLV.
 9. Verification values Invalid and Unknown are operation results, not transport errors. Unknown and extension enum codes survive round trips.
-10. Successful MAC, MAC Verify, Sign, and Signature Verify response decoding requires exactly one well-formed Unique Identifier; missing, duplicate, or malformed values produce a sanitized typed response-shape error while generic response access remains available.
+10. Successful MAC, MAC Verify, Sign, and Signature Verify response decoding requires exactly one well-formed Unique Identifier; missing, duplicate, or malformed values produce a sanitized typed response-shape error while generic response access remains available through the dedicated error accessor. This is the sole error case that retains response TTLV under KMIPKIT-0007-FR-013.
 11. Debug, Display, and sanitized errors do not reveal any operation byte strings or Cryptographic Parameters contents. KMIPKit-owned byte storage uses the existing zeroizing owner.
 
 ## Open source conflicts

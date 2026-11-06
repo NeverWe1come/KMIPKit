@@ -45,4 +45,5 @@
 ## Notes
 
 - Static source and catalog references are listed in [research.md](../research.md) and [traceability.md](../traceability.md); independent reviewer completion is outstanding.
+- The direct maintainer approval for implementation and T098 manifest reconciliation is recorded in [approval-record.md](../approval-record.md); independent review remains outstanding and every reviewer-owned item remains unchecked.
 - The checklist evaluates requirements quality, not implementation completion or official KMIP certification.

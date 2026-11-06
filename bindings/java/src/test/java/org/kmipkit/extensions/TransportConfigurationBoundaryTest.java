@@ -1,12 +1,15 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -114,6 +117,124 @@ final class TransportConfigurationBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> builder.revocationListsPem(new byte[][] {new byte[0]}));
         assertThrows(InvalidInputException.class, () -> builder.revocationListsDer(null));
+    }
+
+    @Test
+    void transportInputsValidateSourceAndEncodingAndRedactMaterial() {
+        byte[] marker = "private-material-marker".getBytes(StandardCharsets.UTF_8);
+        TransportConfiguration.TransportInput key = TransportConfiguration.TransportInput.memory(
+                marker, TransportConfiguration.Encoding.PEM);
+        Arrays.fill(marker, (byte) 0);
+
+        assertEquals(TransportConfiguration.Encoding.PEM, key.encoding());
+        assertFalse(key.toString().contains("private-material-marker"));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.memory(null, TransportConfiguration.Encoding.PEM));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.memory(new byte[0], TransportConfiguration.Encoding.PEM));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.memory(new byte[] {1}, null));
+        assertThrows(ResourceLimitException.class,
+                () -> TransportConfiguration.TransportInput.memory(
+                        new byte[MAX_TRANSPORT_INPUT_BYTES + 1], TransportConfiguration.Encoding.PEM));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.file(null, TransportConfiguration.Encoding.DER));
+        assertThrows(InvalidInputException.class,
+                () -> TransportConfiguration.TransportInput.file(Path.of("key.der"), null));
+    }
+
+    @Test
+    void clientIdentityConsumesItsPrivateKeyInputAndRevocationListsRemainMemoryOnly() {
+        TransportConfiguration.TransportInput certificate = TransportConfiguration.TransportInput.memory(
+                new byte[] {1}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                new byte[] {2}, TransportConfiguration.Encoding.DER);
+        TransportConfiguration.Builder builder = TransportConfiguration.builder()
+                .clientIdentity(List.of(certificate), privateKey);
+
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentity(List.of(certificate), privateKey));
+
+        TransportConfiguration.TransportInput crlFile = TransportConfiguration.TransportInput.file(
+                Path.of("revocation-list.pem"), TransportConfiguration.Encoding.PEM);
+        assertThrows(InvalidInputException.class, () -> builder.revocationLists(List.of(crlFile)));
+    }
+
+    @Test
+    void typedClientIdentityRejectsIncompleteAndOversizedCertificateGroups() {
+        TransportConfiguration.TransportInput certificate = TransportConfiguration.TransportInput.memory(
+                new byte[] {1}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                new byte[] {2}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.Builder builder = TransportConfiguration.builder();
+
+        assertThrows(InvalidInputException.class, () -> builder.clientIdentity(null, privateKey));
+        assertThrows(InvalidInputException.class, () -> builder.clientIdentity(List.of(), privateKey));
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentity(List.of(certificate), null));
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentity(Arrays.asList(certificate, null), privateKey));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.clientIdentity(Collections.nCopies(4_097, certificate), privateKey));
+    }
+
+    @Test
+    void typedClientIdentityCountsCertificateBytesBeforeSnapshotting() {
+        TransportConfiguration.TransportInput maximumCertificate = TransportConfiguration.TransportInput.memory(
+                new byte[MAX_TRANSPORT_INPUT_BYTES], TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput extraCertificate = TransportConfiguration.TransportInput.memory(
+                new byte[] {1}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                new byte[] {2}, TransportConfiguration.Encoding.PEM);
+
+        assertThrows(ResourceLimitException.class,
+                () -> TransportConfiguration.builder().clientIdentity(
+                        List.of(maximumCertificate, extraCertificate), privateKey));
+    }
+
+    @Test
+    void closingUnbuiltBuilderZeroizesItsOwnedPrivateKeyCopy() throws Exception {
+        byte[] marker = {0x31, 0x42, 0x53};
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                marker, TransportConfiguration.Encoding.DER);
+        TransportConfiguration.Builder builder = TransportConfiguration.builder()
+                .clientIdentity(
+                        List.of(TransportConfiguration.TransportInput.memory(
+                                new byte[] {1}, TransportConfiguration.Encoding.PEM)),
+                        privateKey);
+        byte[] ownedCopy = builderPrivateKeyBytes(builder);
+
+        assertArrayEquals(marker, ownedCopy);
+        builder.close();
+        builder.close();
+        assertArrayEquals(new byte[marker.length], ownedCopy);
+        assertArrayEquals(new byte[] {0x31, 0x42, 0x53}, marker);
+        assertThrows(InvalidInputException.class, builder::build);
+    }
+
+    @Test
+    void closingUnbuiltBuilderZeroizesKeyCopiedFromLegacyPemSetter() throws Exception {
+        byte[] marker = {0x41, 0x52, 0x63};
+        TransportConfiguration.Builder builder = TransportConfiguration.builder()
+                .clientIdentityPem(new byte[][] {{1}}, marker);
+        byte[] ownedCopy = builderPrivateKeyBytes(builder);
+
+        assertArrayEquals(marker, ownedCopy);
+        builder.close();
+        assertArrayEquals(new byte[marker.length], ownedCopy);
+        assertArrayEquals(new byte[] {0x41, 0x52, 0x63}, marker);
+        assertThrows(InvalidInputException.class, () -> builder.clientIdentityPem(
+                new byte[][] {{1}}, new byte[] {9}));
+    }
+
+    private static byte[] builderPrivateKeyBytes(TransportConfiguration.Builder builder)
+            throws ReflectiveOperationException {
+        java.lang.reflect.Field privateKeyField = builder.getClass().getDeclaredField("privateKey");
+        privateKeyField.setAccessible(true);
+        Object ownedInput = privateKeyField.get(builder);
+        java.lang.reflect.Field dataField = ownedInput.getClass().getDeclaredField("data");
+        dataField.setAccessible(true);
+        return (byte[]) dataField.get(ownedInput);
     }
 
     @Test

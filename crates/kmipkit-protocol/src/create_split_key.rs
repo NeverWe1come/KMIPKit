@@ -12,7 +12,7 @@ use crate::{
 };
 
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028; // KMIP v2.1 §11.36, Table 470.
-const SUCCESS: u32 = 0;
+const FAILURE: u32 = 1;
 
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -288,9 +288,9 @@ pub struct CreateSplitKeyResponse {
 impl CreateSplitKeyResponse {
     /// Converts one validated Create Split Key response batch item.
     ///
-    /// A successful result requires one or more Unique Identifier fields and
+    /// A non-Failure result requires one or more Unique Identifier fields and
     /// retains repeated values in their original wire order. Failure results
-    /// preserve the shared KMIP result without success payload fields.
+    /// preserve the shared KMIP result without a response payload.
     ///
     /// # Errors
     ///
@@ -309,7 +309,7 @@ impl CreateSplitKeyResponse {
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(CreateSplitKeyError::InvalidOperationResult)?;
 
-        if status.raw() != SUCCESS {
+        if status.raw() == FAILURE {
             return Ok(Self {
                 result,
                 unique_identifiers: Vec::new(),
@@ -317,7 +317,7 @@ impl CreateSplitKeyResponse {
         }
 
         let unique_identifiers = item
-            .with_response_payload(|payload| parse_success_payload(&payload))
+            .with_response_payload(|payload| parse_non_failure_payload(&payload))
             .ok_or(CreateSplitKeyError::MissingSuccessPayload)??;
         Ok(Self {
             result,
@@ -358,9 +358,9 @@ pub enum CreateSplitKeyError {
     MissingResultStatus,
     /// The represented KMIP result violates the shared status/reason contract.
     InvalidOperationResult(ResultValidationError),
-    /// A successful result has no Response Payload Structure.
+    /// A non-Failure result has no Response Payload Structure.
     MissingSuccessPayload,
-    /// A successful payload has no valid Unique Identifier field.
+    /// A non-Failure payload has no valid Unique Identifier field.
     MalformedSuccessPayload,
     /// `KMIPKit` FR-015 requires a caller value for the polynomial prime-field method.
     PolynomialMethodRequiresPrimeFieldSize,
@@ -377,9 +377,9 @@ impl fmt::Display for CreateSplitKeyError {
                     "Create Split Key operation result is invalid: {cause}"
                 );
             }
-            Self::MissingSuccessPayload => "successful Create Split Key result has no payload",
+            Self::MissingSuccessPayload => "non-Failure Create Split Key result has no payload",
             Self::MalformedSuccessPayload => {
-                "successful Create Split Key response payload is malformed"
+                "non-Failure Create Split Key response payload is malformed"
             }
             Self::PolynomialMethodRequiresPrimeFieldSize => {
                 "Create Split Key FR-015 requires explicit Prime Field Size"
@@ -406,7 +406,7 @@ fn unique_identifier_value(identifier: UniqueIdentifier) -> Value {
     }
 }
 
-fn parse_success_payload(
+fn parse_non_failure_payload(
     payload: &StructureView<'_>,
 ) -> Result<Vec<UniqueIdentifier>, CreateSplitKeyError> {
     let mut unique_identifiers = Vec::new();

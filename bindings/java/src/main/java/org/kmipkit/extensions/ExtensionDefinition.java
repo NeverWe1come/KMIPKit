@@ -3,6 +3,7 @@ package org.kmipkit.extensions;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
@@ -53,12 +54,18 @@ public final class ExtensionDefinition implements AutoCloseable {
 
     public static ExtensionDefinition withInformation(
             ExtensionDefinition definition, ExtensionInformation information) {
+        if (definition == null || information == null) {
+            throw new InvalidInputException("extension information inputs are invalid");
+        }
         NativeExtensionRegistry.ensureLoaded();
-        long definitionHandle = definition.handle.transfer();
-        long nativeHandle = information.nativeHandleOwner().withValue(infoHandle ->
-                NativeExtensionRegistry.extensionDefinitionWithInformation(definitionHandle, infoHandle));
-        return new ExtensionDefinition(definition.identity, definition.compatibility,
-                definition.discriminator, definition.schema, information, nativeHandle);
+        return NativeHandle.withNativeHandles(() -> {
+            long infoHandle = information.handle();
+            long definitionHandle = definition.handle.transfer();
+            long nativeHandle = NativeExtensionRegistry.extensionDefinitionWithInformation(
+                    definitionHandle, infoHandle);
+            return new ExtensionDefinition(definition.identity, definition.compatibility,
+                    definition.discriminator, definition.schema, information, nativeHandle);
+        });
     }
 
     public static ExtensionIdentity identity(ExtensionDefinition definition) {

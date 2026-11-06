@@ -34,7 +34,7 @@
 
 ## Decision 5: Preserve the disputed final multipart verification shape
 
-**Decision**: Keep `KMIPKIT-DISC-048` open. The typed client accepts a present or absent Validity Indicator in the final multi-part MAC Verify or Signature Verify response and does not use that disputed field to claim server conformance. A non-final multipart response with a Validity Indicator is a typed response-shape error; the generic TTLV response remains available for lossless inspection.
+**Decision**: Keep `KMIPKIT-DISC-048` open. The typed client accepts a present or absent Validity Indicator in the final multi-part MAC Verify or Signature Verify response and does not use that disputed field to claim server conformance. A non-final multipart response with a Validity Indicator is a typed response-shape error and does not retain response TTLV. Error TTLV retention is limited to the missing, repeated, or malformed Unique Identifier cases defined by FR-015.
 
 **Rationale**: Tables 263/338 conflict with operation prose only for the final part. Both source forms prohibit the indicator on non-final parts. Tolerating both final forms lets the client preserve either normative reading without silently choosing a server requirement.
 

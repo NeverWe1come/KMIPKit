@@ -10,8 +10,8 @@
 //! FR-009; SC-001, SC-002.
 
 use kmipkit_protocol::{
-    Authentication, CredentialType, CredentialValue, HashedPasswordTimestampSequence, Nonce,
-    RequestMessage,
+    Authentication, CredentialType, CredentialValidationErrorKind, CredentialValue,
+    HashedPasswordTimestampSequence, Nonce, RequestMessage, UsernameAndPasswordCredential,
 };
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
@@ -258,6 +258,44 @@ fn username_and_password_requires_username_and_preserves_optional_password_prese
     ] {
         assert!(credential_value(1, invalid).is_err());
     }
+}
+
+#[test]
+fn username_and_password_wrapper_preserves_optional_password_and_order() {
+    let source = structure([
+        item(EXTENSION_CHILD, Value::byte_string(vec![0x80, 0x01])),
+        item(USERNAME, Value::text_string("alice".to_owned())),
+        item(PASSWORD, Value::text_string(String::new())),
+    ]);
+    let credential = UsernameAndPasswordCredential::try_from_ttlv(source)
+        .expect("Table 411 requires Username and permits a present-empty Password");
+
+    assert!(!format!("{credential:?}").contains("alice"));
+    let restored = credential.into_ttlv();
+    let tags: Vec<_> = restored
+        .view()
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect();
+    assert_eq!(tags, [EXTENSION_CHILD, USERNAME, PASSWORD]);
+}
+
+#[test]
+fn username_and_password_wrapper_rejects_missing_username_without_payload() {
+    let source = structure([item(
+        PASSWORD,
+        Value::text_string("sensitive-sentinel".to_owned()),
+    )]);
+
+    let error = UsernameAndPasswordCredential::try_from_ttlv(source)
+        .expect_err("Table 411 requires Username");
+
+    assert_eq!(
+        error.kind(),
+        kmipkit_protocol::CredentialValidationErrorKind::MissingField
+    );
+    assert!(!format!("{error}").contains("sensitive-sentinel"));
 }
 
 #[test]
@@ -554,6 +592,41 @@ fn hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types()
     }
 }
 
+// KMIP Specification v2.1 §9.11, Table 415 requires unique fields in the
+// listed order: Username, Timestamp, optional Hashing Algorithm, Hashed Password.
+#[test]
+fn hashed_password_rejects_duplicate_and_out_of_order_table_415_fields() {
+    let duplicate_username = credential_value(
+        5,
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+        ]),
+    )
+    .expect_err("Table 415 members cannot be duplicated");
+    assert_eq!(
+        duplicate_username.kind(),
+        CredentialValidationErrorKind::DuplicateField
+    );
+
+    let algorithm_after_hash = credential_value(
+        5,
+        structure([
+            item(USERNAME, Value::text_string("alice".to_owned())),
+            item(TIME_STAMP, Value::date_time_extended(1)),
+            item(HASHED_PASSWORD, Value::byte_string(vec![0x01])),
+            item(HASHING_ALGORITHM, Value::enumeration(6)),
+        ]),
+    )
+    .expect_err("Table 415 members must follow the OASIS field order");
+    assert_eq!(
+        algorithm_after_hash.kind(),
+        CredentialValidationErrorKind::FieldOutOfOrder
+    );
+}
+
 // KMIP Specification v2.1 §9.11 (paragraph before Table 415) defaults an omitted
 // Hashing Algorithm to SHA-256.
 #[test]
@@ -585,6 +658,10 @@ fn hashed_password_omission_exposes_sha256_default_without_materializing_field()
             .collect::<Vec<_>>(),
         [USERNAME, TIME_STAMP, HASHED_PASSWORD]
     );
+    let roundtrip_username = fields[0].with_value(|value| match value {
+        ValueView::TextString(text) => Some(text.to_owned()),
+        _ => None,
+    });
     let roundtrip_timestamp = fields[1].with_value(|value| match value {
         ValueView::DateTimeExtended(value) => Some(*value),
         _ => None,
@@ -593,6 +670,7 @@ fn hashed_password_omission_exposes_sha256_default_without_materializing_field()
         ValueView::ByteString(bytes) => Some(bytes.to_vec()),
         _ => None,
     });
+    assert_eq!(roundtrip_username.as_deref(), Some("alice"));
     assert_eq!(roundtrip_timestamp, Some(timestamp));
     assert_eq!(roundtrip_hash, Some(secret_bytes));
 }
@@ -630,6 +708,11 @@ fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
                 .collect::<Vec<_>>(),
             [USERNAME, TIME_STAMP, HASHING_ALGORITHM, HASHED_PASSWORD]
         );
+        let roundtrip_username = fields[0].with_value(|value| match value {
+            ValueView::TextString(text) => Some(text.to_owned()),
+            _ => None,
+        });
+        assert_eq!(roundtrip_username.as_deref(), Some("alice"));
         assert_eq!(
             fields[2].with_value(|value| match value {
                 ValueView::Enumeration(raw) => Some(*raw),
@@ -698,6 +781,68 @@ fn hashed_password_timestamp_sequence_debug_redacts_the_recorded_value() {
 
     assert!(debug.contains("has_previous_timestamp: true"));
     assert!(!debug.contains(&timestamp.to_string()));
+}
+
+#[test]
+fn hashed_password_timestamp_sequence_matches_shared_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture contains cases")
+        .iter()
+        .find(|case| case["id"] == "credentials.hashed-password-timestamp-sequence.v1")
+        .expect("hashed-password timestamp sequence case exists");
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let restored = input["restoredTimestamp"]
+        .as_i64()
+        .expect("restored timestamp is signed 64-bit");
+    let next = input["nextTimestamp"]
+        .as_i64()
+        .expect("next timestamp is signed 64-bit");
+
+    // KMIP Specification v2.1 §9.11, Table 415; OD-003 is resolved in
+    // KMIPKIT-0008 and KMIPKIT-0010 T056 as caller-owned per-Username state.
+    let mut sequence = HashedPasswordTimestampSequence::new(Some(restored));
+    assert_eq!(
+        sequence.last_timestamp(),
+        Some(expected["initialTimestamp"].as_i64().unwrap())
+    );
+    sequence
+        .record(next)
+        .expect("a strictly later timestamp is accepted");
+    assert_eq!(
+        sequence.last_timestamp(),
+        Some(expected["lastAfterIncrease"].as_i64().unwrap())
+    );
+
+    for field in ["equalTimestamp", "earlierTimestamp"] {
+        let rejected = input[field].as_i64().expect("timestamp is signed 64-bit");
+        let error = sequence
+            .record(rejected)
+            .expect_err("equal or earlier timestamps are rejected");
+        assert!(!error.to_string().contains(&rejected.to_string()));
+        assert_eq!(sequence.last_timestamp(), Some(next));
+    }
+
+    let minimum = input["minimumTimestamp"]
+        .as_i64()
+        .expect("i64 minimum is valid");
+    let maximum = input["maximumTimestamp"]
+        .as_i64()
+        .expect("i64 maximum is valid");
+    let mut boundary = HashedPasswordTimestampSequence::new(None);
+    boundary
+        .record(minimum)
+        .expect("i64 minimum is a valid first timestamp");
+    boundary
+        .record(maximum)
+        .expect("i64 maximum strictly increases from minimum");
+    assert!(boundary.record(maximum).is_err());
+    assert_eq!(boundary.last_timestamp(), Some(maximum));
 }
 
 #[test]
@@ -906,5 +1051,122 @@ fn attestation_requires_nonce_type_and_one_or_both_evidence_fields() {
         ]),
     ] {
         assert!(credential_value(3, invalid).is_err());
+    }
+}
+
+// KMIP Specification v2.1 §9.11, Tables 414 and 416, and Table 442 require
+// the generic Credential Value facade to retain its discriminator and TTLV.
+#[test]
+fn credential_value_exposes_raw_type_and_scoped_ttlv_without_rebuilding() {
+    let cases = [
+        (
+            4,
+            structure([
+                item(USERNAME, Value::text_string("alice".to_owned())),
+                item(
+                    ONE_TIME_PASSWORD,
+                    Value::text_string("otp-sentinel".to_owned()),
+                ),
+            ]),
+            vec![USERNAME, ONE_TIME_PASSWORD],
+        ),
+        (
+            6,
+            structure([item(
+                TICKET,
+                Value::structure(structure([
+                    item(TICKET_TYPE, Value::enumeration(1)),
+                    item(TICKET_VALUE, Value::byte_string(vec![0x00, 0xFE])),
+                ])),
+            )]),
+            vec![TICKET],
+        ),
+        (
+            0x8000_0042,
+            structure([item(EXTENSION_CHILD, Value::integer(7))]),
+            vec![EXTENSION_CHILD],
+        ),
+        (
+            0xF123_4567,
+            structure([item(EXTENSION_CHILD, Value::integer(9))]),
+            vec![EXTENSION_CHILD],
+        ),
+    ];
+
+    for (raw_type, source, expected_tags) in cases {
+        let value = credential_value(raw_type, source)
+            .expect("known, extension, and unknown Credential Value trees are valid");
+        assert_eq!(value.credential_type_raw(), raw_type);
+        assert_eq!(
+            value.with_ttlv(|view| view
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()),
+            expected_tags
+        );
+        let roundtrip = value.into_ttlv();
+        let view = roundtrip.view();
+        assert_eq!(
+            view.children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            expected_tags
+        );
+    }
+}
+
+#[test]
+fn typed_credential_variants_preserve_raw_types_and_scoped_ttlv() {
+    let cases = [
+        (
+            1,
+            structure([item(USERNAME, Value::text_string("alice".to_owned()))]),
+            vec![USERNAME],
+        ),
+        (
+            2,
+            structure([item(
+                DEVICE_SERIAL_NUMBER,
+                Value::text_string("serial-id".to_owned()),
+            )]),
+            vec![DEVICE_SERIAL_NUMBER],
+        ),
+        (
+            3,
+            structure([
+                item(NONCE, Value::structure(valid_nonce_value())),
+                item(ATTESTATION_TYPE, Value::enumeration(0xF123_4567)),
+                item(
+                    ATTESTATION_MEASUREMENT,
+                    Value::byte_string(vec![0x80, 0xFE]),
+                ),
+            ]),
+            vec![NONCE, ATTESTATION_TYPE, ATTESTATION_MEASUREMENT],
+        ),
+        (
+            5,
+            structure([
+                item(USERNAME, Value::text_string("alice".to_owned())),
+                item(TIME_STAMP, Value::date_time_extended(1_800_000_000)),
+                item(HASHED_PASSWORD, Value::byte_string(vec![0x80, 0xFE])),
+            ]),
+            vec![USERNAME, TIME_STAMP, HASHED_PASSWORD],
+        ),
+    ];
+
+    for (raw_type, source, expected_tags) in cases {
+        let value = credential_value(raw_type, source)
+            .expect("the known credential variant is valid for its type");
+        assert_eq!(value.credential_type_raw(), raw_type);
+        assert_eq!(
+            value.with_ttlv(|view| view
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()),
+            expected_tags
+        );
     }
 }

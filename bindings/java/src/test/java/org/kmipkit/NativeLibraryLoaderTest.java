@@ -33,19 +33,67 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.kmipkit.extensions.ClientBatchItem;
 
 final class NativeLibraryLoaderTest {
     private static final String WINDOWS_TARGET = "windows-x86_64-msvc";
     private static final String WINDOWS_LIBRARY = "kmipkit_jni.dll";
+    private static final int MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024;
 
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void exactLimitOperationInputsAreAcceptedWithoutMutatingCallerArrays() {
+        byte[] input = new byte[MAX_OPERATION_INPUT_BYTES];
+        java.util.Arrays.fill(input, (byte) 0x5a);
+        byte[] original = input.clone();
+        List<Function<byte[], ClientBatchItem>> factories = List.of(
+                value -> ClientBatchItem.certify(null, null, value, null, null),
+                value -> ClientBatchItem.macVerify(null, null, null, value, null, null, null),
+                value -> ClientBatchItem.sign(null, null, null, value, null, null, null),
+                value -> ClientBatchItem.signatureVerify(null, null, null, value, null, null, null, null),
+                value -> ClientBatchItem.signatureVerify(null, null, null, null, value, null, null, null));
+
+        for (Function<byte[], ClientBatchItem> factory : factories) {
+            try (ClientBatchItem item = factory.apply(input)) {
+                assertNotNull(item);
+            }
+            assertArrayEquals(original, input);
+        }
+    }
+
+    @Test
+    void oversizedOperationInputsAreRejectedBeforeJni() throws Exception {
+        Path testClasses = classLocation(NativeLibraryLoadProbe.class);
+        Path mainClasses = classLocation(NativeExtensionRegistry.class);
+        Path nullableClasses = classLocation(org.jspecify.annotations.Nullable.class);
+        Path java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
+        String classPath = String.join(File.pathSeparator,
+                testClasses.toString(), mainClasses.toString(), nullableClasses.toString());
+        Path unavailableLibrary = temporaryDirectory.resolve("native-library-must-not-load.dll");
+        List<String> command = new java.util.ArrayList<>(List.of(
+                java.toString(), "-Dkmipkit.nativeLibrary=" + unavailableLibrary,
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "operation-input-limit"));
+        String jacocoAgent = childJacocoAgentArgument(ManagementFactory.getRuntimeMXBean().getInputArguments());
+        if (jacocoAgent != null) {
+            command.add(1, jacocoAgent);
+        }
+
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        assertEquals(0, process.waitFor(), output);
+        assertTrue(output.contains("OPERATION_INPUT_LIMIT_REJECTED_BEFORE_NATIVE_LOAD"), output);
+    }
 
     @Test
     void selectsOnlyPublishedNativeTargets() {
@@ -285,7 +333,7 @@ final class NativeLibraryLoaderTest {
         UnsatisfiedLinkError failure = assertThrows(UnsatisfiedLinkError.class,
                 () -> NativeLibraryLoader.validateNativeAbiVersion(2));
 
-        assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
+        assertEquals(NativeLibraryLoader.ABI_FAILURE_MESSAGE, failure.getMessage());
         assertEquals(null, failure.getCause());
     }
 
@@ -310,6 +358,39 @@ final class NativeLibraryLoaderTest {
             assertEquals(NativeLibraryLoader.LOAD_FAILURE_MESSAGE, failure.getMessage());
             assertNull(failure.getCause());
         }
+    }
+
+    @Test
+    void preservesAbiMismatchWhenLoadingAnExplicitNativeLibrary() throws Exception {
+        Path fixture = Path.of("..", "..", "tools", "native_package_smoke", "wrong_abi.rs")
+                .toAbsolutePath().normalize();
+        assertTrue(Files.isRegularFile(fixture), "The wrong-ABI native fixture must exist");
+        Path library = temporaryDirectory.resolve(wrongAbiLibraryName()).toAbsolutePath();
+        Process compiler = new ProcessBuilder("rustc", "--edition=2024", "--crate-name",
+                "kmipkit_wrong_abi", "--crate-type", "cdylib", fixture.toString(), "-o",
+                library.toString()).redirectErrorStream(true).start();
+        String compilerOutput = new String(compiler.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, compiler.waitFor(), compilerOutput);
+
+        Path testClasses = classLocation(NativeLibraryLoadProbe.class);
+        Path mainClasses = classLocation(NativeExtensionRegistry.class);
+        Path java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
+        String classPath = String.join(File.pathSeparator, testClasses.toString(), mainClasses.toString());
+        List<String> command = new java.util.ArrayList<>(List.of(
+                java.toString(), "-Dkmipkit.nativeLibrary=" + library,
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "abi-mismatch"));
+        String jacocoAgent = childJacocoAgentArgument(ManagementFactory.getRuntimeMXBean().getInputArguments());
+        if (jacocoAgent != null) {
+            command.add(1, jacocoAgent);
+        }
+
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        assertNotEquals(0, process.waitFor(), output);
+        assertTrue(output.contains(NativeLibraryLoader.ABI_FAILURE_MESSAGE), output);
+        assertFalse(output.contains(NativeLibraryLoader.LOAD_FAILURE_MESSAGE), output);
     }
 
     @Test
@@ -1031,6 +1112,17 @@ final class NativeLibraryLoaderTest {
     }
 
     private record ProcessResult(int exitCode, String output) {}
+
+    private static String wrongAbiLibraryName() {
+        String osName = System.getProperty("os.name", "");
+        if (osName.startsWith("Windows")) {
+            return "kmipkit_wrong_abi.dll";
+        }
+        if (osName.startsWith("Mac")) {
+            return "libkmipkit_wrong_abi.dylib";
+        }
+        return "libkmipkit_wrong_abi.so";
+    }
 
     private static String childJacocoAgentArgument(List<String> inputArguments) {
         for (String argument : inputArguments) {

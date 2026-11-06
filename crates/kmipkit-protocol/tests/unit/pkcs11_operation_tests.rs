@@ -156,6 +156,57 @@ fn table_274_absence_remains_absent() {
     assert_eq!(result.with_output_parameters(|_| ()), None);
     assert_eq!(result.with_correlation_value(|_| ()), None);
 }
+
+#[test]
+fn table_274_distinguishes_absent_from_present_empty_correlation_value() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/pkcs11-parity.json"
+    ))
+    .unwrap();
+    let typed = &fixture["expectedOutput"]["typedResponse"];
+    let presence_cases = &fixture["expectedOutput"]["correlationValuePresenceCases"];
+    assert_eq!(presence_cases["absent"]["present"], false);
+    assert_eq!(presence_cases["presentEmpty"]["present"], true);
+    let empty_hex = presence_cases["presentEmpty"]["hex"].as_str().unwrap();
+    let (empty_hex_pairs, empty_hex_remainder) = empty_hex.as_bytes().as_chunks::<2>();
+    assert_eq!(empty_hex_remainder, &[] as &[u8]);
+    let empty_value = empty_hex_pairs
+        .iter()
+        .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
+        .collect::<Vec<_>>();
+    let function_value = i32::try_from(typed["function"]["childValue"].as_i64().unwrap()).unwrap();
+    let return_code = u32::from_str_radix(
+        typed["returnCode"]["childValue"]
+            .as_str()
+            .unwrap()
+            .strip_prefix("0x")
+            .unwrap(),
+        16,
+    )
+    .unwrap();
+    let payload = |correlation: Option<Vec<u8>>| {
+        let mut fields = vec![item(
+            FUNCTION,
+            Value::structure(function(Value::integer(function_value))),
+        )];
+        if let Some(correlation) = correlation {
+            fields.push(item(CORRELATION, Value::byte_string(correlation)));
+        }
+        fields.push(item(
+            RETURN,
+            Value::structure(structure([item(RETURN, Value::enumeration(return_code))])),
+        ));
+        structure(fields)
+    };
+    let absent = response(0, None, Some(payload(None))).unwrap();
+    let present_empty = response(0, None, Some(payload(Some(empty_value)))).unwrap();
+
+    assert_eq!(absent.with_correlation_value(<[u8]>::to_vec), None);
+    assert_eq!(
+        present_empty.with_correlation_value(<[u8]>::to_vec),
+        Some(Vec::new())
+    );
+}
 #[test]
 fn table_274_rejects_missing_duplicate_wrong_type_and_out_of_order_fields() {
     for payload in [

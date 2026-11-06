@@ -217,11 +217,10 @@ fn set_defaults_outcome_exposes_typed_views_and_safe_diagnostics() {
     let outcome_debug = format!("{outcome:?}");
     let view_debug = format!("{view:?}");
     assert!(outcome_debug.starts_with("SetDefaults("));
-    assert!(view_debug.starts_with("SetDefaults("));
-    for formatted in [&outcome_debug, &view_debug] {
-        assert!(formatted.contains("[REDACTED]"), "{formatted}");
-        assert!(!formatted.contains(DEBUG_SENTINEL), "{formatted}");
-    }
+    assert_eq!(view_debug, "SetDefaults");
+    assert!(outcome_debug.contains("[REDACTED]"), "{outcome_debug}");
+    assert!(!outcome_debug.contains(DEBUG_SENTINEL), "{outcome_debug}");
+    assert!(!view_debug.contains(DEBUG_SENTINEL), "{view_debug}");
     assert_eq!(
         outcome.to_string(),
         format!("SetDefaults({})", outcome.result())
@@ -249,12 +248,13 @@ fn table_329_success_returns_typed_result_with_empty_payload() {
         panic!("Set Defaults returns a typed outcome");
     };
     assert_eq!(response.result().status().raw(), 0);
-    response.with_ttlv(|item| {
+    assert!(response.with_ttlv(|item| {
         assert!(item.children().iter().any(|field| {
             field.tag().raw() == RESPONSE_PAYLOAD
                 && field.with_value(|value| matches!(value, ValueView::Structure(payload) if payload.children().is_empty()))
         }));
-    });
+    })
+    .is_some());
 }
 
 #[test]

@@ -20,7 +20,9 @@ else
             ;;
     esac
 fi
+cargo_target_directory="$repository_root/target"
 native_output="$script_dir/../target/native"
+export CARGO_TARGET_DIR="$cargo_target_directory"
 mkdir -p "$native_output"
 
 zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
@@ -28,11 +30,36 @@ zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
     "$script_dir/tests/zeroizing_bytes_test.cpp" -o "$zeroizing_bytes_test"
 "$zeroizing_bytes_test"
 
-cargo build --locked -p kmipkit-ffi --manifest-path "$repository_root/Cargo.toml"
+client_batch_item_transfer_test="$native_output/client_batch_item_transfer_test"
+"${CXX:-c++}" -std=c++17 -Wall -Wextra -Werror \
+    "$script_dir/tests/client_batch_item_transfer_test.cpp" -o "$client_batch_item_transfer_test"
+"$client_batch_item_transfer_test"
+
+native_handle_transfer_test="$native_output/native_handle_transfer_test"
+"${CXX:-c++}" -std=c++17 -Wall -Wextra -Werror \
+    "$script_dir/tests/native_handle_transfer_test.cpp" -o "$native_handle_transfer_test"
+"$native_handle_transfer_test"
+
+response_identifier_test="$native_output/response_identifier_validation_test"
+set -- -std=c++17 -Wall -Wextra -Werror
+if [ "${KMIPKIT_JNI_COVERAGE:-}" = "llvm" ]; then
+    set -- "$@" -fprofile-instr-generate -fcoverage-mapping
+fi
+"${CXX:-c++}" "$@" -I"$repository_root/tests/fixtures/api/generated" \
+    "$script_dir/tests/response_identifier_validation_test.cpp" -o "$response_identifier_test"
+"$response_identifier_test"
+
+response_bridge_test="$native_output/response_bridge_test"
+"${CXX:-c++}" "$@" -I"$repository_root/tests/fixtures/api/generated" \
+    "$script_dir/tests/response_bridge_test.cpp" -o "$response_bridge_test"
+"$response_bridge_test"
+
+cargo build --locked -p kmipkit-ffi \
+    --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in
     Linux*)
-        rust_library="$repository_root/target/debug/libkmipkit_ffi.a"
+        rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
         set -- -std=c++17 -fPIC -shared
         if [ "${KMIPKIT_JNI_COVERAGE:-}" = "llvm" ]; then
             set -- "$@" -fprofile-instr-generate -fcoverage-mapping
@@ -45,7 +72,7 @@ case "$(uname -s)" in
             -ldl -lpthread -lm -o "$native_output/libkmipkit_jni.so"
         ;;
     Darwin*)
-        rust_library="$repository_root/target/debug/libkmipkit_ffi.a"
+        rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
         "${CXX:-c++}" -std=c++17 -dynamiclib \
             -I"$java_home/include" -I"$java_home/include/darwin" \
             -I"$repository_root/bindings/c/include" \

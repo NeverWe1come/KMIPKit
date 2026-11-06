@@ -31,5 +31,6 @@
 ## Notes
 
 - Static source evidence is recorded in the draft; independent checklist approval remains outstanding.
+- The direct maintainer approval for implementation and T098 manifest reconciliation is recorded in [approval-record.md](../approval-record.md); independent review remains outstanding and every reviewer-owned item remains unchecked.
 - Activate and Destroy have client request/response tables but their catalog prose clauses are classified server-only.
 - The catalog has no requirement-specific official test-case link for Archive or Recover; derived tests cannot claim official-case passes.

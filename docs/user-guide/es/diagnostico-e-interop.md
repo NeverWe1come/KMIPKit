@@ -15,6 +15,22 @@ se mantienen. La respuesta de éxito está vacía. La prohibición de ofrecer
 Interop en producción corresponde al servidor. Implementar la operación del
 cliente no demuestra interoperabilidad.
 
+El mapeo aprobado en KMIPKIT-0042 también está disponible en las fachadas de
+cliente C, Java y Python. C crea el elemento de batch con
+`kmipkit_client_batch_item_interop` y obtiene la respuesta válida completa con
+`kmipkit_client_batch_item_response_interop_ttlv`; libere la estructura
+devuelta con `kmipkit_ttlv_structure_release`. Java usa
+`ClientBatchItem.interop` y `ClientBatchItemResult.interopResponse`; cierre el
+`InteropResponse` devuelto. Python usa `client_batch_item_interop` y
+`BatchItemResult.interop_response`; cierre el `InteropResponse` devuelto.
+Function conserva una Enumeration abierta de 32 bits sin signo e Identifier
+debe ser UTF-8. El acceso a la respuesta está disponible para resultados
+válidos Success, Failure y Pending; no expone cuerpos de respuesta de errores
+locales de transporte, decodificación o validación. Estos accesores transfieren
+al llamante una estructura TTLV genérica propia. Los runtimes de Java y Python
+pueden conservar copias adicionales de los datos del identificador o la
+respuesta.
+
 ```rust,kmipkit-test
 use kmipkit_protocol::{InteropRequest, SecretText};
 
@@ -87,10 +103,12 @@ también pueden conservar copias externas en sus runtimes. Consulte el
 Los ejemplos se ejecutan en `diagnostics_guide_examples.rs` y se compilan
 directamente con `python scripts/test_user_guide_examples.py --guide
 docs/user-guide/es/diagnostico-e-interop.md`. La
-[trazabilidad](../../../specs/028-diagnostics-interop/traceability.md) enlaza
-las pruebas derivadas del estándar. El mapeo tipado y la paridad C/Java/Python
-esperan a KMIPKIT-0043. Estos ejemplos no demuestran perfiles, certificación,
-fixtures oficiales de OASIS ni interoperabilidad con dos servidores.
+[trazabilidad](../../../specs/028-diagnostics-interop/traceability.md) y las
+evidencias de KMIPKIT-0043 enlazan las pruebas derivadas del estándar y las
+fachadas. El mapeo Interop está implementado en los cuatro lenguajes; quedan
+pendientes los controles finales de la PR y CI. Estos ejemplos no demuestran
+perfiles, certificación, fixtures oficiales de OASIS ni interoperabilidad
+con dos servidores.
 
 
 `with_extension(Item)` conserva los campos desconocidos del payload y su

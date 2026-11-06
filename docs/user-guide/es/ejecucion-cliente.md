@@ -1,9 +1,9 @@
 # Ejecución tipada del cliente
 
-Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
-sus operaciones: Discover Versions, Create, Create Key Pair, Create Split Key,
-Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
-Attribute List, Modify Attribute, Set Attribute, Activate, Archive, Destroy,
+Esta guía describe la base de ejecución tipada en Rust introducida por
+KMIPKIT-0007 y sus APIs de operación en Rust: Discover Versions, Create, Create
+Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
+Get Attributes, Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive, Destroy,
 Recover, Encrypt, Decrypt, Query y Ping. Para ejemplos de Encrypt y Decrypt de
 una parte y multipart controlado por el llamador, consulta la
 [guía de Encrypt y Decrypt](cifrado-descifrado.md). Para el comportamiento de
@@ -13,12 +13,20 @@ y Ping, consulta la [guía de Query y Ping](operaciones-query-ping.md). Para
 configurar una conexión de producción, consulta la [guía de transportes TLS y
 HTTPS](transportes-produccion.md).
 
+Esta guía describe la superficie de la API Rust de `kmipkit-client`. Un modelo
+o accesor de Rust no establece la disponibilidad de una operación en los
+cuatro lenguajes de la versión 1.0. En el manifiesto, `blocked` significa que
+el mapeo completo de operaciones 1.0 para los cuatro lenguajes no está
+disponible, aunque existan tipos de Rust. Consulta el [estado de paquetes e
+idiomas](paquetes-de-idiomas.md) para ver el estado actual de operaciones y
+capacidades.
+
 ## Límite de peticiones tipadas
 
-La API síncrona `kmipkit_client::Client::execute` acepta un `ClientBatch` que
-contiene únicamente variantes del conjunto cerrado `ClientRequest`. El cliente
-admite peticiones explícitas del cliente al servidor para Discover Versions,
-Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+La API síncrona de Rust `kmipkit_client::Client::execute` acepta un `ClientBatch`
+que contiene únicamente variantes del conjunto cerrado `ClientRequest`. El
+cliente Rust admite peticiones explícitas del cliente al servidor para Discover
+Versions, Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
 Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
 Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query y Ping.
 Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
@@ -127,6 +135,47 @@ respuesta y el mayor KMIP Integer con signo. El cliente también impone el
 límite local antes de entrar en el decoder TTLV, aunque el servidor ignore el
 tamaño anunciado.
 
+Las APIs de lote de C, Java y Python exponen las mismas tres formas de
+petición: C usa `kmipkit_client_batch_item_create`,
+`kmipkit_client_batch_item_create_key_pair` y
+`kmipkit_client_batch_item_create_split_key`; Java usa
+`ClientBatchItem.create`, `createKeyPair` y `createSplitKey`; Python usa
+`extensions.client_batch_item_create`, `client_batch_item_create_key_pair` y
+`client_batch_item_create_split_key`. Create requiere una estructura
+Attributes, que puede estar vacía. Create Key Pair mantiene separados sus seis
+grupos opcionales de atributos y máscaras. Create Split Key conserva los
+valores con signo de partes y umbral, el valor abierto del método y el
+identificador de entrada y los bytes del campo primo cuando se proporcionan.
+
+Los accesores de respuesta exitosa conservan el tipo TTLV original de cada
+Unique Identifier. C ofrece `kmipkit_client_batch_item_response_create`,
+`..._create_key_pair` y el par acotado de cantidad/índice
+`..._create_split_key_count` / `..._create_split_key_unique_identifier_at`;
+Java expone `createResponse()`, `createKeyPairResponse()` y
+`createSplitKeyUniqueIdentifiers()`; Python expone los campos de respuesta
+correspondientes en `BatchItemResult`. Los identificadores de las claves
+privada y pública siguen siendo distintos, y los de las partes divididas
+conservan su orden en el mensaje.
+
+El accessor aditivo de C `kmipkit_client_batch_item_response_metadata_v2`
+expone la operación de origen sin convertir y el Result Message UTF-8 exacto y
+opcional. La estructura y la función v1 existentes no cambian. El puntero del
+mensaje se presta mientras siga abierto el handle del elemento de respuesta;
+cópialo antes de liberarlo. `ClientBatchItemResult.metadataV2()` en Java y
+`BatchItemResult.metadata_v2` en Python copian el mensaje a una cadena del
+runtime antes de cerrar la respuesta nativa. No se garantiza el borrado de
+esas copias externas al descartarlas. El límite del mensaje completo también
+acota el texto (16 MiB por defecto). Un mensaje ausente se distingue de uno
+presente pero vacío.
+
+Result Message es texto no confiable del servidor. Se obtiene mediante
+inspección explícita de metadata y se omite del formato predeterminado, logs,
+errores y diagnósticos. OASIS KMIP v2.1 §8.6, Tabla 399, lo marca opcional
+solo cuando Result Status no es Pending ni Success; §9.17 permite un mensaje
+descriptivo de error. Por eso los fixtures compartidos de éxito y Pending lo
+omiten y `creation.result-message-on-failure.v1` comprueba el texto y UTF-8
+exactos en una respuesta Operation Failed.
+
 `Client::new` construye un cliente de producción a partir de una configuración
 inmutable del cliente y un `TransportConfig` validado. Acepta TTLV sobre TLS
 directo o TTLV sobre HTTPS/HTTP 1.1; no acepta transportes implementados por el
@@ -187,6 +236,12 @@ partir del reloj ni de un temporizador de cuenta atrás. Las peticiones
 iniciadas por el cliente omiten Server Correlation Value. Si se proporciona
 Client Correlation Value, es metadato independiente y nunca identifica un
 elemento del lote.
+
+El getter del lote distingue entre el campo ausente y el valor válido cero.
+Rust usa `ClientBatch::request_time_stamp` y devuelve `Option<i64>`; C usa
+`kmipkit_client_batch_request_time_stamp` con un indicador de presencia y un
+valor con signo; Java usa `ClientBatch.getRequestTimestamp()` y devuelve
+`OptionalLong`; Python expone `Batch.request_timestamp` como `int | None`.
 
 KMIP Specification v2.1 §9.20 también permite que un cliente sin reloj en
 tiempo real, pero con temporizador de cuenta atrás, calcule segundos relativos
@@ -251,6 +306,12 @@ trabajo de tipado separado en KMIPKIT-0043 T035; el pie impreso y la fuente
 OASIS fijada permanecen intactos. Esta interpretación no constituye una
 afirmación formal de conformidad. Sigue abierto bajo `OD-002` el hueco del
 catálogo para el campo obligatorio de la petición Process de la Tabla 278.
+
+Java y Python exponen la correlación mediante un callback que recibe una vista
+de solo lectura respaldada por almacenamiento temporal gestionado por KMIPKit.
+Ese almacenamiento se pone a cero antes de que el método vuelva, también si
+el callback lanza una excepción. Las copias que cree la aplicación son de su
+propiedad.
 
 ## Límites de recursos
 

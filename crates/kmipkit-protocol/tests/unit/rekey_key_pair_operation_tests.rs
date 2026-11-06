@@ -1,6 +1,6 @@
 //! Re-key Key Pair contracts from OASIS KMIP Specification v2.1 §6.1.47,
 //! Tables 308–312. Traceability: `KMIPKIT-REQ-SPEC-6.1.47-001`,
-//! `-004-001`, and `-004-002`.
+//! `-004-001`.
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{
@@ -12,6 +12,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001d;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const KEY_VALUE_NOT_PRESENT: u32 = 0x0000_0013;
 const PRIVATE_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_0066;
 const PUBLIC_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_006f;
@@ -95,9 +96,9 @@ fn request_emits_table_310_fields_once_in_order_and_preserves_groups() {
         .with_common_attributes(crate::AttributeSet::new())
         .with_private_key_attributes(crate::AttributeSet::new())
         .with_public_key_attributes(crate::AttributeSet::new())
-        .with_common_protection_storage_masks(structure([item(0x0042_0160, Value::integer(1))]))
-        .with_private_protection_storage_masks(structure([item(0x0042_0160, Value::integer(2))]))
-        .with_public_protection_storage_masks(structure([item(0x0042_0160, Value::integer(3))]));
+        .with_common_protection_storage_masks(structure([item(0x0042_015e, Value::integer(1))]))
+        .with_private_protection_storage_masks(structure([item(0x0042_015e, Value::integer(2))]))
+        .with_public_protection_storage_masks(structure([item(0x0042_015e, Value::integer(3))]));
 
     assert_eq!(request.private_key_unique_identifier(), Some(&identifier));
     let payload = request
@@ -263,7 +264,10 @@ fn successful_response_returns_both_replacement_identifiers_and_unknown_fields()
             "replacement-public".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -329,13 +333,36 @@ fn failure_preserves_table_312_reason_without_success_identifiers() {
 }
 
 #[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 312 remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REKEY_KEY_PAIR_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            PRIVATE_KEY_UNIQUE_IDENTIFIER,
+            Value::text_string("pending-rekey-key-pair-response".to_owned()),
+        )])),
+    );
+    let pending = RekeyKeyPairResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
+}
+
+#[test]
 fn request_debug_redacts_identifier_and_mask_contents() {
     let request = RekeyKeyPairRequest::new()
         .with_private_key_unique_identifier(UniqueIdentifier::TextString(
             "PRIVATE_KEY_IDENTIFIER_SENTINEL".to_owned(),
         ))
         .with_common_protection_storage_masks(structure([item(
-            0x0042_0160,
+            0x0042_015e,
             Value::text_string("PROTECTION_MASK_SECRET_SENTINEL".to_owned()),
         )]));
     let debug = format!("{request:?}");

@@ -12,6 +12,8 @@ from ._handles import (
     _new_handle,
     _scalar,
     synchronize_public_functions,
+    _wipe_staging_buffer,
+    _wrap_owned_handle,
 )
 
 
@@ -51,6 +53,14 @@ class Structure(NativeHandle):
     _release_name = "kmipkit_ttlv_structure_release"
 
 
+def _structure_from_native_address(address: int) -> Structure:
+    """Adopt an opaque Structure handle returned through the shared client ABI."""
+    if address <= 0:
+        errors.raise_for_status(4)
+    handle = ffi.cast("kmipkit_ttlv_structure_t *", address)
+    return _wrap_owned_handle(Structure, handle)
+
+
 class TtlvItem(NativeHandle):
     _release_name = "kmipkit_ttlv_item_release"
 
@@ -67,10 +77,17 @@ class TtlvValueView(NativeHandle):
     _release_name = "kmipkit_ttlv_value_view_release"
 
 
+def _item_type(value: int) -> ItemType:
+    try:
+        return ItemType(value)
+    except ValueError:
+        errors.raise_for_status(4)
+
+
 def raw_tag_from_raw(raw: int) -> RawTag:
     """Create a raw, not yet validated TTLV tag."""
     handle = _new_handle("kmipkit_raw_tag_t", lib.kmipkit_ttlv_raw_tag_create, raw)
-    return RawTag(handle)
+    return _wrap_owned_handle(RawTag, handle)
 
 
 def raw_tag_value(raw_tag: RawTag) -> int:
@@ -83,7 +100,7 @@ def raw_tag_try_checked(raw_tag: RawTag) -> Tag:
     handle = _new_handle(
         "kmipkit_tag_t", lib.kmipkit_ttlv_raw_tag_try_checked, raw_tag._pointer()
     )
-    return Tag(handle)
+    return _wrap_owned_handle(Tag, handle)
 
 
 def tag_value(tag: Tag) -> int:
@@ -94,7 +111,7 @@ def tag_value(tag: Tag) -> int:
 def codec_limits_defaults() -> CodecLimits:
     """Create the default bounded TTLV codec configuration."""
     handle = _new_handle("kmipkit_codec_limits_t", lib.kmipkit_codec_limits_defaults)
-    return CodecLimits(handle)
+    return _wrap_owned_handle(CodecLimits, handle)
 
 
 def codec_limits_create(
@@ -108,7 +125,45 @@ def codec_limits_create(
         max_structure_depth,
         max_elements,
     )
-    return CodecLimits(handle)
+    return _wrap_owned_handle(CodecLimits, handle)
+
+
+def _decode_wire(wire: bytes, limits: CodecLimits | None) -> TtlvItem:
+    if not isinstance(wire, bytes) or (limits is not None and not isinstance(limits, CodecLimits)):
+        errors.raise_for_status(4)
+    error = ffi.new("kmipkit_ttlv_decode_error_v1_t *")
+    error.struct_size = ffi.sizeof("kmipkit_ttlv_decode_error_v1_t")
+    error.abi_version = 1
+    output = ffi.new("kmipkit_ttlv_item_t **")
+    data = ffi.from_buffer("const uint8_t[]", wire) if wire else ffi.NULL
+    if limits is None:
+        status = _invoke(lib.kmipkit_ttlv_decode, data, len(wire), error, output)
+    else:
+        status = _invoke(
+            lib.kmipkit_ttlv_decode_with_limits,
+            data,
+            len(wire),
+            limits._pointer(),
+            error,
+            output,
+        )
+    if status != 0:
+        if error.kind != 0:
+            raise errors.TtlvDecodeError(int(error.kind), int(error.byte_offset))
+        errors.raise_for_status(status)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(4)
+    return _wrap_owned_handle(TtlvItem, output[0])
+
+
+def ttlv_decode(wire: bytes) -> TtlvItem:
+    """Decode exactly one complete Item using the default bounded codec limits."""
+    return _decode_wire(wire, None)
+
+
+def ttlv_decode_with_limits(wire: bytes, limits: CodecLimits) -> TtlvItem:
+    """Decode exactly one complete Item using caller-selected resource limits."""
+    return _decode_wire(wire, limits)
 
 
 def codec_limits_max_message_bytes(limits: CodecLimits) -> int:
@@ -129,7 +184,7 @@ def codec_limits_max_elements(limits: CodecLimits) -> int:
 
 def _new_value(symbol: str, c_type: str, *args: object) -> Value:
     function = getattr(lib, symbol)
-    return Value(_new_handle(c_type, function, *args))
+    return _wrap_owned_handle(Value, _new_handle(c_type, function, *args))
 
 
 def ttlv_value_integer(value: int) -> Value:
@@ -175,10 +230,17 @@ def _variable_value(symbol: str, value: bytes, limits: CodecLimits) -> Value:
         errors.raise_for_status(6)
     raw = view.tobytes()
     data = ffi.new("uint8_t[]", raw)
-    handle = _new_handle(
-        "kmipkit_ttlv_value_t", getattr(lib, symbol), limits._pointer(), data, len(raw)
-    )
-    return Value(handle)
+    try:
+        handle = _new_handle(
+            "kmipkit_ttlv_value_t",
+            getattr(lib, symbol),
+            limits._pointer(),
+            data,
+            len(raw),
+        )
+    finally:
+        _wipe_staging_buffer(data)
+    return _wrap_owned_handle(Value, handle)
 
 
 def ttlv_value_big_integer(value: bytes, limits: CodecLimits) -> Value:
@@ -201,11 +263,12 @@ def ttlv_value_structure(structure: Structure, limits: CodecLimits) -> Value:
         limits._pointer(),
         consumed=(0,),
     )
-    return Value(handle)
+    return _wrap_owned_handle(Value, handle)
 
 
 def ttlv_structure_create() -> Structure:
-    return Structure(
+    return _wrap_owned_handle(
+        Structure,
         _new_handle("kmipkit_ttlv_structure_t", lib.kmipkit_ttlv_structure_create)
     )
 
@@ -219,7 +282,19 @@ def ttlv_item_create(tag: Tag, value: Value, limits: CodecLimits) -> TtlvItem:
         limits._pointer(),
         consumed=(1,),
     )
-    return TtlvItem(handle)
+    return _wrap_owned_handle(TtlvItem, handle)
+
+
+def ttlv_item_view_from_item(item: TtlvItem) -> TtlvItemView:
+    """Create a read-only view of an owned Item while retaining its native owner."""
+    if not isinstance(item, TtlvItem):
+        errors.raise_for_status(4)
+    handle = _new_handle(
+        "kmipkit_ttlv_item_view_t",
+        lib.kmipkit_ttlv_item_view_from_item,
+        item._pointer(),
+    )
+    return _wrap_owned_handle(TtlvItemView, handle, owner=item)
 
 
 def ttlv_structure_with_item(
@@ -233,7 +308,7 @@ def ttlv_structure_with_item(
         limits._pointer(),
         consumed=(0, 1),
     )
-    return Structure(handle)
+    return _wrap_owned_handle(Structure, handle)
 
 
 def ttlv_structure_view(structure: Structure) -> TtlvStructureView:
@@ -242,7 +317,7 @@ def ttlv_structure_view(structure: Structure) -> TtlvStructureView:
         lib.kmipkit_ttlv_structure_view,
         structure._pointer(),
     )
-    return TtlvStructureView(handle, owner=structure)
+    return _wrap_owned_handle(TtlvStructureView, handle, owner=structure)
 
 
 def ttlv_structure_view_item_count(view: TtlvStructureView) -> int:
@@ -260,38 +335,38 @@ def ttlv_structure_view_item_at(view: TtlvStructureView, index: int) -> TtlvItem
         view._pointer(),
         index,
     )
-    return TtlvItemView(handle, owner=view)
+    return _wrap_owned_handle(TtlvItemView, handle, owner=view)
 
 
 def ttlv_item_view_tag(view: TtlvItemView) -> Tag:
     handle = _new_handle(
         "kmipkit_tag_t", lib.kmipkit_ttlv_item_view_tag, view._pointer()
     )
-    return Tag(handle, owner=view)
+    return _wrap_owned_handle(Tag, handle, owner=view)
 
 
 def ttlv_item_view_type(view: TtlvItemView) -> ItemType:
     value = _scalar("uint8_t", lib.kmipkit_ttlv_item_view_type, view._pointer())
-    return ItemType(value)
+    return _item_type(value)
 
 
 def ttlv_item_view_value(view: TtlvItemView) -> TtlvValueView:
     handle = _new_handle(
         "kmipkit_ttlv_value_view_t", lib.kmipkit_ttlv_item_view_value, view._pointer()
     )
-    return TtlvValueView(handle, owner=view)
+    return _wrap_owned_handle(TtlvValueView, handle, owner=view)
 
 
 def ttlv_value_view(value: Value) -> TtlvValueView:
     handle = _new_handle(
         "kmipkit_ttlv_value_view_t", lib.kmipkit_ttlv_value_view, value._pointer()
     )
-    return TtlvValueView(handle, owner=value)
+    return _wrap_owned_handle(TtlvValueView, handle, owner=value)
 
 
 def ttlv_value_view_type(view: TtlvValueView) -> ItemType:
     value = _scalar("uint8_t", lib.kmipkit_ttlv_value_view_type, view._pointer())
-    return ItemType(value)
+    return _item_type(value)
 
 
 def ttlv_value_view_structure(view: TtlvValueView) -> TtlvStructureView:
@@ -300,7 +375,7 @@ def ttlv_value_view_structure(view: TtlvValueView) -> TtlvStructureView:
         lib.kmipkit_ttlv_value_view_structure,
         view._pointer(),
     )
-    return TtlvStructureView(handle, owner=view)
+    return _wrap_owned_handle(TtlvStructureView, handle, owner=view)
 
 
 def _value_scalar(symbol: str, c_type: str, view: TtlvValueView) -> int:

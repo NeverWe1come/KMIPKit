@@ -1,0 +1,839 @@
+{
+  "formatVersion": 1,
+  "cases": [
+    {
+      "rootDeclarationId": "rust-observed-32311dd2ef639f8bca11",
+      "rootExportName": "kmipkit::ClientBatch",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch"
+    },
+    {
+      "rootDeclarationId": "rust-observed-933bbaa94b089868b19c",
+      "rootExportName": "kmipkit::ClientBatch::push",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch::push"
+    },
+    {
+      "rootDeclarationId": "rust-observed-3578c83dadf96cd8d047",
+      "rootExportName": "kmipkit::ClientBatch::with_asynchronous_indicator",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch::with_asynchronous_indicator"
+    },
+    {
+      "rootDeclarationId": "rust-observed-c1de7a380e8b3bcb7eb1",
+      "rootExportName": "kmipkit::ClientBatch::with_batch_error_continuation_option",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch::with_batch_error_continuation_option"
+    },
+    {
+      "rootDeclarationId": "rust-observed-e462fd57bbbcdb507a63",
+      "rootExportName": "kmipkit::ClientBatch::with_batch_order_option",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch::with_batch_order_option"
+    },
+    {
+      "rootDeclarationId": "rust-observed-78382e40fe75d798f2ff",
+      "rootExportName": "kmipkit::ClientBatch::with_client_correlation_value",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch::with_client_correlation_value"
+    },
+    {
+      "rootDeclarationId": "rust-observed-93443866f46c0ae28711",
+      "rootExportName": "kmipkit::ClientBatch::with_request_time_stamp",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatch::with_request_time_stamp"
+    },
+    {
+      "rootDeclarationId": "rust-observed-8812552fa446136e1f31",
+      "rootExportName": "kmipkit::ClientBatchItem::discover_versions",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItem::discover_versions"
+    },
+    {
+      "rootDeclarationId": "rust-observed-7e89d86a43b1cede0a41",
+      "rootExportName": "kmipkit::ClientBatchItem::extension_count",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItem::extension_count"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b85f138e202ffb11e3ed",
+      "rootExportName": "kmipkit::ClientBatchItem::extension_criticality_indicator_at",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItem::extension_criticality_indicator_at"
+    },
+    {
+      "rootDeclarationId": "rust-observed-40f859ae0f164f256876",
+      "rootExportName": "kmipkit::ClientBatchItem::extension_identity_at",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItem::extension_identity_at"
+    },
+    {
+      "rootDeclarationId": "rust-observed-812d21409255222d2186",
+      "rootExportName": "kmipkit::ClientBatchItem::with_extension",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItem::with_extension"
+    },
+    {
+      "rootDeclarationId": "rust-observed-ea1b662a4682f9194600",
+      "rootExportName": "kmipkit::ClientBatchItem::with_unique_batch_item_id",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItem::with_unique_batch_item_id"
+    },
+    {
+      "rootDeclarationId": "rust-observed-5a0086dda7a939f1c453",
+      "rootExportName": "kmipkit::ClientBatchItemResponse",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItemResponse"
+    },
+    {
+      "rootDeclarationId": "rust-observed-bc55e9fa32c26b0e142f",
+      "rootExportName": "kmipkit::ClientBatchItemResponse::outcome",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItemResponse::outcome"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d4955deb48f46d5b972b",
+      "rootExportName": "kmipkit::ClientBatchItemResponse::unique_batch_item_id",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id"
+    },
+    {
+      "rootDeclarationId": "rust-observed-75286f12bb55cdc881b3",
+      "rootExportName": "kmipkit::ClientBatchOutcome::AddAttribute",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::AddAttribute"
+    },
+    {
+      "rootDeclarationId": "rust-observed-35c11740092e65fa15fc",
+      "rootExportName": "kmipkit::ClientBatchOutcome::AdjustAttribute",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::AdjustAttribute"
+    },
+    {
+      "rootDeclarationId": "rust-observed-516ae55b77fe3252ed28",
+      "rootExportName": "kmipkit::ClientBatchOutcome::DeleteAttribute",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::DeleteAttribute"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b2eeaf9076423c2b1db1",
+      "rootExportName": "kmipkit::ClientBatchOutcome::DeriveKey",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::DeriveKey"
+    },
+    {
+      "rootDeclarationId": "rust-observed-a5fd4a87692856da32e0",
+      "rootExportName": "kmipkit::ClientBatchOutcome::Export",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::Export"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d19444d22b0030721018",
+      "rootExportName": "kmipkit::ClientBatchOutcome::GetAttributeList",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::GetAttributeList"
+    },
+    {
+      "rootDeclarationId": "rust-observed-355cbc4e8afc5382479e",
+      "rootExportName": "kmipkit::ClientBatchOutcome::GetAttributes",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::GetAttributes"
+    },
+    {
+      "rootDeclarationId": "rust-observed-1169050b6f9be9f52475",
+      "rootExportName": "kmipkit::ClientBatchOutcome::GetCompleted",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::GetCompleted"
+    },
+    {
+      "rootDeclarationId": "rust-observed-97fade1732968c846085",
+      "rootExportName": "kmipkit::ClientBatchOutcome::GetConstraints",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::GetConstraints"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d234aacaf6de7859bf6c",
+      "rootExportName": "kmipkit::ClientBatchOutcome::GetUsageAllocation",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::GetUsageAllocation"
+    },
+    {
+      "rootDeclarationId": "rust-observed-8a07d70df992432dd04d",
+      "rootExportName": "kmipkit::ClientBatchOutcome::Import",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::Import"
+    },
+    {
+      "rootDeclarationId": "rust-observed-7f3399acdf29379155c7",
+      "rootExportName": "kmipkit::ClientBatchOutcome::Interop",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::Interop"
+    },
+    {
+      "rootDeclarationId": "rust-observed-312bb23cd1026bdabe49",
+      "rootExportName": "kmipkit::ClientBatchOutcome::JoinSplitKeyCompleted",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::JoinSplitKeyCompleted"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b11bbc68601ea288d5de",
+      "rootExportName": "kmipkit::ClientBatchOutcome::LocateCompleted",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::LocateCompleted"
+    },
+    {
+      "rootDeclarationId": "rust-observed-1456cb5e8d0853509846",
+      "rootExportName": "kmipkit::ClientBatchOutcome::Log",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::Log"
+    },
+    {
+      "rootDeclarationId": "rust-observed-f821cf43e179ce8e755f",
+      "rootExportName": "kmipkit::ClientBatchOutcome::ModifyAttribute",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::ModifyAttribute"
+    },
+    {
+      "rootDeclarationId": "rust-observed-9d365075de2d655e8945",
+      "rootExportName": "kmipkit::ClientBatchOutcome::SetAttribute",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::SetAttribute"
+    },
+    {
+      "rootDeclarationId": "rust-observed-0b144a99493d5cd37742",
+      "rootExportName": "kmipkit::ClientBatchOutcome::SetConstraints",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::SetConstraints"
+    },
+    {
+      "rootDeclarationId": "rust-observed-2432ebf2bae2fed9ff9c",
+      "rootExportName": "kmipkit::ClientBatchOutcome::SetDefaults",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::SetDefaults"
+    },
+    {
+      "rootDeclarationId": "rust-observed-aa4b192087168981006d",
+      "rootExportName": "kmipkit::ClientBatchOutcome::activate_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::activate_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d9baa60b08787756b93d",
+      "rootExportName": "kmipkit::ClientBatchOutcome::archive_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::archive_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-294446afe7e6a70d678c",
+      "rootExportName": "kmipkit::ClientBatchOutcome::asynchronous_correlation_value",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value"
+    },
+    {
+      "rootDeclarationId": "rust-observed-ed315de4cf8184c82427",
+      "rootExportName": "kmipkit::ClientBatchOutcome::certify_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::certify_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-e09c91aebc408386020e",
+      "rootExportName": "kmipkit::ClientBatchOutcome::check_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::check_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-39a588fd0e272e829302",
+      "rootExportName": "kmipkit::ClientBatchOutcome::create_key_pair_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::create_key_pair_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-7551d6ea62e01edf82b5",
+      "rootExportName": "kmipkit::ClientBatchOutcome::create_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::create_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b3a316a24fce4bfcbe47",
+      "rootExportName": "kmipkit::ClientBatchOutcome::create_split_key_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::create_split_key_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b2486fc2309245873c9f",
+      "rootExportName": "kmipkit::ClientBatchOutcome::decrypt_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::decrypt_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-20e3cdcae0d30c3da56a",
+      "rootExportName": "kmipkit::ClientBatchOutcome::delegated_login_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::delegated_login_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b2e1bdc113799d986c97",
+      "rootExportName": "kmipkit::ClientBatchOutcome::derive_key_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::derive_key_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-4a4ec36bb63983b11e0a",
+      "rootExportName": "kmipkit::ClientBatchOutcome::destroy_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::destroy_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-33fd79e33d97cf5a3203",
+      "rootExportName": "kmipkit::ClientBatchOutcome::encrypt_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::encrypt_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-5aaf8e69f71d128f29e9",
+      "rootExportName": "kmipkit::ClientBatchOutcome::hash_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::hash_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-c02406dfc35f329dd0b9",
+      "rootExportName": "kmipkit::ClientBatchOutcome::join_split_key_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::join_split_key_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-bfdd7e7f68d0ea53fe62",
+      "rootExportName": "kmipkit::ClientBatchOutcome::login_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::login_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d05e6c52e9f6ea26088c",
+      "rootExportName": "kmipkit::ClientBatchOutcome::logout_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::logout_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-965626fbd9ad08c7dfa7",
+      "rootExportName": "kmipkit::ClientBatchOutcome::mac_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::mac_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-90a43ec6df3b669ab0e5",
+      "rootExportName": "kmipkit::ClientBatchOutcome::mac_verify_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::mac_verify_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-09e7553e1b75c9f30386",
+      "rootExportName": "kmipkit::ClientBatchOutcome::obtain_lease_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::obtain_lease_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-91c3543200e39cdd0fa7",
+      "rootExportName": "kmipkit::ClientBatchOutcome::operation",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::operation"
+    },
+    {
+      "rootDeclarationId": "rust-observed-6d846e7c70fe25fc18e5",
+      "rootExportName": "kmipkit::ClientBatchOutcome::recertify_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::recertify_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-45233981a2c94cc46330",
+      "rootExportName": "kmipkit::ClientBatchOutcome::recover_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::recover_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-2ec9dc60baa7dc32a050",
+      "rootExportName": "kmipkit::ClientBatchOutcome::register_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::register_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-58f6c50db233a1d8e84e",
+      "rootExportName": "kmipkit::ClientBatchOutcome::rekey_key_pair_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::rekey_key_pair_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-5e584ed44d346ebc07dd",
+      "rootExportName": "kmipkit::ClientBatchOutcome::rekey_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::rekey_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-1d93c37f3667775a00f3",
+      "rootExportName": "kmipkit::ClientBatchOutcome::reprovision_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::reprovision_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-c9bc226ded2cf2e16a82",
+      "rootExportName": "kmipkit::ClientBatchOutcome::revoke_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::revoke_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-e6d4db1da9e4840c4b5b",
+      "rootExportName": "kmipkit::ClientBatchOutcome::rng_retrieve_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::rng_retrieve_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-624d255e28682b6de1a7",
+      "rootExportName": "kmipkit::ClientBatchOutcome::rng_seed_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::rng_seed_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d190f26b1daedf203e17",
+      "rootExportName": "kmipkit::ClientBatchOutcome::sign_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::sign_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d431931d71fc9d309360",
+      "rootExportName": "kmipkit::ClientBatchOutcome::signature_verify_response",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientBatchOutcome::signature_verify_response"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d0793dd569b9e06c5c4a",
+      "rootExportName": "kmipkit::ClientError",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d0b2bc5285f66cd1ca4e",
+      "rootExportName": "kmipkit::ClientError::Protocol",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError::Protocol"
+    },
+    {
+      "rootDeclarationId": "rust-observed-6acbe5a92d4316d66f45",
+      "rootExportName": "kmipkit::ClientError::ServerResult",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError::ServerResult"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d6ae92e7ff5bf7e821ee",
+      "rootExportName": "kmipkit::ClientError::Transport",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError::Transport"
+    },
+    {
+      "rootDeclarationId": "rust-observed-12d533cb20d997fef6d7",
+      "rootExportName": "kmipkit::ClientError::category",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError::category"
+    },
+    {
+      "rootDeclarationId": "rust-observed-4921fde44a55dee1922a",
+      "rootExportName": "kmipkit::ClientError::cause_category",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError::cause_category"
+    },
+    {
+      "rootDeclarationId": "rust-observed-353e09ac04211b8ab086",
+      "rootExportName": "kmipkit::ClientError::delivery_state",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientError::delivery_state"
+    },
+    {
+      "rootDeclarationId": "rust-observed-492692680e5acc81f4ee",
+      "rootExportName": "kmipkit::ClientErrorCategory",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientErrorCategory"
+    },
+    {
+      "rootDeclarationId": "rust-observed-1acef8924f054e09ee9d",
+      "rootExportName": "kmipkit::ClientErrorCategory::Protocol",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientErrorCategory::Protocol"
+    },
+    {
+      "rootDeclarationId": "rust-observed-031ed23cfaeb257823db",
+      "rootExportName": "kmipkit::ClientErrorCategory::ServerResult",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientErrorCategory::ServerResult"
+    },
+    {
+      "rootDeclarationId": "rust-observed-1d1139848c248486912a",
+      "rootExportName": "kmipkit::ClientErrorCategory::Transport",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientErrorCategory::Transport"
+    },
+    {
+      "rootDeclarationId": "rust-observed-60bfcf711a3f91fc76c4",
+      "rootExportName": "kmipkit::ClientOperation",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperation"
+    },
+    {
+      "rootDeclarationId": "rust-observed-942a7b0a71de8e092917",
+      "rootExportName": "kmipkit::ClientOperation::CreateKeyPair",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperation::CreateKeyPair"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b5c8efcf6f883bd2132c",
+      "rootExportName": "kmipkit::ClientOperation::CreateSplitKey",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperation::CreateSplitKey"
+    },
+    {
+      "rootDeclarationId": "rust-observed-e80bee902ab4b0c9b470",
+      "rootExportName": "kmipkit::ClientOperationOutcome",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome"
+    },
+    {
+      "rootDeclarationId": "rust-observed-00ff3303adcb20eb2f3e",
+      "rootExportName": "kmipkit::ClientOperationOutcome::cancellation_result",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome::cancellation_result"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d3548ceea6fcc9a2833f",
+      "rootExportName": "kmipkit::ClientOperationOutcome::is_pending",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome::is_pending"
+    },
+    {
+      "rootDeclarationId": "rust-observed-4328d204d298d5229963",
+      "rootExportName": "kmipkit::ClientOperationOutcome::operation",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome::operation"
+    },
+    {
+      "rootDeclarationId": "rust-observed-e46423fc806c8e06bc8f",
+      "rootExportName": "kmipkit::ClientOperationOutcome::result",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome::result"
+    },
+    {
+      "rootDeclarationId": "rust-observed-5164fc13c4c96188d826",
+      "rootExportName": "kmipkit::ClientOperationOutcome::with_asynchronous_correlation_value",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+    },
+    {
+      "rootDeclarationId": "rust-observed-05e7b583c52c36ff9e2c",
+      "rootExportName": "kmipkit::ClientOperationOutcome::with_response_payload",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientOperationOutcome::with_response_payload"
+    },
+    {
+      "rootDeclarationId": "rust-observed-9298e7fd4b9285dc8cd3",
+      "rootExportName": "kmipkit::ClientRequest::Certify",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Certify"
+    },
+    {
+      "rootDeclarationId": "rust-observed-7bc37d23f0d597cf8156",
+      "rootExportName": "kmipkit::ClientRequest::CreateKeyPair",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::CreateKeyPair"
+    },
+    {
+      "rootDeclarationId": "rust-observed-2807f0d54cc4d855cd78",
+      "rootExportName": "kmipkit::ClientRequest::CreateSplitKey",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::CreateSplitKey"
+    },
+    {
+      "rootDeclarationId": "rust-observed-aec481f2aa8c3d798b6b",
+      "rootExportName": "kmipkit::ClientRequest::Export",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Export"
+    },
+    {
+      "rootDeclarationId": "rust-observed-bcfe0346f278ab140493",
+      "rootExportName": "kmipkit::ClientRequest::Get",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Get"
+    },
+    {
+      "rootDeclarationId": "rust-observed-345f2b524e4c83d87865",
+      "rootExportName": "kmipkit::ClientRequest::GetAttributeList",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::GetAttributeList"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b4510951e9d5f9e7b990",
+      "rootExportName": "kmipkit::ClientRequest::GetAttributes",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::GetAttributes"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b3ab111d2e31d0d6a5f9",
+      "rootExportName": "kmipkit::ClientRequest::GetConstraints",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::GetConstraints"
+    },
+    {
+      "rootDeclarationId": "rust-observed-54d53901b332eb10df39",
+      "rootExportName": "kmipkit::ClientRequest::GetUsageAllocation",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::GetUsageAllocation"
+    },
+    {
+      "rootDeclarationId": "rust-observed-845703c389f8f721c5c8",
+      "rootExportName": "kmipkit::ClientRequest::Import",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Import"
+    },
+    {
+      "rootDeclarationId": "rust-observed-a78540b55517c8061e70",
+      "rootExportName": "kmipkit::ClientRequest::Interop",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Interop"
+    },
+    {
+      "rootDeclarationId": "rust-observed-d5a3e8b2d10f95483b28",
+      "rootExportName": "kmipkit::ClientRequest::JoinSplitKey",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::JoinSplitKey"
+    },
+    {
+      "rootDeclarationId": "rust-observed-e64d93dbb39c85df4a83",
+      "rootExportName": "kmipkit::ClientRequest::Locate",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Locate"
+    },
+    {
+      "rootDeclarationId": "rust-observed-6cd01839d68bc364adeb",
+      "rootExportName": "kmipkit::ClientRequest::Log",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Log"
+    },
+    {
+      "rootDeclarationId": "rust-observed-248e176bb3ede6008454",
+      "rootExportName": "kmipkit::ClientRequest::MacVerify",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::MacVerify"
+    },
+    {
+      "rootDeclarationId": "rust-observed-64a30f3f080da38f07f0",
+      "rootExportName": "kmipkit::ClientRequest::ObtainLease",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::ObtainLease"
+    },
+    {
+      "rootDeclarationId": "rust-observed-af0e46dfcf194f1e06f0",
+      "rootExportName": "kmipkit::ClientRequest::ReProvision",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::ReProvision"
+    },
+    {
+      "rootDeclarationId": "rust-observed-2e85d64836128fdd1bb6",
+      "rootExportName": "kmipkit::ClientRequest::Recertify",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Recertify"
+    },
+    {
+      "rootDeclarationId": "rust-observed-46f5af9fe110693e47ff",
+      "rootExportName": "kmipkit::ClientRequest::Register",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Register"
+    },
+    {
+      "rootDeclarationId": "rust-observed-ab0c8fbacb89f8088739",
+      "rootExportName": "kmipkit::ClientRequest::Rekey",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Rekey"
+    },
+    {
+      "rootDeclarationId": "rust-observed-85efc189fa4defe3324f",
+      "rootExportName": "kmipkit::ClientRequest::RekeyKeyPair",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::RekeyKeyPair"
+    },
+    {
+      "rootDeclarationId": "rust-observed-27bee41682417623e4b7",
+      "rootExportName": "kmipkit::ClientRequest::Revoke",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::Revoke"
+    },
+    {
+      "rootDeclarationId": "rust-observed-2d9d58af46509cacef8b",
+      "rootExportName": "kmipkit::ClientRequest::RngRetrieve",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::RngRetrieve"
+    },
+    {
+      "rootDeclarationId": "rust-observed-7d8132797f0844129af0",
+      "rootExportName": "kmipkit::ClientRequest::RngSeed",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::RngSeed"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b4a94e5e0db608823382",
+      "rootExportName": "kmipkit::ClientRequest::SetConstraints",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::SetConstraints"
+    },
+    {
+      "rootDeclarationId": "rust-observed-10cdec8ac838c7ffc5ba",
+      "rootExportName": "kmipkit::ClientRequest::SetDefaults",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::SetDefaults"
+    },
+    {
+      "rootDeclarationId": "rust-observed-87cadcaa8b330e82fec0",
+      "rootExportName": "kmipkit::ClientRequest::SignatureVerify",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::SignatureVerify"
+    },
+    {
+      "rootDeclarationId": "rust-observed-93ba766af4a8d63c0373",
+      "rootExportName": "kmipkit::ClientRequest::check",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::check"
+    },
+    {
+      "rootDeclarationId": "rust-observed-979521e14f2461810182",
+      "rootExportName": "kmipkit::ClientRequest::delegated_login",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::delegated_login"
+    },
+    {
+      "rootDeclarationId": "rust-observed-02603a2a5d2e9906e9f7",
+      "rootExportName": "kmipkit::ClientRequest::login",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::login"
+    },
+    {
+      "rootDeclarationId": "rust-observed-0b48a0e3ecee8ec1f305",
+      "rootExportName": "kmipkit::ClientRequest::logout",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::logout"
+    },
+    {
+      "rootDeclarationId": "rust-observed-bdb4e85f71385f7583f7",
+      "rootExportName": "kmipkit::ClientRequest::reprovision",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::reprovision"
+    },
+    {
+      "rootDeclarationId": "rust-observed-55cc724aa1f6075434b4",
+      "rootExportName": "kmipkit::ClientRequest::rng_retrieve",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::rng_retrieve"
+    },
+    {
+      "rootDeclarationId": "rust-observed-87b41a5927a75d001e04",
+      "rootExportName": "kmipkit::ClientRequest::rng_seed",
+      "canonicalPackageId": "rust-kmipkit-client",
+      "canonicalExportName": "kmipkit_client::ClientRequest::rng_seed"
+    },
+    {
+      "rootDeclarationId": "rust-observed-fe77dd29ab23c017d35f",
+      "rootExportName": "kmipkit::RequestDeliveryState",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState"
+    },
+    {
+      "rootDeclarationId": "rust-observed-60c3eca04ad9e86d8f7a",
+      "rootExportName": "kmipkit::RequestDeliveryState::NotSent",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState::NotSent"
+    },
+    {
+      "rootDeclarationId": "rust-observed-f8bac69494ef4d4bfa59",
+      "rootExportName": "kmipkit::RequestDeliveryState::PossiblySent",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState::PossiblySent"
+    },
+    {
+      "rootDeclarationId": "rust-observed-20ab890fc98078cd14e3",
+      "rootExportName": "kmipkit::RequestDeliveryState::ResponseStarted",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState::ResponseStarted"
+    },
+    {
+      "rootDeclarationId": "rust-observed-581296d3d8f2ea4dbcdf",
+      "rootExportName": "kmipkit::RequestDeliveryState::not_sent",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState::not_sent"
+    },
+    {
+      "rootDeclarationId": "rust-observed-41292f0ecae90ab18f3d",
+      "rootExportName": "kmipkit::RequestDeliveryState::response_bytes_received",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState::response_bytes_received"
+    },
+    {
+      "rootDeclarationId": "rust-observed-f513e34426fea2030b6c",
+      "rootExportName": "kmipkit::RequestDeliveryState::write_started",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::RequestDeliveryState::write_started"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b384ce311bc8d9880055",
+      "rootExportName": "kmipkit::TransportCauseCategory",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportCauseCategory"
+    },
+    {
+      "rootDeclarationId": "rust-observed-31c4d078f713db35dedf",
+      "rootExportName": "kmipkit::TransportCauseCategory::Http",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportCauseCategory::Http"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b1d97c3e3bacb3424f73",
+      "rootExportName": "kmipkit::TransportCauseCategory::Io",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportCauseCategory::Io"
+    },
+    {
+      "rootDeclarationId": "rust-observed-2c55c4b2cff07bea9b5c",
+      "rootExportName": "kmipkit::TransportCauseCategory::Other",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportCauseCategory::Other"
+    },
+    {
+      "rootDeclarationId": "rust-observed-a98e3f47426520fb1c98",
+      "rootExportName": "kmipkit::TransportCauseCategory::Timeout",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportCauseCategory::Timeout"
+    },
+    {
+      "rootDeclarationId": "rust-observed-b2699ca6f620887726bb",
+      "rootExportName": "kmipkit::TransportCauseCategory::Tls",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportCauseCategory::Tls"
+    },
+    {
+      "rootDeclarationId": "rust-observed-03a26e67b1c4ab53c66f",
+      "rootExportName": "kmipkit::TransportError",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportError"
+    },
+    {
+      "rootDeclarationId": "rust-observed-93ac4ef8872c418b6f27",
+      "rootExportName": "kmipkit::TransportError::cause_category",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportError::cause_category"
+    },
+    {
+      "rootDeclarationId": "rust-observed-9cc8fb4708250bf8c4a8",
+      "rootExportName": "kmipkit::TransportError::delivery_state",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportError::delivery_state"
+    },
+    {
+      "rootDeclarationId": "rust-observed-4440c1219dcb9a65d06b",
+      "rootExportName": "kmipkit::TransportError::new",
+      "canonicalPackageId": "rust-kmipkit-transport",
+      "canonicalExportName": "kmipkit_transport::TransportError::new"
+    }
+  ]
+}

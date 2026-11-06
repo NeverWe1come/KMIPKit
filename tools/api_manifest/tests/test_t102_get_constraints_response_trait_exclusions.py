@@ -1,0 +1,3418 @@
+"""Exact T102 operation-trait exclusion and preservation contracts.
+
+The tests cover Constraints, Check, Certify, Derive Key, Export, Get, Import,
+Join Split Key, Interop, Locate, Log, Obtain Lease, Re-certify, Re-key,
+Re-key Key Pair, Register, Revoke, Re-Provision, Validate, and Cancel operations.
+Each operation's approved owner and OASIS citation are asserted by its focused
+case; compiler-visible Rust traits are not separate KMIP capabilities.
+"""
+
+from __future__ import annotations
+
+import json
+import unittest
+
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_PUBLIC_DECLARATIONS,
+)
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+RUST_REPORT = (
+    ROOT
+    / "specs"
+    / "043-public-api-bindings"
+    / "reports"
+    / "rust-export-report-2026-11-01.json"
+)
+APPROVAL_SOURCE = {
+    "kind": "feature-specification",
+    "path": "specs/043-public-api-bindings/spec.md",
+    "status": "Approved",
+    "evidence": "**Status**: Approved for implementation",
+}
+PREFIX = "<kmipkit_protocol::GetConstraintsResponse as "
+ROOT_PREFIX = "<kmipkit::GetConstraintsResponse as "
+SET_PREFIX = "<kmipkit_protocol::SetConstraintsResponse as "
+SET_ROOT_PREFIX = "<kmipkit::SetConstraintsResponse as "
+CERTIFY_PREFIX = "<kmipkit_protocol::CertifyResponse as "
+VALIDATE_PREFIX = "<kmipkit_protocol::ValidateResponse as "
+CHECK_PREFIX = "<kmipkit_protocol::CheckResponse as "
+DERIVE_KEY_PREFIX = "<kmipkit_protocol::DeriveKeyResponse as "
+EXPORT_PREFIX = "<kmipkit_protocol::ExportResponse as "
+GET_PREFIX = "<kmipkit_protocol::GetResponse as "
+LOCATE_PREFIX = "<kmipkit_protocol::LocateResponse as "
+INTEROP_PREFIX = "<kmipkit_protocol::InteropResponse as "
+LOCATE_REQUEST_PREFIX = "<kmipkit_protocol::LocateRequest as "
+LOG_PREFIX = "<kmipkit_protocol::LogResponse as "
+IMPORT_PREFIX = "<kmipkit_protocol::ImportResponse as "
+JOIN_SPLIT_RESPONSE_PREFIX = "<kmipkit_protocol::JoinSplitKeyResponse as "
+OBTAIN_LEASE_RESPONSE_PREFIX = "<kmipkit_protocol::ObtainLeaseResponse as "
+REKEY_KEY_PAIR_RESPONSE_PREFIX = "<kmipkit_protocol::RekeyKeyPairResponse as "
+EXPECTED_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::GetConstraintsResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
+    "<kmipkit_protocol::GetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow_mut",
+    "<kmipkit_protocol::GetConstraintsResponse as core::convert::From<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::from",
+    "<kmipkit_protocol::GetConstraintsResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::GetConstraintsResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::GetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::GetConstraintsResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::GetConstraintsResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::GetConstraintsResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_ROOT_TRAIT_EXPORTS = {
+    "<kmipkit::GetConstraintsResponse as core::any::Any>::type_id",
+    "<kmipkit::GetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow",
+    "<kmipkit::GetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::borrow_mut",
+    "<kmipkit::GetConstraintsResponse as core::convert::From<kmipkit_protocol::get_constraints::GetConstraintsResponse>>::from",
+    "<kmipkit::GetConstraintsResponse as core::convert::Into<U>>::into",
+    "<kmipkit::GetConstraintsResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit::GetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit::GetConstraintsResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit::GetConstraintsResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit::GetConstraintsResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_SET_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::SetConstraintsResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::SetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow",
+    "<kmipkit_protocol::SetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow_mut",
+    "<kmipkit_protocol::SetConstraintsResponse as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::from",
+    "<kmipkit_protocol::SetConstraintsResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::SetConstraintsResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::SetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::SetConstraintsResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_SET_ROOT_TRAIT_EXPORTS = {
+    "<kmipkit::SetConstraintsResponse as core::any::Any>::type_id",
+    "<kmipkit::SetConstraintsResponse as core::borrow::Borrow<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow",
+    "<kmipkit::SetConstraintsResponse as core::borrow::BorrowMut<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::borrow_mut",
+    "<kmipkit::SetConstraintsResponse as core::convert::From<kmipkit_protocol::set_constraints::SetConstraintsResponse>>::from",
+    "<kmipkit::SetConstraintsResponse as core::convert::Into<U>>::into",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit::SetConstraintsResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit::SetConstraintsResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_CERTIFY_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::CertifyResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::CertifyResponse as core::borrow::Borrow<kmipkit_protocol::certify::CertifyResponse>>::borrow",
+    "<kmipkit_protocol::CertifyResponse as core::borrow::BorrowMut<kmipkit_protocol::certify::CertifyResponse>>::borrow_mut",
+    "<kmipkit_protocol::CertifyResponse as core::convert::From<kmipkit_protocol::certify::CertifyResponse>>::from",
+    "<kmipkit_protocol::CertifyResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::CertifyResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::CertifyResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_VALIDATE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::ValidateResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::ValidateResponse as core::borrow::Borrow<kmipkit_protocol::validate::ValidateResponse>>::borrow",
+    "<kmipkit_protocol::ValidateResponse as core::borrow::BorrowMut<kmipkit_protocol::validate::ValidateResponse>>::borrow_mut",
+    "<kmipkit_protocol::ValidateResponse as core::convert::From<kmipkit_protocol::validate::ValidateResponse>>::from",
+    "<kmipkit_protocol::ValidateResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::ValidateResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::ValidateResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_CHECK_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::CheckResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::CheckResponse as core::borrow::Borrow<kmipkit_protocol::check::CheckResponse>>::borrow",
+    "<kmipkit_protocol::CheckResponse as core::borrow::BorrowMut<kmipkit_protocol::check::CheckResponse>>::borrow_mut",
+    "<kmipkit_protocol::CheckResponse as core::convert::From<kmipkit_protocol::check::CheckResponse>>::from",
+    "<kmipkit_protocol::CheckResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::CheckResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::CheckResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::CheckResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::CheckResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::CheckResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_DERIVE_KEY_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::DeriveKeyResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::DeriveKeyResponse as core::borrow::Borrow<kmipkit_protocol::derive_key::DeriveKeyResponse>>::borrow",
+    "<kmipkit_protocol::DeriveKeyResponse as core::borrow::BorrowMut<kmipkit_protocol::derive_key::DeriveKeyResponse>>::borrow_mut",
+    "<kmipkit_protocol::DeriveKeyResponse as core::convert::From<kmipkit_protocol::derive_key::DeriveKeyResponse>>::from",
+    "<kmipkit_protocol::DeriveKeyResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::DeriveKeyResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::DeriveKeyResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::DeriveKeyResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::DeriveKeyResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::DeriveKeyResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_EXPORT_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::ExportResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::ExportResponse as core::borrow::Borrow<kmipkit_protocol::export::ExportResponse>>::borrow",
+    "<kmipkit_protocol::ExportResponse as core::borrow::BorrowMut<kmipkit_protocol::export::ExportResponse>>::borrow_mut",
+    "<kmipkit_protocol::ExportResponse as core::convert::From<kmipkit_protocol::export::ExportResponse>>::from",
+    "<kmipkit_protocol::ExportResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::ExportResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::ExportResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::ExportResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::ExportResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::ExportResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_GET_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::GetResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::GetResponse as core::borrow::Borrow<kmipkit_protocol::get::GetResponse>>::borrow",
+    "<kmipkit_protocol::GetResponse as core::borrow::BorrowMut<kmipkit_protocol::get::GetResponse>>::borrow_mut",
+    "<kmipkit_protocol::GetResponse as core::convert::From<kmipkit_protocol::get::GetResponse>>::from",
+    "<kmipkit_protocol::GetResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::GetResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::GetResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::GetResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::GetResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::GetResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_LOCATE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::LocateResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::LocateResponse as core::borrow::Borrow<kmipkit_protocol::locate::LocateResponse>>::borrow",
+    "<kmipkit_protocol::LocateResponse as core::borrow::BorrowMut<kmipkit_protocol::locate::LocateResponse>>::borrow_mut",
+    "<kmipkit_protocol::LocateResponse as core::convert::From<kmipkit_protocol::locate::LocateResponse>>::from",
+    "<kmipkit_protocol::LocateResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::LocateResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::LocateResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_INTEROP_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::InteropResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::InteropResponse as core::borrow::Borrow<kmipkit_protocol::interop::InteropResponse>>::borrow",
+    "<kmipkit_protocol::InteropResponse as core::borrow::BorrowMut<kmipkit_protocol::interop::InteropResponse>>::borrow_mut",
+    "<kmipkit_protocol::InteropResponse as core::convert::From<kmipkit_protocol::interop::InteropResponse>>::from",
+    "<kmipkit_protocol::InteropResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::InteropResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::InteropResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::InteropResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::InteropResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::InteropResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_LOCATE_REQUEST_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::LocateRequest as core::any::Any>::type_id",
+    "<kmipkit_protocol::LocateRequest as core::borrow::Borrow<kmipkit_protocol::locate::LocateRequest>>::borrow",
+    "<kmipkit_protocol::LocateRequest as core::borrow::BorrowMut<kmipkit_protocol::locate::LocateRequest>>::borrow_mut",
+    "<kmipkit_protocol::LocateRequest as core::convert::From<kmipkit_protocol::locate::LocateRequest>>::from",
+    "<kmipkit_protocol::LocateRequest as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::LocateRequest as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::LocateRequest as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::LocateRequest as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::LocateRequest as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::LocateRequest as core::fmt::Debug>::fmt",
+}
+EXPECTED_LOG_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::LogResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::LogResponse as core::borrow::Borrow<kmipkit_protocol::log::LogResponse>>::borrow",
+    "<kmipkit_protocol::LogResponse as core::borrow::BorrowMut<kmipkit_protocol::log::LogResponse>>::borrow_mut",
+    "<kmipkit_protocol::LogResponse as core::convert::From<kmipkit_protocol::log::LogResponse>>::from",
+    "<kmipkit_protocol::LogResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::LogResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::LogResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::LogResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::LogResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::LogResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_IMPORT_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::ImportResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::ImportResponse as core::borrow::Borrow<kmipkit_protocol::import::ImportResponse>>::borrow",
+    "<kmipkit_protocol::ImportResponse as core::borrow::BorrowMut<kmipkit_protocol::import::ImportResponse>>::borrow_mut",
+    "<kmipkit_protocol::ImportResponse as core::convert::From<kmipkit_protocol::import::ImportResponse>>::from",
+    "<kmipkit_protocol::ImportResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::ImportResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::ImportResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::ImportResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::ImportResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::ImportResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_JOIN_SPLIT_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::borrow::Borrow<kmipkit_protocol::join_split_key::JoinSplitKeyResponse>>::borrow",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::borrow::BorrowMut<kmipkit_protocol::join_split_key::JoinSplitKeyResponse>>::borrow_mut",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::From<kmipkit_protocol::join_split_key::JoinSplitKeyResponse>>::from",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::JoinSplitKeyResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::ObtainLeaseResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::borrow::Borrow<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::borrow",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::borrow::BorrowMut<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::borrow_mut",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::convert::From<kmipkit_protocol::obtain_lease::ObtainLeaseResponse>>::from",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::ObtainLeaseResponse as core::fmt::Debug>::fmt",
+}
+EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::borrow::Borrow<kmipkit_protocol::rekey_key_pair::RekeyKeyPairResponse>>::borrow",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey_key_pair::RekeyKeyPairResponse>>::borrow_mut",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::From<kmipkit_protocol::rekey_key_pair::RekeyKeyPairResponse>>::from",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RekeyKeyPairResponse as core::fmt::Debug>::fmt",
+}
+RETAINED_EXPORTS = {
+    "kmipkit_protocol::GetConstraintsResponse",
+    "kmipkit_protocol::GetConstraintsResponse::constraints",
+    "kmipkit_protocol::GetConstraintsResponse::result",
+    "kmipkit_protocol::GetConstraintsResponse::with_ttlv",
+}
+
+
+CANCEL_RESPONSE_PREFIX = "<kmipkit_protocol::CancelResponse<'a> as "
+EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::CancelResponse<'a> as core::any::Any>::type_id",
+    "<kmipkit_protocol::CancelResponse<'a> as core::borrow::Borrow<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow",
+    "<kmipkit_protocol::CancelResponse<'a> as core::borrow::BorrowMut<kmipkit_protocol::cancel::CancelResponse<'a>>>::borrow_mut",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::From<kmipkit_protocol::cancel::CancelResponse<'a>>>::from",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::CancelResponse<'a> as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::CancelResponse<'a> as core::fmt::Debug>::fmt",
+}
+
+REKEY_RESPONSE_PREFIX = "<kmipkit_protocol::RekeyResponse as "
+EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RekeyResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RekeyResponse as core::borrow::Borrow<kmipkit_protocol::rekey::RekeyResponse>>::borrow",
+    "<kmipkit_protocol::RekeyResponse as core::borrow::BorrowMut<kmipkit_protocol::rekey::RekeyResponse>>::borrow_mut",
+    "<kmipkit_protocol::RekeyResponse as core::convert::From<kmipkit_protocol::rekey::RekeyResponse>>::from",
+    "<kmipkit_protocol::RekeyResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RekeyResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RekeyResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RekeyResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RekeyResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RekeyResponse as core::fmt::Debug>::fmt",
+}
+
+RECERTIFY_RESPONSE_PREFIX = "<kmipkit_protocol::RecertifyResponse as "
+EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RecertifyResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RecertifyResponse as core::borrow::Borrow<kmipkit_protocol::recertify::RecertifyResponse>>::borrow",
+    "<kmipkit_protocol::RecertifyResponse as core::borrow::BorrowMut<kmipkit_protocol::recertify::RecertifyResponse>>::borrow_mut",
+    "<kmipkit_protocol::RecertifyResponse as core::convert::From<kmipkit_protocol::recertify::RecertifyResponse>>::from",
+    "<kmipkit_protocol::RecertifyResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RecertifyResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RecertifyResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RecertifyResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RecertifyResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RecertifyResponse as core::fmt::Debug>::fmt",
+}
+
+REGISTER_RESPONSE_PREFIX = "<kmipkit_protocol::RegisterResponse as "
+EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RegisterResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RegisterResponse as core::borrow::Borrow<kmipkit_protocol::register::RegisterResponse>>::borrow",
+    "<kmipkit_protocol::RegisterResponse as core::borrow::BorrowMut<kmipkit_protocol::register::RegisterResponse>>::borrow_mut",
+    "<kmipkit_protocol::RegisterResponse as core::convert::From<kmipkit_protocol::register::RegisterResponse>>::from",
+    "<kmipkit_protocol::RegisterResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RegisterResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RegisterResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RegisterResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RegisterResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RegisterResponse as core::fmt::Debug>::fmt",
+}
+
+REVOKE_RESPONSE_PREFIX = "<kmipkit_protocol::RevokeResponse as "
+EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RevokeResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RevokeResponse as core::borrow::Borrow<kmipkit_protocol::revoke::RevokeResponse>>::borrow",
+    "<kmipkit_protocol::RevokeResponse as core::borrow::BorrowMut<kmipkit_protocol::revoke::RevokeResponse>>::borrow_mut",
+    "<kmipkit_protocol::RevokeResponse as core::convert::From<kmipkit_protocol::revoke::RevokeResponse>>::from",
+    "<kmipkit_protocol::RevokeResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RevokeResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RevokeResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RevokeResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RevokeResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RevokeResponse as core::fmt::Debug>::fmt",
+}
+
+REPROVISION_RESPONSE_PREFIX = "<kmipkit_protocol::ReProvisionResponse as "
+EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::ReProvisionResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::ReProvisionResponse as core::borrow::Borrow<kmipkit_protocol::reprovision::ReProvisionResponse>>::borrow",
+    "<kmipkit_protocol::ReProvisionResponse as core::borrow::BorrowMut<kmipkit_protocol::reprovision::ReProvisionResponse>>::borrow_mut",
+    "<kmipkit_protocol::ReProvisionResponse as core::convert::From<kmipkit_protocol::reprovision::ReProvisionResponse>>::from",
+    "<kmipkit_protocol::ReProvisionResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::ReProvisionResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::ReProvisionResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::ReProvisionResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::ReProvisionResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::ReProvisionResponse as core::fmt::Debug>::fmt",
+}
+
+
+RNG_RETRIEVE_RESPONSE_PREFIX = "<kmipkit_protocol::RngRetrieveResponse as "
+EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RngRetrieveResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RngRetrieveResponse as core::borrow::Borrow<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow",
+    "<kmipkit_protocol::RngRetrieveResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::borrow_mut",
+    "<kmipkit_protocol::RngRetrieveResponse as core::convert::From<kmipkit_protocol::rng_retrieve::RngRetrieveResponse>>::from",
+    "<kmipkit_protocol::RngRetrieveResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RngRetrieveResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RngRetrieveResponse as core::fmt::Debug>::fmt",
+}
+
+
+RNG_SEED_RESPONSE_PREFIX = "<kmipkit_protocol::RngSeedResponse as "
+EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS = {
+    "<kmipkit_protocol::RngSeedResponse as core::any::Any>::type_id",
+    "<kmipkit_protocol::RngSeedResponse as core::borrow::Borrow<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow",
+    "<kmipkit_protocol::RngSeedResponse as core::borrow::BorrowMut<kmipkit_protocol::rng_seed::RngSeedResponse>>::borrow_mut",
+    "<kmipkit_protocol::RngSeedResponse as core::convert::From<kmipkit_protocol::rng_seed::RngSeedResponse>>::from",
+    "<kmipkit_protocol::RngSeedResponse as core::convert::Into<U>>::into",
+    "<kmipkit_protocol::RngSeedResponse as core::convert::TryFrom<U>>::Error",
+    "<kmipkit_protocol::RngSeedResponse as core::convert::TryFrom<U>>::try_from",
+    "<kmipkit_protocol::RngSeedResponse as core::convert::TryInto<U>>::Error",
+    "<kmipkit_protocol::RngSeedResponse as core::convert::TryInto<U>>::try_into",
+    "<kmipkit_protocol::RngSeedResponse as core::fmt::Debug>::fmt",
+}
+
+class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        cls.rust_report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
+
+    def test_all_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                self.assertIn("KMIPKIT-0039-FR-001", row["evidence"])
+                self.assertIn("KMIPKIT-0039-FR-004", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.22 Tables 229–231 and §7.7", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("GetConstraintsResponse", row["reason"])
+
+    def test_export_audit_reports_the_exact_observed_and_excluded_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_TRAIT_EXPORTS)
+
+    def test_response_type_and_payload_accessors_remain_verified(self) -> None:
+        retained = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName") in RETAINED_EXPORTS
+        }
+        self.assertEqual(set(retained), RETAINED_EXPORTS)
+        for export_name, row in retained.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["declarationState"], "verified")
+                self.assertEqual(
+                    row["capabilityId"], "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS"
+                )
+                self.assertIn("KMIPKIT-0039-FR-001", row["requirementIds"])
+
+    def test_root_reexport_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(ROOT_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(ROOT_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_ROOT_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                self.assertIn("KMIPKIT-0039-FR-001", row["evidence"])
+                self.assertIn("KMIPKIT-0039-FR-004", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.22 Tables 229–231 and §7.7", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("GetConstraintsResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_root_reexport_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(ROOT_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(ROOT_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_ROOT_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_ROOT_TRAIT_EXPORTS)
+
+    def test_root_response_facade_maps_parser_and_ttlv_constructor(self) -> None:
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::GetConstraintsResponse")
+        }
+        blocked = set()
+        mapped = {
+            "kmipkit::GetConstraintsResponse",
+            "kmipkit::GetConstraintsResponse::constraints",
+            "kmipkit::GetConstraintsResponse::result",
+            "kmipkit::GetConstraintsResponse::try_from_response_item",
+        }
+        ttlv_constructor = "kmipkit::GetConstraintsResponse::with_ttlv"
+        self.assertEqual(set(rows), blocked | mapped | {ttlv_constructor})
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in blocked:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
+        for name in mapped:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["declarationState"], "verified")
+                self.assertNotIn("candidateSpecId", rows[name])
+        self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
+        self.assertEqual(
+            rows[ttlv_constructor]["capabilityId"],
+            "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+        )
+
+    def test_set_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(SET_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(SET_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_SET_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                self.assertIn("KMIPKIT-0039-FR-001", row["evidence"])
+                self.assertIn("KMIPKIT-0039-FR-004", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.52 Tables 325–327", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("SetConstraintsResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_set_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(SET_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(SET_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_SET_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_SET_TRAIT_EXPORTS)
+
+    def test_set_response_type_and_ttlv_members_remain_verified(self) -> None:
+        verified = {
+            "kmipkit_protocol::SetConstraintsResponse",
+            "kmipkit_protocol::SetConstraintsResponse::result",
+            "kmipkit_protocol::SetConstraintsResponse::with_ttlv",
+            "kmipkit_protocol::SetConstraintsResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::SetConstraintsResponse")
+        }
+        self.assertEqual(set(rows), verified | set(blocked))
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS")
+                self.assertIn("KMIPKIT-0039-FR-001", rows[name]["requirementIds"])
+
+
+    def test_set_root_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_SET_ROOT_TRAIT_EXPORTS)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0039-FR-001",
+                    "KMIPKIT-0039-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.52 Tables 325–327", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("SetConstraintsResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_set_root_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_SET_ROOT_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_SET_ROOT_TRAIT_EXPORTS)
+
+    def test_set_root_response_facade_maps_parser_and_ttlv_constructor(self) -> None:
+        blocked = set()
+        mapped = {
+            "kmipkit::SetConstraintsResponse",
+            "kmipkit::SetConstraintsResponse::result",
+            "kmipkit::SetConstraintsResponse::try_from_response_item",
+        }
+        ttlv_constructor = "kmipkit::SetConstraintsResponse::with_ttlv"
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::SetConstraintsResponse")
+        }
+        self.assertEqual(set(rows), blocked | mapped | {ttlv_constructor})
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in blocked:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
+        for name in mapped:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["declarationState"], "verified")
+                self.assertNotIn("candidateSpecId", rows[name])
+        self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
+        self.assertEqual(
+            rows[ttlv_constructor]["capabilityId"],
+            "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+        )
+
+
+    def test_certify_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_CERTIFY_TRAIT_EXPORTS)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                self.assertIn("KMIPKIT-0036-FR-001", row["evidence"])
+                self.assertIn("KMIPKIT-0036-FR-004", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.6 Tables 179–181", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("CertifyResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_certify_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_CERTIFY_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_CERTIFY_TRAIT_EXPORTS)
+
+    def test_certify_response_functional_declarations_remain_in_their_current_states(self) -> None:
+        verified = {
+            "kmipkit_protocol::CertifyResponse",
+            "kmipkit_protocol::CertifyResponse::unique_identifier",
+            "kmipkit_protocol::CertifyResponse::with_ttlv",
+            "kmipkit_protocol::CertifyResponse::result",
+            "kmipkit_protocol::CertifyResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::CertifyResponse")
+        }
+        self.assertEqual(set(rows), verified | set(blocked))
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::CertifyResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_validate_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_VALIDATE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0042-FR-001",
+                    "KMIPKIT-0042-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.57 Tables 340–342", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("ValidateResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_validate_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_VALIDATE_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_VALIDATE_TRAIT_EXPORTS)
+
+    def test_validate_response_functional_declarations_remain_verified(self) -> None:
+        expected = {
+            "kmipkit_protocol::ValidateResponse",
+            "kmipkit_protocol::ValidateResponse::result",
+            "kmipkit_protocol::ValidateResponse::try_from_response_item",
+            "kmipkit_protocol::ValidateResponse::validity_indicator",
+            "kmipkit_protocol::ValidateResponse::with_ttlv",
+        }
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::ValidateResponse")
+        }
+
+        self.assertEqual(set(rows), expected)
+        for export_name, row in rows.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["declarationState"], "verified")
+                self.assertEqual(row["capabilityId"], "KMIPKIT-ELEM-OP-C2S-VALIDATE")
+                self.assertIn("KMIPKIT-0042-FR-001", row["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::ValidateResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_check_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CHECK_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CHECK_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_CHECK_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.7 Tables 183–185", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("CheckResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_check_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CHECK_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CHECK_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_CHECK_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_CHECK_TRAIT_EXPORTS)
+
+    def test_check_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::CheckResponse",
+            "kmipkit_protocol::CheckResponse::cryptographic_usage_mask",
+            "kmipkit_protocol::CheckResponse::lease_time",
+            "kmipkit_protocol::CheckResponse::unique_identifier",
+            "kmipkit_protocol::CheckResponse::usage_limits_count",
+            "kmipkit_protocol::CheckResponse::with_ttlv",
+            "kmipkit_protocol::CheckResponse::result",
+            "kmipkit_protocol::CheckResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::CheckResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-CHECK")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::CheckResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_derive_key_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(DERIVE_KEY_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(DERIVE_KEY_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_DERIVE_KEY_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0037-FR-001",
+                    "KMIPKIT-0037-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.14 Tables 205–207", row["evidence"])
+                self.assertIn("§7.12 Table 364", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("DeriveKeyResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_derive_key_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(DERIVE_KEY_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(DERIVE_KEY_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_DERIVE_KEY_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_DERIVE_KEY_TRAIT_EXPORTS)
+
+    def test_derive_key_response_preserves_verified_accessor_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::DeriveKeyResponse",
+            "kmipkit_protocol::DeriveKeyResponse::unique_identifier",
+            "kmipkit_protocol::DeriveKeyResponse::with_ttlv",
+            "kmipkit_protocol::DeriveKeyResponse::result",
+            "kmipkit_protocol::DeriveKeyResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::DeriveKeyResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY")
+                self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::DeriveKeyResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_export_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(EXPORT_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(EXPORT_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_EXPORT_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0037-FR-001",
+                    "KMIPKIT-0037-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.18 Tables 217–219", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("ExportResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_export_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(EXPORT_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(EXPORT_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_EXPORT_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_EXPORT_TRAIT_EXPORTS)
+
+    def test_export_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::ExportResponse",
+            "kmipkit_protocol::ExportResponse::attributes",
+            "kmipkit_protocol::ExportResponse::object",
+            "kmipkit_protocol::ExportResponse::object_type",
+            "kmipkit_protocol::ExportResponse::unique_identifier",
+            "kmipkit_protocol::ExportResponse::with_ttlv",
+            "kmipkit_protocol::ExportResponse::result",
+            "kmipkit_protocol::ExportResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::ExportResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-EXPORT")
+                self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::ExportResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_get_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(GET_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(GET_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_GET_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0017-FR-001",
+                    "KMIPKIT-0017-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.19 Tables 220–222", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("GetResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_get_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(GET_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(GET_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_GET_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_GET_TRAIT_EXPORTS)
+
+    def test_get_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::GetResponse",
+            "kmipkit_protocol::GetResponse::object",
+            "kmipkit_protocol::GetResponse::object_type",
+            "kmipkit_protocol::GetResponse::unique_identifier",
+            "kmipkit_protocol::GetResponse::result",
+            "kmipkit_protocol::GetResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::GetResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-GET")
+                self.assertIn("KMIPKIT-0017-FR-001", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::GetResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_locate_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_LOCATE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0017-FR-001",
+                    "KMIPKIT-0017-FR-008",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.28 Tables 247–249", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("LocateResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_locate_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_LOCATE_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_LOCATE_TRAIT_EXPORTS)
+
+    def test_locate_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::LocateResponse",
+            "kmipkit_protocol::LocateResponse::located_items",
+            "kmipkit_protocol::LocateResponse::unique_identifiers",
+            "kmipkit_protocol::LocateResponse::result",
+            "kmipkit_protocol::LocateResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::LocateResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+                self.assertIn("KMIPKIT-0017-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0017-FR-008", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::LocateResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_interop_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(INTEROP_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(INTEROP_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_INTEROP_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0042-FR-001",
+                    "KMIPKIT-0042-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.26 Tables 241–243", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("InteropResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_interop_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(INTEROP_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(INTEROP_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_INTEROP_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_INTEROP_TRAIT_EXPORTS)
+
+    def test_interop_response_preserves_verified_members_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::InteropResponse",
+            "kmipkit_protocol::InteropResponse::result",
+            "kmipkit_protocol::InteropResponse::with_ttlv",
+            "kmipkit_protocol::InteropResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::InteropResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-INTEROP")
+                self.assertIn("KMIPKIT-0042-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0042-FR-008", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::InteropResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_locate_request_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_REQUEST_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_REQUEST_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_LOCATE_REQUEST_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0017-FR-001",
+                    "KMIPKIT-0017-FR-006",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.28 Tables 247–249", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("LocateRequest", row["reason"])
+
+    def test_rust_audit_reports_exact_locate_request_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_REQUEST_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOCATE_REQUEST_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_LOCATE_REQUEST_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_LOCATE_REQUEST_TRAIT_EXPORTS)
+
+    def test_locate_request_preserves_verified_type_and_blocked_helpers(self) -> None:
+        verified = {
+            "kmipkit_protocol::LocateRequest",
+            "kmipkit_protocol::LocateRequest::new",
+            "kmipkit_protocol::LocateRequest::with_maximum_items",
+            "kmipkit_protocol::LocateRequest::with_offset_items",
+            "kmipkit_protocol::LocateRequest::with_storage_status_mask",
+            "kmipkit_protocol::LocateRequest::with_object_group_member",
+            "kmipkit_protocol::LocateRequest::attributes",
+            "kmipkit_protocol::LocateRequest::maximum_items",
+            "kmipkit_protocol::LocateRequest::object_group_member",
+            "kmipkit_protocol::LocateRequest::offset_items",
+            "kmipkit_protocol::LocateRequest::storage_status_mask",
+            "kmipkit_protocol::LocateRequest::to_ttlv_payload",
+        }
+        blocked: set[str] = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::LocateRequest")
+        }
+
+        self.assertEqual(set(rows), verified | set(blocked))
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        self.assertEqual(
+            rows["kmipkit_protocol::LocateRequest"]["capabilityId"],
+            "KMIPKIT-ELEM-OP-C2S-LOCATE",
+        )
+        self.assertIn(
+            "KMIPKIT-0017-FR-006",
+            rows["kmipkit_protocol::LocateRequest"]["requirementIds"],
+        )
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::LocateRequest")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_log_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_LOG_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0042-FR-001",
+                    "KMIPKIT-0042-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.29 Tables 250–252", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("LogResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_log_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(LOG_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_LOG_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_LOG_TRAIT_EXPORTS)
+
+    def test_log_response_preserves_verified_members_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::LogResponse",
+            "kmipkit_protocol::LogResponse::result",
+            "kmipkit_protocol::LogResponse::with_ttlv",
+            "kmipkit_protocol::LogResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::LogResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-LOG")
+                self.assertIn("KMIPKIT-0042-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0042-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::LogResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_import_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(IMPORT_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(IMPORT_PREFIX)
+        }
+
+        self.assertEqual(set(declarations), set())
+        self.assertEqual(set(exclusions), EXPECTED_IMPORT_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0037-FR-001",
+                    "KMIPKIT-0037-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.25 Tables 238–240", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("ImportResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_import_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(IMPORT_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(IMPORT_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_IMPORT_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_IMPORT_TRAIT_EXPORTS)
+
+    def test_import_response_preserves_verified_accessors_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::ImportResponse",
+            "kmipkit_protocol::ImportResponse::unique_identifier",
+            "kmipkit_protocol::ImportResponse::with_ttlv",
+            "kmipkit_protocol::ImportResponse::result",
+            "kmipkit_protocol::ImportResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::ImportResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-IMPORT")
+                self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0037-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::ImportResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+
+    def test_join_split_key_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(JOIN_SPLIT_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(JOIN_SPLIT_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_JOIN_SPLIT_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0037-FR-001",
+                    "KMIPKIT-0037-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.27 Tables 244–246", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("JoinSplitKeyResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_join_split_key_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(JOIN_SPLIT_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(JOIN_SPLIT_RESPONSE_PREFIX)
+        }
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_JOIN_SPLIT_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(audited_exclusions, EXPECTED_JOIN_SPLIT_RESPONSE_TRAIT_EXPORTS)
+
+    def test_join_split_key_response_preserves_verified_accessor_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::JoinSplitKeyResponse",
+            "kmipkit_protocol::JoinSplitKeyResponse::unique_identifier",
+            "kmipkit_protocol::JoinSplitKeyResponse::with_ttlv",
+            "kmipkit_protocol::JoinSplitKeyResponse::result",
+            "kmipkit_protocol::JoinSplitKeyResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::JoinSplitKeyResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY")
+                self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0037-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::JoinSplitKeyResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_join_split_key_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+    def test_obtain_lease_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.35 Tables 268–270", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("ObtainLeaseResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_obtain_lease_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(audited_exclusions, EXPECTED_OBTAIN_LEASE_RESPONSE_TRAIT_EXPORTS)
+
+    def test_obtain_lease_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::ObtainLeaseResponse",
+            "kmipkit_protocol::ObtainLeaseResponse::last_change_date",
+            "kmipkit_protocol::ObtainLeaseResponse::lease_time",
+            "kmipkit_protocol::ObtainLeaseResponse::unique_identifier",
+            "kmipkit_protocol::ObtainLeaseResponse::with_ttlv",
+            "kmipkit_protocol::ObtainLeaseResponse::result",
+            "kmipkit_protocol::ObtainLeaseResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::ObtainLeaseResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::ObtainLeaseResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_obtain_lease_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+    def test_rekey_key_pair_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 §6.1.47 Tables 310–312", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RekeyKeyPairResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_rekey_key_pair_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(audited_exclusions, EXPECTED_REKEY_KEY_PAIR_RESPONSE_TRAIT_EXPORTS)
+
+    def test_rekey_key_pair_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::RekeyKeyPairResponse",
+            "kmipkit_protocol::RekeyKeyPairResponse::private_key_unique_identifier",
+            "kmipkit_protocol::RekeyKeyPairResponse::public_key_unique_identifier",
+            "kmipkit_protocol::RekeyKeyPairResponse::with_ttlv",
+            "kmipkit_protocol::RekeyKeyPairResponse::result",
+            "kmipkit_protocol::RekeyKeyPairResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RekeyKeyPairResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RekeyKeyPairResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_rekey_key_pair_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+    def test_cancel_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0009-FR-001",
+                    "KMIPKIT-0009-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.5 Tables 176-178", row["evidence"])
+                self.assertIn("KMIP v2.1 Section 11.7 Tables 437-438", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("CancelResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_cancel_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS
+            if " as core::any::Any" not in name
+            and " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 4)
+        self.assertEqual(len(conditional_paths), 6)
+        self.assertEqual(audited_exclusions, EXPECTED_CANCEL_RESPONSE_TRAIT_EXPORTS)
+
+    def test_cancel_response_preserves_mapped_declarations(self) -> None:
+        expected = {
+            "kmipkit_protocol::CancelResponse",
+            "kmipkit_protocol::CancelResponse::try_from_response_item",
+            "kmipkit_protocol::CancelResponse::result",
+            "kmipkit_protocol::CancelResponse::with_asynchronous_correlation_value",
+            "kmipkit_protocol::CancelResponse::cancellation_result",
+        }
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::CancelResponse")
+        }
+
+        self.assertEqual(set(rows), expected)
+        for name, row in rows.items():
+            with self.subTest(export_name=name):
+                self.assertEqual(row["declarationState"], "declared")
+                self.assertEqual(row["capabilityId"], "client_asynchronous_operations")
+                self.assertEqual(
+                    row["approvalSource"]["path"],
+                    "specs/009-asynchronous-operations/spec.md",
+                )
+                self.assertIn("KMIPKIT-0009-FR-001", row["requirementIds"])
+                self.assertIn("KMIPKIT-0009-FR-004", row["requirementIds"])
+
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::CancelResponse")
+        ]
+        self.assertEqual(root_rows, [])
+
+    def test_cancel_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+    def test_rekey_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.46 Tables 305-307", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RekeyResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_rekey_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_REKEY_RESPONSE_TRAIT_EXPORTS)
+
+    def test_rekey_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::RekeyResponse",
+            "kmipkit_protocol::RekeyResponse::unique_identifier",
+            "kmipkit_protocol::RekeyResponse::with_ttlv",
+            "kmipkit_protocol::RekeyResponse::result",
+            "kmipkit_protocol::RekeyResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RekeyResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-KEY")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RekeyResponse")
+        ]
+        self.assertEqual(root_rows, [])
+        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        case_rows = [
+            line
+            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| Re-key |") and "KMIPKIT-TEST-CN01-2-76" in line
+        ]
+        self.assertEqual(len(case_rows), 1)
+        self.assertIn("KMIPKIT-TEST-CN01-2-76", case_rows[0])
+        self.assertIn("KMIPKIT-TEST-CN01-2-87", case_rows[0])
+
+    def test_rekey_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+    def test_recertify_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.45 Tables 300-302", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RecertifyResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_recertify_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_RECERTIFY_RESPONSE_TRAIT_EXPORTS)
+
+    def test_recertify_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::RecertifyResponse",
+            "kmipkit_protocol::RecertifyResponse::unique_identifier",
+            "kmipkit_protocol::RecertifyResponse::with_ttlv",
+            "kmipkit_protocol::RecertifyResponse::result",
+            "kmipkit_protocol::RecertifyResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RecertifyResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RecertifyResponse")
+        ]
+        self.assertEqual(root_rows, [])
+        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        case_rows = [
+            line
+            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| Re-certify | No direct catalog case ID |")
+        ]
+        self.assertEqual(len(case_rows), 1)
+
+    def test_recertify_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+    def test_register_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.43 Tables 291-294", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RegisterResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_register_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_REGISTER_RESPONSE_TRAIT_EXPORTS)
+
+    def test_register_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::RegisterResponse",
+            "kmipkit_protocol::RegisterResponse::unique_identifier",
+            "kmipkit_protocol::RegisterResponse::with_ttlv",
+            "kmipkit_protocol::RegisterResponse::result",
+            "kmipkit_protocol::RegisterResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RegisterResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-REGISTER")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RegisterResponse")
+        ]
+        self.assertEqual(root_rows, [])
+        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        case_rows = [
+            line
+            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| Register | No direct catalog case ID |")
+        ]
+        self.assertEqual(len(case_rows), 1)
+
+    def test_register_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+    def test_revoke_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.44 Tables 295-297", row["evidence"])
+                self.assertIn("Table 296 response", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RevokeResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_revoke_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_REVOKE_RESPONSE_TRAIT_EXPORTS)
+
+    def test_revoke_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::RevokeResponse",
+            "kmipkit_protocol::RevokeResponse::unique_identifier",
+            "kmipkit_protocol::RevokeResponse::with_ttlv",
+            "kmipkit_protocol::RevokeResponse::result",
+            "kmipkit_protocol::RevokeResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RevokeResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-REVOKE")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RevokeResponse")
+        ]
+        self.assertEqual(root_rows, [])
+        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        case_rows = [
+            line
+            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| Revoke | No direct catalog case ID |")
+        ]
+        self.assertEqual(len(case_rows), 1)
+
+    def test_revoke_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+    def test_reprovision_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0036-FR-001",
+                    "KMIPKIT-0036-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.48 Tables 313-315", row["evidence"])
+                self.assertIn("Table 314 response", row["evidence"])
+                self.assertIn("rust-export-report-2026-11-01.json", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("ReProvisionResponse", row["reason"])
+
+    def test_rust_audit_reports_exact_reprovision_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_REPROVISION_RESPONSE_TRAIT_EXPORTS)
+
+    def test_reprovision_response_preserves_verified_fields_and_mapped_parser(self) -> None:
+        verified = {
+            "kmipkit_protocol::ReProvisionResponse",
+            "kmipkit_protocol::ReProvisionResponse::unique_identifier",
+            "kmipkit_protocol::ReProvisionResponse::with_ttlv",
+            "kmipkit_protocol::ReProvisionResponse::result",
+            "kmipkit_protocol::ReProvisionResponse::try_from_response_item",
+        }
+        blocked = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::ReProvisionResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-PROVISION")
+                self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
+        root_rows = [
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::ReProvisionResponse")
+        ]
+        self.assertEqual(root_rows, [])
+        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        case_rows = [
+            line
+            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| Re-Provision | No direct catalog case ID |")
+        ]
+        self.assertEqual(len(case_rows), 1)
+        unique_identifier = rows["kmipkit_protocol::ReProvisionResponse::unique_identifier"]
+        self.assertEqual(set(unique_identifier["languageMappings"]), {"c", "java", "python", "rust"})
+        decision_rows = [
+            line for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            if line.startswith("| Re-Provision response | KMIPKIT-DISC-051 |")
+        ]
+        self.assertEqual(len(decision_rows), 1)
+        self.assertIn("KMIPKIT-DEC-014", decision_rows[0])
+        self.assertIn("allow absence for all three forms", decision_rows[0])
+        self.assertIn("preserve a present identifier", decision_rows[0])
+
+    def test_reprovision_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+    def test_rng_retrieve_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0041-FR-001",
+                    "KMIPKIT-0041-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.49 Tables 316-318", row["evidence"])
+                self.assertIn("Table 317 response", row["evidence"])
+                self.assertIn("no direct RNG Retrieve test-case ID", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RngRetrieveResponse", row["reason"])
+                self.assertIn("secret Data remains mapped", row["reason"])
+
+    def test_rust_audit_reports_exact_rng_retrieve_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_RNG_RETRIEVE_RESPONSE_TRAIT_EXPORTS)
+
+    def test_rng_retrieve_response_preserves_secret_data_and_mapped_helpers(self) -> None:
+        verified = {
+            "kmipkit_protocol::RngRetrieveResponse",
+            "kmipkit_protocol::RngRetrieveResponse::data",
+            "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
+            "kmipkit_protocol::RngRetrieveResponse::result",
+            "kmipkit_protocol::RngRetrieveResponse::try_from_response_item",
+            "kmipkit_protocol::RngRetrieveResponse::try_from_pending_response_item",
+        }
+        blocked: set[str] = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RngRetrieveResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE")
+                self.assertIn("KMIPKIT-0041-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0041-FR-004", rows[name]["requirementIds"])
+        self.assertEqual(
+            set(rows["kmipkit_protocol::RngRetrieveResponse::data"]["languageMappings"]),
+            {"c", "java", "python", "rust"},
+        )
+        expected_root_blocked: set[str] = set()
+        expected_root_verified = {
+            "kmipkit::RngRetrieveResponse::try_from_pending_response_item",
+            "kmipkit::RngRetrieveResponse",
+            "kmipkit::RngRetrieveResponse::data",
+            "kmipkit::RngRetrieveResponse::with_ttlv",
+            "kmipkit::RngRetrieveResponse::result",
+            "kmipkit::RngRetrieveResponse::try_from_response_item",
+        }
+        root_rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RngRetrieveResponse")
+        }
+        self.assertEqual(set(root_rows), expected_root_blocked | expected_root_verified)
+        self.assertTrue(all(root_rows[name]["declarationState"] == "blocked" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name].get("candidateSpecId") == "KMIPKIT-0043" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name]["declarationState"] == "verified" for name in expected_root_verified))
+        self.assertTrue(all("candidateSpecId" not in root_rows[name] for name in expected_root_verified))
+        operation = next(
+            row for row in self.manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"
+        )
+        self.assertEqual(operation["section"], "6.1.49")
+        self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
+        owner_spec = ROOT / "specs" / "027-rng-operations" / "spec.md"
+        self.assertIn("Table 317", owner_spec.read_text(encoding="utf-8"))
+        research = ROOT / "specs" / "027-rng-operations" / "research.md"
+        self.assertIn("catalog links no direct official test case", research.read_text(encoding="utf-8"))
+
+    def test_rng_retrieve_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+    def test_rng_seed_response_trait_paths_are_exact_approved_exclusions(self) -> None:
+        declarations = {
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest.get("approvedExclusions", [])
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+        }
+
+        self.assertEqual(declarations, set())
+        self.assertEqual(set(exclusions), EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(len(exclusions), 10)
+        for export_name, row in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+                for requirement_id in (
+                    "KMIPKIT-0041-FR-001",
+                    "KMIPKIT-0041-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                    "KMIPKIT-REQ-SPEC-6.1.50-001",
+                ):
+                    self.assertIn(requirement_id, row["evidence"])
+                self.assertIn("KMIP v2.1 Section 6.1.50 Tables 319-321", row["evidence"])
+                self.assertIn("Table 320 response", row["evidence"])
+                self.assertIn("no direct RNG Seed test-case ID", row["evidence"])
+                self.assertIn("standard-trait implementation", row["reason"])
+                self.assertIn("RngSeedResponse", row["reason"])
+                self.assertIn("zero Data Length remains valid", row["reason"])
+
+    def test_rust_audit_reports_exact_rng_seed_response_trait_paths(self) -> None:
+        observed = [
+            *self.rust_report["declarations"],
+            *self.rust_report["conditionalDeclarations"],
+        ]
+        observed_trait_paths = {
+            row["exportName"]
+            for row in observed
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+        }
+        direct_paths = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+        }
+        conditional_paths = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+        }
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+        }
+        expected_direct = {
+            name for name in EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS
+            if " as core::convert::Into<U>" not in name
+            and " as core::convert::TryFrom<U>" not in name
+            and " as core::convert::TryInto<U>" not in name
+        }
+        expected_conditional = EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS - expected_direct
+
+        self.assertTrue(self.rust_report["matchesManifest"])
+        self.assertEqual(observed_trait_paths, EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS)
+        self.assertEqual(direct_paths, expected_direct)
+        self.assertEqual(conditional_paths, expected_conditional)
+        self.assertEqual(len(direct_paths), 5)
+        self.assertEqual(len(conditional_paths), 5)
+        self.assertEqual(audited_exclusions, EXPECTED_RNG_SEED_RESPONSE_TRAIT_EXPORTS)
+
+    def test_rng_seed_response_preserves_zero_length_and_mapped_helpers(self) -> None:
+        verified = {
+            "kmipkit_protocol::RngSeedResponse",
+            "kmipkit_protocol::RngSeedResponse::data_length",
+            "kmipkit_protocol::RngSeedResponse::with_ttlv",
+            "kmipkit_protocol::RngSeedResponse::result",
+            "kmipkit_protocol::RngSeedResponse::try_from_response_item",
+            "kmipkit_protocol::RngSeedResponse::try_from_pending_response_item",
+        }
+        blocked: set[str] = set()
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith("kmipkit_protocol::RngSeedResponse")
+        }
+
+        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "verified"},
+            verified,
+        )
+        self.assertEqual(
+            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
+            blocked,
+        )
+        for name in verified:
+            with self.subTest(export_name=name):
+                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RNG-SEED")
+                self.assertIn("KMIPKIT-0041-FR-001", rows[name]["requirementIds"])
+                self.assertIn("KMIPKIT-0041-FR-004", rows[name]["requirementIds"])
+        self.assertEqual(
+            set(rows["kmipkit_protocol::RngSeedResponse::data_length"]["languageMappings"]),
+            {"c", "java", "python", "rust"},
+        )
+        expected_root_blocked: set[str] = set()
+        expected_root_verified = {
+            "kmipkit::RngSeedResponse::try_from_pending_response_item",
+            "kmipkit::RngSeedResponse",
+            "kmipkit::RngSeedResponse::data_length",
+            "kmipkit::RngSeedResponse::with_ttlv",
+            "kmipkit::RngSeedResponse::result",
+            "kmipkit::RngSeedResponse::try_from_response_item",
+        }
+        root_rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit::RngSeedResponse")
+        }
+        self.assertEqual(set(root_rows), expected_root_blocked | expected_root_verified)
+        self.assertTrue(all(root_rows[name]["declarationState"] == "blocked" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name].get("candidateSpecId") == "KMIPKIT-0043" for name in expected_root_blocked))
+        self.assertTrue(all(root_rows[name]["declarationState"] == "verified" for name in expected_root_verified))
+        self.assertTrue(all("candidateSpecId" not in root_rows[name] for name in expected_root_verified))
+        operation = next(
+            row for row in self.manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-RNG-SEED"
+        )
+        self.assertEqual(operation["section"], "6.1.50")
+        self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
+        owner_spec = ROOT / "specs" / "027-rng-operations" / "spec.md"
+        owner_text = owner_spec.read_text(encoding="utf-8")
+        self.assertIn("Table 320", owner_text)
+        self.assertIn("returned Data Length can be zero", owner_text)
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", owner_text)
+        research = ROOT / "specs" / "027-rng-operations" / "research.md"
+        self.assertIn("catalog links no direct official test case", research.read_text(encoding="utf-8"))
+
+    def test_rng_seed_response_slice_has_expected_candidate_count(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+
+POLICY_RESPONSE_TRAIT_CASES = {
+    "get_usage_allocation": {
+        "response": "GetUsageAllocationResponse",
+        "module": "get_usage_allocation",
+        "operation": "Get Usage Allocation",
+        "requirements": {
+            "KMIPKIT-0039-FR-001",
+            "KMIPKIT-0039-FR-003",
+            "KMIPKIT-0039-FR-004",
+        },
+        "citation": "KMIP v2.1 §6.1.23 Table 233",
+        "owner_test_case_note": "| Get Usage Allocation | No direct catalog case ID |",
+        "verified_members": {
+            "kmipkit_protocol::GetUsageAllocationResponse",
+            "kmipkit_protocol::GetUsageAllocationResponse::result",
+            "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+            "kmipkit_protocol::GetUsageAllocationResponse::with_ttlv",
+        },
+        "root_rows": {
+            "kmipkit::GetUsageAllocationResponse": "verified",
+            "kmipkit::GetUsageAllocationResponse::result": "verified",
+            "kmipkit::GetUsageAllocationResponse::try_from_response_item": "verified",
+            "kmipkit::GetUsageAllocationResponse::unique_identifier": "verified",
+            "kmipkit::GetUsageAllocationResponse::with_ttlv": "verified",
+        },
+    },
+    "set_defaults": {
+        "response": "SetDefaultsResponse",
+        "module": "set_defaults",
+        "operation": "Set Defaults",
+        "requirements": {
+            "KMIPKIT-0039-FR-001",
+            "KMIPKIT-0039-FR-003",
+            "KMIPKIT-0039-FR-004",
+        },
+        "citation": "KMIP v2.1 §6.1.53 Table 329",
+        "owner_test_case_note": "| Set Defaults | No direct catalog case ID |",
+        "verified_members": {
+            "kmipkit_protocol::SetDefaultsResponse",
+            "kmipkit_protocol::SetDefaultsResponse::result",
+            "kmipkit_protocol::SetDefaultsResponse::with_ttlv",
+        },
+        "root_rows": {
+            "kmipkit::SetDefaultsResponse": "verified",
+            "kmipkit::SetDefaultsResponse::result": "verified",
+            "kmipkit::SetDefaultsResponse::try_from_response_item": "verified",
+            "kmipkit::SetDefaultsResponse::with_ttlv": "verified",
+        },
+    },
+}
+
+
+def _policy_response_trait_paths(response: str, module: str) -> tuple[set[str], set[str]]:
+    owner = f"kmipkit_protocol::{module}::{response}"
+    prefix = f"<kmipkit_protocol::{response} as "
+    direct_suffixes = {
+        "core::any::Any>::type_id",
+        f"core::borrow::Borrow<{owner}>>::borrow",
+        f"core::borrow::BorrowMut<{owner}>>::borrow_mut",
+        f"core::convert::From<{owner}>>::from",
+        "core::fmt::Debug>::fmt",
+    }
+    conditional_suffixes = {
+        "core::convert::Into<U>>::into",
+        "core::convert::TryFrom<U>>::Error",
+        "core::convert::TryFrom<U>>::try_from",
+        "core::convert::TryInto<U>>::Error",
+        "core::convert::TryInto<U>>::try_into",
+    }
+    return (
+        {prefix + suffix for suffix in direct_suffixes},
+        {prefix + suffix for suffix in conditional_suffixes},
+    )
+
+
+class T102PolicyResponseTraitExclusionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.rust_report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
+
+    def _assert_operation_response(self, name: str) -> None:
+        case = POLICY_RESPONSE_TRAIT_CASES[name]
+        response = case["response"]
+        expected_direct, expected_conditional = _policy_response_trait_paths(
+            response, case["module"]
+        )
+        expected_paths = expected_direct | expected_conditional
+        self.assertEqual(len(expected_direct), 5)
+        self.assertEqual(len(expected_conditional), 5)
+
+        prefix = f"kmipkit_protocol::{response}"
+        protocol_rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(prefix)
+        }
+        mapped_parser = f"{prefix}::try_from_response_item"
+        expected_verified = case["verified_members"] | {mapped_parser}
+        self.assertEqual(set(protocol_rows), expected_verified)
+        self.assertEqual(
+            {path for path, row in protocol_rows.items() if row["declarationState"] == "verified"},
+            expected_verified,
+        )
+        self.assertEqual(protocol_rows[mapped_parser]["declarationState"], "verified")
+
+        root_prefix = f"kmipkit::{response}"
+        root_rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "rust-kmipkit"
+            and row.get("exportName", "").startswith(root_prefix)
+        }
+        self.assertEqual(
+            {path: row["declarationState"] for path, row in root_rows.items()},
+            case["root_rows"],
+        )
+
+        observed_direct = {
+            row["exportName"]
+            for row in self.rust_report["declarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        observed_conditional = {
+            row["exportName"]
+            for row in self.rust_report["conditionalDeclarations"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        self.assertEqual(observed_direct, expected_direct)
+        self.assertEqual(observed_conditional, expected_conditional)
+
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        self.assertEqual(set(exclusions), expected_paths)
+        self.assertFalse(
+            {
+                row["exportName"]
+                for row in self.manifest["publicDeclarations"]
+                if row.get("exportName") in expected_paths
+            }
+        )
+        audited_exclusions = {
+            row["exportName"]
+            for row in self.rust_report["excluded"]
+            if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("exportName", "").startswith(f"<{prefix} as ")
+        }
+        self.assertEqual(audited_exclusions, expected_paths)
+
+        owner_spec = (ROOT / "specs" / "025-policy-controls" / "spec.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("**Status**: Approved for implementation", owner_spec)
+        self.assertIn(case["owner_test_case_note"], owner_spec)
+        for path, row in exclusions.items():
+            with self.subTest(export_name=path):
+                for requirement in case["requirements"]:
+                    self.assertIn(requirement, row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", row["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
+                self.assertIn(case["citation"], row["evidence"])
+                self.assertIn("no direct operation-specific client test-case ID", row["evidence"])
+                self.assertIn("no operation-conformance claim", row["evidence"])
+                self.assertEqual(row["approvalSource"], APPROVAL_SOURCE)
+
+    def test_get_usage_allocation_response_excludes_only_standard_trait_artifacts(self) -> None:
+        self._assert_operation_response("get_usage_allocation")
+
+    def test_set_defaults_response_excludes_only_standard_trait_artifacts(self) -> None:
+        self._assert_operation_response("set_defaults")
+
+    def test_policy_response_exclusions_reduce_candidate_count_by_20(self) -> None:
+        self.assertEqual(
+            sum(
+                row.get("candidateSpecId") == "KMIPKIT-0043"
+                and row.get("declarationState") == "blocked"
+                for row in self.manifest["publicDeclarations"]
+            ),
+            T102_BLOCKED_CANDIDATES,
+        )
+
+if __name__ == "__main__":
+    unittest.main()

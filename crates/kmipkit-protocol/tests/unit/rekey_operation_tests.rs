@@ -13,6 +13,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 const REKEY_OPERATION: u32 = 0x0000_0004;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const KEY_VALUE_NOT_PRESENT: u32 = 0x0000_0013;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OFFSET: u32 = 0x0042_0058;
@@ -74,7 +75,7 @@ fn typed_response(
 fn request_emits_table_305_fields_once_in_order_and_preserves_values() {
     let identifier = UniqueIdentifier::TextString("existing-key".to_owned());
     let attributes = structure([item(0x0042_001D, Value::enumeration(1))]);
-    let masks = structure([item(0x0042_0160, Value::integer(3))]);
+    let masks = structure([item(0x0042_015e, Value::integer(3))]);
     let request = RekeyRequest::new()
         .with_unique_identifier(identifier.clone())
         .with_offset(86_400)
@@ -168,7 +169,10 @@ fn successful_response_returns_replacement_identifier_and_preserves_unknown_fiel
         response.unique_identifier(),
         Some(&UniqueIdentifier::TextString("replacement-key".to_owned()))
     );
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -198,10 +202,33 @@ fn failure_preserves_table_307_reason_without_success_identifier() {
 }
 
 #[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(OPERATION_FAILED, Some(0x0000_0001), None)
+        .expect("Table 307 remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REKEY_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-rekey-response".to_owned()),
+        )])),
+    );
+    let pending = RekeyResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
+}
+
+#[test]
 fn request_debug_does_not_expose_mask_structure_values() {
     let sentinel = b"REKEY_MASK_SECRET_SENTINEL";
     let masks = structure([item(
-        0x0042_0160,
+        0x0042_015e,
         Value::text_string(String::from_utf8_lossy(sentinel).into_owned()),
     )]);
     let request = RekeyRequest::new().with_protection_storage_masks(masks);

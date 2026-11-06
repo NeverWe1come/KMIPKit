@@ -51,7 +51,7 @@ fn rekey_request() -> RekeyRequest {
             0x0042_001D,
             Value::enumeration(1),
         )]))
-        .with_protection_storage_masks(test_structure([test_item(0x0042_0160, Value::integer(3))]))
+        .with_protection_storage_masks(test_structure([test_item(0x0042_015e, Value::integer(3))]))
 }
 
 fn assert_one_exchange(fake: &Rc<RefCell<ScriptedTransport>>) {
@@ -163,7 +163,10 @@ fn rekey_sends_one_table_305_request_and_exposes_replacement_identifier() {
         typed.unique_identifier(),
         Some(&UniqueIdentifier::TextString("replacement-key".to_owned()))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     assert_eq!(
         request_fields(
             captured

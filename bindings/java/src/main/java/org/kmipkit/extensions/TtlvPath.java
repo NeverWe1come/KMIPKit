@@ -1,5 +1,6 @@
 package org.kmipkit.extensions;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.Tag;
@@ -13,16 +14,23 @@ public final class TtlvPath implements AutoCloseable {
     }
 
     public static TtlvPath create(Tag firstTag) {
+        if (firstTag == null) {
+            throw new InvalidInputException("TTLV path tag is invalid");
+        }
         NativeExtensionRegistry.ensureLoaded();
         return NativeHandle.withNativeHandles(() ->
                 new TtlvPath(NativeExtensionRegistry.ttlvPathCreate(firstTag.handle())));
     }
 
     public static TtlvPath withChildTag(TtlvPath path, Tag tag) {
+        if (path == null || tag == null) {
+            throw new InvalidInputException("TTLV path inputs are invalid");
+        }
         NativeExtensionRegistry.ensureLoaded();
         return NativeHandle.withNativeHandles(() -> {
+            long tagHandle = tag.handle();
             long pathHandle = path.handle.transfer();
-            return new TtlvPath(NativeExtensionRegistry.ttlvPathWithChildTag(pathHandle, tag.handle()));
+            return new TtlvPath(NativeExtensionRegistry.ttlvPathWithChildTag(pathHandle, tagHandle));
         });
     }
 

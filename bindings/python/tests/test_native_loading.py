@@ -10,6 +10,7 @@ from kmipkit._native import (
     find_bundled_native_library,
     load_cffi_library,
     load_native_library,
+    resolve_native_library_path,
 )
 
 
@@ -148,6 +149,48 @@ def test_load_uses_only_the_explicit_administrator_path_when_configured(
     assert loaded == [str(admin_library)]
 
 
+def test_selected_native_library_resolves_relative_administrator_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_library = tmp_path / "package" / "native.dll"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    admin_library = tmp_path / "admin" / "native.dll"
+    admin_library.parent.mkdir()
+    admin_library.touch()
+    monkeypatch.chdir(tmp_path)
+
+    selected = resolve_native_library_path(
+        bundled_path=package_library,
+        environ={"KMIPKIT_NATIVE_LIBRARY": "admin/native.dll"},
+    )
+
+    assert selected == admin_library.resolve()
+
+
+def test_selected_native_library_resolves_administrator_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_library = tmp_path / "package" / "native.dll"
+    package_library.parent.mkdir(parents=True)
+    package_library.touch()
+    admin_library = tmp_path / "admin" / "native.dll"
+    admin_library.parent.mkdir()
+    admin_library.touch()
+    alias = tmp_path / "admin-link.dll"
+    try:
+        alias.symlink_to(admin_library)
+    except OSError:
+        pytest.skip("the current host cannot create file symlinks")
+
+    selected = resolve_native_library_path(
+        bundled_path=package_library,
+        environ={"KMIPKIT_NATIVE_LIBRARY": str(alias)},
+    )
+
+    assert selected == admin_library.resolve()
+
+
 def test_missing_administrator_path_fails_without_bundled_fallback(
     tmp_path: Path,
 ) -> None:
@@ -212,6 +255,11 @@ def test_wrong_architecture_binary_failure_is_redacted(tmp_path: Path) -> None:
         )
 
     assert loaded == [str(package_library)]
+    assert str(error.value) == (
+        "KMIPKit could not load the selected native library; install a package "
+        "for this OS and architecture or set KMIPKIT_NATIVE_LIBRARY to a "
+        "compatible library."
+    )
     assert "invalid ELF class" not in str(error.value)
     assert str(package_library) not in str(error.value)
     assert error.value.__suppress_context__
@@ -257,6 +305,10 @@ def test_reported_abi_mismatch_has_a_distinct_error(tmp_path: Path) -> None:
 
     assert "3" not in str(error.value)
     assert "4" not in str(error.value)
+    assert str(error.value) == (
+        "KMIPKit native library has an incompatible ABI version; install a "
+        "matching package or set KMIPKIT_NATIVE_LIBRARY to a compatible library."
+    )
 
 
 @pytest.mark.parametrize("name", ["_native_ffi.dll", "_native_ffi.so", "_native_ffi.dylib"])

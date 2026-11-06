@@ -15,6 +15,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 const REGISTER_OPERATION: u32 = 0x0000_0003;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const PENDING: u32 = 2;
 const INVALID_OBJECT_TYPE: u32 = 0x0000_0038;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
@@ -667,7 +668,7 @@ fn request_emits_table_291_fields_in_order_and_preserves_object_item() {
         ]),
         item(SYMMETRIC_KEY, Value::structure(object_body)),
     )
-    .with_protection_storage_masks(structure([item(0x0042_0160, Value::integer(1))]));
+    .with_protection_storage_masks(structure([item(0x0042_015e, Value::integer(1))]));
     let payload = request
         .into_ttlv_payload()
         .expect("required Table 291 fields and Table 293 attributes are valid");
@@ -1254,20 +1255,23 @@ fn successful_response_requires_and_preserves_unique_identifier_and_extensions()
             "registered-object".to_owned()
         ))
     );
-    assert!(response.with_ttlv(|view| {
-        let payload = view
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)
-            .expect("Register response includes a Response Payload");
-        payload.with_value(|value| match value {
-            ValueView::Structure(payload) => payload
+    assert_eq!(
+        response.with_ttlv(|view| {
+            let payload = view
                 .children()
                 .iter()
-                .any(|field| field.tag().raw() == UNKNOWN_VENDOR_TAG),
-            _ => false,
-        })
-    }));
+                .find(|field| field.tag().raw() == RESPONSE_PAYLOAD)
+                .expect("Register response includes a Response Payload");
+            payload.with_value(|value| match value {
+                ValueView::Structure(payload) => payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == UNKNOWN_VENDOR_TAG),
+                _ => false,
+            })
+        }),
+        Some(true)
+    );
 }
 
 #[test]
@@ -1303,6 +1307,34 @@ fn failure_preserves_table_294_result_without_success_identifier() {
         Some(INVALID_OBJECT_TYPE)
     );
     assert!(response.unique_identifier().is_none());
+}
+
+#[test]
+fn failure_and_pending_do_not_expose_response_ttlv() {
+    let failure = typed_response(
+        REGISTER_OPERATION,
+        OPERATION_FAILED,
+        Some(0x0000_0001),
+        None,
+    )
+    .expect("Table 294 failure remains a typed common result");
+    assert_eq!(failure.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(failure.with_ttlv(|_| Some(())), None);
+
+    let message = response_message(
+        REGISTER_OPERATION,
+        PENDING,
+        None,
+        Some(b"pending-correlation"),
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-register-response".to_owned()),
+        )])),
+    );
+    let pending = RegisterResponse::try_from_response_item(response_item(&message))
+        .expect("Pending remains a typed common result");
+    assert_eq!(pending.result().status().raw(), PENDING);
+    assert_eq!(pending.with_ttlv(|_| Some(())), None);
 }
 
 #[test]

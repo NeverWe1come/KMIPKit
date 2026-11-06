@@ -352,6 +352,65 @@ fn replacement_and_conditional_wrap_type_are_preserved_without_unwrapping() {
 }
 
 #[test]
+fn request_encodes_key_wrap_type_and_distinguishes_replace_existing_absence_from_false_and_true() {
+    let expected_absent_tags = [
+        UNIQUE_IDENTIFIER,
+        OBJECT_TYPE,
+        KEY_WRAP_TYPE,
+        ATTRIBUTES,
+        SYMMETRIC_KEY,
+    ];
+    let expected_present_tags = [
+        UNIQUE_IDENTIFIER,
+        OBJECT_TYPE,
+        0x0042_0124,
+        KEY_WRAP_TYPE,
+        ATTRIBUTES,
+        SYMMETRIC_KEY,
+    ];
+
+    for replace_existing in [None, Some(false), Some(true)] {
+        let mut request = ImportRequest::new(
+            UniqueIdentifier::TextString("wrapped-import".to_owned()),
+            ObjectType::from_raw(2),
+            attributes(),
+            wrapped_key_object(),
+        )
+        .with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568));
+        if let Some(value) = replace_existing {
+            request = request.with_replace_existing(value);
+        }
+
+        let payload = request
+            .into_ttlv_payload()
+            .expect("wrapped Import accepts the caller-selected raw Key Wrap Type");
+        let payload_view = payload.view();
+        let fields = payload_view.children();
+        let expected_tags = if replace_existing.is_some() {
+            &expected_present_tags[..]
+        } else {
+            &expected_absent_tags[..]
+        };
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>(),
+            expected_tags,
+        );
+        let key_wrap_index = if replace_existing.is_some() { 3 } else { 2 };
+        assert!(fields[key_wrap_index].with_value(
+            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568),
+        ));
+        if let Some(expected) = replace_existing {
+            assert!(fields[2].with_value(
+                |value| matches!(value, ValueView::Boolean(actual) if *actual == expected),
+            ));
+        }
+    }
+}
+
+#[test]
 fn key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data() {
     let wrapped_without_type = ImportRequest::new(
         UniqueIdentifier::TextString("wrapped-key".to_owned()),

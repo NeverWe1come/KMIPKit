@@ -2,10 +2,9 @@
 
 Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit y
 usar su punto de entrada explícito de validación. La selección runtime de
-Baseline Client está disponible para sus 294 requisitos mapeados, incluidas las
-reglas que dependen del estado del llamador en KMIP Specification v2.1 §§4.38
-y 4.59. Esto habilita la validación de reglas tipadas, pero no demuestra la
-evidencia oficial de conformidad ni la aceptación del servidor.
+Baseline Client no está disponible mientras su evidencia siga incompleta. La
+API por intercambio rechaza Baseline antes del transporte; no se afirma soporte
+ni conformidad del perfil.
 
 ## Selección explícita por intercambio
 
@@ -94,10 +93,9 @@ aportar un estado fiable.
 KMIP Specification v2.1 §14.1 exige que un cliente cumpla uno o más perfiles
 cliente. KMIPKit registra Baseline Client como objetivo inicial de 1.0 para el
 trabajo de evidencia. Esa selección es una decisión de planificación. La
-validación runtime está disponible para los 294 requisitos mapeados de Baseline
-Client. Esto habilita comprobaciones locales de reglas, pero no demuestra el
-soporte del perfil ni satisface por sí solo el requisito de conformidad del
-estándar.
+selección runtime de Baseline Client no está disponible mientras la evidencia
+siga incompleta. La API por intercambio rechaza esa selección antes de iniciar
+el transporte; no se afirma soporte ni conformidad del perfil.
 
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
 fixtures oficiales vinculados a Baseline y Shared Knowledge Link están fijados.
@@ -200,8 +198,8 @@ catálogo, las pruebas enlazadas y la disponibilidad de fixtures:
   pretende establecer. No lo convierte en una opción de tiempo de ejecución.
 - **Validación en tiempo de ejecución** requiere una regla tipada completa y
   una prueba ejecutable y adecuada a la categoría de cada requisito aplicable.
-  Baseline Client ya cumple este control runtime; su estado de evidencia
-  oficial sigue incompleto.
+  Baseline Client no cumple actualmente este control mientras su evidencia
+  oficial siga incompleta.
 - **Estado de evidencia** refleja la evidencia registrada en el catálogo. Un
   informe local no puede mejorarlo; los datos obsoletos `evidence_complete`
   se tratan como incompletos.
@@ -227,3 +225,31 @@ Consulta la [estrategia de conformidad](../../compliance/conformance.md), el
 [inventario KMIP 2.1](../../../specification/catalog/README.md) y la
 [especificación KMIPKIT-0010](../../../specs/010-profile-conformance/spec.md)
 para conocer el modelo de evidencia y su alcance.
+
+## Informes locales de evidencia y catálogo
+
+`ProfileReadiness.evaluate` acepta registros de aprobado/no aprobado aportados
+por la aplicación y devuelve una instantánea local e inmutable del evaluador
+Rust canónico. Java devuelve `Optional.empty()` si el perfil no existe; Python
+devuelve `None`. `ProfileCatalog.clientProfiles`, `clientRequirements` y
+`profileTestCases` devuelven listas Java inmutables. En Python,
+`client_profiles`, `client_requirements` y `profile_test_cases` devuelven tuplas.
+Las filas y relaciones anidadas conservan el orden generado del catálogo. Los
+datos del catálogo son descriptivos: estos accesos no ejecutan reglas del
+perfil ni reproducen casos oficiales.
+
+El evaluador acepta como máximo 100.000 registros y 16 MiB de entrada UTF-8
+agregada, incluido el identificador del perfil. El identificador del perfil
+tiene un límite de 4 KiB. Java lanza `ResourceLimitException` y Python
+`ResourceLimitError` cuando se supera un límite. El cliente C proporciona
+registros y spans versionados, alineados y legibles. Los spans de texto de una
+vista de readiness pertenecen al handle abierto hasta que se libera; los spans
+de texto del catálogo apuntan a datos estáticos generados. Consulta las
+[reglas de ownership y lifetime del ABI C](../../architecture/ffi-and-bindings.md#profile-readiness-and-catalog-abi).
+
+Para Baseline Client, el catálogo sigue indicando `evidence_incomplete` y
+`published_claim == false`, aunque los registros locales aportados indiquen
+que todos los requisitos se han superado. KMIP Specification v2.1 §14.1 y
+KMIP Profiles v2.1 §6.1 aportan contexto sobre perfiles; los diagnósticos y
+estados del catálogo son metadatos de KMIPKit, no códigos de error OASIS ni
+afirmaciones de soporte, conformidad, interoperabilidad o certificación.
