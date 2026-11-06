@@ -436,15 +436,19 @@ def ttlv_value_view_bytes(view: TtlvValueView) -> bytes:
     output = _client_ffi.new("uint8_t[]", length)
     address = int(ffi.cast("uintptr_t", view._pointer()))
     client_view = _client_ffi.cast("kmipkit_ttlv_value_view_t *", address)
-    errors.raise_for_status(
-        _invoke(
-            _client_lib.kmipkit_ttlv_value_view_copy_bytes,
-            client_view,
-            output,
-            length,
+    output_buffer = _client_ffi.buffer(output, length)
+    try:
+        errors.raise_for_status(
+            _invoke(
+                _client_lib.kmipkit_ttlv_value_view_copy_bytes,
+                client_view,
+                output,
+                length,
+            )
         )
-    )
-    return bytes(_client_ffi.buffer(output, length))
+        return bytes(output_buffer)
+    finally:
+        output_buffer[:] = bytes(length)
 
 
 __all__ = [

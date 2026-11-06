@@ -6624,6 +6624,7 @@ JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_ttlvValueV
         }
 
         std::vector<uint8_t> copied(static_cast<size_t>(length));
+        kmipkit::secure::VectorWiper<std::allocator<uint8_t>> copied_wiper(copied);
         if (!check_status(env, [&] {
                 return kmipkit_ttlv_value_view_copy_bytes(view, copied.data(), length);
             })) return static_cast<jbyteArray>(nullptr);

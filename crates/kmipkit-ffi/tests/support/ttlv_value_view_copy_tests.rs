@@ -33,8 +33,14 @@ fn copies_utf8_text_string_in_one_complete_buffer() {
 
 #[test]
 fn copies_byte_string_and_big_integer_as_raw_bytes() {
-    assert_copied_bytes(Value::byte_string(vec![0x00, 0x80, 0xFF]), &[0x00, 0x80, 0xFF]);
-    assert_copied_bytes(Value::big_integer(vec![0xFF, 0x80, 0x01]), &[0xFF, 0x80, 0x01]);
+    assert_copied_bytes(
+        Value::byte_string(vec![0x00, 0x80, 0xFF]),
+        &[0x00, 0x80, 0xFF],
+    );
+    assert_copied_bytes(
+        Value::big_integer(vec![0xFF, 0x80, 0x01]),
+        &[0xFF, 0x80, 0x01],
+    );
 }
 
 #[test]

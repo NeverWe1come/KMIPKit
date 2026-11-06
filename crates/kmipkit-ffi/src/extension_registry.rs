@@ -187,14 +187,14 @@ mod registry_preflight_tests;
 #[path = "../tests/support/test_handle_helpers.rs"]
 mod test_handle_helpers;
 #[cfg(test)]
+#[path = "../tests/support/ttlv_value_view_copy_tests.rs"]
+mod ttlv_value_view_copy_tests;
+#[cfg(test)]
 #[path = "../tests/support/validate_abi_tests.rs"]
 mod validate_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
-#[cfg(test)]
-#[path = "../tests/support/ttlv_value_view_copy_tests.rs"]
-mod ttlv_value_view_copy_tests;
 #[cfg(test)]
 use self::test_handle_helpers::make_handle;
 
