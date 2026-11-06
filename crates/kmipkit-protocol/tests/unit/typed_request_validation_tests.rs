@@ -237,6 +237,19 @@ fn attribute_mutation_validation_rejects_source_prohibited_attributes() {
     assert!(allowed_vendor.validate().is_valid());
 }
 
+#[test]
+fn add_attribute_validation_allows_original_creation_date_when_it_may_be_absent() {
+    let request = AddAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(schema_item(
+            0x0042_00BC,
+            Value::date_time(1_700_000_000),
+        )),
+    );
+
+    assert!(request.validate().is_valid());
+}
+
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
     assert_eq!(T::SCHEMA, expected);
 }
