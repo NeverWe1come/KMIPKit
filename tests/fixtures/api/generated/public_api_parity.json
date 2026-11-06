@@ -34734,7 +34734,7 @@
       "declarationId": "WireEncoding.Json:c",
       "declarationState": "declared",
       "exportName": "KMIPKIT_WIRE_ENCODING_JSON",
-      "kind": "constant",
+      "kind": "macro",
       "languageMappings": {
         "c": {
           "name": "KMIPKIT_WIRE_ENCODING_JSON",
@@ -34882,7 +34882,7 @@
       "declarationId": "WireEncoding.Ttlv:c",
       "declarationState": "declared",
       "exportName": "KMIPKIT_WIRE_ENCODING_TTLV",
-      "kind": "constant",
+      "kind": "macro",
       "languageMappings": {
         "c": {
           "name": "KMIPKIT_WIRE_ENCODING_TTLV",
@@ -35030,7 +35030,7 @@
       "declarationId": "WireEncoding.Xml:c",
       "declarationState": "declared",
       "exportName": "KMIPKIT_WIRE_ENCODING_XML",
-      "kind": "constant",
+      "kind": "macro",
       "languageMappings": {
         "c": {
           "name": "KMIPKIT_WIRE_ENCODING_XML",

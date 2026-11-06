@@ -43,7 +43,10 @@ class BindingExportAuditTests(unittest.TestCase):
         }
         report = {
             "complete": True,
-            "declarations": [AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t.value", "field", "1")],
+            "declarations": [
+                AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t", "type", "1"),
+                AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t.value", "field", "1"),
+            ],
             "issues": [],
         }
 

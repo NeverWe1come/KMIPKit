@@ -205706,7 +205706,7 @@
     {
       "declarationId": "WireEncoding.Json:c",
       "packageId": "c-kmipkit",
-      "kind": "constant",
+      "kind": "macro",
       "exportName": "KMIPKIT_WIRE_ENCODING_JSON",
       "capabilityId": "wire_encoding_selection",
       "requirementIds": [
@@ -205854,7 +205854,7 @@
     {
       "declarationId": "WireEncoding.Ttlv:c",
       "packageId": "c-kmipkit",
-      "kind": "constant",
+      "kind": "macro",
       "exportName": "KMIPKIT_WIRE_ENCODING_TTLV",
       "capabilityId": "wire_encoding_selection",
       "requirementIds": [
@@ -206002,7 +206002,7 @@
     {
       "declarationId": "WireEncoding.Xml:c",
       "packageId": "c-kmipkit",
-      "kind": "constant",
+      "kind": "macro",
       "exportName": "KMIPKIT_WIRE_ENCODING_XML",
       "capabilityId": "wire_encoding_selection",
       "requirementIds": [

@@ -583,6 +583,27 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             row for row in package_rows
             if row.get("declarationState") != "blocked" or row.get("kind") == "c-symbol"
         ]
+        # Versioned C ABI record fields are fully described by the type layout
+        # in the manifest. They need no duplicate publicDeclarations rows.
+        declared_c_types = {
+            row["exportName"] for row in package_rows
+            if row.get("kind") == "type" and row.get("declarationState") in {"declared", "verified"}
+        }
+        recorded_names = {row["exportName"] for row in package_rows}
+        for type_record in manifest.get("types", []):
+            c_record = type_record.get("c", {})
+            c_name = c_record.get("name")
+            if c_record.get("kind") != "record" or c_name not in declared_c_types:
+                continue
+            for field in c_record.get("fields", []):
+                export_name = f"{c_name}.{field['name']}"
+                if export_name not in recorded_names:
+                    package_rows.append({
+                        "packageId": package,
+                        "exportName": export_name,
+                        "kind": "field",
+                    })
+                    recorded_names.add(export_name)
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     duplicate_names = sorted(name for name, count in Counter(row["exportName"] for row in package_rows).items() if count > 1)
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
