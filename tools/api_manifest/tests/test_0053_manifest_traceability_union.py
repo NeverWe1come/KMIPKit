@@ -275,6 +275,85 @@ class ManifestTraceabilityUnionTests(unittest.TestCase):
         self.assertEqual("python-export", reconciled["publicDeclarations"][0]["kind"])
         self.assertEqual(existing["declarationId"], reconciled["publicDeclarations"][0]["declarationId"])
 
+    def test_python_stale_export_path_renames_stable_manifest_declaration(self) -> None:
+        old_name = "KeyBlock.from_fields"
+        corrected_name = "kmipkit.managed_objects.KeyBlock.from_fields"
+        mappings = {
+            "rust": {
+                "packageId": "rust-kmipkit",
+                "name": "kmipkit::protocol::KeyBlock::try_from_item",
+            },
+            "c": {"packageId": "c-kmipkit", "name": "kmipkit_key_block_from_fields"},
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.ttlv.KeyBlock.fromFields",
+            },
+            "python": {"packageId": "python-kmipkit", "name": corrected_name},
+        }
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/053-api-parity-facade/approval-record.md",
+            "status": "Approved",
+            "evidence": "Maintainer-approved KMIPKIT-0053 scope.",
+        }
+        evidence = "bindings/python/tests/test_managed_object_parity.py"
+        existing = {
+            "declarationId": "key_block_from_fields:python",
+            "packageId": "python-kmipkit",
+            "kind": "python-export",
+            "exportName": old_name,
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0049-FR-001"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                **mappings,
+                "python": {"packageId": "python-kmipkit", "name": old_name},
+            },
+            "parityEvidenceIds": ["bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java"],
+            "approvalSource": approval,
+        }
+        candidate = {
+            **existing,
+            "exportName": corrected_name,
+            "languageMappings": mappings,
+            "requirementIds": ["KMIPKIT-0053-FR-003"],
+            "parityEvidenceIds": [evidence],
+        }
+        correction = {
+            "packageId": "python-kmipkit",
+            "name": old_name,
+            "correctedName": corrected_name,
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0053-FR-003"],
+            "evidencePaths": [evidence],
+            "approval": approval,
+            "reason": "The earlier declaration omitted the exact Python package path.",
+        }
+        manifest = {
+            "requirementIds": ["KMIPKIT-0049-FR-001"],
+            "publicDeclarations": [existing],
+            "capabilities": [
+                {
+                    "capabilityId": existing["capabilityId"],
+                    "mappings": {language: [] for language in mappings},
+                    "requirementIds": existing["requirementIds"],
+                    "parityEvidenceIds": existing["parityEvidenceIds"],
+                }
+            ],
+        }
+
+        reconciled = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [candidate], python_stale_mappings=[correction]
+        )
+
+        self.assertEqual(1, len(reconciled["publicDeclarations"]))
+        declaration = reconciled["publicDeclarations"][0]
+        self.assertEqual(existing["declarationId"], declaration["declarationId"])
+        self.assertEqual(corrected_name, declaration["exportName"])
+        self.assertEqual(corrected_name, declaration["languageMappings"]["python"]["name"])
+        self.assertNotIn(old_name, [row["exportName"] for row in reconciled["publicDeclarations"]])
+
     def test_exact_existing_export_corrects_approved_java_wrapper_route(self) -> None:
         old_name = "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
         corrected_name = "org.kmipkit.ttlv.KeyBlock.fieldItem"
