@@ -294,6 +294,26 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             expected,
             {route_id: route["java"]["method"] for route_id, route in routes.items()},
         )
+        declarations = {
+            row["declarationId"]: row
+            for row in route_data["publicDeclarations"]
+            if row["declarationId"].split(":", 1)[0] in expected
+        }
+        for route_id, method in expected.items():
+            exact_name = f"org.kmipkit.ttlv.ManagedObject.{method}"
+            mapped_rows = [
+                row for declaration_id, row in declarations.items()
+                if declaration_id.startswith(f"{route_id}:")
+            ]
+            self.assertEqual(3, len(mapped_rows))
+            self.assertTrue(
+                all(row["languageMappings"]["java"]["name"] == exact_name
+                    for row in mapped_rows)
+            )
+            self.assertEqual(
+                exact_name,
+                declarations[f"{route_id}:java"]["exportName"],
+            )
 
     def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
         route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
