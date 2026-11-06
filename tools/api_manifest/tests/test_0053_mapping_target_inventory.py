@@ -37,6 +37,29 @@ class MappingTargetInventoryTests(unittest.TestCase):
             self.manifest["publicDeclarations"], packages, c_release_functions
         )
 
+    def test_ready_mapping_can_target_an_exact_public_c_function(self) -> None:
+        declarations = [{
+            "declarationId": "query-field-consumer",
+            "packageId": "c-kmipkit",
+            "kind": "function",
+            "exportName": "query-field-consumer",
+            "declarationState": "verified",
+            "parityScope": "c-only",
+            "languageMappings": {
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_response_query_field_at",
+                }
+            },
+        }]
+        self.assertIsNone(
+            generate._validate_ready_mapping_targets(
+                declarations,
+                {"c-kmipkit": "c"},
+                {("c-kmipkit", "kmipkit_client_batch_item_response_query_field_at")},
+            )
+        )
+
     def test_named_c_attribute_tags_map_to_the_same_four_language_attributes(self) -> None:
         declarations = self.manifest["publicDeclarations"]
         c_tags = [
