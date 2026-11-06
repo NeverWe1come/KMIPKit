@@ -767,6 +767,30 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("kmipkit.errors._IntEnum", names)
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_expands_members_of_publicly_reexported_private_enum(self):
+        sources = {
+            "kmipkit/_generated/standard_attribute.py": textwrap.dedent("""
+                from enum import Enum
+
+                class StandardAttribute(Enum):
+                    ACTIVATION_DATE = 0x420001
+                    CRYPTOGRAPHIC_ALGORITHM = 0x420028
+            """),
+            "kmipkit/typed_attributes.py": textwrap.dedent("""
+                from ._generated.standard_attribute import StandardAttribute
+
+                __all__ = ["StandardAttribute"]
+            """),
+        }
+
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertIn("kmipkit.typed_attributes.StandardAttribute", names)
+        self.assertIn("kmipkit.typed_attributes.StandardAttribute.ACTIVATION_DATE", names)
+        self.assertIn("kmipkit.typed_attributes.StandardAttribute.CRYPTOGRAPHIC_ALGORITHM", names)
+        self.assertTrue(result["complete"])
+
     def test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions(self):
         repo_root = Path(__file__).resolve().parents[3]
         manifest_path = repo_root / "specification/api/public-api.json"
