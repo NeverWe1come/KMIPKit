@@ -100,6 +100,14 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         )
         self.assertEqual("field", kind_correction["fromKind"])
         self.assertEqual("python-export", kind_correction["toKind"])
+        rust_kind_correction = next(
+            row
+            for row in route_data.get("rustKindCorrections", [])
+            if row.get("exportName")
+            == "kmipkit_protocol::ManagedValueReader::read_field"
+        )
+        self.assertEqual("function", rust_kind_correction["manifestKind"])
+        self.assertEqual("associated-item", rust_kind_correction["observedKind"])
 
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
