@@ -146,13 +146,26 @@ fn attribute_mutation_validation_rejects_usage_limits_count_for_add_and_modify()
             .validate()
             .is_valid()
     );
+    assert!(
+        ModifyAttributeRequest::new(
+            None,
+            None,
+            crate::NewAttribute::new(schema_item(
+                0x0042_0095,
+                Value::structure(schema_structure([schema_item(
+                    0x0042_0097,
+                    Value::long_integer(12),
+                )])),
+            )),
+        )
+        .validate()
+        .is_valid()
+    );
 }
 
 #[test]
 fn attribute_mutation_validation_rejects_source_prohibited_attributes() {
-    let initial_date = || {
-        crate::NewAttribute::new(schema_item(0x0042_0039, Value::integer(1)))
-    };
+    let initial_date = || crate::NewAttribute::new(schema_item(0x0042_0039, Value::integer(1)));
     let add = AddAttributeRequest::new(None, initial_date());
     let modify = ModifyAttributeRequest::new(None, None, initial_date());
     let set = crate::SetAttributeRequest::new(None, initial_date());
@@ -170,6 +183,32 @@ fn attribute_mutation_validation_rejects_source_prohibited_attributes() {
         ))),
         None,
     );
+    let vendor_attribute = crate::NewAttribute::new(schema_item(
+        0x0042_0008,
+        Value::structure(schema_structure([
+            schema_item(0x0042_009D, Value::text_string("y".to_owned())),
+            schema_item(0x0042_000A, Value::text_string("vendor-name".to_owned())),
+            schema_item(0x0042_000B, Value::text_string("vendor-value".to_owned())),
+        ])),
+    ));
+    let vendor_set = crate::SetAttributeRequest::new(None, vendor_attribute);
+    let vendor_adjust = AdjustAttributeRequest::new(
+        None,
+        crate::AttributeReference::name("y", "attribute"),
+        crate::AdjustmentType::INCREMENT,
+        None,
+    );
+    let allowed_vendor = crate::SetAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(schema_item(
+            0x0042_0008,
+            Value::structure(schema_structure([
+                schema_item(0x0042_009D, Value::text_string("other_vendor".to_owned())),
+                schema_item(0x0042_000A, Value::text_string("attribute".to_owned())),
+                schema_item(0x0042_000B, Value::text_string("vendor-value".to_owned())),
+            ])),
+        )),
+    );
 
     for report in [
         add.validate(),
@@ -177,11 +216,25 @@ fn attribute_mutation_validation_rejects_source_prohibited_attributes() {
         set.validate(),
         adjust.validate(),
         delete.validate(),
+        vendor_set.validate(),
+        vendor_adjust.validate(),
     ] {
-        assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R282"
-        }));
+        assert!(
+            report
+                .issues()
+                .iter()
+                .any(|issue| { issue.code().as_str() == "KMIPKIT-0051-R282" })
+        );
     }
+    assert!(add.validate().issues().iter().any(|issue| {
+        issue.source().to_string() == "KMIP v2.1 4.25"
+            && issue.path().to_string() == "Request Payload.New Attribute.tag(0x420039)"
+    }));
+    assert!(vendor_set.validate().issues().iter().any(|issue| {
+        issue.source().to_string() == "KMIP v2.1 4.60"
+            && issue.path().to_string() == "Request Payload.New Attribute.tag(0x420008)"
+    }));
+    assert!(allowed_vendor.validate().is_valid());
 }
 
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
