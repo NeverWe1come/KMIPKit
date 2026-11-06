@@ -46,3 +46,9 @@ Thumbs.db
 
 # Test PKI is generated ephemerally.
 test-pki/
+
+# Interoperability test suites local artifacts
+interop/.local/
+interop/**/results/
+interop/**/target/
+**/docker-compose.local.yml

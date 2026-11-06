@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/server-connection.schema.json",
+  "title": "KMIP Server Connection Configuration",
+  "type": "object",
+  "required": ["server_id", "endpoints"],
+  "properties": {
+    "server_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "endpoints": {
+      "type": "object",
+      "properties": {
+        "raw_tls": {
+          "type": "object",
+          "required": ["host", "port"],
+          "properties": {
+            "host": { "type": "string" },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        },
+        "https": {
+          "type": "object",
+          "required": ["url"],
+          "properties": {
+            "url": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "properties": {
+        "ca_cert_path": { "type": "string" },
+        "client_cert_path": { "type": "string" },
+        "client_key_path": { "type": "string" },
+        "server_name_override": { "type": "string" },
+        "connect_timeout_seconds": { "type": "integer", "default": 10 },
+        "read_timeout_seconds": { "type": "integer", "default": 30 }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "properties": {
+        "username_password": {
+          "type": "object",
+          "required": ["username", "password"],
+          "properties": {
+            "username": { "type": "string" },
+            "password": { "type": "string" }
+          }
+        }
+      }
+    },
+    "execution_policy": {
+      "type": "object",
+      "properties": {
+        "probe_unsupported": { "type": "boolean", "default": false },
+        "encodings": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["TTLV", "JSON", "XML"] }
+        },
+        "api_levels": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["level1", "level2", "level3"] }
+        },
+        "cleanup_on_failure": { "type": "boolean", "default": true }
+      }
+    }
+  }
+}
