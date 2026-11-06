@@ -1,9 +1,13 @@
 package org.kmipkit.typed;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.credentials.Authentication;
@@ -47,6 +51,38 @@ final class ParametersAuthenticationParityTest {
                     assertEquals(TABLE_59_TAGS[index], tag.raw());
                 }
             }
+        }
+    }
+
+    @Test
+    void readsEveryTypedTable59FieldWithoutConsumingTheModel() {
+        try (CryptographicParameters parameters = CryptographicParameters.builder()
+                     .blockCipherMode(0xe1234567L).paddingMethod(0x80000001L)
+                     .hashingAlgorithm(0xf1234567L).keyRoleType(0x80001234L)
+                     .digitalSignatureAlgorithm(0x80005678L).cryptographicAlgorithm(0xe1230001L)
+                     .randomIv(false).ivLength(8).tagLength(16).fixedFieldLength(2)
+                     .invocationFieldLength(4).counterLength(32).initialCounterValue(1)
+                     .saltLength(16).maskGenerator(0x80000002L)
+                     .maskGeneratorHashingAlgorithm(0x80000003L)
+                     .pSource(new byte[] {0x51, 0, (byte) 0xff}).trailerField(1).build()) {
+            assertEquals(OptionalLong.of(0xe1234567L), parameters.blockCipherMode());
+            assertEquals(OptionalLong.of(0x80000001L), parameters.paddingMethod());
+            assertEquals(OptionalLong.of(0xf1234567L), parameters.hashingAlgorithm());
+            assertEquals(OptionalLong.of(0x80001234L), parameters.keyRoleType());
+            assertEquals(OptionalLong.of(0x80005678L), parameters.digitalSignatureAlgorithm());
+            assertEquals(OptionalLong.of(0xe1230001L), parameters.cryptographicAlgorithm());
+            assertEquals(Optional.of(false), parameters.randomIv());
+            assertEquals(OptionalInt.of(8), parameters.ivLength());
+            assertEquals(OptionalInt.of(16), parameters.tagLength());
+            assertEquals(OptionalInt.of(2), parameters.fixedFieldLength());
+            assertEquals(OptionalInt.of(4), parameters.invocationFieldLength());
+            assertEquals(OptionalInt.of(32), parameters.counterLength());
+            assertEquals(OptionalInt.of(1), parameters.initialCounterValue());
+            assertEquals(OptionalInt.of(16), parameters.saltLength());
+            assertEquals(OptionalLong.of(0x80000002L), parameters.maskGenerator());
+            assertEquals(OptionalLong.of(0x80000003L), parameters.maskGeneratorHashingAlgorithm());
+            assertArrayEquals(new byte[] {0x51, 0, (byte) 0xff}, parameters.pSource().orElseThrow());
+            assertEquals(OptionalInt.of(1), parameters.trailerField());
         }
     }
 

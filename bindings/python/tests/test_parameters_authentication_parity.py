@@ -77,6 +77,37 @@ def test_builds_all_table59_fields_in_normative_order_and_preserves_future_enums
             assert _read_tags(view) == TABLE_59_TAGS
 
 
+def test_reads_every_typed_table59_field_without_consuming_the_model():
+    builder = kmipkit.cryptographic_parameters.CryptographicParameters.builder()
+    builder.block_cipher_mode(0xE123_4567).padding_method(0x8000_0001)
+    builder.hashing_algorithm(0xF123_4567).key_role_type(0x8000_1234)
+    builder.digital_signature_algorithm(0x8000_5678).cryptographic_algorithm(0xE123_0001)
+    builder.random_iv(False).iv_length(8).tag_length(16).fixed_field_length(2)
+    builder.invocation_field_length(4).counter_length(32).initial_counter_value(1)
+    builder.salt_length(16).mask_generator(0x8000_0002)
+    builder.mask_generator_hashing_algorithm(0x8000_0003)
+    builder.p_source(b"Q\x00\xff").trailer_field(1)
+    with builder.build() as parameters:
+        assert parameters.block_cipher_mode() == 0xE123_4567
+        assert parameters.padding_method() == 0x8000_0001
+        assert parameters.hashing_algorithm() == 0xF123_4567
+        assert parameters.key_role_type() == 0x8000_1234
+        assert parameters.digital_signature_algorithm() == 0x8000_5678
+        assert parameters.cryptographic_algorithm() == 0xE123_0001
+        assert parameters.random_iv() is False
+        assert parameters.iv_length() == 8
+        assert parameters.tag_length() == 16
+        assert parameters.fixed_field_length() == 2
+        assert parameters.invocation_field_length() == 4
+        assert parameters.counter_length() == 32
+        assert parameters.initial_counter_value() == 1
+        assert parameters.salt_length() == 16
+        assert parameters.mask_generator() == 0x8000_0002
+        assert parameters.mask_generator_hashing_algorithm() == 0x8000_0003
+        assert parameters.p_source() == b"Q\x00\xff"
+        assert parameters.trailer_field() == 1
+
+
 def test_authentication_is_attached_to_the_request_batch_and_owned_on_success():
     credential = credentials.Credential.from_ttlv(_credential_structure())
     authentication = credentials.Authentication.create([credential])

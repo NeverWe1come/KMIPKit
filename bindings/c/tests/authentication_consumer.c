@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "kmipkit.h"
 
@@ -79,6 +80,44 @@ int32_t kmipkit_parameters_authentication_c_consumer_parameters(void) {
     }
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(structure);
+    kmipkit_cryptographic_parameters_release(parameters);
+    return status;
+}
+
+int32_t kmipkit_parameters_authentication_c_consumer_reads(void) {
+    static const uint8_t expected_p_source[] = {0x00, 0xff, 0x81};
+    kmipkit_cryptographic_parameters_fields_v1_t input = {0};
+    kmipkit_cryptographic_parameters_fields_v1_t output = {0};
+    kmipkit_cryptographic_parameters_t *parameters = 0;
+    int32_t status = 0;
+
+    input.struct_size = (uint32_t)sizeof(input);
+    input.abi_version = 1;
+    input.block_cipher_mode_present = 1;
+    input.block_cipher_mode = UINT32_C(0x80000001);
+    input.random_iv_present = 1;
+    input.random_iv = 0;
+    input.p_source_present = 1;
+    input.p_source = expected_p_source;
+    input.p_source_length = sizeof(expected_p_source);
+    output.struct_size = (uint32_t)sizeof(output);
+    output.abi_version = 1;
+
+    status = kmipkit_cryptographic_parameters_from_fields_v1(&input, &parameters);
+    if (status == 0) {
+        status = kmipkit_cryptographic_parameters_read_fields_v1(parameters, &output);
+    }
+    if (status == 0 &&
+        (output.block_cipher_mode_present != 1 ||
+         output.block_cipher_mode != UINT32_C(0x80000001) ||
+         output.random_iv_present != 1 || output.random_iv != 0 ||
+         output.p_source_present != 1 ||
+         output.p_source_length != sizeof(expected_p_source) ||
+         output.p_source == 0 ||
+         memcmp(output.p_source, expected_p_source, sizeof(expected_p_source)) != 0)) {
+        status = 1;
+    }
+
     kmipkit_cryptographic_parameters_release(parameters);
     return status;
 }
