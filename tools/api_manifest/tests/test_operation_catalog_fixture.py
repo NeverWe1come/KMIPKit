@@ -38,6 +38,7 @@ class OperationCatalogFixtureTests(unittest.TestCase):
 
         self.assertEqual(len(rows), 56)
         self.assertEqual(len({operation_id for operation_id, _ in rows}), 56)
+        self.assertEqual(len({raw for _, raw in rows}), 56)
         self.assertEqual({operation_id for operation_id, _ in rows}, expected_ids)
 
         python_values = PYTHON_VALUES.read_text(encoding="utf-8")

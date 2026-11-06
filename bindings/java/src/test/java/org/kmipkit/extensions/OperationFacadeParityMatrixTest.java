@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +48,9 @@ final class OperationFacadeParityMatrixTest {
                 assertEquals(1, batch.itemCount(), route.operationId());
                 try (ClientBatchItem readBack = batch.itemAt(0)) {
                     assertEquals(0, readBack.extensionCount(), route.operationId());
-                    assertEquals(operationRawValues.get(route.operationId()), readBack.operation(),
+                    assertEquals(
+                            operationRawValues.get(route.operationId()),
+                            readBack.operation(),
                             route.operationId());
                 }
             }
@@ -498,7 +500,8 @@ final class OperationFacadeParityMatrixTest {
         try {
             List<String> lines = Files.readAllLines(fixture, StandardCharsets.UTF_8);
             if (lines.isEmpty() || !lines.get(0).equals("operationId\toperationRaw")) {
-                throw new AssertionError("invalid shared KMIP Operation fixture header: " + fixture);
+                throw new AssertionError(
+                        "invalid shared KMIP Operation fixture header: " + fixture);
             }
             Map<String, Long> values = new HashMap<>();
             for (String line : lines.subList(1, lines.size())) {
@@ -510,7 +513,8 @@ final class OperationFacadeParityMatrixTest {
             }
             return Map.copyOf(values);
         } catch (IOException exception) {
-            throw new AssertionError("unable to read shared KMIP Operation fixture: " + fixture, exception);
+            throw new AssertionError(
+                    "unable to read shared KMIP Operation fixture: " + fixture, exception);
         }
     }
 

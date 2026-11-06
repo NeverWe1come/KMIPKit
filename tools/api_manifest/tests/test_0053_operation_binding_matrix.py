@@ -135,10 +135,8 @@ class OperationBindingMatrixTests(unittest.TestCase):
         # operation identity returned by Rust against the generated KMIP 2.1
         # Operation constants. Its response list covers the same operation set.
         self.assertIn("assertEquals(operationRawValues.keySet(), exercised)", java_test)
-        self.assertIn(
-            "assertEquals(operationRawValues.get(route.operationId()), readBack.operation()",
-            java_test,
-        )
+        self.assertIn("operationRawValues.get(route.operationId())", java_test)
+        self.assertIn("readBack.operation()", java_test)
         self.assertIn("operation_catalog_parity.tsv", java_test)
         self.assertEqual(java_test.count('result("'), 52)
         self.assertEqual(java_test.count("new AsyncResponseAccessor("), 4)
