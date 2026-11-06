@@ -76,7 +76,7 @@
 - [ ] T050 [US5] Refactor repeated operation fixtures from the reviewed operation catalog in tools/api_manifest/tests/ and rerun all four-language operation tests.
 
 ## Phase 7: US6 package docs and closure
-- [ ] T051 [US6] Add runnable external consumers and quickstart examples in tests/consumers/0053-parity/ and specs/053-api-parity-facade/quickstart.md.
+- [x] T051 [US6] Add runnable external consumers and quickstart examples in tests/consumers/0053-parity/ and specs/053-api-parity-facade/quickstart.md.
 - [ ] T052 [US6] Update English typed binding, ownership, validation, authentication, and response guidance in docs/user-guide/en/.
 - [ ] T053 [US6] Update Spanish equivalents and external-runtime copy limits in docs/user-guide/es/.
 - [ ] T054 Complete exact four-language mappings or justified per-route exclusions for the 750 candidates in tools/api_manifest/reconcile_0053_api_parity.py and specification/api/public-api.json.
