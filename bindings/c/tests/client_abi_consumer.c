@@ -4,6 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern int kmipkit_test_client_batch_item_encoded_operation(
+    kmipkit_client_batch_item_t **inout_item,
+    uint32_t *out_operation);
+
+static int test_encoded_operation_and_consume(
+        kmipkit_client_batch_item_t **item,
+        uint32_t expected_operation) {
+    uint32_t encoded_operation = UINT32_MAX;
+    return item != NULL && *item != NULL &&
+        kmipkit_test_client_batch_item_encoded_operation(item, &encoded_operation) == 0 &&
+        *item == NULL && encoded_operation == expected_operation;
+}
+
 static int response_ttlv_path_integer_matches(
         kmipkit_ttlv_structure_view_t *view,
         const uint32_t *path,
@@ -1502,7 +1515,8 @@ static int logout_constructor_is_callable_from_c(void) {
         goto cleanup;
     }
     if (kmipkit_client_batch_item_logout(0, &item) != T076_ERROR_INVALID_INPUT || item != 0 ||
-        kmipkit_client_batch_item_logout(ticket, &item) != 0 || item == 0) {
+        kmipkit_client_batch_item_logout(ticket, &item) != 0 || item == 0 ||
+        !test_encoded_operation_and_consume(&item, UINT32_C(0x2e))) {
         goto cleanup;
     }
     result = 1;
@@ -2254,7 +2268,7 @@ static int interop_constructor_is_callable_from_c(void) {
             UINT32_C(0xf1234567), identifier, sizeof(identifier) - 1, &item) != 0) {
         return 0;
     }
-    const int result = item != 0;
+    const int result = test_encoded_operation_and_consume(&item, UINT32_C(0x34));
     kmipkit_client_batch_item_release(item);
     return result;
 }
@@ -2513,7 +2527,7 @@ static int pkcs11_constructor_is_callable_from_c(void) {
         kmipkit_client_batch_item_pkcs11(function, 0, 0, 0, &item) != 0 || item == 0) {
         goto cleanup;
     }
-    result = 1;
+    result = test_encoded_operation_and_consume(&item, UINT32_C(0x33));
 cleanup:
     kmipkit_client_batch_item_release(item);
     kmipkit_ttlv_structure_release(function);
@@ -2836,7 +2850,8 @@ static int join_split_key_constructor_pairs_each_identifier_with_its_threshold(v
         kmipkit_ttlv_structure_create(&masks) != 0 ||
         kmipkit_client_batch_item_join_split_key(
             UINT32_C(0xf1234567), references, 2, 1, UINT32_C(0xfedcba98),
-            attributes, masks, &item) != 0 || item == 0) {
+            attributes, masks, &item) != 0 || item == 0 ||
+        !test_encoded_operation_and_consume(&item, UINT32_C(0x29))) {
         goto cleanup;
     }
     kmipkit_client_batch_item_release(item);
@@ -7784,7 +7799,6 @@ int main(int argc, char **argv) {
         !check_constructor_is_callable_from_c() ||
         !delegated_login_constructor_is_callable_from_c() ||
         !login_constructor_is_callable_from_c() ||
-        !logout_constructor_is_callable_from_c() ||
         !derive_key_constructor_is_callable_from_c() ||
         !export_constructor_is_callable_from_c() ||
         !export_constructor_rejects_invalid_presence_from_c() ||
@@ -7793,7 +7807,6 @@ int main(int argc, char **argv) {
         !logout_response_accessor_clears_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
-        !interop_constructor_is_callable_from_c() ||
         !validate_constructor_is_callable_from_c() ||
         !validate_constructor_copies_nonempty_certificate_array_from_c() ||
         !validate_constructor_copies_payload_extensions() ||
@@ -7809,7 +7822,6 @@ int main(int argc, char **argv) {
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
-        !join_split_key_constructor_pairs_each_identifier_with_its_threshold() ||
         !join_split_key_constructor_enforces_aggregate_identifier_budget_from_c() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
@@ -7820,10 +7832,19 @@ int main(int argc, char **argv) {
         !encrypt_decrypt_abi_is_callable_from_compiled_c()) {
         return 7;
     }
+    if (!logout_constructor_is_callable_from_c()) {
+        return 71;
+    }
+    if (!interop_constructor_is_callable_from_c()) {
+        return 72;
+    }
+    if (!join_split_key_constructor_pairs_each_identifier_with_its_threshold()) {
+        return 73;
+    }
     if (!pkcs11_constructor_is_callable_from_c() ||
         !pkcs11_constructor_preserves_opaque_payload_extensions_from_c() ||
         !pkcs11_response_accessor_clears_invalid_outputs_from_c()) {
-        return 7;
+        return 74;
     }
 
     kmipkit_transport_config_v1_t transport_input = {0};

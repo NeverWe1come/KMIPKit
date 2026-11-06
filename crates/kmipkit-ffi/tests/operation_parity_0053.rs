@@ -28,6 +28,6 @@ fn compiled_c_consumer_invokes_all_56_client_operation_routes() {
 
     assert_eq!(
         result, 48,
-        "the matrix must batch 48 operation items; the existing C consumer covers Interop, Join Split Key, Logout, and PKCS#11, and negative results identify the first failing route"
+        "the matrix must encode 48 generic operation items; the other four synchronous factories are checked by the C helper consumer and negative results identify the first failing route"
     );
 }

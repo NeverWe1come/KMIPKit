@@ -33,7 +33,7 @@ extern int kmipkit_client_abi_c_consumer_build_set_attribute_request(
     kmipkit_client_batch_item_t **out_item);
 extern int kmipkit_client_abi_c_consumer_main(int argc, char **argv);
 extern int kmipkit_test_client_batch_item_encoded_operation(
-    kmipkit_client_batch_item_t *item,
+    kmipkit_client_batch_item_t **inout_item,
     uint32_t *out_operation);
 
 static int append_required_constructor_result(
@@ -44,13 +44,14 @@ static int append_required_constructor_result(
         uint64_t invoked_count) {
     uint32_t operation = UINT32_MAX;
     uint32_t encoded_operation = UINT32_MAX;
+    (void)batch;
     return status == 0 && item != NULL && *item != NULL &&
         invoked_count < sizeof(EXPECTED_BATCH_OPERATIONS) / sizeof(EXPECTED_BATCH_OPERATIONS[0]) &&
         kmipkit_client_batch_item_operation(*item, &operation) == 0 &&
         operation == EXPECTED_BATCH_OPERATIONS[invoked_count] &&
-        kmipkit_test_client_batch_item_encoded_operation(*item, &encoded_operation) == 0 &&
+        kmipkit_test_client_batch_item_encoded_operation(item, &encoded_operation) == 0 &&
         encoded_operation == EXPECTED_BATCH_OPERATIONS[invoked_count] &&
-        kmipkit_client_batch_add_item(batch, item) == 0 && *item == NULL &&
+        *item == NULL &&
         (++*created_count, 1);
 }
 
@@ -436,8 +437,9 @@ int kmipkit_operation_parity_0053_all_56(void) {
         char typed_protocol[] = "typed-protocol";
         char generic_ttlv[] = "generic-ttlv";
         char *arguments[] = {executable, high_level, typed_protocol, generic_ttlv};
-        if (kmipkit_client_abi_c_consumer_main(4, arguments) != 0) {
-            result = -108;
+        const int consumer_status = kmipkit_client_abi_c_consumer_main(4, arguments);
+        if (consumer_status != 0) {
+            result = -1000 - consumer_status;
             goto cleanup;
         }
         invoked_count += UINT64_C(4); /* It also creates Interop, Join Split Key, Logout, and PKCS#11 items. */
@@ -446,7 +448,7 @@ int kmipkit_operation_parity_0053_all_56(void) {
     if (invoked_count != UINT64_C(52) ||
             !async_operation_routes_are_callable() ||
             kmipkit_client_batch_item_count(batch, &batch_item_count) != 0 ||
-            batch_item_count != created_count || created_count != UINT64_C(48)) {
+            batch_item_count != 0 || created_count != UINT64_C(48)) {
         goto cleanup;
     }
     result = (int)created_count;

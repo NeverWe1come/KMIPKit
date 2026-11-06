@@ -1050,6 +1050,44 @@ pub extern "C" fn kmipkit_client_batch_item_operation(
     })
 }
 
+#[cfg(feature = "coverage-c-consumer")]
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_test_client_batch_item_encoded_operation(
+    inout_item: *mut *mut kmipkit_client_batch_item_t,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if inout_item.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller supplies a writable in/out slot, as required by this test-only
+        // consuming helper. The item is cleared as soon as ownership transfers.
+        let item_slot = unsafe { &mut *inout_item };
+        if item_slot.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let out = scalar_out!(out_operation);
+        *out = 0;
+        let item_handle = *item_slot;
+        let handle = read_handle!(item_handle, BatchItem);
+        if !matches!(&handle.value, HandleValue::BatchItem(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(handle);
+        let item = match owned_payload(item_handle, Kind::BatchItem) {
+            Ok(HandleValue::BatchItem(item)) => *item,
+            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        *item_slot = ptr::null_mut();
+        *out = try_ffi!(
+            kmipkit_client::test_support::encoded_batch_item_operation(item)
+                .map_err(|error| protocol_status(&error))
+        );
+        SUCCESS
+    })
+}
+
 /// Creates an owned, read-only metadata view retaining the batch owner's lifetime.
 ///
 /// The view does not copy request payload bytes or expose request payload access.
