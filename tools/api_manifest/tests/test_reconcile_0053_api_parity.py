@@ -1188,6 +1188,81 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         )
         self.assertEqual("native-handle-release", declaration["mappingSemantics"])
 
+    def test_public_route_replay_accepts_only_the_matching_approved_mapping_correction(self) -> None:
+        manifest = {
+            "publicPackages": [
+                {"id": "rust-kmipkit", "language": "rust"},
+                {"id": "rust-kmipkit-protocol", "language": "rust"},
+            ],
+            "publicDeclarations": [
+                {
+                    "declarationId": "reader-facade",
+                    "packageId": "rust-kmipkit",
+                    "kind": "associated-item",
+                    "exportName": "kmipkit::protocol::ManagedValueReader::read_field",
+                    "capabilityId": "typed_managed_objects_and_key_material",
+                    "requirementIds": ["KMIPKIT-0049-FR-001"],
+                    "declarationState": "verified",
+                    "parityScope": "four-language",
+                    "languageMappings": {
+                        "rust": {
+                            "packageId": "rust-kmipkit",
+                            "name": "kmipkit_protocol::ManagedValueReader::read_field",
+                        }
+                    },
+                    "parityEvidenceIds": ["crates/kmipkit-protocol/src/managed_value_reader.rs"],
+                },
+                {
+                    "declarationId": "protocol-reader",
+                    "packageId": "rust-kmipkit-protocol",
+                    "kind": "associated-item",
+                    "exportName": "kmipkit_protocol::ManagedValueReader::read_field",
+                    "capabilityId": "typed_managed_objects_and_key_material",
+                    "declarationState": "verified",
+                },
+            ],
+        }
+        declaration = {
+            **manifest["publicDeclarations"][0],
+            "languageMappings": {
+                "rust": {
+                    "packageId": "rust-kmipkit-protocol",
+                    "name": "kmipkit_protocol::ManagedValueReader::read_field",
+                }
+            },
+        }
+        correction = {
+            "declarationId": "reader-facade",
+            "language": "rust",
+            "from": {
+                "packageId": "rust-kmipkit",
+                "name": "kmipkit_protocol::ManagedValueReader::read_field",
+            },
+            "to": {
+                "packageId": "rust-kmipkit-protocol",
+                "name": "kmipkit_protocol::ManagedValueReader::read_field",
+            },
+            "capabilityId": "typed_managed_objects_and_key_material",
+            "requirementIds": ["KMIPKIT-0053-FR-012"],
+            "evidencePaths": ["crates/kmipkit-protocol/src/managed_value_reader.rs"],
+            "reason": "The facade mapping resolves to the exact protocol crate export.",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer approval of the complete Phase 5 plan.",
+            },
+        }
+
+        result = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [declaration], language_mapping_corrections=[correction]
+        )
+
+        self.assertEqual(
+            correction["to"],
+            result["publicDeclarations"][0]["languageMappings"]["rust"],
+        )
+
     def test_verified_0053_export_is_not_an_unresolved_candidate_on_replay(self) -> None:
         manifest = {
             "publicDeclarations": [{
