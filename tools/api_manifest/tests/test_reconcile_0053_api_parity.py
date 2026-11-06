@@ -11,6 +11,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.manifest = {
             "requirementIds": [],
             "functions": [],
+            "publicPackages": [
+                {"id": "rust-kmipkit", "language": "rust"},
+                {"id": "c-kmipkit", "language": "c"},
+                {"id": "java-kmipkit", "language": "java"},
+                {"id": "python-kmipkit", "language": "python"},
+            ],
             "publicDeclarations": [
                 {
                     "declarationId": "rust-attribute-type",
@@ -44,12 +50,21 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                     "capabilityState": "blocked",
                     "parityScope": "four-language",
                     "ownerSpecId": "KMIPKIT-0048",
+                    "mappings": {language: [] for language in ("rust", "c", "java", "python")},
                 },
                 {
                     "capabilityId": "request_message_authentication",
                     "capabilityState": "blocked",
                     "parityScope": "four-language",
                     "ownerSpecId": "KMIPKIT-0050",
+                    "mappings": {language: [] for language in ("rust", "c", "java", "python")},
+                },
+                {
+                    "capabilityId": "request_validation",
+                    "capabilityState": "blocked",
+                    "parityScope": "c-only",
+                    "ownerSpecId": "KMIPKIT-0051",
+                    "mappings": {"c": []},
                 },
             ],
         }
@@ -91,11 +106,18 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             self.assertNotIn("candidateSpecId", declaration)
             self.assertNotIn("blockedReason", declaration)
             self.assertEqual({"rust", "c", "java", "python"}, set(declaration["languageMappings"]))
-        self.assertTrue(all(item["capabilityState"] == "verified" for item in result["capabilities"]))
+        capability_states = {
+            item["capabilityId"]: item["capabilityState"]
+            for item in result["capabilities"]
+        }
+        self.assertEqual("verified", capability_states["typed_object_attributes"])
+        self.assertEqual("verified", capability_states["request_message_authentication"])
+        self.assertEqual("blocked", capability_states["request_validation"])
         for original, capability in zip(self.manifest["capabilities"], result["capabilities"], strict=True):
             self.assertEqual(original["ownerSpecId"], capability["ownerSpecId"])
-            self.assertEqual("Approved", capability["approvalEvidence"]["status"])
-            self.assertTrue(capability["parityEvidenceIds"])
+            if capability["capabilityState"] == "verified":
+                self.assertEqual("Approved", capability["approvalEvidence"]["status"])
+                self.assertTrue(capability["parityEvidenceIds"])
 
     def test_rejects_missing_language_or_evidence_mapping(self) -> None:
         routes = copy.deepcopy(self.routes)
@@ -138,23 +160,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
         ]
-        self.assertEqual(645, len(candidates))
-        self.assertEqual(
-            {
-                "typed_object_attributes": 279,
-                "typed_managed_objects_and_key_material": 342,
-            "typed_cryptographic_parameters": 24,
-            },
-            {
-                capability_id: sum(
-                    declaration["capabilityId"] == capability_id
-                    for declaration in candidates
-                )
-                for capability_id in {
-                    declaration["capabilityId"] for declaration in candidates
-                }
-            },
-        )
+        self.assertEqual([], candidates)
         resolved = [
             declaration for declaration in manifest["publicDeclarations"]
             if declaration.get("declarationId") == "kmipkit-0048-kmipkit-7ff36f3a6017bfcf719b"
@@ -164,6 +170,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         capabilities = {row["capabilityId"]: row["capabilityState"]
                         for row in manifest["capabilities"]}
         self.assertEqual("verified", capabilities["request_message_authentication"])
+        for capability_id in (
+            "typed_object_attributes",
+            "typed_managed_objects_and_key_material",
+            "typed_cryptographic_parameters",
+        ):
+            self.assertEqual("verified", capabilities[capability_id])
 
     def test_reconciles_only_executable_table59_field_getters_and_builder_setters(self) -> None:
         manifest = json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
@@ -243,28 +255,47 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "Table 59 mapping lacks Rust behavior evidence",
             )
 
+        crypto_resolutions = [
+            resolution for resolution in route_data["candidateResolutions"]
+            if resolution["capabilityId"] == "typed_cryptographic_parameters"
+        ]
+        self.assertEqual(24, len(crypto_resolutions))
+        self.assertTrue(all(row["resolution"] == "mapped" for row in crypto_resolutions))
+
         reconciled = reconcile_0053_api_parity.reconcile_manifest(
             manifest, route_data["candidateRoutes"]
         )
-        reconciled = reconcile_0053_api_parity.add_public_declarations(
-            reconciled, route_data["publicDeclarations"]
+        reconciled = reconcile_0053_api_parity.reconcile_candidate_resolutions(
+            reconciled, route_data["candidateResolutions"]
         )
+        reconciled = reconcile_0053_api_parity.resolve_public_declarations(
+            reconciled, route_data["declarationResolutions"]
+        )
+        reconciled = reconcile_0053_api_parity.add_additional_types(
+            reconciled, route_data["types"]
+        )
+        reconciled = reconcile_0053_api_parity.add_additional_functions(
+            reconciled, route_data["functions"]
+        )
+        reconciled = reconcile_0053_api_parity.add_public_declarations(
+            reconciled,
+            route_data["publicDeclarations"],
+            route_data.get("pythonStaleMappings", []),
+            route_data.get("javaStaleMappings", []),
+            route_data.get("pythonKindCorrections", []),
+            route_data.get("rustKindCorrections", []),
+        )
+        reconciled = reconcile_0053_api_parity.add_approved_exclusions(
+            reconciled, route_data["approvedExclusions"]
+        )
+        reconciled = reconcile_0053_api_parity._synchronize_capability_mappings(reconciled)
         remaining = [
             declaration
             for declaration in reconciled["publicDeclarations"]
             if declaration.get("candidateSpecId") == "KMIPKIT-0053"
             and declaration.get("capabilityId") == "typed_cryptographic_parameters"
         ]
-        self.assertEqual(24, len(remaining))
-        remaining_names = [row["exportName"] for row in remaining]
-        self.assertEqual(18, sum(name.endswith("::with_typed_cryptographic_parameters")
-                                 for name in remaining_names))
-        self.assertEqual(2, sum(name.endswith("CryptographicParameters::with_ttlv")
-                                 for name in remaining_names))
-        self.assertEqual(2, sum(name.endswith("CryptographicParametersBuilder::new")
-                                 for name in remaining_names))
-        self.assertEqual(2, sum(name.endswith("CryptographicParametersBuilder::with_extension")
-                                 for name in remaining_names))
+        self.assertEqual([], remaining)
 
     def test_managed_object_java_routes_match_exported_camel_case_methods(self) -> None:
         route_data = json.loads(
@@ -459,7 +490,12 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             manifest, route_data["functions"]
         )
         manifest = reconcile_0053_api_parity.add_public_declarations(
-            manifest, route_data["publicDeclarations"]
+            manifest,
+            route_data["publicDeclarations"],
+            route_data.get("pythonStaleMappings", []),
+            route_data.get("javaStaleMappings", []),
+            route_data.get("pythonKindCorrections", []),
+            route_data.get("rustKindCorrections", []),
         )
         mapped = next(row for row in manifest["publicDeclarations"]
                       if row["declarationId"] == candidate_id)
@@ -631,6 +667,105 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             reconcile_0053_api_parity.add_approved_exclusions(
                 {"approvedExclusions": []}, [broad]
             )
+
+    def test_adds_exact_rust_export_audit_exclusions_with_identity_and_evidence(self) -> None:
+        exclusion = {
+            "declarationId": "KMIPKIT-0053:exclude:exact-test",
+            "packageId": "rust-kmipkit",
+            "exportName": "<kmipkit::protocol::Example as core::fmt::Debug>::fmt",
+            "reason": "This exact compiler-generated trait implementation is not an independent capability.",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer authorization for KMIPKIT-0053.",
+            },
+            "evidence": "Exact public export audit with its Rustdoc identity.",
+            "evidencePaths": ["crates/kmipkit-protocol/tests/managed_objects.rs"],
+            "candidateSpecId": "KMIPKIT-0053",
+            "rustArtifactKind": "rust-trait-implementation-member",
+            "identity": "serialized-rustdoc-identity",
+        }
+
+        first = reconcile_0053_api_parity.add_approved_exclusions(
+            {"approvedExclusions": []}, [exclusion]
+        )
+        second = reconcile_0053_api_parity.add_approved_exclusions(first, [exclusion])
+
+        self.assertEqual([exclusion], first["approvedExclusions"])
+        self.assertEqual(first, second)
+        broad = copy.deepcopy(exclusion)
+        broad["exportName"] = "<kmipkit::protocol::*>::fmt"
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.add_approved_exclusions(
+                {"approvedExclusions": []}, [broad]
+            )
+
+    def test_validates_capability_and_counterpart_for_rust_shape_exclusion(self) -> None:
+        exclusion = {
+            "declarationId": "KMIPKIT-0053:exclude:enum-variant",
+            "capabilityId": "typed_object_attributes",
+            "packageId": "rust-kmipkit",
+            "exportName": "kmipkit::protocol::Attribute::Name",
+            "declarationKind": "variant",
+            "artifactKind": "rust-enum-variant",
+            "reason": "The Rust enum variant is represented by its parent capability.",
+            "counterpartDeclarationIds": ["rust-attribute-type"],
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer authorization for KMIPKIT-0053.",
+            },
+            "evidence": "Exact Rust public export audit.",
+            "evidencePaths": ["crates/kmipkit-protocol/src/attributes.rs"],
+            "candidateSpecId": "KMIPKIT-0053",
+            "rustArtifactKind": "exact-route",
+        }
+        manifest = copy.deepcopy(self.manifest)
+        manifest["capabilities"][0]["capabilityState"] = "verified"
+        manifest["publicDeclarations"][0]["declarationState"] = "verified"
+
+        result = reconcile_0053_api_parity.add_approved_exclusions(
+            manifest, [exclusion]
+        )
+
+        self.assertEqual([exclusion], result["approvedExclusions"])
+        invalid_capability = copy.deepcopy(exclusion)
+        invalid_capability["capabilityId"] = "unknown_capability"
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.add_approved_exclusions(
+                manifest, [invalid_capability]
+            )
+
+    def test_removes_only_an_exact_approved_declaration_idempotently(self) -> None:
+        declaration = {
+            "declarationId": "0053-counterpart-duplicate-route",
+            "packageId": "python-kmipkit",
+            "exportName": "kmipkit.managed_objects.KeyWrappingData.from_fields",
+        }
+        removal = {
+            "declarationId": declaration["declarationId"],
+            "packageId": declaration["packageId"],
+            "exportName": declaration["exportName"],
+            "reason": "The duplicate Python constructor belongs to its managed-object capability.",
+            "candidateSpecId": "KMIPKIT-0053",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer authorization for the KMIPKIT-0053 plan.",
+            },
+            "evidencePaths": ["bindings/python/tests/test_managed_object_parity.py"],
+        }
+
+        first = reconcile_0053_api_parity.remove_public_declarations(
+            {"publicDeclarations": [declaration]}, [removal]
+        )
+        second = reconcile_0053_api_parity.remove_public_declarations(first, [removal])
+
+        self.assertEqual([], first["publicDeclarations"])
+        self.assertEqual(first, second)
 
     def test_public_c_layout_field_can_be_recorded_as_an_exact_c_only_surface(self) -> None:
         declaration = {
