@@ -14,10 +14,11 @@ use super::schema::RequestPayloadSchema;
 /// Borrowed validation contract for a typed client-initiated KMIP request.
 ///
 /// Implementations identify the exact Request Payload schema and inspect the
-/// request without consuming or cloning it. Operation checks are being added
-/// with their source-backed tests; an empty report does not establish complete
-/// KMIP conformance. No report establishes server capability, authorization,
-/// state, or policy acceptance.
+/// request without consuming or cloning it. The report covers locally
+/// decidable operation semantics; [`crate::validate_structure`] separately
+/// checks a generic TTLV tree against an explicitly selected schema. A valid
+/// report does not establish complete KMIP conformance or server acceptance.
+/// No report establishes server capability, authorization, state, or policy.
 pub trait ValidateKmipRequest {
     /// The OASIS Request Payload schema for this operation.
     const SCHEMA: RequestPayloadSchema;
@@ -48,9 +49,10 @@ macro_rules! impl_typed_request_validation {
                 const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::$schema;
 
                 fn validate(&self) -> ValidationReport {
-                    // Operation-specific validation is added alongside its
-                    // request model and source-backed tests. Keep the common
-                    // contract usable while that exhaustive audit proceeds.
+                    // These operations have no additional locally decidable
+                    // cross-field rule in the audited KMIP 2.1 request tables.
+                    // Their typed fields preserve the selected wire values;
+                    // remote object state and server policy remain remote.
                     let _ = self;
                     ValidationReport::default()
                 }

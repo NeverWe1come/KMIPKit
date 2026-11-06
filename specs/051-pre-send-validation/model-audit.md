@@ -191,7 +191,7 @@ Types are exact stored Rust field types except explicit nested projections/seria
 | R075 | Get / Key Compression Type | `GetRequest.key_compression_type` | `Option<KeyCompressionType>` | S |
 | R076 | Get / Key Wrapping Specification | `GetRequest.key_wrapping_specification` | `Option<Structure>` | R; WRAP |
 | R077 | GetAttributes / Unique Identifier | `GetAttributesRequest.unique_identifier` | `Option<String>` | US |
-| R078 | GetAttributes / Attribute Reference | `GetAttributesRequest.attribute_references` | `Vec<AttributeReference>` | L/AR; REF |
+| R078 | GetAttributes / Attribute Reference | `GetAttributesRequest.attribute_references` | `Vec<AttributeReference>` | L/AR; REF; `GetAttributesRequest::validate` checks the §5.5 Table 161 Vendor Identification alphabet for every name-form reference; `typed_request_validation_tests::get_attributes_validation_rejects_invalid_vendor_identification` verifies safe indexed diagnostics and an accepted identifier |
 | R079 | GetAttributeList / Unique Identifier | `GetAttributeListRequest.unique_identifier` | `Option<String>` | US |
 | R080 | GetUsageAllocation / Unique Identifier | `GetUsageAllocationRequest.unique_identifier` | `Option<UniqueIdentifier>` | U |
 | R081 | GetUsageAllocation / Usage Limits Count | `GetUsageAllocationRequest.usage_limits_count` | `i64` | S |
