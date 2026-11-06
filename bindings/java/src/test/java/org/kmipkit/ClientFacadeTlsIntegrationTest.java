@@ -96,7 +96,7 @@ final class ClientFacadeTlsIntegrationTest {
     private static final String RNG_RETRIEVED_SENTINEL = "KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
     private static final int LARGE_RESPONSE_DATA_BYTES = 16 * 1024 * 1024 + 1;
     private static final byte[] JSON_DISCOVER_VERSIONS_RESPONSE = """
-            {"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}
+            {"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"UniqueBatchItemID","type":"ByteString","value":"6974656d2d30"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}
             """.getBytes(StandardCharsets.UTF_8);
 
     @TempDir
@@ -135,12 +135,12 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(configuration, transport)) {
             try (ClientBatchResponse response = client.executeWithOptions(
-                            ClientBatch.create().add(ClientBatchItem.discoverVersions()),
-                            CodecLimits.defaults(), null)) {
+                            ClientBatch.create().add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0))),
+                            CodecLimits.defaults(), (WireEncoding) null)) {
                 assertEquals(1, response.itemCount());
             }
             try (ClientBatchResponse response = client.executeWithOptions(
-                            ClientBatch.create().add(ClientBatchItem.discoverVersions()),
+                            ClientBatch.create().add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0))),
                             CodecLimits.defaults(), WireEncoding.JSON)) {
                 assertEquals(1, response.itemCount());
             }
@@ -1676,7 +1676,7 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure importAttributes = TtlvStructure.create();
                 TtlvStructure importAnyObject = importAnyObjectStructure()) {
             assertThrows(InvalidInputException.class,
-                    () -> client.executeWithOptions(null, null, null));
+                    () -> client.executeWithOptions(null, null, (WireEncoding) null));
             assertNativeRequestOptionsRejected(client, new long[11]);
             long[] invalidTimeoutKind = new long[12];
             invalidTimeoutKind[0] = 3;
@@ -5754,7 +5754,7 @@ final class ClientFacadeTlsIntegrationTest {
                         ? readFrame(socket.getInputStream())
                         : readJsonDocument(socket.getInputStream());
                 OutputStream output = socket.getOutputStream();
-                output.write(index == 0 ? responseMessage(false) : JSON_DISCOVER_VERSIONS_RESPONSE);
+                output.write(index == 0 ? discoverVersionsResponseMessage(1) : JSON_DISCOVER_VERSIONS_RESPONSE);
                 output.flush();
             }
         }

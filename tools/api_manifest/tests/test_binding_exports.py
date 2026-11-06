@@ -68,7 +68,13 @@ class BindingExportAuditTests(unittest.TestCase):
                     }
                 }
             ],
-            "approvedExclusions": [],
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_probe_v1_t.value",
+                    "reason": "This field is deliberately excluded from parity.",
+                }
+            ],
         }
         report = {
             "complete": True,

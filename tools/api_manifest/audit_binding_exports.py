@@ -878,6 +878,11 @@ def _declared_c_record_fields(
         if row.get("kind") == "type" and row.get("declarationState") in {"declared", "verified"}
     }
     recorded_names = {row["exportName"] for row in package_rows}
+    excluded_names = {
+        row["exportName"]
+        for row in manifest.get("approvedExclusions", [])
+        if row.get("packageId") == "c-kmipkit"
+    }
     declarations: list[dict[str, str]] = []
     for type_record in manifest.get("types", []):
         c_record = type_record.get("c", {})
@@ -890,7 +895,7 @@ def _declared_c_record_fields(
             continue
         for field in c_record.get("fields", []):
             export_name = f"{c_name}.{field['name']}"
-            if export_name not in recorded_names:
+            if export_name not in recorded_names and export_name not in excluded_names:
                 declarations.append({
                     "packageId": "c-kmipkit",
                     "exportName": export_name,
