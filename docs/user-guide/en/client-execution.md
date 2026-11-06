@@ -120,14 +120,17 @@ fn main() {
 Create Split Key may return repeated Unique Identifiers. Its request advertises
 `Maximum Response Size` as the smaller of the local response byte limit and
 the largest signed KMIP Integer. The client independently enforces its local
-byte cap before entering the TTLV decoder, including when a peer ignores the
-advertised size.
+byte cap before entering the selected message decoder, including when a peer
+ignores the advertised size.
 
 `Client::new` constructs a production client from an immutable client
-configuration and a validated `TransportConfig`. It accepts raw TTLV over TLS
-or TTLV over HTTPS/HTTP 1.1; it does not accept caller-implemented transports
-or raw request bytes. See the [transport guide](production-transports.md) for
-trust configuration, timeouts, and connection behavior.
+configuration and a validated `TransportConfig`. It accepts TTLV, JSON, or
+XML over raw TLS and HTTPS/HTTP 1.1; it does not accept caller-implemented
+transports or raw request bytes. The immutable configuration defaults to TTLV,
+and `RequestOptions` can override the encoding for one exchange. The selected
+format applies to both request and response. See the
+[transport guide](production-transports.md) for selection, trust configuration,
+timeouts, and connection behavior.
 
 ## Credentials and attestation capability
 
