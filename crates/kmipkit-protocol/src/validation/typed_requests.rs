@@ -1,14 +1,13 @@
 //! Borrowed validation contract and operation identity mapping for typed requests.
 
 use crate::{
-    ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest,
-    CheckRequest, DelegatedLoginRequest, DeleteAttributeRequest, DestroyRequest,
-    DiscoverVersionsRequest, GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest,
-    GetRequest, GetUsageAllocationRequest, ImportRequest, JoinSplitKeyRequest, LocateRequest,
-    LoginRequest, LogoutRequest, ModifyAttributeRequest, ObtainLeaseRequest, PingRequest,
-    Pkcs11Request, PollRequest, ProcessRequest, QueryAsyncRequestsRequest, QueryRequest,
-    RecoverRequest, RngRetrieveRequest, RngSeedRequest, SetAttributeRequest, SetConstraintsRequest,
-    SetDefaultsRequest, ValidationReport,
+    ActivateRequest, AdjustAttributeRequest, ArchiveRequest, CancelRequest, CheckRequest,
+    DelegatedLoginRequest, DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest,
+    GetAttributeListRequest, GetAttributesRequest, GetConstraintsRequest, GetRequest,
+    GetUsageAllocationRequest, ImportRequest, JoinSplitKeyRequest, LocateRequest, LoginRequest,
+    LogoutRequest, ObtainLeaseRequest, PingRequest, Pkcs11Request, PollRequest, ProcessRequest,
+    QueryAsyncRequestsRequest, QueryRequest, RecoverRequest, RngRetrieveRequest, RngSeedRequest,
+    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, ValidationReport,
 };
 
 use super::schema::RequestPayloadSchema;
@@ -63,7 +62,6 @@ macro_rules! impl_typed_request_validation {
 
 impl_typed_request_validation! {
     ActivateRequest => Activate,
-    AddAttributeRequest => AddAttribute,
     AdjustAttributeRequest => AdjustAttribute,
     ArchiveRequest => Archive,
     CancelRequest => Cancel,
@@ -77,7 +75,6 @@ impl_typed_request_validation! {
     GetUsageAllocationRequest => GetUsageAllocation,
     LocateRequest => Locate,
     LogoutRequest => Logout,
-    ModifyAttributeRequest => ModifyAttribute,
     ObtainLeaseRequest => ObtainLease,
     PingRequest => Ping,
     PollRequest => Poll,
@@ -87,6 +84,57 @@ impl_typed_request_validation! {
     RngRetrieveRequest => RngRetrieve,
     RngSeedRequest => RngSeed,
     SetAttributeRequest => SetAttribute,
+}
+
+impl ValidateKmipRequest for crate::AddAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::AddAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        validate_usage_limits_count(
+            self.new_attribute().item(),
+            "New Attribute.Usage Limits.Usage Limits Count",
+        )
+    }
+}
+
+impl ValidateKmipRequest for crate::ModifyAttributeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::ModifyAttribute;
+
+    fn validate(&self) -> ValidationReport {
+        validate_usage_limits_count(
+            self.new_attribute().item(),
+            "New Attribute.Usage Limits.Usage Limits Count",
+        )
+    }
+}
+
+fn validate_usage_limits_count(
+    attribute: &kmipkit_ttlv::Item,
+    field_path: &'static str,
+) -> ValidationReport {
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+
+    let has_count = attribute.tag().raw() == USAGE_LIMITS
+        && attribute.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(fields) => fields
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == USAGE_LIMITS_COUNT),
+            _ => false,
+        });
+    if has_count {
+        crate::validation::request_issue_report(
+            "KMIPKIT-0051-R281",
+            field_path,
+            crate::ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§4.59; §7.40, Table 392",
+            },
+        )
+    } else {
+        ValidationReport::default()
+    }
 }
 
 impl ValidateKmipRequest for GetRequest {
