@@ -179,7 +179,7 @@ changes to this table.
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
 | `client_execution` | declared | Discover Versions request and response mappings are present in Rust, C, Java, and Python; complete 1.0 operation conformance remains pending. |
-| `client_asynchronous_operations` | declared | Cancel, Poll, Process, and Query Asynchronous Requests use explicit one-exchange calls across four languages; exact correlation bytes and the generic Query TTLV response are preserved, with no automatic polling. |
+| `client_asynchronous_operations` | declared | Cancel, Poll, Process, and Query Asynchronous Requests use explicit one-exchange calls across four languages; exact correlation bytes and typed standard Query fields are preserved alongside generic TTLV access for unknown and vendor fields, with no automatic polling. |
 | `crypto_response_ttlv` | declared | The separate FR-015 error-response access remains limited to its four approved accessors; typed success-response TTLV is recorded on the five operation rows. |
 | `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
 | `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
@@ -199,16 +199,8 @@ changes to this table.
 | `hashed_password_timestamp_sequence` | declared | A locally owned timestamp sequence for Hashed Password credentials is mapped across the four languages; server validation remains authoritative. |
 | `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **0 / 56** remain `blocked`.
-**12** rows are `declared`: Cancel, Create, Create Key Pair, Create Split Key,
-Hash, MAC, MAC Verify, Poll, Process, Query Asynchronous Requests, Sign, and
-Signature Verify. The asynchronous APIs follow the approved KMIPKIT-0009 scope;
-Process Table 278's catalog requirement gap and reviewer-owned checklists remain
-open. Query returns a generic TTLV response under KMIPKIT-DEC-015. `declared`
-records a mapping and does not establish complete operation conformance. Do not
-infer operation availability from types or implementation code elsewhere in
-the repository.
-**44** operation mappings are `verified`:
+Of the **56** KMIP `client_1_0` operation rows, **0 / 56** remain `blocked` or
+`declared`; all **56** API mappings are `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
 Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
@@ -216,7 +208,13 @@ Get Usage Allocation, Import, Interop, Join Split Key, Locate, Log, Login,
 Logout, Modify Attribute, Obtain Lease, PKCS#11, Ping, Query, Recover,
 Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults, and
-Validate. These are API mappings, not full operation-conformance or server-interoperability claims. Logout sends the caller-supplied
+Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
+MAC Verify, Poll, Process, Query Asynchronous Requests, Sign, and Signature
+Verify. These statuses describe API mappings only; they do not establish full
+operation conformance or server interoperability. The asynchronous APIs follow
+the approved KMIPKIT-0009 scope; Process Table 278 catalog and review-checklist
+work remains tracked separately. Do not infer operation availability from
+types or implementation code elsewhere in the repository. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
 see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
@@ -232,8 +230,10 @@ Python. The Get mapping preserves the optional Unique Identifier and Table 220
 selectors and exposes its successful Any Object as an owned response in all
 four languages. Ping maps the empty request and successful response payloads and
 does not imply general server health. Query preserves caller-supplied function
-and Object Group order and unknown response items; it tolerates both response
-shapes described in §6.1.40 while `KMIPKIT-DISC-047` remains unresolved. These
+and Object Group order, exposes typed readers for standard response fields in
+all four languages, retains unknown and vendor fields through generic TTLV,
+and tolerates both response shapes described in §6.1.40 while
+`KMIPKIT-DISC-047` remains unresolved. These
 are API mappings, not server-conformance claims. Locate preserves optional request filters, server order,
 repeated Unique Identifiers, and the distinction between omitted and empty
 Located Items. The Get Usage Allocation mapping includes its optional identifier

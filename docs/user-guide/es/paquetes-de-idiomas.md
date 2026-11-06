@@ -183,7 +183,7 @@ tabla.
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
 | `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
-| `client_asynchronous_operations` | declared | Cancel, Poll, Process y Query Asynchronous Requests usan llamadas explícitas de un intercambio en cuatro lenguajes; conservan los bytes exactos de correlación y la respuesta TTLV genérica de Query, sin sondeo automático. |
+| `client_asynchronous_operations` | declared | Cancel, Poll, Process y Query Asynchronous Requests usan llamadas explícitas de un intercambio en cuatro lenguajes; conservan los bytes exactos de correlación y los campos estándar tipados de Query junto con TTLV genérico para campos desconocidos o de fabricante, sin sondeo automático. |
 | `crypto_response_ttlv` | declared | El acceso separado a TTLV de errores de FR-015 sigue limitado a sus cuatro accesores aprobados; el TTLV de respuestas correctas tipadas se registra en las cinco filas de operaciones. |
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
@@ -204,16 +204,7 @@ tabla.
 | `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 
 De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** siguen en
-estado `blocked`. **12** filas están en estado `declared`: Cancel, Create,
-Create Key Pair, Create Split Key, Hash, MAC, MAC Verify, Poll, Process, Query
-Asynchronous Requests, Sign y Signature Verify. Las API asíncronas siguen el
-alcance aprobado de KMIPKIT-0009; continúa abierta la falta de un requisito de
-catálogo para Process Table 278 y siguen pendientes las listas de revisión del
-propietario. Query devuelve una respuesta TTLV genérica según KMIPKIT-DEC-015.
-`declared` registra el mapeo, pero no demuestra la conformidad completa de las
-operaciones. No se debe inferir que una operación está disponible solo porque
-haya tipos o código en otra parte del repositorio.
-**44** mapeos de operación están en estado `verified`:
+estado `blocked` o `declared`; los **56 mapeos de API** están `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
 Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
@@ -221,17 +212,26 @@ Get Usage Allocation, Import, Interop, Join Split Key, Locate, Log, Login,
 Logout, Modify Attribute, Obtain Lease, PKCS#11, Ping, Query, Recover,
 Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults y
-Validate. Son mapeos de API; no afirman conformidad completa de las
-operaciones ni interoperabilidad con servidores. Logout envía
+Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
+MAC Verify, Poll, Process, Query Asynchronous Requests, Sign y Signature
+Verify. Estos estados describen solo los mapeos de API; no acreditan la
+conformidad completa de las operaciones ni la interoperabilidad con servidores.
+Las API asíncronas siguen el alcance aprobado de KMIPKIT-0009; el trabajo
+separado sobre el catálogo y la revisión de Process Table 278 continúa
+registrado independientemente. No se debe inferir que una operación está
+disponible solo porque haya tipos o código en otra parte del repositorio.
+Logout envía
 el Ticket proporcionado por el llamador; no añade credenciales a peticiones
 posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta
 con payload vacío, y no implica que el servidor esté sano en general. Query
-conserva el orden de las funciones, los Object Groups y los Items desconocidos;
-acepta ambas formas descritas en §6.1.40 mientras `KMIPKIT-DISC-047` siga sin
-resolver. Son mapeos de API, no afirmaciones de conformidad del servidor. El
+conserva el orden de las funciones y los Object Groups, ofrece lectores tipados
+de los campos estándar en los cuatro lenguajes y mantiene los campos
+desconocidos o de fabricante accesibles mediante TTLV genérico; acepta ambas
+formas descritas en §6.1.40 mientras `KMIPKIT-DISC-047` siga sin resolver.
+Son mapeos de API, no afirmaciones de conformidad del servidor. El
 mapeo de Get Constraints envía la petición
 vacía de §6.1.22 y expone la estructura Constraints obligatoria y ordenada,
 además del TTLV completo de la respuesta correcta en Rust, C, Java y Python. C

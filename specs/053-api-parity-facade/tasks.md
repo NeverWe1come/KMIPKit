@@ -93,7 +93,7 @@
 - [x] T063 [US2] Add behavior tests for object/key field values, key format/material variants, wrapping metadata, ownership, and cleanup guarantees across C, Java, and Python.
 - [ ] T064 [US5] Expose normal Query's typed fields in C, Java, and Python with raw access retained for unknown/vendor fields and exact order/repetition preservation.
 - [ ] T065 [US5] Replace route-only checks with assertions of encoded operation identity for every synchronous factory and concrete typed response values for each operation family.
-- [ ] T066 [US2] Correct transparent EC Key Format Type dispatch to the hexadecimal values in KMIP 2.1 §11.25 Table 461; add rejection tests for malformed 0x14/0x15 structures and preserve reserved 0x0E/0x0F as generic values in Rust, C, Java, and Python.
+- [x] T066 [US2] Correct transparent EC Key Format Type dispatch to the hexadecimal values in KMIP 2.1 §11.25 Table 461; add rejection tests for malformed 0x14/0x15 structures and preserve reserved 0x0E/0x0F as generic values in Rust, C, Java, and Python.
 
 ## Dependencies
 T001–T005 precede the user stories. US1 and US2 stabilize typed value/secret patterns; US3 follows; US4 reuses the shared Rust validator; US5 consumes the prior request/response bindings; US6 closes packages, docs, manifest and PR evidence. Keep each lot sequential on this branch.
