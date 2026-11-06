@@ -348,23 +348,73 @@ fn attribute_mutation_validation_rejects_wrong_known_attribute_ttlv_types() {
         Some(crate::CurrentAttribute::new(wrong_activation_date_type())),
         None,
     );
+    let modify_current = ModifyAttributeRequest::new(
+        None,
+        Some(crate::CurrentAttribute::new(wrong_activation_date_type())),
+        crate::NewAttribute::new(schema_item(
+            0x0042_00FD,
+            Value::text_string("replacement".to_owned()),
+        )),
+    );
+    let modify_new = ModifyAttributeRequest::new(
+        None,
+        Some(crate::CurrentAttribute::new(schema_item(
+            0x0042_00FD,
+            Value::text_string("current".to_owned()),
+        ))),
+        crate::NewAttribute::new(wrong_activation_date_type()),
+    );
 
     let expected_path = "Request Payload.New Attribute.Activation Date";
-    assert!(add.validate().issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R284"
-            && issue.path().to_string() == expected_path
-            && issue.source().to_string() == "KMIP v2.1 §4.1"
-    }));
+    let add_report = add.validate();
+    assert!(
+        add_report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R284"
+                && issue.path().to_string() == expected_path
+                && issue.source().to_string() == "KMIP v2.1 4.1"
+        }),
+        "unexpected Add Attribute report: {add_report:?}"
+    );
     assert!(set.validate().issues().iter().any(|issue| {
         issue.code().as_str() == "KMIPKIT-0051-R284"
             && issue.path().to_string() == expected_path
-            && issue.source().to_string() == "KMIP v2.1 §4.1"
+            && issue.source().to_string() == "KMIP v2.1 4.1"
     }));
     assert!(delete.validate().issues().iter().any(|issue| {
         issue.code().as_str() == "KMIPKIT-0051-R284"
             && issue.path().to_string() == "Request Payload.Current Attribute.Activation Date"
-            && issue.source().to_string() == "KMIP v2.1 §4.1"
+            && issue.source().to_string() == "KMIP v2.1 4.1"
     }));
+    for (report, expected_path) in [
+        (
+            modify_current.validate(),
+            "Request Payload.Current Attribute.Activation Date",
+        ),
+        (
+            modify_new.validate(),
+            "Request Payload.New Attribute.Activation Date",
+        ),
+    ] {
+        assert!(report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R284"
+                && issue.path().to_string() == expected_path
+                && issue.source().to_string() == "KMIP v2.1 4.1"
+        }));
+    }
+
+    let valid_date = crate::SetAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(schema_item(0x0042_0001, Value::date_time(1_700_000_000))),
+    );
+    let unknown_extension = crate::SetAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(schema_item(
+            0x0054_0001,
+            Value::byte_string(vec![0xCA, 0xFE]),
+        )),
+    );
+    assert!(valid_date.validate().is_valid());
+    assert!(unknown_extension.validate().is_valid());
 }
 
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {

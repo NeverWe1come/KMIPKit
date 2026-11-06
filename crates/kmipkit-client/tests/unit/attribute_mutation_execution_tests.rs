@@ -1229,6 +1229,48 @@ fn duplicate_vendor_identification_containing_y_is_rejected_before_exchange() {
     }
 }
 
+#[test]
+fn malformed_vendor_attribute_shape_is_rejected_before_exchange() {
+    let malformed = item(
+        VENDOR_ATTRIBUTE,
+        Value::structure(structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string(OTHER_VENDOR_IDENTIFIER.to_owned()),
+            ),
+            item(
+                ATTRIBUTE_NAME,
+                Value::text_string("SECRET_ATTRIBUTE_CANARY".to_owned()),
+            ),
+        ])),
+    );
+    let request = ClientRequest::add_attribute(AddAttributeRequest::new(
+        Some(OBJECT_IDENTIFIER.to_owned()),
+        NewAttribute::new(malformed),
+    ));
+
+    assert_payload_free_not_sent(
+        request,
+        ADD_ATTRIBUTE_OPERATION,
+        "malformed Vendor Attribute shape must fail before transport exchange",
+    );
+}
+
+#[test]
+fn known_attribute_type_mismatch_is_rejected_before_exchange() {
+    let activation_date_with_wrong_type = item(0x0042_0001, Value::integer(1_700_000_000));
+    let request = ClientRequest::add_attribute(AddAttributeRequest::new(
+        Some(OBJECT_IDENTIFIER.to_owned()),
+        NewAttribute::new(activation_date_with_wrong_type),
+    ));
+
+    assert_payload_free_not_sent(
+        request,
+        ADD_ATTRIBUTE_OPERATION,
+        "known attribute Item Type mismatch must fail before transport exchange",
+    );
+}
+
 fn tag_reference_and_unknown_attribute_cases() -> Vec<ServerAuthoritativeCase> {
     // Table 161 tag form carries no Vendor Identification. The unknown tag is
     // in the §11.56 Table 487 Extensions range 0x540000–0x54FFFF and is

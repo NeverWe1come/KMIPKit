@@ -31,6 +31,8 @@ Locality:
 
 **ATTRIBUTE-WRAPPER (R283; L):** Typed Current/New Attribute wrappers carry one direct attribute Item, but callers can wrap a raw generic Item that bypassed `AttributeSet::try_new`. For Vendor Attribute (`0x420008`), validate the selected §4.60 Table 150 shape and required-member order/types before an attribute-mutation request is sent. Other remote-object facts and the meaning of arbitrary Attribute Value content remain outside this check.
 
+**ATTRIBUTE-TYPE (R284; L):** When a raw Current/New Attribute Item uses a catalogued standard attribute tag, enforce that attribute's exact permitted TTLV Item Type from its pinned §4 definition. Multiple allowed forms (such as Unique Identifier) remain accepted. Unknown assigned, extension, and vendor tags have no catalogued type assertion here and remain generic.
+
 **ADJUST (R005–R007, L/S/A):** §11.1 Table 428, Increment/Decrement rows L45880/L45896, applies to Integer, Long Integer, Big Integer, Interval, Date-Time and Date-Time Extended and supplies a default adjustment of 1 (seconds/microseconds for dates); optional Adjustment Value is therefore valid. Negate applies to Integer, Long Integer, Big Integer and Boolean (L45912). §6.1.3 L22870 defines zero/false initialization and failure for other missing remote values. Target type can be checked only where known from a standard Attribute Reference; an unknown/vendor attribute is not enough information. Table 428 uses the wording “Adjustment Parameter” while Table 170 names the field “Adjustment Value”; it does not explicitly forbid an unused Adjustment Value with Negate, mandate the adjustment value's TTLV type for every target type, or define a universal positive-only constraint.
 
 ## Operation and cross-field condition groups
