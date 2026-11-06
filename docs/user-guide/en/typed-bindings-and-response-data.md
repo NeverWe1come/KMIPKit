@@ -103,6 +103,21 @@ The accessors expose the decoded TTLV tree, preserving item order, repetitions, 
 
 The decoder does not retain padding bytes, so <code>raw()</code> is a view or copy of the decoded TTLV tree, not a byte-for-byte reproduction of the network frame. Do not log response bodies or include them in errors.
 
-Query provides typed access to standard response fields where a binding implements its typed reader. The generic Response Payload and TTLV views remain available alongside it for unknown fields and vendor extensions. Use the raw path to inspect fields the typed reader does not model. This documents API access only; it does not claim complete Query parity or server interoperability.
+### Typed Query response fields
+
+All four language bindings expose Rust-classified fields for the standard KMIP 2.1 Query response. Java, Python, and C read the classification supplied by Rust rather than independently guessing field types.
+
+| Language | Typed entry point | Typical typed access | Generic TTLV access |
+| --- | --- | --- | --- |
+| Rust | <code>ClientResponseView::query()</code> returns an optional <code>QueryResponse</code> | <code>operations()</code>, <code>object_types()</code>, <code>response_fields()</code>, <code>unknown_items()</code> | <code>to_ttlv_payload()</code> rebuilds the ordered generic payload |
+| C | <code>kmipkit_client_batch_item_response_query_field_count(...)</code> and <code>kmipkit_client_batch_item_response_query_field_at(...)</code> | Read tag, field kind, and raw Enumeration; non-Enumeration results return an owned TTLV Item | <code>kmipkit_client_batch_item_response_query_ttlv(...)</code> |
+| Java | <code>ClientBatchItemResult.typedQueryResponse()</code> returns an optional <code>QueryResponse</code> | <code>operations()</code>, <code>applicationNamespaces()</code>, <code>fieldAt(index)</code>, <code>unknownItems()</code> | <code>rawView()</code>; <code>ClientBatchItemResult.queryResponse()</code> returns the owned payload Structure |
+| Python | <code>BatchItemResult.typed_query_response()</code> returns <code>QueryResponse</code> or <code>None</code> | <code>operations</code>, <code>application_namespaces</code>, <code>field_at(index)</code>, <code>unknown_items</code> | <code>raw_view()</code>; <code>BatchItemResult.raw()</code> returns the generic payload Structure |
+
+The C field-kind output uses <code>KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION</code>, <code>KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING</code>, <code>KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE</code>, or <code>KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN</code>. Enumeration values use the raw-value output; other kinds return an owned Item that the caller releases.
+
+Query field views expose the raw tag and Rust-selected field kind. Enumeration access preserves the unsigned value, including values added after this KMIPKit release. Java and Python collection accessors return matching occurrences in received order; their singular optional conveniences expose at most their first matching field. Use <code>fieldAt(index)</code> / <code>field_at(index)</code> or C's indexed accessor to retain the complete interleaved field order, including repeated fields; an unknown field remains available as its original generic TTLV Item. In C, callers release returned Items with <code>kmipkit_ttlv_item_release</code>. The independent Java <code>rawView()</code> / Python <code>raw_view()</code> view retains the full decoded payload and nested vendor fields. Close Java <code>QueryResponse</code> and returned native-backed views; use Python's context manager or <code>close()</code> and close returned views as well.
+
+Rust exposes the same classified members through <code>QueryResponseField</code>, typed convenience accessors, and <code>unknown_items()</code>. Its <code>to_ttlv_payload()</code> reconstructs the field sequence, retaining unknown Items and nested Structures. The query execution example in [Query and Ping](query-ping.md) shows how to obtain a Rust response. These API descriptions do not establish server support or interoperability.
 
 The high-level API does not expose transport byte exchange. Asynchronous outcomes remain explicit, and KMIPKit does not poll or retry a request automatically. See [Client execution](client-execution.md) for operation calls and delivery outcomes.
