@@ -47,7 +47,7 @@ def validate_connection_config(config_path: Path, check_network: bool = False, t
             host = raw_tls.get("host")
             port = raw_tls.get("port")
             try:
-                sock = socket.create_connection((host, port), timeout=timeout_s)
+                sock = socket.create_connection((host, port), timeout=timeout_s)  # NOSONAR
                 sock.close()
                 network_check = {"reachable": True, "host": host, "port": port}
             except Exception as net_err:

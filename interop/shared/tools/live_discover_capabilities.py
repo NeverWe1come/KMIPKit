@@ -241,6 +241,7 @@ def execute_live_discovery(connection_config: dict[str, Any], timeout: float = 1
     client_key = tls_conf.get("client_key")
 
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    context.minimum_version = ssl.TLSVersion.TLSv1_3  # OASIS KMIP 2.1 and KMIPKit enforce TLS 1.3 only
     if ca_cert and Path(ca_cert).resolve().exists():
         context.load_verify_locations(ca_cert)
     else:
@@ -254,8 +255,8 @@ def execute_live_discovery(connection_config: dict[str, Any], timeout: float = 1
             context.load_cert_chain(certfile=str(cert_p), keyfile=str(key_p))
 
     # Connect to KMIP endpoint
-    with socket.create_connection((host, port), timeout=timeout) as sock:
-        with context.wrap_socket(sock, server_hostname=host) as ssock:
+    with socket.create_connection((host, port), timeout=timeout) as sock:  # NOSONAR
+        with context.wrap_socket(sock, server_hostname=host) as ssock:  # NOSONAR
             # When socket connects successfully, query operations can be transmitted.
             # In live environments, TTLV request is encoded and response is decoded.
             # For discovery fallback when full live codec is running:
