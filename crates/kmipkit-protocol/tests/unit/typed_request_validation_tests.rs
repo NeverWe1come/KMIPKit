@@ -103,6 +103,38 @@ fn every_supported_client_request_implements_borrowed_validation() {
     assert_validate_contract::<ValidateRequest>();
 }
 
+#[test]
+fn attribute_mutation_validation_rejects_usage_limits_count_for_add_and_modify() {
+    let usage_limits = schema_item(
+        0x0042_0095,
+        Value::structure(schema_structure([schema_item(
+            0x0042_0096,
+            Value::long_integer(7),
+        )])),
+    );
+    let add = AddAttributeRequest::new(None, crate::NewAttribute::new(usage_limits));
+    let modify = ModifyAttributeRequest::new(
+        None,
+        None,
+        crate::NewAttribute::new(schema_item(
+            0x0042_0095,
+            Value::structure(schema_structure([schema_item(
+                0x0042_0096,
+                Value::long_integer(7),
+            )])),
+        )),
+    );
+
+    for report in [add.validate(), modify.validate()] {
+        assert!(report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R281"
+                && issue.path().to_string()
+                    == "Request Payload.New Attribute.Usage Limits.Usage Limits Count"
+                && issue.source().to_string() == "KMIP v2.1 §4.59; §7.40, Table 392"
+        }));
+    }
+}
+
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
     assert_eq!(T::SCHEMA, expected);
 }
