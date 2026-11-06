@@ -312,6 +312,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             route_data.get("javaStaleMappings", []),
             route_data.get("pythonKindCorrections", []),
             route_data.get("rustKindCorrections", []),
+            route_data.get("languageMappingCorrections", []),
         )
         reconciled = reconcile_0053_api_parity.add_approved_exclusions(
             reconciled, route_data["approvedExclusions"]
@@ -524,6 +525,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             route_data.get("javaStaleMappings", []),
             route_data.get("pythonKindCorrections", []),
             route_data.get("rustKindCorrections", []),
+            route_data.get("languageMappingCorrections", []),
         )
         mapped = next(row for row in manifest["publicDeclarations"]
                       if row["declarationId"] == candidate_id)
@@ -533,6 +535,11 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertTrue(any(row["exportName"] == "kmipkit_typed_attribute_from_item"
                             and row["declarationState"] == "verified"
                             for row in manifest["publicDeclarations"]))
+        standard_attribute = next(
+            row for row in manifest["publicDeclarations"]
+            if row.get("exportName") == "KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE"
+        )
+        self.assertEqual("uint32_t", standard_attribute["cValueType"])
         invalid_candidate = copy.deepcopy(
             next(
                 row
@@ -1193,7 +1200,17 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             "publicPackages": [
                 {"id": "rust-kmipkit", "language": "rust"},
                 {"id": "rust-kmipkit-protocol", "language": "rust"},
+                {"id": "c-kmipkit", "language": "c"},
+                {"id": "java-kmipkit", "language": "java"},
+                {"id": "python-kmipkit", "language": "python"},
             ],
+            "capabilities": [{
+                "capabilityId": "typed_managed_objects_and_key_material",
+                "parityScope": "four-language",
+                "mappings": {"rust": [], "c": [], "java": [], "python": []},
+                "requirementIds": [],
+                "parityEvidenceIds": [],
+            }],
             "publicDeclarations": [
                 {
                     "declarationId": "reader-facade",
@@ -1208,9 +1225,18 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                         "rust": {
                             "packageId": "rust-kmipkit",
                             "name": "kmipkit_protocol::ManagedValueReader::read_field",
-                        }
+                        },
+                        "c": {"packageId": "c-kmipkit", "name": "kmipkit_managed_value_field_read"},
+                        "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.ManagedValueReader.readField"},
+                        "python": {"packageId": "python-kmipkit", "name": "kmipkit.managed_objects.ManagedValueReader.read_field"},
                     },
                     "parityEvidenceIds": ["crates/kmipkit-protocol/src/managed_value_reader.rs"],
+                    "approvalSource": {
+                        "kind": "feature-specification",
+                        "path": "specs/053-api-parity-facade/approval-record.md",
+                        "status": "Approved",
+                        "evidence": "Direct maintainer approval of the complete Phase 5 plan.",
+                    },
                 },
                 {
                     "declarationId": "protocol-reader",
@@ -1224,11 +1250,15 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         }
         declaration = {
             **manifest["publicDeclarations"][0],
+            "requirementIds": ["KMIPKIT-0049-FR-001", "KMIPKIT-0053-FR-012"],
             "languageMappings": {
                 "rust": {
                     "packageId": "rust-kmipkit-protocol",
                     "name": "kmipkit_protocol::ManagedValueReader::read_field",
-                }
+                },
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_managed_value_field_read"},
+                "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.ttlv.ManagedValueReader.readField"},
+                "python": {"packageId": "python-kmipkit", "name": "kmipkit.managed_objects.ManagedValueReader.read_field"},
             },
         }
         correction = {
