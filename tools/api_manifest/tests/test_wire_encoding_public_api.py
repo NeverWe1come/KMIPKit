@@ -69,6 +69,21 @@ class WireEncodingPublicApiTests(unittest.TestCase):
         self.assertEqual(capability["parityScope"], "four-language")
         self.assertIn("KMIPKIT-0057-FR-005", capability["requirementIds"])
 
+    def test_c_wire_encoding_selectors_are_manifest_macros(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        selectors = {
+            "KMIPKIT_WIRE_ENCODING_TTLV",
+            "KMIPKIT_WIRE_ENCODING_JSON",
+            "KMIPKIT_WIRE_ENCODING_XML",
+        }
+        actual = {
+            row["exportName"]: row["kind"]
+            for row in manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit" and row["exportName"] in selectors
+        }
+
+        self.assertEqual(actual, {name: "macro" for name in selectors})
+
     def test_public_c_encoding_override_has_a_constructible_client_path(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         functions = {record["c"]["symbol"] for record in manifest["functions"]}

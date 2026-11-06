@@ -20,6 +20,38 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_c_record_fields_are_declared_by_the_manifest_record_layout(self):
+        manifest = {
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_probe_v1_t",
+                    "kind": "type",
+                    "declarationState": "declared",
+                }
+            ],
+            "types": [
+                {
+                    "c": {
+                        "name": "kmipkit_probe_v1_t",
+                        "kind": "record",
+                        "fields": [{"name": "value", "type": "uint32_t"}],
+                    }
+                }
+            ],
+            "approvedExclusions": [],
+        }
+        report = {
+            "complete": True,
+            "declarations": [AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t.value", "field", "1")],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "c-kmipkit")
+
+        self.assertTrue(result["matchesManifest"])
+        self.assertEqual(result["counts"]["missingFromManifest"], 0)
+
     def test_java_compile_uses_gradle_configured_jspecify_classpath(self):
         repo_root = Path(__file__).resolve().parents[3]
         with tempfile.TemporaryDirectory() as directory:
