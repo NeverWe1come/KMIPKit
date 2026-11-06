@@ -27,6 +27,33 @@ fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiR
     }
 }
 
+fn clone_query_response_field_item(
+    field: &kmipkit_protocol::QueryResponseField,
+) -> FfiResult<Option<Item>> {
+    use kmipkit_protocol::QueryResponseField;
+
+    match field.kind() {
+        QueryResponseFieldKind::Enumeration => Ok(None),
+        QueryResponseFieldKind::TextString => {
+            let value = match field {
+                QueryResponseField::VendorIdentification(value)
+                | QueryResponseField::ApplicationNamespace(value) => value,
+                _ => return Err(ERROR_INTERNAL),
+            };
+            let tag = RawTag::new(field.tag())
+                .and_then(|raw| raw.try_checked())
+                .map_err(model_status)?;
+            Item::new(tag, Value::text_string(value.clone()))
+                .map(Some)
+                .map_err(model_status)
+        }
+        QueryResponseFieldKind::Structure | QueryResponseFieldKind::Unknown => field
+            .with_ttlv(super::clone_item)
+            .ok_or(ERROR_INTERNAL)?
+            .map(Some),
+    }
+}
+
 fn outcome_has_success_or_pending_response(outcome: &kmipkit_client::ClientBatchOutcome) -> bool {
     outcome.result().status().raw() == 0 || outcome.asynchronous_correlation_value().is_some()
 }
@@ -5099,9 +5126,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_field_at(
             | QueryResponseFieldKind::Unknown => {}
         }
         if field_kind != QueryResponseFieldKind::Enumeration {
-            let payload = try_ffi!(query.to_ttlv_payload().map_err(|_| ERROR_INTERNAL));
-            let source_item = try_ffi!(payload.view().children().get(index).ok_or(ERROR_INTERNAL));
-            let owned_item = try_ffi!(super::clone_item(source_item));
+            let owned_item = try_ffi!(
+                clone_query_response_field_item(field).and_then(|item| item.ok_or(ERROR_INTERNAL))
+            );
             *output_item = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(owned_item)));
         }
         *present = 1;
