@@ -1285,12 +1285,46 @@ def _validate_public_declaration_approval(
 
 
 def _validate_approved_exclusions(
-    exclusions: list[dict[str, Any]], package_languages: dict[Any, Any], root: Path
+    exclusions: list[dict[str, Any]],
+    package_languages: dict[Any, Any],
+    root: Path,
+    declarations: list[dict[str, Any]],
 ) -> None:
+    declarations_by_id = {
+        declaration.get("declarationId"): declaration
+        for declaration in declarations
+        if isinstance(declaration, dict)
+    }
     for exclusion in exclusions:
         if not isinstance(exclusion, dict):
             raise ManifestError("manifest approved exclusion is malformed")
         _validate_approval_source(exclusion.get("approvalSource"), root)
+        if exclusion.get("candidateSpecId") != "KMIPKIT-0053":
+            continue
+
+        artifact_kind = exclusion.get("artifactKind")
+        if artifact_kind is not None:
+            counterpart_ids = exclusion.get("counterpartDeclarationIds")
+            if not isinstance(counterpart_ids, list) or not counterpart_ids:
+                raise ManifestError("KMIPKIT-0053 type-system exclusions need exact counterparts")
+            capability_id = exclusion.get("capabilityId")
+            for counterpart_id in counterpart_ids:
+                counterpart = declarations_by_id.get(counterpart_id)
+                if (
+                    counterpart is None
+                    or counterpart.get("declarationState") != "verified"
+                    or counterpart.get("capabilityId") != capability_id
+                    or counterpart.get("parityScope") != "four-language"
+                ):
+                    raise ManifestError(
+                        "KMIPKIT-0053 type-system exclusions need verified counterparts "
+                        "for the same four-language capability"
+                    )
+        elif not all(
+            isinstance(exclusion.get(key), str) and exclusion[key].strip()
+            for key in ("reason", "evidence")
+        ):
+            raise ManifestError("KMIPKIT-0053 exact route exclusions need a reason and evidence")
 
 
 def _validate_unique_public_export_identities(
@@ -1424,7 +1458,7 @@ def _validate_v2_readiness(
     )
     _validate_internal_c_type_visibility(manifest)
     _validate_signature_type_readiness(manifest, declarations)
-    _validate_approved_exclusions(exclusions, package_languages, root)
+    _validate_approved_exclusions(exclusions, package_languages, root, declarations)
     if require_complete and not package_languages:
         raise ManifestError("release manifest contains no public packages")
 

@@ -34,7 +34,9 @@ class CandidateExclusionManifestTests(unittest.TestCase):
         exclusion["counterpartDeclarationIds"] = ["missing-exact-counterpart"]
 
         with self.assertRaises(generate.ManifestError):
-            generate._validate_approved_exclusions([exclusion], {}, ROOT)
+            generate._validate_approved_exclusions(
+                [exclusion], {}, ROOT, manifest["publicDeclarations"]
+            )
 
     def test_candidate_exclusions_require_verified_same_capability_counterparts(self) -> None:
         manifest = copy.deepcopy(self.manifest)
@@ -53,7 +55,9 @@ class CandidateExclusionManifestTests(unittest.TestCase):
         counterpart["declarationState"] = "declared"
 
         with self.assertRaises(generate.ManifestError):
-            generate._validate_approved_exclusions([exclusion], {}, ROOT)
+            generate._validate_approved_exclusions(
+                [exclusion], {}, ROOT, manifest["publicDeclarations"]
+            )
 
 
 if __name__ == "__main__":
