@@ -1489,6 +1489,68 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
         self.assertEqual("KMIPKIT-0053", approved["candidateSpecId"])
 
+    def test_approved_0053_scope_can_take_ownership_of_exact_0052_parity_route(self) -> None:
+        old_approval = {
+            "kind": "feature-specification",
+            "path": "specs/052-response-navigation/approval-record.md",
+            "status": "Approved",
+            "evidence": "Earlier approved Query response navigation scope.",
+        }
+        new_approval = {
+            "kind": "feature-specification",
+            "path": "specs/053-api-parity-facade/approval-record.md",
+            "status": "Approved",
+            "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+        }
+        declaration = {
+            "declarationId": "KMIPKIT-0053:query-response-parity",
+            "packageId": "rust-kmipkit",
+            "kind": "type",
+            "exportName": "kmipkit::protocol::QueryResponse",
+            "capabilityId": "typed_query_response",
+            "requirementIds": ["KMIPKIT-0052-FR-001", "KMIPKIT-0053-FR-008"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "rust": {"packageId": "rust-kmipkit", "name": "kmipkit::protocol::QueryResponse"},
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_client_batch_item_response_query_ttlv"},
+                "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.QueryResponse"},
+                "python": {"packageId": "python-kmipkit", "name": "kmipkit.client.QueryResponse"},
+            },
+            "parityEvidenceIds": ["specs/052-response-navigation/spec.md"],
+            "approvalSource": old_approval,
+        }
+        manifest = {
+            "publicPackages": [
+                {"id": "rust-kmipkit", "language": "rust"},
+                {"id": "c-kmipkit", "language": "c"},
+                {"id": "java-kmipkit", "language": "java"},
+                {"id": "python-kmipkit", "language": "python"},
+            ],
+            "publicDeclarations": [copy.deepcopy(declaration)],
+            "capabilities": [{
+                "capabilityId": "typed_query_response",
+                "ownerSpecId": "KMIPKIT-0052",
+                "approvalEvidence": old_approval,
+                "mappings": {language: [] for language in ("rust", "c", "java", "python")},
+            }],
+            "requirementIds": declaration["requirementIds"],
+        }
+        declaration["approvalSource"] = new_approval
+        declaration["requirementIds"].append("KMIPKIT-0053-FR-012")
+        declaration["parityEvidenceIds"].append(
+            "specs/053-api-parity-facade/approval-record.md"
+        )
+        declaration["candidateSpecId"] = "KMIPKIT-0053"
+
+        result = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [declaration]
+        )
+
+        approved = result["publicDeclarations"][0]
+        self.assertEqual(new_approval, approved["approvalSource"])
+        self.assertEqual("KMIPKIT-0053", approved["candidateSpecId"])
+
 
 if __name__ == "__main__":
     unittest.main()
