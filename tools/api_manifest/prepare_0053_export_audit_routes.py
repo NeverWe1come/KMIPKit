@@ -827,6 +827,9 @@ def main() -> int:
             rust_document.get("kindCorrections", []),
         )
         result = merge_declarations(route_data, declarations, exclusions)
+        result["javaStaleMappings"] = copy.deepcopy(
+            documents[0].get("staleMappings", [])
+        )
         result["pythonStaleMappings"] = copy.deepcopy(
             python_document.get("staleMappings", [])
         )
