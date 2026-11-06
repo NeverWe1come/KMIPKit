@@ -1453,6 +1453,42 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
         self.assertEqual(manifest, result)
 
+    def test_verified_declaration_retains_its_expansion_approval_owner(self) -> None:
+        declaration = {
+            "declarationId": "KMIPKIT-0053:approved-expansion",
+            "packageId": "rust-kmipkit",
+            "kind": "type",
+            "exportName": "kmipkit::protocol::ApprovedExpansion",
+            "capabilityId": "typed_object_attributes",
+            "requirementIds": ["KMIPKIT-0053-FR-012"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "rust": {"packageId": "rust-kmipkit", "name": "ApprovedExpansion"},
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_approved_expansion_t"},
+                "java": {"packageId": "java-kmipkit", "name": "ApprovedExpansion"},
+                "python": {"packageId": "python-kmipkit", "name": "ApprovedExpansion"},
+            },
+            "parityEvidenceIds": ["bindings/c/tests/typed_attribute_parity_consumer.c"],
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+            },
+            "candidateSpecId": "KMIPKIT-0053",
+        }
+
+        result = reconcile_0053_api_parity.add_public_declarations(
+            self.manifest, [declaration]
+        )
+        approved = next(
+            row for row in result["publicDeclarations"]
+            if row.get("declarationId") == declaration["declarationId"]
+        )
+
+        self.assertEqual("KMIPKIT-0053", approved["candidateSpecId"])
+
 
 if __name__ == "__main__":
     unittest.main()
