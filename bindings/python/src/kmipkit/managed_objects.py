@@ -196,10 +196,14 @@ class ManagedTtlvItem(ttlv.TtlvItem):
         if length > 0x7FFF_FFFF:
             errors.raise_for_status(6)
         output = _client_ffi.new("uint8_t[]", length) if length else _client_ffi.NULL
-        copied_length = self._native_field_read(raw_tag, 5, output, length)[4]
-        if copied_length != length:
-            errors.raise_for_status(4)
-        return bytes(_client_ffi.buffer(output, length)) if length else b""
+        try:
+            copied_length = self._native_field_read(raw_tag, 5, output, length)[4]
+            if copied_length != length:
+                errors.raise_for_status(4)
+            return bytes(_client_ffi.buffer(output, length)) if length else b""
+        finally:
+            if length:
+                _client_ffi.buffer(output, length)[:] = bytes(length)
 
     def field_read(self, raw_tag: int, read_kind: int) -> bool | ttlv.ItemType | int | bytes:
         """Read a direct child by tag: 1=presence, 2=type, 3=Enumeration, 4=Integer, 5=bytes."""
