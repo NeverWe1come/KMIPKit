@@ -276,6 +276,40 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
         self.assertIn("test-support", exclusion_categories)
 
+    def test_verified_routes_can_cite_the_specification_that_expands_a_capability(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        capabilities = {row["capabilityId"]: row for row in manifest["capabilities"]}
+        declaration = copy.deepcopy(
+            next(
+                row
+                for row in manifest["publicDeclarations"]
+                if row.get("approvalSource", {}).get("path")
+                == "specs/053-api-parity-facade/approval-record.md"
+                and capabilities[row["capabilityId"]].get("ownerSpecId")
+                != "KMIPKIT-0053"
+            )
+        )
+        declaration["candidateSpecId"] = "KMIPKIT-0053"
+
+        schema_errors: list[str] = []
+        schema_valid = generate._schema_matches(
+            declaration,
+            schema["$defs"]["publicDeclaration"],
+            schema,
+            "declaration",
+            schema_errors,
+        )
+
+        self.assertTrue(schema_valid, schema_errors)
+        generate._validate_public_declaration_approval(
+            declaration,
+            capabilities[declaration["capabilityId"]],
+            None,
+            declaration["parityScope"],
+            ROOT,
+        )
+
     def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
