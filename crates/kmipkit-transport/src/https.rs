@@ -536,41 +536,15 @@ async fn exchange_on_worker(
         && !control.is_finalized()
     {
         drop(session);
-        let fresh_conn_result = connect_https_connection(
+        let backup = request_backup.expect("backup exists for reused session");
+        return retry_on_fresh_connection(
             &settings,
-            control.clone(),
-            #[cfg(test)]
-            None,
-            #[cfg(test)]
-            None,
+            &control,
+            backup,
+            max_response_bytes,
+            &connection_state,
         )
         .await;
-        match fresh_conn_result {
-            Ok(mut fresh_session) => {
-                let backup = request_backup.expect("backup exists for reused session");
-                let retry_result = execute_https_exchange(
-                    &mut fresh_session,
-                    backup,
-                    &settings,
-                    max_response_bytes,
-                    &control,
-                    #[cfg(test)]
-                    None,
-                )
-                .await;
-                if retry_result.is_ok() {
-                    fresh_session.io_control.finish_exchange();
-                    if fresh_session.is_reusable() {
-                        let (completed, _) = control.finish();
-                        if completed {
-                            *lock_https_connection(&connection_state) = Some(fresh_session);
-                        }
-                    }
-                }
-                return retry_result;
-            }
-            Err(err) => return Err(err),
-        }
     }
 
     if result.is_ok() {
@@ -589,6 +563,44 @@ async fn exchange_on_worker(
         }
     }
     result
+}
+
+async fn retry_on_fresh_connection(
+    settings: &HttpsExchangeSettings,
+    control: &ExchangeControl,
+    backup: SecretBuffer,
+    max_response_bytes: usize,
+    connection_state: &StdMutex<Option<HttpsConnection>>,
+) -> Result<TransportResponse, TransportError> {
+    let mut fresh_session = connect_https_connection(
+        settings,
+        control.clone(),
+        #[cfg(test)]
+        None,
+        #[cfg(test)]
+        None,
+    )
+    .await?;
+    let retry_result = execute_https_exchange(
+        &mut fresh_session,
+        backup,
+        settings,
+        max_response_bytes,
+        control,
+        #[cfg(test)]
+        None,
+    )
+    .await;
+    if retry_result.is_ok() {
+        fresh_session.io_control.finish_exchange();
+        if fresh_session.is_reusable() {
+            let (completed, _) = control.finish();
+            if completed {
+                *lock_https_connection(connection_state) = Some(fresh_session);
+            }
+        }
+    }
+    retry_result
 }
 
 async fn acquire_https_connection(

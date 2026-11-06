@@ -2292,12 +2292,8 @@ fn consecutive_raw_tls_exchanges_resume_tls13_session() {
     let server_config = server_config(&pki, true);
 
     let peer = spawn_resumption_peer(listener.into_inner(), server_config);
-    let mut adapter = RawTlsTransport::new(public_client_config(
-        &pki,
-        address.port(),
-        SERVER_NAME,
-    ))
-    .expect("the raw TLS adapter initializes");
+    let mut adapter = RawTlsTransport::new(public_client_config(&pki, address.port(), SERVER_NAME))
+        .expect("the raw TLS adapter initializes");
 
     let first = adapter
         .exchange(fixtures::REQUEST_SENTINEL, 64)
