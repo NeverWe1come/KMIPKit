@@ -36,6 +36,7 @@ from ._handles import (
     _wrap_owned_handle,
     synchronize_public_functions,
 )
+from .validation import ValidationReport
 
 
 @dataclass(frozen=True, slots=True)
@@ -342,7 +343,7 @@ class ClientBatchItem(NativeHandle):
             self._pointer(),
         )
 
-    def validation_report(self):
+    def validation_report(self) -> ValidationReport:
         """Return the shared Rust validation report for this typed request."""
         from .validation import validate_request
 
