@@ -734,6 +734,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] queryId = "query-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] logoutId = "logout-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] request;
+        TtlvStructure retainedQueryRaw;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
                 ClientConfiguration extensions = ClientConfiguration.create(registry);
@@ -746,7 +747,7 @@ final class ClientFacadeTlsIntegrationTest {
                 ClientBatch batch = ClientBatch.create()) {
             batch.add(ClientBatchItem.ping().withUniqueBatchItemId(pingId));
             batch.add(ClientBatchItem.query(
-                            new int[] {1, 2, 1}, new String[] {"group-b", "group-a"})
+                            new int[] {1, 2, 1, 3}, new String[] {"group-b", "group-a"})
                     .withUniqueBatchItemId(queryId));
             try (TtlvStructure ticket = logoutTicket()) {
                 batch.add(ClientBatchItem.logout(ticket).withUniqueBatchItemId(logoutId));
@@ -770,18 +771,56 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0x18, queryResult.operation());
                 assertEquals(0x2e, logoutResult.operation());
                 assertEquals(Boolean.TRUE, logoutResult.logoutResponse().orElseThrow());
+                retainedQueryRaw = queryResult.raw().orElseThrow();
+                try (TtlvStructure responseHeader = queryResult.responseHeaderTtlv();
+                        TtlvStructureView headerView = responseHeader.view()) {
+                    assertTrue(headerView.itemCount() > 0);
+                }
                 try (TtlvStructure queryPayload = queryResult.queryResponse().orElseThrow();
                         TtlvStructureView payloadView = queryPayload.view();
-                        TtlvItemView masksItem = payloadView.itemAt(0);
+                        TtlvItemView masksItem = payloadView.itemAt(1);
                         Tag masksTag = masksItem.tag()) {
-                    assertEquals(1, payloadView.itemCount());
+                    assertEquals(2, payloadView.itemCount());
                     assertEquals(0x42015f, masksTag.raw());
                     assertEquals(TtlvItemType.Structure, masksItem.itemType());
                     try (TtlvValueView masksValue = masksItem.value();
                             TtlvStructureView masks = masksValue.structure()) {
-                        assertEquals(0, masks.itemCount());
+                        assertEquals(1, masks.itemCount());
+                        try (TtlvItemView vendorItem = masks.itemAt(0);
+                                Tag vendorTag = vendorItem.tag();
+                                TtlvValueView vendorValue = vendorItem.value();
+                                TtlvStructureView vendor = vendorValue.structure();
+                                TtlvItemView vendorValueItem = vendor.itemAt(0);
+                                Tag vendorValueTag = vendorValueItem.tag();
+                                TtlvValueView vendorValueView = vendorValueItem.value()) {
+                            assertEquals(0x540001, vendorTag.raw());
+                            assertEquals(0x540002, vendorValueTag.raw());
+                            assertEquals(0x1234, vendorValueView.integer());
+                        }
                     }
                 }
+                try (TtlvStructure queryPayload = queryResult.raw().orElseThrow();
+                        TtlvStructureView queryPayloadView = queryPayload.view();
+                        TtlvItemView serverInformationItem = queryPayloadView.itemAt(0);
+                        Tag serverInformationTag = serverInformationItem.tag();
+                        TtlvValueView serverInformationValue = serverInformationItem.value();
+                        TtlvStructureView serverInformation = serverInformationValue.structure();
+                        TtlvItemView vendorItem = serverInformation.itemAt(0);
+                        Tag vendorTag = vendorItem.tag();
+                        TtlvValueView vendorValue = vendorItem.value();
+                        TtlvStructureView vendor = vendorValue.structure();
+                        TtlvItemView nestedVendorItem = vendor.itemAt(0);
+                        Tag nestedVendorTag = nestedVendorItem.tag();
+                        TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                    assertEquals(0x420088, serverInformationTag.raw());
+                    assertEquals(0x540001, vendorTag.raw());
+                    assertEquals(0x540002, nestedVendorTag.raw());
+                    assertEquals(0x1234, nestedVendorValue.integer());
+                }
+            }
+            try (retainedQueryRaw; TtlvStructureView detachedView = retainedQueryRaw.view()) {
+                assertEquals(2, detachedView.itemCount(),
+                        "the copied raw payload survives closing its response owner");
             }
             request = peer.get(15, TimeUnit.SECONDS);
         } finally {
@@ -2128,6 +2167,23 @@ final class ClientFacadeTlsIntegrationTest {
                     assertTagOrder(getObject, 0x42008f);
                     assertTrue(containsByteString(getObject, 0x420045,
                             "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                    assertFalse(getResponse.toString().contains("KMIPKit-get-response-sentinel"));
+                    try (TtlvItemView keyBlockItem = getObject.itemAt(0);
+                            Tag keyBlockTag = keyBlockItem.tag();
+                            TtlvValueView keyBlockValue = keyBlockItem.value();
+                            TtlvStructureView keyBlock = keyBlockValue.structure();
+                            TtlvItemView vendorExtensionItem = keyBlock.itemAt(2);
+                            Tag vendorExtensionTag = vendorExtensionItem.tag();
+                            TtlvValueView vendorExtensionValue = vendorExtensionItem.value();
+                            TtlvStructureView vendorExtension = vendorExtensionValue.structure();
+                            TtlvItemView nestedVendorItem = vendorExtension.itemAt(0);
+                            Tag nestedVendorTag = nestedVendorItem.tag();
+                            TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                        assertEquals(0x420040, keyBlockTag.raw());
+                        assertEquals(0x540001, vendorExtensionTag.raw());
+                        assertEquals(0x540002, nestedVendorTag.raw());
+                        assertEquals(0x1234, nestedVendorValue.integer());
+                    }
                     assertFalse(getResponse.toString().contains("get-response-secret-id"));
                 }
                 ClientBatchItemResult.LocateResponse locateResponse =
@@ -5934,7 +5990,10 @@ final class ClientFacadeTlsIntegrationTest {
                 enumeration(0x42007f, 1), enumeration(0x42007e, 5));
         byte[] getObject = structure(0x42008f,
                 structure(0x420040,
-                        item(0x420045, 8, "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII))));
+                        enumeration(0x420042, 1),
+                        structure(0x420045,
+                                item(0x420043, 8, "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII))),
+                        structure(0x540001, item(0x540002, 2, integer(0x1234)))));
         byte[] getPayload = structure(0x42007c,
                 enumeration(0x420057, 2),
                 item(0x420094, 7, "get-response-secret-id".getBytes(StandardCharsets.UTF_8)),
@@ -6002,7 +6061,11 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, pingId),
                 enumeration(0x42007f, 0),
                 structure(0x42007c), responseExtension);
-        byte[] queryPayload = structure(0x42007c, structure(0x42015f));
+        byte[] queryPayload = structure(0x42007c,
+                structure(0x420088,
+                        structure(0x540001, item(0x540002, 2, integer(0x1234)))),
+                structure(0x42015f,
+                        structure(0x540001, item(0x540002, 2, integer(0x1234)))));
         byte[] queryItem = structure(0x42000f,
                 enumeration(0x42005c, 0x18),
                 item(0x420093, 8, queryId),

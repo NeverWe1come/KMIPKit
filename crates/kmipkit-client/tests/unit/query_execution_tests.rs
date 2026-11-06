@@ -21,6 +21,9 @@ const QUERY_FUNCTION: u32 = 0x0042_0074;
 const OBJECT_GROUPS: u32 = 0x0042_0166;
 const OBJECT_GROUP: u32 = 0x0042_0056;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
+const SERVER_INFORMATION: u32 = 0x0042_0088;
+const VENDOR_SERVER_INFO_EXTENSION: u32 = 0x0054_0001;
+const VENDOR_NESTED_VALUE: u32 = 0x0054_0002;
 
 fn query_request_shape(request: &[u8]) -> Option<(Vec<u32>, Vec<String>)> {
     let decoded = decode_with_limits(request, &CodecLimits::defaults()).ok()?;
@@ -140,6 +143,64 @@ fn query_sends_one_request_with_repeated_functions_and_ordered_object_groups() {
             vec!["group-b".into(), "group-a".into(), "group-b".into()]
         ))
     );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn query_raw_response_navigates_vendor_ttlv_nested_inside_server_information() {
+    let server_information = test_structure([test_item(
+        VENDOR_SERVER_INFO_EXTENSION,
+        kmipkit_ttlv::Value::structure(test_structure([test_item(
+            VENDOR_NESTED_VALUE,
+            kmipkit_ttlv::Value::integer(0x1234),
+        )])),
+    )]);
+    let response = asynchronous_response_bytes(
+        QUERY,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            SERVER_INFORMATION,
+            kmipkit_ttlv::Value::structure(server_information),
+        ), test_item(
+            PROTECTION_STORAGE_MASKS,
+            kmipkit_ttlv::Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let outcome = client
+        .query(
+            QueryRequest::new([QueryFunction::from_raw(3)]),
+            &CodecLimits::defaults(),
+        )
+        .expect("the Query response preserves generic Server Information descendants");
+    let raw = outcome.raw().expect("the Query response has a payload");
+    let server_information = raw
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == SERVER_INFORMATION)
+        .and_then(kmipkit_ttlv::Item::as_structure)
+        .expect("the Server Information structure is reachable");
+    let vendor_extension = server_information
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == VENDOR_SERVER_INFO_EXTENSION)
+        .and_then(kmipkit_ttlv::Item::as_structure)
+        .expect("the nested vendor extension structure is reachable");
+    let value = vendor_extension
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == VENDOR_NESTED_VALUE)
+        .expect("the vendor child tag is preserved")
+        .with_value(|value| match value {
+            ValueView::Integer(value) => Some(*value),
+            _ => None,
+        });
+    assert_eq!(value, Some(0x1234));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 

@@ -4,6 +4,117 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int response_ttlv_path_integer_matches(
+        kmipkit_ttlv_structure_view_t *view,
+        const uint32_t *path,
+        uint64_t path_length,
+        int32_t expected_integer) {
+    uint64_t count = 0;
+    if (view == NULL || path == NULL || path_length == 0 ||
+            kmipkit_ttlv_structure_view_item_count(view, &count) != 0) {
+        return 0;
+    }
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *item = NULL;
+        kmipkit_tag_t *tag = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        kmipkit_ttlv_structure_view_t *nested = NULL;
+        uint32_t actual_tag = 0;
+        uint8_t item_type = 0;
+        int32_t actual_integer = 0;
+        int matched = 0;
+        if (kmipkit_ttlv_structure_view_item_at(view, index, &item) != 0 || item == NULL ||
+                kmipkit_ttlv_item_view_tag(item, &tag) != 0 || tag == NULL ||
+                kmipkit_ttlv_tag_value(tag, &actual_tag) != 0 || actual_tag != path[0] ||
+                kmipkit_ttlv_item_view_value(item, &value) != 0 || value == NULL) {
+            goto item_cleanup;
+        }
+        if (path_length == UINT64_C(1)) {
+            matched = kmipkit_ttlv_item_view_type(item, &item_type) == 0 &&
+                    item_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER &&
+                    kmipkit_ttlv_value_view_integer(value, &actual_integer) == 0 &&
+                    actual_integer == expected_integer;
+        } else if (kmipkit_ttlv_value_view_type(value, &item_type) == 0 &&
+                item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE &&
+                kmipkit_ttlv_value_view_structure(value, &nested) == 0 && nested != NULL) {
+            matched = response_ttlv_path_integer_matches(
+                    nested, path + 1, path_length - UINT64_C(1), expected_integer);
+        }
+item_cleanup:
+        kmipkit_ttlv_structure_view_release(nested);
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item);
+        if (matched) return 1;
+    }
+    return 0;
+}
+
+int32_t kmipkit_client_abi_consumer_response_ttlv_handles(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t expected_payload_present,
+        uint64_t expected_payload_item_count,
+        const uint32_t *expected_integer_path,
+        uint64_t expected_integer_path_length,
+        int32_t expected_integer) {
+    uint8_t payload_present = 0;
+    uint8_t header_present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_t *header = NULL;
+    kmipkit_ttlv_structure_view_t *payload_view = NULL;
+    kmipkit_ttlv_structure_view_t *header_view = NULL;
+    uint64_t payload_item_count = UINT64_MAX;
+    uint64_t header_item_count = 0;
+    int32_t result = 1;
+
+    if (item == NULL || expected_payload_present > 1 ||
+            (expected_integer_path_length != 0 && expected_integer_path == NULL) ||
+            kmipkit_client_batch_item_response_raw_ttlv(
+                    item, &payload_present, &payload) != 0 ||
+            kmipkit_client_batch_item_response_header_ttlv(
+                    item, &header_present, &header) != 0 ||
+            payload_present != expected_payload_present ||
+            header_present != 1 || header == NULL ||
+            ((payload_present == 1) != (payload != NULL))) {
+        goto cleanup;
+    }
+
+    /* The caller transferred this result handle; the returned structures must outlive it. */
+    kmipkit_client_batch_item_response_release(item);
+    item = NULL;
+
+    if (payload != NULL) {
+        if (kmipkit_ttlv_structure_view(payload, &payload_view) != 0 ||
+                kmipkit_ttlv_structure_view_item_count(
+                        payload_view, &payload_item_count) != 0 ||
+                payload_item_count != expected_payload_item_count) {
+            goto cleanup;
+        }
+        if (expected_integer_path_length != 0 &&
+                !response_ttlv_path_integer_matches(
+                        payload_view, expected_integer_path,
+                        expected_integer_path_length, expected_integer)) {
+            goto cleanup;
+        }
+    } else if (expected_payload_item_count != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_structure_view(header, &header_view) != 0 ||
+            kmipkit_ttlv_structure_view_item_count(header_view, &header_item_count) != 0 ||
+            header_item_count == 0) {
+        goto cleanup;
+    }
+    result = 0;
+
+cleanup:
+    if (item != NULL) kmipkit_client_batch_item_response_release(item);
+    if (payload_view != NULL) kmipkit_ttlv_structure_view_release(payload_view);
+    if (header_view != NULL) kmipkit_ttlv_structure_view_release(header_view);
+    if (payload != NULL) kmipkit_ttlv_structure_release(payload);
+    if (header != NULL) kmipkit_ttlv_structure_release(header);
+    return result;
+}
+
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
 int kmipkit_client_abi_c_consumer_batch_item_readback(void) {
