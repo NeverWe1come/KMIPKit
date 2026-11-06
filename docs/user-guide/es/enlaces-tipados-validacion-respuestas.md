@@ -45,6 +45,19 @@ Respeta las reglas de vida útil de cada binding:
 
 KMIPKit limpia los buffers secretos que posee cuando se libera el objeto propietario. Las copias devueltas a Java o Python, o copiadas posteriormente por el código de la aplicación, quedan fuera de la garantía de borrado determinista de KMIPKit. Los mensajes de error y las representaciones de depuración/cadena evitan imprimir valores secretos o mensajes KMIP completos.
 
+## Copias en bloque de bytes TTLV
+
+Para valores TTLV `BigInteger`, `ByteString` y `TextString`, usa el acceso a bytes correspondiente al modelo de propiedad del binding. Una copia de `TextString` contiene sus bytes UTF-8 originales.
+
+| Lenguaje | Acceso a bytes | Copia y vida útil |
+| --- | --- | --- |
+| Rust | Haz match de `ValueView::BigInteger`, `ValueView::ByteString` o `ValueView::TextString` dentro de `Item::with_value(...)`. | Los slices de bytes o el texto se prestan durante el callback. Copia solo si la aplicación necesita conservar el valor durante más tiempo. |
+| C | `kmipkit_ttlv_value_view_byte_length(...)` y `kmipkit_ttlv_value_view_byte_at(...)`. | C no publica una función de copia en bloque; su API pública lee un byte por llamada mientras la vista del valor siga abierta. Cualquier buffer que reúna la aplicación es propiedad de esta. |
+| Java | `TtlvValueView.bytes()`. | Devuelve el valor completo como un `byte[]` propiedad de quien llama mediante una copia en bloque. La copia temporal nativa se limpia antes de que el método devuelva o falle; los arrays de bytes de Java devueltos quedan fuera de la garantía de borrado determinista de KMIPKit. |
+| Python | `ttlv.ttlv_value_view_bytes(view)`. | Devuelve el valor completo como `bytes` inmutable propiedad de quien llama mediante una copia en bloque. El búfer nativo temporal se limpia tanto si la operación tiene éxito como si falla; los bytes inmutables de Python devueltos quedan fuera de la garantía de borrado determinista de KMIPKit. |
+
+El array de Java y el objeto `bytes` de Python siguen siendo válidos al cerrar su vista nativa porque son copias independientes. Quien llama desde C y necesite conservar una secuencia de bytes debe copiarla mientras la vista del valor siga abierta y gestionar esa copia. Los límites del decoder acotan el mensaje de origen antes de aceptarlo; no hacen que las copias propiedad de la aplicación puedan borrarse de forma determinista.
+
 ## Cryptographic Parameters
 
 Cryptographic Parameters conserva los valores brutos de Enumeration, incluso aquellos que esta versión de la biblioteca no conoce. Los builders emiten los miembros conocidos en el orden de KMIP 2.1 Tabla 59. Los accesores distinguen entre un campo ausente y uno presente con valor cero o <code>false</code>. Los campos modelados son Block Cipher Mode, Padding Method, Hashing Algorithm, Key Role Type, Digital Signature Algorithm, Cryptographic Algorithm, Random IV, IV Length, Tag Length, Fixed Field Length, Invocation Field Length, Counter Length, Initial Counter Value, Salt Length, Mask Generator, Mask Generator Hashing Algorithm, P Source y Trailer Field.

@@ -45,6 +45,19 @@ Follow the lifetime rules of each binding:
 
 KMIPKit clears secret buffers that it owns when their owning object is released. Copies returned to Java or Python, or copied onward by application code, are outside KMIPKit's deterministic zeroization guarantee. Error messages and debug/string representations are designed to avoid printing secret values or complete KMIP messages.
 
+## Bulk TTLV byte copies
+
+For TTLV `BigInteger`, `ByteString`, and `TextString` values, use the binding's byte access according to its ownership model. A copied `TextString` contains its original UTF-8 bytes.
+
+| Language | Byte access | Copy and lifetime |
+| --- | --- | --- |
+| Rust | Match `ValueView::BigInteger`, `ValueView::ByteString`, or `ValueView::TextString` inside `Item::with_value(...)`. | The byte slices or text are borrowed for the callback lifetime. Copy only when the application needs a longer-lived value. |
+| C | `kmipkit_ttlv_value_view_byte_length(...)` and `kmipkit_ttlv_value_view_byte_at(...)`. | There is no public C bulk-copy function; the public C API reads one byte per call while the value view is open. Any buffer assembled by the application is application-owned. |
+| Java | `TtlvValueView.bytes()`. | Returns the complete value as a caller-owned `byte[]` in one bulk copy. The native staging copy is cleared before the method returns or fails; the returned Java-owned byte array is outside KMIPKit's deterministic zeroization guarantee. |
+| Python | `ttlv.ttlv_value_view_bytes(view)`. | Returns the complete value as caller-owned immutable `bytes` in one bulk copy. The temporary native staging buffer is cleared on success or failure; the returned Python-owned immutable bytes object is outside KMIPKit's deterministic zeroization guarantee. |
+
+The Java array and Python `bytes` remain valid after their native value view is closed because they are independent copies. C callers that need a retained byte sequence must copy it while the value view is open and manage that copy themselves. Decoder limits bound the source message before it is accepted; they do not make application-owned copies zeroizable.
+
 ## Cryptographic Parameters
 
 Cryptographic Parameters retain raw Enumeration values, including values not known to this library version. Builders emit known members in KMIP 2.1 Table 59 order. Accessors distinguish an absent field from a present zero or <code>false</code> value. The modeled fields are Block Cipher Mode, Padding Method, Hashing Algorithm, Key Role Type, Digital Signature Algorithm, Cryptographic Algorithm, Random IV, IV Length, Tag Length, Fixed Field Length, Invocation Field Length, Counter Length, Initial Counter Value, Salt Length, Mask Generator, Mask Generator Hashing Algorithm, P Source, and Trailer Field.
