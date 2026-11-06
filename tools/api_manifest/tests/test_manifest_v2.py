@@ -1422,7 +1422,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 re.MULTILINE,
             )
         )
-        self.assertEqual(header_ttlv_macros, ready_by_kind["macro"])
+        header_encoding_macros = set(
+            re.findall(r"^#define (KMIPKIT_WIRE_ENCODING_\w+)", header, re.MULTILINE)
+        )
+        self.assertEqual(header_ttlv_macros | header_encoding_macros, ready_by_kind["macro"])
         header_error_macros = set(
             re.findall(r"^#define (KMIPKIT_ERROR_\w+)", header, re.MULTILINE)
         )
@@ -1434,13 +1437,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and item["exportName"].startswith("KMIPKIT_ERROR_")
         }
         self.assertEqual(header_error_macros, manifest_error_macros)
-        header_encoding_macros = set(
-            re.findall(r"^#define (KMIPKIT_WIRE_ENCODING_\w+)", header, re.MULTILINE)
-        )
         manifest_encoding_macros = {
             item["exportName"]
             for item in declarations
-            if item["kind"] == "constant"
+            if item["kind"] == "macro"
             and item["declarationState"] in {"declared", "verified"}
             and item["exportName"].startswith("KMIPKIT_WIRE_ENCODING_")
         }

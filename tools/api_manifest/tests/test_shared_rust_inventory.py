@@ -39,10 +39,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 22)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 62)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            22,
+            62,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -54,9 +54,9 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 9525)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 143)
-        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 9583)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 172)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 33)
         self.assertNotIn("KMIPKIT-0009", inventory["draftOwnerGates"])
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
@@ -256,14 +256,18 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         blocked = inventory["blockedUnreconciledDeclarations"]
 
-        self.assertEqual(len(blocked), 36)
+        self.assertEqual(len(blocked), 33)
         self.assertEqual(
             sum("callable public declaration" in row["blockedReason"] for row in blocked),
-            22,
+            19,
         )
         self.assertEqual(
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),
             12,
+        )
+        self.assertEqual(
+            sum("crate root is not an exported declaration" in row["blockedReason"] for row in blocked),
+            2,
         )
         for row in blocked:
             source = next(
