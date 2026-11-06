@@ -27,6 +27,10 @@ mod ffi_pointer_safety_tests;
 #[path = "../tests/support/profile_readiness_abi_tests.rs"]
 mod profile_readiness_abi_tests;
 
+#[cfg(test)]
+#[path = "../tests/support/typed_attribute_0053_tests.rs"]
+mod typed_attribute_0053_tests;
+
 use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
     kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
