@@ -176,9 +176,18 @@ fn validate_attribute_item_mutation(
 ) -> ValidationReport {
     const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
     const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
     const USAGE_LIMITS: u32 = 0x0042_0095;
 
-    let source_section = if item.tag().raw() == VENDOR_ATTRIBUTE {
+    let source_section = if item.tag().raw() == ORIGINAL_CREATION_DATE
+        && mutation == crate::attribute::ClientAttributeMutation::Add
+    {
+        // KMIP v2.1 §4.38 permits the client to supply this attribute later
+        // through Add Attribute when it was omitted during object creation.
+        // Whether it is already present is state-dependent and belongs to the
+        // server or an explicitly selected profile validator.
+        None
+    } else if item.tag().raw() == VENDOR_ATTRIBUTE {
         item.with_value(|value| match value {
             kmipkit_ttlv::ValueView::Structure(fields) => fields
                 .children()
