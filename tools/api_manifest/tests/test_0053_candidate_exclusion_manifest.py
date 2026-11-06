@@ -34,9 +34,26 @@ class CandidateExclusionManifestTests(unittest.TestCase):
         exclusion["counterpartDeclarationIds"] = ["missing-exact-counterpart"]
 
         with self.assertRaises(generate.ManifestError):
-            generate._validate_v2_manifest(
-                manifest, self.schema, self.catalog, ROOT
-            )
+            generate._validate_approved_exclusions([exclusion], {}, ROOT)
+
+    def test_candidate_exclusions_require_verified_same_capability_counterparts(self) -> None:
+        manifest = copy.deepcopy(self.manifest)
+        exclusion = next(
+            row
+            for row in manifest["approvedExclusions"]
+            if row.get("candidateSpecId") == "KMIPKIT-0053"
+            and row.get("artifactKind")
+        )
+        counterpart_id = exclusion["counterpartDeclarationIds"][0]
+        counterpart = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row["declarationId"] == counterpart_id
+        )
+        counterpart["declarationState"] = "declared"
+
+        with self.assertRaises(generate.ManifestError):
+            generate._validate_approved_exclusions([exclusion], {}, ROOT)
 
 
 if __name__ == "__main__":
