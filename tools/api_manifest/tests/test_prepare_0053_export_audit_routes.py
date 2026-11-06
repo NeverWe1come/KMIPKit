@@ -109,6 +109,29 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         self.assertEqual("function", rust_kind_correction["manifestKind"])
         self.assertEqual("associated-item", rust_kind_correction["observedKind"])
 
+    def test_audited_capabilities_resolve_to_the_repository_manifest(self) -> None:
+        manifest_path = (
+            prepare_0053_export_audit_routes.ROOT
+            / prepare_0053_export_audit_routes.MANIFEST_PATH
+        )
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        documents = prepare_0053_export_audit_routes._read_documents(
+            prepare_0053_export_audit_routes.ROOT
+        )
+        declarations, _ = prepare_0053_export_audit_routes.compile_documents(
+            documents, manifest["publicDeclarations"]
+        )
+        known = {row["capabilityId"] for row in manifest["capabilities"]}
+        unknown = sorted(
+            {
+                row["capabilityId"]
+                for row in declarations
+                if row["capabilityId"] not in known
+            }
+        )
+
+        self.assertEqual([], unknown)
+
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
             "formatVersion": 1,
