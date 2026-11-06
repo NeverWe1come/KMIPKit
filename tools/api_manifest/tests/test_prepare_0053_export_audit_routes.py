@@ -93,6 +93,13 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
             "org.kmipkit.ttlv.KeyBlock.fieldItem",
             {target["name"] for target in java_stale["observedPublicTargets"]},
         )
+        kind_correction = next(
+            row
+            for row in route_data.get("pythonKindCorrections", [])
+            if row.get("name") == "kmipkit.client.QueryResponse.field_count"
+        )
+        self.assertEqual("field", kind_correction["fromKind"])
+        self.assertEqual("python-export", kind_correction["toKind"])
 
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
