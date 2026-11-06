@@ -133,6 +133,19 @@ fn attribute_mutation_validation_rejects_usage_limits_count_for_add_and_modify()
                 && issue.source().to_string() == "KMIP v2.1 §4.59; §7.40, Table 392"
         }));
     }
+
+    let total_only = crate::NewAttribute::new(schema_item(
+        0x0042_0095,
+        Value::structure(schema_structure([schema_item(
+            0x0042_0097,
+            Value::long_integer(12),
+        )])),
+    ));
+    assert!(
+        AddAttributeRequest::new(None, total_only)
+            .validate()
+            .is_valid()
+    );
 }
 
 fn assert_schema<T: ValidateKmipRequest>(expected: crate::RequestPayloadSchema) {
