@@ -1,5 +1,7 @@
 #include "kmipkit.h"
 
+#include <stddef.h>
+
 #include <stdint.h>
 
 #define KMIPKIT_OPERATION_INVALID_INPUT ((int32_t)4)

@@ -1,5 +1,7 @@
 #include "kmipkit.h"
 
+#include <stddef.h>
+
 /* This declaration deliberately lives in the consumer test until the public ABI is implemented. */
 int32_t kmipkit_managed_value_field_read(
     uint32_t owner_kind,
