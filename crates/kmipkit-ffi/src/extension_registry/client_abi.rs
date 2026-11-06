@@ -30,6 +30,7 @@ fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiR
 fn clone_query_response_field_item(
     field: &kmipkit_protocol::QueryResponseField,
 ) -> FfiResult<Option<Item>> {
+    // Callers enumerate fields individually; rebuilding the full payload here would be quadratic.
     use kmipkit_protocol::QueryResponseField;
 
     match field.kind() {

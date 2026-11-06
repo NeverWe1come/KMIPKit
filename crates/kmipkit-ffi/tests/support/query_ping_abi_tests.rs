@@ -948,9 +948,8 @@ fn compiled_c_consumer_navigates_response_vendor_ttlv_in_nested_structures() {
 
 #[test]
 fn query_field_copy_builds_only_the_requested_ttlv_item() {
-    let text = kmipkit_protocol::QueryResponseField::VendorIdentification(
-        "KMIPKit vendor".to_owned(),
-    );
+    let text =
+        kmipkit_protocol::QueryResponseField::VendorIdentification("KMIPKit vendor".to_owned());
     let copied = super::clone_query_response_field_item(&text)
         .unwrap()
         .expect("text Query fields have a TTLV Item");
@@ -962,7 +961,9 @@ fn query_field_copy_builds_only_the_requested_ttlv_item() {
     )));
 
     let enumeration = kmipkit_protocol::QueryResponseField::Operation(0xfeed_beef);
-    assert!(super::clone_query_response_field_item(&enumeration)
-        .unwrap()
-        .is_none());
+    assert!(
+        super::clone_query_response_field_item(&enumeration)
+            .unwrap()
+            .is_none()
+    );
 }

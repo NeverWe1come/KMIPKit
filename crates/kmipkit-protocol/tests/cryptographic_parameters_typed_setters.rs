@@ -24,7 +24,10 @@ fn parameters() -> CryptographicParameters {
 fn parameters_with_vendor_extension(hashing_algorithm: u32) -> CryptographicParameters {
     let mut structure = Structure::new();
     structure
-        .try_push(item(HASHING_ALGORITHM, Value::enumeration(hashing_algorithm)))
+        .try_push(item(
+            HASHING_ALGORITHM,
+            Value::enumeration(hashing_algorithm),
+        ))
         .expect("Hashing Algorithm fits in Cryptographic Parameters");
     structure
         .try_push(item(0x0054_0031, Value::byte_string(vec![0xca, 0xfe])))
