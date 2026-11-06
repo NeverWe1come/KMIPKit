@@ -7,7 +7,7 @@
 - [x] T001 Record baseline commit, branch, predecessor PR #123, platform, and approval in specs/053-api-parity-facade/implementation-evidence.md.
 - [x] T002 Add manifest inventory tests for the 750 candidates, four capabilities, and unowned routes in tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
 - [x] T003 Add common ABI ownership, null-output, stale-handle, and redaction tests in crates/kmipkit-ffi/tests/support/api_parity_0053_tests.rs.
-- [ ] T004 Add clean external package consumers for Rust, C, Java, and Python in tests/consumers/0053-parity/.
+- [x] T004 Add clean external package consumers for Rust, C, Java, and Python in tests/consumers/0053-parity/.
 - [x] T005 Review the language boundary and ownership contract in specs/053-api-parity-facade/contracts/language-api.md.
 
 ## Phase 2: US1 typed attributes (62 applicable definitions)
