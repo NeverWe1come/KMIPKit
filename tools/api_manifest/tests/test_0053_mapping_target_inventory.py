@@ -113,6 +113,38 @@ class MappingTargetInventoryTests(unittest.TestCase):
                         declarations, packages, c_release_functions
                     )
 
+    def test_generic_c_tag_macro_maps_to_the_standard_attribute_accessors(self) -> None:
+        declaration = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("declarationId")
+            == "KMIPKIT-0053:c-standard-attribute:tag"
+        )
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(
+            "standard-attribute-tag-value", declaration["mappingSemantics"]
+        )
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit",
+                    "name": "kmipkit::protocol::AttributeDefinition::TAG",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "KMIPKIT_STANDARD_ATTRIBUTE_TAG",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.ttlv.StandardAttribute.tag",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.StandardAttribute.tag",
+                },
+            },
+            declaration["languageMappings"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
