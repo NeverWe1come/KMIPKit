@@ -5,6 +5,10 @@
 //! low-level contract is caller-byte exchange over TLS 1.3/mTLS, with one
 //! response frame per connection and zeroization of KMIPKit-owned staged
 //! request bytes before release.
+//!
+//! Text document syntax follows OASIS KMIP Profiles v2.1 §§5.4 (XML) and 5.5
+//! (JSON). One-document-per-connection completion and closure are the `KMIPKit`
+//! interpretation recorded in ADR-0018, not an OASIS raw-TLS framing claim.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
@@ -160,6 +164,170 @@ fn raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame() {
         "the raw connection closes after the single response frame"
     );
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+}
+
+#[test]
+fn raw_tls_json_response_is_framed_across_fragments_and_closes_after_one_document() {
+    const FRAGMENTS: &[&[u8]] = &[br#"{"tag":"Response"#, br#"Message","value":"#, br"[]}"];
+    let expected = FRAGMENTS.concat();
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("a complete fragmented JSON response is framed");
+    assert_eq!(response.as_bytes(), expected);
+    assert!(
+        peer.closed_after_response,
+        "the client closes after one document"
+    );
+    assert_eq!(peer.request_bytes.as_slice(), fixtures::REQUEST_SENTINEL);
+}
+
+#[test]
+fn raw_tls_xml_response_is_framed_across_fragments() {
+    const FRAGMENTS: &[&[u8]] = &[
+        b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><ResponseMessage>",
+        b"<ResponseHeader>",
+        b"</ResponseHeader><BatchItem/>",
+        b"</ResponseMessage>",
+    ];
+    let expected = FRAGMENTS.concat();
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Xml,
+    );
+
+    let response = result.expect("a complete fragmented XML response is framed");
+    assert_eq!(response.as_bytes(), expected);
+    assert!(
+        peer.closed_after_response,
+        "the client closes after one document"
+    );
+}
+
+#[test]
+fn raw_tls_json_returns_one_document_and_closes_before_delayed_surplus() {
+    const FRAGMENTS: &[&[u8]] = &[b"{}", b" false"];
+    let (result, _peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("the first complete JSON document ends the exchange");
+    assert_eq!(response.as_bytes(), b"{}");
+}
+
+#[test]
+fn raw_tls_xml_returns_one_document_and_closes_before_delayed_surplus() {
+    const FRAGMENTS: &[&[u8]] = &[b"<ResponseMessage/>", b"<Unexpected/>"];
+    let (result, _peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Xml,
+    );
+
+    let response = result.expect("the first complete XML document ends the exchange");
+    assert_eq!(response.as_bytes(), b"<ResponseMessage/>");
+}
+
+#[test]
+fn raw_tls_rejects_incomplete_and_malformed_text_documents() {
+    for (encoding, response) in [
+        (
+            config::WireEncoding::Json,
+            &b"{\"tag\":\"ResponseMessage\""[..],
+        ),
+        (config::WireEncoding::Json, &b"[1,2,3]"[..]),
+        (config::WireEncoding::Xml, &b"<ResponseMessage>"[..]),
+        (
+            config::WireEncoding::Xml,
+            &b"<!DOCTYPE ResponseMessage>"[..],
+        ),
+    ] {
+        let (result, peer) =
+            exchange_action_with_encoding(PeerAction::RespondBytes(response), 1024, encoding);
+        let error = result.expect_err("incomplete or malformed text input is rejected");
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert!(
+            peer.closed_after_response,
+            "the client closes after the invalid document"
+        );
+    }
+}
+
+#[test]
+fn raw_tls_reports_cross_encoding_responses_as_protocol_mismatches() {
+    for (selected, response) in [
+        (config::WireEncoding::Ttlv, &b"{}"[..]),
+        (config::WireEncoding::Ttlv, &b"<ResponseMessage/>"[..]),
+        (config::WireEncoding::Json, &RESPONSE_FRAME[..]),
+        (config::WireEncoding::Json, &b"<ResponseMessage/>"[..]),
+        (config::WireEncoding::Xml, &RESPONSE_FRAME[..]),
+        (config::WireEncoding::Xml, &b"{}"[..]),
+    ] {
+        let (result, peer) =
+            exchange_action_with_encoding(PeerAction::RespondBytes(response), 1024, selected);
+        let error = result.expect_err("a response in another supported encoding is rejected");
+        assert_eq!(
+            error.cause_category(),
+            TransportCauseCategory::EncodingMismatch
+        );
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert!(peer.closed_after_response);
+    }
+}
+
+#[test]
+fn raw_tls_discards_text_surplus_after_one_document_and_enforces_actual_byte_limit() {
+    let trailing = br#"{"tag":"ResponseMessage","value":[]} false"#;
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(trailing),
+        1024,
+        config::WireEncoding::Json,
+    );
+    let response = result.expect("the complete first JSON document ends the exchange");
+    assert_eq!(
+        response.as_bytes(),
+        br#"{"tag":"ResponseMessage","value":[]}"#
+    );
+    assert!(peer.closed_after_response);
+
+    let limited = b"<ResponseMessage/>";
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(limited),
+        limited.len() - 1,
+        config::WireEncoding::Xml,
+    );
+    let error = result.expect_err("the actual XML bytes are checked against the local cap");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(peer.closed_after_response);
+}
+
+#[test]
+fn raw_tls_accepts_a_text_document_at_its_exact_sub_header_byte_cap() {
+    let response_bytes = b"{}";
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(response_bytes),
+        response_bytes.len(),
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("text framing has no TTLV header minimum");
+    assert_eq!(response.as_bytes(), response_bytes);
+    assert!(peer.closed_after_response);
 }
 
 /// Proves the staged request owner is cleaned up when the peer closes after
@@ -1220,6 +1388,31 @@ fn exchange_action(
     exchange_action_with_response_allocation_observer(action, max_response_bytes, None)
 }
 
+fn exchange_action_with_encoding(
+    action: PeerAction,
+    max_response_bytes: usize,
+    encoding: config::WireEncoding,
+) -> (Result<TransportResponse, TransportError>, PeerObservation) {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        action,
+    );
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let mut adapter = raw_tls::new_for_test(config, None);
+    let result = adapter.exchange_with_options(
+        fixtures::REQUEST_SENTINEL,
+        max_response_bytes,
+        &RequestOptions::default().with_wire_encoding(encoding),
+    );
+    let peer = peer.join().expect("the local TLS peer thread completes");
+    (result, peer)
+}
+
 fn exchange_action_with_response_allocation_observer(
     action: PeerAction,
     max_response_bytes: usize,
@@ -1465,6 +1658,7 @@ fn server_config(pki: &impl PkiMaterial, require_client_auth: bool) -> Arc<Serve
 enum PeerAction {
     RespondOnce,
     RespondBytes(&'static [u8]),
+    RespondFragments(&'static [&'static [u8]]),
     RespondCoalesced,
     CloseWithoutResponse,
     CloseAfterHandshake,
@@ -1728,40 +1922,12 @@ fn run_peer(
     }
 
     match action {
-        PeerAction::RespondOnce | PeerAction::RespondBytes(_) | PeerAction::RespondCoalesced => {
-            let response_write = match action {
-                PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME),
-                PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes),
-                PeerAction::RespondCoalesced => connection.writer().write_all(&TWO_RESPONSE_FRAMES),
-                _ => {
-                    return observation;
-                }
-            };
-            if response_write.is_err() {
-                return observation;
-            }
-            while connection.wants_write() {
-                if Instant::now() >= deadline || connection.write_tls(&mut stream).is_err() {
-                    return observation;
-                }
-            }
-            if stream.shutdown(Shutdown::Write).is_err() {
-                return observation;
-            }
-            let mut encrypted = [0_u8; 1024];
-            loop {
-                if Instant::now() >= deadline {
-                    break;
-                }
-                match stream.read(&mut encrypted) {
-                    Ok(0) => {
-                        observation.closed_after_response = true;
-                        break;
-                    }
-                    Ok(_) => {}
-                    Err(_) => break,
-                }
-            }
+        PeerAction::RespondOnce
+        | PeerAction::RespondBytes(_)
+        | PeerAction::RespondFragments(_)
+        | PeerAction::RespondCoalesced => {
+            observation.closed_after_response =
+                respond_and_wait_for_close(&mut connection, &mut stream, action, deadline).is_ok();
         }
         PeerAction::CloseWithoutResponse
         | PeerAction::CloseAfterHandshake
@@ -1772,6 +1938,71 @@ fn run_peer(
         PeerAction::HoldAfterRequestFor(duration) => thread::sleep(duration),
     }
     observation
+}
+
+fn respond_and_wait_for_close(
+    connection: &mut ServerConnection,
+    stream: &mut TcpStream,
+    action: PeerAction,
+    deadline: Instant,
+) -> io::Result<()> {
+    match action {
+        PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME)?,
+        PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes)?,
+        PeerAction::RespondFragments(fragments) => {
+            write_response_fragments(connection, stream, fragments, deadline)?;
+        }
+        PeerAction::RespondCoalesced => {
+            connection.writer().write_all(&TWO_RESPONSE_FRAMES)?;
+        }
+        _ => return Err(io::Error::other("peer action does not carry a response")),
+    }
+    while connection.wants_write() {
+        if Instant::now() >= deadline {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "test response deadline elapsed",
+            ));
+        }
+        connection.write_tls(stream)?;
+    }
+    stream.shutdown(Shutdown::Write)?;
+    let mut encrypted = [0_u8; 1024];
+    loop {
+        if Instant::now() >= deadline {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "test response close deadline elapsed",
+            ));
+        }
+        match stream.read(&mut encrypted) {
+            Ok(0) => return Ok(()),
+            Ok(_) => {}
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+fn write_response_fragments(
+    connection: &mut ServerConnection,
+    stream: &mut TcpStream,
+    fragments: &[&[u8]],
+    deadline: Instant,
+) -> io::Result<()> {
+    for fragment in fragments {
+        connection.writer().write_all(fragment)?;
+        while connection.wants_write() {
+            if Instant::now() >= deadline {
+                return Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "fragmented test response deadline elapsed",
+                ));
+            }
+            connection.write_tls(stream)?;
+        }
+        thread::sleep(Duration::from_millis(5));
+    }
+    Ok(())
 }
 
 fn accept_before_deadline(listener: &TcpListener) -> io::Result<(TcpStream, std::net::SocketAddr)> {

@@ -1,4 +1,4 @@
-//! Synchronous HTTPS with TTLV over verified TLS 1.3 and HTTP/1.1.
+//! Synchronous KMIP HTTPS over verified TLS 1.3 and HTTP/1.1.
 
 use std::convert::Infallible;
 use std::future::poll_fn;
@@ -24,7 +24,7 @@ use tokio_rustls::TlsConnector;
 use tokio_rustls::client::TlsStream;
 use zeroize::Zeroize;
 
-use crate::config::TransportConfigError;
+use crate::config::{TransportConfigError, WireEncoding};
 use crate::resolver::{ResolveFailure, Resolver};
 use crate::secret::SecretBuffer;
 #[cfg(test)]
@@ -52,6 +52,9 @@ use std::thread::JoinHandle;
 /// negotiated. TLS ALPN is empty and the adapter uses Hyper's HTTP/1 driver.
 /// The default timeout policy comes from the validated configuration, and
 /// [`Self::exchange_with_options`] accepts per-call overrides.
+/// Each exchange uses its selected KMIP encoding's Content-Type for the
+/// request and requires the response to match. Direct calls without an
+/// encoding option use TTLV, including calls on a reused connection.
 ///
 /// `KMIPKit` zeroizes initialized bytes in its staged request owner and partial
 /// response allocation. This does not cover caller-owned input or copies made
@@ -106,13 +109,16 @@ struct HttpsRoute {
     target: String,
 }
 
-struct HttpsConnectionSettings {
+// Rebuilt for each exchange: connection reuse must not retain a previous
+// exchange's media type or timeout overrides.
+struct HttpsExchangeSettings {
     route: HttpsRoute,
     resolver: Resolver,
     client_config: Arc<rustls::ClientConfig>,
     server_name: ServerName<'static>,
     policy: TimeoutPolicy,
     total_deadline: Option<Instant>,
+    content_type: &'static str,
 }
 
 impl HttpsRoute {
@@ -191,7 +197,7 @@ impl HttpsTransport {
         })
     }
 
-    /// Exchanges caller bytes using timeout overrides for this request.
+    /// Exchanges caller bytes using encoding and timeout options for this request.
     ///
     /// Unspecified timeout phases inherit the validated configuration's
     /// [`TimeoutPolicy`]. The response cap is enforced while streaming the
@@ -211,6 +217,7 @@ impl HttpsTransport {
     ) -> Result<TransportResponse, TransportError> {
         let exchange_started = Instant::now();
         let policy = self.configuration.timeouts().with_overrides(options);
+        let content_type = content_type_for_encoding(options.wire_encoding().unwrap_or_default());
         if request.len() > self.configuration.max_request_bytes() {
             return Err(safe_error(
                 RequestDeliveryState::NotSent,
@@ -292,6 +299,7 @@ impl HttpsTransport {
                     server_name,
                     policy,
                     total_deadline,
+                    content_type,
                     max_response_bytes,
                     control,
                     #[cfg(test)]
@@ -437,7 +445,7 @@ pub(crate) fn build_request_for_test(
         .expect("the request-builder test supplies a validated HTTPS endpoint");
     let owner = SecretBuffer::try_copy_from_slice(request)
         .expect("the bounded test request owner allocates");
-    build_http_request(&route, owner)
+    build_http_request(&route, owner, "application/octet-stream")
 }
 
 impl Transport for HttpsTransport {
@@ -460,6 +468,7 @@ async fn exchange_on_worker(
     server_name: ServerName<'static>,
     policy: TimeoutPolicy,
     total_deadline: Option<Instant>,
+    content_type: &'static str,
     max_response_bytes: usize,
     control: ExchangeControl,
     #[cfg(test)] driver_abort_observer: Option<mpsc::SyncSender<()>>,
@@ -478,13 +487,14 @@ async fn exchange_on_worker(
         });
     }
 
-    let settings = HttpsConnectionSettings {
+    let settings = HttpsExchangeSettings {
         route,
         resolver,
         client_config,
         server_name,
         policy,
         total_deadline,
+        content_type,
     };
     let mut session = acquire_https_connection(
         &connection_state,
@@ -526,7 +536,7 @@ async fn exchange_on_worker(
 
 async fn acquire_https_connection(
     connection_state: &StdMutex<Option<HttpsConnection>>,
-    settings: &HttpsConnectionSettings,
+    settings: &HttpsExchangeSettings,
     control: &ExchangeControl,
     #[cfg(test)] mut abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] mut cleanup_gate: Option<DriverCleanupGateForTest>,
@@ -579,7 +589,7 @@ async fn acquire_https_connection(
 }
 
 async fn connect_https_connection(
-    settings: &HttpsConnectionSettings,
+    settings: &HttpsExchangeSettings,
     control: ExchangeControl,
     #[cfg(test)] abort_observer: Option<mpsc::SyncSender<()>>,
     #[cfg(test)] cleanup_gate: Option<DriverCleanupGateForTest>,
@@ -644,12 +654,14 @@ async fn connect_https_connection(
 async fn execute_https_exchange(
     session: &mut HttpsConnection,
     request_owner: SecretBuffer,
-    settings: &HttpsConnectionSettings,
+    settings: &HttpsExchangeSettings,
     max_response_bytes: usize,
     control: &ExchangeControl,
     #[cfg(test)] response_buffer_observer: Option<ResponseBufferObserver>,
 ) -> Result<TransportResponse, TransportError> {
-    let request = build_http_request(&settings.route, request_owner).map_err(|_| {
+    let route = &settings.route;
+    let content_type = settings.content_type;
+    let request = build_http_request(route, request_owner, content_type).map_err(|_| {
         safe_error(
             RequestDeliveryState::NotSent,
             TransportCauseCategory::Other,
@@ -668,6 +680,7 @@ async fn execute_https_exchange(
     .map_err(|error| io_error(error, control.delivery_state()))?;
     read_response_body(
         response,
+        content_type,
         max_response_bytes,
         control,
         #[cfg(test)]
@@ -854,11 +867,13 @@ async fn connect_and_handshake(
 
 async fn read_response_body(
     response: hyper::Response<Incoming>,
+    content_type: &str,
     max_response_bytes: usize,
     control: &ExchangeControl,
     #[cfg(test)] observer: Option<ResponseBufferObserver>,
 ) -> Result<TransportResponse, TransportError> {
-    let declared_length = validate_response_headers(&response, max_response_bytes, control)?;
+    let declared_length =
+        validate_response_headers(&response, content_type, max_response_bytes, control)?;
     let mut body = response.into_body();
     #[cfg(test)]
     let response_buffer = ResponseBuffer::with_capacity(declared_length, observer);
@@ -900,11 +915,12 @@ async fn read_response_body(
 
 fn validate_response_headers(
     response: &hyper::Response<Incoming>,
+    content_type: &str,
     max_response_bytes: usize,
     control: &ExchangeControl,
 ) -> Result<usize, TransportError> {
     // Hyper owns HTTP syntax parsing and produces the framed Incoming body.
-    // KMIPKit owns the narrower response profile and the exact TTLV byte cap.
+    // KMIPKit owns the narrower response profile and the actual wire-byte cap.
     if response.status() != hyper::StatusCode::OK {
         return Err(http_response_error(
             control,
@@ -912,7 +928,7 @@ fn validate_response_headers(
         ));
     }
 
-    validate_response_content_type(response.headers(), control)?;
+    validate_response_content_type(response.headers(), content_type, control)?;
     let declared_length = parse_response_content_length(response.headers(), control)?;
 
     if response.headers().contains_key(TRANSFER_ENCODING) {
@@ -939,6 +955,7 @@ fn validate_response_headers(
 
 fn validate_response_content_type(
     headers: &hyper::http::HeaderMap,
+    expected_content_type: &str,
     control: &ExchangeControl,
 ) -> Result<(), TransportError> {
     let mut content_types = headers.get_all(CONTENT_TYPE).iter();
@@ -960,13 +977,29 @@ fn validate_response_content_type(
         .split(';')
         .next()
         .map(str::trim);
-    if !media_type.is_some_and(|value| value.eq_ignore_ascii_case("application/octet-stream")) {
+    let Some(media_type) = media_type else {
         return Err(http_response_error(
             control,
-            "HTTP response media type was not octet-stream",
+            "HTTP response media type was invalid",
+        ));
+    };
+    if media_type.eq_ignore_ascii_case(expected_content_type) {
+        return Ok(());
+    }
+    if ["application/octet-stream", "application/json", "text/xml"]
+        .iter()
+        .any(|supported| media_type.eq_ignore_ascii_case(supported))
+    {
+        return Err(safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::EncodingMismatch,
+            io::Error::other("HTTP response encoding did not match selected encoding"),
         ));
     }
-    Ok(())
+    Err(http_response_error(
+        control,
+        "HTTP response media type did not match selected encoding",
+    ))
 }
 
 fn parse_response_content_length(
@@ -1224,9 +1257,19 @@ impl Body for RequestBody {
     }
 }
 
+// OASIS KMIP Profiles v2.1 §§5.3.1–5.3.2; contextual body rule in ADR-0018.
+fn content_type_for_encoding(encoding: WireEncoding) -> &'static str {
+    match encoding {
+        WireEncoding::Ttlv => "application/octet-stream",
+        WireEncoding::Json => "application/json",
+        WireEncoding::Xml => "text/xml",
+    }
+}
+
 fn build_http_request(
     route: &HttpsRoute,
     request_owner: SecretBuffer,
+    content_type: &str,
 ) -> Result<Request<RequestBody>, hyper::http::Error> {
     let body = RequestBody::from_owner(request_owner);
     let body_length = body.length;
@@ -1234,7 +1277,7 @@ fn build_http_request(
         .method(Method::POST)
         .uri(&route.target)
         .header(HOST, &route.authority)
-        .header(CONTENT_TYPE, "application/octet-stream")
+        .header(CONTENT_TYPE, content_type)
         .header(CONTENT_LENGTH, body_length.to_string())
         .header(CACHE_CONTROL, "no-cache")
         .body(body)

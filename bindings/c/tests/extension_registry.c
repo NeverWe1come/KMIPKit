@@ -60,9 +60,6 @@ extern int32_t kmipkit_client_extension_registry_create_v1(
 extern int32_t kmipkit_client_configuration_create(
     struct kmipkit_client_extension_registry_t *registry,
     struct kmipkit_client_configuration_t **out_configuration);
-extern int32_t kmipkit_transport_config_create_v1(
-    const struct kmipkit_transport_config_v1_t *configuration,
-    struct kmipkit_transport_config_t **out_configuration);
 extern void kmipkit_transport_config_release(struct kmipkit_transport_config_t *handle);
 extern int32_t kmipkit_client_create(
     struct kmipkit_client_configuration_t *configuration,
@@ -123,17 +120,14 @@ extern int32_t kmipkit_client_batch_response_item_at(
     struct kmipkit_client_batch_response_t *response,
     uint64_t index,
     struct kmipkit_client_batch_item_response_t **out_item);
-extern int32_t kmipkit_client_batch_item_response_metadata_v1(
-    struct kmipkit_client_batch_item_response_t *item,
-    struct kmipkit_client_batch_item_metadata_v1_t *out_metadata);
 extern int32_t kmipkit_client_batch_item_response_unique_batch_item_id(
     struct kmipkit_client_batch_item_response_t *item,
     uint8_t *out_present,
-    struct kmipkit_byte_span_v1_t *out_value);
+    kmipkit_byte_span_v1_t *out_value);
 extern int32_t kmipkit_client_batch_item_response_pending_correlation_value(
     struct kmipkit_client_batch_item_response_t *item,
     uint8_t *out_present,
-    struct kmipkit_byte_span_v1_t *out_value);
+    kmipkit_byte_span_v1_t *out_value);
 extern void kmipkit_client_batch_item_response_release(
     struct kmipkit_client_batch_item_response_t *handle);
 
@@ -416,7 +410,7 @@ static bool test_t076_transport_config_null_input_contract(void)
 
 static bool test_t076_transport_config_rejects_unknown_abi_version(void)
 {
-    struct kmipkit_transport_config_v1_t input = {0};
+    kmipkit_transport_config_v1_t input = {0};
     struct kmipkit_transport_config_t *configuration = NULL;
     int32_t status = INT32_C(0);
     uint32_t category = UINT32_C(0);
@@ -441,9 +435,9 @@ static bool test_t076_validated_client_reports_delivery_state(
     int argc,
     char **argv)
 {
-    struct kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
-    struct kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
-    struct kmipkit_transport_config_v1_t transport_input = {0};
+    kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
+    kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
+    kmipkit_transport_config_v1_t transport_input = {0};
     kmipkit_extension_registry_limits_v1_t registry_limits = {0};
     struct kmipkit_extension_definition_t **definitions = NULL;
     struct kmipkit_client_extension_registry_t *registry = NULL;
@@ -822,7 +816,7 @@ static bool test_t076_validated_client_reports_delivery_state(
 
 static bool test_t076_transport_config_rejects_invalid_discriminators(void)
 {
-    struct kmipkit_transport_config_v1_t configuration = {0};
+    kmipkit_transport_config_v1_t configuration = {0};
     struct kmipkit_transport_config_t *out = NULL;
 
     configuration.struct_size = (uint32_t)sizeof(configuration);
@@ -845,7 +839,7 @@ static bool test_t076_transport_config_rejects_invalid_discriminators(void)
                    (int32_t)4);
     REQUIRE(out == NULL);
 
-    configuration.connect_timeout = (struct kmipkit_timeout_limit_v1_t){0};
+    configuration.connect_timeout = (kmipkit_timeout_limit_v1_t){0};
     configuration.reserved = UINT32_C(1);
     REQUIRE_STATUS(kmipkit_transport_config_create_v1(&configuration, &out),
                    (int32_t)4);

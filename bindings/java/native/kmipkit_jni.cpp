@@ -261,6 +261,8 @@ int32_t kmipkit_client_batch_item_response_set_attribute(
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_execute_with_options(kmipkit_client_t*, kmipkit_client_batch_t**,
+        kmipkit_codec_limits_t*, int32_t, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_profiles_and_context_and_options_v1(
         kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
@@ -5587,6 +5589,35 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigura
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithWireEncoding(
+        JNIEnv* env, jclass, jlong raw_configuration, jint encoding) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_configuration_t>(env, [&](auto output) {
+            return kmipkit_client_configuration_with_wire_encoding(
+                    from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
+                    static_cast<kmipkit_wire_encoding_t>(encoding), output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWireEncoding(
+        JNIEnv* env, jclass, jlong raw_configuration) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t encoding = 0;
+        const int32_t status = kmipkit_client_configuration_wire_encoding(
+                from_java_handle<kmipkit_client_configuration_t>(raw_configuration), &encoding);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jint>(0);
+        }
+        if (encoding > 2) {
+            throw_invalid_input(env);
+            return static_cast<jint>(0);
+        }
+        return static_cast<jint>(encoding);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationExtensionRegistry(
         JNIEnv* env, jclass, jlong raw_configuration) {
     return guarded<jlong>(env, 0, [&] {
@@ -6997,6 +7028,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteGu
     return guarded<jlong>(env, 0, [&] {
         return execute_guarded_protection_item(env, raw_client, raw_context, raw_item,
                 raw_cost, raw_asynchronous_indicator, true, raw_limits);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithEncoding(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_batch, jlongArray raw_limits,
+        jint encoding_override) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        auto* batch = from_java_handle<kmipkit_client_batch_t>(raw_batch);
+        if (client == nullptr || batch == nullptr
+                || encoding_override < -1 || encoding_override > 2) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_client_batch_response_t* response = nullptr;
+        const int32_t status = kmipkit_client_execute_with_options(
+                client, &batch, limits.get(), encoding_override, &response);
+        if (status != 0) throw_status(env, status);
+        if (batch != nullptr) kmipkit_client_batch_release(batch);
+        if (status != 0) return static_cast<jlong>(0);
+        if (response == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(response);
     });
 }
 

@@ -300,6 +300,11 @@
     "KMIPKIT-0044-FR-005",
     "KMIPKIT-0044-FR-006",
     "KMIPKIT-0044-FR-007",
+    "KMIPKIT-0057-FR-001",
+    "KMIPKIT-0057-FR-002",
+    "KMIPKIT-0057-FR-003",
+    "KMIPKIT-0057-FR-004",
+    "KMIPKIT-0057-FR-005",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -1399,7 +1404,8 @@
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client",
@@ -1429,7 +1435,8 @@
         "KMIPKIT-0006-FR-005",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client",
@@ -1460,7 +1467,8 @@
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client",
@@ -4550,6 +4558,100 @@
       "python": {
         "module": "kmipkit.client",
         "name": "ProfileValidationResult"
+      }
+    },
+    {
+      "id": "TimeoutLimitV1",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi",
+        "name": "kmipkit_timeout_limit_v1_t",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_timeout_limit_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "seconds",
+            "type": "uint64_t"
+          },
+          {
+            "name": "nanoseconds",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint32_t"
+          }
+        ],
+        "visibility": "public"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "TransportConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "TransportConfig"
+      }
+    },
+    {
+      "id": "WireEncoding",
+      "kind": "enum",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_transport",
+        "name": "WireEncoding",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_wire_encoding_t",
+        "kind": "enum",
+        "underlyingType": "uint32_t",
+        "unknownValuePolicy": "reject-unsupported"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "WireEncoding"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "WireEncoding"
+      },
+      "enumRepresentation": {
+        "shape": "closed-numeric",
+        "unknownValuePolicy": "reject-unsupported",
+        "values": [
+          {
+            "name": "Ttlv",
+            "value": 0
+          },
+          {
+            "name": "Json",
+            "value": 1
+          },
+          {
+            "name": "Xml",
+            "value": 2
+          }
+        ]
       }
     }
   ],
@@ -14522,7 +14624,9 @@
         "KMIPKIT-0006-FR-005",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatch",
@@ -14862,7 +14966,9 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
         "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatch",
@@ -15211,8 +15317,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatchResponse",
@@ -15275,8 +15383,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatchResponse",
@@ -15750,7 +15860,9 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
       ],
       "rust": {
         "module": "kmipkit_client::Client",
@@ -46316,6 +46428,486 @@
         ]
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_metadata_v1",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "client_batch_item_response_metadata_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_metadata",
+            "type": "*mut kmipkit_client_batch_item_metadata_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_metadata_v1",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_metadata",
+            "kind": "versioned-value-pointer",
+            "type": "kmipkit_client_batch_item_metadata_v1_t *",
+            "direction": "output",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "metadata",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseMetadata",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "long[]"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "BatchItemResult.metadata",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "BatchItemResult"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_response_metadata_v1",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "tuple"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_configuration_wire_encoding",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry::ClientConfiguration",
+        "name": "wire_encoding",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "&ClientConfiguration"
+          }
+        ],
+        "returnType": "WireEncoding"
+      },
+      "c": {
+        "symbol": "kmipkit_client_configuration_wire_encoding",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "handle",
+            "type": "kmipkit_client_configuration_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_encoding",
+            "kind": "output",
+            "type": "uint32_t *",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientConfiguration",
+        "method": "wireEncoding",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWireEncoding",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "WireEncoding"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "client_configuration_wire_encoding",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_configuration_wire_encoding",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "WireEncoding"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_configuration_with_wire_encoding",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry::ClientConfiguration",
+        "name": "with_wire_encoding",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "encoding",
+            "type": "WireEncoding"
+          }
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "c": {
+        "symbol": "kmipkit_client_configuration_with_wire_encoding",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "handle",
+            "type": "kmipkit_client_configuration_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "encoding",
+            "kind": "enum-value",
+            "type": "kmipkit_wire_encoding_t"
+          },
+          {
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_client_configuration_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientConfiguration",
+        "method": "withWireEncoding",
+        "parameters": [
+          {
+            "name": "encoding",
+            "type": "WireEncoding"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithWireEncoding",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "ClientConfiguration.with_wire_encoding",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "encoding",
+            "type": "WireEncoding"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_configuration_with_wire_encoding",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_with_wire_encoding",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "&Client"
+          },
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "&RequestOptions"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_with_options",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "batch",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_t **",
+            "ownership": "consumed",
+            "handleType": "kmipkit_client_batch_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "encoding_override",
+            "kind": "scalar",
+            "type": "int32_t"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "documentation": [
+          "Pass -1 to use the configured default; pass 0, 1, or 2 for TTLV, JSON, or XML."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeWithOptions",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "encodingOverride",
+            "type": "WireEncoding"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithEncoding",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "batch",
+            "type": "Batch"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "wire_encoding",
+            "type": "WireEncoding | None"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_with_options",
+        "errorCategories": [
+          "internal",
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "preserves-caller-batch-and-extension-order"
+    },
+    {
+      "id": "transport_config_create_v1",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "transport_config_create_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "*const kmipkit_transport_config_v1_t"
+          },
+          {
+            "name": "out_configuration",
+            "type": "*mut *mut kmipkit_transport_config_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_transport_config_create_v1",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_transport_config_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_transport_config_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "TransportConfiguration.Builder",
+        "method": "build",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_transportConfigCreate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "TransportConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "TransportConfig",
+        "parameters": [
+          {
+            "name": "endpoint",
+            "type": "Endpoint"
+          },
+          {
+            "name": "client_certificates",
+            "type": "tuple[TransportInput, ...]"
+          },
+          {
+            "name": "client_private_key",
+            "type": "TransportInput"
+          },
+          {
+            "name": "trust",
+            "type": "TrustSource"
+          },
+          {
+            "name": "revocation_lists",
+            "type": "tuple[TransportInput, ...]"
+          },
+          {
+            "name": "connect_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "write_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "read_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "total_timeout",
+            "type": "TimeoutLimit"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_transport_config_create_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "TransportConfig"
+      },
+      "ordering": "not-applicable"
     }
   ],
   "errorCategories": [
@@ -46782,45 +47374,6 @@
       }
     },
     {
-      "declarationId": "ClientBatchItem:c-release",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_client_batch_item_release",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchItem"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItem.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.ClientBatchItem.close"
-        }
-      },
-      "mappingSemantics": "native-handle-release"
-    },
-    {
       "declarationId": "ClientBatchItem:java",
       "packageId": "java-kmipkit",
       "kind": "type",
@@ -46945,45 +47498,6 @@
           "name": "kmipkit.extensions.ClientConfiguration"
         }
       }
-    },
-    {
-      "declarationId": "ClientConfiguration:c-release",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_client_configuration_release",
-      "capabilityId": "vendor_extension_registry",
-      "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/012-vendor-extension-registry/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::extension_registry::ClientConfiguration"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_configuration_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientConfiguration.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.ClientConfiguration.close"
-        }
-      },
-      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "ClientConfiguration:java",
@@ -47544,47 +48058,6 @@
           "name": "kmipkit.ttlv.CodecLimits"
         }
       }
-    },
-    {
-      "declarationId": "CodecLimits:c-release",
-      "packageId": "c-kmipkit",
-      "kind": "c-symbol",
-      "exportName": "kmipkit_codec_limits_release",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0005-FR-007",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-009",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-ttlv",
-          "name": "kmipkit_ttlv::codec::CodecLimits"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_codec_limits_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.CodecLimits"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.ttlv.CodecLimits.close"
-        }
-      },
-      "mappingSemantics": "native-handle-release-managed-java-value"
     },
     {
       "declarationId": "CodecLimits:java",
@@ -108356,6 +108829,7 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
@@ -108476,6 +108950,7 @@
       "requirementIds": [
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
         "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
@@ -108591,7 +109066,9 @@
         "KMIPKIT-0014-FR-007",
         "KMIPKIT-0014-FR-008",
         "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -108703,6 +109180,7 @@
         "KMIPKIT-0014-FR-013",
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -108815,6 +109293,7 @@
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0014-FR-015",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -120131,6 +120610,7 @@
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
         "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-010",
@@ -120251,6 +120731,7 @@
       "requirementIds": [
         "KMIPKIT-0021-FR-001",
         "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
         "KMIPKIT-0021-FR-007",
         "KMIPKIT-0021-FR-008",
         "KMIPKIT-0021-FR-009",
@@ -120366,7 +120847,9 @@
         "KMIPKIT-0014-FR-007",
         "KMIPKIT-0014-FR-008",
         "KMIPKIT-0014-FR-009",
+        "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -120478,6 +120961,7 @@
         "KMIPKIT-0014-FR-013",
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -120590,6 +121074,7 @@
         "KMIPKIT-0014-FR-014",
         "KMIPKIT-0014-FR-015",
         "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -132858,6 +133343,7 @@
         "KMIPKIT-0036-FR-005",
         "KMIPKIT-0036-FR-006",
         "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -133126,6 +133612,8 @@
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
         "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -133332,7 +133820,13 @@
         "KMIPKIT-0037-FR-005",
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
-        "KMIPKIT-0037-FR-008"
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-REQ-SPEC-7.18-004"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -134393,6 +134887,14 @@
       "exportName": "kmipkit::Client::register_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-007",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -134406,6 +134908,10 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -134930,6 +135436,13 @@
       "exportName": "kmipkit::Client::revoke_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-REVOKE",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -161069,6 +161582,7 @@
         "KMIPKIT-0036-FR-005",
         "KMIPKIT-0036-FR-006",
         "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
@@ -161337,6 +161851,8 @@
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
         "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -161543,7 +162059,13 @@
         "KMIPKIT-0037-FR-005",
         "KMIPKIT-0037-FR-006",
         "KMIPKIT-0037-FR-007",
-        "KMIPKIT-0037-FR-008"
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-REQ-SPEC-7.18-004"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -162601,6 +163123,14 @@
       "exportName": "kmipkit_client::Client::register_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-REGISTER",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-007",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -162614,6 +163144,10 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0044-FR-001",
+        "KMIPKIT-0044-FR-003",
+        "KMIPKIT-0044-FR-005",
+        "KMIPKIT-0044-FR-007",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -163138,6 +163672,13 @@
       "exportName": "kmipkit_client::Client::revoke_with_options",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-REVOKE",
       "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
@@ -233883,46 +234424,6 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchOutcome.PENDING"
-        }
-      }
-    },
-    {
-      "declarationId": "T076:transport:java-kmipkit:org.kmipkit.extensions.TransportConfiguration.Builder.build",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.build",
-      "capabilityId": "production_transport",
-      "requirementIds": [
-        "KMIPKIT-0013-FR-001",
-        "KMIPKIT-0013-FR-007",
-        "KMIPKIT-0043-FR-003",
-        "KMIPKIT-0043-FR-007",
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "declared",
-      "parityScope": "four-language",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/013-production-transport/spec.md",
-        "status": "Accepted",
-        "evidence": "**Status**: Accepted"
-      },
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-transport",
-          "name": "kmipkit_transport::TransportConfigBuilder::build"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_transport_config_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.client.TransportConfig"
         }
       }
     },
@@ -442887,35 +443388,1781 @@
           "name": "kmipkit.ttlv.ttlv_decode_with_limits"
         }
       }
-    }
-  ],
-  "approvedExclusions": [
+    },
     {
+      "declarationId": "WireEncoding.Json:c",
       "packageId": "c-kmipkit",
-      "exportName": "kmipkit_byte_span_v1_t",
-      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
+      "kind": "macro",
+      "exportName": "KMIPKIT_WIRE_ENCODING_JSON",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_JSON"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.JSON"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.JSON"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Json:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.WireEncoding.JSON",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_JSON"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.JSON"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.JSON"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Json:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.WireEncoding.JSON",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_JSON"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.JSON"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.JSON"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Json:rust",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "variant",
+      "exportName": "kmipkit_transport::WireEncoding::Json",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_JSON"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.JSON"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.JSON"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Ttlv:c",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_WIRE_ENCODING_TTLV",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_TTLV"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.TTLV"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.TTLV"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Ttlv:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.WireEncoding.TTLV",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_TTLV"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.TTLV"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.TTLV"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Ttlv:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.WireEncoding.TTLV",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_TTLV"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.TTLV"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.TTLV"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Ttlv:rust",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "variant",
+      "exportName": "kmipkit_transport::WireEncoding::Ttlv",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_TTLV"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.TTLV"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.TTLV"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Xml:c",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_WIRE_ENCODING_XML",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_XML"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.XML"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.XML"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Xml:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.WireEncoding.XML",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_XML"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.XML"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.XML"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Xml:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.WireEncoding.XML",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_XML"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.XML"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.XML"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.Xml:rust",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "variant",
+      "exportName": "kmipkit_transport::WireEncoding::Xml",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding::Xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_XML"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.XML"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.XML"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_wire_encoding_t",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_wire_encoding_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.WireEncoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_wire_encoding_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.extensions.WireEncoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_wire_encoding_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding:rust",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "type",
+      "exportName": "kmipkit_transport::WireEncoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::WireEncoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_wire_encoding_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_wire_encoding:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_configuration_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_configuration_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_wire_encoding:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientConfiguration.wireEncoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_configuration_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_wire_encoding:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_configuration_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_configuration_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_wire_encoding:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_configuration_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_wire_encoding:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_configuration_with_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_wire_encoding:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_wire_encoding:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.ClientConfiguration.with_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_wire_encoding:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_execute_with_options:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_options",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "request_options_with_wire_encoding:rust",
+      "kind": "associated-item",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::RequestOptions::with_wire_encoding"
+    },
+    {
+      "declarationId": "request_options_wire_encoding:rust",
+      "kind": "associated-item",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::RequestOptions::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::RequestOptions::wire_encoding"
+    },
+    {
+      "declarationId": "client_batch_response_item_count:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchResult.item_count",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchResponse::len"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_response_item_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchResponse.itemCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchResult.item_count"
+        }
+      }
+    },
+    {
+      "declarationId": "client_batch_response_item_at:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchResult.item_at",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchResponse::get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_response_item_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchResponse.itemAt"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchResult.item_at"
+        }
+      }
+    },
+    {
+      "declarationId": "client_batch_item_response_metadata_v1:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.metadata",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::outcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_metadata_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.metadata"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.metadata"
+        }
+      }
+    },
+    {
+      "declarationId": "client_batch_item_response_metadata_v1:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.metadata",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::outcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_metadata_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.metadata"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.metadata"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding:client",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::WireEncoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::WireEncoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_wire_encoding_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.TTLV:client",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::WireEncoding::Ttlv",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::WireEncoding::Ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_TTLV"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.TTLV"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.TTLV"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.JSON:client",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::WireEncoding::Json",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::WireEncoding::Json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_JSON"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.JSON"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.JSON"
+        }
+      }
+    },
+    {
+      "declarationId": "WireEncoding.XML:client",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::WireEncoding::Xml",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::WireEncoding::Xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_WIRE_ENCODING_XML"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.WireEncoding.XML"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.WireEncoding.XML"
+        }
+      }
+    },
+    {
+      "declarationId": "request_options_with_wire_encoding:transport",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "associated-item",
+      "exportName": "kmipkit_transport::RequestOptions::with_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "request_options_wire_encoding:transport",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "associated-item",
+      "exportName": "kmipkit_transport::RequestOptions::wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestOptions::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "request_options_with_wire_encoding:facade",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::RequestOptions::with_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "request_options_wire_encoding:facade",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::RequestOptions::wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::RequestOptions::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "rust-observed-0907d43372b60c9a1772",
+      "packageId": "rust-kmipkit-transport",
+      "kind": "variant",
+      "exportName": "kmipkit_transport::TransportCauseCategory::EncodingMismatch",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0057",
+      "blockedReason": "EncodingMismatch is a transport diagnostic detail normalized by the client into the established redacted protocol encoding error; the category has no standalone C, Java, or Python facade mapping."
+    },
+    {
+      "declarationId": "rust-observed-84d149509177de060704",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::TransportCauseCategory::EncodingMismatch",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0057",
+      "blockedReason": "EncodingMismatch is a transport diagnostic detail normalized by the client into the established redacted protocol encoding error; the category has no standalone C, Java, or Python facade mapping."
+    },
+    {
+      "declarationId": "transport_config_create_v1:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.TransportConfiguration.Builder.build",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0013-FR-001",
+        "KMIPKIT-0013-FR-007",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/013-production-transport/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportConfig::builder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportConfig"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_wire_encoding:rust-facade",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::client_config::ClientConfiguration::wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::client_config::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_configuration_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_wire_encoding:rust-facade",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::client_config::ClientConfiguration::with_wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::client_config::ClientConfiguration::with_wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withWireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_wire_encoding"
+        }
+      }
+    },
+    {
+      "declarationId": "ClientBatchItem:c-release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_release",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientBatchItem.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "ClientConfiguration:c-release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_configuration_release",
+      "capabilityId": "vendor_extension_registry",
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/012-vendor-extension-registry/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "CodecLimits:c-release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_codec_limits_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
-      "cType": {
-        "name": "kmipkit_byte_span_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "data",
-            "type": "const uint8_t *"
-          },
-          {
-            "name": "length",
-            "type": "uint64_t"
-          }
-        ]
-      }
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::codec::CodecLimits"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_codec_limits_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.CodecLimits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.CodecLimits.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value"
     },
+    {
+      "declarationId": "client_configuration_wire_encoding:python-property",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.extensions.ClientConfiguration.wire_encoding",
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_wire_encoding"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.wireEncoding"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.wire_encoding"
+        }
+      }
+    }
+  ],
+  "approvedExclusions": [
     {
       "packageId": "c-kmipkit",
       "exportName": "kmipkit_byte_span_v1_t.data",
@@ -443002,48 +445249,6 @@
     },
     {
       "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
-      "reason": "This exact versioned struct is a C ABI value carrier for common batch-result metadata. Rust returns its typed outcome/result values, while Java and Python expose copied scalar fields through `ClientBatchItemResult` and `BatchItemResult`; their adapters translate this record at the native boundary.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Exact field order and widths match `kmipkit_client_batch_item_metadata_v1_t` in `crates/kmipkit-ffi/src/lib.rs`; this C layout is retained for callers of the versioned metadata function.",
-      "cType": {
-        "name": "kmipkit_client_batch_item_metadata_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "struct_size",
-            "type": "uint32_t"
-          },
-          {
-            "name": "abi_version",
-            "type": "uint32_t"
-          },
-          {
-            "name": "outcome_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "result_status",
-            "type": "uint32_t"
-          },
-          {
-            "name": "has_result_reason",
-            "type": "uint32_t"
-          },
-          {
-            "name": "result_reason",
-            "type": "uint32_t"
-          }
-        ]
-      }
-    },
-    {
-      "packageId": "c-kmipkit",
       "exportName": "kmipkit_client_batch_item_metadata_v1_t.abi_version",
       "reason": "This exact member is ABI size, version, or reserved layout metadata rather than a cross-language product value; only this named C ABI field is excluded.",
       "approvalSource": {
@@ -443101,41 +445306,6 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires versioned structures and stable C ABI layout."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
-      "reason": "C returns common response metadata in its versioned fixed-width ABI carrier. Rust exposes the typed `ClientBatchItemResponse::outcome()` and `ClientBatchOutcome::result()` values; Java exposes `outcomeKind()`, `resultStatus()`, and `resultReason()`; Python exposes `outcome`, `result_status`, and `result_reason` on the copied `BatchItemResult`. The C aggregate and its version prefix are representation-specific; its exact function and layout remain available to C callers without inventing a shared aggregate type.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0007-FR-001/-006/-008 and KMIPKIT-0043-FR-005/-007/-012/-013/-021. Java and Python wrappers call this exact C function to populate the returned value fields.",
-      "cFunction": {
-        "symbol": "kmipkit_client_batch_item_response_metadata_v1",
-        "parameters": [
-          {
-            "name": "item",
-            "kind": "handle",
-            "type": "kmipkit_client_batch_item_response_t *",
-            "ownership": "borrowed"
-          },
-          {
-            "name": "out_metadata",
-            "kind": "output-value-pointer",
-            "type": "kmipkit_client_batch_item_metadata_v1_t *",
-            "valueType": "kmipkit_client_batch_item_metadata_v1_t",
-            "ownership": "none"
-          }
-        ],
-        "returnType": "int32_t",
-        "errorCategories": [
-          "invalid_input",
-          "internal"
-        ]
-      }
     },
     {
       "packageId": "c-kmipkit",
@@ -443306,42 +445476,6 @@
     },
     {
       "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_create_v1",
-      "reason": "This C ABI adapter converts the versioned fixed-width transport record into the opaque handle consumed by `kmipkit_client_create`. Java exposes `TransportConfiguration.Builder.build()` and Python passes an immutable `TransportConfig` value to `Client.create()`, where adapters perform this representation conversion internally. The helper remains available to C callers but is not a separate cross-language capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0013-FR-001 and KMIPKIT-0043-FR-003/-007/-021; the exact input layout is `kmipkit_transport_config_v1_t` and the output is the public opaque transport handle.",
-      "cFunction": {
-        "symbol": "kmipkit_transport_config_create_v1",
-        "parameters": [
-          {
-            "name": "configuration",
-            "kind": "versioned-value-pointer",
-            "type": "const kmipkit_transport_config_v1_t *",
-            "direction": "input",
-            "ownership": "borrowed"
-          },
-          {
-            "name": "out_configuration",
-            "kind": "output",
-            "type": "kmipkit_transport_config_t **",
-            "ownership": "library-owned",
-            "nullable": false
-          }
-        ],
-        "returnType": "int32_t",
-        "errorCategories": [
-          "invalid_input",
-          "resource_limit"
-        ]
-      }
-    },
-    {
-      "packageId": "c-kmipkit",
       "exportName": "kmipkit_transport_config_release",
       "reason": "This C ABI release function frees an opaque native handle. Rust releases the owned value through ordinary drop, while Java and Python expose deterministic `close()` methods on their owned wrappers. The C helper is the required caller-owned lifecycle counterpart and does not add a separate four-language capability.",
       "approvalSource": {
@@ -443351,116 +445485,6 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-007 and FR-021; the exact public C release prototype is generated from the associated opaque type record."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_config_v1_t",
-      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
-      "cType": {
-        "name": "kmipkit_transport_config_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "struct_size",
-            "type": "uint32_t"
-          },
-          {
-            "name": "abi_version",
-            "type": "uint32_t"
-          },
-          {
-            "name": "endpoint_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "trust_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "flags",
-            "type": "uint32_t"
-          },
-          {
-            "name": "reserved",
-            "type": "uint32_t"
-          },
-          {
-            "name": "endpoint",
-            "type": "kmipkit_byte_span_v1_t"
-          },
-          {
-            "name": "endpoint_port",
-            "type": "uint16_t"
-          },
-          {
-            "name": "reserved2",
-            "type": "uint16_t"
-          },
-          {
-            "name": "client_certificates",
-            "type": "const kmipkit_transport_input_v1_t *"
-          },
-          {
-            "name": "client_certificate_count",
-            "type": "uint64_t"
-          },
-          {
-            "name": "client_private_key",
-            "type": "kmipkit_transport_input_v1_t"
-          },
-          {
-            "name": "trust_certificates",
-            "type": "const kmipkit_transport_input_v1_t *"
-          },
-          {
-            "name": "trust_certificate_count",
-            "type": "uint64_t"
-          },
-          {
-            "name": "revocation_lists",
-            "type": "const kmipkit_transport_input_v1_t *"
-          },
-          {
-            "name": "revocation_list_count",
-            "type": "uint64_t"
-          },
-          {
-            "name": "tls_server_name",
-            "type": "kmipkit_byte_span_v1_t"
-          },
-          {
-            "name": "target_uri",
-            "type": "kmipkit_byte_span_v1_t"
-          },
-          {
-            "name": "connect_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "write_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "read_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "total_timeout",
-            "type": "kmipkit_timeout_limit_v1_t"
-          },
-          {
-            "name": "max_request_bytes",
-            "type": "uint64_t"
-          }
-        ]
-      }
     },
     {
       "packageId": "c-kmipkit",
@@ -443557,36 +445581,6 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0043-FR-007 defines the fixed-width C ABI layout. KMIPKIT-0013-FR-004 defines caller-selected certificate/key input values; KMIPKIT-0013-FR-003 defines caller-selected trust roots and in-memory CRLs. The count is only the ABI slice length."
-    },
-    {
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_transport_input_v1_t",
-      "reason": "This exact C record is a fixed-width ABI carrier. Rust exposes the validated configuration or outcome through idiomatic types; Java and Python expose typed configuration records and copied byte values rather than this C layout.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Exact ordered fields match the `#[repr(C)]` declaration in `crates/kmipkit-ffi/src/lib.rs`; the type remains generated for C consumers without advertising a same-shaped facade type.",
-      "cType": {
-        "name": "kmipkit_transport_input_v1_t",
-        "kind": "fixed-width-value",
-        "fields": [
-          {
-            "name": "source_kind",
-            "type": "uint32_t"
-          },
-          {
-            "name": "encoding",
-            "type": "uint32_t"
-          },
-          {
-            "name": "data",
-            "type": "kmipkit_byte_span_v1_t"
-          }
-        ]
-      }
     },
     {
       "packageId": "c-kmipkit",
@@ -457856,6 +459850,162 @@
         "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
       },
       "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_config_v1_t.endpoint_kind as raw TLS endpoint; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_ENDPOINT_HTTPS",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_config_v1_t.endpoint_kind as HTTPS endpoint; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_TRUST_PLATFORM",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_config_v1_t.trust_kind as platform trust roots; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_config_v1_t.trust_kind as explicit CA certificate list; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_SOURCE_MEMORY",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_input_v1_t.source_kind as in-memory input bytes; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_SOURCE_FILE",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_input_v1_t.source_kind as filesystem path input; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_ENCODING_PEM",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_input_v1_t.encoding as PEM material; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_ENCODING_DER",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_input_v1_t.encoding as DER material; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 0 for kmipkit_timeout_limit_v1_t.kind as inherit the configured timeout; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_timeout_limit_v1_t.kind as apply a finite timeout; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_timeout_limit_v1_t.kind as disable this timeout; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 1 for kmipkit_transport_config_v1_t.flags as bit set when tls_server_name is present; the constant is excluded from cross-language enum parity."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI",
+      "reason": "This constant names a numeric discriminator or flag accepted by a versioned C transport input record. It is C ABI input metadata rather than a four-language KMIP operation or public enum; Java, Python, and Rust use typed transport configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0057-FR-005 requires a usable public C client construction path. The generated header documents value 2 for kmipkit_transport_config_v1_t.flags as bit set when target_uri is present; the constant is excluded from cross-language enum parity."
     },
     {
       "packageId": "rust-kmipkit-protocol",
@@ -622720,6 +624870,772 @@
         "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "evidence": "The helper is explicitly documented for language bindings and used as internal adapter plumbing. The four-language owned value constructors and lifecycle APIs represent the product capability. Exact KMIPKIT-0046 facade alias observed by the Rust export audit: kmipkit::ttlv::try_clone_value."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::convert::TryInto<U>>::Error",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::convert::TryInto<U>>::try_into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as alloc::borrow::ToOwned>::clone_into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::convert::From<kmipkit_transport::config::WireEncoding>>::from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::convert::Into<U>>::into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::clone::Clone>::clone_from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::any::Any>::type_id",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::convert::Into<U>>::into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::borrow::Borrow<kmipkit_transport::config::WireEncoding>>::borrow",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::clone::Clone>::clone_from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::convert::TryFrom<U>>::Error",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::convert::TryInto<U>>::Error",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::default::Default>::default",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as alloc::borrow::ToOwned>::to_owned",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::borrow::BorrowMut<kmipkit_transport::config::WireEncoding>>::borrow_mut",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::fmt::Debug>::fmt",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::convert::TryInto<U>>::try_into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::convert::TryFrom<U>>::try_from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::fmt::Debug>::fmt",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::clone::Clone>::clone",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::cmp::PartialEq>::ne",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::cmp::PartialEq>::ne",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::borrow::Borrow<kmipkit_transport::config::WireEncoding>>::borrow",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::borrow::BorrowMut<kmipkit_transport::config::WireEncoding>>::borrow_mut",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::any::Any>::type_id",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::convert::TryFrom<U>>::try_from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::convert::TryFrom<U>>::Error",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as alloc::borrow::ToOwned>::Owned",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::cmp::PartialEq>::eq",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as core::cmp::PartialEq>::eq",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as alloc::borrow::ToOwned>::to_owned",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::WireEncoding as alloc::borrow::ToOwned>::clone_into",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::default::Default>::default",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as alloc::borrow::ToOwned>::Owned",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::clone::Clone>::clone",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::WireEncoding as core::convert::From<kmipkit_transport::config::WireEncoding>>::from",
+      "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The public WireEncoding type and its three values carry the four-language encoding selection capability; these derived Clone, Copy, Eq, Debug, Borrow, ToOwned, conversion, and related trait paths are not independent C, Java, or Python API operations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "The pinned Rust 1.94.0 rustdoc audit enumerates these exact public paths. KMIPKIT-0057-FR-001 and FR-005 map WireEncoding and its values across Rust, C, Java, and Python; no requirement exposes Rust standard or blanket trait implementation methods as separate facade operations."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_byte_span_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_byte_span_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "length",
+            "type": "uint64_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_metadata_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_client_batch_item_metadata_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "outcome_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_reason",
+            "type": "uint32_t"
+          }
+        ],
+        "versioned": true
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_transport_config_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "trust_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "flags",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "endpoint_port",
+            "type": "uint16_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint16_t"
+          },
+          {
+            "name": "client_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "client_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "client_private_key",
+            "type": "kmipkit_transport_input_v1_t"
+          },
+          {
+            "name": "trust_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "trust_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "revocation_lists",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "revocation_list_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "tls_server_name",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "target_uri",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "connect_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "write_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "read_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "total_timeout",
+            "type": "kmipkit_timeout_limit_v1_t"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "uint64_t"
+          }
+        ],
+        "versioned": true
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_input_v1_t",
+      "reason": "This exact fixed-width C record is an ABI carrier for the corresponding four-language transport or batch-result value. Its semantic members are mapped individually where they represent public behavior; framing, discriminants, and ABI version fields remain C implementation details.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory this ABI carrier. KMIPKIT-0057-FR-005 retains the existing C construction representation while the Rust, Java, and Python facades expose equivalent transport and batch-result values.",
+      "cType": {
+        "name": "kmipkit_transport_input_v1_t",
+        "kind": "fixed-width-value",
+        "fields": [
+          {
+            "name": "source_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "encoding",
+            "type": "uint32_t"
+          },
+          {
+            "name": "data",
+            "type": "kmipkit_byte_span_v1_t"
+          }
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
+      "reason": "This C-only metadata accessor fills the exact versioned batch-result carrier; the equivalent outcome, status, and reason values are exposed through the four-language batch result facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory the exact C ABI. KMIPKIT-0057-FR-005 confirms the corresponding client and transport capabilities are represented by equivalent four-language facade values.",
+      "cFunction": {
+        "symbol": "kmipkit_client_batch_item_response_metadata_v1",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_metadata",
+            "kind": "versioned-value-pointer",
+            "type": "kmipkit_client_batch_item_metadata_v1_t *",
+            "direction": "output",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "documentation": [
+          "This C-only metadata accessor fills the exact versioned batch-result carrier; the equivalent outcome, status, and reason values are exposed through the four-language batch result facade."
+        ]
+      }
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_create_v1",
+      "reason": "This C-only constructor adapts the versioned transport ABI carrier into the transport configuration handle; the four-language facade exposes the equivalent builder and configuration values.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "evidence": "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory the exact C ABI. KMIPKIT-0057-FR-005 confirms the corresponding client and transport capabilities are represented by equivalent four-language facade values.",
+      "cFunction": {
+        "symbol": "kmipkit_transport_config_create_v1",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_transport_config_v1_t *",
+            "direction": "input",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_transport_config_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "documentation": [
+          "This C-only constructor adapts the versioned transport ABI carrier into the transport configuration handle; the four-language facade exposes the equivalent builder and configuration values."
+        ]
+      }
     }
   ],
   "apiLevels": [
@@ -628538,6 +631454,7 @@
           "kmipkit_client_batch_item_response_discover_versions_supported_versions",
           "kmipkit_client_batch_item_response_extension_count",
           "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "kmipkit_client_batch_item_response_metadata_v1",
           "kmipkit_client_batch_item_response_pending_correlation_value",
           "kmipkit_client_batch_item_response_t",
           "kmipkit_client_batch_item_response_unique_batch_item_id",
@@ -628580,6 +631497,7 @@
           "org.kmipkit.extensions.ClientBatchItemResult",
           "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
           "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "org.kmipkit.extensions.ClientBatchItemResult.metadata",
           "org.kmipkit.extensions.ClientBatchItemResult.outcomeKind",
           "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
           "org.kmipkit.extensions.ClientBatchItemResult.resultReason",
@@ -628606,6 +631524,7 @@
           "kmipkit.client.BatchItemResult",
           "kmipkit.client.BatchItemResult.extension_count",
           "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "kmipkit.client.BatchItemResult.metadata",
           "kmipkit.client.BatchItemResult.outcome",
           "kmipkit.client.BatchItemResult.pending_correlation_value",
           "kmipkit.client.BatchItemResult.result_reason",
@@ -628617,6 +631536,8 @@
           "kmipkit.client.BatchOutcome.PENDING",
           "kmipkit.client.BatchResult",
           "kmipkit.client.BatchResult.close",
+          "kmipkit.client.BatchResult.item_at",
+          "kmipkit.client.BatchResult.item_count",
           "kmipkit.client.BatchResult.items",
           "kmipkit.client.Client",
           "kmipkit.client.Client.close",
@@ -632665,6 +635586,194 @@
           "kmipkit.profile_readiness.ProfileReadinessBlocker.test_id"
         ]
       }
+    },
+    {
+      "capabilityId": "wire_encoding_selection",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-001",
+        "KMIPKIT-0057-FR-002",
+        "KMIPKIT-0057-FR-004",
+        "KMIPKIT-0057-FR-005"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0057",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/057-multi-encoding-client-integration/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit::RequestOptions::wire_encoding",
+          "kmipkit::RequestOptions::with_wire_encoding",
+          "kmipkit::client_config::ClientConfiguration::wire_encoding",
+          "kmipkit::client_config::ClientConfiguration::with_wire_encoding",
+          "kmipkit_client::Client::execute_with_options",
+          "kmipkit_client::RequestOptions::wire_encoding",
+          "kmipkit_client::RequestOptions::with_wire_encoding",
+          "kmipkit_client::WireEncoding",
+          "kmipkit_client::WireEncoding::Json",
+          "kmipkit_client::WireEncoding::Ttlv",
+          "kmipkit_client::WireEncoding::Xml",
+          "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+          "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
+          "kmipkit_transport::RequestOptions::wire_encoding",
+          "kmipkit_transport::RequestOptions::with_wire_encoding",
+          "kmipkit_transport::WireEncoding",
+          "kmipkit_transport::WireEncoding::Json",
+          "kmipkit_transport::WireEncoding::Ttlv",
+          "kmipkit_transport::WireEncoding::Xml"
+        ],
+        "c": [
+          "KMIPKIT_WIRE_ENCODING_JSON",
+          "KMIPKIT_WIRE_ENCODING_TTLV",
+          "KMIPKIT_WIRE_ENCODING_XML",
+          "kmipkit_client_configuration_wire_encoding",
+          "kmipkit_client_configuration_with_wire_encoding",
+          "kmipkit_client_execute_with_options",
+          "kmipkit_wire_encoding_t"
+        ],
+        "java": [
+          "org.kmipkit.extensions.Client.executeWithOptions",
+          "org.kmipkit.extensions.ClientConfiguration.wireEncoding",
+          "org.kmipkit.extensions.ClientConfiguration.withWireEncoding",
+          "org.kmipkit.extensions.WireEncoding",
+          "org.kmipkit.extensions.WireEncoding.JSON",
+          "org.kmipkit.extensions.WireEncoding.TTLV",
+          "org.kmipkit.extensions.WireEncoding.XML"
+        ],
+        "python": [
+          "kmipkit.client.Client.execute",
+          "kmipkit.extensions.ClientConfiguration.wire_encoding",
+          "kmipkit.extensions.ClientConfiguration.with_wire_encoding",
+          "kmipkit.extensions.WireEncoding",
+          "kmipkit.extensions.WireEncoding.JSON",
+          "kmipkit.extensions.WireEncoding.TTLV",
+          "kmipkit.extensions.WireEncoding.XML",
+          "kmipkit.extensions.client_configuration_wire_encoding"
+        ]
+      }
+    }
+  ],
+  "cAbiRecordConstants": [
+    {
+      "name": "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS",
+      "field": "kmipkit_transport_config_v1_t.endpoint_kind",
+      "value": 1,
+      "meaning": "raw TLS endpoint",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_ENDPOINT_HTTPS",
+      "field": "kmipkit_transport_config_v1_t.endpoint_kind",
+      "value": 2,
+      "meaning": "HTTPS endpoint",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_TRUST_PLATFORM",
+      "field": "kmipkit_transport_config_v1_t.trust_kind",
+      "value": 1,
+      "meaning": "platform trust roots",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES",
+      "field": "kmipkit_transport_config_v1_t.trust_kind",
+      "value": 2,
+      "meaning": "explicit CA certificate list",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_SOURCE_MEMORY",
+      "field": "kmipkit_transport_input_v1_t.source_kind",
+      "value": 1,
+      "meaning": "in-memory input bytes",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_SOURCE_FILE",
+      "field": "kmipkit_transport_input_v1_t.source_kind",
+      "value": 2,
+      "meaning": "filesystem path input",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_ENCODING_PEM",
+      "field": "kmipkit_transport_input_v1_t.encoding",
+      "value": 1,
+      "meaning": "PEM material",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_ENCODING_DER",
+      "field": "kmipkit_transport_input_v1_t.encoding",
+      "value": 2,
+      "meaning": "DER material",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT",
+      "field": "kmipkit_timeout_limit_v1_t.kind",
+      "value": 0,
+      "meaning": "inherit the configured timeout",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED",
+      "field": "kmipkit_timeout_limit_v1_t.kind",
+      "value": 1,
+      "meaning": "apply a finite timeout",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED",
+      "field": "kmipkit_timeout_limit_v1_t.kind",
+      "value": 2,
+      "meaning": "disable this timeout",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME",
+      "field": "kmipkit_transport_config_v1_t.flags",
+      "value": 1,
+      "meaning": "bit set when tls_server_name is present",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
+    },
+    {
+      "name": "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI",
+      "field": "kmipkit_transport_config_v1_t.flags",
+      "value": 2,
+      "meaning": "bit set when target_uri is present",
+      "requirementIds": [
+        "KMIPKIT-0057-FR-005"
+      ]
     }
   ]
 }

@@ -68,7 +68,7 @@ use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
-    ClientErrorCategory, ClientRequest,
+    ClientErrorCategory, ClientRequest, WireEncoding,
 };
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
@@ -3953,6 +3953,56 @@ pub extern "C" fn kmipkit_client_configuration_create(
         ));
         SUCCESS
     })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
+    configuration: *mut kmipkit_client_configuration_t,
+    encoding: u32,
+    out_configuration: *mut *mut kmipkit_client_configuration_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_configuration);
+        let encoding = try_ffi!(wire_encoding_from_abi(encoding));
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let configured = client_extension::ClientConfiguration::from_shared_registry(
+            configuration.shared_extension_registry(),
+        )
+        .with_wire_encoding(encoding);
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_wire_encoding(
+    configuration: *mut kmipkit_client_configuration_t,
+    out_encoding: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_encoding);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = configuration.wire_encoding() as u32;
+        SUCCESS
+    })
+}
+
+fn wire_encoding_from_abi(value: u32) -> Result<WireEncoding, i32> {
+    match value {
+        0 => Ok(WireEncoding::Ttlv),
+        1 => Ok(WireEncoding::Json),
+        2 => Ok(WireEncoding::Xml),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
 }
 
 #[unsafe(no_mangle)]

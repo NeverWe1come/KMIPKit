@@ -1,18 +1,37 @@
 # Production TLS and HTTPS transports
 
-The current synchronous Rust client supports TTLV over raw TLS or
-HTTPS/HTTP 1.1. The approved 1.0 scope adds KMIP 2.1 JSON and XML over both
-transports, with TTLV as the default; those encodings will be documented here
-after client integration. The client sends only an operation the application
-requested; construction does not resolve the endpoint, connect, or issue a
-hidden Discover Versions request.
+The synchronous typed client supports KMIP 2.1 TTLV, JSON, and XML over raw
+TLS or HTTPS/HTTP 1.1. TTLV is the default. The client sends only the operation
+the application requested; construction does not resolve the endpoint,
+connect, or issue a hidden Discover Versions request.
+
+## Select a wire encoding
+
+All three formats use the same typed request, validation, correlation, and
+response path. `ClientConfiguration::with_wire_encoding` sets the immutable
+client default. `RequestOptions::with_wire_encoding` can override that choice
+for one exchange. Selection precedence is exchange override, configured
+default, then TTLV. The selected format applies to both the request and its
+response; a response in another format is an error and is never retried or
+decoded using a fallback codec.
+
+On HTTPS, `KMIPKit` sends the matching body and `Content-Type`. On raw TLS,
+TTLV keeps its existing frame; JSON and XML are read incrementally as one
+complete document per connection, without a `KMIPKit`-specific length prefix.
+The connection closes after the response document. Local byte caps apply to
+the actual received wire bytes and are distinct from KMIP `Maximum Response
+Size`. Set a JSON client default with
+`ClientConfiguration::with_wire_encoding(WireEncoding::Json)` and override one
+exchange with `RequestOptions::with_wire_encoding(WireEncoding::Xml)`. The same
+selected format is used to decode each response.
 
 ## Choose an endpoint
 
-Use `Endpoint::raw_tls(host, port)` when the KMIP server accepts a raw TTLV
-frame over TLS. A raw TLS connection carries one request and response and then
-closes. Use `Endpoint::https("https://host:port")` when the server exposes the
-KMIP HTTPS binding. HTTPS uses HTTP/1.1, defaults to the `/kmip` request target,
+Use `Endpoint::raw_tls(host, port)` when the KMIP server accepts a KMIP
+message directly over TLS. TTLV uses its standard frame; JSON and XML use one
+complete document per connection. A raw TLS connection carries one request and
+response and then closes. Use `Endpoint::https("https://host:port")` when the
+server exposes the KMIP HTTPS binding. HTTPS uses HTTP/1.1, defaults to the `/kmip` request target,
 and can reuse a healthy connection for later exchanges by the same client.
 `target_uri` can select another origin-form path and query. Redirects are not
 followed.

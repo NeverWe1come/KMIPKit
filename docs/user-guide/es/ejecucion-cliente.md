@@ -132,8 +132,8 @@ fn main() {
 Create Split Key puede devolver varios Unique Identifier. Su petición anuncia
 `Maximum Response Size` como el menor valor entre el límite local de bytes de
 respuesta y el mayor KMIP Integer con signo. El cliente también impone el
-límite local antes de entrar en el decoder TTLV, aunque el servidor ignore el
-tamaño anunciado.
+límite local antes de entrar en el decodificador del formato seleccionado,
+aunque el servidor ignore el tamaño anunciado.
 
 Las APIs de lote de C, Java y Python exponen las mismas tres formas de
 petición: C usa `kmipkit_client_batch_item_create`,
@@ -177,10 +177,13 @@ omiten y `creation.result-message-on-failure.v1` comprueba el texto y UTF-8
 exactos en una respuesta Operation Failed.
 
 `Client::new` construye un cliente de producción a partir de una configuración
-inmutable del cliente y un `TransportConfig` validado. Acepta TTLV sobre TLS
-directo o TTLV sobre HTTPS/HTTP 1.1; no acepta transportes implementados por el
-llamador ni bytes de petición sin procesar. Consulta la [guía de transporte](transportes-produccion.md)
-para configurar la confianza, los plazos y el comportamiento de las conexiones.
+inmutable del cliente y un `TransportConfig` validado. Acepta TTLV, JSON o
+XML sobre TLS directo y HTTPS/HTTP 1.1; no acepta transportes implementados por
+el llamador ni bytes de petición sin procesar. La configuración inmutable usa
+TTLV de forma predeterminada y `RequestOptions` puede reemplazar la codificación
+en un intercambio. La petición y la respuesta usan el formato seleccionado.
+Consulta la [guía de transporte](transportes-produccion.md) para elegir el
+formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 
 ## Credenciales y capacidad de atestación
 
