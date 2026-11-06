@@ -76,6 +76,18 @@ JAVA_BRIDGE_APPROVAL = {
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation",
 }
+CFFI_BRIDGE_EXCLUSION = (
+    "kmipkit_ttlv_value_view_copy_bytes",
+    "This exact exported C symbol is an internal block-copy bridge used by the Java JNI and Python CFFI adapters; "
+    "it is intentionally absent from the supported C header and adds no independent C product capability.",
+    {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+    },
+    "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+)
 
 
 class ReconciliationError(ValueError):
@@ -1251,7 +1263,7 @@ def add_public_declarations(
 def add_approved_exclusions(
     manifest: dict[str, Any], exclusions: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    """Add only the two exact KMIPKIT-0043 JNI bridge exclusions discovered by 0053."""
+    """Add only the exact JNI and CFFI bridge exclusions reviewed for 0053."""
     if not isinstance(exclusions, list):
         raise ReconciliationError("approved exclusions must be a list")
     result = copy.deepcopy(manifest)
@@ -1277,17 +1289,29 @@ def add_approved_exclusions(
         package_id = exclusion.get("packageId")
         export_name = exclusion.get("exportName")
         key = (package_id, export_name)
-        if (
-            package_id != "java-kmipkit"
-            or export_name not in JAVA_BRIDGE_EXCLUSION_METHODS
-            or exclusion.get("reason") != JAVA_BRIDGE_EXCLUSION_REASON
-            or exclusion.get("approvalSource") != JAVA_BRIDGE_APPROVAL
-            or exclusion.get("candidateSpecId") != "KMIPKIT-0043"
-            or not isinstance(exclusion.get("evidence"), str)
-            or not all(
-                requirement in exclusion["evidence"]
-                for requirement in ("KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021")
+        if package_id == "java-kmipkit" and export_name in JAVA_BRIDGE_EXCLUSION_METHODS:
+            expected = (
+                JAVA_BRIDGE_EXCLUSION_REASON,
+                JAVA_BRIDGE_APPROVAL,
+                "KMIPKIT-0043",
+                ("KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"),
             )
+        elif package_id == "c-kmipkit" and export_name == CFFI_BRIDGE_EXCLUSION[0]:
+            expected = (
+                CFFI_BRIDGE_EXCLUSION[1],
+                CFFI_BRIDGE_EXCLUSION[2],
+                "KMIPKIT-0053",
+                ("bindings/java/native/kmipkit_jni.cpp", "bindings/python/src/kmipkit/ttlv.py"),
+            )
+        else:
+            expected = None
+        if (
+            expected is None
+            or exclusion.get("reason") != expected[0]
+            or exclusion.get("approvalSource") != expected[1]
+            or exclusion.get("candidateSpecId") != expected[2]
+            or not isinstance(exclusion.get("evidence"), str)
+            or not all(reference in exclusion["evidence"] for reference in expected[3])
         ):
             raise ReconciliationError("JNI exclusion is not an exact approved bridge route")
         if key in seen:

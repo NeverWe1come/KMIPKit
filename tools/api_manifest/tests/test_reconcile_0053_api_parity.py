@@ -630,6 +630,22 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 "clientBatchItemResponseHeaderTtlv",
             )
         ]
+        c_name, c_reason, c_approval, c_approval_evidence = (
+            reconcile_0053_api_parity.CFFI_BRIDGE_EXCLUSION
+        )
+        exclusions.append(
+            {
+                "packageId": "c-kmipkit",
+                "exportName": c_name,
+                "reason": c_reason,
+                "approvalSource": c_approval,
+                "evidence": (
+                    f"{c_approval_evidence} The exact symbol is called from "
+                    "bindings/java/native/kmipkit_jni.cpp and bindings/python/src/kmipkit/ttlv.py."
+                ),
+                "candidateSpecId": "KMIPKIT-0053",
+            }
+        )
 
         first = reconcile_0053_api_parity.add_approved_exclusions(
             {"approvedExclusions": []}, exclusions
