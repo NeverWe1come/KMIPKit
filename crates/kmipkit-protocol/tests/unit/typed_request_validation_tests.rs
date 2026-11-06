@@ -249,9 +249,7 @@ fn add_attribute_validation_allows_original_creation_date_when_it_may_be_absent(
 
 #[test]
 fn attribute_reference_mutation_validation_rejects_invalid_vendor_identification() {
-    let reference = || {
-        crate::AttributeReference::name("bad/vendor", "Private Attribute")
-    };
+    let reference = || crate::AttributeReference::name("bad/vendor", "Private Attribute");
     let adjust = crate::AdjustAttributeRequest::new(
         None,
         reference(),
