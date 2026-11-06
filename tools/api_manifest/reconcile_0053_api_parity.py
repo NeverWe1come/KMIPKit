@@ -154,7 +154,12 @@ def _validate_resolution_evidence(resolution: dict[str, Any]) -> list[str]:
         raise ReconciliationError("every declaration resolution needs unique evidence paths")
     for path in evidence:
         parsed = PurePosixPath(path)
-        if parsed.is_absolute() or ".." in parsed.parts or any(char in path for char in "*?"):
+        if (
+            parsed.is_absolute()
+            or ".." in parsed.parts
+            or "\\" in path
+            or any(char in path for char in "*?")
+        ):
             raise ReconciliationError("evidence paths must be exact repository-relative paths")
 
     approval = resolution.get("approvalSource")
@@ -166,6 +171,14 @@ def _validate_resolution_evidence(resolution: dict[str, Any]) -> list[str]:
         or approval.get("status") != "Approved"
     ):
         raise ReconciliationError("every declaration resolution needs an approved feature source")
+    approval_path = PurePosixPath(approval["path"])
+    if (
+        approval_path.is_absolute()
+        or ".." in approval_path.parts
+        or "\\" in approval["path"]
+        or any(char in approval["path"] for char in "*?")
+    ):
+        raise ReconciliationError("approval source must use an exact repository-relative path")
     return evidence
 
 
@@ -191,7 +204,7 @@ def _validate_type_system_exclusion(
     }:
         raise ReconciliationError("an exact type-system exclusion needs an artifact and counterpart IDs")
     artifact_kind = exclusion.get("artifactKind")
-    if artifact_kind not in TYPE_SYSTEM_EXCLUSION_REASONS:
+    if not isinstance(artifact_kind, str) or artifact_kind not in TYPE_SYSTEM_EXCLUSION_REASONS:
         raise ReconciliationError("the exclusion kind is not an approved Rust type-system artifact")
 
     declaration_kind = declaration.get("kind")
@@ -261,6 +274,40 @@ def _required_parent_counterpart(
         enum_type = _candidate_parent(variant, declarations_by_export) if variant is not None else None
         return enum_type.get("declarationId") if enum_type is not None else None
     return None
+
+
+def _validate_counterparts(
+    counterpart_ids: list[str],
+    capability_id: str,
+    declarations_by_id: dict[str, dict[str, Any]],
+) -> None:
+    for counterpart_id in counterpart_ids:
+        counterpart = declarations_by_id.get(counterpart_id)
+        mappings = counterpart.get("languageMappings") if counterpart is not None else None
+        if (
+            counterpart is None
+            or counterpart.get("declarationState") != "verified"
+            or counterpart.get("capabilityId") != capability_id
+            or not isinstance(mappings, dict)
+            or set(mappings) != REQUIRED_LANGUAGES
+            or mappings.get("rust") != {
+                "packageId": counterpart.get("packageId"),
+                "name": counterpart.get("exportName"),
+            }
+        ):
+            raise ReconciliationError(
+                "exclusion counterpart must be an exact verified four-language declaration"
+            )
+        for language in REQUIRED_LANGUAGES:
+            mapping = mappings[language]
+            if (
+                not isinstance(mapping, dict)
+                or set(mapping) != {"packageId", "name"}
+                or mapping["packageId"] not in LANGUAGE_PACKAGES[language]
+                or not isinstance(mapping["name"], str)
+                or not mapping["name"].strip()
+            ):
+                raise ReconciliationError("exclusion counterpart contains an invalid language mapping")
 
 
 def _resolution_exclusion_record(
@@ -351,14 +398,11 @@ def reconcile_candidate_resolutions(
                 expected = _resolution_exclusion_replay_record(resolution)
                 if existing_exclusion != expected:
                     raise ReconciliationError("replayed exclusion differs from approved record")
-                for counterpart_id in expected["counterpartDeclarationIds"]:
-                    counterpart = all_by_id.get(counterpart_id)
-                    if (
-                        counterpart is None
-                        or counterpart.get("declarationState") != "verified"
-                        or counterpart.get("capabilityId") != existing_exclusion.get("capabilityId")
-                    ):
-                        raise ReconciliationError("replayed exclusion counterpart is no longer mapped")
+                _validate_counterparts(
+                    expected["counterpartDeclarationIds"],
+                    existing_exclusion.get("capabilityId"),
+                    all_by_id,
+                )
                 continue
             raise ReconciliationError("candidate resolution references no exact 0053 candidate")
 
@@ -372,6 +416,8 @@ def reconcile_candidate_resolutions(
                 or mappings["rust"]["name"] != declaration["exportName"]
             ):
                 raise ReconciliationError("Rust mapping must exactly match the candidate export")
+            if any(char in mapping["name"] for mapping in mappings.values() for char in "*?"):
+                raise ReconciliationError("language mappings must name exact public routes")
             updated = copy.deepcopy(declaration)
             updated["declarationState"] = "verified"
             updated["languageMappings"] = mappings
@@ -405,12 +451,7 @@ def reconcile_candidate_resolutions(
         )
         if required_parent is not None and required_parent not in counterpart_ids:
             raise ReconciliationError("enum-shape exclusion must name its exact mapped parent model")
-        for counterpart_id in counterpart_ids:
-            counterpart = all_by_id.get(counterpart_id)
-            if counterpart is None or counterpart.get("capabilityId") != declaration["capabilityId"]:
-                raise ReconciliationError("exclusion counterpart must be an exact same-capability declaration")
-            if counterpart.get("declarationState") != "verified" or counterpart_id not in mapping_ids:
-                raise ReconciliationError("exclusion counterpart must have an exact verified four-language mapping")
+        _validate_counterparts(counterpart_ids, declaration["capabilityId"], all_by_id)
 
     processed_candidate_ids = set(identifiers) & set(candidates_by_id)
     result["publicDeclarations"] = [
@@ -441,6 +482,8 @@ def reconcile_candidate_resolutions(
             row.get("candidateSpecId") == SPEC_ID and row.get("capabilityId") == capability_id
             for row in result["publicDeclarations"]
         )
+        if unresolved and capability.get("capabilityState") == "verified":
+            raise ReconciliationError("a verified capability cannot retain unresolved 0053 candidates")
         if unresolved or capability.get("capabilityState") == "verified":
             continue
         if capability.get("capabilityState") != "blocked":
@@ -463,7 +506,7 @@ def reconcile_candidate_resolutions(
             None,
         )
         if mapped_resolution is not None:
-            capability["ownerSpecId"] = SPEC_ID
+            capability.setdefault("ownerSpecId", SPEC_ID)
             capability["approvalEvidence"] = copy.deepcopy(mapped_resolution["approvalSource"])
             capability["parityEvidenceIds"] = sorted({
                 path for resolution in resolutions
