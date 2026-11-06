@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/test-vectors.schema.json",
+  "title": "KMIP 2.1 Canonical Test Vectors Schema",
+  "type": "object",
+  "required": ["version", "description", "symmetric_keys", "asymmetric_keys", "managed_objects", "crypto_vectors"],
+  "properties": {
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "symmetric_keys": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["algorithm", "length_bits", "key_hex"],
+        "properties": {
+          "algorithm": { "type": "string" },
+          "length_bits": { "type": "integer" },
+          "key_hex": { "type": "string" },
+          "usage_mask": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "asymmetric_keys": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["algorithm", "private_key_hex", "public_key_hex"],
+        "properties": {
+          "algorithm": { "type": "string" },
+          "key_size_bits": { "type": "integer" },
+          "curve": { "type": "string" },
+          "format": { "type": "string" },
+          "private_key_hex": { "type": "string" },
+          "public_key_hex": { "type": "string" },
+          "usage_mask": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "managed_objects": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["object_type", "format", "payload_hex"],
+        "properties": {
+          "object_type": { "type": "string" },
+          "format": { "type": "string" },
+          "payload_hex": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "crypto_vectors": {
+      "type": "object",
+      "required": ["encrypt_decrypt", "sign_verify", "mac", "hash"],
+      "properties": {
+        "encrypt_decrypt": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "algorithm", "key_ref", "plaintext_hex", "iv_nonce_hex", "ciphertext_hex"],
+            "properties": {
+              "id": { "type": "string" },
+              "algorithm": { "type": "string" },
+              "mode": { "type": "string" },
+              "key_ref": { "type": "string" },
+              "plaintext_hex": { "type": "string" },
+              "iv_nonce_hex": { "type": "string" },
+              "aad_hex": { "type": "string" },
+              "ciphertext_hex": { "type": "string" },
+              "tag_hex": { "type": "string" }
+            }
+          }
+        },
+        "sign_verify": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "algorithm", "key_ref", "message_hex", "signature_hex"],
+            "properties": {
+              "id": { "type": "string" },
+              "algorithm": { "type": "string" },
+              "padding": { "type": "string" },
+              "hashing_algorithm": { "type": "string" },
+              "key_ref": { "type": "string" },
+              "message_hex": { "type": "string" },
+              "signature_hex": { "type": "string" }
+            }
+          }
+        },
+        "mac": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "algorithm", "key_ref", "data_hex", "mac_hex"],
+            "properties": {
+              "id": { "type": "string" },
+              "algorithm": { "type": "string" },
+              "key_ref": { "type": "string" },
+              "data_hex": { "type": "string" },
+              "mac_hex": { "type": "string" }
+            }
+          }
+        },
+        "hash": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "algorithm", "data_hex", "digest_hex"],
+            "properties": {
+              "id": { "type": "string" },
+              "algorithm": { "type": "string" },
+              "data_hex": { "type": "string" },
+              "digest_hex": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
