@@ -89,6 +89,8 @@ fn ffi_exports_reject_nulls_and_mismatched_handle_payloads() {
     null_pointer_export_matrix();
 }
 
+// Keep the exhaustive ABI matrix together so all calls reuse the same malformed-handle fixtures.
+#[allow(clippy::too_many_lines)]
 fn null_pointer_export_matrix() {
     let malformed_add_attribute_request_handle: *mut kmipkit_ttlv_structure_t = make_handle(
         Kind::AddAttributeRequest,
@@ -278,12 +280,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_validation_error_view_get_v1_out_view =
+        let mut kmipkit_profile_validation_error_view_get_v1_out_view =
             std::mem::MaybeUninit::<kmipkit_profile_validation_error_view_v1_t>::uninit();
         let status = unsafe {
             super::kmipkit_profile_validation_error_view_get_v1(
                 malformed_profile_validation_error_handle.cast(),
-                _kmipkit_profile_validation_error_view_get_v1_out_view.as_mut_ptr(),
+                kmipkit_profile_validation_error_view_get_v1_out_view.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -330,12 +332,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_readiness_view_get_v1_out_view =
+        let mut kmipkit_profile_readiness_view_get_v1_out_view =
             std::mem::MaybeUninit::<crate::kmipkit_profile_readiness_view_v1_t>::uninit();
         let status = unsafe {
             super::kmipkit_profile_readiness_view_get_v1(
                 malformed_profile_readiness_handle.cast(),
-                _kmipkit_profile_readiness_view_get_v1_out_view.as_mut_ptr(),
+                kmipkit_profile_readiness_view_get_v1_out_view.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -369,13 +371,13 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_readiness_blocker_at_v1_out_view =
+        let mut kmipkit_profile_readiness_blocker_at_v1_out_view =
             std::mem::MaybeUninit::<crate::kmipkit_profile_readiness_blocker_view_v1_t>::uninit();
         let status = unsafe {
             super::kmipkit_profile_readiness_blocker_at_v1(
                 malformed_profile_readiness_handle.cast(),
                 0,
-                _kmipkit_profile_readiness_blocker_at_v1_out_view.as_mut_ptr(),
+                kmipkit_profile_readiness_blocker_at_v1_out_view.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -766,11 +768,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_extension_count_out_count =
+        let mut kmipkit_client_batch_item_extension_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = super::kmipkit_client_batch_item_extension_count(
             malformed_batch_item_handle.cast(),
-            _kmipkit_client_batch_item_extension_count_out_count.as_mut_ptr(),
+            kmipkit_client_batch_item_extension_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -817,12 +819,12 @@ fn null_pointer_export_matrix() {
     }
     {
         let mut
-        _kmipkit_client_batch_item_extension_criticality_indicator_at_out_criticality_indicator =
+        kmipkit_client_batch_item_extension_criticality_indicator_at_out_criticality_indicator =
             std::mem::MaybeUninit::<u8>::uninit();
         let status = super::kmipkit_client_batch_item_extension_criticality_indicator_at(
             malformed_batch_item_handle.cast(),
             0,
-            _kmipkit_client_batch_item_extension_criticality_indicator_at_out_criticality_indicator
+            kmipkit_client_batch_item_extension_criticality_indicator_at_out_criticality_indicator
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -953,11 +955,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_request_header_view_protocol_version_out_version =
+        let mut kmipkit_request_header_view_protocol_version_out_version =
             std::mem::MaybeUninit::<crate::kmipkit_protocol_version_v1_t>::uninit();
         let status = super::kmipkit_request_header_view_protocol_version(
             malformed_request_header_view_handle.cast(),
-            _kmipkit_request_header_view_protocol_version_out_version.as_mut_ptr(),
+            kmipkit_request_header_view_protocol_version_out_version.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -987,11 +989,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_request_header_view_batch_count_out_count =
+        let mut kmipkit_request_header_view_batch_count_out_count =
             std::mem::MaybeUninit::<i32>::uninit();
         let status = super::kmipkit_request_header_view_batch_count(
             malformed_request_header_view_handle.cast(),
-            _kmipkit_request_header_view_batch_count_out_count.as_mut_ptr(),
+            kmipkit_request_header_view_batch_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1021,11 +1023,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_request_header_view_effective_attestation_capable_indicator_out_indicator =
+        let mut kmipkit_request_header_view_effective_attestation_capable_indicator_out_indicator =
             std::mem::MaybeUninit::<u8>::uninit();
         let status = super::kmipkit_request_header_view_effective_attestation_capable_indicator(
             malformed_request_header_view_handle.cast(),
-            _kmipkit_request_header_view_effective_attestation_capable_indicator_out_indicator
+            kmipkit_request_header_view_effective_attestation_capable_indicator_out_indicator
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -1056,11 +1058,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_request_header_view_effective_batch_error_continuation_option_out_option =
+        let mut kmipkit_request_header_view_effective_batch_error_continuation_option_out_option =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_request_header_view_effective_batch_error_continuation_option(
             malformed_request_header_view_handle.cast(),
-            _kmipkit_request_header_view_effective_batch_error_continuation_option_out_option
+            kmipkit_request_header_view_effective_batch_error_continuation_option_out_option
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -1121,14 +1123,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_request_batch_item_view_operation_out_present =
+        let mut kmipkit_request_batch_item_view_operation_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_request_batch_item_view_operation_out_operation =
+        let mut kmipkit_request_batch_item_view_operation_out_operation =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_request_batch_item_view_operation(
             malformed_request_batch_item_view_handle.cast(),
-            _kmipkit_request_batch_item_view_operation_out_present.as_mut_ptr(),
-            _kmipkit_request_batch_item_view_operation_out_operation.as_mut_ptr(),
+            kmipkit_request_batch_item_view_operation_out_present.as_mut_ptr(),
+            kmipkit_request_batch_item_view_operation_out_operation.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1172,11 +1174,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_response_header_view_batch_count_out_count =
+        let mut kmipkit_response_header_view_batch_count_out_count =
             std::mem::MaybeUninit::<i32>::uninit();
         let status = super::kmipkit_response_header_view_batch_count(
             malformed_response_header_view_handle.cast(),
-            _kmipkit_response_header_view_batch_count_out_count.as_mut_ptr(),
+            kmipkit_response_header_view_batch_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1221,11 +1223,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_request_batch_item_extension_count_out_count =
+        let mut kmipkit_request_batch_item_extension_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = super::kmipkit_request_batch_item_extension_count(
             malformed_request_batch_item_view_handle.cast(),
-            _kmipkit_request_batch_item_extension_count_out_count.as_mut_ptr(),
+            kmipkit_request_batch_item_extension_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1255,11 +1257,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_response_batch_item_extension_count_out_count =
+        let mut kmipkit_response_batch_item_extension_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = super::kmipkit_response_batch_item_extension_count(
             malformed_response_batch_item_view_handle.cast(),
-            _kmipkit_response_batch_item_extension_count_out_count.as_mut_ptr(),
+            kmipkit_response_batch_item_extension_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1304,11 +1306,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_message_validation_error_kind_out_kind =
+        let mut kmipkit_message_validation_error_kind_out_kind =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_message_validation_error_kind(
             malformed_message_validation_error_handle.cast(),
-            _kmipkit_message_validation_error_kind_out_kind.as_mut_ptr(),
+            kmipkit_message_validation_error_kind_out_kind.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1339,14 +1341,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_message_validation_error_field_index_out_present =
+        let mut kmipkit_message_validation_error_field_index_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_message_validation_error_field_index_out_index =
+        let mut kmipkit_message_validation_error_field_index_out_index =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = super::kmipkit_message_validation_error_field_index(
             malformed_message_validation_error_handle.cast(),
-            _kmipkit_message_validation_error_field_index_out_present.as_mut_ptr(),
-            _kmipkit_message_validation_error_field_index_out_index.as_mut_ptr(),
+            kmipkit_message_validation_error_field_index_out_present.as_mut_ptr(),
+            kmipkit_message_validation_error_field_index_out_index.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1374,10 +1376,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_credential_type_out_raw = std::mem::MaybeUninit::<u32>::uninit();
+        let mut kmipkit_credential_type_out_raw = std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_credential_type(
             malformed_credential_handle.cast(),
-            _kmipkit_credential_type_out_raw.as_mut_ptr(),
+            kmipkit_credential_type_out_raw.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1405,10 +1407,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_credential_type_raw_out_raw = std::mem::MaybeUninit::<u32>::uninit();
+        let mut kmipkit_credential_type_raw_out_raw = std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_credential_type_raw(
             malformed_credential_handle.cast(),
-            _kmipkit_credential_type_raw_out_raw.as_mut_ptr(),
+            kmipkit_credential_type_raw_out_raw.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1445,10 +1447,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_credential_value_type_raw_out_raw = std::mem::MaybeUninit::<u32>::uninit();
+        let mut kmipkit_credential_value_type_raw_out_raw = std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_credential_value_type_raw(
             malformed_credential_value_handle.cast(),
-            _kmipkit_credential_value_type_raw_out_raw.as_mut_ptr(),
+            kmipkit_credential_value_type_raw_out_raw.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1499,11 +1501,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_authentication_credential_count_out_count =
+        let mut kmipkit_authentication_credential_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = super::kmipkit_authentication_credential_count(
             malformed_authentication_handle.cast(),
-            _kmipkit_authentication_credential_count_out_count.as_mut_ptr(),
+            kmipkit_authentication_credential_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1548,10 +1550,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_credential_view_type_out_raw = std::mem::MaybeUninit::<u32>::uninit();
+        let mut kmipkit_credential_view_type_out_raw = std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_credential_view_type(
             malformed_credential_view_handle.cast(),
-            _kmipkit_credential_view_type_out_raw.as_mut_ptr(),
+            kmipkit_credential_view_type_out_raw.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1581,10 +1583,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_credential_view_type_raw_out_raw = std::mem::MaybeUninit::<u32>::uninit();
+        let mut kmipkit_credential_view_type_raw_out_raw = std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_credential_view_type_raw(
             malformed_credential_view_handle.cast(),
-            _kmipkit_credential_view_type_raw_out_raw.as_mut_ptr(),
+            kmipkit_credential_view_type_raw_out_raw.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1699,14 +1701,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_hashed_password_credential_hashing_algorithm_raw_out_present =
+        let mut kmipkit_hashed_password_credential_hashing_algorithm_raw_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_hashed_password_credential_hashing_algorithm_raw_out_algorithm =
+        let mut kmipkit_hashed_password_credential_hashing_algorithm_raw_out_algorithm =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_hashed_password_credential_hashing_algorithm_raw(
             malformed_hashed_password_credential_handle.cast(),
-            _kmipkit_hashed_password_credential_hashing_algorithm_raw_out_present.as_mut_ptr(),
-            _kmipkit_hashed_password_credential_hashing_algorithm_raw_out_algorithm.as_mut_ptr(),
+            kmipkit_hashed_password_credential_hashing_algorithm_raw_out_present.as_mut_ptr(),
+            kmipkit_hashed_password_credential_hashing_algorithm_raw_out_algorithm.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1736,11 +1738,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_hashed_password_credential_effective_hashing_algorithm_raw_out_algorithm =
+        let mut kmipkit_hashed_password_credential_effective_hashing_algorithm_raw_out_algorithm =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = super::kmipkit_hashed_password_credential_effective_hashing_algorithm_raw(
             malformed_hashed_password_credential_handle.cast(),
-            _kmipkit_hashed_password_credential_effective_hashing_algorithm_raw_out_algorithm
+            kmipkit_hashed_password_credential_effective_hashing_algorithm_raw_out_algorithm
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -1786,14 +1788,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_present =
+        let mut kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_timestamp =
+        let mut kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_timestamp =
             std::mem::MaybeUninit::<i64>::uninit();
         let status = super::kmipkit_hashed_password_timestamp_sequence_last_timestamp(
             malformed_hashed_password_timestamp_sequence_handle.cast(),
-            _kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_present.as_mut_ptr(),
-            _kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_timestamp.as_mut_ptr(),
+            kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_present.as_mut_ptr(),
+            kmipkit_hashed_password_timestamp_sequence_last_timestamp_out_timestamp.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1852,10 +1854,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_count_out_count = std::mem::MaybeUninit::<u64>::uninit();
+        let mut kmipkit_client_batch_item_count_out_count = std::mem::MaybeUninit::<u64>::uninit();
         let status = client_abi::kmipkit_client_batch_item_count(
             malformed_client_batch_handle.cast(),
-            _kmipkit_client_batch_item_count_out_count.as_mut_ptr(),
+            kmipkit_client_batch_item_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -1915,14 +1917,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_request_time_stamp_out_present =
+        let mut kmipkit_client_batch_request_time_stamp_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_request_time_stamp_out_time_stamp =
+        let mut kmipkit_client_batch_request_time_stamp_out_time_stamp =
             std::mem::MaybeUninit::<i64>::uninit();
         let status = client_abi::kmipkit_client_batch_request_time_stamp(
             malformed_client_batch_handle.cast(),
-            _kmipkit_client_batch_request_time_stamp_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_request_time_stamp_out_time_stamp.as_mut_ptr(),
+            kmipkit_client_batch_request_time_stamp_out_present.as_mut_ptr(),
+            kmipkit_client_batch_request_time_stamp_out_time_stamp.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2082,11 +2084,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_delete_attribute_request_unique_identifier_out_unique_identifier =
+        let mut kmipkit_delete_attribute_request_unique_identifier_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_delete_attribute_request_unique_identifier(
             malformed_delete_attribute_request_handle.cast(),
-            _kmipkit_delete_attribute_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
+            kmipkit_delete_attribute_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2132,14 +2134,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_delete_attribute_request_attribute_reference_out_present =
+        let mut kmipkit_delete_attribute_request_attribute_reference_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_delete_attribute_request_attribute_reference_out_attribute_reference =
+        let mut kmipkit_delete_attribute_request_attribute_reference_out_attribute_reference =
             std::mem::MaybeUninit::<crate::kmipkit_attribute_reference_v1_t>::uninit();
         let status = client_abi::kmipkit_delete_attribute_request_attribute_reference(
             malformed_delete_attribute_request_handle.cast(),
-            _kmipkit_delete_attribute_request_attribute_reference_out_present.as_mut_ptr(),
-            _kmipkit_delete_attribute_request_attribute_reference_out_attribute_reference
+            kmipkit_delete_attribute_request_attribute_reference_out_present.as_mut_ptr(),
+            kmipkit_delete_attribute_request_attribute_reference_out_attribute_reference
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -2198,11 +2200,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_modify_attribute_request_unique_identifier_out_unique_identifier =
+        let mut kmipkit_modify_attribute_request_unique_identifier_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_modify_attribute_request_unique_identifier(
             malformed_modify_attribute_request_handle.cast(),
-            _kmipkit_modify_attribute_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
+            kmipkit_modify_attribute_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2289,11 +2291,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_set_attribute_request_unique_identifier_out_unique_identifier =
+        let mut kmipkit_set_attribute_request_unique_identifier_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_set_attribute_request_unique_identifier(
             malformed_set_attribute_request_handle.cast(),
-            _kmipkit_set_attribute_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
+            kmipkit_set_attribute_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2365,12 +2367,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_get_attribute_list_request_unique_identifier_out_unique_identifier =
+        let mut kmipkit_get_attribute_list_request_unique_identifier_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_get_attribute_list_request_unique_identifier(
             malformed_get_attribute_list_request_handle.cast(),
-            _kmipkit_get_attribute_list_request_unique_identifier_out_unique_identifier
-                .as_mut_ptr(),
+            kmipkit_get_attribute_list_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2436,11 +2437,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_get_attributes_request_unique_identifier_out_unique_identifier =
+        let mut kmipkit_get_attributes_request_unique_identifier_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_get_attributes_request_unique_identifier(
             ptr::null_mut(),
-            _kmipkit_get_attributes_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
+            kmipkit_get_attributes_request_unique_identifier_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2458,11 +2459,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_get_attributes_request_attribute_reference_count_out_count =
+        let mut kmipkit_get_attributes_request_attribute_reference_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = client_abi::kmipkit_get_attributes_request_attribute_reference_count(
             ptr::null_mut(),
-            _kmipkit_get_attributes_request_attribute_reference_count_out_count.as_mut_ptr(),
+            kmipkit_get_attributes_request_attribute_reference_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2481,12 +2482,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_get_attributes_request_attribute_reference_at_out_reference =
+        let mut kmipkit_get_attributes_request_attribute_reference_at_out_reference =
             std::mem::MaybeUninit::<crate::kmipkit_attribute_reference_v1_t>::uninit();
         let status = client_abi::kmipkit_get_attributes_request_attribute_reference_at(
             ptr::null_mut(),
             0,
-            _kmipkit_get_attributes_request_attribute_reference_at_out_reference.as_mut_ptr(),
+            kmipkit_get_attributes_request_attribute_reference_at_out_reference.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2528,11 +2529,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_cancel_request_asynchronous_correlation_value_out_value =
+        let mut kmipkit_cancel_request_asynchronous_correlation_value_out_value =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = client_abi::kmipkit_cancel_request_asynchronous_correlation_value(
             malformed_cancel_request_handle.cast(),
-            _kmipkit_cancel_request_asynchronous_correlation_value_out_value.as_mut_ptr(),
+            kmipkit_cancel_request_asynchronous_correlation_value_out_value.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2576,11 +2577,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_poll_request_asynchronous_correlation_value_out_value =
+        let mut kmipkit_poll_request_asynchronous_correlation_value_out_value =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = client_abi::kmipkit_poll_request_asynchronous_correlation_value(
             malformed_poll_request_handle.cast(),
-            _kmipkit_poll_request_asynchronous_correlation_value_out_value.as_mut_ptr(),
+            kmipkit_poll_request_asynchronous_correlation_value_out_value.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2790,12 +2791,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_async_operation_outcome_metadata_v1_out_metadata =
+        let mut kmipkit_client_async_operation_outcome_metadata_v1_out_metadata =
             std::mem::MaybeUninit::<kmipkit_client_async_operation_metadata_v1_t>::uninit();
         let status = unsafe {
             client_abi::kmipkit_client_async_operation_outcome_metadata_v1(
                 malformed_client_async_operation_outcome_handle.cast(),
-                _kmipkit_client_async_operation_outcome_metadata_v1_out_metadata.as_mut_ptr(),
+                kmipkit_client_async_operation_outcome_metadata_v1_out_metadata.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -2827,14 +2828,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_async_operation_outcome_correlation_value_out_present =
+        let mut kmipkit_client_async_operation_outcome_correlation_value_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_async_operation_outcome_correlation_value_out_value =
+        let mut kmipkit_client_async_operation_outcome_correlation_value_out_value =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = client_abi::kmipkit_client_async_operation_outcome_correlation_value(
             malformed_client_async_operation_outcome_handle.cast(),
-            _kmipkit_client_async_operation_outcome_correlation_value_out_present.as_mut_ptr(),
-            _kmipkit_client_async_operation_outcome_correlation_value_out_value.as_mut_ptr(),
+            kmipkit_client_async_operation_outcome_correlation_value_out_present.as_mut_ptr(),
+            kmipkit_client_async_operation_outcome_correlation_value_out_value.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2879,11 +2880,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_async_operation_outcome_extension_count_out_count =
+        let mut kmipkit_client_async_operation_outcome_extension_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = client_abi::kmipkit_client_async_operation_outcome_extension_count(
             malformed_client_async_operation_outcome_handle.cast(),
-            _kmipkit_client_async_operation_outcome_extension_count_out_count.as_mut_ptr(),
+            kmipkit_client_async_operation_outcome_extension_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2929,11 +2930,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_usage_allocation_context_usage_limits_unit_out_unit =
+        let mut kmipkit_usage_allocation_context_usage_limits_unit_out_unit =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = client_abi::kmipkit_usage_allocation_context_usage_limits_unit(
             malformed_usage_allocation_context_handle.cast(),
-            _kmipkit_usage_allocation_context_usage_limits_unit_out_unit.as_mut_ptr(),
+            kmipkit_usage_allocation_context_usage_limits_unit_out_unit.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2963,11 +2964,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_usage_allocation_context_allocated_units_out_units =
+        let mut kmipkit_usage_allocation_context_allocated_units_out_units =
             std::mem::MaybeUninit::<i64>::uninit();
         let status = client_abi::kmipkit_usage_allocation_context_allocated_units(
             malformed_usage_allocation_context_handle.cast(),
-            _kmipkit_usage_allocation_context_allocated_units_out_units.as_mut_ptr(),
+            kmipkit_usage_allocation_context_allocated_units_out_units.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -2997,11 +2998,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_usage_allocation_context_available_units_out_units =
+        let mut kmipkit_usage_allocation_context_available_units_out_units =
             std::mem::MaybeUninit::<i64>::uninit();
         let status = client_abi::kmipkit_usage_allocation_context_available_units(
             malformed_usage_allocation_context_handle.cast(),
-            _kmipkit_usage_allocation_context_available_units_out_units.as_mut_ptr(),
+            kmipkit_usage_allocation_context_available_units_out_units.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3031,11 +3032,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_usage_allocation_context_reserved_units_out_units =
+        let mut kmipkit_usage_allocation_context_reserved_units_out_units =
             std::mem::MaybeUninit::<i64>::uninit();
         let status = client_abi::kmipkit_usage_allocation_context_reserved_units(
             malformed_usage_allocation_context_handle.cast(),
-            _kmipkit_usage_allocation_context_reserved_units_out_units.as_mut_ptr(),
+            kmipkit_usage_allocation_context_reserved_units_out_units.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3065,11 +3066,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_usage_allocation_context_unique_identifier_out_identifier =
+        let mut kmipkit_usage_allocation_context_unique_identifier_out_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_usage_allocation_context_unique_identifier(
             malformed_usage_allocation_context_handle.cast(),
-            _kmipkit_usage_allocation_context_unique_identifier_out_identifier.as_mut_ptr(),
+            kmipkit_usage_allocation_context_unique_identifier_out_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3152,12 +3153,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_validation_result_profile_id_count_v1_out_count =
+        let mut kmipkit_profile_validation_result_profile_id_count_v1_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = unsafe {
             client_abi::kmipkit_profile_validation_result_profile_id_count_v1(
                 malformed_profile_validation_result_handle.cast(),
-                _kmipkit_profile_validation_result_profile_id_count_v1_out_count.as_mut_ptr(),
+                kmipkit_profile_validation_result_profile_id_count_v1_out_count.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -3191,13 +3192,13 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_validation_result_profile_id_at_v1_out_span =
+        let mut kmipkit_profile_validation_result_profile_id_at_v1_out_span =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = unsafe {
             client_abi::kmipkit_profile_validation_result_profile_id_at_v1(
                 malformed_profile_validation_result_handle.cast(),
                 0,
-                _kmipkit_profile_validation_result_profile_id_at_v1_out_span.as_mut_ptr(),
+                kmipkit_profile_validation_result_profile_id_at_v1_out_span.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -3230,12 +3231,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_validation_result_requirement_id_count_v1_out_count =
+        let mut kmipkit_profile_validation_result_requirement_id_count_v1_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = unsafe {
             client_abi::kmipkit_profile_validation_result_requirement_id_count_v1(
                 malformed_profile_validation_result_handle.cast(),
-                _kmipkit_profile_validation_result_requirement_id_count_v1_out_count.as_mut_ptr(),
+                kmipkit_profile_validation_result_requirement_id_count_v1_out_count.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -3269,13 +3270,13 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_profile_validation_result_requirement_id_at_v1_out_span =
+        let mut kmipkit_profile_validation_result_requirement_id_at_v1_out_span =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = unsafe {
             client_abi::kmipkit_profile_validation_result_requirement_id_at_v1(
                 malformed_profile_validation_result_handle.cast(),
                 0,
-                _kmipkit_profile_validation_result_requirement_id_at_v1_out_span.as_mut_ptr(),
+                kmipkit_profile_validation_result_requirement_id_at_v1_out_span.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -3390,11 +3391,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_response_item_count_out_count =
+        let mut kmipkit_client_batch_response_item_count_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = client_abi::kmipkit_client_batch_response_item_count(
             malformed_client_batch_response_handle.cast(),
-            _kmipkit_client_batch_response_item_count_out_count.as_mut_ptr(),
+            kmipkit_client_batch_response_item_count_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3455,11 +3456,11 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_metadata_v1_out_metadata =
+        let mut kmipkit_client_batch_item_response_metadata_v1_out_metadata =
             std::mem::MaybeUninit::<kmipkit_client_batch_item_metadata_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_metadata_v1(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_metadata_v1_out_metadata.as_mut_ptr(),
+            kmipkit_client_batch_item_response_metadata_v1_out_metadata.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3491,12 +3492,12 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_metadata_v2_out_metadata =
+        let mut kmipkit_client_batch_item_response_metadata_v2_out_metadata =
             std::mem::MaybeUninit::<kmipkit_client_batch_item_metadata_v2_t>::uninit();
         let status = unsafe {
             client_abi::kmipkit_client_batch_item_response_metadata_v2(
                 malformed_client_batch_item_response_handle.cast(),
-                _kmipkit_client_batch_item_response_metadata_v2_out_metadata.as_mut_ptr(),
+                kmipkit_client_batch_item_response_metadata_v2_out_metadata.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -3528,14 +3529,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_rekey_out_present =
+        let mut kmipkit_client_batch_item_response_rekey_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_rekey_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_rekey_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_rekey(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_rekey_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_rekey_out_unique_identifier.as_mut_ptr(),
+            kmipkit_client_batch_item_response_rekey_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_rekey_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3567,19 +3568,18 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_rekey_key_pair_out_present =
+        let mut kmipkit_client_batch_item_response_rekey_key_pair_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut
-        _kmipkit_client_batch_item_response_rekey_key_pair_out_private_key_unique_identifier =
+        let mut kmipkit_client_batch_item_response_rekey_key_pair_out_private_key_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_rekey_key_pair_out_public_key_unique_identifier =
+        let mut kmipkit_client_batch_item_response_rekey_key_pair_out_public_key_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_rekey_key_pair(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_rekey_key_pair_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_rekey_key_pair_out_private_key_unique_identifier
+            kmipkit_client_batch_item_response_rekey_key_pair_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_rekey_key_pair_out_private_key_unique_identifier
                 .as_mut_ptr(),
-            _kmipkit_client_batch_item_response_rekey_key_pair_out_public_key_unique_identifier
+            kmipkit_client_batch_item_response_rekey_key_pair_out_public_key_unique_identifier
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -3612,17 +3612,17 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_reprovision_out_present =
+        let mut kmipkit_client_batch_item_response_reprovision_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_reprovision_out_identifier_present =
+        let mut kmipkit_client_batch_item_response_reprovision_out_identifier_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_reprovision_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_reprovision_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_reprovision(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_reprovision_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_reprovision_out_identifier_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_reprovision_out_unique_identifier.as_mut_ptr(),
+            kmipkit_client_batch_item_response_reprovision_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_reprovision_out_identifier_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_reprovision_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3670,20 +3670,20 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_obtain_lease_out_present =
+        let mut kmipkit_client_batch_item_response_obtain_lease_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_obtain_lease_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_obtain_lease_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_obtain_lease_out_lease_time =
+        let mut kmipkit_client_batch_item_response_obtain_lease_out_lease_time =
             std::mem::MaybeUninit::<u32>::uninit();
-        let mut _kmipkit_client_batch_item_response_obtain_lease_out_last_change_date =
+        let mut kmipkit_client_batch_item_response_obtain_lease_out_last_change_date =
             std::mem::MaybeUninit::<i64>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_obtain_lease(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_obtain_lease_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_obtain_lease_out_unique_identifier.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_obtain_lease_out_lease_time.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_obtain_lease_out_last_change_date.as_mut_ptr(),
+            kmipkit_client_batch_item_response_obtain_lease_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_obtain_lease_out_unique_identifier.as_mut_ptr(),
+            kmipkit_client_batch_item_response_obtain_lease_out_lease_time.as_mut_ptr(),
+            kmipkit_client_batch_item_response_obtain_lease_out_last_change_date.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3714,14 +3714,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_join_split_key_out_present =
+        let mut kmipkit_client_batch_item_response_join_split_key_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_join_split_key_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_join_split_key_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_join_split_key(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_join_split_key_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_join_split_key_out_unique_identifier.as_mut_ptr(),
+            kmipkit_client_batch_item_response_join_split_key_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_join_split_key_out_unique_identifier.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3790,23 +3790,23 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_get_attribute_list_out_present =
+        let mut kmipkit_client_batch_item_response_get_attribute_list_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_get_attribute_list_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_get_attribute_list_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_get_attribute_list_out_references =
+        let mut kmipkit_client_batch_item_response_get_attribute_list_out_references =
             std::mem::MaybeUninit::<crate::kmipkit_attribute_reference_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_get_attribute_list_out_count =
+        let mut kmipkit_client_batch_item_response_get_attribute_list_out_count =
             std::mem::MaybeUninit::<u64>::uninit();
         let status = unsafe {
             client_abi::kmipkit_client_batch_item_response_get_attribute_list(
                 malformed_client_batch_item_response_handle.cast(),
-                _kmipkit_client_batch_item_response_get_attribute_list_out_present.as_mut_ptr(),
-                _kmipkit_client_batch_item_response_get_attribute_list_out_unique_identifier
+                kmipkit_client_batch_item_response_get_attribute_list_out_present.as_mut_ptr(),
+                kmipkit_client_batch_item_response_get_attribute_list_out_unique_identifier
                     .as_mut_ptr(),
-                _kmipkit_client_batch_item_response_get_attribute_list_out_references.as_mut_ptr(),
+                kmipkit_client_batch_item_response_get_attribute_list_out_references.as_mut_ptr(),
                 0,
-                _kmipkit_client_batch_item_response_get_attribute_list_out_count.as_mut_ptr(),
+                kmipkit_client_batch_item_response_get_attribute_list_out_count.as_mut_ptr(),
             )
         };
         assert_ne!(
@@ -3853,14 +3853,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_validate_out_present =
+        let mut kmipkit_client_batch_item_response_validate_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_validate_out_validity_indicator =
+        let mut kmipkit_client_batch_item_response_validate_out_validity_indicator =
             std::mem::MaybeUninit::<u32>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_validate(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_validate_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_validate_out_validity_indicator.as_mut_ptr(),
+            kmipkit_client_batch_item_response_validate_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_validate_out_validity_indicator.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3925,14 +3925,14 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_unique_batch_item_id_out_present =
+        let mut kmipkit_client_batch_item_unique_batch_item_id_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_unique_batch_item_id_out_value =
+        let mut kmipkit_client_batch_item_unique_batch_item_id_out_value =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_unique_batch_item_id(
             malformed_batch_item_handle.cast(),
-            _kmipkit_client_batch_item_unique_batch_item_id_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_unique_batch_item_id_out_value.as_mut_ptr(),
+            kmipkit_client_batch_item_unique_batch_item_id_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_unique_batch_item_id_out_value.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -3971,40 +3971,39 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_encrypt_out_present =
+        let mut kmipkit_client_batch_item_response_encrypt_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_encrypt_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_data_present =
+        let mut kmipkit_client_batch_item_response_encrypt_out_data_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_data =
+        let mut kmipkit_client_batch_item_response_encrypt_out_data =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce_present =
+        let mut kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce =
+        let mut kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_correlation_present =
+        let mut kmipkit_client_batch_item_response_encrypt_out_correlation_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_correlation_value =
+        let mut kmipkit_client_batch_item_response_encrypt_out_correlation_value =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
-        let mut
-        _kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag_present =
+        let mut kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag =
+        let mut kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_encrypt(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_encrypt_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_unique_identifier.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_data_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_data.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_correlation_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_correlation_value.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag_present
+            kmipkit_client_batch_item_response_encrypt_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_unique_identifier.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_data_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_data.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_iv_counter_nonce.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_correlation_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_correlation_value.as_mut_ptr(),
+            kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag_present
                 .as_mut_ptr(),
-            _kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag
+            kmipkit_client_batch_item_response_encrypt_out_authenticated_encryption_tag
                 .as_mut_ptr(),
         );
         assert_ne!(
@@ -4040,26 +4039,26 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_client_batch_item_response_decrypt_out_present =
+        let mut kmipkit_client_batch_item_response_decrypt_out_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_decrypt_out_unique_identifier =
+        let mut kmipkit_client_batch_item_response_decrypt_out_unique_identifier =
             std::mem::MaybeUninit::<kmipkit_unique_identifier_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_decrypt_out_data_present =
+        let mut kmipkit_client_batch_item_response_decrypt_out_data_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_decrypt_out_data =
+        let mut kmipkit_client_batch_item_response_decrypt_out_data =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
-        let mut _kmipkit_client_batch_item_response_decrypt_out_correlation_present =
+        let mut kmipkit_client_batch_item_response_decrypt_out_correlation_present =
             std::mem::MaybeUninit::<u8>::uninit();
-        let mut _kmipkit_client_batch_item_response_decrypt_out_correlation_value =
+        let mut kmipkit_client_batch_item_response_decrypt_out_correlation_value =
             std::mem::MaybeUninit::<crate::kmipkit_byte_span_v1_t>::uninit();
         let status = client_abi::kmipkit_client_batch_item_response_decrypt(
             malformed_client_batch_item_response_handle.cast(),
-            _kmipkit_client_batch_item_response_decrypt_out_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_decrypt_out_unique_identifier.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_decrypt_out_data_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_decrypt_out_data.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_decrypt_out_correlation_present.as_mut_ptr(),
-            _kmipkit_client_batch_item_response_decrypt_out_correlation_value.as_mut_ptr(),
+            kmipkit_client_batch_item_response_decrypt_out_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_decrypt_out_unique_identifier.as_mut_ptr(),
+            kmipkit_client_batch_item_response_decrypt_out_data_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_decrypt_out_data.as_mut_ptr(),
+            kmipkit_client_batch_item_response_decrypt_out_correlation_present.as_mut_ptr(),
+            kmipkit_client_batch_item_response_decrypt_out_correlation_value.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -4191,10 +4190,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_attribute_set_len_out_count = std::mem::MaybeUninit::<u64>::uninit();
+        let mut kmipkit_attribute_set_len_out_count = std::mem::MaybeUninit::<u64>::uninit();
         let status = client_abi::kmipkit_attribute_set_len(
             malformed_attribute_set_handle.cast(),
-            _kmipkit_attribute_set_len_out_count.as_mut_ptr(),
+            kmipkit_attribute_set_len_out_count.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
@@ -4224,11 +4223,10 @@ fn null_pointer_export_matrix() {
         );
     }
     {
-        let mut _kmipkit_attribute_set_is_empty_out_is_empty =
-            std::mem::MaybeUninit::<u8>::uninit();
+        let mut kmipkit_attribute_set_is_empty_out_is_empty = std::mem::MaybeUninit::<u8>::uninit();
         let status = client_abi::kmipkit_attribute_set_is_empty(
             malformed_attribute_set_handle.cast(),
-            _kmipkit_attribute_set_is_empty_out_is_empty.as_mut_ptr(),
+            kmipkit_attribute_set_is_empty_out_is_empty.as_mut_ptr(),
         );
         assert_ne!(
             status, ERROR_INTERNAL,
