@@ -381,6 +381,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "kmipkit-test-server"
+version = "1.0.0"
+dependencies = [
+ "aws-lc-rs",
+ "bytes",
+ "hyper",
+ "kmipkit-client",
+ "kmipkit-protocol",
+ "kmipkit-transport",
+ "kmipkit-ttlv",
+ "rcgen",
+ "roxmltree",
+ "rustls",
+ "serde_json",
+ "tokio",
+ "tokio-rustls",
+ "zeroize",
+]
+
+[[package]]
 name = "kmipkit-test-support"
 version = "1.0.0"
 dependencies = [
