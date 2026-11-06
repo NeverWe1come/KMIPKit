@@ -30970,4 +30970,39 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ManagedValueReader::read_field_item",
     ),
+    (
+        "T064:query-field-count:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponse::response_field_count",
+    ),
+    (
+        "T064:query-field-at:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponse::response_field",
+    ),
+    (
+        "T064:query-field-kind:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponseFieldKind",
+    ),
+    (
+        "T064:query-field-kind-value:Enumeration:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponseFieldKind::Enumeration",
+    ),
+    (
+        "T064:query-field-kind-value:TextString:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponseFieldKind::TextString",
+    ),
+    (
+        "T064:query-field-kind-value:Structure:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponseFieldKind::Structure",
+    ),
+    (
+        "T064:query-field-kind-value:Unknown:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::QueryResponseFieldKind::Unknown",
+    ),
 ];

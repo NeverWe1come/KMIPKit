@@ -220,7 +220,10 @@ pub use profile::{
     ProfileReadinessBlocker, ProfileTransport, ProfileValidationContext, ProfileValidationError,
     ProfileValidationErrorCode, ProfileValidationResult, ProfileValidationSelection,
 };
-pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
+pub use query::{
+    QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField,
+    QueryResponseFieldKind,
+};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};

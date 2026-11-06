@@ -1484,9 +1484,21 @@ final class ClientFacadeTlsIntegrationTest {
                         .withUniqueBatchItemId("large-query".getBytes(StandardCharsets.US_ASCII)));
                 try (ClientBatchResponse response = client.execute(batch, queryLimits);
                         ClientBatchItemResult result = response.itemAt(0);
-                        TtlvStructure queryPayload = result.queryResponse().orElseThrow()) {
+                        TtlvStructure queryPayload = result.queryResponse().orElseThrow();
+                        var typedQuery = result.typedQueryResponse().orElseThrow()) {
                     assertEquals(0x18, result.operation());
                     assertNotNull(queryPayload);
+                    assertEquals(7, typedQuery.fieldCount());
+                    assertEquals(List.of(0x3bL, 0x3bL), typedQuery.operations());
+                    assertEquals(List.of("namespace-a", "namespace-b"),
+                            typedQuery.applicationNamespaces());
+                    assertEquals(0x0054_1234, typedQuery.fieldAt(2).tag());
+                    assertEquals(org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN,
+                            typedQuery.fieldAt(2).kind());
+                    try (TtlvItemView unknown = typedQuery.fieldAt(2).item().orElseThrow();
+                            Tag unknownTag = unknown.tag()) {
+                        assertEquals(0x0054_1234, unknownTag.raw());
+                    }
                 }
             }
 
@@ -5934,7 +5946,16 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
-        byte[] payload = structure(0x42007c, structure(0x42015f));
+        byte[] serverInformation = structure(0x420088,
+                item(0x0054_0001, 7, "server-extension".getBytes(StandardCharsets.UTF_8)));
+        byte[] payload = structure(0x42007c,
+                enumeration(0x42005c, 0x3b),
+                item(0x420003, 7, "namespace-a".getBytes(StandardCharsets.UTF_8)),
+                item(0x0054_1234, 7, "vendor-extension".getBytes(StandardCharsets.UTF_8)),
+                enumeration(0x42005c, 0x3b),
+                item(0x420003, 7, "namespace-b".getBytes(StandardCharsets.UTF_8)),
+                serverInformation,
+                structure(0x42015f));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x18),
                 item(0x420093, 8, "large-query".getBytes(StandardCharsets.US_ASCII)),

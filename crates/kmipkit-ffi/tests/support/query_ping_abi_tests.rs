@@ -542,9 +542,46 @@ fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
         item_count, 9,
         "typed standard, repeated, nested vendor, and unknown Query fields are copied"
     );
+    let mut query_field_present = u8::MAX;
+    let mut query_field_count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_count(
+            query,
+            &raw mut query_field_present,
+            &raw mut query_field_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(query_field_present, 1);
+    assert_eq!(query_field_count, 9);
+    let mut field_present = u8::MAX;
+    let mut field_tag = u32::MAX;
+    let mut field_kind = u8::MAX;
+    let mut field_enumeration = u32::MAX;
+    let mut field_item = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_at(
+            query,
+            99,
+            &raw mut field_present,
+            &raw mut field_tag,
+            &raw mut field_kind,
+            &raw mut field_enumeration,
+            &raw mut field_item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(field_present, 0);
+    assert_eq!(field_tag, 0);
+    assert_eq!(field_kind, 0);
+    assert_eq!(field_enumeration, 0);
+    assert!(field_item.is_null());
     #[cfg(feature = "coverage-c-consumer")]
     // SAFETY: The compiled C consumer borrows the live response and releases only its own copies.
-    assert_eq!(unsafe { kmipkit_client_abi_consumer_query_typed_fields(query) }, 0);
+    assert_eq!(
+        unsafe { kmipkit_client_abi_consumer_query_typed_fields(query) },
+        0
+    );
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(query_ttlv);
 
@@ -556,6 +593,41 @@ fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
     );
     assert_eq!(present, 0);
     assert!(query_ttlv.is_null());
+
+    query_field_present = u8::MAX;
+    query_field_count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_count(
+            ping,
+            &raw mut query_field_present,
+            &raw mut query_field_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(query_field_present, 0);
+    assert_eq!(query_field_count, 0);
+    field_present = u8::MAX;
+    field_tag = u32::MAX;
+    field_kind = u8::MAX;
+    field_enumeration = u32::MAX;
+    field_item = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_query_field_at(
+            ping,
+            0,
+            &raw mut field_present,
+            &raw mut field_tag,
+            &raw mut field_kind,
+            &raw mut field_enumeration,
+            &raw mut field_item,
+        ),
+        SUCCESS
+    );
+    assert_eq!(field_present, 0);
+    assert_eq!(field_tag, 0);
+    assert_eq!(field_kind, 0);
+    assert_eq!(field_enumeration, 0);
+    assert!(field_item.is_null());
 
     present = u8::MAX;
     query_ttlv = ptr::dangling_mut();
@@ -605,6 +677,85 @@ fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
     kmipkit_client_batch_item_response_release(invalid_index);
     kmipkit_client_batch_item_response_release(query);
     kmipkit_client_batch_item_response_release(ping);
+}
+
+#[test]
+fn ffi_query_response_rejects_duplicate_singleton_before_field_access() {
+    let batch_item_id = b"query-duplicate-singleton";
+    let response = successful_cryptographic_response(
+        QUERY_OPERATION,
+        batch_item_id,
+        vec![
+            ttlv_item(0x0042_009d, 0x07, b"vendor-a"),
+            ttlv_item(0x0042_009d, 0x07, b"vendor-b"),
+            ttlv_structure(0x0042_015f, []),
+        ],
+    );
+    assert!(
+        execute_single_abi_response(
+            ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+            batch_item_id,
+            response,
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn ffi_query_field_count_distinguishes_empty_payload_from_no_payload() {
+    let empty_payload = successful_response_item(
+        ClientRequest::query(QueryRequest::new([QueryFunction::from_raw(1)])),
+        QUERY_OPERATION,
+        b"empty-query-payload",
+        Vec::new(),
+    );
+    let absent_payload = failed_query_without_payload_item();
+
+    for (item, expected_payload_present) in [(empty_payload, 1), (absent_payload, 0)] {
+        let mut query_present = u8::MAX;
+        let mut field_count = u64::MAX;
+        assert_eq!(
+            kmipkit_client_batch_item_response_query_field_count(
+                item,
+                &raw mut query_present,
+                &raw mut field_count,
+            ),
+            SUCCESS
+        );
+        assert_eq!(
+            query_present, 1,
+            "the batch result remains a Query response"
+        );
+        assert_eq!(field_count, 0, "both forms contain zero typed fields");
+
+        let mut payload_present = u8::MAX;
+        let mut payload = ptr::dangling_mut();
+        assert_eq!(
+            kmipkit_client_batch_item_response_raw_ttlv(
+                item,
+                &raw mut payload_present,
+                &raw mut payload,
+            ),
+            SUCCESS
+        );
+        assert_eq!(payload_present, expected_payload_present);
+        if expected_payload_present == 1 {
+            assert!(!payload.is_null());
+            let mut view = ptr::null_mut();
+            assert_eq!(kmipkit_ttlv_structure_view(payload, &raw mut view), SUCCESS);
+            let mut count = u64::MAX;
+            assert_eq!(
+                kmipkit_ttlv_structure_view_item_count(view, &raw mut count),
+                SUCCESS
+            );
+            assert_eq!(count, 0);
+            kmipkit_ttlv_structure_view_release(view);
+            kmipkit_ttlv_structure_release(payload);
+        } else {
+            assert!(payload.is_null());
+        }
+        kmipkit_client_batch_item_response_release(item);
+    }
 }
 
 #[test]

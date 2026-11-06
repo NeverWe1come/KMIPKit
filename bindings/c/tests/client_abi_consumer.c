@@ -4,14 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Red-phase declarations: the official manifest generator will emit these in kmipkit.h. */
-extern int32_t kmipkit_client_batch_item_response_query_field_count(
-        kmipkit_client_batch_item_response_t *item, uint8_t *out_present, uint64_t *out_count);
-extern int32_t kmipkit_client_batch_item_response_query_field_at(
-        kmipkit_client_batch_item_response_t *item, uint64_t index, uint8_t *out_present,
-        uint32_t *out_tag, uint8_t *out_kind, uint32_t *out_enumeration,
-        kmipkit_ttlv_item_t **out_item);
-
 static int response_ttlv_path_integer_matches(
         kmipkit_ttlv_structure_view_t *view,
         const uint32_t *path,
@@ -116,22 +108,27 @@ int32_t kmipkit_client_abi_consumer_query_typed_fields(
     for (uint64_t index = 0; index < typed_count; ++index) {
         uint8_t field_present = 0;
         uint32_t field_tag = 0;
-        uint8_t field_kind = 0;
+        kmipkit_query_response_field_kind_t field_kind = 0;
         uint32_t enumeration = 0;
         kmipkit_ttlv_item_t *field = NULL;
-        uint8_t expected_kind = (index == 0 || index == 3 || index == 4) ? 1 :
-                ((index == 1 || index == 2 || index == 6 || index == 7) ? 2 :
-                ((index == 5 || index == 8) ? 3 : 4));
+        kmipkit_query_response_field_kind_t expected_kind =
+                (index == 0 || index == 3 || index == 4) ?
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION :
+                ((index == 1 || index == 6 || index == 7) ?
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING :
+                ((index == 5 || index == 8) ?
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE :
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN));
         if (kmipkit_client_batch_item_response_query_field_at(
                     item, index, &field_present, &field_tag, &field_kind,
                     &enumeration, &field) != 0 || field_present != 1 ||
                 field_tag != expected_tags[index] || field_kind != expected_kind ||
-                (expected_kind == 1 && field != NULL) ||
-                (expected_kind != 1 && field == NULL)) {
+                (expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION && field != NULL) ||
+                (expected_kind != KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION && field == NULL)) {
             kmipkit_ttlv_item_release(field);
             goto cleanup;
         }
-        if (expected_kind == 1) {
+        if (expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION) {
             const uint32_t expected_value = index == 0 ? UINT32_C(0x3b) :
                     (index == 3 ? UINT32_C(0xf1234567) : UINT32_C(7));
             if (enumeration != expected_value) goto cleanup;
@@ -140,15 +137,15 @@ int32_t kmipkit_client_abi_consumer_query_typed_fields(
             uint8_t item_type = 0;
             int field_ok = kmipkit_ttlv_item_view_from_item(field, &field_view) == 0 &&
                     field_view != NULL;
-            if (field_ok && (expected_kind == 2)) {
+            if (field_ok && (expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING)) {
                 const char *expected_text = index == 1 ? "namespace-a" :
                         (index == 2 ? "vendor-extension" :
                         (index == 6 ? "namespace-b" : "vendor-a"));
                 field_ok = query_ttlv_text_matches(field_view, field_tag, expected_text);
-            } else if (field_ok && expected_kind == 3) {
+            } else if (field_ok && expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE) {
                 field_ok = kmipkit_ttlv_item_view_type(field_view, &item_type) == 0 &&
                         item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE;
-            } else if (field_ok && expected_kind == 4) {
+            } else if (field_ok && expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN) {
                 field_ok = query_ttlv_text_matches(
                         field_view, UINT32_C(0x00541234), "vendor-extension");
             }

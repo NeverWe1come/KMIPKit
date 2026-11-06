@@ -353,6 +353,7 @@
     "KMIPKIT-0053-FR-005",
     "KMIPKIT-0053-FR-006",
     "KMIPKIT-0053-FR-007",
+    "KMIPKIT-0053-FR-008",
     "KMIPKIT-0053-FR-009",
     "KMIPKIT-0053-FR-010",
     "KMIPKIT-0053-FR-011",
@@ -4912,6 +4913,57 @@
       "python": {
         "module": "kmipkit.validation",
         "name": "ValidationIssue"
+      }
+    },
+    {
+      "id": "QueryResponseFieldKind",
+      "kind": "enum",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol",
+        "name": "QueryResponseFieldKind",
+        "owner": "protocol"
+      },
+      "c": {
+        "name": "kmipkit_query_response_field_kind_t",
+        "kind": "enum",
+        "underlyingType": "uint8_t",
+        "unknownValuePolicy": "reject-unsupported"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "QueryResponseFieldKind"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "QueryFieldKind"
+      },
+      "enumRepresentation": {
+        "shape": "closed-numeric",
+        "unknownValuePolicy": "reject-unsupported",
+        "values": [
+          {
+            "name": "Enumeration",
+            "value": 1
+          },
+          {
+            "name": "TextString",
+            "value": 2
+          },
+          {
+            "name": "Structure",
+            "value": 3
+          },
+          {
+            "name": "Unknown",
+            "value": 4
+          }
+        ]
       }
     }
   ],
@@ -50808,6 +50860,198 @@
         ]
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_query_field_count",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItemResponse",
+        "name": "response_field_count",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "Option<usize>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_query_field_count",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_count",
+            "kind": "output-scalar-pointer",
+            "type": "uint64_t *",
+            "valueType": "uint64_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "resource_limit"
+        ],
+        "documentation": [
+          "Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.",
+          "Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "QueryResponse",
+        "method": "fieldCount",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseQueryFieldCount",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "resource_limit"
+        ],
+        "returnType": "long[]"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "QueryResponse.field_count",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_batch_item_response_query_field_count",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "resource_limit"
+        ],
+        "returnType": "int"
+      },
+      "ordering": "preserves-response-field-wire-order"
+    },
+    {
+      "id": "client_batch_item_response_query_field_at",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItemResponse",
+        "name": "response_field",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "Option<QueryResponseField>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_query_field_at",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "index",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_tag",
+            "kind": "output-scalar-pointer",
+            "type": "uint32_t *",
+            "valueType": "uint32_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_kind",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_enumeration",
+            "kind": "output-scalar-pointer",
+            "type": "uint32_t *",
+            "valueType": "uint32_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_ttlv_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "resource_limit"
+        ],
+        "documentation": [
+          "Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.",
+          "Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "QueryResponse",
+        "method": "fieldAt",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "long"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseQueryFieldAt",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "resource_limit"
+        ],
+        "returnType": "long[]"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "QueryResponse.field_at",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_response_query_field_at",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "resource_limit"
+        ],
+        "returnType": "QueryField"
+      },
+      "ordering": "preserves-response-field-wire-order"
     }
   ],
   "errorCategories": [
@@ -648189,6 +648433,1386 @@
         "status": "Approved",
         "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
+    },
+    {
+      "declarationId": "T064:query-field-count:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::QueryResponse::response_field_count",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-count:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_query_field_count",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-count:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.QueryResponse.fieldCount",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-count:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.QueryResponse.field_count",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-at:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::QueryResponse::response_field",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldAt"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_at"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-at:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_query_field_at",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldAt"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_at"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-at:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.QueryResponse.fieldAt",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldAt"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_at"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-at:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.QueryResponse.field_at",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponse.fieldAt"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryResponse.field_at"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "type",
+      "exportName": "kmipkit_protocol::QueryResponseFieldKind",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_query_response_field_kind_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_query_response_field_kind_t",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_query_response_field_kind_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.QueryResponseFieldKind",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_query_response_field_kind_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.QueryFieldKind",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_query_response_field_kind_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Enumeration",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.ENUMERATION"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.ENUMERATION"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:TextString",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.TEXT_STRING"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.TEXT_STRING"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Structure",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.STRUCTURE"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.STRUCTURE"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Unknown",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Unknown"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.UNKNOWN"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Enumeration:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::QueryResponseFieldKind::Enumeration",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.ENUMERATION"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.ENUMERATION"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Enumeration:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.QueryResponseFieldKind.ENUMERATION",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.ENUMERATION"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.ENUMERATION"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Enumeration:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.QueryFieldKind.ENUMERATION",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Enumeration"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.ENUMERATION"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.ENUMERATION"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:TextString:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::QueryResponseFieldKind::TextString",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.TEXT_STRING"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.TEXT_STRING"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:TextString:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.QueryResponseFieldKind.TEXT_STRING",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.TEXT_STRING"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.TEXT_STRING"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:TextString:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.QueryFieldKind.TEXT_STRING",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::TextString"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.TEXT_STRING"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.TEXT_STRING"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Structure:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::QueryResponseFieldKind::Structure",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.STRUCTURE"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.STRUCTURE"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Structure:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.QueryResponseFieldKind.STRUCTURE",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.STRUCTURE"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.STRUCTURE"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Structure:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.QueryFieldKind.STRUCTURE",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.STRUCTURE"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.STRUCTURE"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Unknown:rust",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "variant",
+      "exportName": "kmipkit_protocol::QueryResponseFieldKind::Unknown",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Unknown"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.UNKNOWN"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Unknown:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Unknown"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.UNKNOWN"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-kind-value:Unknown:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.QueryFieldKind.UNKNOWN",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponseFieldKind::Unknown"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryFieldKind.UNKNOWN"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.QueryResponseField",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseField"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryField"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T064:query-field-type:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.QueryField",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::QueryResponse::response_field"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_query_field_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.QueryResponseField"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.QueryField"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs"
+      ]
     }
   ],
   "approvedExclusions": [
@@ -877241,7 +878865,11 @@
         "KMIPKIT-0052-FR-004",
         "KMIPKIT-0052-FR-005",
         "KMIPKIT-0052-FR-006",
-        "KMIPKIT-0052-FR-007"
+        "KMIPKIT-0052-FR-007",
+        "KMIPKIT-0053-FR-008",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
       ],
       "capabilityState": "verified",
       "parityScope": "four-language",
@@ -877253,17 +878881,20 @@
         "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
       },
       "parityEvidenceIds": [
-        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
-        "crates/kmipkit-protocol/tests/message_accessors.rs",
-        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
-        "bindings/java/src/test/java/org/kmipkit/extensions/ClientBatchItemPingQueryMappingTest.java",
-        "bindings/python/tests/test_query_ping_operation.py",
-        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
-        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
-        "crates/kmipkit-ttlv/tests/public_api.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientBatchItemPingQueryMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/QueryResponseTypedFieldsTest.java",
+        "bindings/python/tests/test_query_ping_operation.py",
+        "bindings/python/tests/test_query_response_typed_fields.py",
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs"
       ],
       "mappings": {
         "rust": [
@@ -877286,15 +878917,29 @@
           "kmipkit_client::ClientOperationOutcome::process_response",
           "kmipkit_client::ClientOperationOutcome::query_async_requests_response",
           "kmipkit_client::ClientOperationOutcome::raw",
+          "kmipkit_protocol::QueryResponse::response_field",
+          "kmipkit_protocol::QueryResponse::response_field_count",
+          "kmipkit_protocol::QueryResponseFieldKind",
+          "kmipkit_protocol::QueryResponseFieldKind::Enumeration",
+          "kmipkit_protocol::QueryResponseFieldKind::Structure",
+          "kmipkit_protocol::QueryResponseFieldKind::TextString",
+          "kmipkit_protocol::QueryResponseFieldKind::Unknown",
           "kmipkit_protocol::ResponseBatchItemView::raw",
           "kmipkit_protocol::ResponseHeaderView::raw",
           "kmipkit_ttlv::Item::as_structure"
         ],
         "c": [
+          "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION",
+          "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE",
+          "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING",
+          "KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN",
           "kmipkit_client_async_operation_outcome_metadata_v1",
           "kmipkit_client_async_operation_outcome_response_payload_ttlv",
           "kmipkit_client_batch_item_response_header_ttlv",
+          "kmipkit_client_batch_item_response_query_field_at",
+          "kmipkit_client_batch_item_response_query_field_count",
           "kmipkit_client_batch_item_response_raw_ttlv",
+          "kmipkit_query_response_field_kind_t",
           "kmipkit_ttlv_value_view_structure"
         ],
         "java": [
@@ -877302,6 +878947,14 @@
           "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
           "org.kmipkit.extensions.ClientBatchItemResult.raw",
           "org.kmipkit.extensions.ClientBatchItemResult.responseHeaderTtlv",
+          "org.kmipkit.extensions.QueryResponse.fieldAt",
+          "org.kmipkit.extensions.QueryResponse.fieldCount",
+          "org.kmipkit.extensions.QueryResponseField",
+          "org.kmipkit.extensions.QueryResponseFieldKind",
+          "org.kmipkit.extensions.QueryResponseFieldKind.ENUMERATION",
+          "org.kmipkit.extensions.QueryResponseFieldKind.STRUCTURE",
+          "org.kmipkit.extensions.QueryResponseFieldKind.TEXT_STRING",
+          "org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN",
           "org.kmipkit.ttlv.TtlvValueView.structure"
         ],
         "python": [
@@ -877309,6 +878962,14 @@
           "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
           "kmipkit.client.BatchItemResult.raw",
           "kmipkit.client.BatchItemResult.response_header_ttlv",
+          "kmipkit.client.QueryField",
+          "kmipkit.client.QueryFieldKind",
+          "kmipkit.client.QueryFieldKind.ENUMERATION",
+          "kmipkit.client.QueryFieldKind.STRUCTURE",
+          "kmipkit.client.QueryFieldKind.TEXT_STRING",
+          "kmipkit.client.QueryFieldKind.UNKNOWN",
+          "kmipkit.client.QueryResponse.field_at",
+          "kmipkit.client.QueryResponse.field_count",
           "kmipkit.ttlv.ttlv_value_view_structure"
         ]
       }

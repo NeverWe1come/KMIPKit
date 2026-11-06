@@ -1020,7 +1020,7 @@ def add_additional_types(
             raise ReconciliationError("additional API type needs a stable ID")
         if identifier in additions_by_id:
             raise ReconciliationError("additional API type IDs must be unique")
-        if set(type_row) != {
+        allowed_type_keys = {
             "id",
             "kind",
             "requirementIds",
@@ -1028,7 +1028,10 @@ def add_additional_types(
             "c",
             "java",
             "python",
-        }:
+        }
+        if type_row.get("kind") == "enum":
+            allowed_type_keys.add("enumRepresentation")
+        if set(type_row) != allowed_type_keys:
             raise ReconciliationError(
                 "additional API type must define exact Rust, C, Java, and Python mappings"
             )
@@ -1060,6 +1063,20 @@ def add_additional_types(
             raise ReconciliationError(
                 "additional API type needs an exact public C name"
             )
+        if type_row["kind"] == "enum":
+            representation = type_row.get("enumRepresentation")
+            if (
+                c_record.get("kind") != "enum"
+                or not isinstance(representation, dict)
+                or representation.get("shape") not in {"open-numeric", "closed-numeric"}
+                or representation.get("unknownValuePolicy")
+                not in {"preserve-raw", "reject-unsupported"}
+                or not isinstance(representation.get("values"), list)
+                or not representation["values"]
+            ):
+                raise ReconciliationError(
+                    "additional enum types need an exact numeric representation"
+                )
         additions_by_id[identifier] = type_row
         if identifier in by_id and by_id[identifier] != type_row:
             raise ReconciliationError(
@@ -1165,6 +1182,44 @@ def add_public_declarations(
     for identifier, declaration in additions_by_id.items():
         if identifier not in by_id:
             current.append(copy.deepcopy(declaration))
+    capabilities = result.get("capabilities")
+    if not isinstance(capabilities, list):
+        raise ReconciliationError("manifest lacks its capability inventory")
+    capabilities_by_id = {
+        row.get("capabilityId"): row for row in capabilities if isinstance(row, dict)
+    }
+    for declaration in additions_by_id.values():
+        if declaration["declarationId"] in by_id:
+            continue
+        capability_id = declaration.get("capabilityId")
+        capability = capabilities_by_id.get(capability_id)
+        if capability is None:
+            raise ReconciliationError(
+                f"public declaration references an unknown capability: {capability_id}"
+            )
+        mappings = capability.get("mappings")
+        if not isinstance(mappings, dict):
+            raise ReconciliationError(
+                f"capability lacks reviewed language mappings: {capability_id}"
+            )
+        for language, mapping in declaration["languageMappings"].items():
+            language_mappings = mappings.get(language)
+            if not isinstance(language_mappings, list):
+                raise ReconciliationError(
+                    f"capability lacks {language} mappings: {capability_id}"
+                )
+            name = mapping["name"]
+            if name not in language_mappings:
+                language_mappings.append(name)
+                language_mappings.sort()
+        capability["requirementIds"] = sorted(
+            set(capability.get("requirementIds", []))
+            | set(declaration["requirementIds"])
+        )
+        capability["parityEvidenceIds"] = sorted(
+            set(capability.get("parityEvidenceIds", []))
+            | set(declaration["parityEvidenceIds"])
+        )
     result["requirementIds"] = sorted(
         set(result.get("requirementIds", []))
         | {

@@ -1423,9 +1423,10 @@
           "enum": [
             "not-applicable",
             "preserves-caller-batch-and-extension-order",
-            "preserves-response-extension-order"
+            "preserves-response-extension-order",
+            "preserves-response-field-wire-order"
           ],
-          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order."
+          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order. Typed response field indexing preserves decoded TTLV field order."
         },
         "criticalityIndicator": {
           "$ref": "#/$defs/criticalityIndicator"

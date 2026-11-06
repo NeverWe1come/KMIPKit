@@ -577,6 +577,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseValidate(long itemResponse);
     public static native long[] clientBatchItemResponsePing(long itemResponse);
     public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
+    public static native long[] clientBatchItemResponseQueryFieldCount(long itemResponse);
+    public static native long[] clientBatchItemResponseQueryFieldAt(long itemResponse, long index);
     public static native Object[] clientBatchItemResponseRawTtlv(long itemResponse);
     public static native long clientBatchItemResponseHeaderTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);

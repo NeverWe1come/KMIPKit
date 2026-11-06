@@ -9349,6 +9349,74 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
     });
 }
 
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseQueryFieldCount(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint64_t count = 0;
+        const int32_t status = kmipkit_client_batch_item_response_query_field_count(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &count);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present > 1 || (present == 0 && count != 0)) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jlongArray>(nullptr);
+        }
+        return make_long_array(env, {static_cast<jlong>(present), static_cast<jlong>(count)});
+    });
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseQueryFieldAt(
+        JNIEnv* env, jclass, jlong raw_item, jlong raw_index) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        if (raw_index < 0) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        uint8_t present = 0;
+        uint32_t tag = 0;
+        uint8_t kind = 0;
+        uint32_t enumeration = 0;
+        kmipkit_ttlv_item_t* item = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_query_field_at(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                static_cast<uint64_t>(raw_index), &present, &tag, &kind, &enumeration, &item);
+        if (status != 0) {
+            kmipkit_ttlv_item_release(item);
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        const bool enum_kind = kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION;
+        if (present > 1 || (present == 0 && (tag != 0 || kind != 0 || enumeration != 0 || item != nullptr))
+                || (present == 1 && (kind < KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION
+                    || kind > KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN))
+                || (present == 1 && enum_kind && item != nullptr)
+                || (present == 1 && !enum_kind && item == nullptr)) {
+            kmipkit_ttlv_item_release(item);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jlongArray>(nullptr);
+        }
+        kmipkit_ttlv_item_view_t* item_view = nullptr;
+        if (item != nullptr) {
+            const int32_t view_status = kmipkit_ttlv_item_view_from_item(item, &item_view);
+            kmipkit_ttlv_item_release(item);
+            if (view_status != 0 || item_view == nullptr) {
+                kmipkit_ttlv_item_view_release(item_view);
+                throw_status(env, view_status == 0 ? KMIPKIT_ERROR_INTERNAL : view_status);
+                return static_cast<jlongArray>(nullptr);
+            }
+        }
+        jlongArray result = make_long_array(env, {
+            static_cast<jlong>(present), static_cast<jlong>(tag), static_cast<jlong>(kind),
+            static_cast<jlong>(enumeration), to_java_handle(item_view)});
+        if (result == nullptr) kmipkit_ttlv_item_view_release(item_view);
+        return result;
+    });
+}
+
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseRawTtlv(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jobjectArray>(env, nullptr, [&] {

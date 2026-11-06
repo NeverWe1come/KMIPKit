@@ -67,6 +67,12 @@ typedef uint32_t kmipkit_credential_validation_error_kind_t;
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER ((kmipkit_credential_validation_error_kind_t)5)
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE ((kmipkit_credential_validation_error_kind_t)6)
 
+typedef uint8_t kmipkit_query_response_field_kind_t;
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION ((kmipkit_query_response_field_kind_t)1)
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING ((kmipkit_query_response_field_kind_t)2)
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE ((kmipkit_query_response_field_kind_t)3)
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN ((kmipkit_query_response_field_kind_t)4)
+
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
 #define KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS ((uint32_t)5)
@@ -2998,6 +3004,16 @@ int32_t kmipkit_certificate_request_from_fields(kmipkit_ttlv_item_t ** fields, u
  */
 /* KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_managed_value_field_item_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint8_t * out_present, kmipkit_ttlv_item_t ** out_item);
+/* Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.
+ * Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release.
+ */
+/* KMIPKIT-0053-FR-008, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_item_response_query_field_count(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint64_t * out_count);
+/* Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.
+ * Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release.
+ */
+/* KMIPKIT-0053-FR-008, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_item_response_query_field_at(kmipkit_client_batch_item_response_t * item, uint64_t index, uint8_t * out_present, uint32_t * out_tag, uint8_t * out_kind, uint32_t * out_enumeration, kmipkit_ttlv_item_t ** out_item);
 /* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
  * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
  * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.

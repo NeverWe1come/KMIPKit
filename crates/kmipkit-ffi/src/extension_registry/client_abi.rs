@@ -4990,6 +4990,134 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_ttlv(
     })
 }
 
+/// Query field value categories returned by `query_field_at`.
+const QUERY_FIELD_KIND_ENUMERATION: u8 = 1;
+const QUERY_FIELD_KIND_TEXT_STRING: u8 = 2;
+const QUERY_FIELD_KIND_STRUCTURE: u8 = 3;
+const QUERY_FIELD_KIND_UNKNOWN: u8 = 4;
+
+/// Returns whether this result is a typed Query response and its field count.
+///
+/// `out_present` is zero when the result belongs to another operation. A
+/// failed Query response is still present but can have zero payload fields.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_query_field_count(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_count.is_null()
+            || ffi_output_ranges_overlap(out_present, out_count)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let count = scalar_out!(out_count);
+        *present = 0;
+        *count = 0;
+
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        let response = outcome.response();
+        let Some(query) = response.query() else {
+            return SUCCESS;
+        };
+        *count =
+            try_ffi!(u64::try_from(query.response_field_count()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Returns one Query field in wire order using the Rust protocol classifier.
+///
+/// Enumeration values are written to `out_enumeration` and have no Item
+/// handle. Text, structure, and unknown members return a caller-owned `Item`
+/// handle, released with `kmipkit_ttlv_item_release`. `out_present` is zero
+/// when the result is not a Query response; an out-of-range index is invalid.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_query_field_at(
+    item: *mut kmipkit_client_batch_item_response_t,
+    index: u64,
+    out_present: *mut u8,
+    out_tag: *mut u32,
+    out_kind: *mut u8,
+    out_enumeration: *mut u32,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let outputs = [
+            out_present.cast::<u8>(),
+            out_tag.cast::<u8>(),
+            out_kind.cast::<u8>(),
+            out_enumeration.cast::<u8>(),
+            out_item.cast::<u8>(),
+        ];
+        if outputs.iter().any(|output| output.is_null())
+            || ffi_output_ranges_overlap(out_present, out_tag)
+            || ffi_output_ranges_overlap(out_present, out_kind)
+            || ffi_output_ranges_overlap(out_present, out_enumeration)
+            || ffi_output_ranges_overlap(out_present, out_item)
+            || ffi_output_ranges_overlap(out_tag, out_kind)
+            || ffi_output_ranges_overlap(out_tag, out_enumeration)
+            || ffi_output_ranges_overlap(out_tag, out_item)
+            || ffi_output_ranges_overlap(out_kind, out_enumeration)
+            || ffi_output_ranges_overlap(out_kind, out_item)
+            || ffi_output_ranges_overlap(out_enumeration, out_item)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let tag = scalar_out!(out_tag);
+        let kind = scalar_out!(out_kind);
+        let enumeration = scalar_out!(out_enumeration);
+        let output_item = out_slot!(out_item);
+        *present = 0;
+        *tag = 0;
+        *kind = 0;
+        *enumeration = 0;
+
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let response_item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = response_item.outcome();
+        let response = outcome.response();
+        let Some(query) = response.query() else {
+            return SUCCESS;
+        };
+        let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+        let Some(field) = query.response_field(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *tag = field.tag();
+        match field.kind() {
+            QueryResponseFieldKind::Enumeration => {
+                *kind = QUERY_FIELD_KIND_ENUMERATION;
+                *enumeration = try_ffi!(field.raw_enumeration().ok_or(ERROR_INTERNAL));
+            }
+            QueryResponseFieldKind::TextString => {
+                *kind = QUERY_FIELD_KIND_TEXT_STRING;
+            }
+            QueryResponseFieldKind::Structure => {
+                *kind = QUERY_FIELD_KIND_STRUCTURE;
+            }
+            QueryResponseFieldKind::Unknown => *kind = QUERY_FIELD_KIND_UNKNOWN,
+        }
+        if *kind != QUERY_FIELD_KIND_ENUMERATION {
+            let payload = try_ffi!(query.to_ttlv_payload().map_err(|_| ERROR_INTERNAL));
+            let source_item = try_ffi!(payload.view().children().get(index).ok_or(ERROR_INTERNAL));
+            let owned_item = try_ffi!(super::clone_item(source_item));
+            *output_item = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(owned_item)));
+        }
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Copies the ordered Response Payload for any valid batch result, when present.
 ///
 /// The returned structure is caller-owned and remains valid after the result

@@ -120,6 +120,7 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
             self.manifest, resolutions
         )
 
+
     def test_maps_exact_candidate_and_replays_idempotently(self) -> None:
         mapping = self._mapping(self.candidates[0])
 
@@ -328,6 +329,97 @@ class CandidateDeclarationResolutionTests(unittest.TestCase):
         mapping = self._mapping(self.candidates[0])
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             self._reconcile([mapping, mapping])
+
+
+
+
+class AddedPublicDeclarationCapabilityTests(unittest.TestCase):
+    def test_additions_extend_capability_mappings_idempotently(self) -> None:
+        manifest = {
+            "requirementIds": ["KMIPKIT-0052-FR-001"],
+            "publicDeclarations": [],
+            "capabilities": [
+                {
+                    "capabilityId": "response_ttlv_navigation",
+                    "requirementIds": ["KMIPKIT-0052-FR-001"],
+                    "parityEvidenceIds": ["crates/kmipkit-protocol/tests/old.rs"],
+                    "mappings": {
+                        language: [f"old_{language}"]
+                        for language in ("rust", "c", "java", "python")
+                    },
+                }
+            ],
+        }
+        route = {
+            "declarationId": "T064:query-field-count:c",
+            "packageId": "c-kmipkit",
+            "kind": "c-symbol",
+            "exportName": "kmipkit_client_batch_item_response_query_field_count",
+            "capabilityId": "response_ttlv_navigation",
+            "requirementIds": ["KMIPKIT-0053-FR-008"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "rust": {
+                    "packageId": "rust-kmipkit-protocol",
+                    "name": "kmipkit_protocol::QueryResponse::response_field_count",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_response_query_field_count",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.QueryResponse.fieldCount",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.client.QueryResponse.field_count",
+                },
+            },
+            "parityEvidenceIds": ["bindings/c/tests/client_abi_consumer.c"],
+        }
+
+        reconciled = reconcile_0053_api_parity.add_public_declarations(
+            manifest, [route]
+        )
+        capability = reconciled["capabilities"][0]
+        self.assertEqual(
+            capability["mappings"],
+            {
+                "rust": [
+                    "kmipkit_protocol::QueryResponse::response_field_count",
+                    "old_rust",
+                ],
+                "c": [
+                    "kmipkit_client_batch_item_response_query_field_count",
+                    "old_c",
+                ],
+                "java": [
+                    "old_java",
+                    "org.kmipkit.extensions.QueryResponse.fieldCount",
+                ],
+                "python": [
+                    "kmipkit.client.QueryResponse.field_count",
+                    "old_python",
+                ],
+            },
+        )
+        self.assertEqual(
+            capability["requirementIds"],
+            ["KMIPKIT-0052-FR-001", "KMIPKIT-0053-FR-008"],
+        )
+        self.assertEqual(
+            capability["parityEvidenceIds"],
+            ["bindings/c/tests/client_abi_consumer.c", "crates/kmipkit-protocol/tests/old.rs"],
+        )
+        self.assertEqual(
+            reconcile_0053_api_parity.add_public_declarations(
+                reconciled, [route]
+            ),
+            reconciled,
+        )
+
 
 
 if __name__ == "__main__":

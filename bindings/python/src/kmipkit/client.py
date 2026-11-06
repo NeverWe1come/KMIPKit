@@ -1603,6 +1603,235 @@ class _BatchItemResultNativeState:
     )
 
 
+class QueryFieldKind(IntEnum):
+    """Rust-classified TTLV category for one Query response field."""
+
+    ENUMERATION = 1
+    TEXT_STRING = 2
+    STRUCTURE = 3
+    UNKNOWN = 4
+
+
+@dataclass(frozen=True, slots=True)
+class _QueryFieldData:
+    tag: int
+    kind: QueryFieldKind
+    enumeration: int
+
+
+class QueryResponse:
+    """Typed fields classified by Rust, with the complete ordered TTLV payload retained."""
+
+    _OPERATION = 0x0042_005C
+    _OBJECT_TYPE = 0x0042_0057
+    _VENDOR_IDENTIFICATION = 0x0042_009D
+    _SERVER_INFORMATION = 0x0042_0088
+    _APPLICATION_NAMESPACE = 0x0042_0003
+    _EXTENSION_INFORMATION = 0x0042_00A4
+    _ATTESTATION_TYPE = 0x0042_00C7
+    _RNG_PARAMETERS = 0x0042_00D9
+    _PROFILE_INFORMATION = 0x0042_00EB
+    _VALIDATION_INFORMATION = 0x0042_00DF
+    _CAPABILITY_INFORMATION = 0x0042_00F7
+    _CLIENT_REGISTRATION_METHOD = 0x0042_00F6
+    _DEFAULTS_INFORMATION = 0x0042_0152
+    _PROTECTION_STORAGE_MASKS = 0x0042_015F
+    def __init__(self, payload: ttlv.Structure, fields: Sequence[_QueryFieldData]) -> None:
+        if not isinstance(payload, ttlv.Structure):
+            errors.raise_for_status(4)
+        self._payload = payload
+        self._view = ttlv.ttlv_structure_view(payload)
+        self._fields = tuple(fields)
+        self._closed = False
+        if len(self._fields) != ttlv.ttlv_structure_view_item_count(self._view):
+            self.close()
+            errors.raise_for_status(4)
+
+    @property
+    def field_count(self) -> int:
+        self._ensure_open()
+        return len(self._fields)
+
+    def field_at(self, index: int) -> QueryField:
+        """Return Rust-classified field metadata at its original wire-order index."""
+        position = _unsigned(index, 64)
+        self._ensure_open()
+        if position >= len(self._fields):
+            errors.raise_for_status(4)
+        return QueryField(self, position, self._fields[position])
+
+    @property
+    def operations(self) -> tuple[int, ...]:
+        return self._enumerations(self._OPERATION)
+
+    @property
+    def object_types(self) -> tuple[int, ...]:
+        return self._enumerations(self._OBJECT_TYPE)
+
+    @property
+    def vendor_identifications(self) -> tuple[str, ...]:
+        return self._text_values(self._VENDOR_IDENTIFICATION)
+
+    @property
+    def application_namespaces(self) -> tuple[str, ...]:
+        return self._text_values(self._APPLICATION_NAMESPACE)
+
+    @property
+    def attestation_types(self) -> tuple[int, ...]:
+        return self._enumerations(self._ATTESTATION_TYPE)
+
+    @property
+    def client_registration_methods(self) -> tuple[int, ...]:
+        return self._enumerations(self._CLIENT_REGISTRATION_METHOD)
+
+    @property
+    def server_informations(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return self._items(self._SERVER_INFORMATION)
+
+    @property
+    def extension_informations(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return self._items(self._EXTENSION_INFORMATION)
+
+    @property
+    def rng_parameters(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return self._items(self._RNG_PARAMETERS)
+
+    @property
+    def profile_information(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return self._items(self._PROFILE_INFORMATION)
+
+    @property
+    def validation_information(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return self._items(self._VALIDATION_INFORMATION)
+
+    @property
+    def capability_information(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return self._items(self._CAPABILITY_INFORMATION)
+
+    @property
+    def defaults_information(self) -> ttlv.TtlvItemView | None:
+        return self._first_item(self._DEFAULTS_INFORMATION)
+
+    @property
+    def protection_storage_masks(self) -> ttlv.TtlvItemView | None:
+        return self._first_item(self._PROTECTION_STORAGE_MASKS)
+
+    @property
+    def unknown_items(self) -> tuple[ttlv.TtlvItemView, ...]:
+        return tuple(
+            self._item_at(index)
+            for index, field in enumerate(self._fields)
+            if field.kind is QueryFieldKind.UNKNOWN
+        )
+
+    @property
+    def unknown_field_tags(self) -> tuple[int, ...]:
+        return tuple(
+            field.tag for field in self._fields if field.kind is QueryFieldKind.UNKNOWN
+        )
+
+    @property
+    def raw_field_tags(self) -> tuple[int, ...]:
+        self._ensure_open()
+        return tuple(field.tag for field in self._fields)
+
+    def raw_view(self) -> ttlv.TtlvStructureView:
+        """Returns an independent view over the complete ordered generic TTLV payload."""
+        self._ensure_open()
+        return ttlv.ttlv_structure_view(self._payload)
+
+    def _item_at(self, index: int) -> ttlv.TtlvItemView:
+        self._ensure_open()
+        return ttlv.ttlv_structure_view_item_at(self._view, index)
+
+    def _enumerations(self, raw_tag: int) -> tuple[int, ...]:
+        return tuple(
+            field.enumeration for field in self._fields
+            if field.tag == raw_tag and field.kind is QueryFieldKind.ENUMERATION
+        )
+
+    def _text_values(self, raw_tag: int) -> tuple[str, ...]:
+        result: list[str] = []
+        for index, field in enumerate(self._fields):
+            if field.tag == raw_tag and field.kind is QueryFieldKind.TEXT_STRING:
+                item = self._item_at(index)
+                try:
+                    if ttlv.ttlv_item_view_type(item) is not ttlv.ItemType.TextString:
+                        errors.raise_for_status(4)
+                    value = ttlv.ttlv_item_view_value(item)
+                    try:
+                        length = ttlv.ttlv_value_view_byte_length(value)
+                        raw = bytes(
+                            ttlv.ttlv_value_view_byte_at(value, offset)
+                            for offset in range(length)
+                        )
+                    finally:
+                        value.close()
+                    result.append(raw.decode("utf-8", errors="strict"))
+                finally:
+                    item.close()
+        return tuple(result)
+
+    def _items(self, raw_tag: int) -> tuple[ttlv.TtlvItemView, ...]:
+        return tuple(
+            self._item_at(index)
+            for index, field in enumerate(self._fields)
+            if field.tag == raw_tag and field.kind is QueryFieldKind.STRUCTURE
+        )
+
+    def _first_item(self, raw_tag: int) -> ttlv.TtlvItemView | None:
+        result = self._items(raw_tag)
+        if not result:
+            return None
+        for extra in result[1:]:
+            extra.close()
+        return result[0]
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        self._view.close()
+        self._payload.close()
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            errors.raise_for_status(4)
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        self.close()
+
+
+@dataclass(frozen=True, slots=True)
+class QueryField:
+    """A field classification and its original payload index."""
+
+    _response: QueryResponse = field(repr=False, compare=False)
+    index: int
+    _data: _QueryFieldData = field(repr=False, compare=False)
+
+    @property
+    def tag(self) -> int:
+        return self._data.tag
+
+    @property
+    def kind(self) -> QueryFieldKind:
+        return self._data.kind
+
+    @property
+    def enumeration(self) -> int | None:
+        return self._data.enumeration if self.kind is QueryFieldKind.ENUMERATION else None
+
+    def item(self) -> ttlv.TtlvItemView | None:
+        """Return a caller-owned view of a non-Enumeration node, if present."""
+        if self.kind is QueryFieldKind.ENUMERATION:
+            return None
+        return self._response._item_at(self.index)
+
+
 @dataclass(frozen=True, slots=True)
 class BatchItemResult(_BatchItemResultNativeState):
     """Copied metadata plus any live native result handle required by an approved capability."""
@@ -1697,6 +1926,24 @@ class BatchItemResult(_BatchItemResultNativeState):
             self.result_reason,
             self.result_message,
         )
+
+    def typed_query_response(self) -> QueryResponse | None:
+        """Return Rust-classified Query fields in an independently owned TTLV payload."""
+        item = self._native_response_item
+        if item is None:
+            return None
+        payload = _query_response(item)
+        if payload is None:
+            return None
+        try:
+            fields = _query_response_fields(item)
+            if fields is None:
+                payload.close()
+                return None
+            return QueryResponse(payload, fields)
+        except Exception:
+            payload.close()
+            raise
 
     @property
     def extension_count(self) -> int:
@@ -5367,6 +5614,59 @@ def _query_response(item: _ClientBatchItemResponse) -> ttlv.Structure | None:
         raise
 
 
+def _query_response_fields(
+    item: _ClientBatchItemResponse,
+) -> tuple[_QueryFieldData, ...] | None:
+    """Read field metadata only from the Rust QueryResponseField classifier."""
+    present = ffi.new("uint8_t *")
+    count = ffi.new("uint64_t *")
+    with _NATIVE_CALL_LOCK:
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_query_field_count(
+                item._pointer(), present, count
+            )
+        )
+    if present[0] not in (0, 1) or (present[0] == 0 and count[0] != 0):
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        return None
+    if count[0] > 100_000:
+        errors.raise_for_status(6)
+
+    fields: list[_QueryFieldData] = []
+    for index in range(int(count[0])):
+        field_present = ffi.new("uint8_t *")
+        tag = ffi.new("uint32_t *")
+        kind = ffi.new("uint8_t *")
+        enumeration = ffi.new("uint32_t *")
+        output_item = ffi.new("kmipkit_ttlv_item_t **")
+        with _NATIVE_CALL_LOCK:
+            status = lib.kmipkit_client_batch_item_response_query_field_at(
+                item._pointer(), index, field_present, tag, kind, enumeration, output_item
+            )
+        owned_item = output_item[0]
+        try:
+            _raise_abi_status(status)
+            if field_present[0] != 1:
+                errors.raise_for_status(4)
+            try:
+                field_kind = QueryFieldKind(int(kind[0]))
+            except ValueError:
+                errors.raise_for_status(4)
+            if field_kind is QueryFieldKind.ENUMERATION:
+                if owned_item != ffi.NULL:
+                    errors.raise_for_status(4)
+            elif owned_item == ffi.NULL:
+                errors.raise_for_status(4)
+            fields.append(
+                _QueryFieldData(int(tag[0]), field_kind, int(enumeration[0]))
+            )
+        finally:
+            if owned_item != ffi.NULL:
+                lib.kmipkit_ttlv_item_release(owned_item)
+    return tuple(fields)
+
+
 def _response_structure(
     item: _ClientBatchItemResponse,
     function: Any,
@@ -6326,6 +6626,9 @@ __all__ = [
     "GetUsageAllocationResponse",
     "ObtainLeaseResponse",
     "Pkcs11Response",
+    "QueryField",
+    "QueryFieldKind",
+    "QueryResponse",
     "ImportResponse",
     "JoinSplitKeyResponse",
     "InteropResponse",
