@@ -47,6 +47,20 @@ fn main() {
         .flag_if_supported("-std=c11");
     client_consumer.compile("kmipkit_client_abi_c_consumer");
 
+    let managed_object_consumer =
+        workspace_root.join("bindings/c/tests/managed_object_parity_consumer.c");
+    println!(
+        "cargo:rerun-if-changed={}",
+        managed_object_consumer.display()
+    );
+    cc::Build::new()
+        .file(managed_object_consumer)
+        .include(&consumer_header)
+        .warnings_into_errors(true)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_managed_object_parity_consumer");
+
     let message_model_consumer =
         workspace_root.join("bindings/c/tests/message_model_abi_consumer.c");
     println!(

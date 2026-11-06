@@ -26,10 +26,10 @@
 
 ## Phase 3: US2 managed objects and key structures
 ### Red
-- [ ] T016 [US2] Add compiled C object/key/material/wrapping roundtrip and release tests in bindings/c/tests/managed_object_parity_consumer.c.
-- [ ] T017 [US2] Add Java object dispatch/material/extension/redaction/close tests in bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java.
-- [ ] T018 [US2] Add Python object dispatch/material/extension/redaction/context tests in bindings/python/tests/test_managed_object_parity.py.
-- [ ] T019 [US2] Run focused red consumers and record failures in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T016 [US2] Add compiled C object/key/material/wrapping roundtrip and release tests in bindings/c/tests/managed_object_parity_consumer.c.
+- [x] T017 [US2] Add Java object dispatch/material/extension/redaction/close tests in bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java.
+- [x] T018 [US2] Add Python object dispatch/material/extension/redaction/context tests in bindings/python/tests/test_managed_object_parity.py.
+- [x] T019 [US2] Run focused red consumers and record failures in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
 - [ ] T020 [US2] Add C ABI owners/views for nine objects, KeyBlock, KeyValue, material and wrapping forms in crates/kmipkit-ffi/src/extension_registry/managed_objects.rs.
 - [ ] T021 [US2] Add Java closeable owners, views, fallback values and JNI conversion in bindings/java/src/main/java/org/kmipkit/managed/ and bindings/java/native/kmipkit_jni.cpp.
