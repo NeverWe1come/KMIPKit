@@ -45,15 +45,88 @@ unsafe extern "C" {
     ) -> i32;
     fn kmipkit_0053_managed_object_from_fields(
         object_type: u32,
-        fields: *const *mut kmipkit_ttlv_item_t,
+        fields: *mut *mut kmipkit_ttlv_item_t,
         field_count: u64,
         out_item: *mut *mut kmipkit_ttlv_item_t,
     ) -> i32;
     fn kmipkit_0053_key_material_from_fields(
         format_raw: u32,
-        fields: *const *mut kmipkit_ttlv_item_t,
+        fields: *mut *mut kmipkit_ttlv_item_t,
         field_count: u64,
         out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_key_block_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_key_value_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_key_material_from_fields_default(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_key_wrapping_data_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_certificate_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_symmetric_key_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_public_key_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_private_key_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_split_key_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_secret_data_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_opaque_object_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_pgp_key_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_certificate_request_from_fields(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_certificate_roundtrip(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
+    ) -> i32;
+    fn kmipkit_0053_managed_field_reader_roundtrip(
+        fields: *mut *mut kmipkit_ttlv_item_t,
+        field_count: u64,
     ) -> i32;
 }
 
@@ -151,6 +224,47 @@ fn assert_copied_item(
     kmipkit_ttlv_item_release(source_handle);
 }
 
+fn field_handle(raw_tag: u32, value: Value) -> *mut kmipkit_ttlv_item_t {
+    make_handle(
+        Kind::Item,
+        HandleValue::Item(Item::new(tag(raw_tag), value).expect("valid fixture Item")),
+    )
+}
+
+type FieldConstructor =
+    unsafe extern "C" fn(*mut *mut kmipkit_ttlv_item_t, u64, *mut *mut kmipkit_ttlv_item_t) -> i32;
+
+fn assert_compiled_c_field_constructor(
+    constructor: FieldConstructor,
+    mut fields: Vec<*mut kmipkit_ttlv_item_t>,
+    expected_tag: u32,
+) {
+    let mut output_handle = ptr::null_mut();
+    // SAFETY: Every field is a live Item handle and both the pointer array and output slot are valid.
+    let status = unsafe {
+        constructor(
+            fields.as_mut_ptr(),
+            fields.len() as u64,
+            &raw mut output_handle,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    let output = reference_handle(output_handle, Kind::Item).expect("typed structure output");
+    let HandleValue::Item(item) = &output.value else {
+        panic!("typed structure output is an Item")
+    };
+    assert_eq!(item.tag().raw(), expected_tag);
+    assert!(
+        fields
+            .iter()
+            .all(|field| reference_handle(*field, Kind::Item).is_ok())
+    );
+    kmipkit_ttlv_item_release(output_handle);
+    for field in fields {
+        kmipkit_ttlv_item_release(field);
+    }
+}
+
 #[test]
 fn compiled_c_consumer_reads_all_nine_known_object_types() {
     let expected_tags = [
@@ -174,6 +288,171 @@ fn compiled_c_consumer_reads_all_nine_known_object_types() {
             expected_tag,
         );
     }
+}
+
+#[test]
+fn compiled_c_consumer_builds_each_named_object_from_typed_fields() {
+    let key_block_field = || {
+        make_handle(
+            Kind::Item,
+            HandleValue::Item(key_block().try_into_item().expect("Key Block Item")),
+        )
+    };
+    let cases: [(FieldConstructor, u32, Vec<*mut kmipkit_ttlv_item_t>); 9] = [
+        (
+            kmipkit_0053_certificate_from_fields,
+            CERTIFICATE,
+            vec![
+                field_handle(0x0042_001e, Value::byte_string(b"cert".to_vec())),
+                field_handle(0x0042_001d, Value::enumeration(0x8000_0042)),
+            ],
+        ),
+        (
+            kmipkit_0053_symmetric_key_from_fields,
+            SYMMETRIC_KEY,
+            vec![key_block_field()],
+        ),
+        (
+            kmipkit_0053_public_key_from_fields,
+            PUBLIC_KEY,
+            vec![key_block_field()],
+        ),
+        (
+            kmipkit_0053_private_key_from_fields,
+            PRIVATE_KEY,
+            vec![key_block_field()],
+        ),
+        (
+            kmipkit_0053_split_key_from_fields,
+            SPLIT_KEY,
+            vec![
+                field_handle(0x0042_008c, Value::integer(2)),
+                field_handle(0x0042_0044, Value::integer(1)),
+                field_handle(0x0042_008a, Value::enumeration(1)),
+                field_handle(0x0042_008b, Value::integer(2)),
+                key_block_field(),
+            ],
+        ),
+        (
+            kmipkit_0053_secret_data_from_fields,
+            SECRET_DATA,
+            vec![
+                key_block_field(),
+                field_handle(0x0042_0086, Value::enumeration(3)),
+            ],
+        ),
+        (
+            kmipkit_0053_opaque_object_from_fields,
+            OPAQUE_OBJECT,
+            vec![
+                field_handle(0x0042_005a, Value::byte_string(b"opaque".to_vec())),
+                field_handle(0x0042_0059, Value::enumeration(9)),
+            ],
+        ),
+        (
+            kmipkit_0053_pgp_key_from_fields,
+            PGP_KEY,
+            vec![
+                key_block_field(),
+                field_handle(0x0042_00be, Value::integer(7)),
+            ],
+        ),
+        (
+            kmipkit_0053_certificate_request_from_fields,
+            CERTIFICATE_REQUEST,
+            vec![
+                field_handle(0x0042_0140, Value::byte_string(b"request".to_vec())),
+                field_handle(0x0042_0019, Value::enumeration(4)),
+            ],
+        ),
+    ];
+    for (constructor, expected_tag, mut fields) in cases {
+        assert_compiled_c_field_constructor(constructor, std::mem::take(&mut fields), expected_tag);
+    }
+}
+
+#[test]
+fn compiled_c_consumer_reads_named_certificate_fields_by_ttlv_type() {
+    let mut fields = vec![
+        field_handle(0x0042_001e, Value::byte_string(b"cert".to_vec())),
+        field_handle(0x0042_001d, Value::enumeration(0x8000_0042)),
+    ];
+    // SAFETY: The C consumer reads the live borrowed field handles and releases all views and its owned output.
+    let status =
+        unsafe { kmipkit_0053_certificate_roundtrip(fields.as_mut_ptr(), fields.len() as u64) };
+    assert_eq!(status, SUCCESS);
+    assert!(
+        fields
+            .iter()
+            .all(|field| reference_handle(*field, Kind::Item).is_ok())
+    );
+    for field in fields {
+        kmipkit_ttlv_item_release(field);
+    }
+}
+
+#[test]
+fn compiled_c_consumer_reads_typed_managed_fields_by_owner_and_tag() {
+    let mut fields = vec![
+        field_handle(0x0042_001e, Value::byte_string(b"cert".to_vec())),
+        field_handle(0x0042_001d, Value::enumeration(0x8000_0042)),
+    ];
+    // SAFETY: The C consumer reads the borrowed fields, constructs/releases an owned result, and copies bytes into its local buffer.
+    let status = unsafe {
+        kmipkit_0053_managed_field_reader_roundtrip(fields.as_mut_ptr(), fields.len() as u64)
+    };
+    assert_eq!(status, SUCCESS);
+    assert!(fields
+        .iter()
+        .all(|field| reference_handle(*field, Kind::Item).is_ok()));
+    for field in fields {
+        kmipkit_ttlv_item_release(field);
+    }
+}
+
+#[test]
+fn compiled_c_consumer_builds_key_block_value_and_wrapping_fields() {
+    assert_compiled_c_field_constructor(
+        kmipkit_0053_key_value_from_fields,
+        vec![field_handle(
+            KEY_MATERIAL,
+            Value::byte_string(b"secret-canary".to_vec()),
+        )],
+        KEY_VALUE,
+    );
+    assert_compiled_c_field_constructor(
+        kmipkit_0053_key_material_from_fields_default,
+        vec![field_handle(
+            KEY_MATERIAL,
+            Value::byte_string(b"secret-canary".to_vec()),
+        )],
+        KEY_MATERIAL,
+    );
+    let key_value = KeyValue::try_new(
+        KeyMaterial::byte_string(1, b"secret-canary".to_vec()).expect("raw key material"),
+        None,
+    )
+    .expect("Key Value")
+    .into_item();
+    assert_compiled_c_field_constructor(
+        kmipkit_0053_key_block_from_fields,
+        vec![
+            make_handle(Kind::Item, HandleValue::Item(key_value)),
+            field_handle(0x0042_0042, Value::enumeration(1)),
+        ],
+        KEY_BLOCK,
+    );
+    let encryption_info = EncryptionKeyInformation::try_new("wrapping-key".to_owned())
+        .expect("encryption key information")
+        .into_item();
+    assert_compiled_c_field_constructor(
+        kmipkit_0053_key_wrapping_data_from_fields,
+        vec![
+            make_handle(Kind::Item, HandleValue::Item(encryption_info)),
+            field_handle(0x0042_009e, Value::enumeration(1)),
+        ],
+        KEY_WRAPPING_DATA,
+    );
 }
 
 #[test]
@@ -296,19 +575,13 @@ fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values
         Value::byte_string(b"certificate-canary".to_vec()),
     )
     .expect("certificate value");
-    let unknown_first = Item::new(
-        tag(0x0054_0010),
-        Value::byte_string(b"vendor-one".to_vec()),
-    )
-    .expect("vendor field");
-    let certificate_type = Item::new(tag(0x0042_001d), Value::enumeration(0x8000_0042))
-        .expect("certificate type");
-    let unknown_repeat = Item::new(
-        tag(0x0054_0010),
-        Value::byte_string(b"vendor-two".to_vec()),
-    )
-    .expect("repeated vendor field");
-    let source_handles = [
+    let unknown_first = Item::new(tag(0x0054_0010), Value::byte_string(b"vendor-one".to_vec()))
+        .expect("vendor field");
+    let certificate_type =
+        Item::new(tag(0x0042_001d), Value::enumeration(0x8000_0042)).expect("certificate type");
+    let unknown_repeat = Item::new(tag(0x0054_0010), Value::byte_string(b"vendor-two".to_vec()))
+        .expect("repeated vendor field");
+    let mut source_handles = [
         make_handle(Kind::Item, HandleValue::Item(certificate_value)),
         make_handle(Kind::Item, HandleValue::Item(unknown_first)),
         make_handle(Kind::Item, HandleValue::Item(certificate_type)),
@@ -319,7 +592,7 @@ fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values
     let status = unsafe {
         kmipkit_0053_managed_object_from_fields(
             1,
-            source_handles.as_ptr(),
+            source_handles.as_mut_ptr(),
             source_handles.len() as u64,
             &raw mut output_handle,
         )
@@ -348,17 +621,16 @@ fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values
             }),
             0x8000_0042
         );
-        assert_eq!(
-            structure.children()[2].with_value(|value| match value {
-                ValueView::ByteString(bytes) => bytes.as_slice(),
-                _ => &[],
-            }),
-            b"certificate-canary"
-        );
+        assert!(structure.children()[2].with_value(|value| match value {
+            ValueView::ByteString(bytes) => bytes == b"certificate-canary",
+            _ => false,
+        }));
     });
-    assert!(source_handles
-        .iter()
-        .all(|source| reference_handle(*source, Kind::Item).is_ok()));
+    assert!(
+        source_handles
+            .iter()
+            .all(|source| reference_handle(*source, Kind::Item).is_ok())
+    );
     kmipkit_ttlv_item_release(output_handle);
     for source in source_handles {
         kmipkit_ttlv_item_release(source);
@@ -367,14 +639,11 @@ fn compiled_c_consumer_builds_certificate_in_schema_order_and_reads_field_values
 
 #[test]
 fn compiled_c_consumer_builds_transparent_rsa_public_material_in_schema_order() {
-    let exponent = Item::new(
-        tag(0x0042_006c),
-        Value::big_integer(vec![1, 0, 1]),
-    )
-    .expect("public exponent");
-    let modulus = Item::new(tag(0x0042_0052), Value::big_integer(vec![0x80, 0x01]))
-        .expect("modulus");
-    let source_handles = [
+    let exponent =
+        Item::new(tag(0x0042_006c), Value::big_integer(vec![1, 0, 1])).expect("public exponent");
+    let modulus =
+        Item::new(tag(0x0042_0052), Value::big_integer(vec![0x80, 0x01])).expect("modulus");
+    let mut source_handles = [
         make_handle(Kind::Item, HandleValue::Item(exponent)),
         make_handle(Kind::Item, HandleValue::Item(modulus)),
     ];
@@ -383,7 +652,7 @@ fn compiled_c_consumer_builds_transparent_rsa_public_material_in_schema_order() 
     let status = unsafe {
         kmipkit_0053_key_material_from_fields(
             11,
-            source_handles.as_ptr(),
+            source_handles.as_mut_ptr(),
             source_handles.len() as u64,
             &raw mut output_handle,
         )
