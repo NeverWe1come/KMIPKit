@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -50,7 +51,12 @@ final class QueryResponseTypedFieldsTest {
             assertEquals(List.of(0x3bL, 0xf1234567L), response.operations());
             assertEquals(List.of(7L), response.objectTypes());
             assertEquals(List.of("vendor-a"), response.vendorIdentifications());
-            assertEquals(List.of("namespace-a", "namespace-b"), response.applicationNamespaces());
+            assertEquals(List.of("namespace-ñ", "namespace-b"), response.applicationNamespaces());
+            try (var raw = response.rawView();
+                    TtlvItemView namespace = raw.itemAt(1);
+                    TtlvValueView value = namespace.value()) {
+                assertArrayEquals("namespace-ñ".getBytes(StandardCharsets.UTF_8), value.bytes());
+            }
             assertEquals(List.of(0xf1234567L), response.attestationTypes());
             assertEquals(List.of(0x80000001L), response.clientRegistrationMethods());
             assertOne(response.extensionInformations());
@@ -155,7 +161,7 @@ final class QueryResponseTypedFieldsTest {
         TtlvStructure structure = TtlvStructure.create();
         structure = append(structure, OPERATION, TtlvValue.Enumeration(0x3b), limits);
         structure = append(structure, APPLICATION_NAMESPACE,
-                TtlvValue.TextString("namespace-a".getBytes(StandardCharsets.UTF_8), limits), limits);
+                TtlvValue.TextString("namespace-ñ".getBytes(StandardCharsets.UTF_8), limits), limits);
         structure = append(structure, UNKNOWN_VENDOR_TAG,
                 TtlvValue.TextString("vendor-extension".getBytes(StandardCharsets.UTF_8), limits), limits);
         structure = append(structure, OPERATION,

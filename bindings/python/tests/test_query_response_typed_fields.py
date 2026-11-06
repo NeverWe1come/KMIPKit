@@ -45,7 +45,7 @@ def _query_payload() -> ttlv.Structure:
         payload = ttlv.ttlv_structure_create()
         payload = _append(payload, OPERATION, ttlv.ttlv_value_enumeration(0x3B), limits)
         payload = _append(payload, APPLICATION_NAMESPACE,
-                          ttlv.ttlv_value_text_string(b"namespace-a", limits), limits)
+                          ttlv.ttlv_value_text_string("namespace-ñ".encode(), limits), limits)
         payload = _append(payload, UNKNOWN_VENDOR_TAG,
                           ttlv.ttlv_value_text_string(b"vendor-extension", limits), limits)
         payload = _append(payload, OPERATION,
@@ -146,7 +146,17 @@ def test_typed_query_fields_retain_repeats_unknowns_and_raw_order() -> None:
         assert response.operations == (0x3B, 0xF1234567)
         assert response.object_types == (7,)
         assert response.vendor_identifications == ("vendor-a",)
-        assert response.application_namespaces == ("namespace-a", "namespace-b")
+        assert response.application_namespaces == ("namespace-ñ", "namespace-b")
+        with ttlv.ttlv_structure_view(payload) as raw:
+            item = ttlv.ttlv_structure_view_item_at(raw, 1)
+            try:
+                value = ttlv.ttlv_item_view_value(item)
+                try:
+                    assert ttlv.ttlv_value_view_bytes(value) == "namespace-ñ".encode()
+                finally:
+                    value.close()
+            finally:
+                item.close()
         assert response.attestation_types == (0xF1234567,)
         assert response.client_registration_methods == (0x80000001,)
         assert response.unknown_field_tags == (UNKNOWN_VENDOR_TAG,)
