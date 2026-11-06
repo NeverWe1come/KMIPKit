@@ -4014,7 +4014,7 @@ def test_client_execute_with_options_forwards_encoding_and_consumes_batch(
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
     handle = _wrap_owned_handle(client.Client, client_pointer)
-    batch = client.Batch(batch_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
     encodings: list[int] = []
 
