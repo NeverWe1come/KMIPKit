@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 SPEC_ID = "KMIPKIT-0053"
+APPROVAL_RECORD_PATH = "specs/053-api-parity-facade/approval-record.md"
 LANGUAGE_PACKAGES = {
     "rust": {"rust-kmipkit", "rust-kmipkit-protocol", "rust-kmipkit-client"},
     "c": {"c-kmipkit"},
@@ -173,6 +174,8 @@ def _validate_resolution_evidence(resolution: dict[str, Any]) -> list[str]:
         raise ReconciliationError("every declaration resolution needs an approved feature source")
     approval_path = PurePosixPath(approval["path"])
     if (
+        approval["path"] != APPROVAL_RECORD_PATH
+        or
         approval_path.is_absolute()
         or ".." in approval_path.parts
         or "\\" in approval["path"]
@@ -507,20 +510,15 @@ def reconcile_candidate_resolutions(
             language: sorted({row["languageMappings"][language]["name"] for row in mapped_rows})
             for language in sorted(REQUIRED_LANGUAGES)
         }
-        mapped_resolution = next(
-            (resolution for resolution in resolutions
-             if resolution["resolution"] == "mapped"
-             and resolution["capabilityId"] == capability_id),
-            None,
-        )
-        if mapped_resolution is not None:
+        phase5_rows = [
+            row for row in mapped_rows
+            if row.get("approvalSource", {}).get("path") == APPROVAL_RECORD_PATH
+        ]
+        if phase5_rows:
             capability.setdefault("ownerSpecId", SPEC_ID)
-            capability["approvalEvidence"] = copy.deepcopy(mapped_resolution["approvalSource"])
+            capability["approvalEvidence"] = copy.deepcopy(phase5_rows[0]["approvalSource"])
             capability["parityEvidenceIds"] = sorted({
-                path for resolution in resolutions
-                if resolution["resolution"] == "mapped"
-                and resolution["capabilityId"] == capability_id
-                for path in resolution["evidencePaths"]
+                path for row in phase5_rows for path in row.get("parityEvidenceIds", [])
             })
         capability.pop("candidateSpecId", None)
         capability.pop("blockedReason", None)
