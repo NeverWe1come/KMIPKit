@@ -124,10 +124,12 @@ fn unpack_v1_attribute(attr_item: &Item) -> Option<Item> {
 }
 
 /// Converts a 2.1 attribute item into a 1.x `Attribute` structure:
+/// ```text
 /// Structure {
 ///   AttributeName: TextString,
 ///   AttributeValue: <original value>
 /// }
+/// ```
 pub fn convert_v2_to_v1_attribute(item: &Item) -> Option<Item> {
     let raw = item.tag().raw();
     let name_str = crate::codec::names::tag_name(raw)?;
