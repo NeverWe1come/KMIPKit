@@ -60,7 +60,30 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
             for row in merged["publicDeclarations"]
         ]
         self.assertEqual(len(keys), len(set(keys)))
-        self.assertGreater(len(merged["publicDeclarations"]), len(route_data["publicDeclarations"]))
+        self.assertEqual(len(route_data["publicDeclarations"]), len(merged["publicDeclarations"]))
+        rerun = prepare_0053_export_audit_routes.merge_declarations(
+            merged, declarations, exclusions
+        )
+        self.assertEqual(merged, rerun)
+
+    def test_reviewed_routes_persist_exact_python_stale_mappings_for_reconciliation(self) -> None:
+        route_path = (
+            prepare_0053_export_audit_routes.ROOT
+            / prepare_0053_export_audit_routes.ROUTE_PATH
+        )
+        route_data = json.loads(route_path.read_text(encoding="utf-8"))
+
+        stale = next(
+            row
+            for row in route_data.get("pythonStaleMappings", [])
+            if row.get("name") == "KeyBlock.from_fields"
+        )
+
+        self.assertEqual(
+            "kmipkit.managed_objects.KeyBlock.from_fields", stale["correctedName"]
+        )
+        self.assertEqual("python-kmipkit", stale["packageId"])
+        self.assertEqual("Approved", stale["approval"]["status"])
 
     def test_compiles_rust_composed_route_using_one_exact_manifest_route_per_language(self) -> None:
         document = {
