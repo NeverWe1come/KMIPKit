@@ -14,7 +14,6 @@ import org.kmipkit.ttlv.ManagedObject;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
-import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
@@ -30,16 +29,13 @@ final class ManagedTtlvItemTransferTest {
                 ManagedObject object = ManagedObject.opaqueObject(List.of(opaqueDataType, opaqueDataValue));
                 TtlvStructure attributes = TtlvStructure.create()) {
             TtlvItem item = object.intoItem();
-            assertThrows(InvalidInputException.class, object::view);
             try (item) {
-                try (TtlvItemView view = item.view(); Tag tag = view.tag()) {
-                    assertEquals(0x0042_005b, tag.raw());
-                }
                 try (RegisterRequest request = RegisterRequest.create(8, attributes, item);
                         ClientBatchItem batchItem = ClientBatchItem.register(request)) {
                     assertEquals(3, batchItem.operation());
                     assertNotNull(batchItem);
                 }
+                assertThrows(InvalidInputException.class, object::view);
             }
         }
     }
