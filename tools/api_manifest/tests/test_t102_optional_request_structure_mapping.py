@@ -18,7 +18,6 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
-    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -191,7 +190,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-OTHER_DECLARATIONS_SHA256 = "d121fc6e76a1eb5651eef5dba427c7a1cfe3c0667af73a76078a16090e404621"
+OTHER_DECLARATIONS_SHA256 = "cb38e53cebb5c658a71ae7caff6e5b9c98aa6c95df98a0e31753e432145fb71d"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -376,13 +375,12 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
-        # The 930 0051 validation declarations, including 902 blocked candidates,
-        # and predecessor stack additions
+        # The 930 blocked 0051 validation rows and predecessor stack additions
         # remain inside the exact non-target fingerprint and
         # cannot acquire four-language parity through snapshot normalization.
         for capability, count in (
             ("typed_object_attributes", 286),
-            ("typed_managed_objects_and_key_material", 500),
+            ("typed_managed_objects_and_key_material", 356),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [
@@ -395,7 +393,6 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     and row["candidateSpecId"] == "KMIPKIT-0053"
                     for row in typed_rows
                 ))
-        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])

@@ -13,7 +13,6 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
-    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -156,7 +155,7 @@ BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-DECLARATIONS_SHA256 = "9dd20ddf38f06f47d976219d0a46c6ccc77e079524c9f091af1dae765cdac49e"
+DECLARATIONS_SHA256 = "1830e66d0ee3d65bcb680d75b7babd738b81adb951e8cb2161dbe678d480dbe0"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
@@ -437,13 +436,12 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
-        # The 930 0051 validation declarations, including 902 blocked candidates,
-        # and predecessor stack additions
+        # The 930 blocked 0051 validation rows and predecessor stack additions
         # remain inside the exact non-target fingerprint and
         # cannot acquire four-language parity through snapshot normalization.
         for capability, count in (
             ("typed_object_attributes", 286),
-            ("typed_managed_objects_and_key_material", 500),
+            ("typed_managed_objects_and_key_material", 356),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [
@@ -456,7 +454,6 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     and row["candidateSpecId"] == "KMIPKIT-0053"
                     for row in typed_rows
                 ))
-        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

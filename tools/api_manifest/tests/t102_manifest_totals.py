@@ -1,20 +1,9 @@
-"""Shared manifest snapshot guards and historical T102 Rust audit totals."""
+"""Current manifest totals and historical T102 Rust audit snapshot totals."""
 
-from typing import Any
-
-
-def without_0047_versioned_values(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Keep the pre-versioned-value T102 snapshot focused on its original rows."""
-    return [
-        row for row in rows
-        if "KMIPKIT-0047-FR-009" not in row.get("requirementIds", [])
-    ]
-
-
-# KMIPKIT-0051 adds 930 declarations, including 902 unresolved 0043 candidates.
+# The 902 new 0051 validation rows retain the generic reconciler's 0043 candidate owner.
 T102_BLOCKED_CANDIDATES = 902
-T102_PUBLIC_DECLARATIONS = 13_631
-T102_APPROVED_EXCLUSIONS = 17_594
+T102_PUBLIC_DECLARATIONS = 13_372
+T102_APPROVED_EXCLUSIONS = 17_428
 T102_RUST_AUDIT_MANIFEST = 3_287
 T102_RUST_AUDIT_EXCLUDED = 7_176
 T102_RUST_AUDIT_OBSERVED = 10_463
