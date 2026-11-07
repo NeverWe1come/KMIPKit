@@ -79,9 +79,9 @@ platform and adapter coverage gate. The aggregate command was not run because
 Ubuntu and macOS reports are not available in this local Windows worktree;
 remote CI was not queried under the maintainer's instruction to ignore it
 during the GitHub billing issue. Cross-platform reports and full adapter
-aggregate coverage remain pending. T007's local verification task is complete;
-the cross-platform aggregate and hosted CI remain external integration/release
-gates and are not claimed as passed.
+aggregate coverage remain pending. The recorded Windows checks pass, but T007
+remains open until the required cross-platform aggregate coverage and hosted
+platform controls are available and their results are recorded.
 
 The Codex Security diff scan for base `7ea1fac2b8eb55e40a57d1da0c86fbf6d420b6f1`
 and head `a782fa24027922bb5dff81f3f15343293f0b84de` completed with no findings
@@ -96,5 +96,6 @@ The feature branch is intended to target
 PR [#114](https://github.com/NeverWe1come/KMIPKit/pull/114) is open against
 that branch. The remote branch push succeeded after replacing private commit
 email addresses with the account's GitHub noreply address; repository content
-is unchanged. At the last check, GitHub reported no status checks yet. T007
-remains open for the aggregate coverage and remote platform controls.
+is unchanged. Hosted status checks were not queried under the maintainer's
+instruction to ignore remote CI during the GitHub billing issue. T007 remains
+open for the cross-platform aggregate coverage and hosted platform controls.
