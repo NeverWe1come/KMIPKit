@@ -1579,12 +1579,6 @@ class AsyncOperationResponseV1:
         """Return an owned generic TTLV copy of this response payload, if present."""
         return self._outcome.response_payload_ttlv
 
-    @property
-    def is_pending(self) -> bool:
-        """Return whether this operation response has Pending status."""
-        return self.result.result_status == 2
-
-
 class AsyncCancelResponse(AsyncOperationResponseV1):
     """Typed Cancel fields with its echoed correlation value retained in raw TTLV."""
 
@@ -1673,6 +1667,11 @@ class AsyncQueryAsyncRequestsResponse(AsyncOperationResponseV1):
 
     def __init__(self, outcome: AsyncOperationOutcome, _response) -> None:
         super().__init__(outcome)
+
+    @property
+    def is_pending(self) -> bool:
+        """Return whether this Query Asynchronous Requests response is Pending."""
+        return self.result.result_status == 2
 
     def with_asynchronous_correlation_value(
         self, callback: Callable[[memoryview], object]
