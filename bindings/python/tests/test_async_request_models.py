@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import async_operations, ttlv
+from kmipkit import async_operations, errors, ttlv
 from kmipkit.async_operations import (
     CancelRequest,
     PollRequest,
@@ -204,3 +204,100 @@ def test_request_wipes_staged_value_when_buffer_view_creation_fails(
 
     assert source == b"correlation"
     assert staged_values == [bytearray(len(source))]
+
+
+def test_correlation_staging_rejects_invalid_released_and_over_limit_buffers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        async_operations._correlation_staging(object())  # type: ignore[arg-type]
+
+    released = memoryview(b"correlation")
+    released.release()
+    with pytest.raises(errors.InvalidInputError):
+        async_operations._correlation_staging(released)
+
+    monkeypatch.setattr(async_operations, "_MAX_INPUT_BYTES", 2)
+    with pytest.raises(errors.ResourceLimitError):
+        async_operations._correlation_staging(b"too long")
+
+
+def test_correlation_snapshot_wipes_current_and_prior_buffers_on_size_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(async_operations, "_MAX_INPUT_BYTES", 2)
+    wiped: list[bytes] = []
+    original_wipe = async_operations._wipe
+
+    def record_wipe(staging: bytearray) -> None:
+        original_wipe(staging)
+        wiped.append(bytes(staging))
+
+    monkeypatch.setattr(async_operations, "_wipe", record_wipe)
+    with pytest.raises(errors.ResourceLimitError):
+        async_operations._correlation_values([b"a", b"bb"])
+
+    assert wiped == [b"\x00\x00", b"\x00"]
+
+
+def test_correlation_and_operation_filters_reject_non_iterables_and_invalid_values(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        async_operations._correlation_values(None)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        async_operations._with_operations(None, None)  # type: ignore[arg-type]
+
+    with QueryAsyncRequestsRequest.create() as request:
+        with pytest.raises(errors.InvalidInputError):
+            request.with_operations([True])
+        with pytest.raises(errors.InvalidInputError):
+            request.with_operations([-1])
+
+        monkeypatch.setattr(async_operations, "_MAX_FILTER_COUNT", 0)
+        with pytest.raises(errors.ResourceLimitError):
+            request.with_operations([1])
+
+
+def test_async_request_correlation_callback_validation_and_span_cleanup() -> None:
+    for request_type in (CancelRequest, PollRequest):
+        with request_type.create(b"correlation") as request:
+            with pytest.raises(errors.InvalidInputError):
+                request.with_asynchronous_correlation_value(None)  # type: ignore[arg-type]
+
+    ffi = async_operations.ffi
+    storage = ffi.new("uint8_t[]", b"secret")
+    span = ffi.new("kmipkit_byte_span_v1_t *")
+    span.data = ffi.cast("const uint8_t *", storage)
+    span.length = 6
+    borrowed: list[bytearray] = []
+
+    def fail(view: memoryview) -> None:
+        assert view.readonly
+        borrowed.append(view.obj)
+        raise RuntimeError("callback failed")
+
+    with pytest.raises(RuntimeError, match="callback failed"):
+        async_operations._call_with_span(span, fail)
+    assert borrowed == [bytearray(6)]
+
+    with pytest.raises(errors.InvalidInputError):
+        async_operations._call_with_span(
+            [SimpleNamespace(data=ffi.NULL, length=1)], lambda _view: None
+        )
+
+
+def test_async_request_callback_tolerates_callback_releasing_view() -> None:
+    ffi = async_operations.ffi
+    storage = ffi.new("uint8_t[]", b"secret")
+    span = ffi.new("kmipkit_byte_span_v1_t *")
+    span.data = ffi.cast("const uint8_t *", storage)
+    span.length = 6
+    borrowed: list[bytearray] = []
+
+    def release(view: memoryview) -> None:
+        borrowed.append(view.obj)
+        view.release()
+
+    assert async_operations._call_with_span(span, release) is None
+    assert borrowed == [bytearray(6)]

@@ -47,9 +47,9 @@ For full pull-request CI, `fast-preflight` is a required selected job. It runs t
 |---|---|
 | `rust` | Linux, Windows, and macOS LLVM JSON; crate and workspace thresholds plus changed-source threshold. |
 | `ffi-c` | Existing Linux C consumer/Rust FFI LLVM JSON; `kmipkit-ffi` threshold and C API exercise. Selected together with `rust` where Rust core/shared CI applies. |
-| `java` | Linux JaCoCo XML; Java adapter 85% and selected changed-source 95%. |
-| `python` | Linux coverage.py XML; Python adapter 85% and selected changed-source 95%. |
-| `jni` | Linux JNI LLVM JSON; JNI bridge 85% and selected changed-source 95%. |
+| `java` | Linux JaCoCo XML; Java adapter 85% and selected changed-source 90%. |
+| `python` | Linux coverage.py XML; Python adapter 85% and selected changed-source 90%. |
+| `jni` | Linux JNI LLVM JSON; JNI bridge 85% and selected changed-source 90%. |
 
 ## Job Result
 

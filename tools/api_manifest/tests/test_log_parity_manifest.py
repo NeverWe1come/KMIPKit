@@ -36,6 +36,15 @@ PARITY_EVIDENCE = {
 }
 EXPECTED_MAPPINGS = {
     "rust": {
+        "kmipkit::protocol::LogRequest",
+        "kmipkit::protocol::LogRequest::new",
+        "kmipkit::protocol::LogRequest::into_ttlv_payload",
+        "kmipkit::protocol::LogRequest::with_extension",
+        "kmipkit::protocol::LogRequest::with_log_message",
+        "kmipkit::protocol::LogResponse",
+        "kmipkit::protocol::LogResponse::result",
+        "kmipkit::protocol::LogResponse::try_from_response_item",
+        "kmipkit::protocol::LogResponse::with_ttlv",
         "kmipkit_client::ClientRequest::Log",
         "kmipkit_client::ClientBatchOutcome::Log",
         "kmipkit_protocol::LogRequest",

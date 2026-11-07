@@ -84,3 +84,36 @@ fn compiled_c_consumer_reads_adjust_attribute_identifier_and_hides_failure_paylo
     );
     kmipkit_client_batch_item_response_release(failure);
 }
+
+#[test]
+fn adjust_attribute_response_rejects_each_missing_required_output() {
+    let mut present = u8::MAX;
+    let mut identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier record size fits the ABI"),
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_adjust_attribute(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_adjust_attribute(
+            ptr::null_mut(),
+            &raw mut present,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+}

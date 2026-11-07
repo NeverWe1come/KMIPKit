@@ -14,10 +14,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+PROTOCOL_CRATE = "kmipkit_protocol"
+PROTOCOL_REEXPORT_NAMESPACE = "kmipkit::protocol"
+PROTOCOL_REEXPORT_PREFIX = f"{PROTOCOL_REEXPORT_NAMESPACE}::"
 REEXPORT_PACKAGES = {
     "rust-kmipkit": "kmipkit",
-    "rust-kmipkit-protocol": "kmipkit_protocol",
+    "rust-kmipkit-protocol": PROTOCOL_CRATE,
 }
+PROFILE_MODEL_REEXPORT_NAMESPACES = (
+    REEXPORT_PACKAGES["rust-kmipkit"],
+    PROTOCOL_REEXPORT_NAMESPACE,
+    PROTOCOL_CRATE,
+)
 CLIENT_CRATE = "kmipkit_client"
 MODEL_SUFFIXES = {
     "ProfileTransport": ("", "::Https", "::RawTtlvTls"),
@@ -101,9 +109,17 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
             for type_name, suffixes in MODEL_SUFFIXES.items()
             for suffix in suffixes
         }
-        self.assertEqual(38, len(expected))
+        expected.update(
+            (
+                "rust-kmipkit",
+                f"{PROTOCOL_REEXPORT_NAMESPACE}::{type_name}{suffix}",
+            )
+            for type_name, suffixes in MODEL_SUFFIXES.items()
+            for suffix in suffixes
+        )
+        self.assertEqual(57, len(expected))
         self.assertEqual(
-            2,
+            3,
             sum(name.endswith("::ProfileValidationSelection::validate") for _, name in expected),
         )
         self.assertFalse(any("ProfileValidationResult" in name for _, name in expected))
@@ -121,9 +137,14 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
 
         for (package, export_name), row in rows.items():
             crate = REEXPORT_PACKAGES[package]
-            suffix = export_name.removeprefix(f"{crate}::")
-            client_export = f"{CLIENT_CRATE}::{suffix}"
-            client_row = declarations[("rust-kmipkit-client", client_export)]
+            if export_name.startswith(PROTOCOL_REEXPORT_PREFIX):
+                suffix = export_name.removeprefix(PROTOCOL_REEXPORT_PREFIX)
+                protocol_export = f"{PROTOCOL_CRATE}::{suffix}"
+                client_row = declarations[("rust-kmipkit-protocol", protocol_export)]
+            else:
+                suffix = export_name.removeprefix(f"{crate}::")
+                client_export = f"{CLIENT_CRATE}::{suffix}"
+                client_row = declarations[("rust-kmipkit-client", client_export)]
             expected_mappings = dict(client_row["languageMappings"])
             expected_mappings["rust"] = {"packageId": package, "name": export_name}
             with self.subTest(export_name=export_name):
@@ -242,7 +263,7 @@ class T102ProfileModelReexportMappingTests(unittest.TestCase):
         self.assertEqual("declared", capability["capabilityState"])
         expected_model_exports = {
             f"{crate}::{type_name}{suffix}"
-            for crate in ("kmipkit", "kmipkit_protocol")
+            for crate in PROFILE_MODEL_REEXPORT_NAMESPACES
             for type_name, suffixes in MODEL_SUFFIXES.items()
             for suffix in suffixes
         }

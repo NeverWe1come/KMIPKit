@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t101-hash-mac-signature-baseline.json"
 OWNER_SPEC = "specs/021-hash-mac-signature-operations/spec.md"
 T101_TEST = "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
 BASE_CANDIDATE_COUNT = 377
@@ -196,6 +197,14 @@ def _expected_mapping_identities() -> set[tuple[str, str]]:
     return expected
 
 
+def _baseline_candidate_identities() -> set[tuple[str, str]]:
+    inventory = json.loads(BASELINE_INVENTORY.read_text(encoding="utf-8"))
+    return {
+        (row["packageId"], row["exportName"])
+        for row in inventory["identities"]
+    }
+
+
 def _expected_targets(export_name: str) -> tuple[str, dict[str, str]]:
     op = _operation(export_name)
     details = OPS[op]
@@ -219,22 +228,33 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
     def _mapped(self) -> list[dict[str, object]]:
-        expected = _expected_mapping_identities()
+        baseline = _baseline_candidate_identities()
         return [
             r for r in self.manifest["publicDeclarations"]
             if r.get("approvalSource", {}).get("path") == OWNER_SPEC
-            and (r["packageId"], r["exportName"]) in expected
+            and (r["packageId"], r["exportName"]) in baseline
         ]
 
     def _excluded(self) -> list[dict[str, object]]:
-        return [r for r in self.manifest["approvedExclusions"] if r.get("approvalSource", {}).get("path") == OWNER_SPEC and "T101" in r.get("evidence", "")]
+        baseline = _baseline_candidate_identities()
+        return [
+            r for r in self.manifest["approvedExclusions"]
+            if r.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and "T101" in r.get("evidence", "")
+            and (r["packageId"], r["exportName"]) in baseline
+        ]
 
     def test_baseline_identity_fingerprint_is_pinned(self) -> None:
-        candidates = [r for r in self.manifest["publicDeclarations"] if r.get("candidateSpecId") == "KMIPKIT-0021"]
-        rows = candidates or (self._mapped() + self._excluded())
-        identities = sorted(f"{r['packageId']}|{r['exportName']}" for r in rows)
+        inventory = json.loads(BASELINE_INVENTORY.read_text(encoding="utf-8"))
+        identities = sorted(
+            f"{row['packageId']}|{row['exportName']}"
+            for row in inventory["identities"]
+        )
+        self.assertEqual(BASE_CANDIDATE_COUNT, inventory["count"])
+        self.assertEqual(BASE_CANDIDATE_SHA256, inventory["sha256"])
         self.assertEqual(BASE_CANDIDATE_COUNT, len(identities))
         self.assertEqual(BASE_CANDIDATE_SHA256, hashlib.sha256("\n".join(identities).encode()).hexdigest())
+        rows = inventory["identities"]
         self.assertEqual(BASE_PACKAGE_COUNTS, {
             package: sum(row["packageId"] == package for row in rows)
             for package in BASE_PACKAGE_COUNTS
@@ -256,6 +276,8 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
         self.assertEqual([], unresolved)
         all_rows = mapped + excluded
         identities = sorted(f"{r['packageId']}|{r['exportName']}" for r in all_rows)
+        observed = {(r["packageId"], r["exportName"]) for r in all_rows}
+        self.assertEqual(_baseline_candidate_identities(), observed)
         self.assertEqual(BASE_CANDIDATE_COUNT, len(identities))
         self.assertEqual(BASE_CANDIDATE_SHA256, hashlib.sha256("\n".join(identities).encode()).hexdigest())
 

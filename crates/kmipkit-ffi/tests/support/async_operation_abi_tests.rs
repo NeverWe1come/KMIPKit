@@ -1,6 +1,38 @@
 use super::*;
 
 #[test]
+fn standalone_poll_request_exposes_its_owned_correlation_bytes() {
+    let expected_correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
+    let mut request = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_poll_request_create(
+            expected_correlation.as_ptr(),
+            u64::try_from(expected_correlation.len()).expect("correlation length fits ABI"),
+            &raw mut request,
+        ),
+        SUCCESS
+    );
+    assert!(!request.is_null());
+
+    let mut observed = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: u64::MAX,
+    };
+    assert_eq!(
+        client_abi::kmipkit_poll_request_asynchronous_correlation_value(request, &raw mut observed,),
+        SUCCESS
+    );
+    assert_eq!(observed.length, expected_correlation.len() as u64);
+    assert!(!observed.data.is_null());
+    // SAFETY: the borrowed span remains valid while the live Poll request handle is retained.
+    let observed_bytes =
+        unsafe { std::slice::from_raw_parts(observed.data, expected_correlation.len()) };
+    assert_eq!(observed_bytes, expected_correlation);
+
+    client_abi::kmipkit_poll_request_release(request);
+}
+
+#[test]
 fn poll_execution_clears_output_before_rejecting_an_invalid_correlation_span() {
     let mut output = ptr::dangling_mut::<crate::kmipkit_client_async_operation_outcome_t>();
 
@@ -406,6 +438,258 @@ fn poll_execution_with_options_returns_one_exact_async_outcome() {
     kmipkit_client_async_operation_outcome_release(outcome);
     kmipkit_codec_limits_release(limits_handle);
     kmipkit_client_release(client_handle);
+}
+
+#[test]
+fn query_async_requests_executes_once_and_has_no_operation_correlation_value() {
+    let first_correlation = [0x00, 0xff, 0x80];
+    let response = query_async_requests_response(&first_correlation);
+    let (client, peer, exchange_count) = client_with_responses(vec![response]);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let second_correlation = [0x13, 0x00];
+    let correlation_values = [first_correlation.as_slice(), second_correlation.as_slice()];
+    let correlation_spans = correlation_values.map(|value| crate::kmipkit_byte_span_v1_t {
+        data: value.as_ptr(),
+        length: u64::try_from(value.len()).expect("correlation length fits ABI"),
+    });
+    let operations = [0x1a, 0xf123_4567];
+    let mut outcome = ptr::null_mut();
+
+    let status = kmipkit_client_execute_query_async_requests(
+        client_handle,
+        1,
+        correlation_spans.as_ptr(),
+        u64::try_from(correlation_spans.len()).expect("span count fits ABI"),
+        1,
+        operations.as_ptr(),
+        u64::try_from(operations.len()).expect("operation count fits ABI"),
+        0,
+        0,
+        limits_handle,
+        &raw mut outcome,
+    );
+    peer.join().expect("the one-exchange test peer completes");
+
+    assert_eq!(status, SUCCESS);
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+    assert!(!outcome.is_null());
+    assert_query_async_requests_metadata(outcome);
+    assert_query_async_requests_has_no_correlation(outcome);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+#[test]
+fn query_async_requests_with_options_executes_and_returns_one_outcome() {
+    let expected_correlation = [0x00, 0xff, 0x80];
+    let response = query_async_requests_response(&expected_correlation);
+    let (client, peer, exchange_count) = client_with_responses(vec![response]);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let other_correlation = [0x13, 0x00];
+    let correlation_values = [
+        expected_correlation.as_slice(),
+        other_correlation.as_slice(),
+    ];
+    let correlation_spans = correlation_values.map(|value| crate::kmipkit_byte_span_v1_t {
+        data: value.as_ptr(),
+        length: u64::try_from(value.len()).expect("correlation length fits ABI"),
+    });
+    let operations = [0x1a, 0xf123_4567];
+    let options = request_options(
+        timeout(1, 3, 0),
+        timeout(1, 4, 0),
+        timeout(1, 5, 0),
+        timeout(1, 6, 0),
+    );
+    let mut outcome = ptr::null_mut();
+
+    let status = kmipkit_client_execute_query_async_requests_with_options_v1(
+        client_handle,
+        1,
+        correlation_spans.as_ptr(),
+        u64::try_from(correlation_spans.len()).expect("span count fits ABI"),
+        1,
+        operations.as_ptr(),
+        u64::try_from(operations.len()).expect("operation count fits ABI"),
+        1,
+        1,
+        limits_handle,
+        &options,
+        &raw mut outcome,
+    );
+    peer.join().expect("the one-exchange peer completes");
+
+    assert_eq!(status, SUCCESS);
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+    assert!(!outcome.is_null());
+    assert_query_async_requests_metadata(outcome);
+    assert_query_async_requests_has_no_correlation(outcome);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+#[test]
+fn query_async_requests_with_options_rejects_invalid_presence_flags_and_counts() {
+    let mut outcome = ptr::dangling_mut();
+    let invalid_flag = kmipkit_client_execute_query_async_requests_with_options_v1(
+        ptr::null_mut(),
+        2,
+        ptr::null(),
+        0,
+        0,
+        ptr::null(),
+        0,
+        0,
+        0,
+        ptr::null_mut(),
+        ptr::null(),
+        &raw mut outcome,
+    );
+    assert_eq!(invalid_flag, ERROR_INVALID_INPUT);
+    assert!(outcome.is_null());
+
+    let correlation = crate::kmipkit_byte_span_v1_t {
+        data: ptr::NonNull::<u8>::dangling().as_ptr(),
+        length: 1,
+    };
+    outcome = ptr::dangling_mut();
+    let unexpected_correlation = kmipkit_client_execute_query_async_requests_with_options_v1(
+        ptr::null_mut(),
+        0,
+        &raw const correlation,
+        1,
+        0,
+        ptr::null(),
+        0,
+        0,
+        0,
+        ptr::null_mut(),
+        ptr::null(),
+        &raw mut outcome,
+    );
+    assert_eq!(unexpected_correlation, ERROR_INVALID_INPUT);
+    assert!(outcome.is_null());
+
+    let operation = 0x1a;
+    outcome = ptr::dangling_mut();
+    let unexpected_operation = kmipkit_client_execute_query_async_requests_with_options_v1(
+        ptr::null_mut(),
+        0,
+        ptr::null(),
+        0,
+        0,
+        &raw const operation,
+        1,
+        0,
+        0,
+        ptr::null_mut(),
+        ptr::null(),
+        &raw mut outcome,
+    );
+    assert_eq!(unexpected_operation, ERROR_INVALID_INPUT);
+    assert!(outcome.is_null());
+}
+
+fn query_async_requests_response(correlation: &[u8]) -> Vec<u8> {
+    ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x39),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(
+                        0x0042_007c,
+                        [ttlv_structure(
+                            0x0042_0176,
+                            [ttlv_item(0x0042_0006, 0x08, correlation)],
+                        )],
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+fn assert_query_async_requests_metadata(
+    outcome: *mut crate::kmipkit_client_async_operation_outcome_t,
+) {
+    let mut metadata = kmipkit_client_async_operation_metadata_v1_t {
+        struct_size: 0,
+        abi_version: 0,
+        operation: 0,
+        outcome_kind: 0,
+        result_status: 0,
+        has_result_reason: 0,
+        result_reason: 0,
+        has_cancellation_result: 0,
+        cancellation_result: 0,
+        has_result_message: 0,
+        reserved: 0,
+        result_message_data: ptr::null(),
+        result_message_length: 0,
+    };
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_client_async_operation_outcome_metadata_v1(
+            outcome,
+            &mut metadata
+        )),
+        SUCCESS
+    );
+    assert_eq!(metadata.operation, 0x39);
+    assert_eq!(metadata.outcome_kind, BATCH_OUTCOME_COMPLETED);
+    assert_eq!(metadata.result_status, 0);
+}
+
+fn assert_query_async_requests_has_no_correlation(
+    outcome: *mut crate::kmipkit_client_async_operation_outcome_t,
+) {
+    let mut present = u8::MAX;
+    let mut correlation = crate::kmipkit_byte_span_v1_t {
+        data: std::ptr::dangling(),
+        length: u64::MAX,
+    };
+    assert_eq!(
+        kmipkit_client_async_operation_outcome_correlation_value(
+            outcome,
+            &raw mut present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(correlation.data.is_null());
+    assert_eq!(correlation.length, 0);
 }
 
 fn assert_pending_metadata(outcome: *mut kmipkit_client_async_operation_outcome_t) {
