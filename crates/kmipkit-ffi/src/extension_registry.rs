@@ -161,6 +161,13 @@ mod test_handle_helpers;
 #[cfg(test)]
 #[path = "../tests/support/validate_abi_tests.rs"]
 mod validate_abi_tests;
+
+#[cfg(test)]
+#[path = "../tests/support/coverage_guard_tests.rs"]
+mod coverage_guard_tests;
+#[cfg(test)]
+#[path = "../tests/support/ffi_error_kind_mapping_tests.rs"]
+mod ffi_error_kind_mapping_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;

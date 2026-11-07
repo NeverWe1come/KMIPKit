@@ -81,36 +81,42 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                 )
                 self.assertNotIn("binding remains blocked", row)
 
-    def test_bilingual_guides_separate_reconciled_inventory_from_incomplete_mappings(self) -> None:
+    def test_bilingual_guides_match_verified_binding_surface_manifest_state(self) -> None:
         guides = {
             "en": ROOT / "docs" / "user-guide" / "en" / "language-packages.md",
             "es": ROOT / "docs" / "user-guide" / "es" / "paquetes-de-idiomas.md",
         }
-        expected = {
+        expected_scope = {
             "en": (
-                "T011",
-                "every observed declaration has a manifest record or an exact approved exclusion",
+                "t108/t109 and t011 confirm every observed declaration has a manifest record or an exact approved exclusion",
                 "the inventory is reconciled",
-                "does not claim KMIP conformance",
+                "does not claim kmip conformance or release readiness",
             ),
             "es": (
-                "T011",
-                "cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
+                "t108/t109 y t011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
                 "el inventario está reconciliado",
-                "no afirma conformidad KMIP",
+                "no afirma conformidad kmip ni preparación para publicar la versión",
             ),
         }
+        capability = next(
+            item
+            for item in self.manifest["capabilities"]
+            if item["capabilityId"] == "public_binding_surface"
+        )
+        self.assertEqual("verified", capability["capabilityState"])
 
         for language, path in guides.items():
             guide_text = path.read_text(encoding="utf-8")
-            guide = re.sub(r"\s+", " ", guide_text).lower()
             row = next(
                 line.lower() for line in guide_text.splitlines() if "public_binding_surface" in line
             )
+            columns = [column.strip() for column in row.strip("|").split("|")]
             with self.subTest(language=language):
-                for phrase in expected[language]:
-                    self.assertIn(phrase.lower(), row)
-                self.assertNotIn("inventory and mappings are not reconciled", row)
+                self.assertEqual("`public_binding_surface`", columns[0])
+                self.assertEqual(capability["capabilityState"], columns[1])
+                for phrase in expected_scope[language]:
+                    self.assertIn(phrase, columns[2])
+                self.assertNotIn("inventory and mappings are not reconciled", columns[2])
 
     def test_public_api_reference_scopes_high_level_subset_and_complete_typed_set(self) -> None:
         reference = (ROOT / "docs" / "architecture" / "public-api.md").read_text(

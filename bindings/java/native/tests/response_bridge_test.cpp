@@ -192,6 +192,18 @@ void mismatched_ttlv_presence_releases_native_ttlv() {
     assert(state.fields_calls == 0);
 }
 
+void absent_response_with_unexpected_ttlv_is_rejected_and_released() {
+    State state{};
+    state.present = 0;
+    state.ttlv_present = 0;
+    const auto ops = operations(state);
+
+    assert(kmipkit::jni::marshal_client_batch_item_response(ops) == nullptr);
+    assert(state.last_status == KMIPKIT_ERROR_INVALID_INPUT);
+    assert(state.ttlv_releases == 1);
+    assert(state.fields_calls == 0);
+}
+
 void missing_ttlv_for_present_response_is_rejected() {
     State state{};
     state.return_null_ttlv = true;
@@ -284,6 +296,7 @@ int main() {
     excessive_field_count_is_rejected_before_fetching_ttlv();
     ttlv_getter_error_is_reported_without_allocating_java_values();
     mismatched_ttlv_presence_releases_native_ttlv();
+    absent_response_with_unexpected_ttlv_is_rejected_and_released();
     missing_ttlv_for_present_response_is_rejected();
     invalid_payload_releases_native_ttlv();
     fields_array_failure_releases_native_ttlv();

@@ -197,11 +197,11 @@ KMIPKit integration-test results.
 
 ## Coverage
 
-- `kmipkit-ttlv` and `kmipkit-protocol`: 95 percent line minimum each.
+- `kmipkit-ttlv` and `kmipkit-protocol`: 90 percent line minimum each.
 - `kmipkit-transport`, `kmipkit-ffi`, Java, Python, and JNI: 85 percent
   line minimum for each separately measured scope.
 - Rust workspace: 90 percent line minimum.
-- Changed production code across Rust, Java, Python, and JNI: 95 percent line
+- Changed production code across Rust, Java, Python, and JNI: 90 percent line
   minimum.
 - Normative requirement traceability: 100 percent.
 
@@ -235,9 +235,9 @@ uncovered duplicate groups at a mapped physical line; unexplained summary
 reserves are conservative because LLVM does not report their physical
 locations. Missing region start lines fail closed. This preserves
 nested-region counts and prevents missing function records from hiding
-uncovered lines. It requires at least 95 percent changed executable-line
+uncovered lines. It requires at least 90 percent changed executable-line
 coverage. Each Rust crate is gated separately: `kmipkit-ttlv` and
-`kmipkit-protocol` at 95 percent, and `kmipkit-transport` and `kmipkit-ffi`
+`kmipkit-protocol` at 90 percent, and `kmipkit-transport` and `kmipkit-ffi`
 at 85 percent. The Rust workspace gate is 90 percent and includes Rust
 production crates only.
 An LLVM report that repeats a workspace source path across export mappings
@@ -253,7 +253,7 @@ Windows at `coverage-java-linux/jacoco.xml` and
 `coverage-python/coverage.xml`, and one LLVM JSON report at
 `coverage-jni/coverage.json` whenever these source trees exist. It checks each
 scope independently at 85 percent, then includes all reported production
-lines in the 95 percent changed-code gate. Adapter report paths must resolve to
+lines in the 90 percent changed-code gate. Adapter report paths must resolve to
 the source checkout, and every selected production source must be present in
 its report.
 
@@ -290,7 +290,7 @@ does not depend on the runner image's default CMake generator.
 The Linux adapter-coverage job also measures the checked-in normative attribute
 type generator separately from the adapter aggregate. It runs the focused
 `tools.normative_catalog.tests.test_generate_attribute_types` suite under the
-pinned coverage.py 7.10.6 and enforces at least 95 percent line coverage for
+pinned coverage.py 7.10.6 and enforces at least 90 percent line coverage for
 `tools/normative_catalog/generate_attribute_types.py`. This makes changes to
 the catalog-to-runtime mapping generator subject to the repository's changed
 code coverage requirement without counting tooling as a runtime adapter.

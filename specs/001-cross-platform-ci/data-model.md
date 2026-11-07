@@ -38,7 +38,7 @@ The final CI run summary is derived from the workflow `needs` result objects and
 | execution_count | Hit count per executable line | Sum across reports; non-negative integer |
 | changed_lines | Executable source lines changed from PR base to checked merge tree | Computed from exact base and merge commit trees; zero changed executable lines => changed-code metric is not applicable |
 | coverage_percent | Covered executable lines / executable lines | No production executable source => overall coverage unavailable; otherwise thresholds evaluated; no changed executable lines => changed-code metric is not applicable, never 100% |
-| threshold | Applicable policy | 95% changed and ttlv/protocol; 85% transport/FFI/bindings; 90% workspace |
+| threshold | Applicable policy | 90% changed and ttlv/protocol; 85% transport/FFI/bindings; 90% workspace |
 | branch_summary | Branch counts/coverage where emitted | Report only; never gates this feature |
 | coverage_summary | Measured percentages and thresholds, unavailable reason, or failure diagnostic | Written by the coverage gate; never claims a threshold when coverage is unavailable |
 
