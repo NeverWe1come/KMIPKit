@@ -189,6 +189,26 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         with self.assertRaises(ReconciliationError):
             reconcile(self.manifest, report)
 
+    def test_unowned_attribute_trait_projection_fails_closed(self) -> None:
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "associated-item",
+            "exportName": "<kmipkit_protocol::attribute::ClientAttributeMutation as core::fmt::Debug>::fmt",
+        }]}
+
+        with self.assertRaises(ReconciliationError):
+            reconcile(self.manifest, report)
+
+    def test_unowned_attribute_function_fails_closed(self) -> None:
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "function",
+            "exportName": "kmipkit_protocol::attribute::client_vendor_attribute_mutation_is_prohibited",
+        }]}
+
+        with self.assertRaises(ReconciliationError):
+            reconcile(self.manifest, report)
+
     def test_trait_projection_checks_the_exact_package_and_owner(self) -> None:
         cases = (
             ("rust-kmipkit", "<kmipkit::TlsConfig as core::fmt::Debug>::fmt"),
