@@ -64,6 +64,11 @@ call `Client.execute`: that requires a configured transport and a KMIP server.
 The synthetic response exercises the same public parser and generic TTLV
 accessors used for decoded responses; it is not a server response.
 
+These examples do not claim complete operation-checked response-reader parity.
+Typed foreign readers that check operation identity for Cancel, Poll, Process,
+and Query Async remain open in
+[converged task T078](tasks.md).
+
 ## Runnable sources
 
 - [Rust consumer](../../tests/consumers/0053-parity/rust/src/main.rs)

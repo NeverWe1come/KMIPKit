@@ -24,7 +24,9 @@ fn item(raw_tag: u32, value: Value) -> Result<Item, Box<dyn std::error::Error>> 
     Ok(Item::new(RawTag::new(raw_tag)?.try_checked()?, value)?)
 }
 
-fn structure(items: impl IntoIterator<Item = Item>) -> Result<Structure, Box<dyn std::error::Error>> {
+fn structure(
+    items: impl IntoIterator<Item = Item>,
+) -> Result<Structure, Box<dyn std::error::Error>> {
     let mut result = Structure::new();
     for child in items {
         result.try_push(child)?;
@@ -62,7 +64,9 @@ fn demo_authentication() -> Result<Authentication, Box<dyn std::error::Error>> {
         item(0x0042_0024, Value::enumeration(1))?,
         item(0x0042_0025, Value::structure(credential_value))?,
     ])?;
-    Ok(Authentication::new(vec![Credential::try_from_ttlv(credential)?])?)
+    Ok(Authentication::new(vec![Credential::try_from_ttlv(
+        credential,
+    )?])?)
 }
 
 fn execute_ping(
@@ -70,6 +74,31 @@ fn execute_ping(
     limits: &CodecLimits,
 ) -> Result<ClientBatchResponse, ClientError> {
     client.execute(ClientBatch::new(ClientBatchItem::ping()), limits)
+}
+
+fn demonstrate_client_request() -> Result<(), Box<dyn std::error::Error>> {
+    let request = ClientRequest::ping();
+    let validation_report = request.validation_report();
+    assert!(validation_report.is_valid());
+    let _authenticated_batch =
+        ClientBatch::new(ClientBatchItem::ping()).with_authentication(demo_authentication()?);
+    assert_eq!(ClientBatchItem::ping().operation(), 0x3B);
+    Ok(())
+}
+
+fn inspect_synthetic_response() -> Result<(), Box<dyn std::error::Error>> {
+    let response = ResponseMessage::try_from_ttlv(synthetic_ping_response()?)?;
+    assert_eq!(response.batch_items().len(), 1);
+    assert_eq!(
+        response
+            .batch_items()
+            .next()
+            .and_then(|item| item.result_status())
+            .map(|status| status.raw()),
+        Some(0)
+    );
+    assert_eq!(response.with_ttlv(|tree| tree.children().len()), 2);
+    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -86,17 +115,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
     assert_eq!(parameters.cryptographic_algorithm(), Some(0x8000_0001));
 
-    let request = ClientRequest::ping();
-    let validation_report = request.validation_report();
-    assert!(validation_report.is_valid());
-    let _authenticated_batch =
-        ClientBatch::new(ClientBatchItem::ping()).with_authentication(demo_authentication()?);
-    assert_eq!(ClientBatchItem::ping().operation(), 0x3B);
-
-    let response = ResponseMessage::try_from_ttlv(synthetic_ping_response()?)?;
-    assert_eq!(response.batch_items().len(), 1);
-    assert_eq!(response.batch_items().next().and_then(|item| item.result_status()).map(|s| s.raw()), Some(0));
-    assert_eq!(response.with_ttlv(|tree| tree.children().len()), 2);
+    demonstrate_client_request()?;
+    inspect_synthetic_response()?;
 
     // The consumer prepares an operation and validates it locally. No server is contacted.
     let _client_builder: fn(ClientConfiguration, TransportConfig) -> Result<Client, ClientError> =
