@@ -421,6 +421,21 @@ read-only view backed by temporary KMIPKit-managed storage. The temporary
 storage is zeroized before the callback method returns, including when the
 callback raises. Any copy made by application code is caller-owned.
 
+Each async outcome offers an operation-specific response view: `cancelResponse()`/
+`cancel_response()`, `pollResponse()`/`poll_response()`,
+`processResponse()`/`process_response()`, and
+`queryAsyncRequestsResponse()`/`query_async_requests_response()`. Rust uses
+the corresponding snake-case readers, and the C ABI has one `_response_v1`
+function for each operation. A reader returns absence for another operation.
+Cancel exposes the Cancellation Result; Poll and Process expose Pending state;
+Process also exposes payload presence and member count. All views retain or
+borrow from the outcome owner, so Java/Python views cannot be used after the
+outcome is closed. Generic payload access remains available through `raw()`;
+Query Asynchronous Requests deliberately leaves its payload generic because
+KMIP v2.1 §6.1.41 Table 286 has a caption/body discrepancy. C correlation
+spans and Java/Python callbacks read the outcome-owned bytes without storing a
+second correlation copy.
+
 ## Resource limits
 
 `CodecLimits` applies to each request execution. Its defaults are:
