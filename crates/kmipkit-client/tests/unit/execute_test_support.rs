@@ -1,5 +1,8 @@
 //! Shared, deterministic TTLV fixtures for client execution tests.
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -118,22 +121,29 @@ pub(crate) fn assert_lifecycle_outcome_surface(
 
 pub(crate) struct TestTransport {
     transport: Box<dyn Transport>,
-    options_observer: Option<std::rc::Rc<std::cell::RefCell<Vec<RequestOptions>>>>,
+    observed_options: Option<Rc<RefCell<Vec<RequestOptions>>>>,
 }
 
 impl TestTransport {
     pub(crate) fn new<T: Transport + 'static>(transport: T) -> Self {
         Self {
             transport: Box::new(transport),
-            options_observer: None,
+            observed_options: None,
         }
     }
 
-    pub(crate) fn observe_options(
-        &mut self,
-        observer: std::rc::Rc<std::cell::RefCell<Vec<RequestOptions>>>,
-    ) {
-        self.options_observer = Some(observer);
+    pub(crate) fn with_options_observer<T: Transport + 'static>(
+        transport: T,
+        observed_options: Rc<RefCell<Vec<RequestOptions>>>,
+    ) -> Self {
+        Self {
+            transport: Box::new(transport),
+            observed_options: Some(observed_options),
+        }
+    }
+
+    pub(crate) fn observe_options(&mut self, observer: Rc<RefCell<Vec<RequestOptions>>>) {
+        self.observed_options = Some(observer);
     }
 
     pub(crate) fn exchange_with_options(
@@ -142,8 +152,8 @@ impl TestTransport {
         max_response_bytes: usize,
         options: &RequestOptions,
     ) -> Result<TransportResponse, TransportError> {
-        if let Some(observer) = &self.options_observer {
-            observer.borrow_mut().push(*options);
+        if let Some(observed_options) = &self.observed_options {
+            observed_options.borrow_mut().push(*options);
         }
         self.transport.exchange(request, max_response_bytes)
     }

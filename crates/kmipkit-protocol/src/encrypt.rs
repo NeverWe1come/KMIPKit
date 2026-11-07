@@ -96,6 +96,15 @@ impl EncryptRequest {
         self
     }
 
+    /// Supplies typed Cryptographic Parameters for this request.
+    #[must_use]
+    pub fn with_typed_cryptographic_parameters(
+        self,
+        parameters: crate::CryptographicParameters,
+    ) -> Self {
+        self.with_cryptographic_parameters(parameters.into_ttlv())
+    }
+
     /// Supplies the optional IV/Counter/Nonce Byte String.
     #[must_use]
     pub fn with_iv_counter_nonce(mut self, value: SecretBytes) -> Self {

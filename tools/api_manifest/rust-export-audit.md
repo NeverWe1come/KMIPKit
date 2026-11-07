@@ -205,3 +205,20 @@ ordering, and the installed-toolchain guard. Red/Green commits are distinct:
 
 The pinned real compiler established JSON format 57; the initial exploratory
 stable compiler's format 61 is deliberately rejected by this runner.
+
+## Parameters and Authentication synchronization snapshot (2026-11-07)
+
+The 0047, 0048, and 0049 reports remain historical snapshots. The combined
+0050 source is audited separately at
+`specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json`.
+It contains 22,655 observed routes, 6,825 exact manifest matches, and 15,830
+approved exclusions, with zero missing or unobserved paths, kind mismatches,
+conditional mismatches, or inventory issues. The audit completed with Windows
+Rust 1.94.0 and all features.
+
+The shared auditor and its current-snapshot tests now select that paired 0050
+input and `specs/050-parameters-auth-client/reports/shared-rust-inventory-post-sync-2026-11-07.json`.
+The shared capability inventory retains 3,697 mapped declarations; operation
+mappings are counted separately. Typed parameters and request Authentication
+execution remain blocked for binding parity under KMIPKIT-0053. See the 0050
+reports README for the exact reproduction commands and scope.

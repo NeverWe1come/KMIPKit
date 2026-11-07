@@ -167,3 +167,14 @@ generator checks are tracked in their own T011 evidence; end-to-end language
 parity and offline package-loading gates remain assigned to T029/T071 and
 T028/T072. Regenerate the current report after each binding-export
 reconciliation batch.
+
+## Parameters and Authentication synchronization snapshot (2026-11-07)
+
+The 0049 binding report remains a historical predecessor snapshot. The new
+combined 0050 report is
+`specs/050-parameters-auth-client/reports/binding-export-report-post-sync-2026-11-07.json`.
+Its official `--check` run completed with 1,708 exact C manifest matches,
+1,881 Java matches, and 2,000 Python matches. All three packages are complete
+and match the manifest, with no missing or unobserved routes, kind mismatches,
+or inventory issues. No binding capability is promoted by this audit; typed
+parameters and Authentication execution parity remain assigned to KMIPKIT-0053.

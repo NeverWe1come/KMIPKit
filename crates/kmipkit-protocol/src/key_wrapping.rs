@@ -70,6 +70,14 @@ impl EncryptionKeyInformation {
         Ok(self)
     }
 
+    /// Adds typed Cryptographic Parameters after the Unique Identifier.
+    pub fn with_typed_cryptographic_parameters(
+        self,
+        parameters: crate::CryptographicParameters,
+    ) -> Result<Self, ManagedObjectError> {
+        self.with_cryptographic_parameters(parameters.into_ttlv())
+    }
+
     /// Consumes this value into its Structure Item.
     #[must_use]
     pub fn into_item(self) -> Item {
@@ -122,6 +130,14 @@ impl MacSignatureKeyInformation {
         self.item =
             append_cryptographic_parameters(&self.item, MAC_SIGNATURE_KEY_INFORMATION, parameters)?;
         Ok(self)
+    }
+
+    /// Adds typed Cryptographic Parameters after the Unique Identifier.
+    pub fn with_typed_cryptographic_parameters(
+        self,
+        parameters: crate::CryptographicParameters,
+    ) -> Result<Self, ManagedObjectError> {
+        self.with_cryptographic_parameters(parameters.into_ttlv())
     }
 
     /// Consumes this value into its Structure Item.

@@ -130,6 +130,7 @@ pub use cryptographic_operation::{
     CryptographicOperationResponseContext, DigitalSignatureAlgorithm, HashingAlgorithm,
     ValidityIndicator, VerificationResponseContext,
 };
+pub use cryptographic_parameters::{CryptographicParameters, CryptographicParametersBuilder};
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delegated_login::{DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};

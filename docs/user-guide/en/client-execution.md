@@ -57,6 +57,56 @@ claim that the implementation provides KMIP §9.16 same-major backward
 compatibility. See [ADR-0002](../../adr/0002-kmip-21-release-scope.md) for the release
 scope.
 
+## Direct operation methods and per-exchange options
+
+`Client` exposes a typed direct method for each of the 56 client-initiated
+operations. Methods that perform an exchange also have a matching
+`*_with_options` method accepting `RequestOptions`; the options apply to that
+exchange only. A direct call sends one request and returns its one-item
+response. It does not retry or issue Poll implicitly. Pending status and its
+correlation value remain explicit in the returned outcome.
+
+Use `ClientBatch` when a request needs Request Header Authentication, an
+Asynchronous Indicator, multiple ordered Batch Items, or other shared header
+fields. Authentication is attached to that one batch and is encoded once for
+the Request Message; direct convenience methods do not select or retain
+credentials.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientError, ClientRequest, RequestOptions};
+use kmipkit_protocol::{Authentication, GetRequest};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn direct_get(
+    client: &mut Client,
+    limits: &CodecLimits,
+    options: &RequestOptions,
+) -> Result<(), ClientError> {
+    let response = client.get_with_options(GetRequest::new(), limits, options)?;
+    let _outcome = response.outcome();
+    Ok(())
+}
+
+#[allow(dead_code)]
+fn authenticated_get(
+    client: &mut Client,
+    limits: &CodecLimits,
+    authentication: Authentication,
+) -> Result<(), ClientError> {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new())))
+        .with_authentication(authentication);
+    let _response = client.execute(batch, limits)?;
+    Ok(())
+}
+
+fn main() {}
+```
+
+`Authentication` is distinct from TLS client authentication. The first is a
+caller-supplied KMIP Request Header value; the second authenticates the TLS
+connection. KMIPKit does not persist KMIP credentials on `Client`.
+
 ## Server-generated creation operations
 
 Create, Create Key Pair, and Create Split Key send caller-selected typed

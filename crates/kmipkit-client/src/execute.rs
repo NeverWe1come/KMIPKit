@@ -13,7 +13,7 @@ use kmipkit_protocol::extension::ExtensionIdentity;
 use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, AddAttributeRequest, AddAttributeResponse,
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
-    AsynchronousOperationError, AttributeReference, CancelRequest, CancelResponse,
+    AsynchronousOperationError, AttributeReference, Authentication, CancelRequest, CancelResponse,
     CancellationResult, CertifyRequest, CertifyResponse, CheckRequest, CheckResponse,
     CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
     CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
@@ -151,6 +151,7 @@ const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const BATCH_ORDER_OPTION: u32 = 0x0042_0010;
 const ASYNCHRONOUS_INDICATOR: u32 = 0x0042_0007;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
+const AUTHENTICATION: u32 = 0x0042_000C;
 const ATTESTATION_CAPABLE_INDICATOR: u32 = 0x0042_00D3;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -1122,6 +1123,7 @@ impl fmt::Debug for ClientBatchItem {
 /// A typed ordered request batch with common client-selected message options.
 pub struct ClientBatch {
     items: Vec<ClientBatchItem>,
+    authentication: Option<Authentication>,
     request_time_stamp: Option<i64>,
     batch_order_option: Option<bool>,
     batch_error_continuation_values: Vec<u32>,
@@ -1141,6 +1143,7 @@ impl ClientBatch {
     pub fn new(item: ClientBatchItem) -> Self {
         Self {
             items: vec![item],
+            authentication: None,
             request_time_stamp: None,
             batch_order_option: None,
             batch_error_continuation_values: Vec::new(),
@@ -1154,6 +1157,7 @@ impl ClientBatch {
     pub fn from_items(items: impl IntoIterator<Item = ClientBatchItem>) -> Self {
         Self {
             items: items.into_iter().collect(),
+            authentication: None,
             request_time_stamp: None,
             batch_order_option: None,
             batch_error_continuation_values: Vec::new(),
@@ -1165,6 +1169,17 @@ impl ClientBatch {
     /// Appends a typed request item in execution order.
     pub fn push(&mut self, item: ClientBatchItem) {
         self.items.push(item);
+    }
+
+    /// Sets optional Authentication for this Request Message.
+    ///
+    /// The same owned Authentication applies to every item in the batch. It
+    /// is encoded once in Request Header and is never retained in the client
+    /// configuration.
+    #[must_use]
+    pub fn with_authentication(mut self, authentication: Authentication) -> Self {
+        self.authentication = Some(authentication);
+        self
     }
 
     /// Sets the optional caller-supplied Request Header Time Stamp.
@@ -1229,6 +1244,7 @@ impl fmt::Debug for ClientBatch {
         formatter
             .debug_struct("ClientBatch")
             .field("item_count", &self.items.len())
+            .field("authentication", &self.authentication.is_some())
             .field("request_time_stamp", &self.request_time_stamp.is_some())
             .field("batch_order_option", &self.batch_order_option)
             .field(
@@ -3983,6 +3999,416 @@ fn transport_configuration_error(error: TransportConfigError) -> ClientError {
 }
 
 impl Client {
+    /// Executes one Discover Versions request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn discover_versions(
+        &mut self,
+        request: DiscoverVersionsRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.discover_versions_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Discover Versions request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn discover_versions_with_options(
+        &mut self,
+        request: DiscoverVersionsRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::DiscoverVersions(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Delegated Login request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn delegated_login(
+        &mut self,
+        request: DelegatedLoginRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.delegated_login_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Delegated Login request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn delegated_login_with_options(
+        &mut self,
+        request: DelegatedLoginRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::DelegatedLogin(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Login request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn login(
+        &mut self,
+        request: LoginRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.login_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Login request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn login_with_options(
+        &mut self,
+        request: LoginRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Login(request), limits, request_options)
+    }
+
+    /// Executes one Logout request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn logout(
+        &mut self,
+        request: LogoutRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.logout_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Logout request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn logout_with_options(
+        &mut self,
+        request: LogoutRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Logout(request), limits, request_options)
+    }
+
+    /// Executes one Get request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn get(
+        &mut self,
+        request: GetRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.get_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Get request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn get_with_options(
+        &mut self,
+        request: GetRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Get(request), limits, request_options)
+    }
+
+    /// Executes one Locate request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn locate(
+        &mut self,
+        request: LocateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.locate_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Locate request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn locate_with_options(
+        &mut self,
+        request: LocateRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Locate(request), limits, request_options)
+    }
+
+    /// Executes one Add Attribute request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn add_attribute(
+        &mut self,
+        request: AddAttributeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.add_attribute_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Add Attribute request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn add_attribute_with_options(
+        &mut self,
+        request: AddAttributeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::AddAttribute(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Adjust Attribute request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn adjust_attribute(
+        &mut self,
+        request: AdjustAttributeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.adjust_attribute_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Adjust Attribute request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn adjust_attribute_with_options(
+        &mut self,
+        request: AdjustAttributeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::AdjustAttribute(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Delete Attribute request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn delete_attribute(
+        &mut self,
+        request: DeleteAttributeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.delete_attribute_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Delete Attribute request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn delete_attribute_with_options(
+        &mut self,
+        request: DeleteAttributeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::DeleteAttribute(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Modify Attribute request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn modify_attribute(
+        &mut self,
+        request: ModifyAttributeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.modify_attribute_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Modify Attribute request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn modify_attribute_with_options(
+        &mut self,
+        request: ModifyAttributeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::ModifyAttribute(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Set Attribute request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn set_attribute(
+        &mut self,
+        request: SetAttributeRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.set_attribute_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Set Attribute request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn set_attribute_with_options(
+        &mut self,
+        request: SetAttributeRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::SetAttribute(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Get Attributes request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn get_attributes(
+        &mut self,
+        request: GetAttributesRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.get_attributes_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Get Attributes request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn get_attributes_with_options(
+        &mut self,
+        request: GetAttributesRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::GetAttributes(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Encrypt request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn encrypt(
+        &mut self,
+        request: EncryptRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.encrypt_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Encrypt request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn encrypt_with_options(
+        &mut self,
+        request: EncryptRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Encrypt(request), limits, request_options)
+    }
+
+    /// Executes one Decrypt request in one exchange without polling or retrying.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn decrypt(
+        &mut self,
+        request: DecryptRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.decrypt_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Decrypt request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn decrypt_with_options(
+        &mut self,
+        request: DecryptRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::Decrypt(request), limits, request_options)
+    }
+
     /// Creates a typed client from its immutable extension configuration and
     /// one validated production transport configuration.
     ///
@@ -5004,11 +5430,21 @@ impl Client {
         &mut self,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::get_constraints(),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.get_constraints_with_options(limits, &RequestOptions::default())
+    }
+
+    /// Executes one Get Constraints request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_constraints_with_options(
+        &mut self,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::get_constraints(), limits, request_options)
     }
 
     /// Executes one Get Attribute List request through one transport exchange.
@@ -5022,11 +5458,7 @@ impl Client {
         request: GetAttributeListRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::get_attribute_list(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.get_attribute_list_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one Set Constraints request through one transport exchange.
@@ -5040,11 +5472,7 @@ impl Client {
         request: SetConstraintsRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::set_constraints(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.set_constraints_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one Set Defaults request through one transport exchange.
@@ -5058,11 +5486,7 @@ impl Client {
         request: SetDefaultsRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::set_defaults(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.set_defaults_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one Get Usage Allocation request through one transport exchange.
@@ -5079,11 +5503,7 @@ impl Client {
         request: GetUsageAllocationRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::get_usage_allocation(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.get_usage_allocation_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one certificate-chain Validate request with one exchange.
@@ -5099,11 +5519,7 @@ impl Client {
         request: ValidateRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::validate(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.validate_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one RNG Retrieve request through one transport exchange.
@@ -5120,11 +5536,7 @@ impl Client {
         request: RngRetrieveRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::rng_retrieve(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.rng_retrieve_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one explicitly selected Log request with one exchange.
@@ -5140,11 +5552,7 @@ impl Client {
         request: LogRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::log(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.log_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one explicitly selected Interop request with one exchange.
@@ -5158,11 +5566,7 @@ impl Client {
         request: InteropRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::interop(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.interop_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Executes one RNG Seed request through one transport exchange.
@@ -5179,11 +5583,7 @@ impl Client {
         request: RngSeedRequest,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execute_one_typed_request(
-            ClientRequest::rng_seed(request),
-            limits,
-            &RequestOptions::default(),
-        )
+        self.rng_seed_with_options(request, limits, &RequestOptions::default())
     }
 
     /// Forwards one explicit PKCS#11 request (§6.1.37, Table 273) in one exchange.
@@ -5571,6 +5971,152 @@ impl Client {
     ) -> Result<ClientBatchItemResponse, ClientError> {
         let response = self.execute_with_options(batch, limits, options)?;
         take_single_item_response(response.items)
+    }
+
+    /// Executes one Get Attribute List request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn get_attribute_list_with_options(
+        &mut self,
+        request: GetAttributeListRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::get_attribute_list(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Set Constraints request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn set_constraints_with_options(
+        &mut self,
+        request: SetConstraintsRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::set_constraints(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Set Defaults request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn set_defaults_with_options(
+        &mut self,
+        request: SetDefaultsRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::set_defaults(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Get Usage Allocation request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn get_usage_allocation_with_options(
+        &mut self,
+        request: GetUsageAllocationRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::get_usage_allocation(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Validate request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn validate_with_options(
+        &mut self,
+        request: ValidateRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::validate(request), limits, request_options)
+    }
+
+    /// Executes one RNG Retrieve request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn rng_retrieve_with_options(
+        &mut self,
+        request: RngRetrieveRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::rng_retrieve(request),
+            limits,
+            request_options,
+        )
+    }
+
+    /// Executes one Log request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn log_with_options(
+        &mut self,
+        request: LogRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::log(request), limits, request_options)
+    }
+
+    /// Executes one Interop request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn interop_with_options(
+        &mut self,
+        request: InteropRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::interop(request), limits, request_options)
+    }
+
+    /// Executes one RNG Seed request with per-exchange transport options.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with delivery evidence.
+    pub fn rng_seed_with_options(
+        &mut self,
+        request: RngSeedRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::rng_seed(request), limits, request_options)
     }
 
     /// Executes one typed Create request through the shared batch writer.
@@ -6030,6 +6576,23 @@ impl Client {
     #[cfg(test)]
     pub(super) fn for_test<T: Transport + 'static>(transport: T) -> Self {
         Self::for_test_with_configuration(transport, empty_test_configuration())
+    }
+
+    #[cfg(test)]
+    pub(super) fn for_test_with_options_observer<T: Transport + 'static>(
+        transport: T,
+        observed_options: std::rc::Rc<std::cell::RefCell<Vec<RequestOptions>>>,
+    ) -> Self {
+        Self {
+            transport: ClientTransport::Test(TestTransport::with_options_observer(
+                transport,
+                observed_options,
+            )),
+            configuration: empty_test_configuration(),
+            request_owner_observer: None,
+            pending_owner_observer: None,
+            limits_identity_observer: None,
+        }
     }
 
     #[cfg(test)]
@@ -6505,11 +7068,11 @@ pub(super) fn validate_batch_error_continuation(
 }
 
 fn build_request_message(
-    batch: ClientBatch,
+    mut batch: ClientBatch,
     options: &ValidatedBatchOptions,
     maximum_response_size: Option<i32>,
 ) -> Result<RequestMessage, ProtocolError> {
-    let header = build_request_header(&batch, options, maximum_response_size)?;
+    let header = build_request_header(&mut batch, options, maximum_response_size)?;
     let mut tree = Structure::new();
     push(&mut tree, REQUEST_HEADER, Value::structure(header))?;
     for item in batch.items {
@@ -6568,7 +7131,7 @@ fn clone_response_message(response: &ResponseMessage) -> Result<ResponseMessage,
 }
 
 fn build_request_header(
-    batch: &ClientBatch,
+    batch: &mut ClientBatch,
     options: &ValidatedBatchOptions,
     maximum_response_size: Option<i32>,
 ) -> Result<Structure, ProtocolError> {
@@ -6612,6 +7175,10 @@ fn build_request_header(
         ATTESTATION_CAPABLE_INDICATOR,
         Value::boolean(true),
     )?;
+    if let Some(authentication) = batch.authentication.take() {
+        let tree = authentication.into_ttlv();
+        push(&mut header, AUTHENTICATION, Value::structure(tree))?;
+    }
     if let Some(value) = options.batch_error_continuation.encoded {
         push(
             &mut header,

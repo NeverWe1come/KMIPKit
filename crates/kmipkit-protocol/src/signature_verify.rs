@@ -61,6 +61,15 @@ impl SignatureVerifyRequest {
         self
     }
 
+    /// Supplies typed Cryptographic Parameters for this request.
+    #[must_use]
+    pub fn with_typed_cryptographic_parameters(
+        self,
+        value: crate::CryptographicParameters,
+    ) -> Self {
+        self.with_cryptographic_parameters(value.into_ttlv())
+    }
+
     /// Supplies optional original Data (§7.9).
     #[must_use]
     pub fn with_data(mut self, value: OperationData) -> Self {
