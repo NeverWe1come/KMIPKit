@@ -179,6 +179,16 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         with self.assertRaises(ReconciliationError):
             reconcile(self.manifest, report)
 
+    def test_unowned_trait_projection_fails_closed(self) -> None:
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-transport",
+            "kind": "associated-item",
+            "exportName": "<kmipkit_transport::TlsConfig as core::fmt::Debug>::fmt",
+        }]}
+
+        with self.assertRaises(ReconciliationError):
+            reconcile(self.manifest, report)
+
     def test_registers_only_the_requirement_ids_used_by_new_rows(self) -> None:
         result = reconcile(self.manifest, self.report)
 
