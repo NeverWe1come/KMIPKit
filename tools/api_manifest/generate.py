@@ -30,9 +30,10 @@ from typing import Any
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-# Public API parity records include exact declarations in all four languages;
-# keep parsing bounded while leaving room for the complete generated inventory.
-MAX_MANIFEST_BYTES = 48 * 1024 * 1024
+# Public API parity records include exact declarations in all four languages.
+# 56 MiB covers the full inventory's indented test serialization with bounded
+# headroom while retaining a strict upper bound on manifest input allocation.
+MAX_MANIFEST_BYTES = 56 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
