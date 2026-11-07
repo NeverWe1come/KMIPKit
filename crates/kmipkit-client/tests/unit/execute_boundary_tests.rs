@@ -997,6 +997,9 @@ impl BoundaryAudit {
             impl_type,
             signature,
         );
+        let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
+        let server_request_dispatcher =
+            is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
         let approved_generic_signature = extension_view_callback
             || error_response_ttlv_callback
             || async_outcome_callback
@@ -1019,6 +1022,7 @@ impl BoundaryAudit {
                     || batch_from_items && index == 0
                     || registry_value_validation && index == 2
                     || registry_inspect && index == 2
+                    || server_request_dispatcher && index == 2
                 {
                     continue;
                 }
@@ -2316,6 +2320,24 @@ fn is_exact_registry_generic_accessor(
     )
 }
 
+fn is_exact_server_request_dispatch(
+    s2c_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    s2c_root_scope
+        && impl_type == Some("ServerRequestDispatcher")
+        && signature.ident == "dispatch"
+        && signature.generics.params.is_empty()
+        && signature.generics.where_clause.is_none()
+        && signature.asyncness.is_none()
+        && signature.constness.is_none()
+        && signature.unsafety.is_none()
+        && signature.abi.is_none()
+        && signature.variadic.is_none()
+        && signature.inputs.len() == 3
+}
+
 fn is_result_with_types(output: &syn::ReturnType, ok_type: &str, error_type: &str) -> bool {
     let syn::ReturnType::Type(_, output) = output else {
         return false;
@@ -3307,6 +3329,7 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
         "json_encoding.rs",
         "xml_codec.rs",
         "wire_codec_common.rs",
+        "server_to_client.rs",
     ] {
         assert!(
             paths.contains(expected),

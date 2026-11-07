@@ -326,6 +326,12 @@ pub use kmipkit_protocol::{
 };
 pub use kmipkit_transport::{RequestOptions, WireEncoding};
 
+pub mod server_to_client;
+pub use server_to_client::{
+    ClientListener, ClientListenerConnection, IncomingServerBatch, RoleReversedSession,
+    ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload, ServerRequestItemView,
+};
+
 #[cfg(test)]
 #[path = "../tests/unit/interop_execution_tests.rs"]
 mod interop_execution_tests;
@@ -341,3 +347,7 @@ mod validate_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/pkcs11_execution_tests.rs"]
 mod pkcs11_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/server_to_client_tests.rs"]
+mod server_to_client_tests;

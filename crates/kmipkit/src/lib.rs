@@ -157,27 +157,32 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "server_generated_creation"
             | "typed_message_model"
             | "public_binding_surface"
+            | "server_to_client_operations"
+            | "endpoint_role_inversion"
     ))
 }
 
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
-    ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest, PendingOutcome,
-    RequestOptions, UsageAllocationContext, UsageAllocationContextError,
+    ClientListener, ClientListenerConnection, ClientMessageExtension, ClientOperation,
+    ClientOperationOutcome, ClientRequest, IncomingServerBatch, PendingOutcome, RequestOptions,
+    RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload,
+    ServerRequestItemView, UsageAllocationContext, UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,
-    GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse, GetUsageAllocationError,
-    GetUsageAllocationRequest, GetUsageAllocationResponse, KmipOperationResult, LoginError,
-    LoginRequest, LoginResponse, LogoutError, LogoutRequest, LogoutResponse, PollRequest,
-    ProcessRequest, ProfileObjectState, ProfileTransport, ProfileValidationContext,
-    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
-    ProfileValidationSelection, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
-    RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse, RngSeedError, RngSeedRequest,
-    RngSeedResponse, SecretBytes, SetConstraintsError, SetConstraintsRequest,
-    SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse, Ticket,
-    TicketType, TicketValidationError, TicketValidationErrorKind,
+    EndpointRole, GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse,
+    GetUsageAllocationError, GetUsageAllocationRequest, GetUsageAllocationResponse,
+    KmipOperationResult, LoginError, LoginRequest, LoginResponse, LogoutError, LogoutRequest,
+    LogoutResponse, PollRequest, ProcessRequest, ProfileObjectState, ProfileTransport,
+    ProfileValidationContext, ProfileValidationError, ProfileValidationErrorCode,
+    ProfileValidationResult, ProfileValidationSelection, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus,
+    ResultValidationError, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse,
+    RngSeedError, RngSeedRequest, RngSeedResponse, SecretBytes, SetConstraintsError,
+    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest,
+    SetDefaultsResponse, SetEndpointRoleError, SetEndpointRoleRequest, SetEndpointRoleResponse,
+    Ticket, TicketType, TicketValidationError, TicketValidationErrorKind,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
