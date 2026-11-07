@@ -17,110 +17,59 @@ fn ttlv_item(raw_tag: u32, value: Value) -> Result<Item, String> {
     Item::new(tag, value).map_err(|e| e.to_string())
 }
 
-/// A KMIP 3.0 Deactivate request.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct DeactivateRequest {
-    unique_identifier: String,
-}
-
-impl DeactivateRequest {
-    #[must_use]
-    pub fn new(unique_identifier: impl Into<String>) -> Self {
-        Self {
-            unique_identifier: unique_identifier.into(),
-        }
-    }
-
-    #[must_use]
-    pub fn unique_identifier(&self) -> &str {
-        &self.unique_identifier
-    }
-
-    /// Serializes to TTLV request payload structure.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if structure push fails.
-    pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut s = Structure::new();
-        s.try_push(ttlv_item(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string(self.unique_identifier),
-        )?)
+fn single_uid_payload(uid: String) -> Result<Structure, String> {
+    let mut s = Structure::new();
+    s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(uid))?)
         .map_err(|e| e.to_string())?;
-        Ok(s)
-    }
+    Ok(s)
 }
 
-/// A KMIP 3.0 Deactivate response.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct DeactivateResponse {
-    unique_identifier: String,
-}
-
-impl DeactivateResponse {
-    #[must_use]
-    pub fn new(unique_identifier: impl Into<String>) -> Self {
-        Self {
-            unique_identifier: unique_identifier.into(),
-        }
-    }
-
-    #[must_use]
-    pub fn unique_identifier(&self) -> &str {
-        &self.unique_identifier
-    }
-
-    /// Serializes to TTLV response payload structure.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if structure push fails.
-    pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut s = Structure::new();
-        s.try_push(ttlv_item(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string(self.unique_identifier),
-        )?)
+fn uid_bytes_payload(uid: String, tag: u32, bytes: Vec<u8>) -> Result<Structure, String> {
+    let mut s = single_uid_payload(uid)?;
+    s.try_push(ttlv_item(tag, Value::byte_string(bytes))?)
         .map_err(|e| e.to_string())?;
-        Ok(s)
-    }
+    Ok(s)
 }
 
-/// A KMIP 3.0 Encapsulate request (PQC KEM).
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct EncapsulateRequest {
-    unique_identifier: String,
-}
-
-impl EncapsulateRequest {
-    #[must_use]
-    pub fn new(unique_identifier: impl Into<String>) -> Self {
-        Self {
-            unique_identifier: unique_identifier.into(),
+macro_rules! define_uid_message {
+    ($name:ident, $doc:expr) => {
+        #[doc = $doc]
+        #[derive(Clone, Debug, Eq, PartialEq)]
+        pub struct $name {
+            unique_identifier: String,
         }
-    }
 
-    #[must_use]
-    pub fn unique_identifier(&self) -> &str {
-        &self.unique_identifier
-    }
+        impl $name {
+            #[must_use]
+            pub fn new(unique_identifier: impl Into<String>) -> Self {
+                Self {
+                    unique_identifier: unique_identifier.into(),
+                }
+            }
 
-    /// Serializes to TTLV request payload structure.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if structure push fails.
-    pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut s = Structure::new();
-        s.try_push(ttlv_item(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string(self.unique_identifier),
-        )?)
-        .map_err(|e| e.to_string())?;
-        Ok(s)
-    }
+            #[must_use]
+            pub fn unique_identifier(&self) -> &str {
+                &self.unique_identifier
+            }
+
+            /// Serializes to TTLV payload structure.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if structure push fails.
+            pub fn into_ttlv_payload(self) -> Result<Structure, String> {
+                single_uid_payload(self.unique_identifier)
+            }
+        }
+    };
 }
+
+define_uid_message!(DeactivateRequest, "A KMIP 3.0 Deactivate request.");
+define_uid_message!(DeactivateResponse, "A KMIP 3.0 Deactivate response.");
+define_uid_message!(
+    EncapsulateRequest,
+    "A KMIP 3.0 Encapsulate request (PQC KEM)."
+);
 
 /// A KMIP 3.0 Encapsulate response (PQC KEM).
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -165,17 +114,7 @@ impl EncapsulateResponse {
     ///
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut s = Structure::new();
-        s.try_push(ttlv_item(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string(self.unique_identifier),
-        )?)
-        .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(
-            CIPHERTEXT_TAG,
-            Value::byte_string(self.ciphertext),
-        )?)
-        .map_err(|e| e.to_string())?;
+        let mut s = uid_bytes_payload(self.unique_identifier, CIPHERTEXT_TAG, self.ciphertext)?;
         s.try_push(ttlv_item(
             SHARED_SECRET_TAG,
             Value::byte_string(self.shared_secret),
@@ -217,18 +156,7 @@ impl DecapsulateRequest {
     ///
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut s = Structure::new();
-        s.try_push(ttlv_item(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string(self.unique_identifier),
-        )?)
-        .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(
-            CIPHERTEXT_TAG,
-            Value::byte_string(self.ciphertext),
-        )?)
-        .map_err(|e| e.to_string())?;
-        Ok(s)
+        uid_bytes_payload(self.unique_identifier, CIPHERTEXT_TAG, self.ciphertext)
     }
 }
 
@@ -264,17 +192,10 @@ impl DecapsulateResponse {
     ///
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut s = Structure::new();
-        s.try_push(ttlv_item(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string(self.unique_identifier),
-        )?)
-        .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(
+        uid_bytes_payload(
+            self.unique_identifier,
             SHARED_SECRET_TAG,
-            Value::byte_string(self.shared_secret),
-        )?)
-        .map_err(|e| e.to_string())?;
-        Ok(s)
+            self.shared_secret,
+        )
     }
 }

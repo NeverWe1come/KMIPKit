@@ -4,93 +4,66 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
 /// Supported link relationships between KMIP objects.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(u32)]
 #[non_exhaustive]
 pub enum LinkType {
-    Certificate,
-    PublicKey,
-    PrivateKey,
-    PreviousKey,
-    NextKey,
-    DerivationBaseObject,
-    DerivedKey,
-    SplitKey,
-    WrappingKey,
-    ParentObject,
-    ChildObject,
+    Certificate = 0,
+    PublicKey = 1,
+    PrivateKey = 2,
+    PreviousKey = 3,
+    NextKey = 4,
+    DerivationBaseObject = 5,
+    DerivedKey = 6,
+    SplitKey = 7,
+    WrappingKey = 8,
+    ParentObject = 9,
+    ChildObject = 10,
 }
+
+const ALL_LINK_TYPES: [LinkType; 11] = [
+    LinkType::Certificate,
+    LinkType::PublicKey,
+    LinkType::PrivateKey,
+    LinkType::PreviousKey,
+    LinkType::NextKey,
+    LinkType::DerivationBaseObject,
+    LinkType::DerivedKey,
+    LinkType::SplitKey,
+    LinkType::WrappingKey,
+    LinkType::ParentObject,
+    LinkType::ChildObject,
+];
 
 impl LinkType {
     /// Returns the KMIP 2.x enumeration value for this link type.
     #[must_use]
     pub const fn v2_enumeration(self) -> u32 {
-        match self {
-            Self::Certificate => 0x0000_0101,
-            Self::PublicKey => 0x0000_0102,
-            Self::PrivateKey => 0x0000_0103,
-            Self::PreviousKey => 0x0000_0104,
-            Self::NextKey => 0x0000_0105,
-            Self::DerivationBaseObject => 0x0000_0106,
-            Self::DerivedKey => 0x0000_0107,
-            Self::SplitKey => 0x0000_0108,
-            Self::WrappingKey => 0x0000_0109,
-            Self::ParentObject => 0x0000_010A,
-            Self::ChildObject => 0x0000_010B,
-        }
+        0x0000_0101 + (self as u32)
     }
 
     /// Returns the KMIP 3.0 discrete typed link TTLV tag for this link type.
     #[must_use]
     pub const fn v3_tag(self) -> u32 {
-        match self {
-            Self::Certificate => 0x0042_0153,
-            Self::PublicKey => 0x0042_0154,
-            Self::PrivateKey => 0x0042_0155,
-            Self::PreviousKey => 0x0042_0156,
-            Self::NextKey => 0x0042_0157,
-            Self::DerivationBaseObject => 0x0042_0158,
-            Self::DerivedKey => 0x0042_0159,
-            Self::SplitKey => 0x0042_015A,
-            Self::WrappingKey => 0x0042_015B,
-            Self::ParentObject => 0x0042_015C,
-            Self::ChildObject => 0x0042_015D,
-        }
+        0x0042_0153 + (self as u32)
     }
 
     /// Resolves from KMIP 2.x enumeration value.
     #[must_use]
     pub const fn from_v2_enumeration(val: u32) -> Option<Self> {
-        match val {
-            0x0000_0101 => Some(Self::Certificate),
-            0x0000_0102 => Some(Self::PublicKey),
-            0x0000_0103 => Some(Self::PrivateKey),
-            0x0000_0104 => Some(Self::PreviousKey),
-            0x0000_0105 => Some(Self::NextKey),
-            0x0000_0106 => Some(Self::DerivationBaseObject),
-            0x0000_0107 => Some(Self::DerivedKey),
-            0x0000_0108 => Some(Self::SplitKey),
-            0x0000_0109 => Some(Self::WrappingKey),
-            0x0000_010A => Some(Self::ParentObject),
-            0x0000_010B => Some(Self::ChildObject),
-            _ => None,
+        if val >= 0x0000_0101 && val <= 0x0000_010B {
+            Some(ALL_LINK_TYPES[(val - 0x0000_0101) as usize])
+        } else {
+            None
         }
     }
 
     /// Resolves from KMIP 3.0 discrete typed link TTLV tag.
     #[must_use]
     pub const fn from_v3_tag(tag: u32) -> Option<Self> {
-        match tag {
-            0x0042_0153 => Some(Self::Certificate),
-            0x0042_0154 => Some(Self::PublicKey),
-            0x0042_0155 => Some(Self::PrivateKey),
-            0x0042_0156 => Some(Self::PreviousKey),
-            0x0042_0157 => Some(Self::NextKey),
-            0x0042_0158 => Some(Self::DerivationBaseObject),
-            0x0042_0159 => Some(Self::DerivedKey),
-            0x0042_015A => Some(Self::SplitKey),
-            0x0042_015B => Some(Self::WrappingKey),
-            0x0042_015C => Some(Self::ParentObject),
-            0x0042_015D => Some(Self::ChildObject),
-            _ => None,
+        if tag >= 0x0042_0153 && tag <= 0x0042_015D {
+            Some(ALL_LINK_TYPES[(tag - 0x0042_0153) as usize])
+        } else {
+            None
         }
     }
 }
