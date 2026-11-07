@@ -485,7 +485,7 @@ fn poll_execution_with_options_returns_one_exact_async_outcome() {
 #[test]
 fn query_async_requests_executes_once_and_has_no_operation_correlation_value() {
     let first_correlation = [0x00, 0xff, 0x80];
-    let response = query_async_requests_response(&first_correlation);
+    let response = query_async_requests_response(&first_correlation, 0);
     let (client, peer, exchange_count) = client_with_responses(vec![response]);
     let client_handle = make_handle(
         Kind::Client,
@@ -522,7 +522,7 @@ fn query_async_requests_executes_once_and_has_no_operation_correlation_value() {
     assert_eq!(status, SUCCESS);
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
     assert!(!outcome.is_null());
-    assert_query_async_requests_metadata(outcome);
+    assert_query_async_requests_metadata(outcome, 0, BATCH_OUTCOME_COMPLETED);
     assert_query_async_requests_has_no_correlation(outcome);
     assert_c_consumer_typed_response(outcome, 0x39, 0, 0, 0, 0, &[], 1, 0);
 
@@ -584,9 +584,51 @@ fn cancel_and_process_typed_readers_are_called_from_the_compiled_c_consumer() {
 }
 
 #[test]
+fn cancel_failure_does_not_expose_a_payload_correlation_as_an_echo() {
+    let correlation = [0x00, 0xff, 0x80, 0x23];
+    let response = response_message(
+        0x19,
+        1,
+        None,
+        Some(ttlv_structure(
+            0x0042_007c,
+            [ttlv_item(0x0042_0006, 0x08, &correlation)],
+        )),
+    );
+    let (client, peer, exchange_count) = client_with_responses(vec![response]);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut outcome = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute_cancel(
+            client_handle,
+            correlation.as_ptr(),
+            u64::try_from(correlation.len()).expect("correlation length fits ABI"),
+            limits_handle,
+            &raw mut outcome,
+        ),
+        SUCCESS
+    );
+    peer.join().expect("the failure-response test peer completes");
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+    assert!(!outcome.is_null());
+    assert_c_consumer_typed_response(outcome, 0x19, 1, 0, 0, 0, &[], 1, 0);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+#[test]
 fn query_async_requests_with_options_executes_and_returns_one_outcome() {
     let expected_correlation = [0x00, 0xff, 0x80];
-    let response = query_async_requests_response(&expected_correlation);
+    let response = query_async_requests_response(&expected_correlation, 2);
     let (client, peer, exchange_count) = client_with_responses(vec![response]);
     let client_handle = make_handle(
         Kind::Client,
@@ -633,8 +675,9 @@ fn query_async_requests_with_options_executes_and_returns_one_outcome() {
     assert_eq!(status, SUCCESS);
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
     assert!(!outcome.is_null());
-    assert_query_async_requests_metadata(outcome);
+    assert_query_async_requests_metadata(outcome, 2, BATCH_OUTCOME_PENDING);
     assert_query_async_requests_has_no_correlation(outcome);
+    assert_c_consumer_typed_response(outcome, 0x39, 2, 1, 0, 0, &[], 1, 0);
 
     kmipkit_client_async_operation_outcome_release(outcome);
     kmipkit_codec_limits_release(limits_handle);
@@ -703,7 +746,7 @@ fn query_async_requests_with_options_rejects_invalid_presence_flags_and_counts()
     assert!(outcome.is_null());
 }
 
-fn query_async_requests_response(correlation: &[u8]) -> Vec<u8> {
+fn query_async_requests_response(correlation: &[u8], result_status: u32) -> Vec<u8> {
     ttlv_structure(
         0x0042_007b,
         [
@@ -722,7 +765,7 @@ fn query_async_requests_response(correlation: &[u8]) -> Vec<u8> {
                 0x0042_000f,
                 [
                     ttlv_enumeration(0x0042_005c, 0x39),
-                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_enumeration(0x0042_007f, result_status),
                     ttlv_structure(
                         0x0042_007c,
                         [ttlv_structure(
@@ -852,6 +895,8 @@ fn assert_c_consumer_typed_response(
 
 fn assert_query_async_requests_metadata(
     outcome: *mut crate::kmipkit_client_async_operation_outcome_t,
+    expected_status: u32,
+    expected_outcome: u32,
 ) {
     let mut metadata = kmipkit_client_async_operation_metadata_v1_t {
         struct_size: 0,
@@ -876,8 +921,8 @@ fn assert_query_async_requests_metadata(
         SUCCESS
     );
     assert_eq!(metadata.operation, 0x39);
-    assert_eq!(metadata.outcome_kind, BATCH_OUTCOME_COMPLETED);
-    assert_eq!(metadata.result_status, 0);
+    assert_eq!(metadata.outcome_kind, expected_outcome);
+    assert_eq!(metadata.result_status, expected_status);
 }
 
 fn assert_query_async_requests_has_no_correlation(

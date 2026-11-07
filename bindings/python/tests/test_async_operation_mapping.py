@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from contextlib import ExitStack
+from threading import Event, Thread
 from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, errors, ttlv
+from kmipkit import _handles, client, errors, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._handles import _wrap_owned_handle
 
@@ -467,7 +468,7 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
 ) -> None:
     stubs = _typed_outcome_stubs(
         operation,
-        is_pending=operation in (0x1A, 0x3A),
+        is_pending=operation in (0x1A, 0x3A, 0x39),
         payload_member_count=0,
         has_payload=operation in (0x3A, 0x39),
         correlation=(b"typed-correlation" if operation in (0x19, 0x1A, 0x3A) else None),
@@ -504,7 +505,7 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
 
             assert typed.with_echoed_correlation_value(inspect_echo)
             assert observed == [b"typed-correlation"]
-        if operation in (0x1A, 0x3A):
+        if operation in (0x1A, 0x3A, 0x39):
             assert typed.is_pending
         if operation == 0x3A:
             assert typed.payload_member_count == 0
@@ -538,6 +539,69 @@ def test_async_response_view_uses_the_outcome_lifetime(monkeypatch) -> None:
         _ = view.result
     with pytest.raises(errors.InvalidInputError):
         _ = view.is_pending
+
+
+def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -> None:
+    expected = b"borrowed-correlation"
+    copy_started = Event()
+    allow_copy = Event()
+    close_finished = Event()
+    callback_values: list[bytes] = []
+    failures: list[BaseException] = []
+    response = SimpleNamespace(
+        has_asynchronous_correlation_value=1,
+        asynchronous_correlation_value=SimpleNamespace(
+            data=object(), length=len(expected)
+        ),
+    )
+    outcome_handle = ffi.cast("kmipkit_client_async_operation_outcome_t *", 47)
+    stubs = SimpleNamespace(
+        kmipkit_client_async_operation_outcome_release=lambda _handle: None
+    )
+
+    def delayed_buffer(_data, length):
+        copy_started.set()
+        assert client._NATIVE_CALL_LOCK._is_owned()
+        assert length == len(expected)
+        assert allow_copy.wait(timeout=5)
+        return expected
+
+    monkeypatch.setattr(client, "ffi", SimpleNamespace(buffer=delayed_buffer))
+    monkeypatch.setattr(client, "lib", stubs)
+    monkeypatch.setattr(_handles, "lib", stubs)
+    monkeypatch.setattr(client.AsyncOperationOutcome, "_typed_response", lambda *_args: response)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, outcome_handle)
+
+    def read_correlation() -> None:
+        try:
+            assert outcome._with_typed_correlation_value(
+                "kmipkit_client_async_operation_outcome_cancel_response_v1",
+                lambda view: callback_values.append(bytes(view)),
+            )
+        except BaseException as error:
+            failures.append(error)
+
+    def close_outcome() -> None:
+        outcome.close()
+        close_finished.set()
+
+    reader = Thread(target=read_correlation)
+    reader.start()
+    assert copy_started.wait(timeout=5)
+    closer = Thread(target=close_outcome)
+    closer.start()
+    try:
+        assert not close_finished.wait(timeout=0.05)
+    finally:
+        allow_copy.set()
+        reader.join(timeout=5)
+        closer.join(timeout=5)
+
+    assert not reader.is_alive()
+    assert not closer.is_alive()
+    assert failures == []
+    assert close_finished.is_set()
+    assert callback_values == [expected]
 
 
 def _cancel_response_payload(
