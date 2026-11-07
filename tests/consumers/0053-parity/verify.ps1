@@ -4,6 +4,36 @@ param()
 $ErrorActionPreference = 'Stop'
 $consumerRoot = $PSScriptRoot
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $consumerRoot '..\..\..')).Path
+$fixtureRoot = Join-Path $repositoryRoot 'bindings\python\tests\fixtures\login-mtls'
+$temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("kmipkit-0053-" + [guid]::NewGuid().ToString('N'))
+$readyFile = Join-Path $temporaryRoot 'ready.txt'
+$serverErrorFile = Join-Path $temporaryRoot 'responder.err'
+$server = $null
+$hadPort = Test-Path Env:\KMIPKIT_CONSUMER_TEST_PORT
+$previousPort = $env:KMIPKIT_CONSUMER_TEST_PORT
+$hadFixtures = Test-Path Env:\KMIPKIT_CONSUMER_TEST_FIXTURES
+$previousFixtures = $env:KMIPKIT_CONSUMER_TEST_FIXTURES
+
+New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
+try {
+    $server = Start-Process -FilePath 'python' -ArgumentList @(
+        (Join-Path $consumerRoot 'local_ping_responder.py'),
+        '--ready-file', $readyFile,
+        '--fixture-dir', $fixtureRoot,
+        '--connections', '4'
+    ) -WindowStyle Hidden -PassThru -RedirectStandardError $serverErrorFile
+    for ($attempt = 0; $attempt -lt 100 -and -not (Test-Path -LiteralPath $readyFile); $attempt++) {
+        if ($server.HasExited) { throw 'The loopback mTLS Ping fixture exited before becoming ready.' }
+        Start-Sleep -Milliseconds 100
+    }
+    if (-not (Test-Path -LiteralPath $readyFile)) { throw 'The loopback mTLS Ping fixture did not become ready.' }
+    $env:KMIPKIT_CONSUMER_TEST_PORT = (Get-Content -LiteralPath $readyFile -Raw).Trim()
+    $env:KMIPKIT_CONSUMER_TEST_FIXTURES = $fixtureRoot
+} catch {
+    if ($null -ne $server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+    Remove-Item -LiteralPath $temporaryRoot -Recurse -Force
+    throw
+}
 
 Push-Location $repositoryRoot
 try {
@@ -48,4 +78,13 @@ try {
 }
 finally {
     Pop-Location
+    if ($hadPort) { $env:KMIPKIT_CONSUMER_TEST_PORT = $previousPort }
+    else { Remove-Item Env:\KMIPKIT_CONSUMER_TEST_PORT -ErrorAction SilentlyContinue }
+    if ($hadFixtures) { $env:KMIPKIT_CONSUMER_TEST_FIXTURES = $previousFixtures }
+    else { Remove-Item Env:\KMIPKIT_CONSUMER_TEST_FIXTURES -ErrorAction SilentlyContinue }
+    if ($null -ne $server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+    if ((Test-Path -LiteralPath $serverErrorFile) -and (Get-Item -LiteralPath $serverErrorFile).Length -gt 0) {
+        Get-Content -LiteralPath $serverErrorFile | ForEach-Object { Write-Error -Message $_ -ErrorAction Continue }
+    }
+    Remove-Item -LiteralPath $temporaryRoot -Recurse -Force
 }

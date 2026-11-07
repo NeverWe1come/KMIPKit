@@ -1,6 +1,8 @@
 #include "kmipkit.h"
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static int32_t append_value(kmipkit_ttlv_structure_t **structure, uint32_t raw_tag,
@@ -113,8 +115,23 @@ int main(void) {
     kmipkit_response_batch_item_view_t *response_item = 0;
     kmipkit_ttlv_structure_t *response_item_ttlv = 0;
     kmipkit_ttlv_structure_view_t *response_view = 0;
+    kmipkit_extension_registry_limits_v1_t registry_limits = {0};
+    kmipkit_client_extension_registry_t *registry = 0;
+    kmipkit_client_configuration_t *client_configuration = 0;
+    kmipkit_transport_config_t *transport_configuration = 0;
+    kmipkit_client_t *client = 0;
+    kmipkit_client_batch_response_t *client_response = 0;
+    kmipkit_client_batch_item_response_t *client_item_response = 0;
+    kmipkit_ttlv_structure_t *client_raw_payload = 0;
+    kmipkit_ttlv_structure_view_t *client_raw_view = 0;
+    kmipkit_transport_input_v1_t client_certificate = {0};
+    kmipkit_transport_input_v1_t private_key = {0};
+    kmipkit_transport_input_v1_t server_certificate = {0};
+    kmipkit_transport_config_v1_t transport_values = {0};
+    kmipkit_client_batch_item_metadata_v1_t client_metadata = {0};
     uint8_t valid = 0;
     uint8_t present = 0;
+    uint8_t ping_present = 0;
     uint32_t result_status = UINT32_MAX;
     uint64_t count = UINT64_MAX;
     int32_t status = kmipkit_codec_limits_defaults(&limits);
@@ -188,6 +205,121 @@ int main(void) {
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(response_view, &count);
     if (status == 0 && count != 3) status = 4;
 
+    registry_limits.struct_size = (uint32_t)sizeof(registry_limits);
+    registry_limits.abi_version = 1;
+    if (status == 0) {
+        status = kmipkit_extension_registry_limits_v1_default_values(&registry_limits);
+    }
+    if (status == 0) {
+        status = kmipkit_client_extension_registry_create_v1(0, 0, &registry_limits, &registry);
+    }
+    if (status == 0) {
+        status = kmipkit_client_configuration_create(registry, &client_configuration);
+    }
+    if (status == 0) registry = 0;
+    {
+        const char *port_text = getenv("KMIPKIT_CONSUMER_TEST_PORT");
+        const char *fixtures = getenv("KMIPKIT_CONSUMER_TEST_FIXTURES");
+        char client_certificate_path[4096] = {0};
+        char private_key_path[4096] = {0};
+        char server_certificate_path[4096] = {0};
+        char *end = 0;
+        unsigned long port = port_text ? strtoul(port_text, &end, 10) : 0;
+        if (status == 0 && (!fixtures || !port_text || end == port_text || *end != '\0'
+                || port == 0 || port > 65535)) {
+            status = 4;
+        }
+        if (status == 0) {
+            int written = snprintf(
+                client_certificate_path, sizeof(client_certificate_path),
+                "%s/client-cert.pem", fixtures);
+            if (written < 0 || written >= (int)sizeof(client_certificate_path)) {
+                status = 4;
+            }
+            written = snprintf(
+                private_key_path, sizeof(private_key_path), "%s/client-key.pem", fixtures);
+            if (written < 0 || written >= (int)sizeof(private_key_path)) {
+                status = 4;
+            }
+            written = snprintf(
+                server_certificate_path, sizeof(server_certificate_path),
+                "%s/server-cert.pem", fixtures);
+            if (written < 0 || written >= (int)sizeof(server_certificate_path)) {
+                status = 4;
+            }
+        }
+        if (status == 0) {
+            const char endpoint[] = "127.0.0.1";
+            const char server_name[] = "localhost";
+            client_certificate.source_kind = 2; client_certificate.encoding = 1;
+            client_certificate.data.data = (const uint8_t *)client_certificate_path;
+            client_certificate.data.length = (uint64_t)strlen(client_certificate_path);
+            private_key.source_kind = 2; private_key.encoding = 1;
+            private_key.data.data = (const uint8_t *)private_key_path;
+            private_key.data.length = (uint64_t)strlen(private_key_path);
+            server_certificate.source_kind = 2; server_certificate.encoding = 1;
+            server_certificate.data.data = (const uint8_t *)server_certificate_path;
+            server_certificate.data.length = (uint64_t)strlen(server_certificate_path);
+            transport_values.struct_size = (uint32_t)sizeof(transport_values);
+            transport_values.abi_version = 1;
+            transport_values.endpoint_kind = 1;
+            transport_values.trust_kind = 2;
+            transport_values.flags = 1;
+            transport_values.endpoint.data = (const uint8_t *)endpoint;
+            transport_values.endpoint.length = (uint64_t)(sizeof(endpoint) - 1);
+            transport_values.endpoint_port = (uint16_t)port;
+            transport_values.client_certificates = &client_certificate;
+            transport_values.client_certificate_count = 1;
+            transport_values.client_private_key = private_key;
+            transport_values.trust_certificates = &server_certificate;
+            transport_values.trust_certificate_count = 1;
+            transport_values.tls_server_name.data = (const uint8_t *)server_name;
+            transport_values.tls_server_name.length = (uint64_t)(sizeof(server_name) - 1);
+            transport_values.max_request_bytes = UINT64_C(16) * 1024 * 1024;
+            status = kmipkit_transport_config_create_v1(&transport_values, &transport_configuration);
+        }
+    }
+    if (status == 0) {
+        status = kmipkit_client_create(client_configuration, &transport_configuration, &client);
+    }
+    if (status == 0 && transport_configuration != 0) {
+        kmipkit_transport_config_release(transport_configuration);
+        transport_configuration = 0;
+    }
+    if (status == 0) {
+        status = kmipkit_client_execute(client, &batch, limits, &client_response);
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_response_item_count(client_response, &count);
+    }
+    if (status == 0 && count != 1) status = 4;
+    if (status == 0) {
+        status = kmipkit_client_batch_response_item_at(client_response, 0, &client_item_response);
+    }
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_ping(client_item_response, &ping_present);
+    }
+    if (status == 0 && !ping_present) status = 4;
+    client_metadata.struct_size = (uint32_t)sizeof(client_metadata);
+    client_metadata.abi_version = 1;
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_metadata_v1(client_item_response, &client_metadata);
+    }
+    if (status == 0 && client_metadata.result_status != 0) status = 4;
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_raw_ttlv(
+            client_item_response, &present, &client_raw_payload);
+    }
+    if (status == 0 && (!present || client_raw_payload == 0)) status = 4;
+    if (status == 0) {
+        status = kmipkit_ttlv_structure_view(client_raw_payload, &client_raw_view);
+    }
+    if (status == 0) {
+        status = kmipkit_ttlv_structure_view_item_count(client_raw_view, &count);
+    }
+    if (status == 0 && count != 0) status = 4;
+    if (status == 0) puts("c: Ping result and raw TTLV verified");
+
     kmipkit_ttlv_value_release(value);
     kmipkit_ttlv_item_release(typed_attribute);
     kmipkit_ttlv_item_release(fields[0]); kmipkit_ttlv_item_release(fields[1]);
@@ -203,6 +335,14 @@ int main(void) {
     kmipkit_response_batch_item_release(response_item);
     kmipkit_ttlv_structure_release(response_item_ttlv);
     kmipkit_ttlv_structure_view_release(response_view);
+    kmipkit_ttlv_structure_view_release(client_raw_view);
+    kmipkit_ttlv_structure_release(client_raw_payload);
+    kmipkit_client_batch_item_response_release(client_item_response);
+    kmipkit_client_batch_response_release(client_response);
+    kmipkit_client_release(client);
+    kmipkit_transport_config_release(transport_configuration);
+    kmipkit_client_configuration_release(client_configuration);
+    kmipkit_client_extension_registry_release(registry);
     kmipkit_codec_limits_release(limits);
     return status == 0 ? 0 : 1;
 }

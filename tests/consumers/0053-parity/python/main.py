@@ -1,5 +1,8 @@
 """External Python package consumer; all data stays local to this process."""
 
+import os
+from pathlib import Path
+
 from kmipkit import (
     client,
     credentials,
@@ -104,6 +107,47 @@ def main() -> None:
                 with item.to_ttlv() as response_ttlv:
                     with ttlv.ttlv_structure_view(response_ttlv) as response_view:
                         assert ttlv.ttlv_structure_view_item_count(response_view) == 3
+
+        port = int(os.environ["KMIPKIT_CONSUMER_TEST_PORT"])
+        fixtures = Path(os.environ["KMIPKIT_CONSUMER_TEST_FIXTURES"])
+        registry = extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+        configuration = extensions.create_client_configuration(registry)
+        transport = client.TransportConfig(
+            endpoint=client.Endpoint.raw_tls("127.0.0.1", port, tls_server_name="localhost"),
+            client_certificates=(
+                client.TransportInput.file(
+                    fixtures / "client-cert.pem", client.CredentialEncoding.PEM
+                ),
+            ),
+            client_private_key=client.TransportInput.file(
+                fixtures / "client-key.pem", client.CredentialEncoding.PEM
+            ),
+            trust=client.TrustSource.certificate_authorities(
+                (
+                    client.TransportInput.file(
+                        fixtures / "server-cert.pem", client.CredentialEncoding.PEM
+                    ),
+                )
+            ),
+        )
+        with configuration, client.Client.create(configuration, transport) as kmip_client:
+            batch = client.Batch.create()
+            batch.add_item(extensions.client_batch_item_ping())
+            result = kmip_client.execute(batch, limits)
+            try:
+                item_result = result.items[0]
+                assert item_result.ping_response is True
+                assert item_result.result_status == 0
+                raw = item_result.raw()
+                assert raw is not None
+                with ttlv.ttlv_structure_view(raw) as raw_view:
+                    assert ttlv.ttlv_structure_view_item_count(raw_view) == 0
+                raw.close()
+                print("python: Ping result and raw TTLV verified")
+            finally:
+                result.close()
 
 if __name__ == "__main__":
     main()

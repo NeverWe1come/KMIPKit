@@ -5,7 +5,9 @@ use kmipkit::{
         Attribute, Authentication, Credential, CryptographicParametersBuilder, KeyMaterial,
         ManagedObject, OpaqueObject, ResponseMessage, attribute::typed,
     },
-    transport_config::TransportConfig,
+    transport_config::{
+        CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
+    },
     ttlv::{Item, RawTag, Structure, Value, codec::CodecLimits},
 };
 
@@ -118,10 +120,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     demonstrate_client_request()?;
     inspect_synthetic_response()?;
 
-    // The consumer prepares an operation and validates it locally. No server is contacted.
-    let _client_builder: fn(ClientConfiguration, TransportConfig) -> Result<Client, ClientError> =
-        Client::new;
-    let _exchange: fn(&mut Client, &CodecLimits) -> Result<ClientBatchResponse, ClientError> =
-        execute_ping;
+    let port: u16 = std::env::var("KMIPKIT_CONSUMER_TEST_PORT")?.parse()?;
+    let fixtures = std::path::PathBuf::from(std::env::var("KMIPKIT_CONSUMER_TEST_FIXTURES")?);
+    let registry = kmipkit::client_config::client_extension_registry(
+        Vec::new(),
+        kmipkit::protocol::extension::defaults(),
+    )?;
+    let configuration = ClientConfiguration::new(registry);
+    let transport = TransportConfig::builder(Endpoint::raw_tls("127.0.0.1", port))
+        .client_identity(ClientIdentity::new(
+            CertificateInput::from_pem_file(fixtures.join("client-cert.pem"))?,
+            PrivateKeyInput::from_pem_file(fixtures.join("client-key.pem"))?,
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_pem_file(fixtures.join("server-cert.pem"))?,
+        ]))
+        .tls_server_name("localhost")
+        .build()?;
+    let mut client = Client::new(configuration, transport)?;
+    let limits = CodecLimits::defaults();
+    let result = execute_ping(&mut client, &limits)?;
+    let item = result.get(0).ok_or("Ping response item is missing")?;
+    assert!(item.outcome().response().ping().is_some());
+    let raw = item.raw().ok_or("Ping Response Payload is missing")?;
+    assert_eq!(raw.children().len(), 0);
+    println!("rust: Ping result and raw TTLV verified");
     Ok(())
 }

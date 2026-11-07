@@ -5,6 +5,30 @@ consumer_root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$consumer_root/../../.." && pwd)
 target_dir="$repository_root/target/debug"
 java_native="$repository_root/bindings/java/target/native"
+fixture_root="$repository_root/bindings/python/tests/fixtures/login-mtls"
+temporary_root=$(mktemp -d "${TMPDIR:-/tmp}/kmipkit-0053.XXXXXX")
+ready_file="$temporary_root/ready.txt"
+python3 "$consumer_root/local_ping_responder.py" \
+    --ready-file "$ready_file" --fixture-dir "$fixture_root" --connections 4 &
+responder_pid=$!
+cleanup() {
+    kill "$responder_pid" 2>/dev/null || true
+    wait "$responder_pid" 2>/dev/null || true
+    rm -rf -- "$temporary_root"
+}
+trap cleanup EXIT INT TERM
+attempt=0
+while [ ! -f "$ready_file" ] && [ "$attempt" -lt 100 ]; do
+    if ! kill -0 "$responder_pid" 2>/dev/null; then
+        echo "The loopback mTLS Ping fixture exited before becoming ready." >&2
+        exit 1
+    fi
+    sleep 0.1
+    attempt=$((attempt + 1))
+done
+[ -f "$ready_file" ] || { echo "The loopback mTLS Ping fixture did not become ready." >&2; exit 1; }
+export KMIPKIT_CONSUMER_TEST_PORT="$(cat "$ready_file")"
+export KMIPKIT_CONSUMER_TEST_FIXTURES="$fixture_root"
 
 cargo +1.94 run --locked --manifest-path "$consumer_root/rust/Cargo.toml"
 cargo build --locked -p kmipkit-ffi

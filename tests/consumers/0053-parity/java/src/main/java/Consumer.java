@@ -1,4 +1,12 @@
+import java.nio.file.Path;
 import java.util.List;
+import org.kmipkit.extensions.Client;
+import org.kmipkit.extensions.ClientBatchItemResult;
+import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.ClientConfiguration;
+import org.kmipkit.extensions.ClientExtensionRegistry;
+import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.extensions.ClientBatch;
@@ -101,6 +109,35 @@ public final class Consumer {
                 }
                 try (TtlvStructure responseTtlv = item.ttlv(); var view = responseTtlv.view()) {
                     if (view.itemCount() != 3) throw new IllegalStateException("response TTLV mismatch");
+                }
+            }
+
+            int port = Integer.parseInt(System.getenv("KMIPKIT_CONSUMER_TEST_PORT"));
+            Path fixtures = Path.of(System.getenv("KMIPKIT_CONSUMER_TEST_FIXTURES"));
+            try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                            List.of(), ExtensionRegistryLimits.defaults());
+                    ClientConfiguration configuration = ClientConfiguration.create(registry);
+                    TransportConfiguration transport = TransportConfiguration.builder()
+                            .rawTls("127.0.0.1", port)
+                            .clientIdentityFiles(List.of(fixtures.resolve("client-cert.pem")),
+                                    fixtures.resolve("client-key.pem"),
+                                    TransportConfiguration.Encoding.PEM)
+                            .trustCertificateFiles(List.of(fixtures.resolve("server-cert.pem")),
+                                    TransportConfiguration.Encoding.PEM)
+                            .tlsServerName("localhost")
+                            .build();
+                    Client kmipClient = Client.create(configuration, transport);
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.ping());
+                try (ClientBatchResponse result = kmipClient.execute(batch, limits);
+                        ClientBatchItemResult itemResult = result.itemAt(0);
+                        TtlvStructure raw = itemResult.raw().orElseThrow();
+                        var rawView = raw.view()) {
+                    if (itemResult.pingResponse().orElse(false) != Boolean.TRUE
+                            || itemResult.resultStatus() != 0 || rawView.itemCount() != 0) {
+                        throw new IllegalStateException("executed Ping result or raw TTLV mismatch");
+                    }
+                    System.out.println("java: Ping result and raw TTLV verified");
                 }
             }
         }
