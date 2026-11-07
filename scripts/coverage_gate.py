@@ -117,6 +117,7 @@ _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
 _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS = frozenset(
     {
         "crates/kmipkit-protocol/src/named_values_generated.rs",
+        "bindings/c/include/kmipkit_named_value_helpers_generated.h",
         "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java",
         "bindings/python/src/kmipkit/protocol_values.py",
     }
