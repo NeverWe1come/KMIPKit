@@ -130,6 +130,7 @@ FUNCTIONAL_STATES = {
     },
     "RegisterRequest": {
         "": "verified",
+        "::from_managed_object": "blocked",
         "::new": "declared",
         "::with_opaque_object_context": "verified",
         "::with_protection_storage_masks": "verified",
@@ -236,6 +237,16 @@ class T102RevocationRegisterTraitExclusionTests(unittest.TestCase):
                 and not row.get("exportName", "").startswith("<")
             }
             self.assertEqual(actual, expected)
+            if type_name == "RegisterRequest":
+                managed = next(
+                    row for row in self.manifest["publicDeclarations"]
+                    if row["packageId"] == PACKAGE
+                    and row["exportName"] == f"{protocol}::from_managed_object"
+                )
+                self.assertEqual("typed_managed_objects_and_key_material", managed["capabilityId"])
+                self.assertEqual("KMIPKIT-0053", managed["candidateSpecId"])
+                self.assertEqual(["KMIPKIT-0049-FR-006", "KMIPKIT-0049-FR-007"], managed["requirementIds"])
+                self.assertNotIn("languageMappings", managed)
 
             root = f"kmipkit::{type_name}"
             root_rows = [
