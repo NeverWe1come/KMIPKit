@@ -9,6 +9,7 @@ import pytest
 
 from kmipkit import client, errors, ttlv
 from kmipkit._client_ffi import ffi
+from kmipkit._handles import _wrap_owned_handle
 
 
 def _released_correlation_view() -> memoryview:
@@ -389,6 +390,117 @@ def _outcome_stubs(
         kmipkit_client_async_operation_outcome_correlation_value=correlation,
         kmipkit_client_async_operation_outcome_response_payload_ttlv=response_payload,
     )
+
+
+def _typed_outcome_stubs(operation: int, *, is_pending: bool = False,
+                         payload_member_count: int | None = None,
+                         has_payload: bool = False) -> SimpleNamespace:
+    """Build typed-reader ABI stubs without allocating another native owner."""
+    stubs = _outcome_stubs(operation, [])
+
+    def read(expected: int, fields: dict[str, int | bool | None]):
+        def invoke(_outcome, present, output) -> int:
+            present[0] = int(operation == expected)
+            if present[0]:
+                output.struct_size = 32
+                output.abi_version = 1
+                output.reserved = 0
+                output.is_pending = int(is_pending)
+                output.has_response_payload = int(has_payload)
+                output.payload_member_count = payload_member_count or 0
+                output.cancellation_result = int(fields.get("cancellation_result") or 0)
+                output.has_echoed_correlation_value = int(
+                    fields.get("has_echoed_correlation_value", 0)
+                )
+            return 0
+
+        return invoke
+
+    stubs.kmipkit_client_async_operation_outcome_cancel_response_v1 = read(
+        0x19, {"cancellation_result": 1, "has_echoed_correlation_value": 1}
+    )
+    stubs.kmipkit_client_async_operation_outcome_poll_response_v1 = read(0x1A, {})
+    stubs.kmipkit_client_async_operation_outcome_process_response_v1 = read(0x3A, {})
+    stubs.kmipkit_client_async_operation_outcome_query_async_requests_response_v1 = read(
+        0x39, {}
+    )
+    return stubs
+
+
+@pytest.mark.parametrize(
+    ("operation", "reader"),
+    [
+        (0x19, "cancel_response"),
+        (0x1A, "poll_response"),
+        (0x3A, "process_response"),
+        (0x39, "query_async_requests_response"),
+    ],
+)
+def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
+    monkeypatch, operation: int, reader: str
+) -> None:
+    stubs = _typed_outcome_stubs(
+        operation,
+        is_pending=operation in (0x1A, 0x3A),
+        payload_member_count=0,
+        has_payload=operation in (0x19, 0x3A, 0x39),
+    )
+    monkeypatch.setattr(client, "lib", stubs)
+    monkeypatch.setattr(client, "ffi", _TypedResponseTestFfi(ffi))
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        typed = getattr(outcome, reader)()
+        assert typed is not None
+        assert typed.result.operation == operation
+        assert typed.raw is not None
+        if operation == 0x19:
+            assert typed.cancellation_result == 1
+        if operation in (0x1A, 0x3A):
+            assert typed.is_pending
+        if operation == 0x3A:
+            assert typed.payload_member_count == 0
+    finally:
+        outcome.close()
+
+
+def test_async_typed_response_readers_return_none_for_other_operations(
+    monkeypatch,
+) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True, has_payload=False)
+    monkeypatch.setattr(client, "lib", stubs)
+    monkeypatch.setattr(client, "ffi", _TypedResponseTestFfi(ffi))
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        assert outcome.poll_response() is not None
+        assert outcome.cancel_response() is None
+        assert outcome.process_response() is None
+        assert outcome.query_async_requests_response() is None
+    finally:
+        outcome.close()
+
+
+class _TypedResponseTestFfi:
+    """Delegate normal CFFI calls while supplying future v1 output records."""
+
+    def __init__(self, base) -> None:
+        self._base = base
+
+    def __getattr__(self, name: str):
+        return getattr(self._base, name)
+
+    def new(self, declaration: str, *args):
+        if declaration.startswith("kmipkit_client_async_") and declaration.endswith(
+            "_response_v1_t *"
+        ):
+            return SimpleNamespace()
+        return self._base.new(declaration, *args)
+
+    def sizeof(self, declaration: str) -> int:
+        if declaration.startswith("kmipkit_client_async_") and declaration.endswith(
+            "_response_v1_t"
+        ):
+            return 32
+        return self._base.sizeof(declaration)
 
 
 def _cancel_response_payload(
