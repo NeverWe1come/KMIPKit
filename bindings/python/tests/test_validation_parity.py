@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import socket
+import re
 import threading
 from pathlib import Path
 
@@ -36,6 +37,40 @@ def test_explicit_create_schema_reports_redacted_stable_metadata():
             assert issue.source_identifier == "KMIP v2.1"
             assert issue.source_reference == "§6.1.8, Table 186"
             assert "SECRET" not in str(issue)
+
+
+def test_explicit_schema_identifiers_cover_every_rust_schema_variant():
+    root = Path(__file__).resolve().parents[3]
+    schema_source = (
+        root / "crates" / "kmipkit-protocol" / "src" / "validation" / "schema.rs"
+    ).read_text(encoding="utf-8")
+    request_source = (
+        root
+        / "crates"
+        / "kmipkit-protocol"
+        / "src"
+        / "validation"
+        / "schemas_generated.rs"
+    ).read_text(encoding="utf-8")
+
+    def variants(source: str, name: str) -> list[str]:
+        match = re.search(
+            rf"pub\s+enum\s+{name}\s*\{{(.*?)^\}}",
+            source,
+            re.MULTILINE | re.DOTALL,
+        )
+        assert match is not None, name
+        return re.findall(r"^\s{4}([A-Z][A-Za-z0-9_]*)\s*,?\s*$", match.group(1), re.MULTILINE)
+
+    schemas = [
+        *(f"RequestPayload/{name}" for name in variants(request_source, "RequestPayloadSchema")),
+        *(f"Nested/{name}" for name in variants(schema_source, "NestedStructureSchema")),
+        "Unsupported",
+    ]
+    with ttlv.ttlv_structure_create() as structure:
+        for schema in schemas:
+            with validation.validate_structure(structure, schema=schema) as report:
+                assert isinstance(report.is_valid, bool), schema
 
 
 def test_typed_request_uses_the_shared_rust_validation_report():

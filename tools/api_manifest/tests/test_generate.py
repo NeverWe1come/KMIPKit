@@ -129,6 +129,11 @@ def _create_repo(parent: Path) -> Path:
         "approvedExclusions",
     ):
         for record in manifest.get(collection_name, []):
+            evidence_paths = record.get("evidencePaths", [])
+            if isinstance(evidence_paths, list):
+                referenced_paths.update(
+                    path for path in evidence_paths if isinstance(path, str)
+                )
             for source_name in ("approvalSource", "approvalEvidence", "acceptedEvidence"):
                 source = record.get(source_name)
                 if not isinstance(source, dict):
@@ -266,7 +271,10 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(preexisting_outputs, [])
 
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 48 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 56 * 1024 * 1024)
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        serialized = json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8")
+        self.assertLessEqual(len(serialized), generate.MAX_MANIFEST_BYTES)
 
     def test_manifest_schema_accepts_exact_test_support_exclusions(self) -> None:
         schema = json.loads(SCHEMA.read_text(encoding="utf-8"))

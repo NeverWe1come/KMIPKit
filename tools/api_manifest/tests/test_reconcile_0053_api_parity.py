@@ -771,6 +771,67 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
     def manifest_for_repository() -> dict:
         return json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
 
+    def test_latest_validation_exports_have_exact_routes_or_exclusions(self) -> None:
+        manifest = self.manifest_for_repository()
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        inventory = json.loads(
+            Path(
+                "specs/053-api-parity-facade/candidate-resolutions/"
+                "validation-export-candidates.json"
+            ).read_text(encoding="utf-8")
+        )
+        candidates = inventory["candidates"]
+        self.assertEqual(934, len(candidates))
+        expected_ids = {row["declarationId"] for row in candidates}
+        expected_exports = {(row["packageId"], row["exportName"]) for row in candidates}
+        removals = route_data.get("removePublicDeclarations", [])
+        removal_ids = {row["declarationId"] for row in removals}
+        self.assertEqual(expected_ids, expected_ids & removal_ids)
+        relevant_removals = [row for row in removals if row["declarationId"] in expected_ids]
+        self.assertEqual(934, len(relevant_removals))
+        self.assertTrue(
+            all(
+                row.get("candidateSpecId") == "KMIPKIT-0053"
+                and row.get("approvalSource", {}).get("path")
+                == "specs/053-api-parity-facade/approval-record.md"
+                for row in relevant_removals
+            )
+        )
+        target_declarations = [
+            row
+            for row in route_data.get("publicDeclarations", [])
+            if (row["packageId"], row["exportName"]) in expected_exports
+        ]
+        target_exclusions = [
+            row
+            for row in route_data.get("approvedExclusions", [])
+            if (row["packageId"], row["exportName"]) in expected_exports
+        ]
+        self.assertEqual(12, len(target_declarations))
+        self.assertEqual(922, len(target_exclusions))
+        routed_exports = {
+            (row["packageId"], row["exportName"])
+            for row in target_declarations
+        }
+        excluded_exports = {
+            (row["packageId"], row["exportName"])
+            for row in target_exclusions
+        }
+        self.assertEqual(expected_exports, routed_exports | excluded_exports)
+        self.assertFalse(routed_exports & excluded_exports)
+        self.assertFalse(
+            any(
+                row.get("declarationState") == "blocked"
+                and row.get("candidateSpecId")
+                in {"KMIPKIT-0009", "KMIPKIT-0043", "KMIPKIT-0044"}
+                for row in manifest["publicDeclarations"]
+            )
+        )
+
     def test_public_four_language_export_is_added_idempotently(self) -> None:
         declarations = [
             {

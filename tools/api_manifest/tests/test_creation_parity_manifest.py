@@ -41,7 +41,7 @@ class CreationParityManifestTests(unittest.TestCase):
         self.assertEqual(CREATION_OPERATIONS, set(operations))
         for operation_id, operation in operations.items():
             with self.subTest(operation=operation_id):
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("KMIPKIT-0014", operation["featureSpecId"])
                 self.assertEqual(
                     {"rust", "c", "java", "python"},
