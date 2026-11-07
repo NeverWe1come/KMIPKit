@@ -30,6 +30,13 @@ pub enum VersionGateError {
         /// The earliest protocol version where this attribute was introduced.
         introduced: ProtocolVersion,
     },
+    /// An attribute mutation (such as `SetAttribute`) is prohibited in the negotiated version.
+    AttributeMutationProhibitedInVersion {
+        /// The raw TTLV tag of the attribute.
+        tag: u32,
+        /// The effective protocol version.
+        version: ProtocolVersion,
+    },
 }
 
 impl fmt::Display for VersionGateError {
@@ -59,6 +66,12 @@ impl fmt::Display for VersionGateError {
                 write!(
                     formatter,
                     "tag 0x{tag:08X} requires KMIP {introduced} or newer, but session is {negotiated}"
+                )
+            }
+            Self::AttributeMutationProhibitedInVersion { tag, version } => {
+                write!(
+                    formatter,
+                    "mutation of attribute tag 0x{tag:08X} is prohibited under KMIP {version} (rotate-only)"
                 )
             }
         }
@@ -149,6 +162,45 @@ impl VersionGate {
                 negotiated: version,
                 introduced: span.introduced,
             });
+        }
+
+        Ok(())
+    }
+
+    /// Validates whether mutating the attribute represented by `tag` is permitted under `version`.
+    ///
+    /// In OASIS KMIP 2.0, the seven core cryptographic attributes are rotate-only and cannot be mutated
+    /// via `SetAttribute`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`VersionGateError::AttributeMutationProhibitedInVersion`] if `tag` is a rotate-only
+    /// attribute under KMIP 2.0.
+    pub fn validate_attribute_mutation(
+        version: ProtocolVersion,
+        tag: u32,
+    ) -> Result<(), VersionGateError> {
+        if !version.is_catalogued() {
+            return Err(VersionGateError::UnsupportedProtocolVersion(version));
+        }
+
+        if version == ProtocolVersion::V2_0 {
+            match tag {
+                0x0042_0028 // Cryptographic Algorithm
+                | 0x0042_002A // Cryptographic Length
+                | 0x0042_002B // Cryptographic Parameters
+                | 0x0042_002C // Cryptographic Usage Mask
+                | 0x0042_0032 // Digest
+                | 0x0042_00BF // Key Value Present
+                | 0x0042_0044 // Key Format Type
+                => {
+                    return Err(VersionGateError::AttributeMutationProhibitedInVersion {
+                        tag,
+                        version,
+                    });
+                }
+                _ => {}
+            }
         }
 
         Ok(())
