@@ -28,13 +28,14 @@ Estas formas siguen OASIS KMIP v2.1 §§5.5–5.7 y §6.1.2 Tablas 167–169, §
 
 ## Construir peticiones tipadas
 
-El ejemplo construye los siete payloads. Un atributo es un `Item` TTLV genérico: su tag identifica el atributo y su valor conserva el tipo KMIP. Current Attribute y New Attribute envuelven ese único Item directo. El ejemplo usa el tag asignado a `Comment` (`0x4200FD`).
+El ejemplo construye los siete payloads. Los atributos estándar pueden usar marcadores tipados derivados del catálogo; la ruta de `Item` TTLV genérico sigue disponible para tags de extensiones y fabricantes. Current Attribute y New Attribute aceptan ambas formas. El ejemplo usa el tag asignado a `Comment` (`0x4200FD`).
 
 ```rust
 use kmipkit_protocol::{
     AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, AttributeReference,
-    CurrentAttribute, DeleteAttributeRequest, GetAttributeListRequest,
+    Attribute, AttributeSet, CurrentAttribute, DeleteAttributeRequest, GetAttributeListRequest,
     GetAttributesRequest, ModifyAttributeRequest, NewAttribute, SetAttributeRequest,
+    attribute::typed,
 };
 use kmipkit_ttlv::{Item, RawTag, Tag, Value};
 
@@ -45,21 +46,33 @@ fn allocated_tag(raw: u32) -> Tag {
         .expect("Comment está asignado en KMIP 2.1")
 }
 
-fn comment(value: &str) -> Item {
-    Item::new(
-        allocated_tag(0x0042_00FD),
-        Value::text_string(value.to_owned()),
-    )
-    .expect("el Item del ejemplo es estructuralmente válido")
+fn comment(value: &str) -> Result<Attribute<typed::Comment>, kmipkit_protocol::AttributeValueError> {
+    Attribute::new(value.to_owned())
 }
 
 fn build_attribute_payloads() -> Result<(), Box<dyn std::error::Error>> {
     let object = Some("object-id-17".to_owned());
     let by_tag = AttributeReference::tag(0x0042_00FD);
 
+    let mut attributes = AttributeSet::new();
+    attributes.try_push_typed(comment("finance")?)?;
+    let comment_value = attributes
+        .typed::<typed::Comment>()
+        .next()
+        .map(|comment| comment.with_value(str::to_owned))
+        .transpose()?
+        .ok_or("se acaba de insertar el Comment tipado")?;
+    assert_eq!(comment_value, "finance");
+
+    // Los tags de fabricante desconocidos siguen disponibles mediante Item genérico.
+    attributes.try_push(Item::new(
+        allocated_tag(0x0054_1234),
+        Value::byte_string(vec![0x01, 0x02]),
+    )?)?;
+
     let add = AddAttributeRequest::new(
         object.clone(),
-        NewAttribute::new(comment("finance")),
+        NewAttribute::from_typed(comment("finance")?),
     );
     let _add_payload = add.to_ttlv_payload()?;
 
@@ -73,7 +86,7 @@ fn build_attribute_payloads() -> Result<(), Box<dyn std::error::Error>> {
 
     let delete = DeleteAttributeRequest::new(
         object.clone(),
-        Some(CurrentAttribute::new(comment("legacy"))),
+        Some(CurrentAttribute::from_typed(comment("legacy")?)),
         None,
     );
     let _delete_payload = delete.to_ttlv_payload()?;
@@ -89,12 +102,15 @@ fn build_attribute_payloads() -> Result<(), Box<dyn std::error::Error>> {
 
     let modify = ModifyAttributeRequest::new(
         object.clone(),
-        Some(CurrentAttribute::new(comment("legacy"))),
-        NewAttribute::new(comment("current")),
+        Some(CurrentAttribute::from_typed(comment("legacy")?)),
+        NewAttribute::from_typed(comment("current")?),
     );
     let _modify_payload = modify.to_ttlv_payload()?;
 
-    let set = SetAttributeRequest::new(object, NewAttribute::new(comment("current")));
+    let set = SetAttributeRequest::new(
+        object,
+        NewAttribute::from_typed(comment("current")?),
+    );
     let _set_payload = set.to_ttlv_payload()?;
 
     Ok(())
@@ -105,7 +121,7 @@ fn build_attribute_payloads() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Conservar valores y consultar resultados
 
-`AttributeSet` conserva los Items directos, los valores repetidos y el orden del mensaje. Los tags y valores Enumeration desconocidos se mantienen en el modelo TTLV genérico cuando la política de asignación permite representarlos. Adjustment Type admite Increment, Decrement y Negate, además del rango de extensiones KMIP; los valores Reserved se rechazan en peticiones tipadas de salida.
+`AttributeSet::try_push_typed` y `AttributeSet::typed` construyen y leen atributos estándar sin comparar manualmente tags raw. Los valores Enumeration siguen siendo `u32` abiertos: se conservan incluso si esta versión no los conoce. La ruta de `Item` genérico sigue disponible para extensiones de fabricante. Ambas rutas conservan el orden y las instancias repetidas; la validación de cada operación sigue aplicando las reglas de cardinalidad definidas por la fuente. Adjustment Type admite Increment, Decrement y Negate, además del rango de extensiones KMIP; los valores Reserved se rechazan en peticiones tipadas de salida.
 
 KMIP 2.1 §4 recomienda que las distintas instancias de un mismo atributo tengan valores diferentes. El llamador elige esos valores; KMIPKit los conserva tal como se proporcionan y no los reescribe ni elimina duplicados.
 
