@@ -1,8 +1,14 @@
 //! Safe C ABI conversions for typed managed objects and key structures.
-use super::*;
+use super::{
+    ERROR_INVALID_INPUT, ERROR_RESOURCE_LIMIT, HandleValue, Item, KeyBlock, KeyFormatType,
+    KeyMaterial, KeyValue, KeyWrappingData, Kind, ManagedObject, ObjectType, RawTag, SUCCESS,
+    Structure, Value, copy_required_item_handle, ffi_entrypoint, item_type_code,
+    kmipkit_ttlv_item_t, record_ffi_error, try_make_handle,
+};
 use kmipkit_protocol::{
     ManagedFieldValue, ManagedObjectError, ManagedValueKind, ManagedValueReader,
 };
+use std::ptr;
 
 const MAX_TYPED_FIELD_COUNT: u64 = 100_000;
 const KEY_BLOCK_TAG: u32 = 0x0042_0040;
@@ -404,9 +410,8 @@ pub extern "C" fn kmipkit_managed_value_field_read(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let item = try_ffi!(copy_required_item_handle(item));
-        let reader = match ManagedValueReader::try_from_item(kind, item) {
-            Ok(reader) => reader,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(reader) = ManagedValueReader::try_from_item(kind, item) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let field = reader.read_field(field_tag);
         if field.is_none() && read_kind != FIELD_READ_PRESENT {
@@ -442,9 +447,8 @@ pub extern "C" fn kmipkit_managed_value_field_read(
             },
             FIELD_READ_BYTES => match field {
                 ManagedFieldValue::ByteString(bytes) | ManagedFieldValue::BigInteger(bytes) => {
-                    let length = match u64::try_from(bytes.len()) {
-                        Ok(length) => length,
-                        Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                    let Ok(length) = u64::try_from(bytes.len()) else {
+                        return record_ffi_error(ERROR_RESOURCE_LIMIT);
                     };
                     // SAFETY: The required length output was checked before reading the field.
                     unsafe { out_byte_length.write(length) };
@@ -455,7 +459,7 @@ pub extern "C" fn kmipkit_managed_value_field_read(
                         // SAFETY: The caller supplied a non-null buffer whose declared capacity
                         // is at least the complete byte length, and it cannot alias the Item.
                         unsafe {
-                            std::ptr::copy_nonoverlapping(bytes.as_ptr(), out_bytes, bytes.len())
+                            std::ptr::copy_nonoverlapping(bytes.as_ptr(), out_bytes, bytes.len());
                         };
                     }
                     SUCCESS
@@ -493,13 +497,11 @@ pub extern "C" fn kmipkit_managed_value_field_item_read(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let item = try_ffi!(copy_required_item_handle(item));
-        let reader = match ManagedValueReader::try_from_item(kind, item) {
-            Ok(reader) => reader,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(reader) = ManagedValueReader::try_from_item(kind, item) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let nested = match reader.read_field_item(field_tag) {
-            Ok(nested) => nested,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(nested) = reader.read_field_item(field_tag) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let Some(nested) = nested else {
             return SUCCESS;

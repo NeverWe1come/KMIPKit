@@ -14,4 +14,15 @@ Baseline: commit a1ae6b402 on feature/KMIPKIT-0052-typed-responses, 2026-11-06.
 | Operations/package/facade | Rust implements 56 operations and one-crate facade. Foreign routes need behavior/options parity evidence. | Verify operation/options/results and runnable packages; no low-level exchange exposure. | Consumer tests, version sync, Rust one-crate example. |
 
 ## Manifest Baseline
-The reviewed manifest has 750 candidateSpecId KMIPKIT-0053 declarations: 286 attributes, 356 managed-object/key routes, 106 parameters, and 2 Authentication routes. Four capabilities are blocked. Inventory audits do not prove behavior parity. Every candidate must become an evidenced mapping or exact justified exclusion; no general language exclusion is allowed.
+At the start of KMIPKIT-0053, the reviewed manifest had 750 candidate declarations: 286 attribute routes, 356 managed-object/key routes, 106 parameter routes, and 2 Authentication routes. Four associated capabilities were blocked. This is the historical baseline; inventory audits alone do not prove behavior parity.
+
+## Current Reconciliation Status (2026-11-07)
+
+- All 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (56 Rust trait-implementation members plus the Rust-only `EncryptionKeyInformation::with_typed_cryptographic_parameters` helper). There are no unresolved candidates.
+- One internal C ABI block-copy bridge has a separate exact exclusion outside the original 750 candidates. The feature has 354 unique KMIPKIT-0053 package/export exclusions overall, each with an exact reason and evidence paths.
+- All seven capabilities owned by this feature are `verified`, with 1,470 associated public declaration rows verified. The 56 client-initiated operation entries are verified with executable Rust/C/Java/Python evidence; Query typed fields and generic raw access are covered in every binding.
+- Fresh compiled export audits match exactly: Rust 7,844/7,844, C 1,866/1,866, Java 2,161/2,161, and Python 2,347/2,347. Each audit reports zero missing, unobserved, kind-mismatched, or audit-error entries. The earlier snapshots in `candidate-resolutions/` are retained as provenance for the candidate-resolution process and are superseded by these final audits.
+- `python -B tools/api_manifest/generate.py --check` verifies all 12 generated destinations; `python -B tools/api_manifest/reconcile_0053_api_parity.py` reports +0 functions. The global `--require-complete` check still identifies 28 shared capabilities outside this feature that remain `declared`; this feature does not promote unrelated claims.
+- Coverage thresholds and hosted CI are deferred by maintainer instruction and are not represented as passed. No formal KMIP profile conformance claim is made.
+
+Every mapping and exclusion remains tied to executable evidence; no language-wide parity exclusion is used.

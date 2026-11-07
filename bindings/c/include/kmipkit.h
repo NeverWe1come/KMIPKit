@@ -2,6 +2,7 @@
 #ifndef KMIPKIT_H
 #define KMIPKIT_H
 #include <stdint.h>
+#include "kmipkit_standard_attributes_generated.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

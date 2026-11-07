@@ -673,7 +673,7 @@ struct ValidationIssueSnapshot {
 }
 
 impl ValidationReportSnapshot {
-    fn from_report(report: ValidationReport) -> Self {
+    fn from_report(report: &ValidationReport) -> Self {
         let issues = report
             .issues()
             .iter()
@@ -10463,13 +10463,13 @@ pub extern "C" fn kmipkit_ttlv_value_view_byte_length(
     })
 }
 
-/// Copies all bytes from a BigInteger, ByteString, or TextString value view.
+/// Copies all bytes from a `BigInteger`, `ByteString`, or `TextString` value view.
 ///
 /// `capacity` must be at least the byte length reported by
 /// `kmipkit_ttlv_value_view_byte_length`. A null buffer is accepted only when
 /// the value is empty. On any error, this function leaves the buffer untouched.
-/// TextString bytes are copied as their original UTF-8 encoding; ByteString and
-/// BigInteger bytes are copied unchanged. For a non-empty value, the caller
+/// `TextString` bytes are copied as their original UTF-8 encoding; `ByteString` and
+/// `BigInteger` bytes are copied unchanged. For a non-empty value, the caller
 /// must provide `capacity` writable bytes that do not overlap the value's
 /// backing storage.
 #[unsafe(no_mangle)]

@@ -170,8 +170,9 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
-    ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest, PendingOutcome,
-    RequestOptions, UsageAllocationContext, UsageAllocationContextError,
+    ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest,
+    ClientResponseView, PendingOutcome, RequestOptions, UsageAllocationContext,
+    UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,

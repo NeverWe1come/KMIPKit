@@ -6,6 +6,7 @@ import hashlib
 import json
 import argparse
 import copy
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -14,7 +15,12 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 APPROVAL_PATH = "specs/053-api-parity-facade/approval-record.md"
 LANGUAGE_PACKAGES = {
-    "rust": {"rust-kmipkit", "rust-kmipkit-protocol", "rust-kmipkit-client"},
+    "rust": {
+        "rust-kmipkit",
+        "rust-kmipkit-protocol",
+        "rust-kmipkit-client",
+        "rust-kmipkit-ttlv",
+    },
     "c": {"c-kmipkit"},
     "java": {"java-kmipkit"},
     "python": {"python-kmipkit"},
@@ -27,6 +33,9 @@ AUDIT_PATHS = (
 )
 ROUTE_PATH = Path("specs/053-api-parity-facade/additional-api-routes.json")
 MANIFEST_PATH = Path("specification/api/public-api.json")
+CATALOG_PATH = Path("specification/catalog/kmip-2.1.json")
+C_STANDARD_ATTRIBUTE_PREFIX = "KMIPKIT_STANDARD_ATTRIBUTE_"
+VENDOR_ATTRIBUTE_TAG_VALUE = 0x0042_0008
 
 
 class ResolutionError(ValueError):
@@ -151,7 +160,7 @@ def _declaration(document: dict[str, Any], row: dict[str, Any]) -> dict[str, Any
     identifier = "KMIPKIT-0053:export:" + hashlib.sha256(
         json.dumps(canonical, separators=(",", ":")).encode("utf-8")
     ).hexdigest()[:24]
-    return {
+    declaration = {
         "declarationId": identifier,
         "packageId": package_id,
         "kind": kind,
@@ -162,8 +171,13 @@ def _declaration(document: dict[str, Any], row: dict[str, Any]) -> dict[str, Any
         "parityScope": "four-language",
         "languageMappings": mappings,
         "parityEvidenceIds": _evidence(row),
+        "candidateSpecId": "KMIPKIT-0053",
         "approvalSource": _approval(row),
     }
+    for metadata_field in ("mappingSemantics", "lifecycleSemanticsByLanguage"):
+        if metadata_field in row:
+            declaration[metadata_field] = copy.deepcopy(row[metadata_field])
+    return declaration
 
 
 def _exact_exclusion(document: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
@@ -371,6 +385,183 @@ def apply_kind_corrections(
     return result
 
 
+def _normalized_catalog_name(value: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", value.upper())
+
+
+def _catalog_attribute_tag_values(
+    catalog: dict[str, Any], requested_names: set[str]
+) -> dict[str, int]:
+    elements = catalog.get("elements")
+    if not isinstance(elements, list):
+        raise ResolutionError("KMIP 2.1 catalog lacks its element inventory")
+    elements_by_id = {
+        row.get("element_id"): row
+        for row in elements
+        if isinstance(row, dict) and isinstance(row.get("element_id"), str)
+    }
+    tags_by_name: dict[str, list[dict[str, Any]]] = {}
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "tag":
+            continue
+        name = element.get("name")
+        if isinstance(name, str):
+            tags_by_name.setdefault(_normalized_catalog_name(name), []).append(element)
+
+    result: dict[str, int] = {}
+    for attribute in elements:
+        if not isinstance(attribute, dict) or attribute.get("kind") != "attribute":
+            continue
+        name = attribute.get("name")
+        parents = attribute.get("parent_element_ids")
+        if not isinstance(name, str) or not isinstance(parents, list):
+            raise ResolutionError("catalog attribute lacks its exact tag parent")
+        normalized_name = _normalized_catalog_name(name)
+        if normalized_name not in requested_names:
+            continue
+        if normalized_name == "VENDORATTRIBUTE" and not parents:
+            # Table 150 is the catalog's intentional Vendor Attribute exception.
+            result[normalized_name] = VENDOR_ATTRIBUTE_TAG_VALUE
+            continue
+        if len(parents) == 1 and isinstance(parents[0], str):
+            tag = elements_by_id.get(parents[0])
+            matching_tags = [tag] if isinstance(tag, dict) and tag.get("kind") == "tag" else []
+        elif not parents:
+            matching_tags = tags_by_name.get(_normalized_catalog_name(name), [])
+        else:
+            raise ResolutionError("catalog attribute has ambiguous tag parents")
+        if len(matching_tags) != 1:
+            raise ResolutionError(f"catalog attribute has no unique tag value: {name}")
+        wire_value = matching_tags[0].get("wire_value")
+        if not isinstance(wire_value, str) or not re.fullmatch(
+            r"(?:0[xX])?[0-9A-Fa-f]{6}", wire_value
+        ):
+            raise ResolutionError(f"catalog attribute tag has an invalid wire value: {name}")
+        value = int(wire_value, 16)
+        previous = result.get(normalized_name)
+        if previous is not None and previous != value:
+            raise ResolutionError(f"catalog attribute names collide after normalization: {name}")
+        result[normalized_name] = value
+    return result
+
+
+def add_standard_attribute_c_declarations(
+    route_data: dict[str, Any], catalog: dict[str, Any]
+) -> dict[str, Any]:
+    """Materialize each named C attribute macro as an exact four-language route."""
+    result = copy.deepcopy(route_data)
+    declarations = result.get("publicDeclarations")
+    removals = result.get("removePublicDeclarations")
+    if not isinstance(declarations, list) or not isinstance(removals, list):
+        raise ResolutionError("standard attribute route materialization needs declarations and exact replacements")
+    requested_names = {
+        _normalized_catalog_name(row["exportName"].removeprefix(C_STANDARD_ATTRIBUTE_PREFIX))
+        for row in removals
+        if isinstance(row, dict)
+        and row.get("packageId") == "c-kmipkit"
+        and isinstance(row.get("exportName"), str)
+        and row["exportName"].startswith(C_STANDARD_ATTRIBUTE_PREFIX)
+        and row["exportName"] != f"{C_STANDARD_ATTRIBUTE_PREFIX}TAG"
+    }
+    values = _catalog_attribute_tag_values(catalog, requested_names)
+    for removal in removals:
+        if not isinstance(removal, dict):
+            raise ResolutionError("standard attribute replacement must be an exact record")
+        export_name = removal.get("exportName")
+        if (
+            removal.get("packageId") != "c-kmipkit"
+            or not isinstance(export_name, str)
+            or not export_name.startswith(C_STANDARD_ATTRIBUTE_PREFIX)
+        ):
+            continue
+        suffix = export_name.removeprefix(C_STANDARD_ATTRIBUTE_PREFIX)
+        counterparts = [
+            row for row in declarations
+            if isinstance(row, dict)
+            and row.get("packageId") != "c-kmipkit"
+            and row.get("languageMappings", {}).get("c")
+            == {"packageId": "c-kmipkit", "name": export_name}
+        ]
+        if len(counterparts) != 1:
+            raise ResolutionError(
+                f"named C attribute macro needs one exact four-language counterpart: {export_name}"
+            )
+        counterpart = counterparts[0]
+        mappings = counterpart.get("languageMappings")
+        if (
+            counterpart.get("capabilityId") != "typed_object_attributes"
+            or counterpart.get("declarationState") != "verified"
+            or counterpart.get("parityScope") != "four-language"
+            or not isinstance(mappings, dict)
+            or set(mappings) != REQUIRED_LANGUAGES
+        ):
+            raise ResolutionError(
+                f"named C attribute macro counterpart is not verified across all languages: {export_name}"
+            )
+        declaration = {
+            "declarationId": removal["declarationId"],
+            "packageId": "c-kmipkit",
+            "kind": "macro",
+            "exportName": export_name,
+            "capabilityId": "typed_object_attributes",
+            "requirementIds": sorted(
+                set(counterpart.get("requirementIds", []))
+                | {"KMIPKIT-0053-FR-009", "KMIPKIT-0053-FR-012"}
+            ),
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": copy.deepcopy(mappings),
+            "parityEvidenceIds": sorted(
+                set(counterpart.get("parityEvidenceIds", []))
+                | set(removal.get("evidencePaths", []))
+            ),
+            "candidateSpecId": "KMIPKIT-0053",
+            "approvalSource": copy.deepcopy(counterpart.get("approvalSource")),
+            "mappingSemantics": "standard-attribute-tag-value",
+        }
+        declaration["languageMappings"]["python"]["name"] = (
+            "kmipkit.StandardAttribute.tag"
+            if suffix == "TAG"
+            else f"kmipkit.typed_attributes.StandardAttribute.{suffix}"
+        )
+        if suffix != "TAG":
+            value = values.get(_normalized_catalog_name(suffix))
+            if value is None:
+                raise ResolutionError(f"named C attribute macro is absent from the KMIP catalog: {export_name}")
+            declaration["cValue"] = value
+            declaration["cValueType"] = "uint32_t"
+
+        matching_ids = [
+            row for row in declarations
+            if isinstance(row, dict)
+            and row.get("declarationId") == declaration["declarationId"]
+        ]
+        matching_exports = [
+            row for row in declarations
+            if isinstance(row, dict)
+            and row.get("packageId") == "c-kmipkit"
+            and row.get("exportName") == export_name
+        ]
+        if matching_ids or matching_exports:
+            if len(matching_ids) != 1 or matching_exports != matching_ids:
+                raise ResolutionError(f"named C attribute route conflicts with reviewed input: {export_name}")
+            existing = matching_ids[0]
+            if existing != declaration:
+                refreshed = copy.deepcopy(existing)
+                refreshed["approvalSource"] = declaration["approvalSource"]
+                refreshed["languageMappings"] = declaration["languageMappings"]
+                if refreshed != declaration:
+                    raise ResolutionError(
+                        f"named C attribute route conflicts with reviewed input: {export_name}"
+                    )
+                declarations[declarations.index(existing)] = declaration
+            continue
+        declarations.append(declaration)
+    declarations.sort(key=lambda row: (row.get("packageId", ""), row.get("exportName", "")))
+    result["publicDeclarations"] = declarations
+    return result
+
+
 def remove_reviewed_declarations(
     route_data: dict[str, Any], removals: list[dict[str, Any]] | None = None
 ) -> dict[str, Any]:
@@ -401,6 +592,18 @@ def remove_reviewed_declarations(
             or identified[0].get("exportName") != export_name
         ):
             raise ResolutionError("approved removal does not match the exact reviewed declaration")
+        if identified and (
+            identified[0].get("packageId") == "c-kmipkit"
+            and identified[0].get("exportName", "").startswith(C_STANDARD_ATTRIBUTE_PREFIX)
+            and identified[0].get("candidateSpecId") == "KMIPKIT-0053"
+            and identified[0].get("kind") == "macro"
+            and identified[0].get("capabilityId") == "typed_object_attributes"
+            and identified[0].get("declarationState") == "verified"
+            and identified[0].get("parityScope") == "four-language"
+            and identified[0].get("mappingSemantics") == "standard-attribute-tag-value"
+            and set(identified[0].get("languageMappings", {})) == REQUIRED_LANGUAGES
+        ):
+            continue
         declarations = [row for row in declarations if row.get("declarationId") != declaration_id]
     result["publicDeclarations"] = declarations
     return result
@@ -551,6 +754,12 @@ def compile_documents(
     existing_declarations: list[dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Compile mapped rows and refuse unresolved exports before route generation."""
+    existing_declarations = existing_declarations or []
+    existing_by_export = {
+        (row.get("packageId"), row.get("exportName")): row
+        for row in existing_declarations
+        if isinstance(row, dict)
+    }
     declarations: dict[str, dict[str, Any]] = {}
     exclusions: dict[tuple[str, str], dict[str, Any]] = {}
     rust_shape_exclusions: list[dict[str, Any]] = []
@@ -588,6 +797,23 @@ def compile_documents(
             raise ResolutionError(f"unresolved public export blocks route generation: {name}")
         for row in rows:
             declaration = _declaration(document, row)
+            existing = existing_by_export.get(
+                (declaration["packageId"], declaration["exportName"])
+            )
+            if (
+                existing is not None
+                and existing.get("declarationState") in {"declared", "verified"}
+                and existing.get("capabilityId") == declaration["capabilityId"]
+            ):
+                # A reviewed route correction changes a mapping, not the identity
+                # of the already-listed public export.
+                declaration["declarationId"] = existing["declarationId"]
+                if isinstance(existing.get("approvalSource"), dict):
+                    # Preserve the approval owner of an existing capability when
+                    # a later specification adds evidence or corrects its route.
+                    declaration["approvalSource"] = copy.deepcopy(
+                        existing["approvalSource"]
+                    )
             identifier = declaration["declarationId"]
             previous = declarations.get(identifier)
             if previous is None:
@@ -608,7 +834,6 @@ def compile_documents(
             if previous is not None and previous != exclusion:
                 raise ResolutionError(f"conflicting exact exclusion record: {key[1]}")
             exclusions[key] = exclusion
-    existing_declarations = existing_declarations or []
     declarations_by_export = {
         (row["packageId"], row["exportName"]): row
         for row in [*existing_declarations, *declarations.values()]
@@ -669,6 +894,15 @@ def merge_declarations(
             )
             if not exact_route_match:
                 raise ResolutionError(f"imported export conflicts with a reviewed route: {key[1]}")
+            candidate_spec_id = declaration.get("candidateSpecId")
+            if candidate_spec_id is not None:
+                if candidate_spec_id != "KMIPKIT-0053" or existing_export.get(
+                    "candidateSpecId"
+                ) not in {None, candidate_spec_id}:
+                    raise ResolutionError(
+                        f"imported export has another approval owner: {key[1]}"
+                    )
+                existing_export["candidateSpecId"] = candidate_spec_id
             existing_export["requirementIds"] = sorted(
                 set(existing_export.get("requirementIds", []))
                 | set(declaration["requirementIds"])
@@ -696,7 +930,10 @@ def merge_declarations(
         key = exclusion["packageId"], exclusion["exportName"]
         previous = exclusions_by_export.get(key)
         if previous is not None and previous != exclusion:
-            raise ResolutionError(f"exact exclusion conflicts with a reviewed record: {key[1]}")
+            if not _is_exact_legacy_model_error_approval_correction(previous, exclusion):
+                raise ResolutionError(f"exact exclusion conflicts with a reviewed record: {key[1]}")
+            current_exclusions[current_exclusions.index(previous)] = exclusion
+            exclusions_by_export[key] = exclusion
         if previous is None:
             current_exclusions.append(exclusion)
             exclusions_by_export[key] = exclusion
@@ -705,6 +942,46 @@ def merge_declarations(
     )
     result["approvedExclusions"] = current_exclusions
     return result
+
+
+def _is_exact_legacy_model_error_approval_correction(
+    previous: dict[str, Any], corrected: dict[str, Any]
+) -> bool:
+    """Permit only the reviewed 0004 approval-source shape correction."""
+    expected_routes = {
+        ("rust-kmipkit", "kmipkit::ttlv::ModelError::UnsupportedValue"),
+        ("rust-kmipkit-ttlv", "kmipkit_ttlv::ModelError::UnsupportedValue"),
+    }
+    key = (previous.get("packageId"), previous.get("exportName"))
+    if key not in expected_routes or key != (
+        corrected.get("packageId"), corrected.get("exportName")
+    ):
+        return False
+    expected_old_approval = {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "requirementIds": ["KMIPKIT-0004-FR-013"],
+    }
+    expected_new_approval = {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": (
+            "KMIPKIT-0004-FR-013 approves excluding these exact local ModelError "
+            "variants from the cross-language public route inventory."
+        ),
+    }
+    if (
+        previous.get("candidateSpecId") != "KMIPKIT-0004"
+        or corrected.get("candidateSpecId") != "KMIPKIT-0004"
+        or previous.get("approvalSource") != expected_old_approval
+        or corrected.get("approvalSource") != expected_new_approval
+    ):
+        return False
+    normalized_previous = copy.deepcopy(previous)
+    normalized_previous["approvalSource"] = expected_new_approval
+    return normalized_previous == corrected
 
 
 def expand_java_stale_mappings(
@@ -805,9 +1082,13 @@ def main() -> int:
         documents = _read_documents(arguments.repo_root)
         route_data = json.loads(route_path.read_text(encoding="utf-8"))
         manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        catalog_data = json.loads(
+            (arguments.repo_root / CATALOG_PATH).read_text(encoding="utf-8")
+        )
         declarations, exclusions = compile_documents(
             documents, manifest_data.get("publicDeclarations", [])
         )
+        route_data = add_standard_attribute_c_declarations(route_data, catalog_data)
         route_data = remove_reviewed_declarations(
             route_data, route_data.get("removePublicDeclarations", [])
         )
@@ -832,6 +1113,15 @@ def main() -> int:
         )
         result["pythonStaleMappings"] = copy.deepcopy(
             python_document.get("staleMappings", [])
+        )
+        result["pythonKindCorrections"] = copy.deepcopy(
+            python_document.get("kindCorrections", [])
+        )
+        result["rustKindCorrections"] = copy.deepcopy(
+            rust_document.get("kindCorrections", [])
+        )
+        result["rustKindCorrections"] = copy.deepcopy(
+            rust_document.get("kindCorrections", [])
         )
         content = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         current = route_path.read_text(encoding="utf-8")

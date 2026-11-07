@@ -1,7 +1,14 @@
 //! Safe C ABI conversions for the generated direct-attribute catalog.
-use super::*;
+use super::{
+    AttributeSet, ERROR_INTERNAL, ERROR_INVALID_INPUT, ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH,
+    ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH, FfiResult, HandleValue, Item, Kind, RawTag, SUCCESS,
+    Structure, Value, ValueView, copy_required_item_handle, ffi_entrypoint, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_value_t, model_status, record_ffi_error, reference_handle, try_make_handle,
+    typed_attributes_catalog_generated,
+};
+use std::ptr;
 
-/// Validates one Item with the protocol AttributeSet's catalog-backed rules.
+/// Validates one Item with the protocol `AttributeSet`'s catalog-backed rules.
 pub(super) fn validate_typed_item(expected_tag: u32, item: Item) -> FfiResult<Item> {
     if !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag) {
         return Err(ERROR_INVALID_INPUT);

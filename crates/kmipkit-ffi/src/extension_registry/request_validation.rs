@@ -1,5 +1,13 @@
 //! Safe C ABI access to the shared Rust request and TTLV validator.
-use super::*;
+use super::{
+    ERROR_INVALID_INPUT, ERROR_RESOURCE_LIMIT, FfiResult, HandleValue, Kind, NestedStructureSchema,
+    RequestPayloadSchema, SUCCESS, ValidationReport, ValidationReportSnapshot, ValidationSchema,
+    copy_required_structure_handle, ffi_entrypoint, input_span, kmipkit_byte_span_v1_t,
+    kmipkit_client_batch_item_t, kmipkit_ttlv_structure_t, kmipkit_validation_issue_view_v1_t,
+    kmipkit_validation_report_t, record_ffi_error, reference_handle, release, size_of,
+    try_make_handle, validate_structure,
+};
+use std::ptr;
 
 const MAX_SCHEMA_ID_BYTES: u64 = 128;
 
@@ -135,7 +143,7 @@ fn span(bytes: &[u8]) -> kmipkit_byte_span_v1_t {
     }
 }
 
-fn report_handle(report: ValidationReport) -> FfiResult<*mut kmipkit_validation_report_t> {
+fn report_handle(report: &ValidationReport) -> FfiResult<*mut kmipkit_validation_report_t> {
     try_make_handle(
         Kind::ValidationReport,
         HandleValue::ValidationReport(ValidationReportSnapshot::from_report(report)),
@@ -149,7 +157,7 @@ fn report_handle(report: ValidationReport) -> FfiResult<*mut kmipkit_validation_
 ///
 /// # Safety
 ///
-/// `structure` must be null or a live KMIPKit Structure handle. For a non-zero schema length,
+/// `structure` must be null or a live `KMIPKit` Structure handle. For a non-zero schema length,
 /// `schema` must point to that many readable UTF-8 bytes. `out_report` must point to an aligned,
 /// writable handle slot that does not overlap either input.
 #[unsafe(no_mangle)]
@@ -168,7 +176,7 @@ pub unsafe extern "C" fn kmipkit_ttlv_structure_validation_report_v1(
         };
         let structure = try_ffi!(copy_required_structure_handle(structure));
         let report = validate_structure(&structure.view(), schema);
-        *output = try_ffi!(report_handle(report));
+        *output = try_ffi!(report_handle(&report));
         SUCCESS
     })
 }
@@ -177,7 +185,7 @@ pub unsafe extern "C" fn kmipkit_ttlv_structure_validation_report_v1(
 ///
 /// # Safety
 ///
-/// `item` must be null or a live KMIPKit client batch item. `out_report` must point to an aligned,
+/// `item` must be null or a live `KMIPKit` client batch item. `out_report` must point to an aligned,
 /// writable handle slot that does not overlap the input.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kmipkit_client_batch_item_validation_report(
@@ -194,7 +202,7 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_validation_report(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let report = item.request().validation_report();
-        *output = try_ffi!(report_handle(report));
+        *output = try_ffi!(report_handle(&report));
         SUCCESS
     })
 }
@@ -279,8 +287,11 @@ pub unsafe extern "C" fn kmipkit_validation_report_issue_at_v1(
         let Some(issue) = report.issues.get(index) else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
+        let Ok(struct_size) = u32::try_from(size_of::<kmipkit_validation_issue_view_v1_t>()) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
         *output = kmipkit_validation_issue_view_v1_t {
-            struct_size: size_of::<kmipkit_validation_issue_view_v1_t>() as u32,
+            struct_size,
             abi_version: 1,
             severity: issue.severity,
             source_kind: issue.source_kind,

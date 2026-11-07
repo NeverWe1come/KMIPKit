@@ -2870,7 +2870,7 @@
       "packageId": "python-kmipkit",
       "name": "kmipkit.StandardAttribute.tag",
       "observedKind": "python-export",
-      "capabilityId": "standard_attribute_catalog",
+      "capabilityId": "typed_object_attributes",
       "requirementIds": [
         "KMIPKIT-0048-FR-001",
         "KMIPKIT-0048-FR-002",
@@ -2894,15 +2894,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::typed_attributes::AttributeDefinition::TAG for the selected attribute marker"
+          "name": "kmipkit::protocol::AttributeDefinition::TAG"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "KMIPKIT_STANDARD_ATTRIBUTE_<NAME> macro for the selected attribute"
+          "name": "KMIPKIT_STANDARD_ATTRIBUTE_TAG"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.StandardAttribute.tag()"
+          "name": "org.kmipkit.ttlv.StandardAttribute.tag"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -2915,7 +2915,7 @@
       "packageId": "python-kmipkit",
       "name": "kmipkit.TypedAttribute",
       "observedKind": "type",
-      "capabilityId": "typed_attribute_view",
+      "capabilityId": "typed_object_attributes",
       "requirementIds": [
         "KMIPKIT-0048-FR-001",
         "KMIPKIT-0048-FR-007",
@@ -2933,12 +2933,12 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::Attribute"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_typed_attribute_t"
+          "name": "kmipkit_ttlv_item_t"
         },
         "java": {
           "packageId": "java-kmipkit",
@@ -2975,7 +2975,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_client::ClientResponseView::query"
+          "name": "kmipkit::ClientResponseView::query"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3016,7 +3016,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponseField::enumeration"
+          "name": "kmipkit::protocol::QueryResponseField::raw_enumeration"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3057,16 +3057,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::QueryResponse::response_field(index)"
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::protocol::QueryResponse::response_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_query_field_at(index)"
+          "name": "kmipkit_client_batch_item_response_query_field_at"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.QueryResponse.fieldAt(index)"
+          "name": "org.kmipkit.extensions.QueryResponse.fieldAt"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -3099,7 +3099,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponseField::item"
+          "name": "kmipkit::protocol::QueryResponseField::with_ttlv"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3140,7 +3140,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponseField::kind"
+          "name": "kmipkit::protocol::QueryResponseField::kind"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3181,7 +3181,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponseField::tag"
+          "name": "kmipkit::protocol::QueryResponseField::tag"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3222,7 +3222,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3230,7 +3230,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.QueryResponse.QueryResponse"
+          "name": "org.kmipkit.extensions.QueryResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -3263,7 +3263,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3304,7 +3304,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3345,7 +3345,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3386,7 +3386,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3427,7 +3427,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::drop"
+          "name": "kmipkit::protocol::QueryResponse"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3468,7 +3468,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3509,7 +3509,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3550,7 +3550,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3591,7 +3591,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3632,7 +3632,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3673,7 +3673,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3714,7 +3714,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3755,7 +3755,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::to_ttlv_payload"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3796,7 +3796,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3837,7 +3837,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3878,7 +3878,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3919,7 +3919,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -3960,7 +3960,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -4001,7 +4001,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::QueryResponse::response_fields"
+          "name": "kmipkit::protocol::QueryResponse::response_fields"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -4022,7 +4022,7 @@
       "packageId": "python-kmipkit",
       "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.__init__",
       "observedKind": "python-export",
-      "capabilityId": "cryptographic_parameters",
+      "capabilityId": "typed_cryptographic_parameters",
       "requirementIds": [
         "KMIPKIT-0053-FR-004",
         "KMIPKIT-0053-FR-009",
@@ -4062,6 +4062,55 @@
     },
     {
       "packageId": "python-kmipkit",
+      "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close",
+      "observedKind": "python-export",
+      "capabilityId": "typed_cryptographic_parameters",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "resolution": "mapped",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CryptographicParametersBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_cryptographic_parameters_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close"
+        }
+      },
+      "mappingSemantics": "secret-buffer-wipe",
+      "lifecycleSemanticsByLanguage": {
+        "rust": "wipe-on-final-owner-drop",
+        "c": "release-shared-reference-wipe-on-final-owner-drop",
+        "java": "wipe-owned-copy-on-close",
+        "python": "wipe-owned-copy-on-close"
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
       "name": "kmipkit.extensions.ClientBatchItem.validation_report",
       "observedKind": "python-export",
       "capabilityId": "request_validation",
@@ -4082,7 +4131,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_client::ClientBatchItem::validation_report"
+          "name": "kmipkit::ClientRequest::validation_report"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -4126,7 +4175,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4171,7 +4220,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4216,16 +4265,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_bytes"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_bytes"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldBytes"
+          "name": "org.kmipkit.ttlv.KeyBlock.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4261,16 +4310,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_enumeration"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_enumeration"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldEnumeration"
+          "name": "org.kmipkit.ttlv.KeyBlock.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4306,16 +4355,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_integer"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_integer"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldInteger"
+          "name": "org.kmipkit.ttlv.KeyBlock.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4351,16 +4400,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_item"
+          "name": "kmipkit_managed_value_field_item_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.KeyBlock.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4396,8 +4445,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_read"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -4405,7 +4454,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldRead"
+          "name": "org.kmipkit.ttlv.KeyBlock.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4441,16 +4490,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_type"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_type"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldType"
+          "name": "org.kmipkit.ttlv.KeyBlock.fieldType"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4531,16 +4580,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::has_field"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_has"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.hasField"
+          "name": "org.kmipkit.ttlv.KeyBlock.hasField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4576,7 +4625,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4621,7 +4670,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4666,7 +4715,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4711,7 +4760,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4756,7 +4805,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4801,7 +4850,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4846,7 +4895,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4891,7 +4940,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -4936,16 +4985,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_bytes"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_bytes"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldBytes"
+          "name": "org.kmipkit.ttlv.KeyMaterial.fieldBytes"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -4981,16 +5030,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_enumeration"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_enumeration"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldEnumeration"
+          "name": "org.kmipkit.ttlv.KeyMaterial.fieldEnumeration"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -5026,16 +5075,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_integer"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_integer"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldInteger"
+          "name": "org.kmipkit.ttlv.KeyMaterial.fieldInteger"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -5071,16 +5120,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_item"
+          "name": "kmipkit_managed_value_field_item_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.KeyMaterial.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -5116,8 +5165,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_read"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -5125,7 +5174,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldRead"
+          "name": "org.kmipkit.ttlv.KeyMaterial.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -5161,16 +5210,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_type"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_type"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldType"
+          "name": "org.kmipkit.ttlv.KeyMaterial.fieldType"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -5251,7 +5300,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5296,16 +5345,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::has_field"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_has"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.hasField"
+          "name": "org.kmipkit.ttlv.KeyMaterial.hasField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -5341,7 +5390,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5386,7 +5435,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5431,7 +5480,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5476,7 +5525,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5521,7 +5570,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5566,7 +5615,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5611,7 +5660,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5656,7 +5705,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5701,7 +5750,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5746,7 +5795,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5791,7 +5840,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5836,7 +5885,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5881,7 +5930,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5926,7 +5975,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -5971,16 +6020,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_bytes"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_bytes"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldBytes"
+          "name": "org.kmipkit.ttlv.KeyValue.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6016,16 +6065,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_enumeration"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_enumeration"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldEnumeration"
+          "name": "org.kmipkit.ttlv.KeyValue.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6061,16 +6110,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_integer"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_integer"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldInteger"
+          "name": "org.kmipkit.ttlv.KeyValue.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6106,16 +6155,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_item"
+          "name": "kmipkit_managed_value_field_item_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.KeyValue.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6151,8 +6200,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_read"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -6160,7 +6209,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldRead"
+          "name": "org.kmipkit.ttlv.KeyValue.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6196,16 +6245,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_type"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_type"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldType"
+          "name": "org.kmipkit.ttlv.KeyValue.fieldType"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6241,7 +6290,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6331,7 +6380,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6376,16 +6425,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::has_field"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_has"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.hasField"
+          "name": "org.kmipkit.ttlv.KeyValue.hasField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6421,7 +6470,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6466,7 +6515,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6511,7 +6560,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6556,7 +6605,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6601,16 +6650,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_bytes"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_bytes"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldBytes"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6646,16 +6695,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_enumeration"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_enumeration"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldEnumeration"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6691,16 +6740,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_integer"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_integer"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldInteger"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6736,16 +6785,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_item"
+          "name": "kmipkit_managed_value_field_item_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6781,8 +6830,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_read"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -6790,7 +6839,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldRead"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6826,16 +6875,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_type"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_type"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldType"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.fieldType"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -6913,7 +6962,7 @@
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "KeyWrappingData.from_fields"
+          "name": "kmipkit.managed_objects.KeyWrappingData.from_fields"
         }
       }
     },
@@ -6944,7 +6993,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -6989,16 +7038,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::has_field"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_has"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.hasField"
+          "name": "org.kmipkit.ttlv.KeyWrappingData.hasField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7034,7 +7083,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7079,7 +7128,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7124,7 +7173,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7169,7 +7218,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7214,7 +7263,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7349,7 +7398,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7394,7 +7443,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7439,7 +7488,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7484,7 +7533,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7529,16 +7578,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_bytes"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_bytes"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldBytes"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7574,16 +7623,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_enumeration"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_enumeration"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldEnumeration"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7619,16 +7668,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_integer"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_integer"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldInteger"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7664,16 +7713,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_item"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field_item"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_item"
+          "name": "kmipkit_managed_value_field_item_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.ManagedObject.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7709,8 +7758,8 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_read"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -7718,7 +7767,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldRead"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7754,16 +7803,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::field_type"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_type"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldType"
+          "name": "org.kmipkit.ttlv.ManagedObject.fieldType"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7844,16 +7893,16 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ManagedValueReader::has_field"
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_has"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.hasField"
+          "name": "org.kmipkit.ttlv.ManagedObject.hasField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -7889,7 +7938,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7934,7 +7983,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -7979,7 +8028,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8024,7 +8073,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8159,7 +8208,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8204,7 +8253,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8384,7 +8433,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8474,7 +8523,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8519,7 +8568,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8564,7 +8613,7 @@
       },
       "languageMappings": {
         "rust": {
-          "packageId": "rust-kmipkit",
+          "packageId": "rust-kmipkit-protocol",
           "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
@@ -8664,7 +8713,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.ManagedObject.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8689,7 +8738,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.fieldItem"
+          "name": "org.kmipkit.ttlv.ManagedObject.fieldItem"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8726,15 +8775,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ManagedValueReader::read_field (ManagedFieldValue::ByteString/BigInteger)"
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_read(read_kind=5)"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.readField(tag, 5)"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8772,15 +8821,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ManagedValueReader::read_field (ManagedFieldValue::Enumeration)"
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_read(read_kind=3)"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.readField(tag, 3)"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8818,15 +8867,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ManagedValueReader::read_field (ManagedFieldValue::Integer)"
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_read(read_kind=4)"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.readField(tag, 4)"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8864,15 +8913,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ManagedValueReader::read_field (ManagedFieldValue::item_type)"
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_read(read_kind=2)"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.readField(tag, 2)"
+          "name": "org.kmipkit.ttlv.ManagedObject.readField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8910,15 +8959,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ManagedValueReader::read_field (ManagedValueReader::read_field presence)"
+          "name": "kmipkit_protocol::ManagedValueReader::read_field"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_managed_value_field_read(read_kind=1)"
+          "name": "kmipkit_managed_value_field_read"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.ManagedTtlvValue.hasField/readField(tag, 1)"
+          "name": "org.kmipkit.ttlv.ManagedObject.hasField"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -8931,7 +8980,7 @@
       "packageId": "python-kmipkit",
       "name": "kmipkit.ttlv.ttlv_value_view_bytes",
       "observedKind": "python-export",
-      "capabilityId": "typed_attribute_view",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
         "KMIPKIT-0048-FR-001",
         "KMIPKIT-0048-FR-007",
@@ -8999,7 +9048,7 @@
       "packageId": "python-kmipkit",
       "name": "kmipkit.typed_attributes.TypedAttribute.attribute",
       "observedKind": "python-export",
-      "capabilityId": "typed_attribute_view",
+      "capabilityId": "typed_object_attributes",
       "requirementIds": [
         "KMIPKIT-0048-FR-001",
         "KMIPKIT-0048-FR-007",
@@ -9071,7 +9120,7 @@
       "packageId": "python-kmipkit",
       "name": "kmipkit.typed_attributes.TypedAttribute.view",
       "observedKind": "python-export",
-      "capabilityId": "typed_attribute_view",
+      "capabilityId": "typed_object_attributes",
       "requirementIds": [
         "KMIPKIT-0048-FR-001",
         "KMIPKIT-0048-FR-007",
@@ -9090,7 +9139,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::Attribute::value"
+          "name": "kmipkit::protocol::Attribute<D>::as_item"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -9129,7 +9178,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ValidationIssue::code"
+          "name": "kmipkit::protocol::ValidationIssue::code"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -9137,7 +9186,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.typed.ValidationIssue.code"
+          "name": "org.kmipkit.extensions.ValidationIssue.code"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -9168,7 +9217,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ValidationIssue::path"
+          "name": "kmipkit::protocol::ValidationIssue::path"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -9176,7 +9225,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.typed.ValidationIssue.path"
+          "name": "org.kmipkit.extensions.ValidationIssue.path"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -9207,7 +9256,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ValidationIssue::severity"
+          "name": "kmipkit::protocol::ValidationIssue::severity"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -9215,7 +9264,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.typed.ValidationIssue.severity"
+          "name": "org.kmipkit.extensions.ValidationIssue.severity"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -9246,7 +9295,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ValidationIssue::source_identifier"
+          "name": "kmipkit::protocol::ValidationIssue::source_identifier"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -9254,7 +9303,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.typed.ValidationIssue.source_identifier"
+          "name": "org.kmipkit.extensions.ValidationIssue.sourceIdentifier"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -9285,7 +9334,7 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ValidationIssue::source_reference"
+          "name": "kmipkit::protocol::ValidationIssue::source_reference"
         },
         "c": {
           "packageId": "c-kmipkit",
@@ -9293,7 +9342,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.typed.ValidationIssue.source_reference"
+          "name": "org.kmipkit.extensions.ValidationIssue.sourceReference"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -9324,15 +9373,15 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit",
-          "name": "kmipkit_protocol::ValidationIssue::close"
+          "name": "kmipkit::protocol::ValidationReport"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_issue_at_v1"
+          "name": "kmipkit_validation_report_release"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.typed.ValidationIssue.close"
+          "name": "org.kmipkit.extensions.ValidationReport.close"
         },
         "python": {
           "packageId": "python-kmipkit",
@@ -9988,34 +10037,6 @@
         "exportName": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.__slots__",
         "artifactKind": "dataclass-metadata",
         "reason": "Builder slots are Python runtime layout metadata and carry no independent parameter capability."
-      }
-    },
-    {
-      "packageId": "python-kmipkit",
-      "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close",
-      "observedKind": "python-export",
-      "capabilityId": "cryptographic_parameters",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-004",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "evidencePaths": [
-        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
-        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
-        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
-        "bindings/python/tests/test_parameters_authentication_parity.py"
-      ],
-      "approval": {
-        "status": "Approved",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "exclusion": {
-        "exportName": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close",
-        "artifactKind": "local-builder-lifecycle",
-        "reason": "This closes and zeroizes Python-owned staged P Source. Java Builder.close and Rust builder Drop provide corresponding local cleanup; C has no builder-owned staging allocation because the versioned fields record and its bytes remain caller-owned until from_fields_v1 copies them."
       }
     },
     {

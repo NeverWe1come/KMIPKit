@@ -11,6 +11,98 @@ from typing import Any
 
 SPEC_ID = "KMIPKIT-0053"
 APPROVAL_RECORD_PATH = "specs/053-api-parity-facade/approval-record.md"
+QUERY_RESPONSE_SCOPE_SUPERSESSION = (
+    "KMIPKIT-0053 approves typed results and final Rust/C/Java/Python parity, "
+    "superseding only the prior KMIPKIT-0020 Rust-only exclusions for the exact "
+    "QueryResponse and QueryResponseField declarations listed in "
+    "additional-api-routes.json."
+)
+QUERY_RESPONSE_SCOPE_EVIDENCE = frozenset(
+    {
+        "specs/053-api-parity-facade/spec.md",
+        APPROVAL_RECORD_PATH,
+    }
+)
+QUERY_RESPONSE_EXCLUSION_EXPORTS = frozenset(
+    {
+        "kmipkit::protocol::QueryResponse",
+        "kmipkit::protocol::QueryResponse::application_namespaces",
+        "kmipkit::protocol::QueryResponse::attestation_types",
+        "kmipkit::protocol::QueryResponse::capability_information",
+        "kmipkit::protocol::QueryResponse::client_registration_methods",
+        "kmipkit::protocol::QueryResponse::defaults_information",
+        "kmipkit::protocol::QueryResponse::extension_information",
+        "kmipkit::protocol::QueryResponse::object_types",
+        "kmipkit::protocol::QueryResponse::operations",
+        "kmipkit::protocol::QueryResponse::profile_information",
+        "kmipkit::protocol::QueryResponse::protection_storage_masks",
+        "kmipkit::protocol::QueryResponse::response_fields",
+        "kmipkit::protocol::QueryResponse::rng_parameters",
+        "kmipkit::protocol::QueryResponse::server_information",
+        "kmipkit::protocol::QueryResponse::try_from_response_item",
+        "kmipkit::protocol::QueryResponse::unknown_items",
+        "kmipkit::protocol::QueryResponse::validation_information",
+        "kmipkit::protocol::QueryResponse::vendor_identification",
+        "kmipkit::protocol::QueryResponseField",
+        "kmipkit::protocol::QueryResponseField::tag",
+        "kmipkit::protocol::QueryResponseField::with_ttlv",
+    }
+)
+JAVA_BUILDER_CLOSE_DECLARATION_ID = "KMIPKIT-0053:export:946cd939aa398dd68a5ca060"
+JAVA_BUILDER_CLOSE_PACKAGE = "java-kmipkit"
+JAVA_BUILDER_CLOSE_EXPORT = (
+    "org.kmipkit.protocol.CryptographicParameters.Builder.close"
+)
+JAVA_BUILDER_CLOSE_EXCLUSION_REASON = (
+    "This Java-only builder close method clears staged P Source and other builder-owned state. "
+    "C has no builder handle because the versioned fields and their bytes remain caller-owned "
+    "until from_fields_v1 copies them; Rust cleanup is automatic through Drop. This lifecycle "
+    "detail is verified per language and is not claimed as a four-language API route."
+)
+JAVA_BUILDER_CLOSE_APPROVAL_EVIDENCE = (
+    "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+)
+JAVA_BUILDER_CLOSE_SUPERSESSION_RATIONALE = (
+    "The approved Phase 5 contract requires KMIPKit-owned secret copies to be wiped in all supported "
+    "bindings. Java Builder.close, Python builder close, Rust Drop, and C release all wipe KMIPKit-owned "
+    "P Source copies; C has no pre-build builder handle, so its handle release is the corresponding "
+    "owned-secret lifecycle boundary."
+)
+JAVA_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS = frozenset(
+    {
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py",
+        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
+    }
+)
+JAVA_BUILDER_CLOSE_SUPERSESSION_EVIDENCE_PATHS = frozenset(
+    {
+        "specs/053-api-parity-facade/spec.md",
+        APPROVAL_RECORD_PATH,
+        *JAVA_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS,
+        "bindings/c/tests/authentication_consumer.c",
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "crates/kmipkit-protocol/src/credential/secret.rs",
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+        "crates/kmipkit-protocol/tests/credential_secret.rs",
+    }
+)
+PYTHON_BUILDER_CLOSE_DECLARATION_ID = "KMIPKIT-0053:export:b6848d45007bbf0e29966906"
+PYTHON_BUILDER_CLOSE_PACKAGE = "python-kmipkit"
+PYTHON_BUILDER_CLOSE_EXPORT = (
+    "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close"
+)
+PYTHON_BUILDER_CLOSE_EXCLUSION_REASON = (
+    "This closes and zeroizes Python-owned staged P Source. Java Builder.close and Rust builder Drop "
+    "provide corresponding local cleanup; C has no builder-owned staging allocation because the "
+    "versioned fields record and its bytes remain caller-owned until from_fields_v1 copies them."
+)
+PYTHON_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS = (
+    "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+    "bindings/python/tests/test_parameters_authentication_parity.py",
+    "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+    "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
+)
 LANGUAGE_PACKAGES = {
     "rust": {
         "rust-kmipkit",
@@ -1387,6 +1479,11 @@ def add_public_declarations(
         for row in result.get("capabilities", [])
         if isinstance(row, dict)
     }
+    capability_owners = {
+        row.get("capabilityId"): row.get("ownerSpecId")
+        for row in result.get("capabilities", [])
+        if isinstance(row, dict)
+    }
     additions_by_id: dict[str, dict[str, Any]] = {}
     additions_by_export: dict[tuple[str, str], dict[str, Any]] = {}
     for declaration in declarations:
@@ -1634,6 +1731,11 @@ def add_public_declarations(
                     existing_export.get("approvalSource"),
                     declaration.get("approvalSource"),
                     capability_sources.get(declaration.get("capabilityId")),
+                ) and not _is_approved_0053_query_scope_transfer(
+                    existing_export,
+                    declaration,
+                    candidate_spec_id,
+                    capability_owners.get(declaration.get("capabilityId")),
                 ):
                     raise ReconciliationError(
                         f"public export already has another approval source: {export_name}"
@@ -1647,7 +1749,12 @@ def add_public_declarations(
                     raise ReconciliationError(
                         f"public export already has another approval owner: {export_name}"
                     )
-                existing_export["candidateSpecId"] = candidate_spec_id
+                if declaration.get("approvalSource") == capability_sources.get(
+                    declaration.get("capabilityId")
+                ):
+                    existing_export.pop("candidateSpecId", None)
+                else:
+                    existing_export["candidateSpecId"] = candidate_spec_id
             existing_mappings = existing_export.get("languageMappings")
             candidate_mappings = declaration.get("languageMappings")
             if existing_mappings != candidate_mappings:
@@ -1745,9 +1852,6 @@ def add_public_declarations(
                     )
                 existing_export[field] = declared_value
             canonical = copy.deepcopy(existing_export)
-            if canonical.get("candidateSpecId") == SPEC_ID:
-                canonical.pop("candidateSpecId", None)
-                existing_export.pop("candidateSpecId", None)
             canonical["requirementIds"] = sorted(
                 set(existing_export.get("requirementIds", [])) | set(requirements)
             )
@@ -1762,7 +1866,10 @@ def add_public_declarations(
     for identifier, declaration in additions_by_id.items():
         if identifier not in by_id:
             approved = copy.deepcopy(declaration)
-            approved.pop("candidateSpecId", None)
+            if approved.get("approvalSource") == capability_sources.get(
+                approved.get("capabilityId")
+            ):
+                approved.pop("candidateSpecId", None)
             current.append(approved)
     capabilities = result.get("capabilities")
     if not isinstance(capabilities, list):
@@ -1811,6 +1918,48 @@ def add_public_declarations(
     return result
 
 
+def _is_approved_0053_query_scope_transfer(
+    existing: dict[str, Any],
+    replacement: dict[str, Any],
+    candidate_spec_id: Any,
+    owner_spec_id: Any,
+) -> bool:
+    """Allow 0053 to own only the explicitly approved 0052 typed-query parity surface."""
+    old_approval = existing.get("approvalSource")
+    new_approval = replacement.get("approvalSource")
+    requirements = replacement.get("requirementIds", [])
+    declaration_id = replacement.get("declarationId", "")
+    export_name = replacement.get("exportName", "")
+    return (
+        candidate_spec_id == SPEC_ID
+        and owner_spec_id == "KMIPKIT-0052"
+        and replacement.get("capabilityId") == "response_ttlv_navigation"
+        and isinstance(declaration_id, str)
+        and (
+            declaration_id.startswith(f"{SPEC_ID}:")
+            or declaration_id.startswith("T064:query-field-")
+        )
+        and isinstance(export_name, str)
+        and export_name in QUERY_RESPONSE_EXCLUSION_EXPORTS
+        and isinstance(requirements, list)
+        and {"KMIPKIT-0053-FR-008", "KMIPKIT-0053-FR-012"}
+        <= set(requirements)
+        and isinstance(old_approval, dict)
+        and old_approval.get("kind") == "feature-specification"
+        and old_approval.get("path")
+        in {
+            "specs/052-response-navigation/spec.md",
+            "specs/052-response-navigation/approval-record.md",
+        }
+        and isinstance(new_approval, dict)
+        and new_approval.get("kind") == "feature-specification"
+        and new_approval.get("path") == APPROVAL_RECORD_PATH
+        and new_approval.get("status") == "Approved"
+        and "Direct maintainer instruction approving the complete Phase 5 plan"
+        in new_approval.get("evidence", "")
+    )
+
+
 def apply_language_mapping_corrections(
     manifest: dict[str, Any], corrections: list[dict[str, Any]] | None = None
 ) -> dict[str, Any]:
@@ -1829,6 +1978,7 @@ def apply_language_mapping_corrections(
     }
     by_id: dict[str, dict[str, Any]] = {}
     by_export: dict[tuple[str, str], dict[str, Any]] = {}
+    listed_mapping_routes: dict[tuple[str, str, str], str] = {}
     for declaration in declarations:
         if not isinstance(declaration, dict):
             raise ReconciliationError("public declaration inventory contains a non-object")
@@ -1840,6 +1990,19 @@ def apply_language_mapping_corrections(
             raise ReconciliationError("public export paths must be unique for mapping corrections")
         by_id[identifier] = declaration
         by_export[key] = declaration
+        mappings = declaration.get("languageMappings")
+        if isinstance(mappings, dict):
+            for route_language, route in mappings.items():
+                if (
+                    route_language in LANGUAGE_PACKAGES
+                    and isinstance(route, dict)
+                    and route.get("packageId") in LANGUAGE_PACKAGES[route_language]
+                    and isinstance(route.get("name"), str)
+                    and route.get("name")
+                ):
+                    listed_mapping_routes[
+                        (route["packageId"], route["name"], route_language)
+                    ] = declaration.get("declarationState")
 
     correction_keys = {
         "declarationId", "language", "from", "to", "capabilityId",
@@ -1931,6 +2094,15 @@ def apply_language_mapping_corrections(
             raise ReconciliationError(
                 "language mapping correction needs exact approved traceability"
             )
+        approval_path = Path.cwd() / approval["path"]
+        if (
+            not approval_path.is_file()
+            or approval["evidence"]
+            not in approval_path.read_text(encoding="utf-8")
+        ):
+            raise ReconciliationError(
+                "approval evidence does not appear in its cited source"
+            )
         mappings = declaration.get("languageMappings")
         if not isinstance(mappings, dict) or language not in mappings:
             raise ReconciliationError("language mapping correction lacks its current route")
@@ -1942,10 +2114,17 @@ def apply_language_mapping_corrections(
                 f"language mapping correction source differs from the exact current route: {declaration_id}"
             )
         target = by_export.get((new_route["packageId"], new_route["name"]))
+        mapped_target_state = listed_mapping_routes.get(
+            (new_route["packageId"], new_route["name"], language)
+        )
         if (
-            target is None
-            or package_languages.get(target.get("packageId")) != language
-            or target.get("declarationState") not in {"declared", "verified"}
+            package_languages.get(new_route["packageId"]) != language
+            or not (
+                target is not None
+                and package_languages.get(target.get("packageId")) == language
+                and target.get("declarationState") in {"declared", "verified"}
+                or mapped_target_state in {"declared", "verified"}
+            )
         ):
             raise ReconciliationError(
                 f"language mapping correction target is not an exact listed export: {new_route['name']}"
@@ -2049,6 +2228,216 @@ def remove_public_declarations(
             raise ReconciliationError("public declaration removal does not match its exact reviewed target")
         declarations = [row for row in declarations if row.get("declarationId") != identifier]
     result["publicDeclarations"] = declarations
+    return result
+
+
+def remove_approved_exclusions(
+    manifest: dict[str, Any], removals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Remove only explicitly approved Query and secret-cleanup exclusions."""
+    if not isinstance(removals, list):
+        raise ReconciliationError("approved exclusion removals must be a list")
+    result = copy.deepcopy(manifest)
+    exclusions = result.get("approvedExclusions")
+    declarations = result.get("publicDeclarations")
+    if not isinstance(exclusions, list) or not isinstance(declarations, list):
+        raise ReconciliationError(
+            "manifest needs approved exclusions and public declarations for exact supersession"
+        )
+
+    seen: set[str] = set()
+    remove_indexes: set[int] = set()
+    for removal in removals:
+        required = {
+            "declarationId",
+            "packageId",
+            "exportName",
+            "supersedesSpecId",
+            "approvalSource",
+            "evidencePaths",
+        }
+        allowed = required | {"supersessionRationale"}
+        if (
+            not isinstance(removal, dict)
+            or not required <= set(removal)
+            or not set(removal) <= allowed
+        ):
+            raise ReconciliationError(
+                "approved exclusion removal needs its exact reviewed identity and evidence"
+            )
+        declaration_id = removal.get("declarationId")
+        package_id = removal.get("packageId")
+        export_name = removal.get("exportName")
+        is_query_supersession = (
+            isinstance(declaration_id, str)
+            and declaration_id.startswith("KMIPKIT-0053:rust-query-response")
+            and package_id == "rust-kmipkit"
+            and export_name in QUERY_RESPONSE_EXCLUSION_EXPORTS
+            and removal.get("supersedesSpecId") == "KMIPKIT-0020"
+            and "supersessionRationale" not in removal
+        )
+        is_java_builder_close_supersession = (
+            declaration_id == JAVA_BUILDER_CLOSE_DECLARATION_ID
+            and package_id == JAVA_BUILDER_CLOSE_PACKAGE
+            and export_name == JAVA_BUILDER_CLOSE_EXPORT
+            and removal.get("supersedesSpecId") == SPEC_ID
+            and removal.get("supersessionRationale")
+            == JAVA_BUILDER_CLOSE_SUPERSESSION_RATIONALE
+        )
+        is_python_builder_close_supersession = (
+            declaration_id == PYTHON_BUILDER_CLOSE_DECLARATION_ID
+            and package_id == PYTHON_BUILDER_CLOSE_PACKAGE
+            and export_name == PYTHON_BUILDER_CLOSE_EXPORT
+            and removal.get("supersedesSpecId") == SPEC_ID
+            and removal.get("supersessionRationale")
+            == JAVA_BUILDER_CLOSE_SUPERSESSION_RATIONALE
+        )
+        if (
+            (
+                not is_query_supersession
+                and not is_java_builder_close_supersession
+                and not is_python_builder_close_supersession
+            )
+            or declaration_id in seen
+        ):
+            raise ReconciliationError(
+                "only an exact KMIPKIT-0020 exclusion for a QueryResponse route, or an exact KMIPKIT-0053 Java/Python secret-cleanup exclusion, may be superseded"
+            )
+        seen.add(declaration_id)
+
+        approval = removal.get("approvalSource")
+        evidence_paths = removal.get("evidencePaths")
+        expected_approval = {
+            "kind": "feature-specification",
+            "path": APPROVAL_RECORD_PATH,
+            "status": "Approved",
+            "evidence": (
+                QUERY_RESPONSE_SCOPE_SUPERSESSION
+                if is_query_supersession
+                else JAVA_BUILDER_CLOSE_APPROVAL_EVIDENCE
+            ),
+        }
+        expected_evidence = (
+            QUERY_RESPONSE_SCOPE_EVIDENCE
+            if is_query_supersession
+            else JAVA_BUILDER_CLOSE_SUPERSESSION_EVIDENCE_PATHS
+            if is_java_builder_close_supersession
+            else frozenset(
+                {
+                    "specs/053-api-parity-facade/spec.md",
+                    APPROVAL_RECORD_PATH,
+                    *PYTHON_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS,
+                    "bindings/c/tests/authentication_consumer.c",
+                    "crates/kmipkit-protocol/src/credential/secret.rs",
+                    "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+                    "crates/kmipkit-protocol/tests/credential_secret.rs",
+                }
+            )
+        )
+        if (
+            not isinstance(approval, dict)
+            or set(approval) != {"kind", "path", "status", "evidence"}
+            or approval != expected_approval
+            or not isinstance(evidence_paths, list)
+            or any(not isinstance(path, str) for path in evidence_paths)
+            or set(evidence_paths) != expected_evidence
+            or len(evidence_paths) != len(expected_evidence)
+        ):
+            raise ReconciliationError(
+                "approved exclusion supersession needs exact approved 0053 scope evidence"
+            )
+
+        matching_declarations = [
+            row for row in declarations
+            if isinstance(row, dict) and row.get("declarationId") == declaration_id
+        ]
+        if (
+            len(matching_declarations) != 1
+            or matching_declarations[0].get("packageId") != package_id
+            or matching_declarations[0].get("exportName") != export_name
+            or matching_declarations[0].get("declarationState") != "verified"
+            or (
+                (is_java_builder_close_supersession or is_python_builder_close_supersession)
+                and (
+                    matching_declarations[0].get("capabilityId")
+                    != "typed_cryptographic_parameters"
+                    or matching_declarations[0].get("parityScope")
+                    != "four-language"
+                )
+            )
+        ):
+            raise ReconciliationError(
+                "superseded exclusion must match one verified exact KMIPKIT-0053 declaration"
+            )
+
+        matching_exclusions = [
+            (index, row)
+            for index, row in enumerate(exclusions)
+            if isinstance(row, dict)
+            and row.get("packageId") == package_id
+            and row.get("exportName") == export_name
+        ]
+        if len(matching_exclusions) > 1:
+            raise ReconciliationError(
+                "expected at most one exact exclusion for the reviewed route"
+            )
+        if not matching_exclusions:
+            # Reconciliation may be rerun after a prior successful write.
+            # The verified declaration and exact approved removal record are
+            # sufficient to make the already-removed state idempotent.
+            continue
+        index, old = matching_exclusions[0]
+        old_approval = old.get("approvalSource")
+        reason = old.get("reason")
+        if is_query_supersession:
+            expected_old_exclusion = (
+                old.get("candidateSpecId") == "KMIPKIT-0020"
+                and isinstance(old_approval, dict)
+                and old_approval.get("kind") == "feature-specification"
+                and old_approval.get("path") == "specs/020-query-ping/spec.md"
+                and old_approval.get("status") == "Approved"
+                and isinstance(reason, str)
+                and "KMIPKIT-0020 excludes" in reason
+                and (
+                    "typed Query response model to C, Java, or Python" in reason
+                    or "typed binding model" in reason
+                )
+            )
+        elif is_java_builder_close_supersession:
+            old_evidence_paths = old.get("evidencePaths")
+            expected_old_exclusion = (
+                old.get("candidateSpecId") == SPEC_ID
+                and old_approval == expected_approval
+                and reason == JAVA_BUILDER_CLOSE_EXCLUSION_REASON
+                and isinstance(old_evidence_paths, list)
+                and set(old_evidence_paths)
+                == JAVA_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS
+                and len(old_evidence_paths)
+                == len(JAVA_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS)
+                and old.get("evidence")
+                == f"{reason} Evidence files: {', '.join(old_evidence_paths)}."
+            )
+        else:
+            old_evidence_paths = old.get("evidencePaths")
+            expected_old_exclusion = (
+                old.get("candidateSpecId") == SPEC_ID
+                and old_approval == expected_approval
+                and reason == PYTHON_BUILDER_CLOSE_EXCLUSION_REASON
+                and isinstance(old_evidence_paths, list)
+                and tuple(old_evidence_paths)
+                == PYTHON_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS
+                and old.get("evidence")
+                == f"{reason} Evidence files: {', '.join(old_evidence_paths)}."
+            )
+        if not expected_old_exclusion:
+            raise ReconciliationError(
+                "the exact approved exclusion no longer matches its reviewed rationale"
+            )
+        remove_indexes.add(index)
+
+    result["approvedExclusions"] = [
+        row for index, row in enumerate(exclusions) if index not in remove_indexes
+    ]
     return result
 
 
@@ -2208,22 +2597,56 @@ def add_approved_exclusions(
         seen.add(key)
         existing = by_export.get(key)
         if existing is not None and existing != exclusion:
-            if not _is_exact_legacy_model_error_approval_correction(existing, exclusion):
+            if _is_exact_legacy_model_error_approval_correction(existing, exclusion):
+                current[current.index(existing)] = copy.deepcopy(exclusion)
+                by_export[key] = exclusion
+            elif _is_exact_0053_query_field_kind_counterpart_correction(
+                existing, exclusion
+            ):
+                current[current.index(existing)] = copy.deepcopy(exclusion)
+                by_export[key] = exclusion
+            else:
                 raise ReconciliationError(
                     f"approved export exclusion conflicts with its reviewed record: {export_name}"
                 )
-            current[current.index(existing)] = copy.deepcopy(exclusion)
-            by_export[key] = exclusion
         if existing is None:
             current.append(copy.deepcopy(exclusion))
             by_export[key] = exclusion
     return result
 
 
+def _is_exact_0053_query_field_kind_counterpart_correction(
+    previous: dict[str, Any], corrected: dict[str, Any]
+) -> bool:
+    """Allow the four exact facade variant exclusions to cite their facade parent."""
+    names = {
+        "kmipkit::protocol::QueryResponseFieldKind::Enumeration",
+        "kmipkit::protocol::QueryResponseFieldKind::Structure",
+        "kmipkit::protocol::QueryResponseFieldKind::TextString",
+        "kmipkit::protocol::QueryResponseFieldKind::Unknown",
+    }
+    if (
+        previous.get("packageId") != "rust-kmipkit"
+        or previous.get("exportName") not in names
+        or corrected.get("packageId") != previous.get("packageId")
+        or corrected.get("exportName") != previous.get("exportName")
+        or previous.get("counterpartDeclarationIds")
+        != ["T064:query-field-kind:rust"]
+        or corrected.get("counterpartDeclarationIds")
+        != ["KMIPKIT-0053:rust-facade-query-field-kind"]
+    ):
+        return False
+    expected = copy.deepcopy(previous)
+    expected["counterpartDeclarationIds"] = corrected[
+        "counterpartDeclarationIds"
+    ]
+    return expected == corrected
+
+
 def _is_exact_legacy_model_error_approval_correction(
     previous: dict[str, Any], corrected: dict[str, Any]
 ) -> bool:
-    """Permit only the reviewed 0004 approval-source shape correction."""
+    """Restore the exact KMIPKIT-0004 approval quotation for two legacy routes."""
     expected_routes = {
         ("rust-kmipkit", "kmipkit::ttlv::ModelError::UnsupportedValue"),
         ("rust-kmipkit-ttlv", "kmipkit_ttlv::ModelError::UnsupportedValue"),
@@ -2233,30 +2656,41 @@ def _is_exact_legacy_model_error_approval_correction(
         corrected.get("packageId"), corrected.get("exportName")
     ):
         return False
-    expected_old_approval = {
+    approval_source_prefix = {
         "kind": "feature-specification",
         "path": "specs/004-generic-ttlv-model/spec.md",
         "status": "Approved",
-        "requirementIds": ["KMIPKIT-0004-FR-013"],
     }
-    expected_new_approval = {
-        "kind": "feature-specification",
-        "path": "specs/004-generic-ttlv-model/spec.md",
-        "status": "Approved",
+    allowed_previous_approvals = [
+        {
+            **approval_source_prefix,
+            "evidence": "- **KMIPKIT-0004-FR-013**: Errors created by the TTLV value model MUST use safe, value-free diagnostics and MUST NOT expose payload contents. Because `kmipkit-ttlv` is below protocol/client crates, its model error type MUST remain local and MUST NOT introduce a dependency cycle; higher layers may map or wrap it through the shared error model.",
+        },
+        {
+            **approval_source_prefix,
+            "evidence": (
+                "KMIPKIT-0004-FR-013 approves excluding these exact local ModelError "
+                "variants from the cross-language public route inventory."
+            ),
+        },
+    ]
+    exact_approved_quotation = {
+        **approval_source_prefix,
         "evidence": (
-            "KMIPKIT-0004-FR-013 approves excluding these exact local ModelError "
-            "variants from the cross-language public route inventory."
+            "Because `kmipkit-ttlv` is below protocol/client crates, its model error "
+            "type MUST remain local and MUST NOT introduce a dependency cycle; higher "
+            "layers may map or wrap it through the shared error model."
         ),
     }
     if (
         previous.get("candidateSpecId") != "KMIPKIT-0004"
         or corrected.get("candidateSpecId") != "KMIPKIT-0004"
-        or previous.get("approvalSource") != expected_old_approval
-        or corrected.get("approvalSource") != expected_new_approval
+        or previous.get("approvalSource") not in allowed_previous_approvals
+        or corrected.get("approvalSource") != exact_approved_quotation
     ):
         return False
     normalized_previous = copy.deepcopy(previous)
-    normalized_previous["approvalSource"] = expected_new_approval
+    normalized_previous["approvalSource"] = exact_approved_quotation
     return normalized_previous == corrected
 
 
@@ -2342,6 +2776,23 @@ def resolve_public_declarations(
             old_approval = row.get("approvalSource")
             new_approval = resolution.get("approvalSource")
             if old_approval == new_approval:
+                if (
+                    new_approval == resolution.get("approvalSource")
+                    and isinstance(new_approval, dict)
+                    and new_approval.get("path") == APPROVAL_RECORD_PATH
+                    and new_approval.get("status") == "Approved"
+                    and any(
+                        isinstance(requirement, str)
+                        and requirement.startswith(f"{SPEC_ID}-FR-")
+                        for requirement in resolution.get("requirementIds", [])
+                    )
+                ):
+                    existing_candidate = row.get("candidateSpecId")
+                    if existing_candidate not in {None, SPEC_ID}:
+                        raise ReconciliationError(
+                            "verified declaration replay conflicts with another approval owner"
+                        )
+                    row["candidateSpecId"] = SPEC_ID
                 continue
             if _is_approved_source_refresh(old_approval, new_approval):
                 row["approvalSource"] = copy.deepcopy(new_approval)
@@ -2349,11 +2800,23 @@ def resolve_public_declarations(
             raise ReconciliationError(
                 "verified declaration replay may only refresh stale evidence from the same approved record"
             )
+        transfer_from_0043 = (
+            row is not None
+            and row.get("candidateSpecId") == "KMIPKIT-0043"
+            and resolution.get("fromSpecId") == "KMIPKIT-0043"
+        )
+        transfer_client_operation_from_0012 = (
+            row is not None
+            and row.get("candidateSpecId") == "KMIPKIT-0012"
+            and resolution.get("fromSpecId") == "KMIPKIT-0012"
+            and row.get("packageId") == "rust-kmipkit-client"
+            and row.get("exportName")
+            == "kmipkit_client::ClientBatchItem::operation"
+        )
         if (
             row is None
             or row.get("declarationState") != "blocked"
-            or row.get("candidateSpecId") != "KMIPKIT-0043"
-            or resolution.get("fromSpecId") != "KMIPKIT-0043"
+            or not (transfer_from_0043 or transfer_client_operation_from_0012)
         ):
             raise ReconciliationError(
                 "only an exact blocked KMIPKIT-0043 declaration may be transferred"
@@ -2382,6 +2845,14 @@ def resolve_public_declarations(
             raise ReconciliationError(
                 "declaration resolution needs unique requirement IDs"
             )
+        if not any(
+            isinstance(requirement, str)
+            and requirement.startswith(f"{SPEC_ID}-FR-")
+            for requirement in requirements
+        ):
+            raise ReconciliationError(
+                "declaration resolution must include a KMIPKIT-0053 requirement"
+            )
         route = {language: resolution[language] for language in REQUIRED_LANGUAGES}
         route["parityEvidenceIds"] = resolution["parityEvidenceIds"]
         route["approvalSource"] = resolution["approvalSource"]
@@ -2398,7 +2869,7 @@ def resolve_public_declarations(
         row["languageMappings"] = mappings
         row["parityEvidenceIds"] = resolution["parityEvidenceIds"]
         row["approvalSource"] = resolution["approvalSource"]
-        row.pop("candidateSpecId", None)
+        row["candidateSpecId"] = SPEC_ID
         row.pop("blockedReason", None)
     result["requirementIds"] = sorted(
         set(result.get("requirementIds", []))
@@ -2453,6 +2924,9 @@ def main() -> int:
         )
         result = apply_language_mapping_corrections(
             result, route_data.get("languageMappingCorrections", [])
+        )
+        result = remove_approved_exclusions(
+            result, route_data.get("removeApprovedExclusions", [])
         )
         result = add_approved_exclusions(
             result, route_data.get("approvedExclusions", [])

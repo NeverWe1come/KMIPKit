@@ -32,7 +32,7 @@ SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages;
 # keep parsing bounded while leaving room for the complete generated inventory.
-MAX_MANIFEST_BYTES = 44 * 1024 * 1024
+MAX_MANIFEST_BYTES = 48 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
@@ -1267,6 +1267,23 @@ def _validate_public_declaration_approval(
         owner_spec_id = operation.get("featureSpecId")
         owner_adr_id = None
 
+    declaration_spec_id = declaration.get("candidateSpecId")
+    if declaration_spec_id is not None:
+        if (
+            owner_adr_id is not None
+            or not isinstance(declaration_spec_id, str)
+            or re.fullmatch(r"KMIPKIT-[0-9]{4}", declaration_spec_id) is None
+            or not any(
+                isinstance(requirement, str)
+                and requirement.startswith(f"{declaration_spec_id}-FR-")
+                for requirement in declaration.get("requirementIds", [])
+            )
+        ):
+            raise ManifestError(
+                "capability expansion approval needs an exact feature and its traced requirements"
+            )
+        owner_spec_id = declaration_spec_id
+
     if owner_adr_id is not None:
         if parity_scope != "rust-only-adr":
             raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
@@ -1445,14 +1462,20 @@ def _validate_v2_readiness(
         requirements,
         root,
     )
-    c_release_functions = {
+    c_public_functions = {
+        ("c-kmipkit", function["c"]["symbol"])
+        for function in manifest.get("functions", [])
+        if isinstance(function, dict)
+        and isinstance(function.get("c"), dict)
+        and isinstance(function["c"].get("symbol"), str)
+    } | {
         ("c-kmipkit", c_api["releaseFunction"])
         for type_record in manifest.get("types", [])
         if isinstance(type_record, dict)
         and isinstance((c_api := type_record.get("c")), dict)
         and isinstance(c_api.get("releaseFunction"), str)
     }
-    _validate_ready_mapping_targets(declarations, package_languages, c_release_functions)
+    _validate_ready_mapping_targets(declarations, package_languages, c_public_functions)
     _validate_capability_mapping_inventories(
         capabilities, declarations, package_languages
     )
@@ -1466,7 +1489,7 @@ def _validate_v2_readiness(
 def _validate_ready_mapping_targets(
     declarations: list[dict[str, Any]],
     package_languages: dict[Any, Any],
-    c_release_functions: set[tuple[str, str]],
+    c_public_functions: set[tuple[str, str]],
 ) -> None:
     """Require every ready cross-language mapping to resolve to a ready export."""
     declarations_by_path = {
@@ -1483,6 +1506,7 @@ def _validate_ready_mapping_targets(
             "secret-buffer-wipe",
             "normalized-client-protocol-error",
             "normalized-client-protocol-error-outcome",
+            "standard-attribute-tag-value",
         }:
             raise ManifestError("public declaration uses unknown mapping semantics")
         lifecycle_by_language = declaration.get("lifecycleSemanticsByLanguage")
@@ -1500,6 +1524,8 @@ def _validate_ready_mapping_targets(
                 "secret response lifecycle mapping must describe each language's ownership boundary"
             )
         mappings = declaration.get("languageMappings", {})
+        if mapping_semantics == "standard-attribute-tag-value":
+            _validate_standard_attribute_tag_mapping(declaration, mappings)
         if mapping_semantics == "normalized-client-protocol-error":
             expected_mapping = {
                 "rust": {
@@ -1565,8 +1591,7 @@ def _validate_ready_mapping_targets(
             if (
                 target is None
                 and language == "c"
-                and mapping_semantics in {"native-handle-release", "secret-buffer-wipe"}
-                and (mapping.get("packageId"), mapping.get("name")) in c_release_functions
+                and (mapping.get("packageId"), mapping.get("name")) in c_public_functions
             ):
                 target = {
                     "packageId": mapping["packageId"],
@@ -1609,6 +1634,151 @@ def _validate_ready_mapping_targets(
                     raise ManifestError(
                         "lifecycle mapping targets the wrong cleanup operation"
                     )
+
+
+def _validate_standard_attribute_tag_mapping(
+    declaration: dict[str, Any], mappings: dict[str, Any]
+) -> None:
+    """Pin C standard-attribute tag values to their exact idiomatic foreign routes."""
+    c_name = mappings.get("c", {}).get("name", "")
+    prefix = "KMIPKIT_STANDARD_ATTRIBUTE_"
+    if not c_name.startswith(prefix):
+        raise ManifestError("standard attribute tag mapping must use a named C tag macro")
+    tag_name = c_name.removeprefix(prefix)
+    if tag_name == "TAG":
+        expected_mapping = {
+            "rust": {
+                "packageId": "rust-kmipkit",
+                "name": "kmipkit::protocol::AttributeDefinition::TAG",
+            },
+            "c": {"packageId": "c-kmipkit", "name": c_name},
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.ttlv.StandardAttribute.tag",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.StandardAttribute.tag",
+            },
+        }
+        value_metadata_valid = (
+            "cValue" not in declaration and "cValueType" not in declaration
+        )
+    else:
+        rust_marker = "".join(part.title() for part in tag_name.split("_"))
+        expected_mapping = {
+            "rust": {
+                "packageId": "rust-kmipkit",
+                "name": f"kmipkit::protocol::attribute::typed::{rust_marker}",
+            },
+            "c": {"packageId": "c-kmipkit", "name": c_name},
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": f"org.kmipkit.ttlv.StandardAttribute.{tag_name}",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": f"kmipkit.typed_attributes.StandardAttribute.{tag_name}",
+            },
+        }
+        value_metadata_valid = (
+            isinstance(declaration.get("cValue"), int)
+            and declaration.get("cValueType") == "uint32_t"
+        )
+    if (
+        declaration.get("kind") != "macro"
+        or declaration.get("capabilityId") != "typed_object_attributes"
+        or declaration.get("parityScope") != "four-language"
+        or not tag_name
+        or mappings != expected_mapping
+        or not value_metadata_valid
+    ):
+        raise ManifestError(
+            "standard attribute tag mapping must use the exact typed four-language routes"
+        )
+
+
+def _validate_standard_attribute_catalog_values(
+    manifest: dict[str, Any], catalog: dict[str, Any]
+) -> None:
+    """Require C tag metadata to match the assigned tags in the normative catalog."""
+    elements = catalog.get("elements")
+    if not isinstance(elements, list):
+        raise ManifestError("normative catalog has no element list")
+
+    tag_values: dict[str, tuple[int, bool]] = {}
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "tag":
+            continue
+        element_id = element.get("element_id")
+        wire_value = str(element.get("wire_value", ""))
+        if (
+            not isinstance(element_id, str)
+            or re.fullmatch(r"(?:0x)?[0-9A-Fa-f]{6}", wire_value) is None
+            or element.get("allocation") not in {"assigned", "reserved"}
+        ):
+            raise ManifestError("normative catalog contains an invalid tag record")
+        tag_values[element_id] = (
+            int(wire_value.removeprefix("0x").removeprefix("0X"), 16),
+            element["allocation"] == "assigned",
+        )
+
+    expected: dict[str, int] = {}
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "attribute":
+            continue
+        element_id = element.get("element_id")
+        if not isinstance(element_id, str):
+            raise ManifestError("normative catalog contains an invalid attribute identity")
+        if element.get("scope_state") not in {None, "client_1_0"}:
+            continue
+        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES":
+            continue
+        if not element.get("source_encoding"):
+            raise ManifestError("normative direct attribute has no source encoding")
+
+        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE":
+            tag = 0x0042_0008
+            if not any(value == tag and assigned for value, assigned in tag_values.values()):
+                raise ManifestError("Vendor Attribute tag is not assigned in the catalog")
+        else:
+            parents = element.get("parent_element_ids")
+            if not isinstance(parents, list) or len(parents) != 1:
+                raise ManifestError("normative direct attribute has an invalid tag parent")
+            parent_tag = tag_values.get(parents[0])
+            if parent_tag is None or not parent_tag[1]:
+                raise ManifestError("normative direct attribute tag is not assigned")
+            tag = parent_tag[0]
+
+        suffix = element_id.removeprefix("KMIPKIT-ELEM-ATTRIBUTE-")
+        words = re.findall(r"[A-Za-z]+|[0-9]+", suffix)
+        if not words:
+            raise ManifestError("normative direct attribute has an invalid identity")
+        marker = "".join(
+            word if word.isdigit() else word[0].upper() + word[1:].lower()
+            for word in words
+        )
+        if not marker[0].isalpha():
+            marker = "Attribute" + marker
+        constant = re.sub(r"(?<!^)(?=[A-Z])", "_", marker).upper()
+        c_name = f"KMIPKIT_STANDARD_ATTRIBUTE_{constant}"
+        if c_name in expected:
+            raise ManifestError("normative catalog duplicates a standard attribute C tag")
+        expected[c_name] = tag
+
+    actual: dict[str, Any] = {}
+    for declaration in manifest.get("publicDeclarations", []):
+        if not isinstance(declaration, dict):
+            continue
+        c_name = declaration.get("languageMappings", {}).get("c", {}).get("name")
+        if c_name == "KMIPKIT_STANDARD_ATTRIBUTE_TAG":
+            continue
+        if isinstance(c_name, str) and c_name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_"):
+            actual[c_name] = declaration.get("cValue")
+    if actual != expected:
+        raise ManifestError(
+            "standard attribute value does not match the normative catalog"
+        )
 
 
 def _validate_capability_mapping_inventories(
@@ -1749,6 +1919,7 @@ def _validate_v2_manifest(
 ) -> None:
     """Validate v2 schema, normative catalog, references, and readiness together."""
     _validate_schema(manifest, schema)
+    _validate_standard_attribute_catalog_values(manifest, catalog)
     _validate_operation_inventory(manifest, catalog)
     _validate_references(manifest)
     if require_complete:
@@ -2806,11 +2977,15 @@ def render_c_header(
         f"#ifndef {header_guard}",
         f"#define {header_guard}",
         "#include <stdint.h>",
+    ]
+    if manifest.get("formatVersion") == 2 and not include_blocked:
+        lines.append('#include "kmipkit_standard_attributes_generated.h"')
+    lines.extend([
         "#ifdef __cplusplus",
         'extern "C" {',
         "#endif",
         "",
-    ]
+    ])
     declared_c_fields = {
         declaration["exportName"]
         for declaration in manifest.get("publicDeclarations", [])
@@ -2860,6 +3035,16 @@ def render_c_header(
             continue
         name = declaration["exportName"]
         if ready_c_exports is not None and name not in ready_c_exports:
+            continue
+        if (
+            not include_blocked
+            and manifest.get("formatVersion") == 2
+            and name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_")
+        ):
+            # The focused normative-catalog generator owns these named tag
+            # constants. The public header includes its generated header, so
+            # emitting the same macros here would trigger C macro redefinition
+            # warnings (and fail MSVC builds that treat warnings as errors).
             continue
         c_value = declaration["cValue"]
         c_type = declaration["cValueType"]

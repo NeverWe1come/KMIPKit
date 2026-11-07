@@ -37,7 +37,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -75,45 +75,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "kmipkit-0050-kmipkit-3bc4b1c1f7fcdd44745a",
-      "capabilityId": "typed_cryptographic_parameters",
-      "packageId": "rust-kmipkit",
-      "exportName": "kmipkit::protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters",
-      "resolution": "mapped",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit",
-          "name": "kmipkit::protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_key_wrapping_data_from_fields"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.ttlv.KeyWrappingData.fromFields"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.managed_objects.KeyWrappingData.from_fields"
-        }
-      },
-      "evidencePaths": [
-        "crates/kmipkit-protocol/tests/cryptographic_parameters_typed_setters.rs",
-        "crates/kmipkit-ffi/tests/support/managed_object_0053_tests.rs",
-        "bindings/c/tests/managed_object_parity_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
-        "bindings/python/tests/test_managed_object_parity.py"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -153,7 +115,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -194,7 +156,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -234,7 +196,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -274,7 +236,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -312,7 +274,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -352,7 +314,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -392,7 +354,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -430,7 +392,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -468,7 +430,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -506,7 +468,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -544,7 +506,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -582,7 +544,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -620,7 +582,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -658,7 +620,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -698,7 +660,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -738,7 +700,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -778,7 +740,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -818,7 +780,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -858,7 +820,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -899,7 +861,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     },
     {
@@ -939,7 +901,7 @@
         "kind": "feature-specification",
         "path": "specs/053-api-parity-facade/approval-record.md",
         "status": "Approved",
-        "evidence": "Direct maintainer approval of the complete Phase 5 plan and autonomous implementation."
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     }
   ]

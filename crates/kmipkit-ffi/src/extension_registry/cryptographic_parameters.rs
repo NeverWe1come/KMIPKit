@@ -1,5 +1,13 @@
 //! C ABI bridge to the Rust Cryptographic Parameters model.
-use super::*;
+use super::{
+    CryptographicParameters, CryptographicParametersBuilder, ERROR_INVALID_INPUT,
+    ERROR_RESOURCE_LIMIT, HandleValue, Kind, MAX_TRANSPORT_MATERIAL_BYTES, SUCCESS,
+    copy_required_structure_handle, ffi_entrypoint, input_span,
+    kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
+    kmipkit_ttlv_structure_t, owned_payload, protocol_status, record_ffi_error, reference_handle,
+    release, size_of, try_make_handle,
+};
+use std::ptr;
 
 fn valid_presence_flags(fields: &kmipkit_cryptographic_parameters_fields_v1_t) -> bool {
     [
@@ -149,13 +157,14 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_from_fields_v1(
 ///
 /// P Source is returned as a borrowed read-only span backed by the live typed handle. It remains
 /// valid until that handle is released. Foreign runtimes that copy the span must document that
-/// their copies are outside KMIPKit's zeroization guarantee.
+/// their copies are outside `KMIPKit`'s zeroization guarantee.
 ///
 /// # Safety
 ///
 /// `parameters` must be a live handle. `out_fields` must point to an aligned, initialized,
 /// exclusively writable version 1 record for the duration of the call.
 #[unsafe(no_mangle)]
+#[allow(clippy::too_many_lines)] // Populate one versioned C record atomically from the typed model.
 pub unsafe extern "C" fn kmipkit_cryptographic_parameters_read_fields_v1(
     parameters: *mut kmipkit_cryptographic_parameters_t,
     out_fields: *mut kmipkit_cryptographic_parameters_fields_v1_t,

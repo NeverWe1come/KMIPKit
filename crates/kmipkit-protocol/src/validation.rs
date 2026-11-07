@@ -231,6 +231,21 @@ impl ValidationIssue {
     pub const fn source(&self) -> ValidationSourceRef {
         self.source
     }
+
+    /// Returns the safe identifier of the normative document or project rule.
+    #[must_use]
+    pub const fn source_identifier(&self) -> &'static str {
+        self.source.identifier()
+    }
+
+    /// Returns the exact normative reference, or an empty string for a project rule.
+    #[must_use]
+    pub const fn source_reference(&self) -> &'static str {
+        match self.source {
+            ValidationSourceRef::Oasis { reference, .. } => reference,
+            ValidationSourceRef::ProjectRule(_) => "",
+        }
+    }
 }
 
 /// Deterministic findings from validating one request or structure.
@@ -300,8 +315,7 @@ pub(crate) fn issue_report(
 #[cfg(test)]
 mod tests {
     use super::{
-        ValidationCode, ValidationIssue, ValidationPath, ValidationSeverity,
-        ValidationSourceRef,
+        ValidationCode, ValidationIssue, ValidationPath, ValidationSeverity, ValidationSourceRef,
     };
 
     #[test]

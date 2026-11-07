@@ -412,7 +412,7 @@ pub struct kmipkit_validation_issue_view_v1_t {
     pub abi_version: u32,
     /// 1 for Error, 2 for Warning, or 3 for Info.
     pub severity: u32,
-    /// 1 for OASIS, or 2 for a KMIPKit project rule.
+    /// 1 for OASIS, or 2 for a `KMIPKit` project rule.
     pub source_kind: u32,
     pub code: kmipkit_byte_span_v1_t,
     pub path: kmipkit_byte_span_v1_t,

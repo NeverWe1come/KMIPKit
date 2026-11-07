@@ -187,7 +187,7 @@ impl ManagedValueReader {
                 .find(|field| field.tag().raw() == raw_tag)
                 .map(|field| {
                     let item_type = field.item_type();
-                    field.with_value(|value| copy_field_value(item_type, value))
+                    field.with_value(|value| copy_field_value(item_type, &value))
                 })
         })
     }
@@ -196,6 +196,11 @@ impl ManagedValueReader {
     ///
     /// The selected model is validated when the reader is constructed. The returned Item keeps
     /// its complete subtree, including unknown descendants and their original order.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ManagedObjectError::TtlvModelLimit`] when copying the selected subtree would
+    /// exceed the TTLV model's limits.
     pub fn read_field_item(&self, raw_tag: u32) -> Result<Option<Item>, ManagedObjectError> {
         self.item.with_value(|value| {
             let ValueView::Structure(structure) = value else {
@@ -257,25 +262,25 @@ impl fmt::Debug for ManagedValueReader {
     }
 }
 
-fn copy_field_value(item_type: ItemType, value: ValueView<'_>) -> ManagedFieldValue {
+fn copy_field_value(item_type: ItemType, value: &ValueView<'_>) -> ManagedFieldValue {
     match value {
         ValueView::Structure(_) => ManagedFieldValue::Structure,
-        ValueView::Integer(value) => ManagedFieldValue::Integer(*value),
-        ValueView::LongInteger(value) => ManagedFieldValue::LongInteger(*value),
+        ValueView::Integer(value) => ManagedFieldValue::Integer(**value),
+        ValueView::LongInteger(value) => ManagedFieldValue::LongInteger(**value),
         ValueView::BigInteger(value) => {
             ManagedFieldValue::BigInteger(Zeroizing::new(value.to_vec()))
         }
-        ValueView::Enumeration(value) => ManagedFieldValue::Enumeration(*value),
-        ValueView::Boolean(value) => ManagedFieldValue::Boolean(*value),
+        ValueView::Enumeration(value) => ManagedFieldValue::Enumeration(**value),
+        ValueView::Boolean(value) => ManagedFieldValue::Boolean(**value),
         ValueView::TextString(value) => {
             ManagedFieldValue::TextString(Zeroizing::new(value.as_bytes().to_vec()))
         }
         ValueView::ByteString(value) => {
             ManagedFieldValue::ByteString(Zeroizing::new(value.to_vec()))
         }
-        ValueView::DateTime(value) => ManagedFieldValue::DateTime(*value),
-        ValueView::Interval(value) => ManagedFieldValue::Interval(*value),
-        ValueView::DateTimeExtended(value) => ManagedFieldValue::DateTimeExtended(*value),
+        ValueView::DateTime(value) => ManagedFieldValue::DateTime(**value),
+        ValueView::Interval(value) => ManagedFieldValue::Interval(**value),
+        ValueView::DateTimeExtended(value) => ManagedFieldValue::DateTimeExtended(**value),
         _ => ManagedFieldValue::Unknown(item_type),
     }
 }

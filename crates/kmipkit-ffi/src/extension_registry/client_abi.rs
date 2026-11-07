@@ -36,10 +36,10 @@ fn clone_query_response_field_item(
     match field.kind() {
         QueryResponseFieldKind::Enumeration => Ok(None),
         QueryResponseFieldKind::TextString => {
-            let value = match field {
-                QueryResponseField::VendorIdentification(value)
-                | QueryResponseField::ApplicationNamespace(value) => value,
-                _ => return Err(ERROR_INTERNAL),
+            let (QueryResponseField::VendorIdentification(value)
+            | QueryResponseField::ApplicationNamespace(value)) = field
+            else {
+                return Err(ERROR_INTERNAL);
             };
             let tag = RawTag::new(field.tag())
                 .and_then(|raw| raw.try_checked())

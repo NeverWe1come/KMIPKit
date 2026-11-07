@@ -69,21 +69,21 @@
 - [x] T044 [US5] Add async pending/correlation and raw payload presence tests in crates/kmipkit-ffi/tests/support/response_parity_0053_tests.rs, bindings/java/src/test/, and bindings/python/tests/.
 - [x] T045 [US5] Run matrix red tests and record missing routes in specs/053-api-parity-facade/implementation-evidence.md.
 ### Green and Refactor
-- [ ] T046 [US5] Add only evidenced missing C operation/option/result routes in crates/kmipkit-ffi/src/extension_registry/client_abi.rs.
-- [ ] T047 [US5] Add only evidenced missing Java operation/options/response/async accessors in bindings/java/src/main/java/org/kmipkit/ and bindings/java/native/kmipkit_jni.cpp.
-- [ ] T048 [US5] Add only evidenced missing Python operation/options/response/async accessors in bindings/python/src/kmipkit/.
-- [ ] T049 [US5] Verify all 56 operations, delivery/async behavior, KMIPKIT-0052 raw semantics, and nested vendor TTLV in `crates/kmipkit-ffi/tests/support/response_parity_0053_tests.rs`, `bindings/java/src/test/`, and `bindings/python/tests/`.
-- [ ] T050 [US5] Refactor repeated operation fixtures from the reviewed operation catalog in tools/api_manifest/tests/ and rerun all four-language operation tests.
+- [x] T046 [US5] Audit C operation/option/result routes; the executable 56-operation matrix found no additional C routes to add.
+- [x] T047 [US5] Audit Java operation/options/response/async accessors; the executable 56-operation matrix found no additional Java routes to add.
+- [x] T048 [US5] Audit Python operation/options/response/async accessors; the executable 56-operation matrix found no additional Python routes to add.
+- [x] T049 [US5] Verify all 56 operations, delivery/async behavior, KMIPKIT-0052 raw semantics, and nested vendor TTLV in `crates/kmipkit-ffi/tests/operation_parity_0053.rs`, `crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs`, `crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs`, `bindings/java/src/test/`, and `bindings/python/tests/`.
+- [x] T050 [US5] Derive operation fixtures from the reviewed normative catalog and rerun the four-language operation matrices.
 
 ## Phase 7: US6 package docs and closure
 - [x] T051 [US6] Add runnable external consumers and quickstart examples in tests/consumers/0053-parity/ and specs/053-api-parity-facade/quickstart.md.
-- [ ] T052 [US6] Update English typed binding, ownership, validation, authentication, and response guidance in docs/user-guide/en/.
-- [ ] T053 [US6] Update Spanish equivalents and external-runtime copy limits in docs/user-guide/es/.
-- [ ] T054 Complete exact four-language mappings or justified per-route exclusions for the 750 candidates in tools/api_manifest/reconcile_0053_api_parity.py and specification/api/public-api.json.
-- [ ] T055 Run the pinned generator and assert all capability/declaration states in tools/api_manifest/generate.py and tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
-- [ ] T056 Update specs/053-api-parity-facade/gap-matrix.md and traceability.md only where executable evidence verifies closure.
-- [ ] T057 Run format, Clippy, full local tests, C/JNI/Python consumers, generator and export audits; record coverage/remote status in specs/053-api-parity-facade/implementation-evidence.md.
-- [ ] T058 Review OASIS sources, all 750 declarations, security effects and QA acceptance; complete specs/053-api-parity-facade/checklists/normative-requirements.md.
+- [x] T052 [US6] Document English typed binding, ownership, validation, authentication, response, and Query guidance in `docs/user-guide/en/typed-bindings-and-response-data.md`.
+- [x] T053 [US6] Document the Spanish equivalents and external-runtime copy limits in `docs/user-guide/es/enlaces-tipados-validacion-respuestas.md`.
+- [x] T054 Complete exact four-language mappings or justified per-route exclusions for the 750 candidates in `tools/api_manifest/reconcile_0053_api_parity.py` and `specification/api/public-api.json`.
+- [x] T055 Run the pinned generator and assert all capability/declaration states in `tools/api_manifest/generate.py` and `tools/api_manifest/tests/test_reconcile_0053_api_parity.py`.
+- [x] T056 Update `specs/053-api-parity-facade/gap-matrix.md` and traceability only where executable evidence verifies closure.
+- [x] T057 Run format, Clippy, full local tests, C/JNI/Python consumers, generator and export audits; record coverage/remote status in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T058 Review OASIS sources, all 750 declarations, security effects and QA acceptance; complete specs/053-api-parity-facade/checklists/normative-requirements.md.
 - [ ] T059 Confirm distinct Red/Green/Refactor commits, push branch, open draft PR against feature/KMIPKIT-0052-typed-responses, and record URL in specs/053-api-parity-facade/implementation-evidence.md.
 
 ## Converged work from implementation review
@@ -91,8 +91,8 @@
 - [x] T061 [US1] Add behavior tests that round-trip each attribute's actual value, not only its tag and TTLV type, through the typed foreign APIs.
 - [x] T062 [US2] Add typed constructors/readers for the nine managed-object fields and nested KeyBlock/KeyValue/KeyMaterial/wrapping structures across C, Java, and Python, retaining unknown TTLV children.
 - [x] T063 [US2] Add behavior tests for object/key field values, key format/material variants, wrapping metadata, ownership, and cleanup guarantees across C, Java, and Python.
-- [ ] T064 [US5] Expose normal Query's typed fields in C, Java, and Python with raw access retained for unknown/vendor fields and exact order/repetition preservation.
-- [ ] T065 [US5] Replace route-only checks with assertions of encoded operation identity for every synchronous factory and concrete typed response values for each operation family.
+- [x] T064 [US5] Expose normal Query's typed fields in C, Java, and Python with raw access retained for unknown/vendor fields and exact order/repetition preservation.
+- [x] T065 [US5] Replace route-only checks with assertions of encoded operation identity for every synchronous factory and concrete typed response values for each operation family.
 - [x] T066 [US2] Correct transparent EC Key Format Type dispatch to the hexadecimal values in KMIP 2.1 §11.25 Table 461; add rejection tests for malformed 0x14/0x15 structures and preserve reserved 0x0E/0x0F as generic values in Rust, C, Java, and Python.
 
 ## Dependencies
