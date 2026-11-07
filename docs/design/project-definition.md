@@ -158,10 +158,10 @@ files.
 - No panic based production control flow.
 - Public APIs documented.
 - Normative traceability: 100 percent.
-- TTLV and protocol line coverage: at least 90 percent.
+- TTLV and protocol line coverage: at least 95 percent.
 - Transport, FFI, and bindings: at least 85 percent.
 - Workspace overall: at least 90 percent.
-- Changed production code: at least 90 percent.
+- Changed production code: at least 95 percent.
 - Two independent real KMIP implementations tested before 1.0.
 - Independent security review before 1.0.
 

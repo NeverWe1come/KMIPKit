@@ -34,6 +34,8 @@ one and links both directions.
 - [ADR-0019: File-backed TLS hot-reload](0019-file-backed-tls-hot-reload.md) (Proposed)
 - [ADR-0020: TLS 1.3 session resumption without 0-RTT and HTTPS idle reconnect](0020-tls13-session-resumption-and-keepalive.md) (Accepted)
 
+- [ADR-0017: Single-dependency Rust facade](0017-single-dependency-rust-facade.md) (Accepted)
+
 ## Template
 
 ```text

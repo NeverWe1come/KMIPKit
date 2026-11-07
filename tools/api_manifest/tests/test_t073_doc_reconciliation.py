@@ -88,13 +88,13 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
         }
         expected_scope = {
             "en": (
-                "t108 and t109 record the exact four-language capability mappings and complete rust/c/java/python export accounting",
-                "inventory and mapping coverage",
+                "t108/t109 and t011 confirm every observed declaration has a manifest record or an exact approved exclusion",
+                "the inventory is reconciled",
                 "does not claim kmip conformance or release readiness",
             ),
             "es": (
-                "t108 y t109 registran los mapeos exactos de la capacidad en cuatro lenguajes y la auditoría completa de exportaciones rust/c/java/python",
-                "cobertura del inventario y los mapeos",
+                "t108/t109 y t011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
+                "el inventario está reconciliado",
                 "no afirma conformidad kmip ni preparación para publicar la versión",
             ),
         }

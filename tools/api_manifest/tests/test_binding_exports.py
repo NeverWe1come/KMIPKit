@@ -223,6 +223,20 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("KMIPKIT_ERROR_INVALID_INPUT", names)
         self.assertTrue(result["complete"])
 
+    def test_named_value_header_expansion_omits_its_private_include_guard(self):
+        expanded = AUDIT.expand_named_value_helper_header(
+            '#include "kmipkit_named_value_helpers_generated.h"\n',
+            "#ifndef KMIPKIT_NAMED_VALUE_HELPERS_GENERATED_H\n"
+            "#define KMIPKIT_NAMED_VALUE_HELPERS_GENERATED_H\n"
+            "#define KMIPKIT_ENUMERATION_EXAMPLE_ONE 1\n"
+            "#endif\n",
+        )
+
+        result = AUDIT.inventory_c_header(expanded)
+        declarations = {row["exportName"] for row in result["declarations"]}
+        self.assertEqual(declarations, {"KMIPKIT_ENUMERATION_EXAMPLE_ONE"})
+        self.assertTrue(result["complete"])
+
     def test_c_header_inventory_keeps_a_conditional_public_version_macro(self):
         result = AUDIT.inventory_c_header(
             "#ifndef KMIPKIT_ABI_VERSION\n#define KMIPKIT_ABI_VERSION 1\n#endif\n"

@@ -1044,6 +1044,10 @@ jobs:
         id: verify-generated-attribute-policy-lookup
         run: python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check
 
+      - name: Verify generated named protocol values
+        id: verify-generated-named-protocol-values
+        run: python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check
+
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0

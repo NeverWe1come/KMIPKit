@@ -53,12 +53,11 @@ stabilized.
 
 ## Phase 3: complete public APIs
 
-- Rust high level builders for every operation.
-- Complete C ABI and generated header surface.
-- Generic TTLV public escape hatch.
-- Batch builder and per-item outcomes.
-- Secret result types and lifecycle controls.
-- Structured diagnostics.
+- Rust high-level builders for every operation, typed protocol models, the
+  complete C ABI, generic TTLV access, batch outcomes, secret lifecycle
+  controls, and structured diagnostics.
+- Java and Python bindings provide the corresponding operation and TTLV
+  capabilities as detailed in Phase 4.
 - **1.0.0 release gate:** approve a versioned public API manifest covering
   every in-scope client-initiated operation and generic TTLV, then generate
   and verify equivalent Rust, C, Java, and Python capabilities. The Rust
@@ -75,7 +74,21 @@ stabilized.
 - Native package loading and installation tests.
 - Maven Central and PyPI release pipelines in dry-run mode.
 
-## Phase 5: interoperability and release hardening
+## Phase 5: high-level API usability and preflight validation
+
+- Add named values for the KMIP 2.1 enumerations and bitmasks while preserving
+  unknown and vendor values.
+- Add typed builders and readers for attributes and managed objects, key
+  material, and wrapping structures.
+- Complete typed operation parameters, request-scoped authentication, and
+  direct client methods for all client-initiated operations.
+- Provide schema-aware request validation and block locally detectable
+  normative violations before transport I/O.
+- Complete typed response readers and navigable generic TTLV access for the
+  response payload and nested structures in Rust, C, Java, and Python.
+- Reconcile the public API manifest, examples, and English and Spanish guides.
+
+## Phase 6: interoperability and release hardening
 
 Feature identifiers `KMIPKIT-0047` through `KMIPKIT-0053` are reserved for
 the Phase 5 ergonomics, `validate()`, and `.raw()` work. Multi-encoding work
@@ -101,7 +114,7 @@ must not reuse those Phase 5 identifiers.
   client and transports, then updates the manifest, generated API surfaces,
   and Rust/C/Java/Python parity together.
 
-## Phase 6: after 1.0
+## Phase 7: after 1.0
 
 - Evaluate and specify legacy KMIP version support using the
   [compatibility feasibility research](design/kmip-legacy-version-feasibility.md).

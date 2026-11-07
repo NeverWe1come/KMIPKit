@@ -147,6 +147,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "ffi_runtime_metadata"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
+            | "named_protocol_values"
             | "nonce_ttlv_parity"
             | "production_transport"
             | "ttlv_wire_codec"

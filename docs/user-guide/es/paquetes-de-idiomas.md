@@ -118,6 +118,48 @@ sustituye la selección incluida y, si no es válida o compatible, falla sin
 fallback. Antes de exponer CFFI, el paquete llama a `kmipkit_version_get` y
 requiere ABI 1. Python no busca en otros directorios ni descarga bibliotecas.
 
+## Valores de protocolo KMIP con nombre
+
+Los valores generados desde el catálogo están disponibles en el paquete de
+cada lenguaje. Por ejemplo, Rust usa el espacio de nombres tipado del
+protocolo:
+
+```rust
+use kmipkit::protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+
+let algorithm = cryptographic_algorithm::AES;
+let name = cryptographic_algorithm::name(algorithm);
+assert_eq!(name, Some("AES"));
+```
+
+C expone constantes de ancho fijo y funciones de consulta en `kmipkit.h`:
+
+```c
+uint32_t algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+const char *name = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_name(algorithm);
+```
+
+Java y Python exponen los mismos valores del catálogo en su espacio de
+nombres de valores del protocolo:
+
+```java
+long algorithm = KmipValues.CryptographicAlgorithm.AES;
+String name = KmipValues.CryptographicAlgorithm.name(algorithm);
+```
+
+```python
+from kmipkit import protocol_values
+
+algorithm = protocol_values.CryptographicAlgorithm.AES
+name = protocol_values.CryptographicAlgorithm.name(algorithm)
+```
+
+El conjunto generado solo incluye valores asignados. Los valores brutos de
+Enumeration desconocidos y los bits no asignados de Bit Mask siguen
+disponibles; las funciones de consulta muestran los nombres conocidos sin
+modificar el valor bruto del llamador. Un valor con nombre no afirma que el
+servidor lo admita ni que un algoritmo sea apropiado.
+
 ## Alcance actual de capacidades en el manifiesto
 
 Las etiquetas de estado de esta tabla se copian del manifiesto actual.
@@ -133,7 +175,7 @@ tabla.
 | `ttlv_wire_codec` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ffi_runtime_metadata` | declared | Los metadatos de versión y consulta de capacidades están mapeados en Rust, C, Java y Python. |
 | `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
-| `public_binding_surface` | verified | T108 y T109 registran los mapeos exactos de la capacidad en cuatro lenguajes y la auditoría completa de exportaciones Rust/C/Java/Python. Esto verifica la cobertura del inventario y los mapeos; no afirma conformidad KMIP ni preparación para publicar la versión. |
+| `public_binding_surface` | verified | T108/T109 y T011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. El inventario está reconciliado; los mapeos de operaciones que quedan fuera de este inventario verificado siguen incompletos y las API `blocked` no están disponibles. El inventario verificado no afirma conformidad KMIP ni preparación para publicar la versión. |
 | `vendor_extension_registry` | declared | Los mapeos exactos incluyen Rust drop, C release, Java close y Python close para los handles nativos; falta verificar la paridad. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
@@ -147,6 +189,7 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 | `client_profile_validation` | declared | Los puntos de entrada de validación de perfiles y los errores tipados están mapeados en cuatro lenguajes; este mapeo no afirma que se admita el perfil Baseline. |
+| `client_profile_readiness` | declared | La evaluación de preparación de perfiles informa de bloqueos de evidencia en cuatro lenguajes; no afirma conformidad con el perfil Baseline. |
 | `credential_type_parity` | declared | Los valores de Credential Type, incluidos los desconocidos, están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 | `typed_message_model` | declared | Los modelos tipados de petición/respuesta y las vistas de extensiones están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 | `nonce_ttlv_parity` | declared | La conversión TTLV y las operaciones de ciclo de vida de Nonce están mapeadas en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
@@ -154,6 +197,8 @@ tabla.
 | `ffi_shared_owner_status` | declared | C expone el estado `KMIPKIT_ERROR_SHARED_OWNER`; esta capacidad es exclusiva de C. |
 | `credential_validation_error_parity` | declared | Los tipos de error de validación de credenciales están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 | `credential_validation_error_abi_layout` | declared | C mapea los campos del diseño ABI versionado de error de validación de credenciales; esta capacidad es exclusiva de C. |
+| `named_protocol_values` | declared | Los valores Enumeration y Bit Mask asignados de KMIP 2.1 tienen nombres basados en el catálogo en Rust, C, Java y Python. Esto acredita nombres y consultas; no afirma que el servidor los admita ni que sean criptográficamente apropiados. |
+| `hashed_password_timestamp_sequence` | declared | Una secuencia local de marcas de tiempo para credenciales Hashed Password está mapeada en cuatro lenguajes; la validación del servidor sigue siendo la autoridad. |
 | `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 
 De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** siguen en
