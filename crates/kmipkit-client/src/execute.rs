@@ -7051,8 +7051,7 @@ fn build_request_message(
     options: &ValidatedBatchOptions,
     maximum_response_size: Option<i32>,
 ) -> Result<RequestMessage, ProtocolError> {
-    let authentication = batch.authentication.take();
-    let header = build_request_header(&batch, options, maximum_response_size, authentication)?;
+    let header = build_request_header(&mut batch, options, maximum_response_size)?;
     let mut tree = Structure::new();
     push(&mut tree, REQUEST_HEADER, Value::structure(header))?;
     for item in batch.items {
@@ -7111,10 +7110,9 @@ fn clone_response_message(response: &ResponseMessage) -> Result<ResponseMessage,
 }
 
 fn build_request_header(
-    batch: &ClientBatch,
+    batch: &mut ClientBatch,
     options: &ValidatedBatchOptions,
     maximum_response_size: Option<i32>,
-    authentication: Option<Authentication>,
 ) -> Result<Structure, ProtocolError> {
     let mut version_fields = Structure::new();
     push(
@@ -7156,7 +7154,7 @@ fn build_request_header(
         ATTESTATION_CAPABLE_INDICATOR,
         Value::boolean(true),
     )?;
-    if let Some(authentication) = authentication {
+    if let Some(authentication) = batch.authentication.take() {
         let tree = authentication.into_ttlv();
         push(&mut header, AUTHENTICATION, Value::structure(tree))?;
     }
