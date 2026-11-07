@@ -143,6 +143,12 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
         )
 
     def test_macro_lot_two_has_no_blocked_declarations(self) -> None:
+        partition = json.loads((
+            ROOT / "specs/043-public-api-bindings/reports/t102-macro-lot-partition.json"
+        ).read_text(encoding="utf-8"))
+        lot_two_ids = {
+            row["declarationId"] for row in partition["macroLots"]["2"]["declarations"]
+        }
         blocked = [
             row
             for row in self.manifest["publicDeclarations"]
@@ -150,7 +156,7 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
             and row["declarationState"] == "blocked"
         ]
         self.assertEqual(T102_BLOCKED_CANDIDATES, len(blocked))
-        self.assertEqual(0, T102_BLOCKED_CANDIDATES)
+        self.assertEqual([], [row for row in blocked if row["declarationId"] in lot_two_ids])
 
 
 if __name__ == "__main__":

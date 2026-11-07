@@ -188,7 +188,9 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-573ae1d0de80ffa2884b",
 }
 # The non-target snapshot includes subsequent approved T102 manifest slices.
-OTHER_DECLARATIONS_SHA256 = "c5853de988901f59c51ba64d80accc51a4b873161da1a75ef1c3315b7e4ae541"
+# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
+# Snapshot includes final 0049 and exact 0050 constructor mappings.
+OTHER_DECLARATIONS_SHA256 = "06c80c2c63ee8163f9e4f7d18be21ee2f377fce239b3cd05b0008ad5cdff5722"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -373,6 +375,24 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
+        # The 930 blocked 0051 validation rows and predecessor stack additions
+        # remain inside the exact non-target fingerprint and
+        # cannot acquire four-language parity through snapshot normalization.
+        for capability, count in (
+            ("typed_object_attributes", 286),
+            ("typed_managed_objects_and_key_material", 356),
+        ):
+            with self.subTest(stack_capability=capability):
+                typed_rows = [
+                    row for row in other_declarations
+                    if row["capabilityId"] == capability
+                ]
+                self.assertEqual(count, len(typed_rows))
+                self.assertTrue(all(
+                    row["declarationState"] == "blocked"
+                    and row["candidateSpecId"] == "KMIPKIT-0053"
+                    for row in typed_rows
+                ))
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])

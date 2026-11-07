@@ -97,6 +97,11 @@ impl TlsSessionStore {
             .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
+    pub(crate) fn clear(&self) {
+        let mut tickets = self.lock_tickets();
+        tickets.clear();
+    }
+
     fn discard_expired(&self, tickets: &mut VecDeque<StoredTicket>) {
         let now = self.clock.now();
         tickets.retain(|ticket| now.saturating_sub(ticket.inserted_at) < MAX_LOCAL_TICKET_AGE);
@@ -174,6 +179,7 @@ pub(crate) struct TlsClientConfig {
     rustls_config: Arc<ClientConfig>,
     server_name: ServerName<'static>,
     session_store: Arc<TlsSessionStore>,
+    generation: u64,
 }
 
 impl TlsClientConfig {
@@ -192,6 +198,31 @@ impl TlsClientConfig {
 
     pub(crate) fn cached_ticket_count(&self) -> usize {
         self.session_store.count()
+    }
+
+    pub(crate) fn clear_cached_tickets(&self) {
+        self.session_store.clear();
+    }
+
+    pub(crate) fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    pub(crate) fn refresh_if_changed(
+        &mut self,
+        configuration: &mut TransportConfig,
+    ) -> Result<bool, TransportConfigError> {
+        let changed = configuration.reload_file_sources()?;
+        if changed {
+            let new_config = build_client_config(configuration)?;
+            self.rustls_config = new_config.rustls_config;
+            self.server_name = new_config.server_name;
+            self.session_store.clear();
+            self.generation = self.generation.wrapping_add(1);
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
 }
 
@@ -269,6 +300,7 @@ fn finish_client_config(
         rustls_config: Arc::new(rustls_config),
         server_name: configuration.tls_server_name().clone(),
         session_store,
+        generation: 0,
     }
 }
 

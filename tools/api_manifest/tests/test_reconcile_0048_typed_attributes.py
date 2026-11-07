@@ -179,6 +179,73 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         with self.assertRaises(ReconciliationError):
             reconcile(self.manifest, report)
 
+    def test_unowned_trait_projection_fails_closed(self) -> None:
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-transport",
+            "kind": "associated-item",
+            "exportName": "<kmipkit_transport::TlsConfig as core::fmt::Debug>::fmt",
+        }]}
+
+        with self.assertRaises(ReconciliationError):
+            reconcile(self.manifest, report)
+
+    def test_unowned_attribute_trait_projection_fails_closed(self) -> None:
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "associated-item",
+            "exportName": "<kmipkit_protocol::attribute::ClientAttributeMutation as core::fmt::Debug>::fmt",
+        }]}
+
+        with self.assertRaises(ReconciliationError):
+            reconcile(self.manifest, report)
+
+    def test_unowned_attribute_function_fails_closed(self) -> None:
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-protocol",
+            "kind": "function",
+            "exportName": "kmipkit_protocol::attribute::client_vendor_attribute_mutation_is_prohibited",
+        }]}
+
+        with self.assertRaises(ReconciliationError):
+            reconcile(self.manifest, report)
+
+    def test_trait_projection_checks_the_exact_package_and_owner(self) -> None:
+        cases = (
+            ("rust-kmipkit", "<kmipkit::TlsConfig as core::fmt::Debug>::fmt"),
+            ("rust-kmipkit", "<kmipkit_protocol::Attribute<D> as core::clone::Clone>::clone"),
+            ("rust-kmipkit-protocol", "<kmipkit_protocol::AttributeReference as core::fmt::Debug>::fmt"),
+            ("rust-kmipkit", "<kmipkit::TlsConfig as core::convert::Into<kmipkit::protocol::Attribute<D>>>::into"),
+        )
+        for package_id, export_name in cases:
+            with self.subTest(package_id=package_id, export_name=export_name):
+                report = {"missingFromManifest": [{
+                    "packageId": package_id,
+                    "kind": "associated-item",
+                    "exportName": export_name,
+                }]}
+                with self.assertRaises(ReconciliationError):
+                    reconcile(self.manifest, report)
+
+    def test_typed_trait_projections_keep_their_feature_exclusion(self) -> None:
+        cases = (
+            ("rust-kmipkit-protocol", "<kmipkit_protocol::Attribute<D> as core::clone::Clone>::clone"),
+            ("rust-kmipkit", "<kmipkit::protocol::attribute::typed::Comment as core::fmt::Debug>::fmt"),
+            ("rust-kmipkit-protocol", "<kmipkit_protocol::attribute::AttributeValueError as core::fmt::Debug>::fmt"),
+        )
+        for package_id, export_name in cases:
+            with self.subTest(package_id=package_id, export_name=export_name):
+                report = {"missingFromManifest": [{
+                    "packageId": package_id,
+                    "kind": "associated-item",
+                    "exportName": export_name,
+                }]}
+                result = reconcile(self.manifest, report)
+                self.assertEqual(len(result["approvedExclusions"]), 1)
+                exclusion = result["approvedExclusions"][0]
+                self.assertEqual(exclusion["packageId"], package_id)
+                self.assertEqual(exclusion["exportName"], export_name)
+                self.assertEqual(exclusion["candidateSpecId"], "KMIPKIT-0048")
+
     def test_registers_only_the_requirement_ids_used_by_new_rows(self) -> None:
         result = reconcile(self.manifest, self.report)
 

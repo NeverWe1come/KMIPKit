@@ -10,8 +10,7 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
-RUST_REPORT_DIR = REPO_ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_REPORT_PATH = max(RUST_REPORT_DIR.glob("rust-export-report-*.json"))
+RUST_REPORT_PATH = REPO_ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",
@@ -83,7 +82,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/043-public-api-bindings/reports/rust-export-report-2026-11-05.json"
+            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -96,10 +95,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 7450)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 15830)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            7450,
+            15830,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -120,11 +119,11 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 10463)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 1390)
-        self.assertEqual(rust_counts["observed"], 10463)
-        self.assertEqual(rust_counts["matched"], 3013)
-        self.assertEqual(rust_counts["excluded"], 7450)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 23585)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 3697)
+        self.assertEqual(rust_counts["observed"], 23585)
+        self.assertEqual(rust_counts["matched"], 7755)
+        self.assertEqual(rust_counts["excluded"], 15830)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],
@@ -394,22 +393,35 @@ class SharedRustInventoryTests(unittest.TestCase):
                         exclusion,
                         f"{declaration['declarationId']} maps {language} to an unlisted export",
                     )
-                    self.assertEqual(
-                        (mapping["packageId"], mapping["name"]),
-                        ("c-kmipkit", "kmipkit_client_batch_item_response_release"),
-                    )
-                    self.assertIn("lifecycle counterpart", exclusion["reason"])
-                    self.assertIn("distinct four-language capability", exclusion["reason"])
-                    self.assertIn("Encrypt and Decrypt response lifecycle mappings", exclusion["evidence"])
-                    self.assertIn(
-                        declaration["declarationId"],
-                        {
-                            "T040:encrypt:response-close:java",
-                            "T040:encrypt:response-close:python",
-                            "T040:decrypt:response-close:java",
-                            "T040:decrypt:response-close:python",
-                        },
-                    )
+                    if mapping["name"] == "kmipkit_client_batch_item_response_release":
+                        self.assertIn("lifecycle counterpart", exclusion["reason"])
+                        self.assertIn("distinct four-language capability", exclusion["reason"])
+                        self.assertIn("Encrypt and Decrypt response lifecycle mappings", exclusion["evidence"])
+                        self.assertIn(
+                            declaration["declarationId"],
+                            {
+                                "T040:encrypt:response-close:java",
+                                "T040:encrypt:response-close:python",
+                                "T040:decrypt:response-close:java",
+                                "T040:decrypt:response-close:python",
+                            },
+                        )
+                    else:
+                        self.assertEqual(
+                            mapping,
+                            {
+                                "packageId": "c-kmipkit",
+                                "name": "kmipkit_client_batch_item_response_metadata_v1",
+                            },
+                        )
+                        self.assertIn("C-only metadata accessor", exclusion["reason"])
+                        self.assertIn(
+                            declaration["declarationId"],
+                            {
+                                "client_batch_item_response_metadata_v1:java",
+                                "client_batch_item_response_metadata_v1:python",
+                            },
+                        )
                     continue
                 self.assertIsNotNone(
                     target,
@@ -435,6 +447,10 @@ class SharedRustInventoryTests(unittest.TestCase):
         )
         self.assertEqual(
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),
+            0,
+        )
+        self.assertEqual(
+            sum("crate root is not an exported declaration" in row["blockedReason"] for row in blocked),
             0,
         )
         for row in blocked:

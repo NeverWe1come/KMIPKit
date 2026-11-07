@@ -3440,7 +3440,8 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return Optional.of(List.copyOf(versions));
     }
 
-    private long[] metadata() {
+    /** Returns outcome, status, reason-present flag, and raw reason as fresh values. */
+    public long[] metadata() {
         NativeExtensionRegistry.ensureLoaded();
         long[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMetadata);
         return parseMetadata(values);

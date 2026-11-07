@@ -7,8 +7,28 @@
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
 //! Requests. The synchronous [`Client`] is constructed from an immutable client
 //! configuration and validated production transport configuration; callers
-//! cannot inject an arbitrary transport or submit raw KMIP bytes. Timeout
-//! overrides are available through the options-bearing typed methods.
+//! cannot inject an arbitrary transport or submit raw KMIP bytes. Encoding and
+//! timeout overrides are available through the options-bearing typed methods.
+//!
+//! [`WireEncoding`] selects TTLV (the default), JSON, or XML for both the
+//! request and its response. Set an immutable default with
+//! [`extension_registry::ClientConfiguration::with_wire_encoding`], or override
+//! one call with [`RequestOptions::with_wire_encoding`]. The call override wins
+//! over the configured default and does not change subsequent calls. A response
+//! in a different format returns a redacted protocol error with delivery
+//! evidence; the client never retries or falls back to another encoding.
+//!
+//! ```
+//! use kmipkit_client::{RequestOptions, WireEncoding};
+//! use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
+//!
+//! let registry = client_extension_registry(Vec::new(), kmipkit_protocol::extension::defaults())
+//!     .expect("an empty extension registry is valid");
+//! let configuration = ClientConfiguration::new(registry).with_wire_encoding(WireEncoding::Json);
+//! let options = RequestOptions::default().with_wire_encoding(WireEncoding::Xml);
+//! assert_eq!(configuration.wire_encoding(), WireEncoding::Json);
+//! assert_eq!(options.wire_encoding(), Some(WireEncoding::Xml));
+//! ```
 //!
 //! [`ClientBatchOutcome::response`] returns a [`ClientResponseView`] with a
 //! common operation-result accessor and typed accessors for each response.
@@ -33,6 +53,17 @@
 #![doc = include_str!("../../../docs/user-guide/en/production-transports.md")]
 #![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]
 #![forbid(unsafe_code)]
+
+/// Private catalog-derived names shared by the JSON and XML codecs.
+#[allow(dead_code)] // KMIPKIT-0054 supplies the table before either codec lands.
+pub(crate) mod wire_names_generated;
+
+#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
+mod json_encoding;
+#[allow(dead_code)] // The common error contract is consumed by both codecs.
+mod wire_codec_common;
+#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
+mod xml_codec;
 
 mod error;
 pub mod extension_registry;
@@ -309,7 +340,7 @@ pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
     ProfileValidationErrorCode, ProfileValidationSelection,
 };
-pub use kmipkit_transport::RequestOptions;
+pub use kmipkit_transport::{RequestOptions, WireEncoding};
 
 #[cfg(test)]
 #[path = "../tests/unit/interop_execution_tests.rs"]

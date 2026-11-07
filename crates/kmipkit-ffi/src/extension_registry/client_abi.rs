@@ -822,7 +822,7 @@ pub extern "C" fn kmipkit_transport_config_create_v1(
         let configuration = try_ffi!(transport_config_from_v1(configuration));
         *out = try_ffi!(try_make_handle(
             Kind::TransportConfig,
-            HandleValue::TransportConfig(configuration),
+            HandleValue::TransportConfig(Box::new(configuration)),
         ));
         SUCCESS
     })
@@ -855,9 +855,10 @@ pub extern "C" fn kmipkit_client_create(
         }
         let client_configuration = client_extension::ClientConfiguration::from_shared_registry(
             configuration.shared_extension_registry(),
-        );
+        )
+        .with_wire_encoding(configuration.wire_encoding());
         let transport_configuration = match owned_payload(transport_handle, Kind::TransportConfig) {
-            Ok(HandleValue::TransportConfig(configuration)) => configuration,
+            Ok(HandleValue::TransportConfig(configuration)) => *configuration,
             Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
             Err(status) => return record_ffi_error(status),
         };
@@ -1218,6 +1219,38 @@ pub extern "C" fn kmipkit_client_execute(
             out_response,
             None,
             &RequestOptions::default(),
+            None,
+        )
+    })
+}
+
+/// Executes one typed batch with an optional wire-encoding override.
+///
+/// A value of -1 uses the immutable client configuration default; 0, 1, and 2
+/// select TTLV, JSON, and XML respectively.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    encoding_override: i32,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request_options = match encoding_override {
+            -1 => RequestOptions::default(),
+            0 => RequestOptions::default().with_wire_encoding(WireEncoding::Ttlv),
+            1 => RequestOptions::default().with_wire_encoding(WireEncoding::Json),
+            2 => RequestOptions::default().with_wire_encoding(WireEncoding::Xml),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            None,
+            &request_options,
             None,
         )
     })

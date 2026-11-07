@@ -25,13 +25,12 @@ and evidence based conformance.
 Version 1.0.0 includes:
 
 - KMIP 2.1 only.
-- TTLV encoding only.
+- TTLV, JSON, and XML encodings, with TTLV as the default.
 - Every operation initiated by a KMIP client.
 - KMIP protocol asynchronous semantics, including pending results and their
   follow-up operations.
 - Batch messages and a high level batch API.
-- Raw binary TTLV over TLS.
-- Binary TTLV over HTTPS with HTTP/1.1.
+- TTLV, JSON, and XML over raw TLS and HTTPS with HTTP/1.1.
 - TLS 1.3 and mutual TLS.
 - Synchronous/blocking client APIs.
 - Rust, C, Java, and Python with functional parity.
@@ -42,7 +41,8 @@ Version 1.0.0 includes:
 Version 1.0.0 excludes:
 
 - Server initiated operations.
-- JSON and XML encodings.
+- JSON and XML codecs are owned by KMIPKIT-0055 and KMIPKIT-0056; client and
+  transport integration and public exposure are owned by KMIPKIT-0057.
 - Rust async/await APIs.
 - Automatic retries, failover, connection pools, proxy support, and
   capability caching.
@@ -54,8 +54,8 @@ Version 1.0.0 excludes:
 
 - 1.1.0: server initiated operations.
 - Additional idiomatic adapters, prioritized as Go, C++, C#, and JavaScript.
-- Later compatible 1.x releases: JSON, XML, optional async APIs, additional
-  transports and operational facilities.
+- Later compatible 1.x releases: optional async APIs, additional transports
+  and operational facilities.
 - A new major version is reserved for public API or ABI incompatibility.
 
 ## 3. Completeness
@@ -100,7 +100,8 @@ algorithm, key length, usage, mode, padding, and export policy remain explicit.
 - KMIP protocol asynchronous results are fully supported.
 - A client is thread safe and serializes calls through one worker. It may
   reuse a healthy HTTPS connection; raw TLS opens one connection per exchange
-  and closes it after exactly one response frame.
+  and closes it after exactly one complete KMIP response document. TTLV is
+  framed by its header; JSON/XML completion follows their bounded parsers.
 - Concurrent calls on one client are serialized.
 - Applications create multiple clients for parallel network operations.
 - No request is retried automatically.
@@ -157,10 +158,10 @@ files.
 - No panic based production control flow.
 - Public APIs documented.
 - Normative traceability: 100 percent.
-- TTLV and protocol line coverage: at least 90 percent.
+- TTLV and protocol line coverage: at least 95 percent.
 - Transport, FFI, and bindings: at least 85 percent.
 - Workspace overall: at least 90 percent.
-- Changed production code: at least 90 percent.
+- Changed production code: at least 95 percent.
 - Two independent real KMIP implementations tested before 1.0.
 - Independent security review before 1.0.
 

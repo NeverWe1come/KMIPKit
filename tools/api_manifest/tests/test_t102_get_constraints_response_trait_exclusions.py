@@ -9,6 +9,8 @@ case; compiler-visible Rust traits are not separate KMIP capabilities.
 
 from __future__ import annotations
 
+from tools.api_manifest.tests.pre_send_validation_routes import is_pre_send_validation_trait
+
 import json
 import unittest
 
@@ -403,6 +405,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -471,6 +474,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith(ROOT_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -555,6 +559,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(SET_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -635,6 +640,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith(SET_ROOT_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -721,6 +727,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(CERTIFY_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -802,6 +809,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(VALIDATE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -884,6 +892,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(CHECK_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -977,6 +986,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(DERIVE_KEY_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1068,6 +1078,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(EXPORT_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1169,6 +1180,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(GET_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1268,6 +1280,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(LOCATE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1367,6 +1380,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(INTEROP_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1465,6 +1479,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(LOCATE_REQUEST_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1574,6 +1589,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(LOG_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1672,6 +1688,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(IMPORT_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1772,6 +1789,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(JOIN_SPLIT_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1874,6 +1892,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(OBTAIN_LEASE_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -1999,6 +2018,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(REKEY_KEY_PAIR_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2123,6 +2143,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(CANCEL_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2247,6 +2268,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(REKEY_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2380,6 +2402,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(RECERTIFY_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2511,6 +2534,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(REGISTER_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2642,6 +2666,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(REVOKE_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2774,6 +2799,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(REPROVISION_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -2917,6 +2943,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(RNG_RETRIEVE_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -3073,6 +3100,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(RNG_SEED_RESPONSE_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row

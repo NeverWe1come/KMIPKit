@@ -337,7 +337,9 @@ dependencies = [
  "kmipkit-test-support",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "quick-xml",
  "quickcheck",
+ "roxmltree",
  "rustls",
  "serde",
  "serde_json",
@@ -379,6 +381,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "kmipkit-test-server"
+version = "1.0.0"
+dependencies = [
+ "aws-lc-rs",
+ "bytes",
+ "hyper",
+ "kmipkit-client",
+ "kmipkit-protocol",
+ "kmipkit-transport",
+ "kmipkit-ttlv",
+ "rcgen",
+ "roxmltree",
+ "rustls",
+ "serde_json",
+ "tokio",
+ "tokio-rustls",
+ "zeroize",
+]
+
+[[package]]
 name = "kmipkit-test-support"
 version = "1.0.0"
 dependencies = [
@@ -396,6 +418,7 @@ dependencies = [
 name = "kmipkit-transport"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "bytes",
  "hyper",
  "kmipkit-test-support",
@@ -552,6 +575,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.42.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41b1177fdf999d2321d3fb46ff47159d9c1fb9ad66a4879f8c50a0b504615e9b"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]

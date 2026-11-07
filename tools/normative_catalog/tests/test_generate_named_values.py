@@ -7,13 +7,165 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from tools.normative_catalog import generate_named_values
+from tools.normative_catalog import generate_named_values, reconcile_named_value_manifest
 
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_bitmask_java_helper_names_use_camel_case(self) -> None:
+        group = generate_named_values.NamedGroup(
+            "mask-1",
+            "Cryptographic Usage Mask",
+            "CRYPTOGRAPHIC_USAGE_MASK",
+            (),
+        )
+
+        known = reconcile_named_value_manifest._language_names(
+            "bitmask", group, "known_bits"
+        )
+        unknown = reconcile_named_value_manifest._language_names(
+            "bitmask", group, "unknown_bits"
+        )
+
+        self.assertEqual(
+            "org.kmipkit.protocol.KmipValues.CryptographicUsageMask.knownBits",
+            known["java"],
+        )
+        self.assertEqual(
+            "org.kmipkit.protocol.KmipValues.CryptographicUsageMask.unknownBits",
+            unknown["java"],
+        )
+        self.assertTrue(known["rust"].endswith("::known_bits"))
+        self.assertTrue(known["python"].endswith(".known_bits"))
+
+    def test_bitmask_name_helper_is_reconciled_as_c_only(self) -> None:
+        root = ROOT
+        catalog = reconcile_named_value_manifest.load_validated_catalog(
+            reconcile_named_value_manifest.safe_read_bytes(
+                root,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=reconcile_named_value_manifest.MAX_BYTES,
+            ),
+            root,
+            require_complete=True,
+        )
+        declarations, mappings = reconcile_named_value_manifest.build_named_value_records(catalog)
+        reconciled = reconcile_named_value_manifest.reconcile(
+            {"requirementIds": [], "capabilities": [], "publicDeclarations": []},
+            declarations,
+            mappings,
+        )
+
+        bitmask_name_rows = [
+            row
+            for row in reconciled["publicDeclarations"]
+            if "KMIPKIT-0047-FR-004" in row.get("requirementIds", [])
+            and row.get("exportName", "").endswith("name")
+        ]
+        self.assertEqual(3, len(bitmask_name_rows))
+        self.assertEqual({"c-kmipkit"}, {row["packageId"] for row in bitmask_name_rows})
+        self.assertEqual(
+            {"named_protocol_mask_single_bit_lookup"},
+            {row["capabilityId"] for row in bitmask_name_rows},
+        )
+        capability = next(
+            row
+            for row in reconciled["capabilities"]
+            if row["capabilityId"] == "named_protocol_mask_single_bit_lookup"
+        )
+        self.assertEqual("c-only", capability["parityScope"])
+
+    def test_rust_named_values_are_mapped_through_facade_and_protocol_crate(self) -> None:
+        root = ROOT
+        catalog = reconcile_named_value_manifest.load_validated_catalog(
+            reconcile_named_value_manifest.safe_read_bytes(
+                root,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=reconcile_named_value_manifest.MAX_BYTES,
+            ),
+            root,
+            require_complete=True,
+        )
+        declarations, _ = reconcile_named_value_manifest.build_named_value_records(catalog)
+        rows = [
+            row
+            for row in declarations
+            if row["exportName"].endswith(
+                "named_values_generated::values::bitmask::cryptographic_usage_mask::AUTHENTICATE"
+            )
+        ]
+
+        self.assertEqual(
+            {
+                ("rust-kmipkit", "kmipkit::protocol::named_values_generated::values::bitmask::cryptographic_usage_mask::AUTHENTICATE"),
+                ("rust-kmipkit-protocol", "kmipkit_protocol::named_values_generated::values::bitmask::cryptographic_usage_mask::AUTHENTICATE"),
+            },
+            {(row["packageId"], row["exportName"]) for row in rows},
+        )
+
+    def test_manifest_reconciliation_preserves_existing_declaration_order(self) -> None:
+        existing = [
+            {"declarationId": "z-existing", "exportName": "Existing Z"},
+            {"declarationId": "a-existing", "exportName": "Existing A"},
+        ]
+        new_declarations = [
+            {"declarationId": "named-z", "approvalSource": {"path": "specs/047-named-protocol-values/spec.md"}},
+            {"declarationId": "named-a", "approvalSource": {"path": "specs/047-named-protocol-values/spec.md"}},
+        ]
+        existing_capabilities = [
+            {"capabilityId": "z-capability"},
+            {"capabilityId": "a-capability"},
+        ]
+        manifest = {
+            "requirementIds": [],
+            "capabilities": existing_capabilities,
+            "publicDeclarations": existing,
+        }
+
+        reconciled = reconcile_named_value_manifest.reconcile(
+            manifest,
+            new_declarations,
+            {"rust": [], "c": [], "java": [], "python": []},
+        )
+
+        self.assertEqual(
+            ["z-existing", "a-existing", "named-a", "named-z"],
+            [row["declarationId"] for row in reconciled["publicDeclarations"]],
+        )
+        self.assertEqual(
+            ["z-capability", "a-capability", "named_protocol_values"],
+            [row["capabilityId"] for row in reconciled["capabilities"]],
+        )
+
+    def test_manifest_reconciliation_removes_stale_generated_rows_owned_by_spec(self) -> None:
+        stale = {
+            "declarationId": "kmipkit-0047-java-stale-name",
+            "packageId": "java-kmipkit",
+            "exportName": "org.kmipkit.protocol.KmipValues.Mask.known_bits",
+            "capabilityId": "named_protocol_values",
+            "approvalSource": reconcile_named_value_manifest.APPROVAL_SOURCE,
+        }
+        current = {
+            "declarationId": "kmipkit-0047-java-current-name",
+            "packageId": "java-kmipkit",
+            "exportName": "org.kmipkit.protocol.KmipValues.Mask.knownBits",
+            "capabilityId": "named_protocol_values",
+            "approvalSource": reconcile_named_value_manifest.APPROVAL_SOURCE,
+        }
+        reconciled = reconcile_named_value_manifest.reconcile(
+            {
+                "requirementIds": [],
+                "capabilities": [],
+                "publicDeclarations": [stale],
+            },
+            [current],
+            {"rust": [], "c": [], "java": [current["exportName"]], "python": []},
+        )
+
+        self.assertEqual([current], reconciled["publicDeclarations"])
+
     def test_catalog_contains_the_approved_named_value_surface(self) -> None:
         catalog: dict[str, Any] = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
@@ -121,6 +273,32 @@ class NamedValueGeneratorTests(unittest.TestCase):
             generate_named_values._identifier("Polynomial Sharing GF (2¹⁶)"),
             generate_named_values._identifier("Polynomial Sharing GF (2⁸)"),
         )
+
+    def test_c_string_literals_escape_syntax_control_and_utf8_bytes(self) -> None:
+        self.assertEqual(
+            r'"Name\042\134\012\011\303\251"',
+            generate_named_values._c_string('Name"\\\n\té'),
+        )
+
+    def test_c_renderer_uses_safe_literals_for_every_lookup_helper(self) -> None:
+        value = generate_named_values.NamedValue(
+            element_id="value-1",
+            name='Name"\\\n',
+            identifier="NAME",
+            value=1,
+            source_refs=(("KMIPKIT-SRC-spec", "11.1"),),
+        )
+        enumeration = generate_named_values.NamedGroup(
+            "enum-1", "Example Enum", "EXAMPLE_ENUM", (value,)
+        )
+        bitmask = generate_named_values.NamedGroup(
+            "mask-1", "Example Mask", "EXAMPLE_MASK", (value,)
+        )
+        outputs = generate_named_values._render_c(
+            generate_named_values.CatalogValues((enumeration,), (bitmask,))
+        )
+
+        self.assertEqual(3, outputs.count(r'"Name\042\134\012"'))
 
 
 if __name__ == "__main__":

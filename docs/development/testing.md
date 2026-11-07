@@ -302,8 +302,12 @@ test binary and calls it under the same coverage process. This keeps the
 behavior assertions in C while making their Rust ABI calls visible to LLVM.
 The ordinary CMake consumer test still runs in the language-bindings job. The
 coverage build uses the exact-pinned `cc` 1.6.0 build dependency only when the
-coverage feature is enabled. The C header contains declarations, not
-executable lines. The handwritten JNI implementation in
+coverage feature is enabled. The generated named-value C header contains
+`static inline` lookup functions, but C headers are not part of the aggregate
+raw line-coverage inputs. Their behavior is compiled and exercised by the
+`kmipkit_named_values_consumer` C test, and the exact generated header is
+checked with `python -B tools/normative_catalog/generate_named_values.py --repo-root . --check`.
+The handwritten JNI implementation in
 `bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
 coverage instrumentation and measured from its own report; JaCoCo and Rust
 coverage do not count those C++ lines. The JNI collector is Linux-only and
@@ -312,10 +316,12 @@ requires LLVM/Clang 20.1.8. Rust raw coverage also excludes the generated
 states that it contains no executable conformance rules. CI checks its bytes
 with `python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`,
 and profile selection and readiness tests exercise its metadata consumers. It
-also excludes `crates/kmipkit-protocol/src/named_values_generated.rs` and
-`bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java` for the same
-catalog-generated reason: their generator checks exact output and consumer
-tests exercise lookup behavior. The exact generated
+also excludes `crates/kmipkit-protocol/src/named_values_generated.rs`,
+`bindings/c/include/kmipkit_named_value_helpers_generated.h`,
+`bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java`, and
+`bindings/python/src/kmipkit/protocol_values.py` for the same catalog-generated
+reason: the named-value generator checks exact output and consumer tests
+exercise lookup behavior. The exact generated
 `crates/kmipkit-protocol/src/typed_attributes_generated.rs` file is excluded for
 the same reason: its 62 marker implementations are mechanically rendered from
 the pinned catalog into the shared typed-attribute conversion contract. The

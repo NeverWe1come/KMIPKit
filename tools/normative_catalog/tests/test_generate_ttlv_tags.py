@@ -143,6 +143,15 @@ class TagAllocationRenderingTests(unittest.TestCase):
         self._assert_allocation_near(rendered, "420001", "assigned")
         self._assert_allocation_near(rendered, "420009", "reserved")
 
+    def test_renders_catalog_tag_names_for_private_wire_codecs(self) -> None:
+        from tools.normative_catalog.generate_wire_names import render_tsv
+
+        rendered = render_tsv(small_catalog())
+
+        self.assertIn("T\t420001\tActivation Date", rendered)
+        self.assertIn("T\t420174\tSubmission Date", rendered)
+        self.assertNotIn("T\t420009\t", rendered)
+
     def test_renders_every_exact_catalog_tag_and_range(self) -> None:
         catalog = load_validated_catalog(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),

@@ -6,6 +6,9 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.pre_send_validation_routes import validation_stack_routes
+from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 PARTITION = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t102-macro-lot-partition.json"
@@ -61,12 +64,24 @@ class T102MacroLotPartitionTests(unittest.TestCase):
             if row.get("declarationState") == "blocked"
             and row.get("candidateSpecId") == "KMIPKIT-0043"
         }
-        self.assertTrue(blocked.issubset(partition_ids))
+        stack_routes = validation_stack_routes()
+        self.assertEqual(930, len(stack_routes))
+        stack_candidates = {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row["declarationId"] in blocked
+            and (row["packageId"], row["exportName"]) in stack_routes
+        }
+        self.assertEqual(T102_BLOCKED_CANDIDATES, len(stack_candidates))
+        self.assertTrue(stack_candidates.isdisjoint(partition_ids))
+        self.assertTrue((blocked - stack_candidates).issubset(partition_ids))
         planned = {
             item["declarationId"]: item for item in (*lot1, *lot2)
         }
         for row in self.manifest["publicDeclarations"]:
             if row.get("declarationState") != "blocked" or row.get("candidateSpecId") != "KMIPKIT-0043":
+                continue
+            if row["declarationId"] in stack_candidates:
                 continue
             item = planned[row["declarationId"]]
             self.assertEqual(item["packageId"], row["packageId"])

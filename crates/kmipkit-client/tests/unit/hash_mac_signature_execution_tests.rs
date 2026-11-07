@@ -41,7 +41,7 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const HASH_DATA: u32 = 0x0042_00C2;
-const MAC_DATA: u32 = 0x0042_00C6;
+const MAC_DATA: u32 = 0x0042_00C6; // OASIS KMIP v2.1 §11.56, Table 487.
 const SIGNATURE_DATA: u32 = 0x0042_00C3;
 
 fn test_identifier() -> UniqueIdentifier {
@@ -178,7 +178,7 @@ impl OperationFixture {
                     UNIQUE_IDENTIFIER,
                     Value::text_string("mac-object".to_owned()),
                 ),
-                test_item(0x0042_0128, Value::enumeration(1)),
+                test_item(0x0042_009B, Value::enumeration(1)),
             ],
             SIGN => vec![test_item(
                 UNIQUE_IDENTIFIER,
@@ -189,7 +189,7 @@ impl OperationFixture {
                     UNIQUE_IDENTIFIER,
                     Value::text_string("sign-object".to_owned()),
                 ),
-                test_item(0x0042_0128, Value::enumeration(1)),
+                test_item(0x0042_009B, Value::enumeration(1)),
             ],
             _ => unreachable!("fixture only uses the five assigned operations"),
         };
@@ -533,8 +533,8 @@ fn successful_single_part_hash_mac_and_sign_responses_require_output_data() {
 }
 
 #[test]
-fn multipart_hash_mac_and_sign_responses_reject_output_data() {
-    let rejected = output_operation_fixtures().map(|fixture| {
+fn multipart_hash_mac_and_sign_responses_accept_optional_output_data() {
+    let accepted = output_operation_fixtures().map(|fixture| {
         let response = asynchronous_response_bytes(
             fixture.code,
             SUCCESS,
@@ -543,14 +543,27 @@ fn multipart_hash_mac_and_sign_responses_reject_output_data() {
             Some(fixture.success_payload_with_output(true)),
         );
         let (mut client, _) = client([response]);
-        client
+        let result = client
             .execute(
                 ClientBatch::new(ClientBatchItem::new(fixture.multipart_request())),
                 &CodecLimits::defaults(),
             )
-            .is_err()
+            .expect("KMIP 2.1 permits optional output data for multipart responses");
+        let view = result.items[0].outcome().response();
+        match fixture.code {
+            HASH => view
+                .hash()
+                .is_some_and(|response| response.data().is_some()),
+            MAC => view
+                .mac()
+                .is_some_and(|response| response.mac_data().is_some()),
+            SIGN => view
+                .sign()
+                .is_some_and(|response| response.signature_data().is_some()),
+            _ => unreachable!("fixture loop contains only Hash, MAC, and Sign"),
+        }
     });
-    assert_eq!(rejected, [true; 3]);
+    assert_eq!(accepted, [true; 3]);
 }
 
 #[test]
@@ -590,7 +603,7 @@ fn multipart_hash_mac_and_sign_responses_accept_absent_output_data() {
 }
 
 #[test]
-fn final_multipart_hash_mac_and_sign_responses_omit_output_data() {
+fn final_multipart_hash_mac_and_sign_responses_accept_optional_output_data() {
     let conforms = output_operation_fixtures().map(|fixture| {
         let without_output = asynchronous_response_bytes(
             fixture.code,
@@ -615,14 +628,14 @@ fn final_multipart_hash_mac_and_sign_responses_omit_output_data() {
             Some(fixture.success_payload_with_output(true)),
         );
         let (mut second_client, _) = client([with_output]);
-        let present_output_rejected = second_client
+        let present_output_accepted = second_client
             .execute(
                 ClientBatch::new(ClientBatchItem::new(fixture.final_multipart_request())),
                 &CodecLimits::defaults(),
             )
-            .is_err();
+            .is_ok();
 
-        absent_output_accepted && present_output_rejected
+        absent_output_accepted && present_output_accepted
     });
     assert_eq!(conforms, [true; 3]);
 }
