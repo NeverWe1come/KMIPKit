@@ -154,3 +154,25 @@ environment warnings about NASM and an optional compiler probe.
   merge above. This refresh also changes documentation only; no #050
   implementation, test, or generated path is changed by it.
 - Remote CI checks were not queried under the maintainer's billing instruction.
+
+## Latest predecessor synchronization and follow-up (2026-11-07)
+
+- This local branch now includes the latest #116 head `cbe09ce2f` through
+  merge commit `1adb90894`. The merge carries the corrected Decrypt manifest
+  attribution and regenerated parity fixtures from #115.
+- After synchronization, the six focused Authentication tests passed, the
+  focused Encrypt/Decrypt manifest module passed all 5 tests, and
+  `python -B tools/api_manifest/generate.py --check --repo-root .` verified all
+  12 generated outputs.
+- The authentication ownership follow-up separately passed
+  `cargo fmt --all --check`,
+  `cargo clippy --offline -p kmipkit-client --all-targets --all-features -- -D warnings`,
+  and the 6 focused Authentication tests. Its Red, Green, and Refactor commits
+  are listed above. Full workspace tests and coverage have not been rerun on
+  the combined latest stack.
+- The follow-up Codex Security diff scan
+  (`e30feefc-b9b4-416c-b625-eec029f8eede`) reviewed the changed
+  `execute.rs`, found zero issues, and completed with full changed-file
+  coverage. It was a static review; runtime tests are recorded separately.
+- This refreshed local branch has not yet been pushed to PR #118. Hosted CI
+  remains unqueried.
