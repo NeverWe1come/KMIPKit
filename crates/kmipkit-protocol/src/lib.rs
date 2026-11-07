@@ -527,3 +527,23 @@ mod validate_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/pkcs11_operation_tests.rs"]
 mod pkcs11_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/set_endpoint_role_tests.rs"]
+mod set_endpoint_role_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_discover_versions_tests.rs"]
+mod s2c_discover_versions_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_notify_tests.rs"]
+mod s2c_notify_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_put_tests.rs"]
+mod s2c_put_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_query_tests.rs"]
+mod s2c_query_tests;
