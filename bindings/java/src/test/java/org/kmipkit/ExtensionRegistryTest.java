@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientExtensionRegistry;
+import org.kmipkit.extensions.WireEncoding;
 import org.kmipkit.extensions.ClientRequestMessageExtension;
 import org.kmipkit.extensions.Compatibility;
 import org.kmipkit.extensions.Discriminator;
@@ -223,6 +224,19 @@ final class ExtensionRegistryTest {
                 identity, compatibility, discriminator, schema);
         return new SharedConfigurationDefinition(
                 definition, identity, compatibility, discriminator, childSchema, childRule, schema);
+    }
+
+    @Test
+    void clientConfigurationsKeepTtlvDefaultAndEncodingCopiesAreImmutable() throws Exception {
+        ClientExtensionRegistry registry = registry(List.of(alphaDefinition()), defaults());
+        try (ClientConfiguration ttlv = ClientConfiguration.create(registry);
+                ClientConfiguration json = ttlv.withWireEncoding(WireEncoding.JSON);
+                ClientConfiguration xml = json.withWireEncoding(WireEncoding.XML)) {
+            assertEquals(WireEncoding.TTLV, ttlv.wireEncoding());
+            assertEquals(WireEncoding.JSON, json.wireEncoding());
+            assertEquals(WireEncoding.XML, xml.wireEncoding());
+            assertThrows(InvalidInputException.class, () -> ttlv.withWireEncoding(null));
+        }
     }
 
     @Test

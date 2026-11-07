@@ -272,7 +272,7 @@ mod worker;
 pub use config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
     RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportConfig, TransportConfigBuilder,
-    TransportConfigError, TrustSource,
+    TransportConfigError, TrustSource, WireEncoding,
 };
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use https::HttpsTransport;

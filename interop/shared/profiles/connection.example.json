@@ -1,0 +1,33 @@
+{
+  "server_id": "example-kms",
+  "description": "Example connection configuration for a local or remote KMIP 2.1 Server",
+  "endpoints": {
+    "raw_tls": {
+      "host": "127.0.0.1",
+      "port": 5696
+    },
+    "https": {
+      "url": "https://127.0.0.1:5696/kmip/2_1"
+    }
+  },
+  "tls": {
+    "ca_cert_path": "/path/to/ca-cert.pem",
+    "client_cert_path": "/path/to/client-cert.pem",
+    "client_key_path": "/path/to/client-key.pem",
+    "server_name_override": "localhost",
+    "connect_timeout_seconds": 10,
+    "read_timeout_seconds": 30
+  },
+  "authentication": {
+    "username_password": {
+      "username": "kmip_user",
+      "password": "kmip_password"
+    }
+  },
+  "execution_policy": {
+    "probe_unsupported": false,
+    "encodings": ["TTLV", "JSON", "XML"],
+    "api_levels": ["level1", "level2", "level3"],
+    "cleanup_on_failure": true
+  }
+}

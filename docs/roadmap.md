@@ -90,6 +90,11 @@ stabilized.
 
 ## Phase 6: interoperability and release hardening
 
+Feature identifiers `KMIPKIT-0047` through `KMIPKIT-0053` are reserved for
+the Phase 5 ergonomics, `validate()`, and `.raw()` work. Multi-encoding work
+uses the consecutive identifiers `KMIPKIT-0054` through `KMIPKIT-0057` and
+must not reuse those Phase 5 identifiers.
+
 - Automated integration with an external open source KMIP 2.1 server.
 - Manual or automated integration with a second independent implementation.
 - Server compatibility matrix.
@@ -99,6 +104,15 @@ stabilized.
 - Complete English and Spanish documentation.
 - Reproducible packages, SBOM, provenance, and signed artifacts.
 - `1.0.0` release readiness review.
+- **KMIP 2.1 multi-encoding work for 1.0.0:** KMIPKIT-0054 establishes the
+  approved scope amendment and private common codec contract. Once 0054 is
+  accepted, KMIPKIT-0055 (JSON, Profiles §5.5) and KMIPKIT-0056 (XML,
+  Profiles §5.4) may be implemented and tested independently in dedicated
+  worktrees. Their codec modules consume the same ordered generic TTLV item
+  model and checked-in catalog naming metadata. Neither codec changes the
+  public client API manifest. KMIPKIT-0057 integrates both codecs with the
+  client and transports, then updates the manifest, generated API surfaces,
+  and Rust/C/Java/Python parity together.
 
 ## Phase 7: after 1.0
 
@@ -111,7 +125,6 @@ stabilized.
 - Additional idiomatic adapters, in order: Go, C++, C#, and JavaScript.
 - Declarative vendor extension SDK.
 - Optional compiled extension packages.
-- JSON and XML encodings.
 - Async/await client.
 - Connection pools, explicit retry policies, and failover components.
 - Additional TLS identity providers, platforms, and proxy support.

@@ -1,0 +1,739 @@
+{
+  "schema_version": "1.0",
+  "server": {
+    "id": "generic-kmip-2.1",
+    "vendor": "OASIS",
+    "product": "Generic KMIP 2.1 Compliant Server",
+    "version": "2.1",
+    "kmip_versions": [
+      "2.1"
+    ]
+  },
+  "transports": {
+    "raw_tls": {
+      "supported": true,
+      "default_port": 5696
+    },
+    "https": {
+      "supported": true,
+      "default_path": "/kmip/2_1"
+    }
+  },
+  "encodings": {
+    "TTLV": {
+      "supported": true,
+      "transports": [
+        "raw_tls",
+        "https"
+      ]
+    },
+    "JSON": {
+      "supported": true,
+      "transports": [
+        "https",
+        "raw_tls"
+      ]
+    },
+    "XML": {
+      "supported": true,
+      "transports": [
+        "https",
+        "raw_tls"
+      ]
+    }
+  },
+  "authentication": {
+    "mtls_client_cert": true,
+    "username_password": true
+  },
+  "features": {
+    "batching": true,
+    "asynchronous_operations": true,
+    "id_placeholder": true
+  },
+  "operations": {
+    "Discover Versions": {
+      "supported": true
+    },
+    "Query": {
+      "supported": true
+    },
+    "Create": {
+      "supported": true
+    },
+    "Create Key Pair": {
+      "supported": true
+    },
+    "Create Split Key": {
+      "supported": true
+    },
+    "Join Split Key": {
+      "supported": true
+    },
+    "Register": {
+      "supported": true
+    },
+    "Import": {
+      "supported": true
+    },
+    "Export": {
+      "supported": true
+    },
+    "Get": {
+      "supported": true
+    },
+    "Locate": {
+      "supported": true
+    },
+    "Check": {
+      "supported": true
+    },
+    "Activate": {
+      "supported": true
+    },
+    "Revoke": {
+      "supported": true
+    },
+    "Destroy": {
+      "supported": true
+    },
+    "Archive": {
+      "supported": true
+    },
+    "Recover": {
+      "supported": true
+    },
+    "Encrypt": {
+      "supported": true
+    },
+    "Decrypt": {
+      "supported": true
+    },
+    "Sign": {
+      "supported": true
+    },
+    "Signature Verify": {
+      "supported": true
+    },
+    "MAC": {
+      "supported": true
+    },
+    "MAC Verify": {
+      "supported": true
+    },
+    "Hash": {
+      "supported": true
+    },
+    "Derive Key": {
+      "supported": true
+    },
+    "RNG Retrieve": {
+      "supported": true
+    },
+    "RNG Seed": {
+      "supported": true
+    },
+    "Get Attributes": {
+      "supported": true
+    },
+    "Get Attribute List": {
+      "supported": true
+    },
+    "Add Attribute": {
+      "supported": true
+    },
+    "Modify Attribute": {
+      "supported": true
+    },
+    "Set Attribute": {
+      "supported": true
+    },
+    "Delete Attribute": {
+      "supported": true
+    },
+    "Ping": {
+      "supported": true
+    },
+    "Delegated Login": {
+      "supported": true
+    },
+    "Interop": {
+      "supported": true
+    },
+    "Log": {
+      "supported": true
+    },
+    "Login": {
+      "supported": true
+    },
+    "Logout": {
+      "supported": true
+    },
+    "Cancel": {
+      "supported": true
+    },
+    "Certify": {
+      "supported": true
+    },
+    "Get Constraints": {
+      "supported": true
+    },
+    "Get Usage Allocation": {
+      "supported": true
+    },
+    "Obtain Lease": {
+      "supported": true
+    },
+    "PKCS#11": {
+      "supported": true
+    },
+    "Poll": {
+      "supported": true
+    },
+    "Process": {
+      "supported": true
+    },
+    "Query Asynchronous Requests": {
+      "supported": true
+    },
+    "Re-Provision": {
+      "supported": true
+    },
+    "Re-certify": {
+      "supported": true
+    },
+    "Re-key": {
+      "supported": true
+    },
+    "Re-key Key Pair": {
+      "supported": true
+    },
+    "Set Constraints": {
+      "supported": true
+    },
+    "Set Defaults": {
+      "supported": true
+    },
+    "Validate": {
+      "supported": true
+    }
+  },
+  "managed_objects": {
+    "Symmetric Key": {
+      "supported": true
+    },
+    "Public Key": {
+      "supported": true
+    },
+    "Private Key": {
+      "supported": true
+    },
+    "Certificate": {
+      "supported": true
+    },
+    "Secret Data": {
+      "supported": true
+    },
+    "Opaque Object": {
+      "supported": true
+    },
+    "Split Key": {
+      "supported": true
+    },
+    "PGP Key": {
+      "supported": true
+    },
+    "Certificate Request": {
+      "supported": true
+    }
+  },
+  "attributes": {
+    "Cryptographic Algorithm": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": false,
+      "delete": false
+    },
+    "Cryptographic Length": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": false,
+      "delete": false
+    },
+    "Cryptographic Usage Mask": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": false,
+      "delete": false
+    },
+    "Name": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Comment": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "State": {
+      "supported": true,
+      "read": true,
+      "create": false,
+      "modify": false,
+      "delete": false
+    },
+    "Unique Identifier": {
+      "supported": true,
+      "read": true,
+      "create": false,
+      "modify": false,
+      "delete": false
+    },
+    "Activation Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Alternative Name": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Always Sensitive": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Application Specific Information": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Archive Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Certificate Attributes": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Certificate Length": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Certificate Type": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Compromise Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Compromise Occurrence Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Contact Information": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Cryptographic Domain Parameters": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Cryptographic Parameters": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Deactivation Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Description": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Destroy Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Digest": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Digital Signature Algorithm": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Extractable": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Fresh": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Initial Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Key Format Type": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Key Value Location": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Key Value Present": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Last Change Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Lease Time": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Link": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "NIST Key Type": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Never Extractable": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Object Group": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Object Type": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Opaque Data Type": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Original Creation Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "PKCS#12 Friendly Name": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Process Start Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Protect Stop Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Protection Level": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Protection Period": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Protection Storage Mask": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Quantum Safe": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Random Number Generator": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Revocation Reason": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Automatic": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Date": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Generation": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Interval": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Latest": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Name": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Rotate Offset": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Sensitive": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Short Unique Identifier": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Usage Limits": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "Vendor Attribute": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "X.509 Certificate Identifier": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "X.509 Certificate Issuer": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    },
+    "X.509 Certificate Subject": {
+      "supported": true,
+      "read": true,
+      "create": true,
+      "modify": true,
+      "delete": true
+    }
+  },
+  "cryptographic_algorithms": {
+    "AES": {
+      "supported": true,
+      "lengths": [
+        128,
+        192,
+        256
+      ],
+      "modes": [
+        "CBC",
+        "GCM",
+        "ECB",
+        "CTR"
+      ]
+    },
+    "RSA": {
+      "supported": true,
+      "lengths": [
+        2048,
+        3072,
+        4096
+      ]
+    },
+    "ECDSA": {
+      "supported": true,
+      "lengths": [
+        256,
+        384,
+        521
+      ],
+      "curves": [
+        "P_256",
+        "P_384",
+        "P_521"
+      ]
+    },
+    "HMAC_SHA256": {
+      "supported": true,
+      "lengths": [
+        256
+      ]
+    },
+    "SHA_256": {
+      "supported": true
+    }
+  }
+}

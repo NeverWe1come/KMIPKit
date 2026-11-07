@@ -159,7 +159,12 @@ class T102ImportRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ImportRequest::unique_identifier",
             "kmipkit_protocol::ImportRequest::into_ttlv_payload",
         }
-        blocked = set()
+        blocked = {"kmipkit_protocol::ImportRequest::from_managed_object"}
+        managed = protocol_rows["kmipkit_protocol::ImportRequest::from_managed_object"]
+        self.assertEqual("typed_managed_objects_and_key_material", managed["capabilityId"])
+        self.assertEqual("KMIPKIT-0053", managed["candidateSpecId"])
+        self.assertEqual(["KMIPKIT-0049-FR-006", "KMIPKIT-0049-FR-007"], managed["requirementIds"])
+        self.assertNotIn("languageMappings", managed)
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {
