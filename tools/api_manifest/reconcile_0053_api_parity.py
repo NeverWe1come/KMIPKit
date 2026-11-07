@@ -2955,6 +2955,38 @@ def resolve_public_declarations(
     return result
 
 
+def _is_partial_predecessor_correction(
+    declaration: dict[str, Any],
+    source: dict[str, Any],
+    target: dict[str, Any],
+) -> bool:
+    """Match only the predecessor state with corrected ownership and stale foreign routes."""
+    current_mappings = declaration.get("languageMappings")
+    source_mappings = source.get("languageMappings")
+    target_mappings = target.get("languageMappings")
+    return (
+        declaration.get("capabilityId") == target.get("capabilityId")
+        and declaration.get("requirementIds") == target.get("requirementIds")
+        and isinstance(current_mappings, dict)
+        and current_mappings.get("rust")
+        == {
+            "packageId": declaration["packageId"],
+            "name": declaration["exportName"],
+        }
+        and isinstance(source_mappings, dict)
+        and isinstance(target_mappings, dict)
+        and all(
+            current_mappings.get(language)
+            in (source_mappings.get(language), target_mappings.get(language))
+            for language in ("c", "java", "python")
+        )
+        and any(
+            current_mappings.get(language) != target_mappings.get(language)
+            for language in ("c", "java", "python")
+        )
+    )
+
+
 def apply_declaration_corrections(
     manifest: dict[str, Any], corrections: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -3084,31 +3116,7 @@ def apply_declaration_corrections(
                 correction["toCapabilityId"],
             )
             continue
-        current_mappings = declaration.get("languageMappings")
-        source_mappings = source.get("languageMappings")
-        target_mappings = target.get("languageMappings")
-        partial_predecessor_correction = (
-            declaration.get("capabilityId") == target.get("capabilityId")
-            and declaration.get("requirementIds") == target.get("requirementIds")
-            and isinstance(current_mappings, dict)
-            and current_mappings.get("rust")
-            == {
-                "packageId": declaration["packageId"],
-                "name": declaration["exportName"],
-            }
-            and isinstance(source_mappings, dict)
-            and isinstance(target_mappings, dict)
-            and all(
-                current_mappings.get(language)
-                in (source_mappings.get(language), target_mappings.get(language))
-                for language in ("c", "java", "python")
-            )
-            and any(
-                current_mappings.get(language) != target_mappings.get(language)
-                for language in ("c", "java", "python")
-            )
-        )
-        if partial_predecessor_correction:
+        if _is_partial_predecessor_correction(declaration, source, target):
             declaration["languageMappings"] = expected_language_mappings
             declaration["parityEvidenceIds"] = sorted(
                 set(declaration.get("parityEvidenceIds", [])) | set(evidence)
