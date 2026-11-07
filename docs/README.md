@@ -52,6 +52,7 @@ tests, and the conformance matrix.
 - [C ABI and language bindings](architecture/ffi-and-bindings.md)
 - [Transport and security](architecture/transport-security.md)
 - [Vendor extensions](architecture/extensions.md)
+- [Documentation architecture](architecture/documentation-architecture.md)
 
 ## Development
 
