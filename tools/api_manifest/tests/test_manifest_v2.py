@@ -106,6 +106,34 @@ LEGACY_GENERATED_OUTPUTS = {
     "pythonApi": "bindings/python/src/kmipkit/_generated/extension_registry.py",
     "parityFixtures": "tests/fixtures/extensions/generated/registry_parity.json",
 }
+HEADERLESS_C_FUNCTION_EXCLUSIONS = {
+    "kmipkit_ttlv_value_view_copy_bytes",
+}
+VERIFIED_OPERATION_DECLARED_EXPORTS = {
+    "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+    "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+}
+DECLARED_OPERATION_IDS = {
+    "KMIPKIT-ELEM-OP-C2S-CANCEL",
+    "KMIPKIT-ELEM-OP-C2S-CREATE",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+    "KMIPKIT-ELEM-OP-C2S-HASH",
+    "KMIPKIT-ELEM-OP-C2S-MAC",
+    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+    "KMIPKIT-ELEM-OP-C2S-POLL",
+    "KMIPKIT-ELEM-OP-C2S-PROCESS",
+    "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+    "KMIPKIT-ELEM-OP-C2S-SIGN",
+    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+}
+VERIFIED_TTLV_DECLARATIONS = {
+    "KMIPKIT-0053:export:53d898ff0d93bff2b5a4af54",
+}
 
 
 def _valid_v2_manifest() -> dict[str, object]:
@@ -213,11 +241,23 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             / "include"
             / "kmipkit_named_value_helpers_generated.h"
         )
+        standard_attributes_path = (
+            ROOT
+            / "bindings"
+            / "c"
+            / "include"
+            / "kmipkit_standard_attributes_generated.h"
+        )
         header = header_path.read_text(encoding="utf-8")
         helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
         self.assertIn(helper_include, header)
         helper_header = helper_path.read_text(encoding="utf-8")
-        return header.replace(helper_include, helper_header, 1)
+        standard_attributes_include = '#include "kmipkit_standard_attributes_generated.h"'
+        self.assertIn(standard_attributes_include, header)
+        standard_attributes_header = standard_attributes_path.read_text(encoding="utf-8")
+        return header.replace(
+            helper_include, helper_header, 1
+        ).replace(standard_attributes_include, standard_attributes_header, 1)
 
     def _approved_exclusions_by_key(self) -> dict[tuple[str, str], dict[str, object]]:
         return {
@@ -258,6 +298,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         else:
             self.assertEqual(operation["apiState"], declaration["declarationState"])
 
+    def _assert_operation_inventory_state(
+        self, operation: dict[str, object]
+    ) -> None:
+        expected_state = (
+            "declared"
+            if operation["operationId"] in DECLARED_OPERATION_IDS
+            else "verified"
+        )
+        self.assertEqual(expected_state, operation["apiState"])
+
     def test_checked_in_manifest_is_the_complete_v2_contract(self) -> None:
         manifest = self.checked_in_manifest
         self.assertEqual(manifest["formatVersion"], 2)
@@ -268,6 +318,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             EXPECTED_PACKAGES,
         )
         self.assertEqual(len(manifest["operations"]), 56)
+        self.assertEqual(
+            DECLARED_OPERATION_IDS,
+            {
+                operation["operationId"]
+                for operation in manifest["operations"]
+                if operation["apiState"] == "declared"
+            },
+        )
         self.assertTrue(manifest["publicDeclarations"])
         self.assertTrue(manifest["capabilities"])
         self.assertIn("approvedExclusions", manifest)
@@ -2026,7 +2084,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "KMIPKIT-0043-FR-021",
         }
 
-        self.assertEqual("verified", operation["apiState"])
+        self._assert_operation_inventory_state(operation)
         for export_name, mappings in expected_mappings.items():
             declaration = declarations[export_name]
             with self.subTest(export=export_name):
@@ -2309,7 +2367,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         for variant, (operation_id, method) in cases.items():
             operation = operations[operation_id]
-            self.assertEqual("verified", operation["apiState"])
+            self._assert_operation_inventory_state(operation)
             self.assertEqual("KMIPKIT-0021", operation["featureSpecId"])
 
             constructor_declarations = {}
@@ -2430,7 +2488,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         for method, (operation_id, *constructor_names) in cases.items():
             operation = operations[operation_id]
-            self.assertEqual("verified", operation["apiState"])
+            self._assert_operation_inventory_state(operation)
             self.assertTrue(operation["ownerDependency"]["state"] == "approved")
 
             constructor_declarations = {}
@@ -2517,7 +2575,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit::ClientRequest::AddAttribute::0": "rust-kmipkit",
         }
 
-        self.assertEqual("verified", operation["apiState"])
+        self._assert_operation_inventory_state(operation)
         self.assertEqual("KMIPKIT-0016", operation["featureSpecId"])
         for export_name, rust_package in request_variants.items():
             with self.subTest(export=export_name):
@@ -2583,7 +2641,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for variant, (operation_id, method, suffixes) in cases.items():
             operation = operations[operation_id]
             canonical = declarations[f"kmipkit_client::ClientRequest::{method}"]
-            self.assertEqual("verified", operation["apiState"])
+            self._assert_operation_inventory_state(operation)
             self.assertEqual("KMIPKIT-0016", operation["featureSpecId"])
 
             for prefix, package_id in (
@@ -2697,7 +2755,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "packageId": declaration["packageId"],
                     "name": export_name,
                 }
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0036", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -2771,7 +2829,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "packageId": declaration["packageId"],
                     "name": export_name,
                 }
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0039", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -2820,7 +2878,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "packageId": declaration["packageId"],
                     "name": export_name,
                 }
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0038", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -2870,7 +2928,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "packageId": declaration["packageId"],
                     "name": export_name,
                 }
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0037", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -2919,7 +2977,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "packageId": declaration["packageId"],
                     "name": export_name,
                 }
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0017", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -2984,7 +3042,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "packageId": declaration["packageId"],
                     "name": export_name,
                 }
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual(owner_id, operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -3689,13 +3747,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 export_name = f"{rust_prefix}Client::{method}_with_options"
                 with self.subTest(export=export_name):
                     declaration = declarations[export_name]
-                    if operation_id in VERIFIED_OPERATION_DECLARED_OPTIONS:
-                        self.assertEqual("verified", operation["apiState"])
-                        self.assertEqual("declared", declaration["declarationState"])
-                    else:
-                        self.assertEqual(
-                            operation["apiState"], declaration["declarationState"]
-                        )
+                    self.assertEqual(
+                        operation["apiState"], declaration["declarationState"]
+                    )
                     self.assertEqual(operation_id, declaration["capabilityId"])
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
@@ -3854,7 +3908,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0037", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -3902,7 +3956,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "name": export_name,
                 }
                 with self.subTest(export=export_name):
-                    self.assertEqual("verified", operation["apiState"])
+                    self._assert_operation_inventory_state(operation)
                     self.assertEqual("approved", operation["ownerDependency"]["state"])
                     self.assertEqual("Accepted", operation["approvalEvidence"]["status"])
                     self.assertEqual("declared", declaration["declarationState"])
@@ -3988,7 +4042,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("Accepted", operation["approvalEvidence"]["status"])
                 self.assertEqual("declared", canonical["declarationState"])
@@ -4056,7 +4110,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -4114,7 +4168,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("declared", canonical["declarationState"])
                 self.assertIn("response", expected_mappings["c"]["name"].lower())
@@ -4178,7 +4232,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("verified", canonical["declarationState"])
                 self.assertTrue(
@@ -4417,7 +4471,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("KMIPKIT-0042", operation["featureSpecId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
@@ -4475,6 +4529,27 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for row in self.checked_in_manifest["capabilities"]
             if row["capabilityId"] == "client_execution"
         )
+        option_requirement_additions = {
+            "KMIPKIT-ELEM-OP-C2S-EXPORT": {
+                "KMIPKIT-0043-FR-010",
+                "KMIPKIT-0043-FR-021",
+                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.18-008",
+                "KMIPKIT-REQ-SPEC-7.18-001-001",
+                "KMIPKIT-REQ-SPEC-7.18-004",
+            },
+            "KMIPKIT-ELEM-OP-C2S-REGISTER": {
+                *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 9)),
+                "KMIPKIT-0044-FR-001",
+                "KMIPKIT-0044-FR-003",
+                "KMIPKIT-0044-FR-005",
+                "KMIPKIT-0044-FR-007",
+            },
+            "KMIPKIT-ELEM-OP-C2S-REVOKE": {
+                *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 7)),
+                "KMIPKIT-0036-FR-008",
+            },
+        }
 
         for declaration_id, export_name, operation_id in cases:
             with self.subTest(export=export_name):
@@ -4498,7 +4573,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertEqual(operation_id, declaration["capabilityId"])
                 self.assertNotIn("candidateSpecId", declaration)
-                self.assertEqual(base_declaration["requirementIds"], declaration["requirementIds"])
+                expected_requirements = (
+                    set(base_declaration["requirementIds"])
+                    | option_requirement_additions.get(operation_id, set())
+                )
+                self.assertEqual(
+                    expected_requirements,
+                    set(declaration["requirementIds"]),
+                )
                 self.assertEqual(
                     {
                         "rust": {"packageId": "rust-kmipkit-client", "name": export_name},
@@ -4558,7 +4640,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for method, operation_id in methods:
             operation = operations[operation_id]
             with self.subTest(method=method):
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 for suffix in ("", "_with_options"):
                     client_name = f"kmipkit_client::Client::{method}{suffix}"
@@ -4778,7 +4860,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "name": facade_name,
                 }
 
-                self.assertEqual("verified", operation["apiState"])
+                self._assert_operation_inventory_state(operation)
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("verified", client["declarationState"])
                 self.assertEqual(operation_id, client["capabilityId"])
@@ -5141,13 +5223,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         "rust": {"packageId": rust_package, "name": export_name},
                         **mappings,
                     }
-                    if operation["operationId"] in VERIFIED_OPERATION_DECLARED_VARIANTS:
-                        self.assertEqual("verified", operation["apiState"])
-                        self.assertEqual("declared", declaration["declarationState"])
-                    else:
-                        self.assertEqual(
-                            operation["apiState"], declaration["declarationState"]
-                        )
+                    self.assertEqual(
+                        operation["apiState"], declaration["declarationState"]
+                    )
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
                     self.assertEqual(operation["operationId"], declaration["capabilityId"])
@@ -6938,7 +7016,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         header_ttlv_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|ATTRIBUTE_REFERENCE_KIND|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND|CREDENTIAL_TYPE|CREDENTIAL_VALIDATION_ERROR_KIND|PROFILE_(?:CATALOG|TRANSPORT)|WIRE_ENCODING)_\w+)",
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|ATTRIBUTE_REFERENCE_KIND|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND|CREDENTIAL_TYPE|CREDENTIAL_VALIDATION_ERROR_KIND|PROFILE_(?:CATALOG|TRANSPORT)|QUERY_RESPONSE_FIELD_KIND|STANDARD_ATTRIBUTE|WIRE_ENCODING)_\w+)",
                 header,
                 re.MULTILINE,
             )

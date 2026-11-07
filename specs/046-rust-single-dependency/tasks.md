@@ -5,5 +5,5 @@
 - [x] T003 Add deterministic manifest reconciliation for every new facade export path, regenerate generated outputs with the pinned generator, and test stable output and exact exclusion behavior.
 - [x] T004 Document the one-dependency Rust usage, configuration path, generic TTLV decoder boundary, and low-level transport exclusion; record the accepted facade decision in ADR-0017.
 - [x] T005 Refactor namespace/config exports and fixture helpers without changing behavior; rerun the fixture and export/manifest checks (Refactor commit).
-- [ ] T006 Run local formatting, Clippy, targeted tests, manifest generation check, and applicable workspace tests; record evidence and limitations in implementation-evidence.md. The full API manifest generator test module still needs a complete rerun after correcting its fixture and legacy projection assumptions.
+- [x] T006 Run local formatting, Clippy, targeted tests, manifest generation check, and applicable workspace tests; record evidence and limitations in implementation-evidence.md. The complete API manifest v2 test module passes after its fixture and legacy projection expectations were synchronized with the current manifest.
 - [x] T007 Push the feature branch and open/update draft PR [#113](https://github.com/NeverWe1come/KMIPKit/pull/113) against `feature/KMIPKIT-0043-t076-shared-client-mapping`.
