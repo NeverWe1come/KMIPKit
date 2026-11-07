@@ -24,6 +24,12 @@ unsafe extern "C" {
         item: *mut kmipkit_ttlv_item_t,
         out_value: *mut *mut kmipkit_ttlv_value_t,
     ) -> i32;
+    fn kmipkit_0053_typed_attribute_from_named_activation_date(
+        value: *mut kmipkit_ttlv_value_t,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+    fn kmipkit_0053_standard_attribute_tag_count() -> u32;
+    fn kmipkit_0053_standard_attribute_tag_at(index: u32) -> u32;
     fn kmipkit_0053_attribute_set_try_push_typed(
         attributes: *mut kmipkit_attribute_set_t,
         expected_tag: u32,
@@ -68,6 +74,24 @@ fn call_compiled_c_value_reader(
 ) -> i32 {
     // SAFETY: Test-owned item and output slots remain live during the C call.
     unsafe { kmipkit_0053_typed_attribute_value(expected_tag, item, out_value) }
+}
+
+fn call_compiled_c_named_activation_date_constructor(
+    value: *mut kmipkit_ttlv_value_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    // SAFETY: The test-owned Value and output slot remain live during the C call.
+    unsafe { kmipkit_0053_typed_attribute_from_named_activation_date(value, out_item) }
+}
+
+fn compiled_c_standard_attribute_tag_count() -> u32 {
+    // SAFETY: The compiled test consumer returns a constant generated-array length.
+    unsafe { kmipkit_0053_standard_attribute_tag_count() }
+}
+
+fn compiled_c_standard_attribute_tag_at(index: u32) -> u32 {
+    // SAFETY: The test passes only indexes below the exported catalog count.
+    unsafe { kmipkit_0053_standard_attribute_tag_at(index) }
 }
 
 fn call_compiled_c_set_push_typed(
@@ -170,14 +194,14 @@ fn values_match(actual: ValueView<'_>, expected: ValueView<'_>) -> bool {
                     })
         }
         (ValueView::Integer(actual), ValueView::Integer(expected)) => actual == expected,
-        (ValueView::LongInteger(actual), ValueView::LongInteger(expected)) => actual == expected,
-        (ValueView::BigInteger(actual), ValueView::BigInteger(expected)) => actual == expected,
-        (ValueView::Enumeration(actual), ValueView::Enumeration(expected)) => actual == expected,
+        (ValueView::LongInteger(actual), ValueView::LongInteger(expected))
+        | (ValueView::DateTime(actual), ValueView::DateTime(expected)) => actual == expected,
+        (ValueView::BigInteger(actual), ValueView::BigInteger(expected))
+        | (ValueView::ByteString(actual), ValueView::ByteString(expected)) => actual == expected,
+        (ValueView::Enumeration(actual), ValueView::Enumeration(expected))
+        | (ValueView::Interval(actual), ValueView::Interval(expected)) => actual == expected,
         (ValueView::Boolean(actual), ValueView::Boolean(expected)) => actual == expected,
         (ValueView::TextString(actual), ValueView::TextString(expected)) => actual == expected,
-        (ValueView::ByteString(actual), ValueView::ByteString(expected)) => actual == expected,
-        (ValueView::DateTime(actual), ValueView::DateTime(expected)) => actual == expected,
-        (ValueView::Interval(actual), ValueView::Interval(expected)) => actual == expected,
         (ValueView::DateTimeExtended(actual), ValueView::DateTimeExtended(expected)) => {
             actual == expected
         }
@@ -218,6 +242,49 @@ fn compiled_c_consumer_accepts_all_sixty_two_catalogued_attribute_types() {
         assert_eq!(output_item.item_type(), input_item.item_type());
         kmipkit_ttlv_item_release(converted);
         kmipkit_ttlv_item_release(source);
+    }
+}
+
+#[test]
+fn c_named_standard_attribute_tag_constructs_a_typed_item() {
+    let source = make_handle(
+        Kind::Value,
+        HandleValue::Value(Value::date_time(1_700_000_000)),
+    );
+    let mut item_handle = ptr::null_mut();
+
+    assert_eq!(
+        call_compiled_c_named_activation_date_constructor(source, &raw mut item_handle),
+        SUCCESS
+    );
+    let owner = reference_handle(item_handle, Kind::Item).expect("constructed Item is owned");
+    let HandleValue::Item(item) = &owner.value else {
+        panic!("named typed attribute constructor returns an Item");
+    };
+    assert_eq!(item.tag().raw(), ACTIVATION_DATE_TAG);
+    assert_eq!(item.item_type(), kmipkit_ttlv::ItemType::DateTime);
+
+    kmipkit_ttlv_item_release(item_handle);
+    kmipkit_ttlv_value_release(source);
+}
+
+#[test]
+fn c_named_standard_attribute_catalog_covers_all_sixty_two_tags() {
+    let definitions = typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS;
+    assert_eq!(definitions.len(), 62);
+    assert_eq!(
+        compiled_c_standard_attribute_tag_count(),
+        u32::try_from(definitions.len()).expect("catalog size fits the C ABI index")
+    );
+
+    for (index, (tag, _)) in definitions.iter().enumerate() {
+        assert_eq!(
+            compiled_c_standard_attribute_tag_at(
+                u32::try_from(index).expect("catalog index fits the C ABI index")
+            ),
+            *tag,
+            "C named attribute tag at catalog index {index}"
+        );
     }
 }
 

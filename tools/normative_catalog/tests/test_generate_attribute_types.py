@@ -120,7 +120,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
             if line.startswith("#define KMIPKIT_STANDARD_ATTRIBUTE_")
             and not line.startswith("#define KMIPKIT_STANDARD_ATTRIBUTES_")
         ]
-        self.assertEqual(5, len(attribute_macros))
+        self.assertEqual(6, len(attribute_macros))
         self.assertIn(
             "#define KMIPKIT_STANDARD_ATTRIBUTE_TAG(attribute) ((uint32_t)(attribute))",
             rendered,

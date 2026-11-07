@@ -654,6 +654,27 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         include = '#include "kmipkit_standard_attributes_generated.h"'
         self.assertIn(include, public_header)
         self.assertNotIn(include, internal_header)
+        self.assertNotIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE ((uint32_t)4325377)",
+            public_header,
+        )
+
+    def test_standard_attribute_values_must_match_the_normative_catalog(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / generate.CATALOG_PATH).read_text(encoding="utf-8"))
+        declaration = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") == "KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE"
+        )
+        declaration["cValue"] += 1
+
+        with self.assertRaisesRegex(
+            generate.ManifestError,
+            "standard attribute value does not match the normative catalog",
+        ):
+            generate._validate_v2_manifest(manifest, schema, catalog, ROOT)
 
     def test_declared_c_symbol_signature_is_emitted_from_its_declaration(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

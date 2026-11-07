@@ -51,14 +51,17 @@ fn cryptographic_parameters_reader_returns_versioned_fields_and_borrowed_p_sourc
     // SAFETY: the record contains integer fields and a nullable pointer; an all-zero
     // representation is valid before the ABI fills its versioned output fields.
     let mut output: kmipkit_cryptographic_parameters_fields_v1_t = unsafe { std::mem::zeroed() };
-    output.struct_size = std::mem::size_of::<kmipkit_cryptographic_parameters_fields_v1_t>() as u32;
+    output.struct_size = u32::try_from(std::mem::size_of::<
+        kmipkit_cryptographic_parameters_fields_v1_t,
+    >())
+    .expect("the versioned test record size fits u32");
     output.abi_version = 1;
 
     // SAFETY: `handle` is live and `output` is an exclusive writable v1 record.
     let status = unsafe {
         super::cryptographic_parameters::kmipkit_cryptographic_parameters_read_fields_v1(
             handle,
-            &mut output,
+            &raw mut output,
         )
     };
     assert_eq!(status, SUCCESS);
@@ -72,8 +75,9 @@ fn cryptographic_parameters_reader_returns_versioned_fields_and_borrowed_p_sourc
     assert_eq!(output.p_source_length, 3);
     // SAFETY: this span is borrowed from the live CryptographicParameters handle and is
     // valid until that handle is released.
-    let p_source =
-        unsafe { std::slice::from_raw_parts(output.p_source, output.p_source_length as usize) };
+    let p_source_length = usize::try_from(output.p_source_length)
+        .expect("the test P Source length fits the platform usize");
+    let p_source = unsafe { std::slice::from_raw_parts(output.p_source, p_source_length) };
     assert_eq!(p_source, [0x00, 0xff, 0x81]);
 
     release(handle, Kind::CryptographicParameters);

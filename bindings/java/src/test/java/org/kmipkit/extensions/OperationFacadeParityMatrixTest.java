@@ -125,7 +125,7 @@ final class OperationFacadeParityMatrixTest {
                 result("KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE", ClientBatchItemResult::obtainLeaseResponse),
                 result("KMIPKIT-ELEM-OP-C2S-PING", ClientBatchItemResult::pingResponse),
                 result("KMIPKIT-ELEM-OP-C2S-PKCS-11", ClientBatchItemResult::pkcs11Response),
-                result("KMIPKIT-ELEM-OP-C2S-QUERY", ClientBatchItemResult::queryResponse),
+                result("KMIPKIT-ELEM-OP-C2S-QUERY", ClientBatchItemResult::typedQueryResponse),
                 result("KMIPKIT-ELEM-OP-C2S-RE-CERTIFY", ClientBatchItemResult::recertifyResponse),
                 result("KMIPKIT-ELEM-OP-C2S-RECOVER", ClientBatchItemResult::recoverResponse),
                 result("KMIPKIT-ELEM-OP-C2S-REGISTER", ClientBatchItemResult::registerResponse),
@@ -191,6 +191,7 @@ final class OperationFacadeParityMatrixTest {
         response.pingResponse();
         response.pkcs11Response();
         response.queryResponse();
+        response.typedQueryResponse();
         response.recoverResponse();
         response.registerResponse();
         response.rekeyResponse();

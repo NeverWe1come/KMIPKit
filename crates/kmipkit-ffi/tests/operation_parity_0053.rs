@@ -18,7 +18,7 @@ unsafe extern "C" {
 fn compiled_c_consumer_invokes_all_56_client_operation_routes() {
     let mut batch = core::ptr::null_mut();
     // SAFETY: the null output is writable, and the created batch is released below.
-    assert_eq!(unsafe { kmipkit_client_batch_create(&mut batch) }, 0);
+    assert_eq!(unsafe { kmipkit_client_batch_create(&raw mut batch) }, 0);
     assert!(!batch.is_null());
     // SAFETY: `batch` is the live handle returned by the ABI constructor.
     unsafe { kmipkit_client_batch_release(batch) };

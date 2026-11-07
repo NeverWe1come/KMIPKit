@@ -18,6 +18,191 @@ APPROVAL = {
 
 
 class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
+    def test_materializes_exact_c_attribute_macro_route_from_catalog(self) -> None:
+        export_name = "KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE"
+        evidence_paths = [
+            "bindings/c/include/kmipkit_standard_attributes_generated.h",
+            "bindings/c/tests/typed_attribute_parity_consumer.c",
+            "tools/normative_catalog/generate_attribute_types.py",
+        ]
+        route = {
+            "declarationId": "python-activation-date",
+            "packageId": "python-kmipkit",
+            "kind": "python-export",
+            "exportName": "kmipkit.StandardAttribute.ACTIVATION_DATE",
+            "capabilityId": "typed_object_attributes",
+            "requirementIds": ["KMIPKIT-0048-FR-001"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "rust": {
+                    "packageId": "rust-kmipkit",
+                    "name": "kmipkit::protocol::attribute::typed::ActivationDate",
+                },
+                "c": {"packageId": "c-kmipkit", "name": export_name},
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.ttlv.StandardAttribute.ACTIVATION_DATE",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.StandardAttribute.ACTIVATION_DATE",
+                },
+            },
+            "parityEvidenceIds": [
+                "bindings/python/tests/test_typed_attribute_parity.py"
+            ],
+            "candidateSpecId": "KMIPKIT-0053",
+            "approvalSource": {
+                "kind": "feature-specification",
+                "path": "specs/053-api-parity-facade/approval-record.md",
+                "status": "Approved",
+                "evidence": APPROVAL["evidence"],
+            },
+        }
+        removal = {
+            "declarationId": "KMIPKIT-0053:c-standard-attribute:activation-date",
+            "packageId": "c-kmipkit",
+            "exportName": export_name,
+            "reason": "Replace the earlier C-only route with its exact typed mapping.",
+            "candidateSpecId": "KMIPKIT-0053",
+            "approvalSource": route["approvalSource"],
+            "evidencePaths": evidence_paths,
+        }
+        route_data = {
+            "publicDeclarations": [route],
+            "removePublicDeclarations": [removal],
+        }
+        catalog = {
+            "elements": [
+                {
+                    "element_id": "tag-activation-date",
+                    "name": "Activation Date",
+                    "kind": "tag",
+                    "wire_value": "420001",
+                },
+                {
+                    "element_id": "attribute-activation-date",
+                    "name": "Activation Date",
+                    "kind": "attribute",
+                    "parent_element_ids": ["tag-activation-date"],
+                },
+            ]
+        }
+
+        prepared = prepare_0053_export_audit_routes.add_standard_attribute_c_declarations(
+            route_data, catalog
+        )
+        prepared = prepare_0053_export_audit_routes.remove_reviewed_declarations(
+            prepared, prepared["removePublicDeclarations"]
+        )
+        c_declaration = next(
+            row for row in prepared["publicDeclarations"]
+            if row.get("exportName") == export_name
+        )
+
+        self.assertEqual("macro", c_declaration["kind"])
+        self.assertEqual(0x00420001, c_declaration["cValue"])
+        self.assertEqual("uint32_t", c_declaration["cValueType"])
+        self.assertEqual("four-language", c_declaration["parityScope"])
+        expected_mappings = json.loads(json.dumps(route["languageMappings"]))
+        expected_mappings["python"]["name"] = (
+            "kmipkit.typed_attributes.StandardAttribute.ACTIVATION_DATE"
+        )
+        self.assertEqual(
+            expected_mappings, c_declaration["languageMappings"]
+        )
+        self.assertEqual(route["approvalSource"], c_declaration["approvalSource"])
+        legacy_route = json.loads(json.dumps(prepared))
+        legacy_c_route = next(
+            row for row in legacy_route["publicDeclarations"]
+            if row.get("exportName") == export_name
+        )
+        legacy_c_route["approvalSource"]["evidence"] = (
+            "Direct maintainer approval of four-language API parity and exact manifest reconciliation."
+        )
+        legacy_c_route["languageMappings"]["python"]["name"] = (
+            "kmipkit.StandardAttribute.ACTIVATION_DATE"
+        )
+        refreshed = prepare_0053_export_audit_routes.add_standard_attribute_c_declarations(
+            legacy_route, catalog
+        )
+        refreshed_c_route = next(
+            row for row in refreshed["publicDeclarations"]
+            if row.get("exportName") == export_name
+        )
+        self.assertEqual(route["approvalSource"], refreshed_c_route["approvalSource"])
+
+    def test_accepts_exact_public_ttlv_crate_routes(self) -> None:
+        document = {
+            "formatVersion": 1,
+            "specId": "KMIPKIT-0053",
+            "packageId": "java-kmipkit",
+            "mappings": [{
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.ttlv.TtlvValueView.bytes",
+                "kind": "java-member",
+                "resolution": "mapped",
+                "capabilityId": "response_ttlv_navigation",
+                "requirementIds": ["KMIPKIT-0053-FR-008"],
+                "equivalents": {
+                    "rust": {"packageId": "rust-kmipkit-ttlv", "name": "kmipkit_ttlv::Item::with_value"},
+                    "c": "kmipkit_ttlv_value_view_byte_at",
+                    "python": "TtlvValueView.bytes",
+                },
+                "evidencePaths": ["bindings/java/src/main/java/org/kmipkit/ttlv/TtlvValueView.java"],
+                "approval": APPROVAL,
+            }],
+            "exclusions": [],
+            "unresolved": [],
+        }
+
+        declarations, _ = prepare_0053_export_audit_routes.compile_documents([document])
+
+        self.assertEqual("rust-kmipkit-ttlv", declarations[0]["languageMappings"]["rust"]["packageId"])
+
+    def test_compiled_route_preserves_explicit_secret_lifecycle_semantics(self) -> None:
+        lifecycle = {
+            "rust": "wipe-on-final-owner-drop",
+            "c": "release-shared-reference-wipe-on-final-owner-drop",
+            "java": "wipe-owned-copy-on-close",
+            "python": "wipe-owned-copy-on-close",
+        }
+        document = {
+            "formatVersion": 1,
+            "specId": "KMIPKIT-0053",
+            "packageId": "java-kmipkit",
+            "mappings": [{
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.protocol.CryptographicParameters.Builder.close",
+                "kind": "java-member",
+                "resolution": "mapped",
+                "capabilityId": "typed_cryptographic_parameters",
+                "requirementIds": ["KMIPKIT-0053-FR-012"],
+                "equivalents": {
+                    "rust": {
+                        "packageId": "rust-kmipkit-protocol",
+                        "name": "kmipkit_protocol::CryptographicParametersBuilder",
+                    },
+                    "c": "kmipkit_cryptographic_parameters_release",
+                    "python": "CryptographicParametersBuilder.close",
+                },
+                "mappingSemantics": "secret-buffer-wipe",
+                "lifecycleSemanticsByLanguage": lifecycle,
+                "evidencePaths": [
+                    "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java"
+                ],
+                "approval": APPROVAL,
+            }],
+            "exclusions": [],
+            "unresolved": [],
+        }
+
+        declarations, _ = prepare_0053_export_audit_routes.compile_documents([document])
+
+        self.assertEqual("secret-buffer-wipe", declarations[0]["mappingSemantics"])
+        self.assertEqual(lifecycle, declarations[0]["lifecycleSemanticsByLanguage"])
+
     def test_replaces_only_the_exact_legacy_model_error_approval_record(self) -> None:
         previous = {
             "declarationId": "KMIPKIT-0053:exclude:legacy-model-error",
@@ -62,6 +247,13 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         declarations, exclusions = prepare_0053_export_audit_routes.compile_documents(
             documents, manifest["publicDeclarations"]
         )
+        catalog_data = json.loads(
+            (root / prepare_0053_export_audit_routes.CATALOG_PATH)
+            .read_text(encoding="utf-8")
+        )
+        route_data = prepare_0053_export_audit_routes.add_standard_attribute_c_declarations(
+            route_data, catalog_data
+        )
         route_data = prepare_0053_export_audit_routes.remove_reviewed_declarations(
             route_data, route_data.get("removePublicDeclarations", [])
         )
@@ -94,7 +286,32 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
             for row in merged["publicDeclarations"]
         ]
         self.assertEqual(len(keys), len(set(keys)))
-        self.assertEqual(len(route_data["publicDeclarations"]), len(merged["publicDeclarations"]))
+        original_exports = {
+            (row["packageId"], row["exportName"])
+            for row in route_data["publicDeclarations"]
+        }
+        added_exports = {
+            (row["packageId"], row["exportName"])
+            for row in merged["publicDeclarations"]
+            if (row["packageId"], row["exportName"]) not in original_exports
+        }
+        self.assertEqual(
+            {
+                (
+                    "java-kmipkit",
+                    "org.kmipkit.protocol.CryptographicParameters.Builder.close",
+                ),
+            },
+            added_exports,
+        )
+        self.assertTrue(
+            any(
+                row.get("packageId") == "python-kmipkit"
+                and row.get("exportName")
+                == "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close"
+                for row in merged["publicDeclarations"]
+            )
+        )
         rerun = prepare_0053_export_audit_routes.merge_declarations(
             merged, declarations, exclusions
         )
@@ -629,6 +846,64 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         merged = prepare_0053_export_audit_routes.merge_declarations(route_data, [candidate])
 
         self.assertEqual([existing], merged["publicDeclarations"])
+
+    def test_candidate_route_correction_preserves_existing_declaration_identity(self) -> None:
+        prior_approval = {
+            "kind": "feature-specification",
+            "path": "specs/004-generic-ttlv-model/spec.md",
+            "status": "Approved",
+            "evidence": "The public route was already approved with the generic TTLV model.",
+        }
+        existing = {
+            "declarationId": "stable-validation-report-id",
+            "packageId": "java-kmipkit",
+            "kind": "java-member",
+            "exportName": "org.kmipkit.extensions.ClientBatchItem.validationReport",
+            "capabilityId": "request_validation",
+            "requirementIds": ["KMIPKIT-0050-FR-001"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "languageMappings": {
+                "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.ClientBatchItem.validationReport"},
+                "c": {"packageId": "c-kmipkit", "name": "kmipkit_client_batch_item_validation_report"},
+                "rust": {"packageId": "rust-kmipkit", "name": "kmipkit::ClientBatchItem::validation_report"},
+                "python": {"packageId": "python-kmipkit", "name": "kmipkit.validation.validate_request"},
+            },
+            "parityEvidenceIds": ["bindings/python/tests/test_validation_parity.py"],
+            "approvalSource": prior_approval,
+        }
+        candidate = {
+            "formatVersion": 1,
+            "specId": "KMIPKIT-0053",
+            "packageId": "java-kmipkit",
+            "mappings": [{
+                "packageId": "java-kmipkit",
+                "name": existing["exportName"],
+                "kind": "java-member",
+                "resolution": "mapped",
+                "capabilityId": "request_validation",
+                "requirementIds": ["KMIPKIT-0053-FR-009"],
+                "languageMappings": {
+                    **existing["languageMappings"],
+                    "python": {"packageId": "python-kmipkit", "name": "kmipkit.extensions.ClientBatchItem.validation_report"},
+                },
+                "evidencePaths": ["bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java"],
+                "approval": APPROVAL,
+            }],
+            "exclusions": [],
+            "unresolved": [],
+        }
+
+        declarations, _ = prepare_0053_export_audit_routes.compile_documents(
+            [candidate], existing_declarations=[existing]
+        )
+
+        self.assertEqual("stable-validation-report-id", declarations[0]["declarationId"])
+        self.assertEqual(
+            "kmipkit.extensions.ClientBatchItem.validation_report",
+            declarations[0]["languageMappings"]["python"]["name"],
+        )
+        self.assertEqual(prior_approval, declarations[0]["approvalSource"])
 
     def test_audited_exact_route_unions_existing_requirement_and_evidence_traceability(self) -> None:
         existing = {

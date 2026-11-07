@@ -3258,7 +3258,16 @@ fn module_base(file: &Path) -> PathBuf {
 fn is_test_cfg(attributes: &[Attribute]) -> bool {
     attributes.iter().any(|attribute| {
         attribute.path().is_ident("cfg")
-            && matches!(&attribute.meta, Meta::List(list) if list.tokens.to_string() == "test")
+            && matches!(
+                &attribute.meta,
+                Meta::List(list)
+                    if matches!(
+                        list.tokens.to_string().as_str(),
+                        "test"
+                            | "feature = \"test-support\""
+                            | "any (test , feature = \"test-support\")"
+                    )
+            )
     })
 }
 
@@ -3270,6 +3279,8 @@ fn supported_cfg(attribute: &Attribute) -> bool {
                 list.tokens.to_string().as_str(),
                 "test"
                     | "not (test)"
+                    | "feature = \"test-support\""
+                    | "any (test , feature = \"test-support\")"
                     | "kmipkit_pkcs11_candidate_test"
                     | "not (kmipkit_pkcs11_candidate_test)"
             )
@@ -3387,6 +3398,46 @@ fn crate_doc_includes_allow_only_the_two_checked_in_user_guides() {
     assert!(
         audit.is_rejected(),
         "the documentation exception must not whitelist runtime macros"
+    );
+}
+
+#[test]
+fn test_support_cfg_hooks_are_excluded_from_production_source_audit() {
+    let source_path = Path::new("lib.rs");
+    let test_support = syn::parse_file(
+        r#"#[cfg(feature = "test-support")]
+        pub fn encode_test_probe() {}"#,
+    )
+    .expect("the test-support hook parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&test_support, source_path);
+    assert!(
+        !audit.is_rejected(),
+        "an explicitly test-support-gated writer probe is outside production"
+    );
+
+    let test_support_or_test = syn::parse_file(
+        r#"#[cfg(any(test, feature = "test-support"))]
+        pub fn encode_test_probe() {}"#,
+    )
+    .expect("the test-or-test-support hook parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&test_support_or_test, Path::new("wire_encoder.rs"));
+    assert!(
+        !audit.is_rejected(),
+        "a hook compiled only for unit or test-support builds is outside production"
+    );
+
+    let unknown_feature = syn::parse_file(
+        r#"#[cfg(feature = "unreviewed-feature")]
+        pub fn encode_test_probe() {}"#,
+    )
+    .expect("the unknown feature hook parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&unknown_feature, source_path);
+    assert!(
+        audit.is_rejected(),
+        "the audit must continue rejecting unknown feature-gated writer hooks"
     );
 }
 

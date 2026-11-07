@@ -27,13 +27,15 @@ fn common_abi_handles_preserve_ownership_reject_null_and_stale_inputs_and_redact
     // SAFETY: An all-zero versioned record is writable, but its unsupported version is rejected.
     let mut invalid_record: kmipkit_cryptographic_parameters_fields_v1_t =
         unsafe { std::mem::zeroed() };
-    invalid_record.struct_size =
-        std::mem::size_of::<kmipkit_cryptographic_parameters_fields_v1_t>() as u32;
+    invalid_record.struct_size = u32::try_from(std::mem::size_of::<
+        kmipkit_cryptographic_parameters_fields_v1_t,
+    >())
+    .expect("the versioned test record size fits u32");
     invalid_record.abi_version = 2;
     let invalid_version_status = unsafe {
         super::cryptographic_parameters::kmipkit_cryptographic_parameters_read_fields_v1(
             handle,
-            &mut invalid_record,
+            &raw mut invalid_record,
         )
     };
     assert_eq!(invalid_version_status, ERROR_INVALID_INPUT);
@@ -44,7 +46,7 @@ fn common_abi_handles_preserve_ownership_reject_null_and_stale_inputs_and_redact
     let stale_handle_status = unsafe {
         super::cryptographic_parameters::kmipkit_cryptographic_parameters_read_fields_v1(
             handle,
-            &mut invalid_record,
+            &raw mut invalid_record,
         )
     };
     assert_eq!(stale_handle_status, ERROR_INVALID_INPUT);

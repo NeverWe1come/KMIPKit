@@ -408,6 +408,7 @@ fn compiled_c_consumer_reads_all_nine_known_object_types() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)] // One compiled C consumer covers every supported key-format field route.
 fn compiled_c_consumer_reads_transparent_fields_for_assigned_key_formats() {
     let cases = [
         (
@@ -1160,7 +1161,7 @@ fn ffi_builder_dispatches_ec_formats_at_oasis_hex_values_and_preserves_reserved_
     }
 
     for reserved_format in [14, 15] {
-        let vendor_item = Item::new(tag(0x54ff_01), Value::byte_string(vec![0x31, 0x32]))
+        let vendor_item = Item::new(tag(0x0054_ff01), Value::byte_string(vec![0x31, 0x32]))
             .expect("vendor extension item");
         let vendor_handle = make_handle(Kind::Item, HandleValue::Item(vendor_item));
         let mut handles = [vendor_handle];

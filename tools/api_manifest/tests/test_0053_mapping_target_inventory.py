@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import unittest
-import re
 import copy
+import re
+import unittest
 from pathlib import Path
 
 from tools.api_manifest import generate
@@ -32,9 +32,30 @@ class MappingTargetInventoryTests(unittest.TestCase):
             and isinstance(type_record.get("c"), dict)
             and isinstance(type_record["c"].get("releaseFunction"), str)
         }
+        c_release_functions.update(
+            ("c-kmipkit", function["c"]["symbol"])
+            for function in self.manifest.get("functions", [])
+            if isinstance(function, dict)
+            and isinstance(function.get("c"), dict)
+            and isinstance(function["c"].get("symbol"), str)
+        )
 
         generate._validate_ready_mapping_targets(
             self.manifest["publicDeclarations"], packages, c_release_functions
+        )
+
+    def test_java_secret_builder_cleanup_maps_to_python_close_export(self) -> None:
+        declaration = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row.get("declarationId")
+            == "KMIPKIT-0053:export:946cd939aa398dd68a5ca060"
+        )
+        self.assertEqual(
+            {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close",
+            },
+            declaration["languageMappings"]["python"],
         )
 
     def test_ready_mapping_can_target_an_exact_public_c_function(self) -> None:
@@ -107,11 +128,6 @@ class MappingTargetInventoryTests(unittest.TestCase):
             )
 
     def test_standard_attribute_tag_mapping_semantics_reject_unrelated_routes(self) -> None:
-        packages = {
-            package["id"]: package["language"]
-            for package in self.manifest["publicPackages"]
-        }
-        c_release_functions = set()
         declaration = next(
             row for row in self.manifest["publicDeclarations"]
             if row.get("declarationId")
@@ -132,8 +148,8 @@ class MappingTargetInventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(
                     generate.ManifestError, "standard attribute tag mapping"
                 ):
-                    generate._validate_ready_mapping_targets(
-                        declarations, packages, c_release_functions
+                    generate._validate_standard_attribute_tag_mapping(
+                        target, target["languageMappings"]
                     )
 
     def test_generic_c_tag_macro_maps_to_the_standard_attribute_accessors(self) -> None:

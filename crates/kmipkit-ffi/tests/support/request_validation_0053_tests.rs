@@ -20,14 +20,14 @@ fn validation_report_abi_rejects_invalid_and_released_handles() {
             std::ptr::null_mut(),
             std::ptr::null(),
             0,
-            &mut report,
+            &raw mut report,
         )
     };
     assert_eq!(status, ERROR_INVALID_INPUT);
     assert!(report.is_null());
 
     let mut structure = std::ptr::null_mut();
-    assert_eq!(kmipkit_ttlv_structure_create(&mut structure), SUCCESS);
+    assert_eq!(kmipkit_ttlv_structure_create(&raw mut structure), SUCCESS);
     let schema = b"RequestPayload/Create";
     assert_eq!(
         // SAFETY: The structure and output handles are live and the schema span is readable.
@@ -36,7 +36,7 @@ fn validation_report_abi_rejects_invalid_and_released_handles() {
                 structure,
                 schema.as_ptr(),
                 schema.len() as u64,
-                &mut report,
+                &raw mut report,
             )
         },
         SUCCESS
@@ -44,14 +44,19 @@ fn validation_report_abi_rejects_invalid_and_released_handles() {
     assert!(!report.is_null());
 
     let mut view = kmipkit_validation_issue_view_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_validation_issue_view_v1_t>() as u32,
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_validation_issue_view_v1_t>())
+            .expect("the versioned test record size fits u32"),
         abi_version: 2,
         ..kmipkit_validation_issue_view_v1_t::default()
     };
     assert_eq!(
         // SAFETY: The report handle is live, and `view` is a writable versioned output record.
         unsafe {
-            super::request_validation::kmipkit_validation_report_issue_at_v1(report, 0, &mut view)
+            super::request_validation::kmipkit_validation_report_issue_at_v1(
+                report,
+                0,
+                &raw mut view,
+            )
         },
         ERROR_INVALID_INPUT
     );
@@ -59,7 +64,11 @@ fn validation_report_abi_rejects_invalid_and_released_handles() {
     assert_eq!(
         // SAFETY: The report handle is live, and `view` is a writable versioned output record.
         unsafe {
-            super::request_validation::kmipkit_validation_report_issue_at_v1(report, 99, &mut view)
+            super::request_validation::kmipkit_validation_report_issue_at_v1(
+                report,
+                99,
+                &raw mut view,
+            )
         },
         ERROR_INVALID_INPUT
     );
@@ -67,7 +76,7 @@ fn validation_report_abi_rejects_invalid_and_released_handles() {
     super::request_validation::kmipkit_validation_report_release(report);
     let mut is_valid = 0;
     assert_eq!(
-        super::request_validation::kmipkit_validation_report_is_valid(report, &mut is_valid),
+        super::request_validation::kmipkit_validation_report_is_valid(report, &raw mut is_valid),
         ERROR_INVALID_INPUT
     );
     kmipkit_ttlv_structure_release(structure);

@@ -1235,7 +1235,7 @@ fn calling_typed_validation_report_does_not_change_valid_request_wire_bytes() {
         if validate_first {
             let report = item.request().validation_report();
             assert!(report.is_valid());
-            assert!(report.issues().is_empty());
+            assert_eq!(report.issues().len(), 0);
         }
         let batch = ClientBatch::new(item);
         let (mut client, _, captured) =
@@ -1250,7 +1250,7 @@ fn calling_typed_validation_report_does_not_change_valid_request_wire_bytes() {
             .borrow()
             .as_deref()
             .expect("fake transport captured the request bytes")
-            .to_vec()
+            .clone()
     }
 
     assert_eq!(execute_and_capture(true), execute_and_capture(false));

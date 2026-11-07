@@ -1651,7 +1651,7 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure derivationParameters = TtlvStructure.create();
                 TtlvStructure derivedAttributes = deriveKeyAttributes();
                 TtlvStructure importAttributes = TtlvStructure.create();
-                TtlvStructure importAnyObject = importAnyObjectStructure()) {
+                TtlvStructure importAnyObject = wrappedImportAnyObjectStructure(CodecLimits.defaults())) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, null));
             assertNativeRequestOptionsRejected(client, new long[11]);
@@ -1721,10 +1721,10 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.locate(null, null, null, null, createAttributes)
                             .withUniqueBatchItemId(uniqueBatchItemId(21)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    7, Boolean.FALSE, null, importAttributes, importAnyObject)
+                                    2, Boolean.FALSE, 2L, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(22)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    7, Boolean.FALSE, null, importAttributes, importAnyObject)
+                                    2, Boolean.FALSE, 2L, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(23)))
                     .add(ClientBatchItem.interop(0xf1234567L,
                                     "interop-integration-test".getBytes(StandardCharsets.UTF_8))
@@ -2076,10 +2076,14 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals("get-response-secret-id",
                             getResponse.uniqueIdentifier().orElseThrow().text());
                     assertTagOrder(getObject, 0x42008f);
-                    assertTrue(containsByteString(getObject, 0x420045,
+                    assertTrue(containsByteString(getObject, 0x420043,
                             "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
                     assertFalse(getResponse.toString().contains("KMIPKit-get-response-sentinel"));
-                    try (TtlvItemView keyBlockItem = getObject.itemAt(0);
+                    try (TtlvItemView objectItem = getObject.itemAt(0);
+                            Tag objectTag = objectItem.tag();
+                            TtlvValueView objectValue = objectItem.value();
+                            TtlvStructureView objectFields = objectValue.structure();
+                            TtlvItemView keyBlockItem = objectFields.itemAt(0);
                             Tag keyBlockTag = keyBlockItem.tag();
                             TtlvValueView keyBlockValue = keyBlockItem.value();
                             TtlvStructureView keyBlock = keyBlockValue.structure();
@@ -2090,6 +2094,7 @@ final class ClientFacadeTlsIntegrationTest {
                             TtlvItemView nestedVendorItem = vendorExtension.itemAt(0);
                             Tag nestedVendorTag = nestedVendorItem.tag();
                             TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                        assertEquals(0x42008f, objectTag.raw());
                         assertEquals(0x420040, keyBlockTag.raw());
                         assertEquals(0x540001, vendorExtensionTag.raw());
                         assertEquals(0x540002, nestedVendorTag.raw());
@@ -5041,20 +5046,6 @@ final class ClientFacadeTlsIntegrationTest {
         } catch (RuntimeException failure) {
             attributes.close();
             throw failure;
-        }
-    }
-
-    private static TtlvStructure importAnyObjectStructure() {
-        CodecLimits limits = CodecLimits.defaults();
-        TtlvStructure body = TtlvStructure.create();
-        TtlvStructure object = TtlvStructure.create();
-        try (Tag tag = RawTag.fromRaw(0x42008f).checked();
-                TtlvValue value = TtlvValue.structure(body, limits);
-                TtlvItem item = TtlvItem.create(tag, value, limits)) {
-            return TtlvStructure.withItem(object, item, limits);
-        } finally {
-            object.close();
-            body.close();
         }
     }
 

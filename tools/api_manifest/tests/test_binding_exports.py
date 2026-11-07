@@ -18,6 +18,26 @@ from tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions import (
 )
 
 
+EXPECTED_0053_PARITY_BRIDGE_MEMBERS = frozenset(
+    {
+        "CRYPTOGRAPHIC_PARAMETERS", "VALIDATION_REPORT",
+        "attributeSetTryPushTyped", "attributeSetTypedAt", "attributeSetTypedCount",
+        "clientBatchItemOperation", "clientBatchItemResponseQueryFieldAt",
+        "clientBatchItemResponseQueryFieldCount", "clientBatchSetAuthentication",
+        "cryptographicParametersFromFields", "cryptographicParametersFromTtlv",
+        "cryptographicParametersIntoTtlv", "cryptographicParametersReadFields",
+        "keyBlockFromFields", "keyBlockFromItem", "keyMaterialFromFields",
+        "keyMaterialFromItem", "keyValueFromFields", "keyValueFromItem",
+        "keyWrappingDataFromFields", "keyWrappingDataFromItem",
+        "managedObjectFromFields", "managedObjectFromItem",
+        "managedValueFieldItemRead", "managedValueFieldRead", "ttlvValueViewBytes",
+        "typedAttributeFromItem", "typedAttributeFromValue", "typedAttributeValue",
+        "validationReportIsValid", "validationReportIssueAt",
+        "validationReportIssueCount", "validationRequest", "validationStructure",
+    }
+)
+
+
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
 SPEC = importlib.util.spec_from_file_location("audit_binding_exports", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
@@ -26,6 +46,44 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_c_package_audit_expands_local_public_header_includes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            include = root / "bindings" / "c" / "include"
+            include.mkdir(parents=True)
+            (include / "kmipkit.h").write_text(
+                '#include "kmipkit_standard_attributes_generated.h"\n'
+                "int32_t kmipkit_probe(void);\n",
+                encoding="utf-8",
+            )
+            (include / "kmipkit_standard_attributes_generated.h").write_text(
+                "#define KMIPKIT_STANDARD_ATTRIBUTE_PROBE ((uint32_t)0x00420001)\n",
+                encoding="utf-8",
+            )
+            binary = root / "kmipkit_ffi.dll"
+            binary.write_bytes(b"synthetic native library")
+            manifest = {
+                "publicDeclarations": [
+                    {
+                        "packageId": "c-kmipkit",
+                        "kind": "macro",
+                        "exportName": "KMIPKIT_STANDARD_ATTRIBUTE_PROBE",
+                        "declarationState": "verified",
+                    },
+                    {
+                        "packageId": "c-kmipkit",
+                        "kind": "c-symbol",
+                        "exportName": "kmipkit_probe",
+                        "declarationState": "verified",
+                    },
+                ],
+                "approvedExclusions": [],
+            }
+            with patch.object(AUDIT, "read_native_exports", return_value=["kmipkit_probe"]):
+                report = AUDIT.audit_c_package(root, manifest, binary)
+
+        self.assertTrue(report["matchesManifest"], report)
+
     def test_java_classpath_resolution_uses_bash_for_posix_gradle_wrapper(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1037,6 +1095,7 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
+        native_members.update(EXPECTED_0053_PARITY_BRIDGE_MEMBERS)
         native_members.update(
             export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
             for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
@@ -1082,6 +1141,15 @@ class BindingExportAuditTests(unittest.TestCase):
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
+            if exclusion.get("candidateSpecId") == "KMIPKIT-0053":
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/053-api-parity-facade/approval-record.md",
+                )
+                self.assertIn("NativeBridgeCoverageTest.java", evidence)
+                self.assertIn("specs/053-api-parity-facade/spec.md", evidence)
+                self.assertIn("Internal JNI bridge method/constant", evidence)
+                continue
             combined_approved_references = any(
                 reference_group in evidence
                 for reference_group in (

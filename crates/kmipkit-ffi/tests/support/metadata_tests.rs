@@ -386,17 +386,7 @@ fn panic_boundary_records_internal_error_for_void_exports() {
     );
 }
 
-#[test]
-fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
-    const INTERNAL_C_SYMBOLS: [&str; 7] = [
-        "kmipkit_client_batch_item_response_metadata_v1",
-        "kmipkit_client_batch_item_response_release",
-        "kmipkit_client_execute_with_options_and_error_ttlv_v1",
-        "kmipkit_last_error_clear",
-        "kmipkit_transport_config_create_v1",
-        "kmipkit_transport_config_release",
-        "kmipkit_ttlv_value_view_copy_bytes",
-    ];
+fn manifest_c_symbols() -> (BTreeSet<String>, BTreeSet<String>) {
     let manifest: serde_json::Value = serde_json::from_str(include_str!(
         "../../../../specification/api/public-api.json"
     ))
@@ -404,49 +394,45 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
     let declarations = manifest["publicDeclarations"]
         .as_array()
         .expect("the approved manifest lists public declarations");
-    let manifest_symbols: BTreeSet<&str> = declarations
+    let manifest_symbols: BTreeSet<String> = declarations
         .iter()
         .filter(|declaration| {
             declaration["packageId"] == "c-kmipkit"
                 && declaration["kind"] == "c-symbol"
                 && declaration["declarationState"] != "blocked"
         })
-        .filter_map(|declaration| declaration["exportName"].as_str())
+        .filter_map(|declaration| declaration["exportName"].as_str().map(str::to_owned))
         .collect();
-    let blocked_symbols: BTreeSet<&str> = declarations
+    let blocked_symbols: BTreeSet<String> = declarations
         .iter()
         .filter(|declaration| {
             declaration["packageId"] == "c-kmipkit"
                 && declaration["kind"] == "c-symbol"
                 && declaration["declarationState"] == "blocked"
         })
-        .filter_map(|declaration| declaration["exportName"].as_str())
+        .filter_map(|declaration| declaration["exportName"].as_str().map(str::to_owned))
         .collect();
     assert_eq!(
         blocked_symbols,
-        BLOCKED_C_SYMBOLS.into_iter().collect(),
+        BLOCKED_C_SYMBOLS.map(str::to_owned).into_iter().collect(),
         "review blocked C symbols when their manifest state changes"
     );
+    (manifest_symbols, blocked_symbols)
+}
 
-    let sources = [
-        include_str!("../../src/extension_registry.rs"),
-        include_str!("../../src/extension_registry/client_abi.rs"),
-        include_str!("../../src/extension_registry/credential_secrets.rs"),
-        include_str!("../../src/extension_registry/cryptographic_parameters.rs"),
-        include_str!("../../src/extension_registry/managed_objects.rs"),
-        include_str!("../../src/extension_registry/request_validation.rs"),
-        include_str!("../../src/extension_registry/typed_attributes.rs"),
-    ];
-    let typed_fields_body = sources[4]
+fn assert_managed_object_helpers_are_guarded(source: &str) {
+    let typed_fields_body = source
         .split_once("fn typed_fields_to_item(")
         .and_then(|(_, function)| function.split_once('{'))
         .map(|(_, body)| body)
         .expect("managed-object field builder exists");
     assert!(
-        typed_fields_body.trim_start().starts_with("ffi_entrypoint(||"),
+        typed_fields_body
+            .trim_start()
+            .starts_with("ffi_entrypoint(||"),
         "managed-object field builder must enter the shared panic boundary"
     );
-    let managed_object_body = sources[4]
+    let managed_object_body = source
         .split_once("fn managed_object_from_fields_impl(")
         .and_then(|(_, function)| function.split_once('{'))
         .map(|(_, body)| body)
@@ -457,7 +443,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
             .starts_with("typed_fields_to_item("),
         "managed-object conversion helper must delegate to the guarded field builder"
     );
-    let convert_typed_item_body = sources[4]
+    let convert_typed_item_body = source
         .split_once("fn convert_typed_item(")
         .and_then(|(_, function)| function.split_once('{'))
         .map(|(_, body)| body)
@@ -468,6 +454,19 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
             .starts_with("ffi_entrypoint(||"),
         "typed-item conversion helper must enter the shared panic boundary"
     );
+}
+
+fn source_c_exports() -> Vec<(String, bool)> {
+    let sources = [
+        include_str!("../../src/extension_registry.rs"),
+        include_str!("../../src/extension_registry/client_abi.rs"),
+        include_str!("../../src/extension_registry/credential_secrets.rs"),
+        include_str!("../../src/extension_registry/cryptographic_parameters.rs"),
+        include_str!("../../src/extension_registry/managed_objects.rs"),
+        include_str!("../../src/extension_registry/request_validation.rs"),
+        include_str!("../../src/extension_registry/typed_attributes.rs"),
+    ];
+    assert_managed_object_helpers_are_guarded(sources[4]);
     let mut exports: Vec<(String, bool)> = sources
         .into_iter()
         .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
@@ -490,6 +489,8 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         })
         .filter(|(symbol, _)| symbol != "$name")
         .collect();
+    #[cfg(not(feature = "coverage-c-consumer"))]
+    exports.retain(|(symbol, _)| symbol != "kmipkit_test_client_batch_item_encoded_operation");
     exports.extend(macro_generated_c_exports(
         sources[0],
         "lifecycle_batch_item_constructor",
@@ -503,15 +504,38 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         "managed_object_constructor",
     ));
 
+    exports
+}
+
+#[test]
+fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
+    const INTERNAL_C_SYMBOLS: [&str; 7] = [
+        "kmipkit_client_batch_item_response_metadata_v1",
+        "kmipkit_client_batch_item_response_release",
+        "kmipkit_client_execute_with_options_and_error_ttlv_v1",
+        "kmipkit_last_error_clear",
+        "kmipkit_transport_config_create_v1",
+        "kmipkit_transport_config_release",
+        "kmipkit_ttlv_value_view_copy_bytes",
+    ];
+    #[cfg(feature = "coverage-c-consumer")]
+    const TEST_ONLY_C_SYMBOLS: [&str; 1] = ["kmipkit_test_client_batch_item_encoded_operation"];
+    #[cfg(not(feature = "coverage-c-consumer"))]
+    const TEST_ONLY_C_SYMBOLS: [&str; 0] = [];
+    let (manifest_symbols, blocked_symbols) = manifest_c_symbols();
+    let exports = source_c_exports();
     let source_symbols: BTreeSet<&str> =
         exports.iter().map(|(symbol, _)| symbol.as_str()).collect();
-    let expected_symbols: BTreeSet<&str> = manifest_symbols
+    let expected_symbols: BTreeSet<String> = manifest_symbols
         .into_iter()
         .chain(blocked_symbols)
-        .chain(INTERNAL_C_SYMBOLS)
+        .chain(INTERNAL_C_SYMBOLS.map(str::to_owned))
+        .chain(TEST_ONLY_C_SYMBOLS.map(str::to_owned))
         .collect();
+    let expected_symbol_refs: BTreeSet<&str> =
+        expected_symbols.iter().map(String::as_str).collect();
     assert_eq!(
-        source_symbols, expected_symbols,
+        source_symbols, expected_symbol_refs,
         "Rust C exports must match approved manifest symbols and the explicit blocked/internal lists"
     );
     assert_eq!(
@@ -526,6 +550,25 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
     assert!(
         missing_boundary.is_empty(),
         "every exported C function must enter the shared panic boundary first: {missing_boundary:?}"
+    );
+}
+
+#[test]
+fn encoded_operation_probe_is_gated_to_the_c_consumer_test_feature() {
+    let source = include_str!("../../src/extension_registry/client_abi.rs");
+    let function_start = source
+        .find("pub extern \"C\" fn kmipkit_test_client_batch_item_encoded_operation")
+        .expect("encoded operation probe declaration exists");
+    let before_function = &source[..function_start];
+    let no_mangle_start = before_function
+        .rfind("#[unsafe(no_mangle)]")
+        .expect("encoded operation probe has a no_mangle attribute");
+    let before_no_mangle = before_function[..no_mangle_start].trim_end();
+
+    assert!(
+        before_no_mangle.ends_with("#[cfg(feature = \"coverage-c-consumer\")]")
+            && before_function[no_mangle_start..].starts_with("#[unsafe(no_mangle)]"),
+        "the encoded operation probe must only exist for the compiled C consumer tests"
     );
 }
 
