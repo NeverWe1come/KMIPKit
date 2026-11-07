@@ -117,7 +117,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ffi coverage 0/1.*85%"):
                 GATE._evaluate_coverage(root, reports, "", ffi_c_consumer_report=ffi_c_consumer_report)
 
-    def test_ttlv_and_protocol_scopes_accept_exactly_90_percent(self) -> None:
+    def test_ttlv_and_protocol_scopes_reject_90_percent(self) -> None:
         self.require_gate()
         for crate_name in ("kmipkit-ttlv", "kmipkit-protocol"):
             with self.subTest(crate=crate_name), tempfile.TemporaryDirectory() as directory:
@@ -127,13 +127,33 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                 source.parent.mkdir(parents=True)
                 source.write_text("".join(f"pub fn item_{line}() {{}}\n" for line in range(1, 21)), encoding="utf-8")
                 report = {relative: {line: int(line <= 18) for line in range(1, 21)}}
+                with self.assertRaisesRegex(
+                    GATE.CoverageDataError,
+                    f"{crate_name} coverage 18/20 is below 95%",
+                ):
+                    GATE._evaluate_coverage(
+                        root,
+                        {platform: report for platform in ("ubuntu", "windows", "macos")},
+                        "",
+                    )
+
+    def test_ttlv_and_protocol_scopes_accept_exactly_95_percent(self) -> None:
+        self.require_gate()
+        for crate_name in ("kmipkit-ttlv", "kmipkit-protocol"):
+            with self.subTest(crate=crate_name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                relative = f"crates/{crate_name}/src/lib.rs"
+                source = root / relative
+                source.parent.mkdir(parents=True)
+                source.write_text("".join(f"pub fn item_{line}() {{}}\n" for line in range(1, 21)), encoding="utf-8")
+                report = {relative: {line: int(line <= 19) for line in range(1, 21)}}
                 results = GATE._evaluate_coverage(
                     root,
                     {platform: report for platform in ("ubuntu", "windows", "macos")},
                     "",
                 )
 
-                self.assertTrue(any(result.startswith(f"{crate_name} coverage: 18/20 (90.00%)") for result in results))
+                self.assertTrue(any(result.startswith(f"{crate_name} coverage: 19/20 (95.00%)") for result in results))
 
     def test_jacoco_parser_maps_production_source_lines(self) -> None:
         self.require_gate()
@@ -527,7 +547,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(
-                GATE.CoverageDataError, "Changed production code coverage 0/1.*90%"
+                GATE.CoverageDataError, "Changed production code coverage 0/1.*95%"
             ):
                 GATE._evaluate_coverage(
                     root,
@@ -537,7 +557,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                     required_scopes={"rust", "ffi-c"},
                 )
 
-    def test_changed_production_gate_accepts_exactly_90_percent(self) -> None:
+    def test_changed_production_gate_rejects_90_percent(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -556,20 +576,56 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                 )
             )
 
-            results = GATE._evaluate_coverage(
+            with self.assertRaisesRegex(
+                GATE.CoverageDataError,
+                "Changed production code coverage 9/10 is below 95%",
+            ):
+                GATE._evaluate_coverage(
+                    root,
+                    rust_reports,
+                    diff,
+                    adapter_reports,
+                    required_scopes={"python"},
+                )
+
+            with self.assertRaisesRegex(
+                GATE.CoverageDataError,
+                "Changed production code coverage 9/10 is below 95%",
+            ):
+                GATE._evaluate_coverage(root, rust_reports, diff, adapter_reports)
+
+    def test_changed_production_gate_accepts_exactly_95_percent(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rust_reports, adapter_reports, source_paths = self._write_gate_workspace(root, line_count=20)
+            relative = source_paths["Python adapters"]
+            source = root / relative
+            source.write_text("".join(f"value_{line} = {line}\n" for line in range(1, 21)), encoding="utf-8")
+            adapter_reports["Python adapters"] = {relative: {line: int(line <= 19) for line in range(1, 21)}}
+            diff = "\n".join(
+                (
+                    f"diff --git a/{relative} b/{relative}",
+                    "--- /dev/null",
+                    f"+++ b/{relative}",
+                    "@@ -0,0 +1,20 @@",
+                    *(f"+value_{line} = {line}" for line in range(1, 21)),
+                )
+            )
+
+            scoped_results = GATE._evaluate_coverage(
                 root,
                 rust_reports,
                 diff,
                 adapter_reports,
                 required_scopes={"python"},
             )
+            legacy_results = GATE._evaluate_coverage(root, rust_reports, diff, adapter_reports)
 
-        self.assertIn(
-            "Changed production coverage: 9/10 (90.00%) (90% minimum).",
-            results,
-        )
+        self.assertTrue(any(result.startswith("Changed production coverage: 19/20 (95.00%)") for result in scoped_results))
+        self.assertTrue(any(result.startswith("Changed production coverage: 19/20 (95.00%)") for result in legacy_results))
 
-    def test_changed_java_python_and_jni_production_lines_share_the_90_percent_gate(self) -> None:
+    def test_changed_java_python_and_jni_production_lines_share_the_95_percent_gate(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -590,7 +646,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                     )
                 )
 
-            with self.assertRaisesRegex(GATE.CoverageDataError, "Changed production code coverage 0/3.*90%"):
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Changed production code coverage 0/3.*95%"):
                 GATE._evaluate_coverage(root, rust_reports, "\n".join(changed_lines.values()), adapter_reports)
 
     def test_changed_production_gate_ignores_brace_only_source_lines(self) -> None:
@@ -647,7 +703,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             )
 
         self.assertIn(
-            "Changed production coverage: 2/2 (100.00%) (90% minimum).",
+            "Changed production coverage: 2/2 (100.00%) (95% minimum).",
             results,
         )
         self.assertTrue(
@@ -785,8 +841,12 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertEqual(85, pyproject["tool"]["coverage"]["report"]["fail_under"])
         self.assertEqual(
             pyproject["tool"]["coverage"]["run"].get("omit"),
-            ["*/kmipkit/_native_ffi/__init__.py", "*/kmipkit/_native_ffi/ffi.py"],
-            "only build-generated CFFI wrapper modules may be excluded from Python source coverage",
+            [
+                "*/kmipkit/_native_ffi/__init__.py",
+                "*/kmipkit/_native_ffi/ffi.py",
+                "*/kmipkit/protocol_values.py",
+            ],
+            "only generated CFFI wrappers and catalog-backed protocol-value code may be excluded; binding tests exercise the generated behavior",
         )
 
         native_collector = REPOSITORY_ROOT / "scripts/collect_jni_coverage.sh"

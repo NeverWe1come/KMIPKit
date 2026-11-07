@@ -114,6 +114,46 @@ and a missing or incompatible override fails with no fallback. Before
 exposing CFFI, the package calls `kmipkit_version_get` and requires ABI
 version 1. Python does not search other directories or download a library.
 
+## Named KMIP protocol values
+
+The catalog-backed values are available from each language package. For
+example, Rust uses the typed protocol namespace:
+
+```rust
+use kmipkit::protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+
+let algorithm = cryptographic_algorithm::AES;
+let name = cryptographic_algorithm::name(algorithm);
+assert_eq!(name, Some("AES"));
+```
+
+C exposes fixed-width constants and lookup helpers in `kmipkit.h`:
+
+```c
+uint32_t algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+const char *name = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_name(algorithm);
+```
+
+Java and Python expose the same catalog values through their protocol-value
+namespace:
+
+```java
+long algorithm = KmipValues.CryptographicAlgorithm.AES;
+String name = KmipValues.CryptographicAlgorithm.name(algorithm);
+```
+
+```python
+from kmipkit import protocol_values
+
+algorithm = protocol_values.CryptographicAlgorithm.AES
+name = protocol_values.CryptographicAlgorithm.name(algorithm)
+```
+
+The generated set contains assigned values only. Unknown raw Enumeration
+values and unassigned Bit Mask bits remain available; lookup helpers report
+known names without changing the caller's raw value. A named value does not
+claim that a server supports it or that an algorithm choice is appropriate.
+
 ## Current manifest capability scope
 
 The status labels below are copied from the current manifest. `declared` means
@@ -128,11 +168,12 @@ changes to this table.
 | `ttlv_wire_codec` | declared | A four-language mapping is recorded; complete parity verification is still pending. |
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
 | `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
-| `public_binding_surface` | verified | T108 and T109 record the exact four-language capability mappings and complete Rust/C/Java/Python export accounting. This verifies inventory and mapping coverage; it does not claim KMIP conformance or release readiness. |
+| `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled; operation mappings outside this verified inventory remain incomplete and blocked APIs stay unavailable. The verified inventory does not claim KMIP conformance or release readiness. |
 | `vendor_extension_registry` | declared | Exact shared mappings include Rust drop, C release, Java close, and Python close for native handles; parity verification remains pending. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
 | `client_execution` | declared | Discover Versions request and response mappings are present in Rust, C, Java, and Python; complete 1.0 operation conformance remains pending. |
+| `wire_encoding_selection` | declared | TTLV, JSON, and XML defaults and per-exchange selection are mapped across Rust, C, Java, and Python. |
 | `client_asynchronous_operations` | declared | Cancel, Poll, Process, and Query Asynchronous Requests use explicit one-exchange calls across four languages; exact correlation bytes and the generic Query TTLV response are preserved, with no automatic polling. |
 | `crypto_response_ttlv` | declared | The separate FR-015 error-response access remains limited to its four approved accessors; typed success-response TTLV is recorded on the five operation rows. |
 | `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
@@ -141,6 +182,7 @@ changes to this table.
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 | `client_profile_validation` | declared | Profile-validation entry points and typed validation errors map across four languages; this mapping does not claim Baseline profile support. |
+| `client_profile_readiness` | declared | Profile readiness evaluation reports evidence blockers across the four languages; it does not claim Baseline profile conformance. |
 | `credential_type_parity` | declared | Credential Type values, including unknown values, map across four languages; complete parity verification remains pending. |
 | `typed_message_model` | declared | Typed request/response message models and extension views map across four languages; complete parity verification remains pending. |
 | `nonce_ttlv_parity` | declared | Nonce TTLV conversion and lifecycle operations map across four languages; complete parity verification remains pending. |
@@ -148,6 +190,8 @@ changes to this table.
 | `ffi_shared_owner_status` | declared | C exposes the `KMIPKIT_ERROR_SHARED_OWNER` status; this capability is C-only. |
 | `credential_validation_error_parity` | declared | Typed credential-validation error kinds map across four languages; complete parity verification remains pending. |
 | `credential_validation_error_abi_layout` | declared | C maps the versioned credential-validation error ABI layout fields; this capability is C-only. |
+| `named_protocol_values` | declared | Assigned KMIP 2.1 Enumeration and Bit Mask values have catalog-backed names in Rust, C, Java, and Python. This maps names and lookups; it does not claim server support or cryptographic suitability. |
+| `hashed_password_timestamp_sequence` | declared | A locally owned timestamp sequence for Hashed Password credentials is mapped across the four languages; server validation remains authoritative. |
 | `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
 
 Of the **56** KMIP `client_1_0` operation rows, **0 / 56** remain `blocked`.

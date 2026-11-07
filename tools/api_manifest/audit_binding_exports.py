@@ -84,6 +84,33 @@ def _complete_include_guard(lines: list[str]) -> str | None:
     return None
 
 
+def expand_named_value_helper_header(c_header: str, helper_source: str) -> str:
+    """Inline the generated helper header without treating its guard as API."""
+    helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
+    if helper_include not in c_header:
+        return c_header
+
+    cleaned = re.sub(
+        r"/\*.*?\*/|//[^\n]*",
+        lambda match: re.sub(r"[^\n]", " ", match.group(0)),
+        helper_source,
+        flags=re.S,
+    )
+    cleaned_lines = cleaned.splitlines()
+    guard = _complete_include_guard(cleaned_lines)
+    if guard is not None:
+        significant = [
+            index for index, line in enumerate(cleaned_lines) if line.strip()
+        ]
+        guard_lines = {significant[0], significant[1], significant[-1]}
+        helper_lines = [
+            line for index, line in enumerate(helper_source.splitlines())
+            if index not in guard_lines
+        ]
+        helper_source = "\n".join(helper_lines)
+    return c_header.replace(helper_include, helper_source)
+
+
 def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any]:
     """Read exported declarations from the installed public C header."""
     records: list[dict[str, Any]] = []
@@ -190,6 +217,13 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
     for match in re.finditer(r"\b(kmipkit_[A-Za-z_]\w*)\s*\([^;{}]*\)\s*;", cleaned, re.S):
         line_number = cleaned.count("\n", 0, match.start()) + 1
         records.append(_record(package, match.group(1), "c-symbol", str(line_number)))
+    for match in re.finditer(
+        r"\bstatic\s+inline\s+[A-Za-z_][\w\s*]*?\b([A-Za-z_]\w*)\s*\([^{}]*\)\s*\{",
+        cleaned,
+        re.S,
+    ):
+        line_number = cleaned.count("\n", 0, match.start()) + 1
+        records.append(_record(package, match.group(1), "function", str(line_number)))
     return _report(records, issues)
 
 
@@ -869,6 +903,51 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     return _report(records, issues)
 
 
+def _declared_c_record_fields(
+    manifest: dict[str, Any], package_rows: list[dict[str, Any]]
+) -> list[dict[str, str]]:
+    """Return record members declared by an included public C type layout."""
+    declared_types = {
+        row["exportName"] for row in package_rows
+        if row.get("kind") == "type" and row.get("declarationState") in {"declared", "verified"}
+    }
+    recorded_names = {row["exportName"] for row in package_rows}
+    excluded_names = {
+        row["exportName"]
+        for row in manifest.get("approvedExclusions", [])
+        if row.get("packageId") == "c-kmipkit"
+    }
+    declarations: list[dict[str, str]] = []
+    c_records = [
+        type_record.get("c", {})
+        for type_record in manifest.get("types", [])
+    ]
+    c_records.extend(
+        exclusion["cType"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+        and isinstance(exclusion.get("cType"), dict)
+    )
+    for c_record in c_records:
+        c_name = c_record.get("name")
+        if (
+            c_record.get("kind") != "fixed-width-value"
+            or not c_record.get("fields")
+            or (c_name not in declared_types and c_name not in excluded_names)
+        ):
+            continue
+        for field in c_record.get("fields", []):
+            export_name = f"{c_name}.{field['name']}"
+            if export_name not in recorded_names and export_name not in excluded_names:
+                declarations.append({
+                    "packageId": "c-kmipkit",
+                    "exportName": export_name,
+                    "kind": "field",
+                })
+                recorded_names.add(export_name)
+    return declarations
+
+
 def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     if package == "c-kmipkit":
@@ -885,8 +964,8 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             or row.get("kind") == "c-symbol"
             or row.get("exportName") in stable_error_codes
         ]
-    declaration_counts = Counter((row["packageId"], row["exportName"]) for row in package_rows)
-    duplicate_names = sorted(name for (package_id, name), count in declaration_counts.items() if count > 1)
+        # Record layouts are the authoritative C field inventory.
+        package_rows.extend(_declared_c_record_fields(manifest, package_rows))
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
                           if row.get("packageId") == package]
@@ -924,6 +1003,10 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                 })
 
     invalid_overlaps = sorted(declaration_exclusion_overlaps - signature_splits)
+    declaration_counts = Counter((row["packageId"], row["exportName"]) for row in package_rows)
+    duplicate_names = sorted(
+        name for (package_id, name), count in declaration_counts.items() if count > 1
+    )
     def canonical_kind(kind: str) -> str:
         if package == "python-kmipkit" and kind in {"function", "python-export"}:
             return "python-callable"
@@ -1004,6 +1087,15 @@ def build_c_binary_exports(root: Path) -> list[str]:
 
 def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = None) -> dict[str, Any]:
     c_header = (root / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+    helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
+    if helper_include in c_header:
+        helper_path = root / "bindings/c/include/kmipkit_named_value_helpers_generated.h"
+        if not helper_path.is_file():
+            raise ValueError("generated C named-value helper header is missing")
+        c_header = expand_named_value_helper_header(
+            c_header,
+            helper_path.read_text(encoding="utf-8"),
+        )
     native_exports = read_native_exports(binary) if binary is not None else build_c_binary_exports(root)
     c_exclusions = [row for row in manifest.get("approvedExclusions", [])
                     if row.get("packageId") == "c-kmipkit"]

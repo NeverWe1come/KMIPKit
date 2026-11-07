@@ -48,11 +48,13 @@ acceptance.
 
 ## Product and Security Constraints
 
-- The 1.0.0 target is a KMIP 2.1 client using TTLV, raw TLS and HTTPS over
-  TLS 1.3 with mutual TLS, and synchronous APIs. It covers all client
-  initiated operations, including KMIP protocol asynchronous results.
-- Server initiated operations begin in 1.1. JSON, XML, and further language
-  adapters follow later. A server's policy may reject supported requests.
+- The 1.0.0 target is a KMIP 2.1 client using TTLV, JSON, and XML over raw TLS
+  and HTTPS/HTTP 1.1 with TLS 1.3 mutual TLS and synchronous APIs. It covers
+  all client initiated operations, including KMIP protocol asynchronous
+  results. TTLV is the default encoding; JSON and XML use the approved OASIS
+  KMIP 2.1 Profile encodings and their approved KMIPKIT specifications.
+- Server initiated operations begin in 1.1. Further language adapters follow
+  later. A server's policy may reject supported requests.
 - The 1.0 public surface has high level operation builders, complete typed
   requests and responses, and generic TTLV access. Cryptographic choices
   MUST remain explicit to callers.
@@ -92,4 +94,13 @@ Every PR review MUST check compliance with this constitution and record any
 approved exception. `AGENTS.md` provides operational guidance subordinate
 to this document.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
+**Version**: 1.1.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-11-05
+
+### Amendment 1.1.0 (2026-11-05)
+
+The maintainer approved adding KMIP 2.1 JSON and XML message encodings to the
+1.0.0 product boundary alongside TTLV. The encoding, transport, conformance,
+and cross-language obligations are owned by KMIPKIT-0054 through KMIPKIT-0057
+and ADR-0017. This amendment changes product scope; it does not claim profile
+conformance or authorize implementation outside an approved feature
+specification.

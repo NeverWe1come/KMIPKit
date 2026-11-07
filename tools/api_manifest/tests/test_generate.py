@@ -579,6 +579,16 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             header,
         )
 
+    def test_named_value_helpers_are_public_only_not_in_internal_header(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+        public_header = generate.render_c_header(manifest)
+        internal_header = generate.render_internal_c_header(manifest)
+
+        helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
+        self.assertIn(helper_include, public_header)
+        self.assertNotIn(helper_include, internal_header)
+
     def test_declared_c_symbol_signature_is_emitted_from_its_declaration(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declaration = copy.deepcopy(

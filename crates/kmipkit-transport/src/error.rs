@@ -53,6 +53,8 @@ pub enum TransportCauseCategory {
     Tls,
     /// An HTTP framing or status failure.
     Http,
+    /// The response media type does not match the selected KMIP encoding.
+    EncodingMismatch,
     /// A timeout occurred.
     Timeout,
     /// The source does not fit another safe category.
@@ -65,6 +67,7 @@ impl fmt::Display for TransportCauseCategory {
             Self::Io => formatter.write_str("I/O failure"),
             Self::Tls => formatter.write_str("TLS failure"),
             Self::Http => formatter.write_str("HTTP failure"),
+            Self::EncodingMismatch => formatter.write_str("KMIP encoding mismatch"),
             Self::Timeout => formatter.write_str("timeout"),
             Self::Other => formatter.write_str("other transport cause"),
         }

@@ -53,12 +53,11 @@ stabilized.
 
 ## Phase 3: complete public APIs
 
-- Rust high level builders for every operation.
-- Complete C ABI and generated header surface.
-- Generic TTLV public escape hatch.
-- Batch builder and per-item outcomes.
-- Secret result types and lifecycle controls.
-- Structured diagnostics.
+- Rust high-level builders for every operation, typed protocol models, the
+  complete C ABI, generic TTLV access, batch outcomes, secret lifecycle
+  controls, and structured diagnostics.
+- Java and Python bindings provide the corresponding operation and TTLV
+  capabilities as detailed in Phase 4.
 - **1.0.0 release gate:** approve a versioned public API manifest covering
   every in-scope client-initiated operation and generic TTLV, then generate
   and verify equivalent Rust, C, Java, and Python capabilities. The Rust
@@ -75,7 +74,26 @@ stabilized.
 - Native package loading and installation tests.
 - Maven Central and PyPI release pipelines in dry-run mode.
 
-## Phase 5: interoperability and release hardening
+## Phase 5: high-level API usability and preflight validation
+
+- Add named values for the KMIP 2.1 enumerations and bitmasks while preserving
+  unknown and vendor values.
+- Add typed builders and readers for attributes and managed objects, key
+  material, and wrapping structures.
+- Complete typed operation parameters, request-scoped authentication, and
+  direct client methods for all client-initiated operations.
+- Provide schema-aware request validation and block locally detectable
+  normative violations before transport I/O.
+- Complete typed response readers and navigable generic TTLV access for the
+  response payload and nested structures in Rust, C, Java, and Python.
+- Reconcile the public API manifest, examples, and English and Spanish guides.
+
+## Phase 6: interoperability and release hardening
+
+Feature identifiers `KMIPKIT-0047` through `KMIPKIT-0053` are reserved for
+the Phase 5 ergonomics, `validate()`, and `.raw()` work. Multi-encoding work
+uses the consecutive identifiers `KMIPKIT-0054` through `KMIPKIT-0057` and
+must not reuse those Phase 5 identifiers.
 
 - Automated integration with an external open source KMIP 2.1 server.
 - Manual or automated integration with a second independent implementation.
@@ -86,8 +104,17 @@ stabilized.
 - Complete English and Spanish documentation.
 - Reproducible packages, SBOM, provenance, and signed artifacts.
 - `1.0.0` release readiness review.
+- **KMIP 2.1 multi-encoding work for 1.0.0:** KMIPKIT-0054 establishes the
+  approved scope amendment and private common codec contract. Once 0054 is
+  accepted, KMIPKIT-0055 (JSON, Profiles §5.5) and KMIPKIT-0056 (XML,
+  Profiles §5.4) may be implemented and tested independently in dedicated
+  worktrees. Their codec modules consume the same ordered generic TTLV item
+  model and checked-in catalog naming metadata. Neither codec changes the
+  public client API manifest. KMIPKIT-0057 integrates both codecs with the
+  client and transports, then updates the manifest, generated API surfaces,
+  and Rust/C/Java/Python parity together.
 
-## Phase 6: after 1.0
+## Phase 7: after 1.0
 
 - Evaluate and specify legacy KMIP version support using the
   [compatibility feasibility research](design/kmip-legacy-version-feasibility.md).
@@ -98,7 +125,6 @@ stabilized.
 - Additional idiomatic adapters, in order: Go, C++, C#, and JavaScript.
 - Declarative vendor extension SDK.
 - Optional compiled extension packages.
-- JSON and XML encodings.
 - Async/await client.
 - Connection pools, explicit retry policies, and failover components.
 - Additional TLS identity providers, platforms, and proxy support.

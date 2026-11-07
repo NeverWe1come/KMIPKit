@@ -1417,7 +1417,12 @@ def _validate_v2_readiness(
         and isinstance((c_api := type_record.get("c")), dict)
         and isinstance(c_api.get("releaseFunction"), str)
     }
-    _validate_ready_mapping_targets(declarations, package_languages, c_release_functions)
+    _validate_ready_mapping_targets(
+        declarations,
+        package_languages,
+        c_release_functions,
+        exclusions=exclusions,
+    )
     _validate_capability_mapping_inventories(
         capabilities, declarations, package_languages
     )
@@ -1432,11 +1437,25 @@ def _validate_ready_mapping_targets(
     declarations: list[dict[str, Any]],
     package_languages: dict[Any, Any],
     c_release_functions: set[tuple[str, str]],
+    *,
+    exclusions: list[dict[str, Any]] | None = None,
 ) -> None:
     """Require every ready cross-language mapping to resolve to a ready export."""
     declarations_by_path = {
         (row["packageId"], row["exportName"]): row for row in declarations
     }
+    for exclusion in exclusions or []:
+        if exclusion.get("packageId") == "c-kmipkit" and isinstance(
+            exclusion.get("cFunction"), dict
+        ):
+            symbol = exclusion["cFunction"].get("symbol")
+            if isinstance(symbol, str):
+                declarations_by_path[("c-kmipkit", symbol)] = {
+                    "packageId": "c-kmipkit",
+                    "exportName": symbol,
+                    "kind": "c-symbol",
+                    "declarationState": "verified",
+                }
     for declaration in declarations:
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
@@ -1530,7 +1549,11 @@ def _validate_ready_mapping_targets(
             if (
                 target is None
                 and language == "c"
-                and mapping_semantics in {"native-handle-release", "secret-buffer-wipe"}
+                and mapping_semantics in {
+                    "native-handle-release",
+                    "native-handle-release-managed-java-value",
+                    "secret-buffer-wipe",
+                }
                 and (mapping.get("packageId"), mapping.get("name")) in c_release_functions
             ):
                 target = {
@@ -1953,6 +1976,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     error_ids = _require_unique(manifest["errorCategories"], "id", "error category IDs")
     _require_unique(manifest["types"], "id", "type IDs")
     _require_unique(manifest["functions"], "id", "function IDs")
+    c_abi_record_constants = manifest.get("cAbiRecordConstants", [])
+    c_abi_constant_names = _require_unique(
+        c_abi_record_constants, "name", "C ABI record constant names"
+    )
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
     approved_c_layouts = _ordered_approved_c_type_layouts(manifest)
@@ -2015,8 +2042,24 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for exclusion in manifest.get("approvedExclusions", [])
         if exclusion.get("cFunction") is not None
     ]
-    c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
-    c_symbols.extend(function["symbol"] for function in excluded_c_functions)
+    canonical_c_functions = [function["c"] for function in manifest["functions"]]
+    canonical_c_symbols = [function["symbol"] for function in canonical_c_functions]
+    if len(canonical_c_symbols) != len(set(canonical_c_symbols)):
+        raise ManifestError("manifest contains duplicate canonical C function symbols")
+    c_functions_by_symbol = {
+        function["symbol"]: function for function in canonical_c_functions
+    }
+    excluded_only_symbols: list[str] = []
+    for excluded_function in excluded_c_functions:
+        symbol = excluded_function["symbol"]
+        existing = c_functions_by_symbol.get(symbol)
+        if existing is None:
+            excluded_only_symbols.append(symbol)
+            continue
+        comparable_fields = ("symbol", "parameters", "returnType", "errorCategories")
+        if any(existing.get(field) != excluded_function.get(field) for field in comparable_fields):
+            raise ManifestError("C-only exclusion conflicts with its canonical function signature")
+    c_symbols = [*c_functions_by_symbol, *excluded_only_symbols]
     release_symbols = [
         record["c"]["releaseFunction"]
         for record in manifest["types"]
@@ -2067,10 +2110,14 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     for record in requirement_bearing_records:
         if any(identifier not in root_requirements for identifier in record["requirementIds"]):
             raise ManifestError("manifest record references an unknown requirement ID")
+    for record in c_abi_record_constants:
+        if any(identifier not in root_requirements for identifier in record["requirementIds"]):
+            raise ManifestError("C ABI record constant references an unknown requirement ID")
     requirement_lists = [
         manifest["requirementIds"],
         *(record["requirementIds"] for record in [*manifest["types"], *manifest["functions"]]),
         *(record["requirementIds"] for record in requirement_bearing_records),
+        *(record["requirementIds"] for record in c_abi_record_constants),
     ]
     if any(identifiers != sorted(set(identifiers)) for identifiers in requirement_lists):
         raise ManifestError("requirement IDs must be unique and lexicographically sorted")
@@ -2084,6 +2131,52 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     }
     for type_record in manifest["types"]:
         _validate_c_value_layout(type_record["c"], c_type_names)
+    c_record_names = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "fixed-width-value" and record["c"].get("fields")
+    }
+    c_record_names.update(
+        (layout["name"], {"c": layout})
+        for layout in approved_c_layouts
+    )
+    c_only_exports = {
+        record["exportName"]
+        for record in manifest.get("approvedExclusions", [])
+        if record["packageId"] == "c-kmipkit"
+    }
+    if not c_abi_constant_names <= c_only_exports:
+        raise ManifestError("C ABI record constants must be recorded as C-only exports")
+    for constant in c_abi_record_constants:
+        record_name, field_name = constant["field"].split(".", maxsplit=1)
+        record = c_record_names.get(record_name)
+        field = None if record is None else next(
+            (item for item in record["c"]["fields"] if item["name"] == field_name),
+            None,
+        )
+        if field is None or field["type"] != "uint32_t":
+            raise ManifestError("C ABI record constant must identify a uint32_t record field")
+    c_record_field_type_names = set(c_handle_names) | set(c_record_names) | {
+        record["c"]["name"]
+        for record in manifest["types"]
+        if record["c"]["kind"] in {"enum", "fixed-width-value"}
+    }
+    for record in c_record_names.values():
+        fields = record["c"]["fields"]
+        field_names = [field["name"] for field in fields]
+        if len(set(field_names)) != len(field_names):
+            raise ManifestError("C record field names must be unique")
+        for field in fields:
+            field_type = field["type"]
+            match = re.fullmatch(
+                r"(const )?(uint8_t|uint16_t|uint32_t|uint64_t|int32_t|int64_t|kmipkit_[a-z0-9_]+_t)( \*)?",
+                field_type,
+            )
+            if match is None:
+                raise ManifestError("C record field type is not a supported fixed-width field")
+            base_name = field_type.removeprefix("const ").removesuffix(" *")
+            if base_name.startswith("kmipkit_") and base_name not in c_record_field_type_names:
+                raise ManifestError("C record field references an unknown manifest type")
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -2222,6 +2315,15 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         ),
                         None,
                     )
+                    if element_layout is None:
+                        element_layout = next(
+                            (
+                                layout
+                                for layout in approved_c_layouts
+                                if layout["name"] == element_type
+                            ),
+                            None,
+                        )
                     if not (
                         element_layout is not None
                         and element_layout.get("kind") == "fixed-width-value"
@@ -2766,6 +2868,11 @@ def render_c_header(
     manifest: dict[str, Any], *, include_blocked: bool = False, header_guard: str = "KMIPKIT_H"
 ) -> str:
     ready_c_exports = None if include_blocked else _ready_c_export_names(manifest)
+    excluded_c_function_symbols = {
+        exclusion["cFunction"]["symbol"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if isinstance(exclusion.get("cFunction"), dict)
+    }
     lines = [
         "/* @generated by tools/api_manifest/generate.py; do not edit. */",
         f"#ifndef {header_guard}",
@@ -2850,6 +2957,18 @@ def render_c_header(
         and (ready_c_exports is None or declaration["exportName"] in ready_c_exports)
         for declaration in manifest.get("publicDeclarations", [])
     ):
+        lines.append("")
+
+    for constant in manifest.get("cAbiRecordConstants", []):
+        if ready_c_exports is not None and constant["name"] not in ready_c_exports:
+            continue
+        lines.append(
+            f"/* C ABI record input for {constant['field']}: {constant['meaning']}. */"
+        )
+        lines.append(
+            f"#define {constant['name']} ((uint32_t){constant['value']})"
+        )
+    if manifest.get("cAbiRecordConstants"):
         lines.append("")
 
     # Forward declarations make pointer members independent of manifest order.
@@ -2941,6 +3060,7 @@ def render_c_header(
                 or c_type["releaseFunction"] in ready_c_exports
             )
         ):
+            lines.append(f"/* Releases the library-owned {c_type['name']} handle. */")
             lines.append(f"void {c_type['releaseFunction']}({c_type['name']} *handle);")
     for error in manifest["errorCategories"]:
         if (
@@ -2956,6 +3076,8 @@ def render_c_header(
             ready_c_exports is not None
             and function["c"]["symbol"] not in ready_c_exports
         ):
+            continue
+        if function["c"]["symbol"] in excluded_c_function_symbols:
             continue
         c_documentation = function["c"].get("documentation", [])
         if c_documentation:
@@ -3017,6 +3139,12 @@ def render_c_header(
             lines.append(" */")
         lines.append(f"/* Approved exact C-only exclusion: {exclusion['exportName']} */")
         lines.append(_c_declaration({"c": c_function}))
+    if not include_blocked and any(
+        capability.get("capabilityId") == "named_protocol_values"
+        and capability.get("capabilityState") in {"declared", "verified"}
+        for capability in manifest.get("capabilities", [])
+    ):
+        lines.append('#include "kmipkit_named_value_helpers_generated.h"')
     lines.extend(["", "#ifdef __cplusplus", "}", "#endif", f"#endif /* {header_guard} */", ""])
     return "\n".join(lines)
 
@@ -3316,7 +3444,14 @@ def render_java_api(manifest: dict[str, Any]) -> str:
             "class": function["java"]["class"],
             "method": function["java"]["method"],
             "returnType": function["java"]["returnType"],
-            "parameters": function["java"]["parameters"],
+            "parameters": [
+                {
+                    key: parameter[key]
+                    for key in ("name", "type", "nullable")
+                    if key in parameter
+                }
+                for parameter in function["java"]["parameters"]
+            ],
             "requirementIds": function["requirementIds"],
             "errorCategories": function["java"]["errorCategories"],
         }

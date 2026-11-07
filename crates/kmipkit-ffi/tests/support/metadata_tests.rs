@@ -85,6 +85,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "ffi_runtime_metadata",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
+            "named_protocol_values",
             "nonce_ttlv_parity",
             "opaque_register_context",
             "production_transport",
@@ -94,6 +95,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "typed_message_model",
             "usage_allocation_guard",
             "vendor_extension_registry",
+            "wire_encoding_selection",
         ]
     );
     for capability in crate::public_api_generated::C_AVAILABLE_CAPABILITIES {

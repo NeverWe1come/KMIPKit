@@ -1392,13 +1392,13 @@ int kmipkit_client_abi_c_consumer_validate_crypto_response_ttlv(
     kmipkit_client_batch_item_response_t *item, uint32_t operation_index) {
     static const uint32_t hash_tags[] = {UINT32_C(0x4200c2), UINT32_C(0x540001)};
     static const uint32_t mac_tags[] = {
-        UINT32_C(0x420094), UINT32_C(0x4200c4), UINT32_C(0x540001)};
+        UINT32_C(0x420094), UINT32_C(0x4200c6), UINT32_C(0x540001)};
     static const uint32_t mac_verify_tags[] = {
-        UINT32_C(0x420094), UINT32_C(0x420128), UINT32_C(0x540001)};
+        UINT32_C(0x420094), UINT32_C(0x42009b), UINT32_C(0x540001)};
     static const uint32_t sign_tags[] = {
         UINT32_C(0x420094), UINT32_C(0x4200c3), UINT32_C(0x540001)};
     static const uint32_t signature_verify_tags[] = {
-        UINT32_C(0x420094), UINT32_C(0x420128), UINT32_C(0x4200c2),
+        UINT32_C(0x420094), UINT32_C(0x42009b), UINT32_C(0x4200c2),
         UINT32_C(0x540001)};
     typedef int32_t (*response_ttlv_getter)(
         kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
