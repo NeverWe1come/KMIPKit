@@ -92,7 +92,10 @@ pub struct GcpConfig {
     pub project_id: Option<String>,
     pub location: Option<String>,
     pub key_ring: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub secret_name_prefix: Option<String>,
     pub envelope_master_kek_name: Option<String>,
+    pub access_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
