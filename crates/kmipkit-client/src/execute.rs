@@ -7047,11 +7047,12 @@ pub(super) fn validate_batch_error_continuation(
 }
 
 fn build_request_message(
-    batch: ClientBatch,
+    mut batch: ClientBatch,
     options: &ValidatedBatchOptions,
     maximum_response_size: Option<i32>,
 ) -> Result<RequestMessage, ProtocolError> {
-    let header = build_request_header(&batch, options, maximum_response_size)?;
+    let authentication = batch.authentication.take();
+    let header = build_request_header(&batch, options, maximum_response_size, authentication)?;
     let mut tree = Structure::new();
     push(&mut tree, REQUEST_HEADER, Value::structure(header))?;
     for item in batch.items {
@@ -7113,6 +7114,7 @@ fn build_request_header(
     batch: &ClientBatch,
     options: &ValidatedBatchOptions,
     maximum_response_size: Option<i32>,
+    authentication: Option<Authentication>,
 ) -> Result<Structure, ProtocolError> {
     let mut version_fields = Structure::new();
     push(
@@ -7154,10 +7156,8 @@ fn build_request_header(
         ATTESTATION_CAPABLE_INDICATOR,
         Value::boolean(true),
     )?;
-    if let Some(authentication) = &batch.authentication {
-        let tree = authentication
-            .with_ttlv(|value| value.try_clone())
-            .map_err(model_protocol_error)?;
+    if let Some(authentication) = authentication {
+        let tree = authentication.into_ttlv();
         push(&mut header, AUTHENTICATION, Value::structure(tree))?;
     }
     if let Some(value) = options.batch_error_continuation.encoded {
