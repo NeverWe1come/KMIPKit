@@ -44,6 +44,12 @@ fn cancel_exposes_matching_echo_and_assigned_cancellation_result() {
 
     assert_eq!(result.result().status().raw(), 0);
     assert_eq!(
+        result
+            .cancel_response()
+            .and_then(|typed| typed.cancellation_result()),
+        Some(CancellationResult::Completed)
+    );
+    assert_eq!(
         result.cancellation_result(),
         Some(CancellationResult::Completed)
     );

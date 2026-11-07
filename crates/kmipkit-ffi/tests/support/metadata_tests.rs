@@ -90,6 +90,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "opaque_register_context",
             "production_transport",
             "public_binding_surface",
+            "response_ttlv_navigation",
             "server_generated_creation",
             "ttlv_wire_codec",
             "typed_message_model",

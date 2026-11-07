@@ -676,6 +676,93 @@ def test_query_response_adopts_and_releases_owned_ttlv_handles(
     assert released == [handle, handle, handle]
 
 
+def test_response_raw_payload_and_header_adopt_owned_ttlv_copies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    released: list[object] = []
+    payload = object()
+    header = object()
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_raw_ttlv=response_ttlv,
+            kmipkit_client_batch_item_response_header_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    wrapped: list[object] = [payload, header]
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda _address: wrapped.pop(0),
+    )
+    result = client.BatchItemResult(
+        client.BatchOutcome.COMPLETED, 0, None, None, None
+    )
+    item = SimpleNamespace(_pointer=lambda: object())
+    object.__setattr__(result, "_native_response_item", item)
+
+    assert result.raw() is payload
+    assert result.response_header_ttlv() is header
+    assert released == []
+
+
+def test_absent_raw_payload_is_not_fabricated_and_header_requires_a_structure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    released: list[object] = []
+    handle = ffi.cast("kmipkit_ttlv_structure_t *", 456)
+    present = [0]
+
+    def response_ttlv(_item: object, output_present: object, output: object) -> int:
+        output_present[0] = present[0]  # type: ignore[index]
+        output[0] = ffi.NULL  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_raw_ttlv=response_ttlv,
+            kmipkit_client_batch_item_response_header_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    result = client.BatchItemResult(
+        client.BatchOutcome.COMPLETED, 0, None, None, None
+    )
+    object.__setattr__(result, "_native_response_item", SimpleNamespace(_pointer=object))
+
+    assert result.raw() is None
+    with pytest.raises(errors.InvalidInputError):
+        result.response_header_ttlv()
+
+    def absent_with_handle(_item: object, output_present: object, output: object) -> int:
+        output_present[0] = 0  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_raw_ttlv=absent_with_handle,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        result.raw()
+    assert released == [handle]
+
+
 def _opaque(type_name: str) -> tuple[object, object]:
     storage = ffi.new("uint8_t[]", b"\x00")
     return ffi.cast(f"{type_name} *", storage), storage

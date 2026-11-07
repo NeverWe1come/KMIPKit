@@ -94,6 +94,12 @@ fn query_executes_once_and_exposes_generic_response_structure() {
         }),
         Some(true)
     );
+    assert_eq!(
+        result
+            .query_async_requests_response()
+            .map(|typed| { typed.with_response_payload(|payload| payload.children().len()) }),
+        Some(Some(3))
+    );
     assert!(request_contains(&captured, CORRELATION));
     assert_eq!(fake.borrow().exchange_count(), 1);
     assert!(!format!("{result:?}").contains("QUERY_RESPONSE_SECRET"));

@@ -291,6 +291,8 @@ fn each_explicit_operation_call_performs_one_exchange_without_retry() {
         assert_eq!(response.items.len(), 1);
         assert_eq!(response.items[0].outcome().operation(), fixture.operation);
         assert_eq!(response.items[0].outcome().result().status().raw(), SUCCESS);
+        assert!(response.items[0].raw().is_some());
+        assert!(response.items[0].response_header_raw().is_some());
     }
 
     assert_eq!(state.borrow().requests.len(), OperationFixture::ALL.len());
@@ -663,6 +665,7 @@ fn reordered_hash_batch_responses_keep_the_original_request_context() {
     let result = client
         .execute(batch, &CodecLimits::defaults())
         .expect("responses reordered by ID retain their matching request framing");
+    let response_owner = std::sync::Arc::downgrade(&result.items[0].response);
 
     assert_eq!(
         result.items[0].unique_batch_item_id(),
@@ -671,6 +674,29 @@ fn reordered_hash_batch_responses_keep_the_original_request_context() {
     assert_eq!(
         result.items[1].unique_batch_item_id(),
         Some(&b"multipart-id"[..])
+    );
+    assert!(std::sync::Arc::ptr_eq(
+        &result.items[0].response,
+        &result.items[1].response
+    ));
+    assert_eq!(
+        result.items[0].response.batch_items().count(),
+        2,
+        "both public items retain the one decoded response message"
+    );
+    assert_eq!(
+        result.items[0].raw().map(|payload| payload
+            .children()
+            .iter()
+            .any(|item| item.tag().raw() == HASH_DATA)),
+        Some(true)
+    );
+    assert_eq!(
+        result.items[1].raw().map(|payload| payload
+            .children()
+            .iter()
+            .any(|item| item.tag().raw() == HASH_DATA)),
+        Some(false)
     );
     assert!(
         result.items[0]
@@ -686,6 +712,8 @@ fn reordered_hash_batch_responses_keep_the_original_request_context() {
             .hash()
             .is_some_and(|response| response.data().is_none())
     );
+    drop(result);
+    assert!(response_owner.upgrade().is_none());
 }
 
 #[test]

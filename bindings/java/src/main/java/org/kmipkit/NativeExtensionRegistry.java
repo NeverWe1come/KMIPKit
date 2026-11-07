@@ -540,6 +540,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseValidate(long itemResponse);
     public static native long[] clientBatchItemResponsePing(long itemResponse);
     public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
+    public static native Object[] clientBatchItemResponseRawTtlv(long itemResponse);
+    public static native long clientBatchItemResponseHeaderTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);
     public static native Object[] clientBatchItemResponsePkcs11(long itemResponse);
     public static native Object[] clientBatchItemResponseLog(long itemResponse);

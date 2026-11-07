@@ -39,6 +39,14 @@ fn pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copi
     assert_eq!(outcome.result().status().raw(), 2);
     assert_eq!(outcome.operation(), ClientOperation::Poll);
     assert!(outcome.is_pending());
+    assert!(
+        outcome
+            .poll_response()
+            .is_some_and(|response| response.is_pending())
+    );
+    assert!(outcome.cancel_response().is_none());
+    assert!(outcome.process_response().is_none());
+    assert!(outcome.query_async_requests_response().is_none());
     assert_eq!(
         outcome.with_asynchronous_correlation_value(<[u8]>::to_vec),
         Some(CORRELATION.to_vec())
@@ -47,6 +55,7 @@ fn pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copi
         outcome.with_response_payload(|payload| payload.children().len()),
         None
     );
+    assert!(outcome.raw().is_none());
     assert_eq!(outcome.with_cancel_echo(<[u8]>::len), None);
     assert_eq!(outcome.cancellation_result(), None);
     assert_eq!(shared_fake.borrow().exchange_count(), 1);
@@ -76,9 +85,22 @@ fn completed_poll_keeps_original_payload_generic_and_failure_has_no_payload() {
         .expect("Poll success carries an opaque original-operation payload");
     assert_eq!(outcome.result().status().raw(), 0);
     assert_eq!(
+        outcome
+            .poll_response()
+            .map(|response| response.result().status().raw()),
+        Some(0)
+    );
+    assert_eq!(
         outcome.with_response_payload(|payload| { payload.children()[0].tag().raw() }),
         Some(EXTENSION_TAG)
     );
+    assert_eq!(
+        outcome
+            .raw()
+            .map(|payload| payload.children()[0].tag().raw()),
+        Some(EXTENSION_TAG)
+    );
+    assert!(!format!("{outcome:?}").contains("opaque-original-operation"));
     assert_eq!(success_fake.borrow().exchange_count(), 1);
 
     let failure = asynchronous_response_bytes(POLL, 1, Some(1), None, None);

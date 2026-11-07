@@ -9113,6 +9113,67 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
     });
 }
 
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseRawTtlv(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_raw_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &response_ttlv);
+        if (status != 0) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || (present == 1 && response_ttlv == nullptr)
+                || (present == 0 && response_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray response_ttlv_handle = make_long_array(
+                env, {to_java_handle(response_ttlv)});
+        if (response_ttlv_handle == nullptr) {
+            env->DeleteLocalRef(fields);
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, response_ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(fields);
+        env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseHeaderTtlv(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* header = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_header_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &header);
+        if (status != 0) {
+            kmipkit_ttlv_structure_release(header);
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (present != 1 || header == nullptr) {
+            kmipkit_ttlv_structure_release(header);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(header);
+    });
+}
+
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseInterop(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jobjectArray>(env, nullptr, [&] {
@@ -11280,6 +11341,113 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_queryAsyncReque
             return kmipkit_query_async_requests_request_to_ttlv_payload(
                     from_java_handle<kmipkit_query_async_requests_request_t>(raw_request), output);
         });
+    });
+}
+
+using AsyncResponseReader = int32_t (*)(
+        kmipkit_client_async_operation_outcome_t*, uint8_t*,
+        kmipkit_client_async_operation_response_v1_t*);
+
+jlongArray read_async_response_v1(
+        JNIEnv* env, jlong raw_outcome, AsyncResponseReader reader) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        auto* outcome = from_java_handle<kmipkit_client_async_operation_outcome_t>(raw_outcome);
+        if (outcome == nullptr || reader == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        kmipkit_client_async_operation_response_v1_t response{};
+        uint8_t present = 0;
+        const int32_t status = reader(outcome, &present, &response);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present == 0) {
+            if (response.struct_size != 0 || response.abi_version != 0) throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present != 1 || response.struct_size != sizeof(response)
+                || response.abi_version != 1 || response.reserved != 0
+                || response.is_pending > 1 || response.has_cancellation_result > 1
+                || response.has_asynchronous_correlation_value > 1
+                || response.has_response_payload > 1
+                || (response.has_cancellation_result == 0 && response.cancellation_result != 0)
+                || (response.has_asynchronous_correlation_value == 0
+                        && (response.asynchronous_correlation_value.data != nullptr
+                                || response.asynchronous_correlation_value.length != 0))
+                || (response.has_asynchronous_correlation_value == 1
+                        && (response.asynchronous_correlation_value.length > 16 * 1024 * 1024
+                                || (response.asynchronous_correlation_value.length != 0
+                                        && response.asynchronous_correlation_value.data == nullptr)))
+                || (response.has_response_payload == 0
+                        && response.response_payload_member_count != 0)) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        const std::vector<jlong> values = {
+            response.abi_version, response.operation, response.result_status,
+            response.is_pending, response.has_cancellation_result,
+            response.cancellation_result, response.has_response_payload,
+            static_cast<jlong>(response.response_payload_member_count)};
+        jlongArray numbers = make_long_array(env, values);
+        if (numbers == nullptr || env->ExceptionCheck()) return static_cast<jlongArray>(nullptr);
+        return numbers;
+    });
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readCancelResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_cancel_response_v1);
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readPollResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_poll_response_v1);
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readProcessResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_process_response_v1);
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readQueryAsyncRequestsResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_query_async_requests_response_v1);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_withCancelResponseCorrelationValueV1(
+        JNIEnv* env, jclass, jlong raw_outcome, jobject callback) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* outcome = from_java_handle<kmipkit_client_async_operation_outcome_t>(raw_outcome);
+        if (outcome == nullptr || callback == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        kmipkit_client_async_operation_response_v1_t response{};
+        uint8_t present = 0;
+        const int32_t status = kmipkit_client_async_operation_outcome_cancel_response_v1(
+                outcome, &present, &response);
+        if (!check_status(env, [&] { return status; })) return static_cast<jboolean>(JNI_FALSE);
+        if (present == 0) {
+            if (response.struct_size != 0 || response.abi_version != 0) throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        if (present != 1 || response.struct_size != sizeof(response)
+                || response.abi_version != 1 || response.has_asynchronous_correlation_value > 1) {
+            throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        if (response.has_asynchronous_correlation_value == 0) {
+            if (response.asynchronous_correlation_value.data != nullptr
+                    || response.asynchronous_correlation_value.length != 0) throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        return call_with_correlation_value(env, response.asynchronous_correlation_value, callback);
     });
 }
 

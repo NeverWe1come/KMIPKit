@@ -58,6 +58,8 @@ const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
+const VENDOR_KEY_BLOCK_EXTENSION: u32 = 0x0054_0001;
+const VENDOR_NESTED_VALUE: u32 = 0x0054_0002;
 
 const CREATE_BATCH_ID: &[u8] = b"get-placeholder-create";
 const GET_BATCH_ID: &[u8] = b"get-placeholder-read";
@@ -351,6 +353,77 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
     assert!(outcome_display.contains("status 0"));
     assert!(!response_debug.contains("opaque-get-response"));
     assert!(!outcome_debug.contains("opaque-get-response"));
+}
+
+#[test]
+fn get_raw_response_navigates_vendor_ttlv_nested_inside_key_block() {
+    let key_block = test_structure([
+        test_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        test_item(
+            KEY_VALUE,
+            Value::structure(test_structure([test_item(
+                KEY_MATERIAL,
+                Value::byte_string(b"opaque-get-response".to_vec()),
+            )])),
+        ),
+        test_item(
+            VENDOR_KEY_BLOCK_EXTENSION,
+            Value::structure(test_structure([test_item(
+                VENDOR_NESTED_VALUE,
+                Value::integer(0x1234),
+            )])),
+        ),
+    ]);
+    let payload = test_structure([
+        test_item(OBJECT_TYPE, Value::enumeration(2)),
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("get-vendor-extension-id".to_owned()),
+        ),
+        test_item(
+            SYMMETRIC_KEY,
+            Value::structure(test_structure([test_item(
+                KEY_BLOCK,
+                Value::structure(key_block),
+            )])),
+        ),
+    ]);
+    let response = one_item_response_bytes(GET_OPERATION, 0, None, None, None, None, Some(payload));
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let result = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+                get_with_explicit_identifier(),
+            ))),
+            &CodecLimits::defaults(),
+        )
+        .expect("the valid Get response retains unknown nested fields");
+    let item = result.get(0).expect("the response has one item");
+    let raw = item.raw().expect("the Get response has a payload");
+    assert!(raw.children().iter().any(|item| {
+        item.tag().raw() == SYMMETRIC_KEY
+            && item.as_structure().is_some_and(|object| {
+                object.children().iter().any(|item| {
+                    item.tag().raw() == KEY_BLOCK
+                        && item.as_structure().is_some_and(|key_block| {
+                            key_block.children().iter().any(|item| {
+                                item.tag().raw() == VENDOR_KEY_BLOCK_EXTENSION
+                                    && item.as_structure().is_some_and(|vendor| {
+                                        vendor.children().iter().any(|item| {
+                                            item.tag().raw() == VENDOR_NESTED_VALUE
+                                                && item.with_value(|value| {
+                                                    matches!(value, ValueView::Integer(0x1234))
+                                                })
+                                        })
+                                    })
+                            })
+                        })
+                })
+            })
+    }));
 }
 
 #[test]

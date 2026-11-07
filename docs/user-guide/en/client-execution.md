@@ -259,6 +259,38 @@ message. Accordingly, the shared success and Pending fixtures omit it, while
 `creation.result-message-on-failure.v1` checks exact text and UTF-8 preservation
 on an Operation Failed result.
 
+## Navigating response TTLV
+
+Each high-level batch response item exposes `raw()` for its decoded Response
+Payload and `response_header_raw()` for the common Response Header. Rust returns
+borrowed `StructureView`s tied to the response item. `None` means the server
+sent no Response Payload; a present empty Structure remains an empty view.
+Use the ordered child items and `Item::as_structure()` to reach any nested
+Structure, including vendor extensions inside a Get `KeyBlock` or Query Server
+Information. Unknown tags, repeated items, item types, values, and source order
+remain available.
+
+C exposes `kmipkit_client_batch_item_response_raw_ttlv` and
+`kmipkit_client_batch_item_response_header_ttlv`. The returned Structure
+handles are owned copies; release them with `kmipkit_ttlv_structure_release`.
+The raw payload function reports an absent payload with `out_present = 0` and a
+null handle. Java's `ClientBatchItemResult.raw()` returns
+`Optional<TtlvStructure>` and `responseHeaderTtlv()` returns an owned
+`TtlvStructure`; close each structure when finished. Python's `BatchItemResult`
+provides `raw()` and `response_header_ttlv()` as owned `ttlv.Structure` values;
+use their context managers or call `close()`.
+
+Foreign-language structures are independent copies and remain usable after
+the response result is closed. KMIPKit zeroizes its owned copies on release.
+Copies or values made by application code remain the application's
+responsibility; Java and Python runtimes do not promise deterministic wiping of
+external copies. Default formatting and errors redact response values. Read
+secret-bearing fields only when needed and do not log them.
+
+`raw()` exposes the decoded TTLV tree, not the received wire bytes. The decoder
+discards padding, so the API does not promise byte-for-byte reproduction of a
+network response.
+
 `Client::new` constructs a production client from an immutable client
 configuration and a validated `TransportConfig`. It accepts TTLV, JSON, or
 XML over raw TLS and HTTPS/HTTP 1.1; it does not accept caller-implemented
@@ -388,6 +420,21 @@ Java and Python expose the correlation through an explicit callback as a
 read-only view backed by temporary KMIPKit-managed storage. The temporary
 storage is zeroized before the callback method returns, including when the
 callback raises. Any copy made by application code is caller-owned.
+
+Each async outcome offers an operation-specific response view: `cancelResponse()`/
+`cancel_response()`, `pollResponse()`/`poll_response()`,
+`processResponse()`/`process_response()`, and
+`queryAsyncRequestsResponse()`/`query_async_requests_response()`. Rust uses
+the corresponding snake-case readers, and the C ABI has one `_response_v1`
+function for each operation. A reader returns absence for another operation.
+Cancel exposes the Cancellation Result; Poll and Process expose Pending state;
+Process also exposes payload presence and member count. All views retain or
+borrow from the outcome owner, so Java/Python views cannot be used after the
+outcome is closed. Generic payload access remains available through `raw()`;
+Query Asynchronous Requests deliberately leaves its payload generic because
+KMIP v2.1 §6.1.41 Table 286 has a caption/body discrepancy. C correlation
+spans and Java/Python callbacks read the outcome-owned bytes without storing a
+second correlation copy.
 
 ## Resource limits
 

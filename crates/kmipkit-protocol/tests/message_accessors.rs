@@ -297,12 +297,37 @@ fn request_batch_and_extension_accessors_preserve_order_and_values() {
 }
 
 #[test]
-fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
+fn response_header_raw_preserves_order_unknown_fields_and_repetitions() {
     let message = response();
-    let mut items = message.batch_items();
-    let failure = items.next().expect("failure item exists");
-    let success = items.next().expect("success item exists");
-    let pending = items.next().expect("pending item exists");
+    let header = message
+        .header()
+        .raw()
+        .expect("validated Response Header exists");
+    assert_eq!(header.children().len(), 9);
+    assert_eq!(
+        header
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        [
+            PROTOCOL_VERSION,
+            TIME_STAMP,
+            NONCE,
+            SERVER_HASHED_PASSWORD,
+            ATTESTATION_TYPE,
+            ATTESTATION_TYPE,
+            CLIENT_CORRELATION_VALUE,
+            SERVER_CORRELATION_VALUE,
+            BATCH_COUNT,
+        ]
+    );
+}
+
+#[test]
+fn failure_response_payload_raw_is_absent() {
+    let message = response();
+    let failure = message.batch_items().next().expect("failure item exists");
 
     assert_eq!(failure.operation(), Some(7));
     assert_eq!(
@@ -326,12 +351,23 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
         Some("failure detail".to_owned())
     );
     assert_eq!(failure.with_response_payload(|_| ()), None);
+    assert!(failure.raw().is_none());
     assert_eq!(
         failure.with_asynchronous_correlation_value(<[u8]>::to_vec),
         None
     );
+}
 
+#[test]
+fn success_response_payload_raw_preserves_empty_structure_and_extensions() {
+    let message = response();
+    let success = message.batch_items().nth(1).expect("success item exists");
     assert_eq!(success.operation(), Some(8));
+    assert!(
+        success
+            .raw()
+            .is_some_and(|payload| payload.children().is_empty())
+    );
     assert_eq!(
         success.with_response_payload(|payload| payload.children().len()),
         Some(0)
@@ -351,8 +387,18 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
         extension.with_vendor_extension(|value| value.children().len()),
         Some(1)
     );
+}
 
+#[test]
+fn pending_response_payload_raw_preserves_empty_shape_and_correlation() {
+    let message = response();
+    let pending = message.batch_items().nth(2).expect("pending item exists");
     assert_eq!(pending.operation(), Some(9));
+    assert!(
+        pending
+            .raw()
+            .is_some_and(|payload| payload.children().is_empty())
+    );
     assert_eq!(
         pending
             .result_status()

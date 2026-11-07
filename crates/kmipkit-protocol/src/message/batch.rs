@@ -127,6 +127,16 @@ impl<'a> ResponseBatchItemView<'a> {
             .with_root_item_structure(self.root_index, callback)
     }
 
+    /// Borrows the Response Payload as its original ordered TTLV Structure.
+    ///
+    /// Returns `None` when this result has no Response Payload. The view
+    /// borrows the owning Response Message and preserves nested and unknown
+    /// fields without reconstructing wire padding.
+    #[must_use]
+    pub fn raw(self) -> Option<StructureView<'a>> {
+        self.message.response_payload_structure(self.root_index)
+    }
+
     /// Returns the optional raw Operation Enumeration.
     #[must_use]
     pub fn operation(self) -> Option<u32> {

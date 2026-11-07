@@ -1381,6 +1381,120 @@ class AsyncOperationOutcome(_ClientHandle):
                     secret[index] = 0
             return True
 
+    def cancel_response(self) -> AsyncCancelResponse | None:
+        """Return the typed Cancel response view when this outcome is a valid Cancel."""
+        response = self._typed_response(
+            "kmipkit_client_async_operation_outcome_cancel_response_v1", 0x19
+        )
+        return None if response is None else AsyncCancelResponse(self, response)
+
+    def poll_response(self) -> AsyncPollResponse | None:
+        """Return the typed Poll response view when this outcome is a valid Poll."""
+        response = self._typed_response(
+            "kmipkit_client_async_operation_outcome_poll_response_v1", 0x1A
+        )
+        return None if response is None else AsyncPollResponse(self, response)
+
+    def process_response(self) -> AsyncProcessResponse | None:
+        """Return the typed Process response view when this outcome is a valid Process."""
+        response = self._typed_response(
+            "kmipkit_client_async_operation_outcome_process_response_v1", 0x3A
+        )
+        return None if response is None else AsyncProcessResponse(self, response)
+
+    def query_async_requests_response(self) -> AsyncQueryAsyncRequestsResponse | None:
+        """Return the generic-payload Query Asynchronous Requests response view."""
+        response = self._typed_response(
+            "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+            0x39,
+        )
+        return None if response is None else AsyncQueryAsyncRequestsResponse(self, response)
+
+    def _typed_response(self, symbol: str, expected_operation: int):
+        output = ffi.new("kmipkit_client_async_operation_response_v1_t *")
+        present = ffi.new("uint8_t *")
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(getattr(lib, symbol)(self._pointer(), present, output))
+        if present[0] == 0:
+            if output.abi_version != 0 or output.struct_size != 0:
+                errors.raise_for_status(4)
+            return None
+        if present[0] != 1:
+            errors.raise_for_status(4)
+        if (
+            output.struct_size != ffi.sizeof("kmipkit_client_async_operation_response_v1_t")
+            or output.abi_version != 1
+            or output.operation != expected_operation
+            or output.is_pending not in (0, 1)
+            or output.has_cancellation_result not in (0, 1)
+            or output.has_asynchronous_correlation_value not in (0, 1)
+            or output.has_response_payload not in (0, 1)
+            or output.reserved != 0
+        ):
+            errors.raise_for_status(4)
+        if (
+            (output.has_cancellation_result == 0 and output.cancellation_result != 0)
+            or (
+                output.has_asynchronous_correlation_value == 0
+                and (
+                    output.asynchronous_correlation_value.data != ffi.NULL
+                    or output.asynchronous_correlation_value.length != 0
+                )
+            )
+            or (
+                output.has_asynchronous_correlation_value == 1
+                and (
+                    output.asynchronous_correlation_value.length > _MAX_INPUT_BYTES
+                    or (
+                        output.asynchronous_correlation_value.length
+                        and output.asynchronous_correlation_value.data == ffi.NULL
+                    )
+                )
+            )
+            or (
+                output.has_response_payload == 0
+                and output.response_payload_member_count != 0
+            )
+        ):
+            errors.raise_for_status(4)
+        return output
+
+    def _with_typed_correlation_value(
+        self, symbol: str, callback: Callable[[memoryview], object]
+    ) -> bool:
+        if not callable(callback):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            response = self._typed_response(
+                symbol,
+                {
+                    "kmipkit_client_async_operation_outcome_cancel_response_v1": 0x19,
+                    "kmipkit_client_async_operation_outcome_poll_response_v1": 0x1A,
+                    "kmipkit_client_async_operation_outcome_process_response_v1": 0x3A,
+                }[symbol],
+            )
+            if response is None or response.has_asynchronous_correlation_value == 0:
+                return False
+            span = response.asynchronous_correlation_value
+            secret = (
+                bytearray(ffi.buffer(span.data, int(span.length)))
+                if span.length
+                else bytearray()
+            )
+        borrowed: memoryview | None = None
+        try:
+            borrowed = memoryview(secret).toreadonly()
+            callback(borrowed)
+        finally:
+            if borrowed is not None:
+                try:
+                    borrowed.release()
+                except ValueError:
+                    pass
+            for index in range(len(secret)):
+                secret[index] = 0
+        return True
+
     @property
     def extension_count(self) -> int:
         """Return the number of accepted response Message Extensions in wire order."""
@@ -1421,7 +1535,7 @@ class AsyncOperationOutcome(_ClientHandle):
 
     @property
     def response_payload_ttlv(self) -> ttlv.Structure | None:
-        """Copy a successful generic Response Payload into an owned TTLV handle."""
+        """Copy a present generic Response Payload into an owned TTLV handle."""
         present = ffi.new("uint8_t *")
         output = ffi.new("kmipkit_ttlv_structure_t **")
         with _NATIVE_CALL_LOCK:
@@ -1445,6 +1559,125 @@ class AsyncOperationOutcome(_ClientHandle):
             except Exception:
                 lib.kmipkit_ttlv_structure_release(output[0])
                 raise
+
+
+class AsyncOperationResponseV1:
+    """Borrowed typed response view that remains valid only while its outcome is open."""
+
+    __slots__ = ("_outcome",)
+
+    def __init__(self, outcome: AsyncOperationOutcome) -> None:
+        self._outcome = outcome
+
+    @property
+    def result(self) -> AsyncOperationMetadataV1:
+        """Return the common operation result while the owner remains open."""
+        return self._outcome.metadata_v1
+
+    @property
+    def raw(self) -> ttlv.Structure | None:
+        """Return an owned generic TTLV copy of this response payload, if present."""
+        return self._outcome.response_payload_ttlv
+
+class AsyncCancelResponse(AsyncOperationResponseV1):
+    """Typed Cancel fields with its echoed correlation value retained in raw TTLV."""
+
+    __slots__ = ("_cancellation_result",)
+
+    def __init__(self, outcome: AsyncOperationOutcome, response) -> None:
+        super().__init__(outcome)
+        self._cancellation_result = (
+            int(response.cancellation_result)
+            if response.has_cancellation_result
+            else None
+        )
+
+    @property
+    def cancellation_result(self) -> int | None:
+        """Return the preserved Cancellation Result for successful Cancel responses."""
+        self._outcome._pointer()
+        return self._cancellation_result
+
+    def with_echoed_correlation_value(
+        self, callback: Callable[[memoryview], object]
+    ) -> bool:
+        """Borrow the Cancel echo for a callback and wipe the temporary view afterward."""
+        return self._outcome._with_typed_correlation_value(
+            "kmipkit_client_async_operation_outcome_cancel_response_v1", callback
+        )
+
+
+class AsyncPollResponse(AsyncOperationResponseV1):
+    """Typed Poll status and correlation view with optional generic response payload."""
+
+    __slots__ = ("_is_pending",)
+
+    def __init__(self, outcome: AsyncOperationOutcome, response) -> None:
+        super().__init__(outcome)
+        self._is_pending = bool(response.is_pending)
+
+    @property
+    def is_pending(self) -> bool:
+        """Return whether another caller-selected Poll is required."""
+        self._outcome._pointer()
+        return self._is_pending
+
+    def with_asynchronous_correlation_value(
+        self, callback: Callable[[memoryview], object]
+    ) -> bool:
+        """Borrow the Pending correlation value through the caller callback."""
+        return self._outcome.with_asynchronous_correlation_value(callback)
+
+
+class AsyncProcessResponse(AsyncOperationResponseV1):
+    """Typed Process status, payload shape, and correlation view."""
+
+    __slots__ = ("_is_pending", "_payload_member_count")
+
+    def __init__(self, outcome: AsyncOperationOutcome, response) -> None:
+        super().__init__(outcome)
+        self._is_pending = bool(response.is_pending)
+        self._payload_member_count = (
+            int(response.response_payload_member_count)
+            if response.has_response_payload
+            else None
+        )
+
+    @property
+    def is_pending(self) -> bool:
+        """Return whether this Process response remains Pending."""
+        self._outcome._pointer()
+        return self._is_pending
+
+    @property
+    def payload_member_count(self) -> int | None:
+        """Return the count for a present Process Response Payload Structure."""
+        self._outcome._pointer()
+        return self._payload_member_count
+
+    def with_asynchronous_correlation_value(
+        self, callback: Callable[[memoryview], object]
+    ) -> bool:
+        """Borrow the Pending correlation value through the caller callback."""
+        return self._outcome.with_asynchronous_correlation_value(callback)
+
+
+class AsyncQueryAsyncRequestsResponse(AsyncOperationResponseV1):
+    """Typed Query Asynchronous Requests result with generic, uninterpreted payload."""
+
+    def __init__(self, outcome: AsyncOperationOutcome, _response) -> None:
+        super().__init__(outcome)
+
+    @property
+    def is_pending(self) -> bool:
+        """Return whether this Query Asynchronous Requests response is Pending."""
+        return self.result.result_status == 2
+
+    def with_asynchronous_correlation_value(
+        self, callback: Callable[[memoryview], object]
+    ) -> bool:
+        """Borrow the response correlation value for this callback."""
+        return self._outcome.with_asynchronous_correlation_value(callback)
 
 
 class Batch(_ClientHandle):
@@ -1576,7 +1809,7 @@ class Batch(_ClientHandle):
 
 class _BatchItemResultNativeState:
     __slots__ = (
-        "_native_response_extensions",
+        "_native_response_item",
         "_native_usage_allocation_response",
         "_rng_retrieve_response",
         "_rng_seed_response",
@@ -1662,7 +1895,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     )
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "_native_response_extensions", None)
+        object.__setattr__(self, "_native_response_item", None)
         object.__setattr__(self, "_native_usage_allocation_response", None)
         object.__setattr__(self, "_rng_retrieve_response", None)
         object.__setattr__(self, "_rng_seed_response", None)
@@ -1686,7 +1919,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     @property
     def extension_count(self) -> int:
         """Return the number of accepted response Message Extensions in wire order."""
-        item = self._native_response_extensions
+        item = self._native_response_item
         if item is None:
             return 0
         return _client_scalar(
@@ -1703,7 +1936,7 @@ class BatchItemResult(_BatchItemResultNativeState):
         count = self.extension_count
         if position >= count:
             errors.raise_for_status(4)
-        item = self._native_response_extensions
+        item = self._native_response_item
         if item is None:
             errors.raise_for_status(4)
 
@@ -1725,6 +1958,31 @@ class BatchItemResult(_BatchItemResultNativeState):
             except Exception:
                 lib.kmipkit_ttlv_structure_release(output[0])
                 raise
+
+    def raw(self) -> ttlv.Structure | None:
+        """Return an owned copy of the decoded Response Payload, when present.
+
+        Close the returned structure when finished. The copy retains ordered TTLV values but does
+        not reproduce network padding or promise byte-for-byte equality with the received message.
+        """
+        item = self._native_response_item
+        if item is None:
+            errors.raise_for_status(4)
+        return _response_structure(
+            item, lib.kmipkit_client_batch_item_response_raw_ttlv, required=False
+        )
+
+    def response_header_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the ordered Response Header TTLV structure."""
+        item = self._native_response_item
+        if item is None:
+            errors.raise_for_status(4)
+        result = _response_structure(
+            item, lib.kmipkit_client_batch_item_response_header_ttlv, required=True
+        )
+        if result is None:
+            errors.raise_for_status(4)
+        return result
 
     def create_usage_allocation_context(
         self, requested_units: int, usage_limits_unit: int
@@ -2618,13 +2876,15 @@ class BatchResult(_ClientHandle):
 
     def close(self) -> None:
         with _NATIVE_CALL_LOCK:
+            closed_handles: set[int] = set()
             for item in self.items:
-                native_response = item._native_usage_allocation_response
-                if native_response is not None:
-                    native_response.close()
-                native_extensions = item._native_response_extensions
-                if native_extensions is not None:
-                    native_extensions.close()
+                for native_response in (
+                    item._native_response_item,
+                    item._native_usage_allocation_response,
+                ):
+                    if native_response is not None and id(native_response) not in closed_handles:
+                        native_response.close()
+                        closed_handles.add(id(native_response))
             super().close()
 
 
@@ -3788,9 +4048,8 @@ def _batch_result(
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
-                if extension_count[0] > 0:
-                    object.__setattr__(result, "_native_response_extensions", item)
-                    keep_item_handle = True
+                object.__setattr__(result, "_native_response_item", item)
+                keep_item_handle = True
                 items.append(result)
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -3805,13 +4064,15 @@ def _batch_result(
         response.items = tuple(items)
         return response
     except Exception:
+        closed_handles: set[int] = set()
         for item in items:
-            native_response = item._native_usage_allocation_response
-            if native_response is not None:
-                native_response.close()
-            native_extensions = item._native_response_extensions
-            if native_extensions is not None:
-                native_extensions.close()
+            for native_response in (
+                item._native_response_item,
+                item._native_usage_allocation_response,
+            ):
+                if native_response is not None and id(native_response) not in closed_handles:
+                    native_response.close()
+                    closed_handles.add(id(native_response))
         response.close()
         raise
 
@@ -5353,6 +5614,37 @@ def _query_response(item: _ClientBatchItemResponse) -> ttlv.Structure | None:
         raise
 
 
+def _response_structure(
+    item: _ClientBatchItemResponse,
+    function: Any,
+    *,
+    required: bool,
+) -> ttlv.Structure | None:
+    present = ffi.new("uint8_t *")
+    output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = function(item._pointer(), present, output)
+    handle = output[0]
+    if status != 0:
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
+        _raise_abi_status(status)
+    if present[0] not in (0, 1) or (present[0] == 1) != (handle != ffi.NULL):
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if required:
+            errors.raise_for_status(4)
+        return None
+    try:
+        return ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(handle)
+        raise
+
+
 def _interop_response(item: _ClientBatchItemResponse) -> InteropResponse | None:
     present = ffi.new("uint8_t *")
     response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
@@ -6255,6 +6547,11 @@ __all__ = [
     "ArchiveResponse",
     "AsyncOperationMetadataV1",
     "AsyncOperationOutcome",
+    "AsyncOperationResponseV1",
+    "AsyncCancelResponse",
+    "AsyncPollResponse",
+    "AsyncProcessResponse",
+    "AsyncQueryAsyncRequestsResponse",
     "Batch",
     "BatchItemMetadataV2",
     "BatchItemResult",

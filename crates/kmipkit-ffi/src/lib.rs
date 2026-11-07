@@ -100,6 +100,25 @@ pub struct kmipkit_client_async_operation_metadata_v1_t {
     pub result_message_data: *const u8,
     pub result_message_length: u64,
 }
+
+/// Fixed-width typed view of one asynchronous response. Correlation bytes
+/// borrow from the open outcome; the Table 286 payload remains generic TTLV.
+#[repr(C)]
+#[derive(Default)]
+pub struct kmipkit_client_async_operation_response_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub operation: u32,
+    pub result_status: u32,
+    pub is_pending: u32,
+    pub has_cancellation_result: u32,
+    pub cancellation_result: u32,
+    pub has_asynchronous_correlation_value: u32,
+    pub asynchronous_correlation_value: kmipkit_byte_span_v1_t,
+    pub has_response_payload: u32,
+    pub reserved: u32,
+    pub response_payload_member_count: u64,
+}
 #[repr(C)]
 pub struct kmipkit_usage_allocation_context_t {
     _private: [u8; 0],

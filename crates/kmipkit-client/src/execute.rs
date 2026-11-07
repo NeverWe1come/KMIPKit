@@ -3,6 +3,7 @@
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
+use std::sync::Arc;
 
 use crate::ClientErrorResponseTtlv;
 use kmipkit_protocol::attribute::{
@@ -1887,6 +1888,53 @@ impl ClientOperationOutcome {
             .next()?
             .with_response_payload(callback)
     }
+
+    /// Borrows the decoded ordered Response Payload, when one is present.
+    ///
+    /// The view is tied to this outcome and does not reproduce discarded TTLV
+    /// padding or expose raw network bytes.
+    #[must_use]
+    pub fn raw(&self) -> Option<StructureView<'_>> {
+        self.response.batch_items().next()?.raw()
+    }
+
+    /// Returns the typed Cancel response when this outcome is Cancel.
+    #[must_use]
+    pub fn cancel_response(&self) -> Option<CancelResponse<'_>> {
+        if self.operation != ClientOperation::Cancel {
+            return None;
+        }
+        CancelResponse::try_from_response_item(self.response.batch_items().next()?).ok()
+    }
+
+    /// Returns the typed Poll response when this outcome is Poll.
+    #[must_use]
+    pub fn poll_response(&self) -> Option<PollResponse<'_>> {
+        if self.operation != ClientOperation::Poll {
+            return None;
+        }
+        PollResponse::try_from_response_item(self.response.batch_items().next()?).ok()
+    }
+
+    /// Returns the typed Process response when this outcome is Process.
+    #[must_use]
+    pub fn process_response(&self) -> Option<ProcessResponse<'_>> {
+        if self.operation != ClientOperation::Process {
+            return None;
+        }
+        ProcessResponse::try_from_response_item(self.response.batch_items().next()?).ok()
+    }
+
+    /// Returns the typed Query Asynchronous Requests response when this outcome
+    /// is Query Asynchronous Requests. Its payload remains generic while the
+    /// Table 286 discrepancy is unresolved.
+    #[must_use]
+    pub fn query_async_requests_response(&self) -> Option<QueryAsyncRequestsResponse<'_>> {
+        if self.operation != ClientOperation::QueryAsyncRequests {
+            return None;
+        }
+        QueryAsyncRequestsResponse::try_from_response_item(self.response.batch_items().next()?).ok()
+    }
 }
 
 impl fmt::Debug for ClientOperationOutcome {
@@ -3757,6 +3805,17 @@ pub struct ClientBatchItemResponse {
     unique_batch_item_id: Option<Vec<u8>>,
     outcome: ClientBatchOutcome,
     extensions: Vec<ClientMessageExtension>,
+    response: Arc<ResponseMessage>,
+    response_index: usize,
+    #[cfg(test)]
+    pending_owner_observer: Option<ZeroizationObserver>,
+}
+
+struct PendingClientBatchItemResponse {
+    unique_batch_item_id: Option<Vec<u8>>,
+    outcome: ClientBatchOutcome,
+    extensions: Vec<ClientMessageExtension>,
+    response_index: usize,
     #[cfg(test)]
     pending_owner_observer: Option<ZeroizationObserver>,
 }
@@ -3780,6 +3839,22 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub fn unique_batch_item_id(&self) -> Option<&[u8]> {
         self.unique_batch_item_id.as_deref()
+    }
+
+    /// Borrows the decoded ordered Response Payload, when one is present.
+    ///
+    /// `None` means the server response contained no Response Payload; an
+    /// actual empty Structure returns an empty view. The view is tied to this
+    /// result item, and it is not a byte-exact copy of the network message.
+    #[must_use]
+    pub fn raw(&self) -> Option<StructureView<'_>> {
+        self.response.batch_items().nth(self.response_index)?.raw()
+    }
+
+    /// Borrows the common ordered Response Header TTLV for this batch result.
+    #[must_use]
+    pub fn response_header_raw(&self) -> Option<StructureView<'_>> {
+        self.response.header().raw()
     }
 
     /// Lends the successful Discover Versions response list, when this item
@@ -3857,6 +3932,12 @@ impl ClientBatchResponse {
     #[must_use = "use the iterator or explicitly ignore its results"]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = &ClientBatchItemResponse> + '_ {
         self.items.iter()
+    }
+
+    /// Borrows the ordered Response Header TTLV when this response has an item.
+    #[must_use]
+    pub fn response_header_raw(&self) -> Option<StructureView<'_>> {
+        self.items.first()?.response_header_raw()
     }
 }
 
@@ -7584,15 +7665,33 @@ fn validate_response(
         #[cfg(test)]
         pending_owner_observer,
     );
-    result.map_err(|error| {
-        let response_ttlv = error
-            .retains_generic_response()
-            .then(|| ClientErrorResponseTtlv::new(response));
-        ResponseValidationError {
-            error,
-            response_ttlv,
+    match result {
+        Ok(pending_items) => {
+            let response = Arc::new(response);
+            let items = pending_items
+                .into_iter()
+                .map(|item| ClientBatchItemResponse {
+                    unique_batch_item_id: item.unique_batch_item_id,
+                    outcome: item.outcome,
+                    extensions: item.extensions,
+                    response: Arc::clone(&response),
+                    response_index: item.response_index,
+                    #[cfg(test)]
+                    pending_owner_observer: item.pending_owner_observer,
+                })
+                .collect();
+            Ok(ClientBatchResponse { items })
         }
-    })
+        Err(error) => {
+            let response_ttlv = error
+                .retains_generic_response()
+                .then(|| ClientErrorResponseTtlv::new(response));
+            Err(ResponseValidationError {
+                error,
+                response_ttlv,
+            })
+        }
+    }
 }
 
 fn validate_response_inner(
@@ -7602,7 +7701,7 @@ fn validate_response_inner(
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
-) -> Result<ClientBatchResponse, ProtocolError> {
+) -> Result<Vec<PendingClientBatchItemResponse>, ProtocolError> {
     if !protocol_version_is_supported(response.header().protocol_version()) {
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
@@ -7640,17 +7739,18 @@ fn validate_response_inner(
         {
             observer.expect_initialized_len(pending.asynchronous_correlation_value.len());
         }
-        ordered.push(ClientBatchItemResponse {
+        ordered.push(PendingClientBatchItemResponse {
             unique_batch_item_id: request_identities[request_index]
                 .unique_batch_item_id
                 .clone(),
             outcome,
             extensions,
+            response_index,
             #[cfg(test)]
             pending_owner_observer: pending_owner_observer.cloned(),
         });
     }
-    Ok(ClientBatchResponse { items: ordered })
+    Ok(ordered)
 }
 
 fn response_outcome(
