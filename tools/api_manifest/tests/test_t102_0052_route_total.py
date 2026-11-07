@@ -44,7 +44,30 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
 
         baseline_exclusions = len(baseline["approvedExclusions"])
         current_exclusions = len(current["approvedExclusions"])
-        self.assertEqual(2, current_exclusions - baseline_exclusions)
+        self.assertEqual(5, current_exclusions - baseline_exclusions)
+        self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
+
+    def test_async_response_v1_record_exclusions_are_in_the_snapshot(self) -> None:
+        baseline_bytes = subprocess.run(
+            [
+                "git",
+                "show",
+                f"{KMIPKIT_0051_BASELINE}:specification/api/public-api.json",
+            ],
+            cwd=REPOSITORY_ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        baseline = json.loads(baseline_bytes)
+        current = json.loads(
+            (REPOSITORY_ROOT / "specification/api/public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        baseline_exclusions = len(baseline["approvedExclusions"])
+        current_exclusions = len(current["approvedExclusions"])
+        self.assertEqual(5, current_exclusions - baseline_exclusions)
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
 
 
