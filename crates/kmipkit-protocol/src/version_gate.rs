@@ -30,7 +30,7 @@ pub enum VersionGateError {
         /// The earliest protocol version where this attribute was introduced.
         introduced: ProtocolVersion,
     },
-    /// An attribute mutation (such as SetAttribute) is prohibited in the negotiated version.
+    /// An attribute mutation (such as `SetAttribute`) is prohibited in the negotiated version.
     AttributeMutationProhibitedInVersion {
         /// The raw TTLV tag of the attribute.
         tag: u32,

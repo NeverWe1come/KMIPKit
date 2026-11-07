@@ -108,4 +108,24 @@ fn kmip20_prohibits_mutation_of_seven_cryptographic_attributes() {
         // Under 2.1, attribute mutation is permitted
         assert!(VersionGate::validate_attribute_mutation(ProtocolVersion::V2_1, tag).is_ok());
     }
+
+    // Format check for AttributeMutationProhibitedInVersion
+    let err_display = VersionGateError::AttributeMutationProhibitedInVersion {
+        tag: CRYPTOGRAPHIC_ALGORITHM_TAG,
+        version: ProtocolVersion::V2_0,
+    };
+    assert!(format!("{err_display}").contains("prohibited under KMIP 2.0"));
+
+    // Mutation of non-rotate attribute under KMIP 2.0 is allowed
+    assert!(VersionGate::validate_attribute_mutation(ProtocolVersion::V2_0, 0x0042_9999).is_ok());
+
+    // Uncatalogued version rejected
+    assert_eq!(
+        VersionGate::validate_attribute_mutation(
+            ProtocolVersion::from_raw(99, 99),
+            CRYPTOGRAPHIC_ALGORITHM_TAG
+        )
+        .unwrap_err(),
+        VersionGateError::UnsupportedProtocolVersion(ProtocolVersion::from_raw(99, 99))
+    );
 }
