@@ -140,16 +140,11 @@ impl Dispatcher {
         payload: Option<&Structure>,
         id_placeholder: &mut Option<String>,
     ) -> Result<Vec<Item>, (u32, &'static str)> {
-        if (major, minor) == (2, 0) {
-            match op {
-                0x0000_0036..=0x0000_003B => {
-                    return Err((
-                        REASON_OPERATION_NOT_SUPPORTED,
-                        "Operation not supported in KMIP 2.0",
-                    ));
-                }
-                _ => {}
-            }
+        if (major, minor) == (2, 0) && (0x0000_0036..=0x0000_003B).contains(&op) {
+            return Err((
+                REASON_OPERATION_NOT_SUPPORTED,
+                "Operation not supported in KMIP 2.0",
+            ));
         }
 
         let now_secs = now_unix_seconds();

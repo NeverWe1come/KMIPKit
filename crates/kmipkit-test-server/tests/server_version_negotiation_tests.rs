@@ -51,9 +51,7 @@ async fn build_raw_tls_stream(
 #[tokio::test]
 async fn test_server_responds_with_requested_kmip20_version() {
     let dir = std::env::temp_dir().join(format!("kmip20-resp-ver-{}", std::process::id()));
-    let config = ServerConfig::new()
-        .with_data_dir(&dir)
-        .with_clean(true);
+    let config = ServerConfig::new().with_data_dir(&dir).with_clean(true);
     let handle = TestServer::start(config).await.unwrap();
 
     let mut stream = build_raw_tls_stream(handle.pki(), handle.port()).await;
@@ -88,7 +86,10 @@ async fn test_server_responds_with_requested_kmip20_version() {
 
     let mut msg_struct = Structure::new();
     msg_struct
-        .try_push(ttlv_item(TAG_REQUEST_HEADER, Value::structure(header_struct)))
+        .try_push(ttlv_item(
+            TAG_REQUEST_HEADER,
+            Value::structure(header_struct),
+        ))
         .unwrap();
     msg_struct
         .try_push(ttlv_item(TAG_BATCH_ITEM, Value::structure(item_struct)))
@@ -116,8 +117,18 @@ async fn test_server_responds_with_requested_kmip20_version() {
                         if let kmipkit_ttlv::ValueView::Structure(pv_struct) = pv_view {
                             let major = &pv_struct.children()[0];
                             let minor = &pv_struct.children()[1];
-                            assert!(major.with_value(|v| matches!(v, kmipkit_ttlv::ValueView::Integer(2))));
-                            assert!(minor.with_value(|v| matches!(v, kmipkit_ttlv::ValueView::Integer(0))));
+                            assert!(
+                                major.with_value(|v| matches!(
+                                    v,
+                                    kmipkit_ttlv::ValueView::Integer(2)
+                                ))
+                            );
+                            assert!(
+                                minor.with_value(|v| matches!(
+                                    v,
+                                    kmipkit_ttlv::ValueView::Integer(0)
+                                ))
+                            );
                         }
                     });
                 }
@@ -167,7 +178,10 @@ async fn test_server_in_kmip20_mode_rejects_kmip21_operations() {
 
     let mut msg_struct = Structure::new();
     msg_struct
-        .try_push(ttlv_item(TAG_REQUEST_HEADER, Value::structure(header_struct)))
+        .try_push(ttlv_item(
+            TAG_REQUEST_HEADER,
+            Value::structure(header_struct),
+        ))
         .unwrap();
     msg_struct
         .try_push(ttlv_item(TAG_BATCH_ITEM, Value::structure(item_struct)))
