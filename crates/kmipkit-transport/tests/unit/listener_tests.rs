@@ -862,10 +862,13 @@ fn test_https_listener_request_parsing_variations() {
         tls.write_all(b"GET /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n")
             .unwrap();
         tls.flush().unwrap();
+        let mut buf = [0_u8; 64];
+        let _ = tls.read(&mut buf);
     });
     let mut conn = listener.accept(Some(Duration::from_secs(5))).unwrap();
     let err = conn.recv_request(1024, Some(Duration::from_secs(5)));
     assert!(err.is_err());
+    let _ = conn.close();
     h1.join().unwrap();
 
     // Test 2: Path mismatch
@@ -878,10 +881,13 @@ fn test_https_listener_request_parsing_variations() {
         tls.write_all(b"POST /other HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 0\r\n\r\n")
             .unwrap();
         tls.flush().unwrap();
+        let mut buf = [0_u8; 64];
+        let _ = tls.read(&mut buf);
     });
     let mut conn = listener.accept(Some(Duration::from_secs(5))).unwrap();
     let err = conn.recv_request(1024, Some(Duration::from_secs(5)));
     assert!(err.is_err());
+    let _ = conn.close();
     h2.join().unwrap();
 
     // Test 3: Body exceeds max bytes
@@ -894,10 +900,13 @@ fn test_https_listener_request_parsing_variations() {
         tls.write_all(b"POST /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 999999\r\n\r\n")
             .unwrap();
         tls.flush().unwrap();
+        let mut buf = [0_u8; 64];
+        let _ = tls.read(&mut buf);
     });
     let mut conn = listener.accept(Some(Duration::from_secs(5))).unwrap();
     let err = conn.recv_request(1024, Some(Duration::from_secs(5)));
     assert!(err.is_err());
+    let _ = conn.close();
     h3.join().unwrap();
 
     // Test 4: JSON content-type
@@ -909,6 +918,8 @@ fn test_https_listener_request_parsing_variations() {
         let mut tls = StreamOwned::new(client_conn, sock);
         tls.write_all(b"POST /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}").unwrap();
         tls.flush().unwrap();
+        let mut buf = [0_u8; 64];
+        let _ = tls.read(&mut buf);
     });
     let mut conn = listener.accept(Some(Duration::from_secs(5))).unwrap();
     let (body, enc) = conn
@@ -916,6 +927,8 @@ fn test_https_listener_request_parsing_variations() {
         .unwrap();
     assert_eq!(enc, WireEncoding::Json);
     assert_eq!(body.as_bytes(), b"{}");
+    conn.send_response(b"{}", WireEncoding::Json, None).unwrap();
+    let _ = conn.close();
     h4.join().unwrap();
 
     // Test 5: XML content-type
@@ -927,6 +940,8 @@ fn test_https_listener_request_parsing_variations() {
         let mut tls = StreamOwned::new(client_conn, sock);
         tls.write_all(b"POST /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: text/xml\r\nContent-Length: 4\r\n\r\n<a/>").unwrap();
         tls.flush().unwrap();
+        let mut buf = [0_u8; 64];
+        let _ = tls.read(&mut buf);
     });
     let mut conn = listener.accept(Some(Duration::from_secs(5))).unwrap();
     let (body, enc) = conn
@@ -934,6 +949,9 @@ fn test_https_listener_request_parsing_variations() {
         .unwrap();
     assert_eq!(enc, WireEncoding::Xml);
     assert_eq!(body.as_bytes(), b"<a/>");
+    conn.send_response(b"<a/>", WireEncoding::Xml, None)
+        .unwrap();
+    let _ = conn.close();
     h5.join().unwrap();
 }
 
