@@ -275,3 +275,70 @@ fn test_server_put_replace_without_replaced_uid_rejected() {
 
     assert!(ServerPutRequest::try_from_request_item(view).is_err());
 }
+
+#[test]
+fn test_put_function_and_server_put_constructors_and_errors() {
+    use crate::server_to_client::put::{PutFunction, ServerPutError};
+
+    let f_new = PutFunction::NEW;
+    assert!(f_new.is_known());
+    assert!(!f_new.is_extension());
+    assert_eq!(f_new.wire_name(), "New");
+    assert_eq!(format!("{f_new:?}"), "PutFunction(1: New)");
+    assert_eq!(format!("{f_new}"), "New");
+
+    let f_replace = PutFunction::REPLACE;
+    assert!(f_replace.is_known());
+    assert!(!f_replace.is_extension());
+    assert_eq!(f_replace.wire_name(), "Replace");
+
+    let ext = PutFunction::from_raw(0x8000_0001);
+    assert!(!ext.is_known());
+    assert!(ext.is_extension());
+    assert_eq!(ext.wire_name(), "Unknown");
+
+    let dummy_item = Item::new(
+        RawTag::new(0x0042_008F).unwrap().try_checked().unwrap(),
+        Value::structure(Structure::new()),
+    )
+    .unwrap();
+
+    let req = ServerPutRequest::new(
+        PutFunction::REPLACE,
+        "new-id".to_string(),
+        Some("old-id".to_string()),
+        dummy_item,
+        None,
+    );
+    assert_eq!(req.put_function(), PutFunction::REPLACE);
+    assert_eq!(req.unique_identifier(), "new-id");
+    assert_eq!(req.replaced_unique_identifier(), Some("old-id"));
+    assert!(req.attributes().is_none());
+
+    let resp = ServerPutResponse::new();
+    let resp_payload = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
+    assert!(resp_payload.view().children().is_empty());
+
+    let err1 = ServerPutError::UnexpectedOperation;
+    assert!(format!("{err1}").contains("Put"));
+
+    let err2 = ServerPutError::MissingPayload;
+    assert!(format!("{err2}").contains("missing payload"));
+
+    let err3 = ServerPutError::MissingUniqueIdentifier;
+    assert!(format!("{err3}").contains("Unique Identifier"));
+
+    let err4 = ServerPutError::MissingReplacedUniqueIdentifier;
+    assert!(format!("{err4}").contains("Replaced Unique Identifier"));
+
+    let err5 = ServerPutError::MissingManagedObject;
+    assert!(format!("{err5}").contains("Managed Object"));
+
+    let err6 = ServerPutError::MalformedPayload;
+    assert!(format!("{err6}").contains("malformed Put payload"));
+
+    let msg = wrap_request_item(0x0000_0001, Structure::new());
+    let view = msg.batch_items().next().expect("valid view");
+    let err = ServerPutRequest::try_from_request_item(view).unwrap_err();
+    assert_eq!(err, ServerPutError::UnexpectedOperation);
+}

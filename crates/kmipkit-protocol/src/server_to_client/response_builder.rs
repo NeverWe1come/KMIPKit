@@ -18,7 +18,7 @@ const TIME_STAMP_TAG: u32 = 0x0042_0092;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
 const OPERATION_TAG: u32 = 0x0042_005C;
-const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0094;
+const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const RESULT_REASON_TAG: u32 = 0x0042_007E;
 const RESULT_MESSAGE_TAG: u32 = 0x0042_007D;
@@ -213,18 +213,8 @@ impl ServerResponseBuilder {
         operation: u32,
         payload: Option<Structure>,
     ) -> Result<ResponseMessage, ProtocolError> {
-        if let Some(p) = payload {
-            self.add_success_item(operation, None, p)?;
-        } else {
-            let mut item_structure = Structure::new();
-            item_structure
-                .try_push(item(OPERATION_TAG, Value::enumeration(operation))?)
-                .map_err(protocol_model_error)?;
-            item_structure
-                .try_push(item(RESULT_STATUS_TAG, Value::enumeration(0))?)
-                .map_err(protocol_model_error)?;
-            self.items.push(item_structure);
-        }
+        let p = payload.unwrap_or_default();
+        self.add_success_item(operation, None, p)?;
         self.build()
     }
 

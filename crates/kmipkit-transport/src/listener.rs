@@ -319,6 +319,60 @@ pub struct RawTlsListener {
     config: ListenerTransportConfig,
 }
 
+fn accept_with_timeout(
+    listener: &TcpListener,
+    timeout: Option<Duration>,
+) -> Result<(TcpStream, SocketAddr), TransportError> {
+    if let Some(t) = timeout {
+        listener.set_nonblocking(true).map_err(|e| {
+            TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                e,
+            )
+        })?;
+        let start = std::time::Instant::now();
+        loop {
+            match listener.accept() {
+                Ok((sock, addr)) => {
+                    let _ = listener.set_nonblocking(false);
+                    let _ = sock.set_nonblocking(false);
+                    return Ok((sock, addr));
+                }
+                Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                    if start.elapsed() >= t {
+                        let _ = listener.set_nonblocking(false);
+                        return Err(TransportError::new(
+                            RequestDeliveryState::NotSent,
+                            TransportCauseCategory::Timeout,
+                            io::Error::new(io::ErrorKind::TimedOut, "accept timed out"),
+                        ));
+                    }
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+                Err(e) => {
+                    let _ = listener.set_nonblocking(false);
+                    return Err(TransportError::new(
+                        RequestDeliveryState::NotSent,
+                        TransportCauseCategory::Other,
+                        e,
+                    ));
+                }
+            }
+        }
+    }
+
+    let (sock, addr) = listener.accept().map_err(|err| {
+        TransportError::new(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            err,
+        )
+    })?;
+    let _ = sock.set_nonblocking(false);
+    Ok((sock, addr))
+}
+
 impl RawTlsListener {
     /// Binds a raw-TLS listener to the address configured in `config`.
     ///
@@ -364,25 +418,7 @@ impl RawTlsListener {
         &mut self,
         timeout: Option<Duration>,
     ) -> Result<RawTlsServerConnection, TransportError> {
-        if let Some(t) = timeout {
-            self.listener.set_nonblocking(false).map_err(|e| {
-                TransportError::new(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    e,
-                )
-            })?;
-            // Using socket timeout on accept if supported or blocking
-            let _ = t;
-        }
-
-        let (socket, peer_addr) = self.listener.accept().map_err(|err| {
-            TransportError::new(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                err,
-            )
-        })?;
+        let (socket, peer_addr) = accept_with_timeout(&self.listener, timeout)?;
 
         let read_timeout = match self.config.timeout_policy().read() {
             crate::config::TimeoutLimit::Bounded(d) => Some(d),
@@ -644,13 +680,7 @@ impl HttpsListener {
         &mut self,
         timeout: Option<Duration>,
     ) -> Result<HttpsServerConnection, TransportError> {
-        let (socket, peer_addr) = self.listener.accept().map_err(|err| {
-            TransportError::new(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                err,
-            )
-        })?;
+        let (socket, peer_addr) = accept_with_timeout(&self.listener, timeout)?;
 
         let read_timeout = match self.config.timeout_policy().read() {
             crate::config::TimeoutLimit::Bounded(d) => Some(d),

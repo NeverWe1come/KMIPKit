@@ -782,7 +782,7 @@ impl ClientListenerConnection {
     }
 }
 
-fn encode_structure_view(tag: u32, view: &StructureView<'_>, out: &mut Vec<u8>) {
+pub(crate) fn encode_structure_view(tag: u32, view: &StructureView<'_>, out: &mut Vec<u8>) {
     let raw_tag = tag.to_be_bytes();
     let tag_bytes = [raw_tag[1], raw_tag[2], raw_tag[3]];
     let mut children_bytes = Vec::new();

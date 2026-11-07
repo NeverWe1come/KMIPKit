@@ -158,3 +158,44 @@ fn test_server_query_response_extension_map_supersedes_extension_list() {
         );
     }
 }
+
+#[test]
+fn test_server_query_constructors_and_capabilities_coverage() {
+    use crate::QueryFunction;
+    use crate::server_to_client::query::ServerQueryError;
+
+    let mut caps = ServerCapabilities::new();
+    caps.set_vendor_identification("AcmeVendor");
+    caps.set_operations(vec![0x18, 0x1E]);
+    caps.set_object_types(vec![1, 2]);
+    caps.set_extension_tags(vec![0x8000_0001]);
+    assert_eq!(caps.vendor_identification(), Some("AcmeVendor"));
+
+    let req = ServerQueryRequest::new(vec![
+        QueryFunction::OPERATIONS,
+        QueryFunction::OBJECTS,
+        QueryFunction::SERVER_INFORMATION,
+        QueryFunction::EXTENSION_LIST,
+    ]);
+    assert_eq!(req.query_functions().len(), 4);
+
+    let resp = ServerQueryResponse::respond(&req, &caps);
+    let ttlv = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
+    let binding = ttlv.view();
+    let children = binding.children();
+    assert_eq!(children.len(), 6); // 2 operations + 2 object types + 1 server information + 1 extension list
+
+    let err1 = ServerQueryError::UnexpectedOperation;
+    assert!(format!("{err1}").contains("Query"));
+
+    let err2 = ServerQueryError::MissingPayload;
+    assert!(format!("{err2}").contains("missing payload"));
+
+    let err3 = ServerQueryError::MalformedPayload;
+    assert!(format!("{err3}").contains("malformed Query payload"));
+
+    let msg = wrap_request_item(0x0000_0001, Structure::new());
+    let view = msg.batch_items().next().expect("valid view");
+    let err = ServerQueryRequest::try_from_request_item(view).unwrap_err();
+    assert_eq!(err, ServerQueryError::UnexpectedOperation);
+}

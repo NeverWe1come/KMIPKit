@@ -559,3 +559,7 @@ mod s2c_put_tests;
 #[cfg(test)]
 #[path = "../tests/unit/s2c_query_tests.rs"]
 mod s2c_query_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_response_builder_tests.rs"]
+mod s2c_response_builder_tests;

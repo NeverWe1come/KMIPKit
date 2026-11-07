@@ -209,3 +209,180 @@ fn test_set_endpoint_role_response_decoding_failure() {
     assert_eq!(response.result().reason(), Some(ResultReason::from_raw(2)));
     assert!(response.into_result().is_err());
 }
+
+#[test]
+fn test_endpoint_role_helpers_and_formatting() {
+    let client = EndpointRole::CLIENT;
+    assert!(client.is_known());
+    assert!(!client.is_extension());
+    assert_eq!(client.wire_name(), "Client");
+    assert_eq!(format!("{client:?}"), "EndpointRole(1: Client)");
+    assert_eq!(format!("{client}"), "Client");
+    assert_eq!(EndpointRole::from_wire_name("Client"), Some(client));
+
+    let server = EndpointRole::SERVER;
+    assert!(server.is_known());
+    assert!(!server.is_extension());
+    assert_eq!(server.wire_name(), "Server");
+    assert_eq!(EndpointRole::from_wire_name("Server"), Some(server));
+
+    let ext = EndpointRole::from_raw(0x8000_0001);
+    assert!(!ext.is_known());
+    assert!(ext.is_extension());
+    assert_eq!(ext.wire_name(), "Unknown");
+    assert_eq!(EndpointRole::from_wire_name("Invalid"), None);
+}
+
+#[test]
+fn test_set_endpoint_role_response_builders_and_payloads() {
+    let resp = SetEndpointRoleResponse::success(EndpointRole::CLIENT, Some("VendorX".to_string()));
+    assert_eq!(resp.endpoint_role(), Some(EndpointRole::CLIENT));
+    assert_eq!(resp.vendor_identification(), Some("VendorX"));
+
+    let ttlv = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
+    let view = ttlv.view();
+    assert_eq!(view.children().len(), 2);
+
+    let resp_no_vendor = SetEndpointRoleResponse::success(EndpointRole::SERVER, None);
+    assert_eq!(resp_no_vendor.vendor_identification(), None);
+    let ttlv_no_vendor = resp_no_vendor
+        .to_ttlv_payload()
+        .expect("to_ttlv_payload succeeds");
+    assert_eq!(ttlv_no_vendor.view().children().len(), 1);
+}
+
+#[test]
+fn test_set_endpoint_role_request_try_from_request_item() {
+    use crate::RequestMessage;
+
+    // Build a valid request message
+    let mut header = Structure::new();
+    let mut pv = Structure::new();
+    pv.try_push(
+        Item::new(
+            RawTag::new(0x0042_006A).unwrap().try_checked().unwrap(),
+            Value::integer(2),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    pv.try_push(
+        Item::new(
+            RawTag::new(0x0042_006B).unwrap().try_checked().unwrap(),
+            Value::integer(1),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    header
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0069).unwrap().try_checked().unwrap(),
+                Value::structure(pv),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    header
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_000D).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut item_s = Structure::new();
+    item_s
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_005C).unwrap().try_checked().unwrap(),
+                Value::enumeration(0x32),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0151).unwrap().try_checked().unwrap(),
+                Value::enumeration(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_009D).unwrap().try_checked().unwrap(),
+                Value::text_string("TestVendor".to_string()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    item_s
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0079).unwrap().try_checked().unwrap(),
+                Value::structure(payload),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut root = Structure::new();
+    root.try_push(
+        Item::new(
+            RawTag::new(0x0042_0077).unwrap().try_checked().unwrap(),
+            Value::structure(header),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    root.try_push(
+        Item::new(
+            RawTag::new(0x0042_000F).unwrap().try_checked().unwrap(),
+            Value::structure(item_s),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+
+    let req_msg = RequestMessage::try_from_ttlv(root).expect("valid request message");
+    let item_view = req_msg.batch_items().next().expect("batch item exists");
+    let req = SetEndpointRoleRequest::try_from_request_item(item_view).expect("parsed request");
+    assert_eq!(req.endpoint_role(), EndpointRole::CLIENT);
+    assert_eq!(req.vendor_identification(), Some("TestVendor"));
+}
+
+#[test]
+fn test_set_endpoint_role_error_displays_and_coverage() {
+    use crate::set_endpoint_role::SetEndpointRoleError;
+
+    let err1 = SetEndpointRoleError::UnexpectedOperation;
+    assert!(format!("{err1}").contains("Set Endpoint Role"));
+
+    let err2 = SetEndpointRoleError::MissingResultStatus;
+    assert!(format!("{err2}").contains("missing a result status"));
+
+    let err3 = SetEndpointRoleError::MissingPayload;
+    assert!(format!("{err3}").contains("omitted payload"));
+
+    let err4 = SetEndpointRoleError::InvalidPayloadStructure;
+    assert!(format!("{err4}").contains("malformed Set Endpoint Role payload"));
+
+    let err5 = SetEndpointRoleError::MissingRequiredField;
+    assert!(format!("{err5}").contains("missing required Endpoint Role"));
+
+    let op_res = crate::KmipOperationResult::new(
+        ResultStatus::from_raw(1),
+        Some(ResultReason::from_raw(1)),
+        None,
+    )
+    .unwrap();
+    let err6 = SetEndpointRoleError::ServerRejected(op_res);
+    assert!(format!("{err6}").contains("server rejected Set Endpoint Role"));
+}

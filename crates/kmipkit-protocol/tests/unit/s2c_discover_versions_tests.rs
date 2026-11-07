@@ -184,3 +184,29 @@ fn test_server_discover_versions_request_decoding_omitted_versions() {
     assert_eq!(payload.view().children().len(), 1);
     assert_eq!(payload.view().children()[0].tag().raw(), 0x0042_0069);
 }
+
+#[test]
+fn test_server_discover_versions_constructors_and_errors() {
+    use crate::server_to_client::discover_versions::ServerDiscoverVersionsError;
+
+    let req = ServerDiscoverVersionsRequest::new(vec![ProtocolVersion::from_raw(2, 1)]);
+    assert_eq!(req.protocol_versions(), &[ProtocolVersion::from_raw(2, 1)]);
+
+    let resp = ServerDiscoverVersionsResponse::new(vec![ProtocolVersion::from_raw(2, 1)]);
+    assert_eq!(resp.protocol_versions(), &[ProtocolVersion::from_raw(2, 1)]);
+
+    let err1 = ServerDiscoverVersionsError::UnexpectedOperation;
+    assert!(format!("{err1}").contains("Discover Versions"));
+
+    let err2 = ServerDiscoverVersionsError::MissingPayload;
+    assert!(format!("{err2}").contains("missing payload"));
+
+    let err3 = ServerDiscoverVersionsError::MalformedProtocolVersion;
+    assert!(format!("{err3}").contains("malformed Protocol Version"));
+
+    // Wrong operation rejection
+    let msg = wrap_request_item(0x0000_0001, Structure::new());
+    let view = msg.batch_items().next().expect("valid view");
+    let err = ServerDiscoverVersionsRequest::try_from_request_item(view).unwrap_err();
+    assert_eq!(err, ServerDiscoverVersionsError::UnexpectedOperation);
+}

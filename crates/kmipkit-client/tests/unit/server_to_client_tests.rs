@@ -1,5 +1,11 @@
 //! Unit tests for Server-to-Client operations and listener dispatcher.
 
+use std::io::{Read, Write};
+use std::net::TcpStream;
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
+
 use kmipkit_protocol::server_to_client::{
     ServerCapabilities, ServerDiscoverVersionsRequest, ServerDiscoverVersionsResponse,
     ServerNotifyRequest, ServerNotifyResponse, ServerPutRequest, ServerPutResponse,
@@ -435,4 +441,574 @@ fn malformed_incoming_batch_returns_error() {
     let limits = CodecLimits::defaults();
     assert!(IncomingServerBatch::from_ttlv_bytes(&[], &limits).is_err());
     assert!(IncomingServerBatch::from_ttlv_bytes(&[0x00, 0x01, 0x02], &limits).is_err());
+}
+
+#[test]
+fn server_request_item_payload_debug_formatting() {
+    use crate::server_to_client::ServerRequestItemPayload;
+    use kmipkit_protocol::QueryFunction;
+    use kmipkit_protocol::server_to_client::PutFunction;
+
+    let disc =
+        ServerRequestItemPayload::DiscoverVersions(ServerDiscoverVersionsRequest::new(vec![
+            ProtocolVersion::from_raw(2, 1),
+        ]));
+    assert!(format!("{disc:?}").contains("DiscoverVersions"));
+
+    let notif = ServerRequestItemPayload::Notify(ServerNotifyRequest::new(
+        "id-1".to_string(),
+        None,
+        Vec::new(),
+    ));
+    assert!(format!("{notif:?}").contains("Notify"));
+
+    let put_item = Item::new(tag(0x0042_000B), Value::structure(Structure::new())).unwrap();
+    let put = ServerPutRequest::new(PutFunction::NEW, "id-2".to_string(), None, put_item, None);
+    let put_payload = ServerRequestItemPayload::Put(put);
+    assert!(format!("{put_payload:?}").contains("Put"));
+
+    let query =
+        ServerRequestItemPayload::Query(ServerQueryRequest::new(vec![QueryFunction::OPERATIONS]));
+    assert!(format!("{query:?}").contains("Query"));
+
+    let role = ServerRequestItemPayload::SetEndpointRole(SetEndpointRoleRequest::new(
+        EndpointRole::SERVER,
+    ));
+    assert!(format!("{role:?}").contains("SetEndpointRole"));
+
+    let unk = ServerRequestItemPayload::Unknown { operation: 0x9999 };
+    assert!(format!("{unk:?}").contains("Unknown"));
+}
+
+#[test]
+fn server_request_item_views_none_branches() {
+    let ttlv = make_test_request_batch_ttlv();
+    let limits = CodecLimits::defaults();
+    let batch = IncomingServerBatch::from_ttlv_bytes(&ttlv, &limits).unwrap();
+    let items = batch.items();
+
+    assert!(items[0].as_notify().is_none());
+    assert!(items[0].as_put().is_none());
+    assert!(items[0].as_query().is_none());
+    assert!(items[0].as_set_endpoint_role().is_none());
+
+    assert!(items[1].as_discover_versions().is_none());
+    assert!(items[1].as_put().is_none());
+    assert!(items[1].as_query().is_none());
+    assert!(items[1].as_set_endpoint_role().is_none());
+
+    assert!(items[2].as_discover_versions().is_none());
+    assert!(items[2].as_notify().is_none());
+    assert!(items[2].as_query().is_none());
+    assert!(items[2].as_set_endpoint_role().is_none());
+
+    assert!(items[3].as_discover_versions().is_none());
+    assert!(items[3].as_notify().is_none());
+    assert!(items[3].as_put().is_none());
+    assert!(items[3].as_set_endpoint_role().is_none());
+
+    assert!(items[4].as_discover_versions().is_none());
+    assert!(items[4].as_notify().is_none());
+    assert!(items[4].as_put().is_none());
+    assert!(items[4].as_query().is_none());
+}
+
+#[test]
+fn dispatcher_unknown_operation_handling() {
+    let mut header = Structure::new();
+    let mut pv = Structure::new();
+    pv.try_push(Item::new(tag(PROTOCOL_VERSION_MAJOR_TAG), Value::integer(2)).unwrap())
+        .unwrap();
+    pv.try_push(Item::new(tag(PROTOCOL_VERSION_MINOR_TAG), Value::integer(1)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(PROTOCOL_VERSION_TAG), Value::structure(pv)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(MAXIMUM_RESPONSE_SIZE_TAG), Value::integer(65536)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(BATCH_COUNT_TAG), Value::integer(1)).unwrap())
+        .unwrap();
+
+    let mut root = Structure::new();
+    root.try_push(Item::new(tag(REQUEST_HEADER_TAG), Value::structure(header)).unwrap())
+        .unwrap();
+
+    // Unknown operation
+    let mut item = Structure::new();
+    item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x9999)).unwrap())
+        .unwrap();
+    item.try_push(Item::new(tag(UNIQUE_BATCH_ITEM_ID_TAG), Value::byte_string(vec![99])).unwrap())
+        .unwrap();
+    let p = Structure::new();
+    item.try_push(Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(p)).unwrap())
+        .unwrap();
+    root.try_push(Item::new(tag(BATCH_ITEM_TAG), Value::structure(item)).unwrap())
+        .unwrap();
+
+    let msg = Item::new(tag(REQUEST_MESSAGE_TAG), Value::structure(root)).unwrap();
+    let mut ttlv = Vec::new();
+    encode_item(&msg, &mut ttlv);
+
+    let limits = CodecLimits::defaults();
+    let batch = IncomingServerBatch::from_ttlv_bytes(&ttlv, &limits).unwrap();
+    let items = batch.items();
+    assert_eq!(items[0].operation(), 0x9999);
+
+    let mut handler = TestHandler {
+        discover_versions_called: false,
+        notify_called: false,
+        put_called: false,
+        query_called: false,
+        set_endpoint_role_called: false,
+    };
+    let mut dispatcher = ServerRequestDispatcher::new();
+    let response = dispatcher.dispatch(&batch, &mut handler).unwrap();
+    let res_items: Vec<_> = response.batch_items().collect();
+    assert_eq!(res_items.len(), 1);
+    assert_eq!(
+        res_items[0].result_status(),
+        Some(ResultStatus::from_raw(1))
+    );
+    assert_eq!(
+        res_items[0].result_reason(),
+        Some(ResultReason::from_raw(0x05))
+    );
+}
+
+#[test]
+fn incoming_server_batch_missing_operation_tag() {
+    let mut header = Structure::new();
+    let mut pv = Structure::new();
+    pv.try_push(Item::new(tag(PROTOCOL_VERSION_MAJOR_TAG), Value::integer(2)).unwrap())
+        .unwrap();
+    pv.try_push(Item::new(tag(PROTOCOL_VERSION_MINOR_TAG), Value::integer(1)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(PROTOCOL_VERSION_TAG), Value::structure(pv)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(BATCH_COUNT_TAG), Value::integer(1)).unwrap())
+        .unwrap();
+
+    let mut root = Structure::new();
+    root.try_push(Item::new(tag(REQUEST_HEADER_TAG), Value::structure(header)).unwrap())
+        .unwrap();
+
+    // Batch item with NO operation tag
+    let mut item = Structure::new();
+    item.try_push(Item::new(tag(UNIQUE_BATCH_ITEM_ID_TAG), Value::byte_string(vec![1])).unwrap())
+        .unwrap();
+    root.try_push(Item::new(tag(BATCH_ITEM_TAG), Value::structure(item)).unwrap())
+        .unwrap();
+
+    let msg = Item::new(tag(REQUEST_MESSAGE_TAG), Value::structure(root)).unwrap();
+    let mut ttlv = Vec::new();
+    encode_item(&msg, &mut ttlv);
+
+    let limits = CodecLimits::defaults();
+    let err = IncomingServerBatch::from_ttlv_bytes(&ttlv, &limits);
+    assert!(err.is_err());
+}
+
+#[test]
+fn client_listener_bind_and_timeout() {
+    use crate::server_to_client::ClientListener;
+    use kmipkit_test_support::EphemeralPki;
+    use kmipkit_transport::listener::ListenerTransportConfig;
+    use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
+    use std::time::Duration;
+
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let server = pki.server_identity();
+
+    let make_identity = || {
+        ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        )
+    };
+    let make_trust = || {
+        TrustSource::certificate_authorities(vec![CertificateInput::from_der(vec![
+            pki.authority_certificate_der().to_vec(),
+        ])])
+    };
+
+    let config_raw = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(make_identity())
+        .trust_source(make_trust())
+        .build()
+        .expect("valid config");
+
+    let mut raw_listener = ClientListener::bind_raw_tls(config_raw).expect("bind raw succeeds");
+    assert!(raw_listener.local_addr().is_ok());
+    assert!(raw_listener.port().is_ok());
+
+    let err1 = raw_listener.accept(Some(Duration::from_millis(10)));
+    assert!(err1.is_err());
+
+    let config_https = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(make_identity())
+        .trust_source(make_trust())
+        .target_path("/kmip")
+        .build()
+        .expect("valid config");
+
+    let mut https_listener = ClientListener::bind_https(config_https).expect("bind https succeeds");
+    assert!(https_listener.local_addr().is_ok());
+    assert!(https_listener.port().is_ok());
+
+    let err2 = https_listener.accept(Some(Duration::from_millis(10)));
+    assert!(err2.is_err());
+}
+
+fn client_tls_config(pki: &kmipkit_test_support::EphemeralPki) -> Arc<rustls::ClientConfig> {
+    use rustls::RootCertStore;
+    use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+
+    let client = pki.client_identity();
+    let mut roots = RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(
+            pki.authority_certificate_der().to_vec(),
+        ))
+        .expect("authority cert is valid");
+
+    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let config = rustls::ClientConfig::builder_with_provider(provider)
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .expect("TLS 1.3 only")
+        .with_root_certificates(roots)
+        .with_client_auth_cert(
+            vec![CertificateDer::from(client.certificate_der().to_vec())],
+            PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(client.private_key_der().to_vec())),
+        )
+        .expect("valid client identity");
+
+    Arc::new(config)
+}
+
+#[test]
+fn client_listener_raw_tls_full_exchange_and_role_reversal() {
+    use crate::server_to_client::ClientListener;
+    use kmipkit_test_support::EphemeralPki;
+    use kmipkit_transport::listener::ListenerTransportConfig;
+    use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
+
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let server = pki.server_identity();
+    let config = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .build()
+        .expect("config builds");
+
+    let mut listener = ClientListener::bind_raw_tls(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+    let ttlv_req = make_test_request_batch_ttlv();
+    let ttlv_req_clone = ttlv_req.clone();
+
+    let client_handle = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", port)).expect("connect succeeds");
+        let server_name =
+            rustls::pki_types::ServerName::try_from("server.kmipkit.test").expect("valid dns name");
+        let client_conn = rustls::ClientConnection::new(client_config, server_name)
+            .expect("client conn succeeds");
+        let mut tls = rustls::StreamOwned::new(client_conn, sock);
+
+        // 1. Send first TTLV request batch
+        tls.write_all(&ttlv_req_clone).expect("write batch 1");
+        tls.flush().expect("flush");
+
+        // Read response
+        let mut resp_header = [0_u8; 8];
+        tls.read_exact(&mut resp_header).expect("read resp header");
+        let payload_len = u32::from_be_bytes([
+            resp_header[4],
+            resp_header[5],
+            resp_header[6],
+            resp_header[7],
+        ]) as usize;
+        let padding = (8 - (payload_len % 8)) % 8;
+        let mut resp_body = vec![0_u8; payload_len + padding];
+        tls.read_exact(&mut resp_body).expect("read resp body");
+
+        // 2. In role-reversed mode, send a second request batch
+        tls.write_all(&ttlv_req_clone)
+            .expect("write batch 2 in role-reversal");
+        tls.flush().expect("flush");
+
+        // Read response from role-reversed session
+        tls.read_exact(&mut resp_header)
+            .expect("read resp header 2");
+        let payload_len2 = u32::from_be_bytes([
+            resp_header[4],
+            resp_header[5],
+            resp_header[6],
+            resp_header[7],
+        ]) as usize;
+        let padding2 = (8 - (payload_len2 % 8)) % 8;
+        let mut resp_body2 = vec![0_u8; payload_len2 + padding2];
+        tls.read_exact(&mut resp_body2).expect("read resp body 2");
+    });
+
+    let limits = CodecLimits::defaults();
+    let mut conn = listener
+        .accept(Some(Duration::from_secs(5)))
+        .expect("accept succeeds");
+    assert!(conn.peer_addr().ip().is_loopback());
+
+    // 1. Recv first batch and send response
+    let batch = conn
+        .recv_batch(&limits, Some(Duration::from_secs(5)))
+        .expect("recv batch 1");
+    let mut handler = TestHandler {
+        discover_versions_called: false,
+        notify_called: false,
+        put_called: false,
+        query_called: false,
+        set_endpoint_role_called: false,
+    };
+    let mut dispatcher = ServerRequestDispatcher::new();
+    let response = dispatcher
+        .dispatch(&batch, &mut handler)
+        .expect("dispatch 1");
+    conn.send_response(&response, Some(Duration::from_secs(5)))
+        .expect("send response 1");
+
+    // 2. Transition to role-reversed session
+    let mut session = conn
+        .into_role_reversed()
+        .expect("into_role_reversed succeeds");
+    let batch2 = session
+        .recv_batch(&limits, Some(Duration::from_secs(5)))
+        .expect("recv batch 2");
+    let response2 = dispatcher
+        .dispatch(&batch2, &mut handler)
+        .expect("dispatch 2");
+    session
+        .send_response(&response2, Some(Duration::from_secs(5)))
+        .expect("send response 2");
+    session.close().expect("close session");
+
+    client_handle
+        .join()
+        .expect("client thread finishes cleanly");
+}
+
+#[test]
+fn client_listener_https_full_exchange_and_rejections() {
+    use crate::server_to_client::ClientListener;
+    use kmipkit_test_support::EphemeralPki;
+    use kmipkit_transport::listener::ListenerTransportConfig;
+    use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
+
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let server = pki.server_identity();
+    let config = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .target_path("/kmip")
+        .build()
+        .expect("config builds");
+
+    let mut listener = ClientListener::bind_https(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+    let ttlv_req = make_test_request_batch_ttlv();
+
+    let client_handle = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", port)).expect("connect succeeds");
+        let server_name =
+            rustls::pki_types::ServerName::try_from("server.kmipkit.test").expect("valid dns name");
+        let client_conn = rustls::ClientConnection::new(client_config, server_name)
+            .expect("client conn succeeds");
+        let mut tls = rustls::StreamOwned::new(client_conn, sock);
+
+        let http_req = format!(
+            "POST /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
+            ttlv_req.len()
+        );
+        tls.write_all(http_req.as_bytes()).expect("write headers");
+        tls.write_all(&ttlv_req).expect("write body");
+        tls.flush().expect("flush");
+
+        let mut resp_buf = Vec::new();
+        let mut chunk = [0_u8; 512];
+        while !resp_buf.windows(4).any(|w| w == b"\r\n\r\n") {
+            let n = tls.read(&mut chunk).expect("read resp headers");
+            if n == 0 {
+                break;
+            }
+            resp_buf.extend_from_slice(&chunk[..n]);
+        }
+        let s = String::from_utf8_lossy(&resp_buf);
+        assert!(s.contains("HTTP/1.1 200 OK"));
+    });
+
+    let limits = CodecLimits::defaults();
+    let mut conn = listener
+        .accept(Some(Duration::from_secs(5)))
+        .expect("accept succeeds");
+    assert!(conn.peer_addr().ip().is_loopback());
+    let batch = conn
+        .recv_batch(&limits, Some(Duration::from_secs(5)))
+        .expect("recv batch");
+    let mut handler = TestHandler {
+        discover_versions_called: false,
+        notify_called: false,
+        put_called: false,
+        query_called: false,
+        set_endpoint_role_called: false,
+    };
+    let mut dispatcher = ServerRequestDispatcher::new();
+    let response = dispatcher.dispatch(&batch, &mut handler).expect("dispatch");
+    conn.send_response(&response, Some(Duration::from_secs(5)))
+        .expect("send response");
+
+    // HTTPS connection CANNOT be converted into role-reversed session
+    let err = conn.into_role_reversed();
+    assert!(err.is_err());
+
+    client_handle.join().expect("client finishes");
+}
+
+#[test]
+fn incoming_server_batch_json_xml_and_unsupported() {
+    let limits = CodecLimits::defaults();
+
+    // 1. JSON decoding
+    let json_bytes = br#"{"tag":"RequestMessage","type":"Structure","value":[{"tag":"RequestHeader","type":"Structure","value":[{"tag":"ProtocolVersion","type":"Structure","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"MaximumResponseSize","type":"Integer","value":65536},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","type":"Structure","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"RequestPayload","type":"Structure","value":[{"tag":"ProtocolVersion","type":"Structure","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]}]}]}]}"#;
+    let batch_json = IncomingServerBatch::from_encoded_bytes(
+        json_bytes,
+        kmipkit_transport::WireEncoding::Json,
+        &limits,
+    )
+    .expect("json batch decodes");
+    assert_eq!(batch_json.batch_count(), 1);
+
+    // 2. XML decoding
+    let xml_bytes = br#"<RequestMessage><RequestHeader><ProtocolVersion><ProtocolVersionMajor type="Integer" value="2"/><ProtocolVersionMinor type="Integer" value="1"/></ProtocolVersion><MaximumResponseSize type="Integer" value="256"/><BatchCount type="Integer" value="1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="DiscoverVersions"/><RequestPayload><ProtocolVersion><ProtocolVersionMajor type="Integer" value="2"/><ProtocolVersionMinor type="Integer" value="1"/></ProtocolVersion></RequestPayload></BatchItem></RequestMessage>"#;
+    let batch_xml = IncomingServerBatch::from_encoded_bytes(
+        xml_bytes,
+        kmipkit_transport::WireEncoding::Xml,
+        &limits,
+    )
+    .expect("xml batch decodes");
+    assert_eq!(batch_xml.batch_count(), 1);
+
+    // 3. Malformed JSON
+    let err_json = IncomingServerBatch::from_encoded_bytes(
+        b"not-valid-json",
+        kmipkit_transport::WireEncoding::Json,
+        &limits,
+    );
+    assert!(err_json.is_err());
+
+    // 4. Malformed XML
+    let err_xml = IncomingServerBatch::from_encoded_bytes(
+        b"<not-closed-xml",
+        kmipkit_transport::WireEncoding::Xml,
+        &limits,
+    );
+    assert!(err_xml.is_err());
+}
+
+#[test]
+fn client_listener_connection_close_paths() {
+    use crate::server_to_client::ClientListener;
+    use kmipkit_test_support::EphemeralPki;
+    use kmipkit_transport::listener::ListenerTransportConfig;
+    use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
+
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let server = pki.server_identity();
+    let config = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .build()
+        .expect("config builds");
+
+    let mut listener = ClientListener::bind_raw_tls(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+
+    let client_handle = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", port)).expect("connect succeeds");
+        let server_name =
+            rustls::pki_types::ServerName::try_from("server.kmipkit.test").expect("valid dns name");
+        let client_conn = rustls::ClientConnection::new(client_config, server_name)
+            .expect("client conn succeeds");
+        let mut tls = rustls::StreamOwned::new(client_conn, sock);
+        let req = [0x42, 0x00, 0x77, 0x01, 0, 0, 0, 8, 1, 2, 3, 4, 5, 6, 7, 8];
+        let _ = tls.write_all(&req);
+        let _ = tls.flush();
+    });
+
+    let mut conn = listener
+        .accept(Some(Duration::from_secs(5)))
+        .expect("accept succeeds");
+    conn.close().expect("close succeeds");
+    client_handle.join().expect("client finishes");
+}
+
+#[test]
+fn encode_structure_view_scalar_types() {
+    use kmipkit_protocol::server_to_client::ServerResponseBuilder;
+
+    let mut builder = ServerResponseBuilder::new();
+    let mut payload = Structure::new();
+    payload
+        .try_push(Item::new(tag(0x0042_0001), Value::long_integer(1_234_567_890_123)).unwrap())
+        .unwrap();
+    payload
+        .try_push(Item::new(tag(0x0042_0002), Value::big_integer(vec![1, 2, 3, 4, 5])).unwrap())
+        .unwrap();
+    payload
+        .try_push(Item::new(tag(0x0042_0003), Value::boolean(true)).unwrap())
+        .unwrap();
+    payload
+        .try_push(Item::new(tag(0x0042_0004), Value::date_time(1_700_000_000)).unwrap())
+        .unwrap();
+    payload
+        .try_push(Item::new(tag(0x0042_0005), Value::interval(3600)).unwrap())
+        .unwrap();
+    payload
+        .try_push(
+            Item::new(
+                tag(0x0042_0006),
+                Value::text_string("padding-test".to_string()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    builder
+        .add_success_item(0x1E, Some(vec![1, 2, 3]), payload)
+        .expect("add success");
+    let resp = builder.build().expect("build resp");
+
+    // Verify round-trip encoding through with_ttlv
+    let mut bytes = Vec::new();
+    resp.with_ttlv(|view| {
+        crate::server_to_client::encode_structure_view(0x0042_007B, &view, &mut bytes);
+    });
+    assert_ne!(bytes, [] as [u8; 0]);
 }

@@ -162,3 +162,33 @@ fn test_server_notify_missing_unique_identifier_rejected() {
 
     assert!(ServerNotifyRequest::try_from_request_item(view).is_err());
 }
+
+#[test]
+fn test_server_notify_constructors_and_errors() {
+    use crate::server_to_client::notify::ServerNotifyError;
+
+    let req = ServerNotifyRequest::new("id-123".to_string(), None, Vec::new());
+    assert_eq!(req.unique_identifier(), "id-123");
+    assert!(req.attributes().is_none());
+    assert!(req.deleted_attribute_references().is_empty());
+
+    let resp = ServerNotifyResponse::default();
+    assert!(resp.to_ttlv_payload().unwrap().view().children().is_empty());
+
+    let err1 = ServerNotifyError::UnexpectedOperation;
+    assert!(format!("{err1}").contains("Notify"));
+
+    let err2 = ServerNotifyError::MissingPayload;
+    assert!(format!("{err2}").contains("missing payload"));
+
+    let err3 = ServerNotifyError::MissingUniqueIdentifier;
+    assert!(format!("{err3}").contains("Unique Identifier"));
+
+    let err4 = ServerNotifyError::MalformedPayload;
+    assert!(format!("{err4}").contains("malformed Notify payload"));
+
+    let msg = wrap_request_item(0x0000_0001, Structure::new());
+    let view = msg.batch_items().next().expect("valid view");
+    let err = ServerNotifyRequest::try_from_request_item(view).unwrap_err();
+    assert_eq!(err, ServerNotifyError::UnexpectedOperation);
+}
