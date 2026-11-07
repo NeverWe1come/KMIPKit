@@ -162453,6 +162453,100 @@
   ],
   "removeApprovedExclusions": [
     {
+      "declarationId": "client_batch_item_response_metadata_v1",
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
+      "supersedesSpecId": "KMIPKIT-0057",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "supersessionRationale": "The manifest now classifies these exact symbols as ready four-language functions; retaining their C-only exclusion duplicates the same C ABI export and fails release-manifest validation.",
+      "evidencePaths": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "specs/053-api-parity-facade/approval-record.md",
+        "specs/053-api-parity-facade/implementation-evidence.md",
+        "specs/053-api-parity-facade/spec.md"
+      ]
+    },
+    {
+      "declarationId": "transport_config_create_v1",
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_transport_config_create_v1",
+      "supersedesSpecId": "KMIPKIT-0057",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "supersessionRationale": "The manifest now classifies these exact symbols as ready four-language functions; retaining their C-only exclusion duplicates the same C ABI export and fails release-manifest validation.",
+      "evidencePaths": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "specs/053-api-parity-facade/approval-record.md",
+        "specs/053-api-parity-facade/implementation-evidence.md",
+        "specs/053-api-parity-facade/spec.md"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053:export:946cd939aa398dd68a5ca060",
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.Builder.close",
+      "supersedesSpecId": "KMIPKIT-0053",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "supersessionRationale": "The approved Phase 5 contract requires KMIPKit-owned secret copies to be wiped in all supported bindings. Java Builder.close, Python builder close, Rust Drop, and C release all wipe KMIPKit-owned P Source copies; C has no pre-build builder handle, so its handle release is the corresponding owned-secret lifecycle boundary.",
+      "evidencePaths": [
+        "specs/053-api-parity-facade/spec.md",
+        "specs/053-api-parity-facade/approval-record.md",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py",
+        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "crates/kmipkit-protocol/src/credential/secret.rs",
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053:export:b6848d45007bbf0e29966906",
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close",
+      "supersedesSpecId": "KMIPKIT-0053",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "supersessionRationale": "The approved Phase 5 contract requires KMIPKit-owned secret copies to be wiped in all supported bindings. Java Builder.close, Python builder close, Rust Drop, and C release all wipe KMIPKit-owned P Source copies; C has no pre-build builder handle, so its handle release is the corresponding owned-secret lifecycle boundary.",
+      "evidencePaths": [
+        "specs/053-api-parity-facade/spec.md",
+        "specs/053-api-parity-facade/approval-record.md",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/tests/test_parameters_authentication_parity.py",
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
+        "bindings/c/tests/authentication_consumer.c",
+        "crates/kmipkit-protocol/src/credential/secret.rs",
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
+      ]
+    },
+    {
       "declarationId": "KMIPKIT-0053:rust-query-response",
       "packageId": "rust-kmipkit",
       "exportName": "kmipkit::protocol::QueryResponse",
@@ -162786,56 +162880,6 @@
       "evidencePaths": [
         "specs/053-api-parity-facade/spec.md",
         "specs/053-api-parity-facade/approval-record.md"
-      ]
-    },
-    {
-      "declarationId": "KMIPKIT-0053:export:946cd939aa398dd68a5ca060",
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.protocol.CryptographicParameters.Builder.close",
-      "supersedesSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "supersessionRationale": "The approved Phase 5 contract requires KMIPKit-owned secret copies to be wiped in all supported bindings. Java Builder.close, Python builder close, Rust Drop, and C release all wipe KMIPKit-owned P Source copies; C has no pre-build builder handle, so its handle release is the corresponding owned-secret lifecycle boundary.",
-      "evidencePaths": [
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/approval-record.md",
-        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
-        "bindings/python/tests/test_parameters_authentication_parity.py",
-        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
-        "bindings/c/tests/authentication_consumer.c",
-        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
-        "crates/kmipkit-protocol/src/credential/secret.rs",
-        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
-        "crates/kmipkit-protocol/tests/credential_secret.rs"
-      ]
-    },
-    {
-      "declarationId": "KMIPKIT-0053:export:b6848d45007bbf0e29966906",
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close",
-      "supersedesSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "supersessionRationale": "The approved Phase 5 contract requires KMIPKit-owned secret copies to be wiped in all supported bindings. Java Builder.close, Python builder close, Rust Drop, and C release all wipe KMIPKit-owned P Source copies; C has no pre-build builder handle, so its handle release is the corresponding owned-secret lifecycle boundary.",
-      "evidencePaths": [
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/approval-record.md",
-        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
-        "bindings/python/tests/test_parameters_authentication_parity.py",
-        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
-        "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
-        "bindings/c/tests/authentication_consumer.c",
-        "crates/kmipkit-protocol/src/credential/secret.rs",
-        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
-        "crates/kmipkit-protocol/tests/credential_secret.rs"
       ]
     }
   ],

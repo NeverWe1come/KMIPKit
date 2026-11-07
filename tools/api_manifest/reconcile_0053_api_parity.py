@@ -103,6 +103,55 @@ PYTHON_BUILDER_CLOSE_EXCLUSION_EVIDENCE_PATHS = (
     "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
     "crates/kmipkit-protocol/tests/cryptographic_parameters_public.rs",
 )
+C_FUNCTION_SUPERSESSION_SYMBOLS = {
+    "client_batch_item_response_metadata_v1": "kmipkit_client_batch_item_response_metadata_v1",
+    "transport_config_create_v1": "kmipkit_transport_config_create_v1",
+}
+C_FUNCTION_SUPERSESSION_RATIONALE = (
+    "The manifest now classifies these exact symbols as ready four-language functions; "
+    "retaining their C-only exclusion duplicates the same C ABI export and fails "
+    "release-manifest validation."
+)
+C_FUNCTION_SUPERSESSION_APPROVAL_EVIDENCE = (
+    "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+)
+C_FUNCTION_SUPERSESSION_EVIDENCE_PATHS = frozenset(
+    {
+        "specs/053-api-parity-facade/spec.md",
+        APPROVAL_RECORD_PATH,
+        "specs/053-api-parity-facade/implementation-evidence.md",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py",
+    }
+)
+C_FUNCTION_OLD_APPROVAL = {
+    "kind": "feature-specification",
+    "path": "specs/057-multi-encoding-client-integration/spec.md",
+    "status": "Approved",
+    "evidence": (
+        "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; "
+        "requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+    ),
+}
+C_FUNCTION_OLD_EVIDENCE = (
+    "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory the exact C ABI. "
+    "KMIPKIT-0057-FR-005 confirms the corresponding client and transport "
+    "capabilities are represented by equivalent four-language facade values."
+)
+C_FUNCTION_OLD_REASONS = {
+    "client_batch_item_response_metadata_v1": (
+        "This C-only metadata accessor fills the exact versioned batch-result carrier; "
+        "the equivalent outcome, status, and reason values are exposed through the "
+        "four-language batch result facade."
+    ),
+    "transport_config_create_v1": (
+        "This C-only constructor adapts the versioned transport ABI carrier into the "
+        "transport configuration handle; the four-language facade exposes the equivalent "
+        "builder and configuration values."
+    ),
+}
 LANGUAGE_PACKAGES = {
     "rust": {
         "rust-kmipkit",
@@ -2329,16 +2378,25 @@ def remove_approved_exclusions(
             and removal.get("supersessionRationale")
             == JAVA_BUILDER_CLOSE_SUPERSESSION_RATIONALE
         )
+        is_c_function_supersession = (
+            declaration_id in C_FUNCTION_SUPERSESSION_SYMBOLS
+            and package_id == "c-kmipkit"
+            and export_name == C_FUNCTION_SUPERSESSION_SYMBOLS.get(declaration_id)
+            and removal.get("supersedesSpecId") == "KMIPKIT-0057"
+            and removal.get("supersessionRationale")
+            == C_FUNCTION_SUPERSESSION_RATIONALE
+        )
         if (
             (
                 not is_query_supersession
                 and not is_java_builder_close_supersession
                 and not is_python_builder_close_supersession
+                and not is_c_function_supersession
             )
             or declaration_id in seen
         ):
             raise ReconciliationError(
-                "only an exact KMIPKIT-0020 exclusion for a QueryResponse route, or an exact KMIPKIT-0053 Java/Python secret-cleanup exclusion, may be superseded"
+                "only exact approved QueryResponse, secret-cleanup, or four-language C function exclusions may be superseded"
             )
         seen.add(declaration_id)
 
@@ -2351,12 +2409,16 @@ def remove_approved_exclusions(
             "evidence": (
                 QUERY_RESPONSE_SCOPE_SUPERSESSION
                 if is_query_supersession
+                else C_FUNCTION_SUPERSESSION_APPROVAL_EVIDENCE
+                if is_c_function_supersession
                 else JAVA_BUILDER_CLOSE_APPROVAL_EVIDENCE
             ),
         }
         expected_evidence = (
             QUERY_RESPONSE_SCOPE_EVIDENCE
             if is_query_supersession
+            else C_FUNCTION_SUPERSESSION_EVIDENCE_PATHS
+            if is_c_function_supersession
             else JAVA_BUILDER_CLOSE_SUPERSESSION_EVIDENCE_PATHS
             if is_java_builder_close_supersession
             else frozenset(
@@ -2388,23 +2450,36 @@ def remove_approved_exclusions(
             row for row in declarations
             if isinstance(row, dict) and row.get("declarationId") == declaration_id
         ]
-        if (
-            len(matching_declarations) != 1
-            or matching_declarations[0].get("packageId") != package_id
-            or matching_declarations[0].get("exportName") != export_name
-            or matching_declarations[0].get("declarationState") != "verified"
-            or (
-                (is_java_builder_close_supersession or is_python_builder_close_supersession)
-                and (
+        matching_functions = [
+            row
+            for row in result.get("functions", [])
+            if isinstance(row, dict) and row.get("id") == declaration_id
+        ]
+        valid_target = (
+            len(matching_functions) == 1
+            and matching_functions[0].get("c", {}).get("symbol") == export_name
+            and "KMIPKIT-0057-FR-005" in matching_functions[0].get("requirementIds", [])
+            and all(
+                isinstance(matching_functions[0].get(language), dict)
+                for language in REQUIRED_LANGUAGES
+            )
+        ) if is_c_function_supersession else (
+            len(matching_declarations) == 1
+            and matching_declarations[0].get("packageId") == package_id
+            and matching_declarations[0].get("exportName") == export_name
+            and matching_declarations[0].get("declarationState") == "verified"
+            and (
+                not (is_java_builder_close_supersession or is_python_builder_close_supersession)
+                or (
                     matching_declarations[0].get("capabilityId")
-                    != "typed_cryptographic_parameters"
-                    or matching_declarations[0].get("parityScope")
-                    != "four-language"
+                    == "typed_cryptographic_parameters"
+                    and matching_declarations[0].get("parityScope") == "four-language"
                 )
             )
-        ):
+        )
+        if not valid_target:
             raise ReconciliationError(
-                "superseded exclusion must match one verified exact KMIPKIT-0053 declaration"
+                "superseded exclusion must match one verified exact KMIPKIT-0053 declaration or mapped four-language function"
             )
 
         matching_exclusions = [
@@ -2426,7 +2501,14 @@ def remove_approved_exclusions(
         index, old = matching_exclusions[0]
         old_approval = old.get("approvalSource")
         reason = old.get("reason")
-        if is_query_supersession:
+        if is_c_function_supersession:
+            expected_old_exclusion = (
+                old.get("cFunction", {}).get("symbol") == export_name
+                and old.get("approvalSource") == C_FUNCTION_OLD_APPROVAL
+                and old.get("reason") == C_FUNCTION_OLD_REASONS[declaration_id]
+                and old.get("evidence") == C_FUNCTION_OLD_EVIDENCE
+            )
+        elif is_query_supersession:
             expected_old_exclusion = (
                 old.get("candidateSpecId") == "KMIPKIT-0020"
                 and isinstance(old_approval, dict)
