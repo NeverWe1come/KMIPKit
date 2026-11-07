@@ -315,7 +315,9 @@ and profile selection and readiness tests exercise its metadata consumers. It
 also excludes `crates/kmipkit-protocol/src/named_values_generated.rs` and
 `bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java` for the same
 catalog-generated reason: their generator checks exact output and consumer
-tests exercise lookup behavior. The exact generated
+tests exercise lookup behavior. The local JaCoCo bundle check applies the
+matching class exclusion for `KmipValues`, so `mvn clean verify` and the shared
+coverage gate enforce the same executable-source scope. The exact generated
 `crates/kmipkit-protocol/src/typed_attributes_generated.rs` file is excluded for
 the same reason: its 62 marker implementations are mechanically rendered from
 the pinned catalog into the shared typed-attribute conversion contract. The
