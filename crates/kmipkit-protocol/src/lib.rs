@@ -46,7 +46,9 @@ mod hash;
 mod import;
 mod interop;
 mod join_split_key;
+mod kem;
 mod lifecycle;
+pub mod link_normalizer;
 mod locate;
 mod log;
 mod login;
@@ -57,6 +59,7 @@ mod message;
 mod modify_attribute;
 mod multipart;
 mod obtain_lease;
+mod object_class;
 mod operation_data;
 mod ping;
 mod pkcs11;
@@ -153,6 +156,11 @@ pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };
+pub use kem::{
+    DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,
+    EncapsulateRequest, EncapsulateResponse,
+};
+pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
@@ -168,6 +176,7 @@ pub use message::{
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
+pub use object_class::ObjectClass;
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};

@@ -418,7 +418,8 @@ fn v1_compat_full_roundtrip() {
     assert!(is_version_supported(1, 4));
     assert!(is_version_supported(2, 0));
     assert!(is_version_supported(2, 1));
-    assert!(!is_version_supported(3, 0));
+    assert!(is_version_supported(3, 0));
+    assert!(!is_version_supported(4, 0));
 
     // Convert v2 attributes of each type into v1
     let int_item = ttlv_item(TAG_CRYPTOGRAPHIC_LENGTH, Value::integer(256));

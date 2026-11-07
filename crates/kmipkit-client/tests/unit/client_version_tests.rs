@@ -136,3 +136,27 @@ fn test_version_gate_rejects_uncatalogued_version_before_send() {
     assert_eq!(err.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
 }
+
+#[test]
+fn test_version_gate_kmip30_operations_validation() {
+    use kmipkit_protocol::VersionGate;
+
+    const DEACTIVATE_OPERATION: u32 = 0x0000_003E;
+    const ENCAPSULATE_OPERATION: u32 = 0x0000_003F;
+    const DECAPSULATE_OPERATION: u32 = 0x0000_0040;
+
+    // Allowed under KMIP 3.0
+    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, DEACTIVATE_OPERATION).is_ok());
+    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, ENCAPSULATE_OPERATION).is_ok());
+    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, DECAPSULATE_OPERATION).is_ok());
+
+    // Rejected under KMIP 2.1
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, DEACTIVATE_OPERATION).is_err());
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, ENCAPSULATE_OPERATION).is_err());
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, DECAPSULATE_OPERATION).is_err());
+
+    // Rejected under KMIP 2.0
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, DEACTIVATE_OPERATION).is_err());
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, ENCAPSULATE_OPERATION).is_err());
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, DECAPSULATE_OPERATION).is_err());
+}

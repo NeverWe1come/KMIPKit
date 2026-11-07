@@ -35,6 +35,9 @@ pub const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025;
 pub const HASH_OPERATION: u32 = 0x0000_0027;
 pub const PING_OPERATION: u32 = 0x0000_003B;
 pub const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032;
+pub const DEACTIVATE_OPERATION: u32 = 0x0000_003E;
+pub const ENCAPSULATE_OPERATION: u32 = 0x0000_003F;
+pub const DECAPSULATE_OPERATION: u32 = 0x0000_0040;
 
 // Tag constants
 pub const TAG_REQUEST_MESSAGE: u32 = 0x0042_0078;
@@ -144,6 +147,13 @@ impl Dispatcher {
             return Err((
                 REASON_OPERATION_NOT_SUPPORTED,
                 "Operation not supported in KMIP 2.0",
+            ));
+        }
+
+        if major < 3 && (0x0000_003C..=0x0000_0042).contains(&op) {
+            return Err((
+                REASON_OPERATION_NOT_SUPPORTED,
+                "Operation not supported in KMIP versions prior to 3.0",
             ));
         }
 
@@ -711,6 +721,66 @@ impl Dispatcher {
                     .and_then(|item| extract_enumeration(&item))
                     .unwrap_or(2); // 2 = Server
                 Ok(vec![ttlv_item(TAG_ENDPOINT_ROLE, Value::enumeration(role))])
+            }
+
+            DEACTIVATE_OPERATION => {
+                let id = payload
+                    .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
+                    .and_then(|item| extract_text_string(&item))
+                    .or_else(|| id_placeholder.clone())
+                    .ok_or((REASON_ITEM_NOT_FOUND, "missing unique identifier"))?;
+
+                if self.store.get(&id).is_none() {
+                    return Err((REASON_ITEM_NOT_FOUND, "object not found"));
+                }
+                *id_placeholder = Some(id.clone());
+
+                Ok(vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id))])
+            }
+
+            ENCAPSULATE_OPERATION => {
+                let id = payload
+                    .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
+                    .and_then(|item| extract_text_string(&item))
+                    .or_else(|| id_placeholder.clone())
+                    .ok_or((REASON_ITEM_NOT_FOUND, "missing unique identifier"))?;
+
+                if self.store.get(&id).is_none() {
+                    return Err((REASON_ITEM_NOT_FOUND, "object not found"));
+                }
+                *id_placeholder = Some(id.clone());
+
+                let ciphertext = crypto::generate_random_bytes(32)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+                let shared_secret = crypto::generate_random_bytes(32)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+
+                Ok(vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id)),
+                    ttlv_item(TAG_DATA, Value::byte_string(ciphertext)),
+                    ttlv_item(TAG_KEY_MATERIAL, Value::byte_string(shared_secret)),
+                ])
+            }
+
+            DECAPSULATE_OPERATION => {
+                let id = payload
+                    .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
+                    .and_then(|item| extract_text_string(&item))
+                    .or_else(|| id_placeholder.clone())
+                    .ok_or((REASON_ITEM_NOT_FOUND, "missing unique identifier"))?;
+
+                if self.store.get(&id).is_none() {
+                    return Err((REASON_ITEM_NOT_FOUND, "object not found"));
+                }
+                *id_placeholder = Some(id.clone());
+
+                let shared_secret = crypto::generate_random_bytes(32)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+
+                Ok(vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id)),
+                    ttlv_item(TAG_KEY_MATERIAL, Value::byte_string(shared_secret)),
+                ])
             }
 
             QUERY_OPERATION | PING_OPERATION => Ok(Vec::new()),

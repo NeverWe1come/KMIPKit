@@ -11,7 +11,7 @@ fn test_deactivate_request_and_response_roundtrip() {
     assert_eq!(req.unique_identifier(), "test-key-uuid-123");
 
     let payload = req.into_ttlv_payload().expect("valid payload");
-    assert_eq!(payload.children().len(), 1);
+    assert_eq!(payload.view().children().len(), 1);
 
     let resp = DeactivateResponse::new("test-key-uuid-123");
     assert_eq!(resp.unique_identifier(), "test-key-uuid-123");
@@ -23,7 +23,7 @@ fn test_encapsulate_request_and_response() {
     assert_eq!(req.unique_identifier(), "public-key-uuid-456");
 
     let payload = req.into_ttlv_payload().expect("valid payload");
-    assert_eq!(payload.children().len(), 1);
+    assert_eq!(payload.view().children().len(), 1);
 
     let ciphertext = vec![0x01, 0x02, 0x03, 0x04];
     let shared_secret = vec![0xAA, 0xBB, 0xCC, 0xDD];
