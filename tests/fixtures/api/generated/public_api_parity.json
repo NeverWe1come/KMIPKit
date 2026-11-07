@@ -598096,7 +598096,7 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-3f4f85a696c50c205347",
       "declarationState": "verified",
       "exportName": "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_additional_data",
@@ -598148,11 +598148,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -603504,7 +603505,7 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-44a49712122e9a2527a7",
       "declarationState": "verified",
       "exportName": "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_tag",
@@ -603556,11 +603557,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -619721,7 +619723,7 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-576971cc1c9d14849f2c",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
@@ -619773,11 +619775,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -683581,7 +683584,7 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-9ba5e392ae91e3287aa8",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
@@ -683633,11 +683636,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
