@@ -15,7 +15,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 KMIPKIT_0051_BASELINE = "c0aecd29c93dd63abbaa9928ee8988bcb4b9ebdc"
-KMIPKIT_0052_ROUTE_DELTA = 28
+KMIPKIT_0052_ROUTE_DELTA = 78
 
 
 class T102ResponseRouteTotalTests(unittest.TestCase):
