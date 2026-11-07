@@ -5,6 +5,8 @@
 - Branch: `feature/KMIPKIT-0050-parameters-auth-client`.
 - Base: `feature/KMIPKIT-0049-managed-objects` (PR #116), as recorded in
   `approval-record.md`.
+- Latest synchronized predecessor commit: `15f4cee81` (PR #116); this branch
+  includes that parent through a normal merge.
 - Scope: typed Cryptographic Parameters, request-scoped KMIP Authentication,
   direct Rust client methods, public API reconciliation, examples, and tests.
 
@@ -29,6 +31,10 @@ Successful Windows checks on this branch:
 - `cargo fmt --all --check`.
 - `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`.
 - `cargo test --workspace --all-features`.
+- `cargo test --offline -p kmipkit-client --lib authentication_owner` passed
+  both ADR-0012 candidate-callsite lifecycle tests: ownership survives a
+  successful exchange and is zeroized afterward; a partial-write failure
+  zeroizes the owner, reports the delivery outcome, and does not retry.
 - `cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw-local.json`
   (full Windows workspace test and coverage instrumentation completed).
 - `python scripts/coverage_gate.py normalize --workspace . --input coverage-raw-local.json --output coverage-local.json`.
@@ -88,6 +94,12 @@ environment warnings about NASM and an optional compiler probe.
 - Draft pull request: [#118](https://github.com/NeverWe1come/KMIPKit/pull/118),
   base `feature/KMIPKIT-0049-managed-objects`, head
   `feature/KMIPKIT-0050-parameters-auth-client`, verified open and draft at
-  commit `4f23fba09f791dbbd7f510188151a3683fef1dfb`.
+  original PR-open commit `4f23fba09f791dbbd7f510188151a3683fef1dfb`. The
+  branch now includes the synchronized 0049 parent and this evidence update.
+- ADR-0012 Decision 6 still requires hosted CI to run and pass these exact
+  candidate-callsite tests before the production route can be merged, enabled,
+  or released. CI was not queried under the maintainer's instruction during
+  the billing issue, so this remains an integration gate despite the local
+  pass.
 - This evidence does not claim profile conformance, interoperability, human
   security approval, or release readiness.
