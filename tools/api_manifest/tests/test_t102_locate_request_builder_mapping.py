@@ -75,6 +75,33 @@ LOCATE_EXISTING_OPERATION_DECLARATIONS = {
     "T038:locate:python:unique_identifiers:05",
 }
 
+# Exact approved facade aliases from the public protocol namespace.
+LOCATE_PROTOCOL_ALIASES = {
+    "rust-observed-0ed7f834e1e763c2bd24": "kmipkit::protocol::LocateRequest::new",
+    "rust-observed-1fb2f0ef8c85083f7aa2": "kmipkit::protocol::LocateRequest::with_object_group_member",
+    "rust-observed-2d35ba3aa643b1999e00": "kmipkit::protocol::LocateRequest::offset_items",
+    "rust-observed-49d03cfe024d950280d2": "kmipkit::protocol::LocateResponse::try_from_response_item",
+    "rust-observed-4b4b00d4c5e187b32c38": "kmipkit::protocol::ObjectGroupMember::from_raw",
+    "rust-observed-5343a4e9de6bebc5507b": "kmipkit::protocol::StorageStatusMask::raw",
+    "rust-observed-61a01d54f9ea83b9ae99": "kmipkit::protocol::LocateResponse",
+    "rust-observed-6aebffd1646efc60f126": "kmipkit::protocol::StorageStatusMask",
+    "rust-observed-756de058d68ae474dfba": "kmipkit::protocol::LocateRequest::object_group_member",
+    "rust-observed-7af3e273e3fd323acf39": "kmipkit::protocol::LocateRequest::attributes",
+    "rust-observed-7cb50a47a88a215f19f2": "kmipkit::protocol::LocateResponse::unique_identifiers",
+    "rust-observed-7e54c3deafa02329aaaa": "kmipkit::protocol::LocateResponse::result",
+    "rust-observed-823a64ae9538c5523f9d": "kmipkit::protocol::StorageStatusMask::from_raw",
+    "rust-observed-9bb50225ddd5f1e28052": "kmipkit::protocol::LocateRequest::to_ttlv_payload",
+    "rust-observed-a723201e26375e01d907": "kmipkit::protocol::LocateRequest::with_maximum_items",
+    "rust-observed-a9946cf80e765b5b504e": "kmipkit::protocol::LocateRequest::with_offset_items",
+    "rust-observed-cc1ac744ce26b9a9814b": "kmipkit::protocol::LocateRequest",
+    "rust-observed-d7c4979851ede798a073": "kmipkit::protocol::LocateRequest::maximum_items",
+    "rust-observed-d8189aa94d1d4a30f11e": "kmipkit::protocol::ObjectGroupMember::raw",
+    "rust-observed-dc67a63a9f318f844a4c": "kmipkit::protocol::LocateRequest::storage_status_mask",
+    "rust-observed-ddecc4abd5246e6facfd": "kmipkit::protocol::LocateRequest::with_storage_status_mask",
+    "rust-observed-f09e32ad434e77d86642": "kmipkit::protocol::ObjectGroupMember",
+    "rust-observed-fabbb8c6a23f584c3668": "kmipkit::protocol::LocateResponse::located_items",
+}
+
 LOCATE_ATTRIBUTE_REQUEST_DECLARATIONS = {
     "rust-observed-e64d93dbb39c85df4a83",
     "rust-observed-cfe296342a701e9d4e86",
@@ -188,13 +215,27 @@ class T102LocateRequestBuilderMappingTests(unittest.TestCase):
             for declarations in operation["declarations"].values()
             for declaration_id in declarations
         }
-        self.assertEqual(51, len(locate_ids))
+        self.assertEqual(74, len(locate_ids))
         self.assertEqual(
-            LOCATE_EXISTING_OPERATION_DECLARATIONS | {
+            LOCATE_EXISTING_OPERATION_DECLARATIONS | set(LOCATE_PROTOCOL_ALIASES) | {
                 declaration_id for declaration_id, _ in EXPECTED
             },
             locate_ids,
         )
+        self.assertEqual(23, len(LOCATE_PROTOCOL_ALIASES))
+        for declaration_id, export_name in LOCATE_PROTOCOL_ALIASES.items():
+            with self.subTest(protocol_alias=export_name):
+                alias = self.declarations[declaration_id]
+                self.assertEqual("rust-kmipkit", alias["packageId"])
+                self.assertEqual(export_name, alias["exportName"])
+                canonical_name = export_name.replace("kmipkit::protocol::", "kmipkit_protocol::", 1)
+                canonical = next(
+                    row for row in self.declarations.values()
+                    if row["packageId"] == "rust-kmipkit-protocol"
+                    and row["exportName"] == canonical_name
+                )
+                for field in ("capabilityId", "declarationState", "requirementIds", "approvalSource"):
+                    self.assertEqual(canonical[field], alias[field])
         self.assertIn(SERVER_ONLY_REQUIREMENT, json.loads(MANIFEST.read_text(encoding="utf-8"))["requirementIds"])
         self.assertFalse(
             any(
@@ -218,7 +259,11 @@ class T102LocateRequestBuilderMappingTests(unittest.TestCase):
             for declaration_id in declarations
         }
         self.assertEqual(
-            LOCATE_ATTRIBUTE_REQUEST_DECLARATIONS,
+            LOCATE_ATTRIBUTE_REQUEST_DECLARATIONS | {
+                declaration_id
+                for declaration_id, name in LOCATE_PROTOCOL_ALIASES.items()
+                if name.startswith("kmipkit::protocol::LocateRequest")
+            },
             {
                 declaration_id
                 for declaration_id in locate_ids

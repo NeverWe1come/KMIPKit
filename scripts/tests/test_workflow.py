@@ -128,6 +128,16 @@ class WorkflowContractTests(unittest.TestCase):
             command="python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check",
         )
 
+    def test_normative_inventory_checks_generated_named_values(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "normative-inventory")
+        self.assert_generator_check_step(
+            job,
+            name="Verify generated named protocol values",
+            step_id="verify-generated-named-protocol-values",
+            command="python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check",
+        )
+
     def test_normative_inventory_checks_generated_client_profiles(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")

@@ -222,6 +222,142 @@ fn tls13_resumption_uses_new_connections_and_is_bounded_to_sixteen_tickets() {
 }
 
 #[test]
+fn session_store_clear_purges_cached_tickets_and_forces_full_handshake() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let client = tls::build_client_config(&transport_config(&pki, &pki, None, Vec::new()))
+        .expect("the client configuration is valid");
+    let peer = server_config(&pki, false, 2);
+
+    assert_eq!(
+        handshake(&client, Arc::clone(&peer)).expect("the first TLS connection succeeds"),
+        HandshakeKind::Full
+    );
+    assert!(client.cached_ticket_count() > 0);
+
+    client.clear_cached_tickets();
+    assert_eq!(client.cached_ticket_count(), 0);
+
+    assert_eq!(
+        handshake(&client, peer).expect("after clear, connection performs full handshake"),
+        HandshakeKind::Full
+    );
+}
+
+#[test]
+fn config_tracks_file_backed_credentials() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let cert_pem = pem("CERTIFICATE", pki.client.der().as_ref());
+    let key_pem = pem("PRIVATE KEY", &pki.client_key.serialize_der());
+
+    let cert_path =
+        std::env::temp_dir().join(format!("test-policy-cert-{}.pem", std::process::id()));
+    let key_path = std::env::temp_dir().join(format!("test-policy-key-{}.pem", std::process::id()));
+    std::fs::write(&cert_path, &cert_pem).unwrap();
+    std::fs::write(&key_path, &key_pem).unwrap();
+
+    let mut config = TransportConfig::builder(crate::Endpoint::raw_tls("localhost", 5696))
+        .client_identity(crate::ClientIdentity::new(
+            crate::CertificateInput::from_pem_file(&cert_path).unwrap(),
+            crate::PrivateKeyInput::from_pem_file(&key_path).unwrap(),
+        ))
+        .trust_source(crate::TrustSource::certificate_authorities(vec![
+            crate::CertificateInput::from_pem(pem("CERTIFICATE", pki.ca.der().as_ref())),
+        ]))
+        .build()
+        .unwrap();
+
+    // In-memory config has no tracked files
+    let mut mem_config = TransportConfig::builder(crate::Endpoint::raw_tls("localhost", 5696))
+        .client_identity(crate::ClientIdentity::new(
+            crate::CertificateInput::from_pem(cert_pem.clone()),
+            crate::PrivateKeyInput::from_pem(key_pem.clone()),
+        ))
+        .trust_source(crate::TrustSource::certificate_authorities(vec![
+            crate::CertificateInput::from_pem(pem("CERTIFICATE", pki.ca.der().as_ref())),
+        ]))
+        .build()
+        .unwrap();
+    assert!(!mem_config.files_have_changed());
+    assert!(!mem_config.reload_file_sources().unwrap());
+
+    // File-backed config initially unchanged
+    assert!(!config.files_have_changed());
+    let mut client = tls::build_client_config(&config).unwrap();
+    assert_eq!(client.generation(), 0);
+    assert!(!client.refresh_if_changed(&mut config).unwrap());
+    assert_eq!(client.generation(), 0);
+    assert!(!config.reload_file_sources().unwrap());
+
+    // 1. Rotate to valid new identity
+    let pki2 = TestPki::generate(SERVER_NAME, false);
+    let rotated_cert_pem = pem("CERTIFICATE", pki2.client.der().as_ref());
+    let rotated_key_pem = pem("PRIVATE KEY", &pki2.client_key.serialize_der());
+    std::fs::write(&cert_path, &rotated_cert_pem).unwrap();
+    std::fs::write(&key_path, &rotated_key_pem).unwrap();
+    assert!(config.files_have_changed());
+    assert!(client.refresh_if_changed(&mut config).unwrap());
+    assert_eq!(client.generation(), 1);
+    assert!(!config.files_have_changed());
+
+    // 2. Corrupt cert file
+    std::fs::write(&cert_path, b"invalid pem data").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+    assert_eq!(
+        client.refresh_if_changed(&mut config).unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 3. Restore valid cert, corrupt key file
+    std::fs::write(&cert_path, &rotated_cert_pem).unwrap();
+    std::fs::write(&key_path, b"invalid pem key").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 4. Truncate cert file
+    std::fs::write(&cert_path, b"").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 5. Restore valid cert, truncate key file
+    std::fs::write(&cert_path, &rotated_cert_pem).unwrap();
+    std::fs::write(&key_path, b"").unwrap();
+    assert!(config.files_have_changed());
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 6. Cert changed on disk, but key file is missing when reloading
+    std::fs::write(&cert_path, &cert_pem).unwrap();
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // 7. Key changed on disk, but cert file is missing when reloading
+    std::fs::write(&key_path, &key_pem).unwrap();
+    let _ = std::fs::remove_file(&cert_path);
+    assert_eq!(
+        config.reload_file_sources().unwrap_err(),
+        crate::TransportConfigError::InvalidCredential
+    );
+
+    // Clean up temporary files
+    let _ = std::fs::remove_file(&cert_path);
+    let _ = std::fs::remove_file(&key_path);
+}
+
+#[test]
 fn each_identity_gets_an_isolated_session_cache() {
     let pki = TestPki::generate(SERVER_NAME, false);
     let other_identity = TestPki::generate("other-client.kmipkit.test", false);
@@ -322,6 +458,17 @@ fn resumed_handshake_does_not_reinvoke_the_full_handshake_trust_verifier() {
         dns_name("other.kmipkit.test"),
     ));
     assert_eq!(verifier.calls(), 2);
+}
+
+#[test]
+fn client_config_strictly_disables_0rtt_early_data_for_security() {
+    let pki = TestPki::generate(SERVER_NAME, false);
+    let configuration = transport_config(&pki, &pki, None, Vec::new());
+    let client = tls::build_client_config(&configuration).expect("valid client config builds");
+    assert!(
+        !client.rustls_config().enable_early_data,
+        "TLS 1.3 0-RTT early data must be disabled per AGENTS.md §8"
+    );
 }
 
 #[test]

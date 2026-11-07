@@ -39,6 +39,16 @@ APPROVAL_SOURCE = {
 }
 NAMED_VALUES_FACADE_PREFIX = "kmipkit::protocol::named_values_generated"
 NAMED_VALUES_PROTOCOL_PREFIX = "kmipkit_protocol::named_values_generated"
+TYPED_ATTRIBUTE_PACKAGE_PREFIXES = {
+    "rust-kmipkit": "kmipkit::protocol::",
+    "rust-kmipkit-protocol": "kmipkit_protocol::",
+}
+TYPED_ATTRIBUTE_ROOT_TYPES = frozenset({
+    "Attribute", "AttributeDefinition", "AttributeSet", "AttributeValueError",
+    "AttributeView", "CurrentAttribute", "NewAttribute",
+    "UniqueIdentifierValue", "UniqueIdentifierView",
+})
+TYPED_ATTRIBUTE_MARKER_NAMESPACE = "attribute::typed"
 UNIMPLEMENTED_MASK_NAME_EXPORTS = {
     "rust-kmipkit": {
         "kmipkit::protocol::named_values_generated::values::bitmask::cryptographic_usage_mask::name",
@@ -167,6 +177,13 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
         if key in declaration_keys or key in exclusion_keys:
             continue
 
+        if package_id == "rust-kmipkit-protocol" and export_name.startswith(NAMED_VALUES_PROTOCOL_PREFIX):
+            named_routes.append(observed)
+            continue
+
+        if not _is_typed_attribute_route(package_id, export_name):
+            raise ReconciliationError(f"unowned Rust export cannot be attributed to KMIPKIT-0048: {package_id}:{export_name}")
+
         if kind == "associated-item" and export_name.startswith("<"):
             exclusions.append({
                 "packageId": package_id,
@@ -179,12 +196,6 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
             exclusion_keys.add(key)
             continue
 
-        if package_id == "rust-kmipkit-protocol" and export_name.startswith(NAMED_VALUES_PROTOCOL_PREFIX):
-            named_routes.append(observed)
-            continue
-
-        if package_id not in {"rust-kmipkit", "rust-kmipkit-protocol"} or not _is_typed_attribute_route(export_name):
-            raise ReconciliationError(f"unowned Rust export cannot be attributed to KMIPKIT-0048: {package_id}:{export_name}")
         typed_routes.append(observed)
 
     for observed in named_routes:
@@ -232,16 +243,20 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
     return result
 
 
-def _is_typed_attribute_route(export_name: str) -> bool:
+def _is_typed_attribute_route(package_id: str, export_name: str) -> bool:
     """Accept only public paths whose visible owner is the 0048 attribute API."""
-    return any(token in export_name for token in (
-        "::attribute::",
-        "::Attribute",
-        "::CurrentAttribute",
-        "::NewAttribute",
-        "::UniqueIdentifierValue",
-        "::UniqueIdentifierView",
-    )) or export_name.endswith("::attribute")
+    prefix = TYPED_ATTRIBUTE_PACKAGE_PREFIXES.get(package_id)
+    # A typed value used only as a trait argument cannot establish ownership.
+    owner = export_name.removeprefix("<").split(" as ", 1)[0]
+    if prefix is None or not owner.startswith(prefix):
+        return False
+    relative_owner = owner.removeprefix(prefix).split("<", 1)[0]
+    if relative_owner == TYPED_ATTRIBUTE_MARKER_NAMESPACE or relative_owner.startswith(
+        TYPED_ATTRIBUTE_MARKER_NAMESPACE + "::"
+    ):
+        return True
+    relative_owner = relative_owner.removeprefix("attribute::")
+    return relative_owner.split("::", 1)[0] in TYPED_ATTRIBUTE_ROOT_TYPES
 
 
 def _typed_requirement_ids(export_name: str) -> list[str]:

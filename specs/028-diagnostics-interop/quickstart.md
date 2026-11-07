@@ -23,7 +23,7 @@ Expected evidence: correct required/optional fields and empty responses; open en
     python tools/normative_catalog/report.py --check
     git diff --check
 
-Apply the exact gates in docs/development/testing.md: 90% line coverage for the protocol crate and changed production code, 90% Rust workspace coverage, and 100% normative traceability. Apply the 85% per-scope adapter/transport thresholds when those scopes change.
+Apply the exact gates in docs/development/testing.md: 95% line coverage for TTLV/protocol crates and changed production code, 90% Rust workspace coverage, and 100% normative traceability. Apply the 85% per-scope adapter/transport thresholds when those scopes change.
 
 ## 1.0 interoperability release gate
 
