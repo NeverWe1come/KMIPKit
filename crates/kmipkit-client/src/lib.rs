@@ -353,6 +353,10 @@ mod pkcs11_execution_tests;
 mod client_version_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/kmip20_interop_tests.rs"]
+mod kmip20_interop_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/server_to_client_tests.rs"]
 mod server_to_client_tests;
 

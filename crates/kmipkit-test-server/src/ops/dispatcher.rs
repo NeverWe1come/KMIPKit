@@ -85,15 +85,28 @@ pub const REASON_GENERAL_FAILURE: u32 = 0x0000_0100;
 #[derive(Clone)]
 pub struct Dispatcher {
     store: Arc<JsonStore>,
+    fixed_version: Option<(u32, u32)>,
 }
 
 impl Dispatcher {
     pub fn new(store: Arc<JsonStore>) -> Self {
-        Self { store }
+        Self {
+            store,
+            fixed_version: None,
+        }
+    }
+
+    pub fn with_fixed_version(store: Arc<JsonStore>, version: Option<(u32, u32)>) -> Self {
+        Self {
+            store,
+            fixed_version: version,
+        }
     }
 
     pub fn dispatch(&self, request: &Item) -> Result<Item, String> {
-        let (major, minor, items) = extract_request_parts(request)?;
+        let (req_major, req_minor, items) = extract_request_parts(request)?;
+
+        let (major, minor) = self.fixed_version.unwrap_or((req_major, req_minor));
 
         if !is_version_supported(major, minor) {
             return Ok(build_error_response(
@@ -122,11 +135,18 @@ impl Dispatcher {
     fn execute_operation(
         &self,
         major: u32,
-        _minor: u32,
+        minor: u32,
         op: u32,
         payload: Option<&Structure>,
         id_placeholder: &mut Option<String>,
     ) -> Result<Vec<Item>, (u32, &'static str)> {
+        if (major, minor) == (2, 0) && (0x0000_0036..=0x0000_003B).contains(&op) {
+            return Err((
+                REASON_OPERATION_NOT_SUPPORTED,
+                "Operation not supported in KMIP 2.0",
+            ));
+        }
+
         let now_secs = now_unix_seconds();
 
         match op {

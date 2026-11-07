@@ -130,7 +130,10 @@ impl TestServer {
                 .map_err(|e| format!("storage init error: {e}"))?,
         );
 
-        let dispatcher = Arc::new(Dispatcher::new(Arc::clone(&store)));
+        let dispatcher = Arc::new(Dispatcher::with_fixed_version(
+            Arc::clone(&store),
+            config.protocol_version,
+        ));
 
         let mut root_store = rustls::RootCertStore::empty();
         root_store
