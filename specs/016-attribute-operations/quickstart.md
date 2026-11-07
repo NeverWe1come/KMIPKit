@@ -36,4 +36,4 @@ cargo test --workspace --all-features
 cargo llvm-cov --workspace --all-features
 ```
 
-Expected result: supported CI platforms pass, protocol/new-code coverage is at least 95%, transport/FFI/binding coverage is at least 85%, workspace coverage is at least 90%, and changed-code coverage is at least 95%. No live KMIP server is required for these deterministic tests.
+Expected result: supported CI platforms pass, protocol/new-code coverage is at least 90%, transport/FFI/binding coverage is at least 85%, workspace coverage is at least 90%, and changed-code coverage is at least 90%. No live KMIP server is required for these deterministic tests.

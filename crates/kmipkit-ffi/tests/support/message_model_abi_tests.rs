@@ -1168,6 +1168,14 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
     assert!(!message.is_null());
     assert!(validation_error.is_null());
 
+    let mut message_ttlv: *mut crate::kmipkit_ttlv_structure_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_response_message_ttlv(message, &raw mut message_ttlv),
+        SUCCESS
+    );
+    let _message_tree = assert_structure_tags(message_ttlv, &[RESPONSE_HEADER_TAG, BATCH_ITEM_TAG]);
+    kmipkit_ttlv_structure_release(message_ttlv);
+
     let mut header: *mut crate::kmipkit_response_header_view_t = ptr::null_mut();
     assert_eq!(
         kmipkit_response_message_header(message, &raw mut header),

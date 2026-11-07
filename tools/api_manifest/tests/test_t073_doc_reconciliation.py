@@ -51,7 +51,7 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                 elif owner_state == "candidate":
                     self.assertIn("Candidate owner", rows[name])
 
-    def test_dependency_matrix_reports_declared_hash_mac_and_signature_operations(self) -> None:
+    def test_dependency_matrix_reports_verified_hash_mac_and_signature_operations(self) -> None:
         matrix_path = (
             ROOT
             / "specs"
@@ -73,44 +73,50 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                     for line in matrix.splitlines()
                     if f"| {name} |" in line and line.startswith("| §6.1.")
                 )
-                self.assertEqual("declared", operation["apiState"])
-                self.assertIn("manifest API state: `declared`", row)
+                self.assertEqual("verified", operation["apiState"])
+                self.assertIn("manifest API state: `verified`", row)
                 self.assertIn(
-                    "four-language request and response mappings are recorded, and parity verification remains incomplete",
+                    "T101 maps all four languages and records parity evidence",
                     row,
                 )
                 self.assertNotIn("binding remains blocked", row)
 
-    def test_bilingual_guides_separate_reconciled_inventory_from_incomplete_mappings(self) -> None:
+    def test_bilingual_guides_match_verified_binding_surface_manifest_state(self) -> None:
         guides = {
             "en": ROOT / "docs" / "user-guide" / "en" / "language-packages.md",
             "es": ROOT / "docs" / "user-guide" / "es" / "paquetes-de-idiomas.md",
         }
-        expected = {
+        expected_scope = {
             "en": (
-                "T011",
-                "every observed declaration has a manifest record or an exact approved exclusion",
+                "t108/t109 and t011 confirm every observed declaration has a manifest record or an exact approved exclusion",
                 "the inventory is reconciled",
-                "does not claim KMIP conformance",
+                "the verified inventory does not claim kmip conformance, interoperability, or release readiness",
             ),
             "es": (
-                "T011",
-                "cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
+                "t108/t109 y t011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
                 "el inventario está reconciliado",
-                "no afirma conformidad KMIP",
+                "el inventario verificado no afirma conformidad kmip, interoperabilidad ni preparación para publicar la versión",
             ),
         }
+        capability = next(
+            item
+            for item in self.manifest["capabilities"]
+            if item["capabilityId"] == "public_binding_surface"
+        )
+        self.assertEqual("verified", capability["capabilityState"])
 
         for language, path in guides.items():
             guide_text = path.read_text(encoding="utf-8")
-            guide = re.sub(r"\s+", " ", guide_text).lower()
             row = next(
                 line.lower() for line in guide_text.splitlines() if "public_binding_surface" in line
             )
+            columns = [column.strip() for column in row.strip("|").split("|")]
             with self.subTest(language=language):
-                for phrase in expected[language]:
-                    self.assertIn(phrase.lower(), row)
-                self.assertNotIn("inventory and mappings are not reconciled", row)
+                self.assertEqual("`public_binding_surface`", columns[0])
+                self.assertEqual(capability["capabilityState"], columns[1])
+                for phrase in expected_scope[language]:
+                    self.assertIn(phrase, columns[2])
+                self.assertNotIn("inventory and mappings are not reconciled", columns[2])
 
     def test_public_api_reference_scopes_high_level_subset_and_complete_typed_set(self) -> None:
         reference = (ROOT / "docs" / "architecture" / "public-api.md").read_text(
@@ -161,14 +167,14 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             normalized_typed.lower(),
         )
         self.assertIn(
-            "which are declared in the manifest under the approved kmipkit-0009 scope",
+            "these operations have verified four-language api mappings under the approved kmipkit-0009 scope",
             normalized_typed.lower(),
         )
         for operation in async_followups:
             with self.subTest(excluded_async_operation=operation):
                 self.assertIn(operation.lower(), normalized_typed.lower())
-                self.assertEqual("declared", operations_by_name[operation]["apiState"])
-                self.assertEqual("declared", documented_states.get(operation))
+                self.assertEqual("verified", operations_by_name[operation]["apiState"])
+                self.assertEqual("verified", documented_states.get(operation))
         self.assertIn("generic ttlv response", normalized_typed.lower())
         self.assertIn("kmipkit-dec-015", normalized_typed.lower())
         self.assertIn(

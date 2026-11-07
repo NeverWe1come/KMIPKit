@@ -273,6 +273,35 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             ):
                 self.assertEqual(0, audit_module.audit(binary))
 
+    def test_default_jni_audit_allows_manifest_excluded_pkcs11_bridge(self) -> None:
+        audit_module = _public_jni_audit_module()
+        expected = set(self.fixture["publicNativeExports"]["javaJni"])
+        internal_export = self.fixture["approvedInternalNativeExports"]["javaJni"][0]
+        internal_bridge = internal_export["symbol"]
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        excluded_names = {
+            row["exportName"]
+            for row in manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertIn(
+            internal_export["manifestExport"],
+            excluded_names,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / "libkmipkit_jni.so"
+            binary.touch()
+            with patch.object(
+                audit_module,
+                "read_native_exports",
+                return_value=expected | {internal_bridge},
+            ):
+                self.assertEqual(0, audit_module.audit(binary))
+
     def test_default_jni_audit_rejects_unlisted_jni_candidate_symbols(self) -> None:
         audit_module = _public_jni_audit_module()
         expected = set(self.fixture["publicNativeExports"]["javaJni"])

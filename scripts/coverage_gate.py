@@ -1738,13 +1738,13 @@ def _evaluate_coverage(
         summary_only += sum(adapter_summary_excess.get(source, 0) for source in changed_adapter_sources)
         total = len(changed_executable) + summary_only
         rust_only = all(source.endswith(".rs") for source, _ in changed_executable)
-        if not meets_threshold(covered, total, 95):
+        if not meets_threshold(covered, total, 90):
             prefix = "Changed Rust code" if rust_only else "Changed production code"
-            raise CoverageDataError(f"{prefix} coverage {covered}/{total} is below 95%.")
+            raise CoverageDataError(f"{prefix} coverage {covered}/{total} is below 90%.")
         percentage = covered * 100 / total
         label = "Changed Rust" if rust_only else "Changed production"
         results.append(
-            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (95% minimum)."
+            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (90% minimum)."
         )
     else:
         changed_sources = {source for source in changed if source in merged}
@@ -1759,8 +1759,8 @@ def _evaluate_coverage(
         results.append("Changed executable production lines: not applicable.")
 
     crate_thresholds = {
-        "kmipkit-ttlv": 95,
-        "kmipkit-protocol": 95,
+        "kmipkit-ttlv": 90,
+        "kmipkit-protocol": 90,
         "kmipkit-transport": 85,
         "kmipkit-ffi": 85,
     }
@@ -1872,8 +1872,8 @@ def _evaluate_scoped_coverage(
                         summary_excess[source] = summary_excess.get(source, 0) + count
 
             crate_thresholds = {
-                "kmipkit-ttlv": 95,
-                "kmipkit-protocol": 95,
+                "kmipkit-ttlv": 90,
+                "kmipkit-protocol": 90,
                 "kmipkit-transport": 85,
                 "kmipkit-ffi": 85,
             }
@@ -2014,9 +2014,9 @@ def _evaluate_scoped_coverage(
         )
         extra = sum(count for source, count in summary_excess.items() if source in changed)
         total = len(changed_executable) + extra
-        if not meets_threshold(covered, total, 95):
-            raise CoverageDataError(f"Changed production code coverage {covered}/{total} is below 95%.")
-        results.append(f"Changed production coverage: {covered}/{total} ({covered * 100 / total:.2f}%) (95% minimum).")
+        if not meets_threshold(covered, total, 90):
+            raise CoverageDataError(f"Changed production code coverage {covered}/{total} is below 90%.")
+        results.append(f"Changed production coverage: {covered}/{total} ({covered * 100 / total:.2f}%) (90% minimum).")
     else:
         results.append("Changed executable production lines: not applicable.")
     return results

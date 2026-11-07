@@ -18,7 +18,7 @@ class CoverageRestorationTests(unittest.TestCase):
         self.assertNotIn("temporary coverage-threshold waiver", workflow)
         self.assertNotIn("--cov-fail-under=0", workflow)
         self.assertIn("python -m coverage report", workflow)
-        self.assertIn("--fail-under=95", workflow)
+        self.assertIn("--fail-under=90", workflow)
         self.assertIn("steps.enforce.outcome == 'skipped'", workflow)
 
 

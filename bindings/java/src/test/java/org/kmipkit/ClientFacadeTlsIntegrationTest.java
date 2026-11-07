@@ -267,6 +267,13 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult certifyResult19 = response.itemAt(19);
                     ClientBatchItemResult certifyResult20 = response.itemAt(20);
                     ClientBatchItemResult certifyResult21 = response.itemAt(21)) {
+                NativeBridgeCoverageTest.assertResponseMappers(createPairResult, "createKeyPairResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(rekeyPairResult, "rekeyKeyPairResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(explicitRekeyPairResult, "rekeyKeyPairResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(certifyResult18, "certifyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(certifyResult19, "certifyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(certifyResult20, "certifyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(certifyResult21, "certifyResponse");
                 assertEquals(28, response.itemCount());
                 assertEquals(0, createPairResult.resultStatus());
                 ClientBatchItemResult.CreateKeyPairResponse createPairResponse =
@@ -693,6 +700,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
+                NativeBridgeCoverageTest.assertResponseMappers(pingResult, "pingResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(queryResult, "queryResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(logoutResult, "logoutResponse");
                 assertEquals(3, response.itemCount());
                 assertEquals(0x3b, pingResult.operation());
                 assertEquals(Boolean.TRUE, pingResult.pingResponse().orElseThrow());
@@ -823,6 +833,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(addAttribute);
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "addAttributeResponse");
                 assertEquals(0x0d, result.operation());
                 assertEquals(0, result.resultStatus());
                 ClientBatchItemResult.AddAttributeResponse mapped =
@@ -902,6 +913,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(modifyAttribute);
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "modifyAttributeResponse");
                 assertEquals(0x0e, result.operation());
                 assertEquals(0, result.resultStatus());
                 ClientBatchItemResult.ModifyAttributeResponse mapped =
@@ -978,6 +990,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(setAttribute);
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "setAttributeResponse");
                 assertEquals(0x31, result.operation());
                 assertEquals(0, result.resultStatus());
                 ClientBatchItemResult.SetAttributeResponse mapped =
@@ -1055,6 +1068,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(deleteAttribute);
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "deleteAttributeResponse");
                 assertEquals(0x0f, result.operation());
                 assertEquals(0, result.resultStatus());
                 ClientBatchItemResult.DeleteAttributeResponse mapped =
@@ -1130,6 +1144,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult.GetAttributesResponse mapped =
                             result.getAttributesResponse().orElseThrow();
                     TtlvStructureView attributesView = mapped.attributes().orElseThrow().view()) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "getAttributesResponse");
                 assertEquals(0x0b, result.operation());
                 assertEquals(0, result.resultStatus());
                 assertEquals("object-7", mapped.uniqueIdentifier());
@@ -1197,6 +1212,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult result = response.itemAt(0);
                     ClientBatchItemResult.GetAttributesResponse mapped =
                             result.getAttributesResponse().orElseThrow()) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "getAttributesResponse");
                 assertEquals(0, result.resultStatus());
                 assertEquals("object-7", mapped.uniqueIdentifier());
                 assertTrue(mapped.attributes().isEmpty());
@@ -1258,6 +1274,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(adjustAttribute);
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "adjustAttributeResponse");
                 assertEquals(0x30, result.operation());
                 assertEquals(0, result.resultStatus());
                 assertEquals("adjusted-object-1",
@@ -1486,6 +1503,7 @@ final class ClientFacadeTlsIntegrationTest {
                         ClientBatchItemResult result = response.itemAt(0);
                         TtlvStructure queryPayload = result.queryResponse().orElseThrow();
                         var typedQuery = result.typedQueryResponse().orElseThrow()) {
+                    NativeBridgeCoverageTest.assertResponseMappers(result, "queryResponse");
                     assertEquals(0x18, result.operation());
                     assertNotNull(queryPayload);
                     assertEquals(7, typedQuery.fieldCount());
@@ -1774,6 +1792,33 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult interop = response.itemAt(24);
                     ClientBatchItemResult log = response.itemAt(25);
                     ClientBatchItemResult login = response.itemAt(26)) {
+                NativeBridgeCoverageTest.assertResponseMappers(completed, "supportedVersions");
+                NativeBridgeCoverageTest.assertResponseMappers(pending, null);
+                NativeBridgeCoverageTest.assertResponseMappers(failed, null);
+                NativeBridgeCoverageTest.assertResponseMappers(empty, "supportedVersions");
+                NativeBridgeCoverageTest.assertResponseMappers(created, "createResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(creationFailed, null);
+                NativeBridgeCoverageTest.assertResponseMappers(keyPair, "createKeyPairResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(splitKey, "createSplitKeyUniqueIdentifiers");
+                NativeBridgeCoverageTest.assertResponseMappers(textCreated, "createResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(certified, "certifyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(allocated, "getUsageAllocationResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(checked, "checkResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(delegated, "delegatedLoginResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(derived, "deriveKeyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(exported, "exportResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(exportFailed, "exportResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(constraints, "getConstraintsResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(constraintsFailed, null);
+                NativeBridgeCoverageTest.assertResponseMappers(getMapped, "getResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(locateMapped, "locateResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(getFailed, "getResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(locateFailed, "locateResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(imported, "importResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(importFailed, null);
+                NativeBridgeCoverageTest.assertResponseMappers(interop, "interopResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(log, "logResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(login, "loginResponse");
                 assertEquals(27, response.itemCount());
                 assertTrue(completed.getResponse().isEmpty());
                 assertTrue(completed.locateResponse().isEmpty());
@@ -2532,6 +2577,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)));
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "supportedVersions");
                 List<ProtocolVersion> versions = result.supportedVersions().orElseThrow();
                 assertEquals(supportedVersionCount, versions.size());
                 assertEquals(new ProtocolVersion(2, 1), versions.get(0));
@@ -2589,6 +2635,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.createSplitKey(7, null, 2, 2, 1, null, attributes, null));
             try (ClientBatchResponse response = client.execute(batch, limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "createSplitKeyUniqueIdentifiers");
                 List<UniqueIdentifier> identifiers = result.createSplitKeyUniqueIdentifiers()
                         .orElseThrow();
                 assertEquals(identifierCount, identifiers.size());
@@ -2755,6 +2802,8 @@ final class ClientFacadeTlsIntegrationTest {
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult completed = response.itemAt(0);
                     ClientBatchItemResult pending = response.itemAt(1)) {
+                NativeBridgeCoverageTest.assertResponseMappers(completed, "createSplitKeyUniqueIdentifiers");
+                NativeBridgeCoverageTest.assertResponseMappers(pending, "createSplitKeyUniqueIdentifiers");
                 assertEquals(2, response.itemCount());
                 assertArrayEquals(uniqueBatchItemIds.get(0).getBytes(StandardCharsets.US_ASCII),
                         completed.uniqueBatchItemId().orElseThrow());
@@ -2879,6 +2928,7 @@ final class ClientFacadeTlsIntegrationTest {
             ClientBatchItemResult.JoinSplitKeyResponse joined;
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "joinSplitKeyResponse");
                 assertEquals(1, response.itemCount());
                 assertEquals(0, result.resultStatus());
                 joined = result.joinSplitKeyResponse().orElseThrow();
@@ -2948,6 +2998,7 @@ final class ClientFacadeTlsIntegrationTest {
 
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult item = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(item, "recertifyResponse");
                 assertEquals(1, response.itemCount());
                 assertEquals(0x07, item.operation());
                 assertEquals(0, item.resultStatus());
@@ -3017,6 +3068,8 @@ final class ClientFacadeTlsIntegrationTest {
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult resultWithIdentifier = response.itemAt(0);
                     ClientBatchItemResult resultWithoutIdentifier = response.itemAt(1)) {
+                NativeBridgeCoverageTest.assertResponseMappers(resultWithIdentifier, "reprovisionResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(resultWithoutIdentifier, "reprovisionResponse");
                 assertEquals(2, response.itemCount());
                 assertEquals(0x35, resultWithIdentifier.operation());
                 assertEquals(0, resultWithIdentifier.resultStatus());
@@ -3092,6 +3145,7 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(item);
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult result = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "registerResponse");
                 assertEquals(1, response.itemCount());
                 assertEquals(0x03, result.operation());
                 assertEquals(0, result.resultStatus());
@@ -3169,6 +3223,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult success = response.itemAt(0);
                     ClientBatchItemResult failure = response.itemAt(1);
                     ClientBatchItemResult pending = response.itemAt(2)) {
+                NativeBridgeCoverageTest.assertResponseMappers(success, "revokeResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(failure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(pending, null);
                 assertEquals(3, response.itemCount());
                 assertEquals(0x13, success.operation());
                 assertEquals(0, success.resultStatus());
@@ -3261,6 +3318,10 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult archive = response.itemAt(1);
                     ClientBatchItemResult destroy = response.itemAt(2);
                     ClientBatchItemResult recover = response.itemAt(3)) {
+                NativeBridgeCoverageTest.assertResponseMappers(activate, null);
+                NativeBridgeCoverageTest.assertResponseMappers(archive, null);
+                NativeBridgeCoverageTest.assertResponseMappers(destroy, null);
+                NativeBridgeCoverageTest.assertResponseMappers(recover, null);
                 assertEquals(4, response.itemCount());
 
                 assertEquals(0x12, activate.operation());
@@ -3642,6 +3703,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult item = response.itemAt(0);
                     ClientBatchItemResult.GetAttributeListResponse typed =
                             item.getAttributeListResponse().orElseThrow()) {
+                NativeBridgeCoverageTest.assertResponseMappers(item, "getAttributeListResponse");
                 assertEquals(0x0c, item.operation());
                 assertEquals("attribute-list-object", typed.uniqueIdentifier().text());
                 assertEquals(2, typed.attributeReferences().size());
@@ -3651,6 +3713,7 @@ final class ClientFacadeTlsIntegrationTest {
                         typed.attributeReferences().get(1).vendorIdentification().orElseThrow());
                 assertEquals("Comment",
                         typed.attributeReferences().get(1).attributeName().orElseThrow());
+                assertTrue(item.deriveKeyResponse().isEmpty());
                 try (TtlvStructure payload = typed.responsePayloadTtlv();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(3, view.itemCount());
@@ -3711,6 +3774,10 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult archive = response.itemAt(1);
                     ClientBatchItemResult destroy = response.itemAt(2);
                     ClientBatchItemResult recover = response.itemAt(3)) {
+                NativeBridgeCoverageTest.assertResponseMappers(activate, "activateResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(archive, "archiveResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(destroy, "destroyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(recover, "recoverResponse");
                 assertEquals(4, response.itemCount());
                 assertEquals("activate-result-secret",
                         activate.activateResponse().orElseThrow().uniqueIdentifier().text());
@@ -3796,6 +3863,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult success = response.itemAt(0);
                     ClientBatchItemResult failure = response.itemAt(1);
                     ClientBatchItemResult pending = response.itemAt(2)) {
+                NativeBridgeCoverageTest.assertResponseMappers(success, "setConstraintsResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(failure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(pending, null);
                 assertEquals(3, response.itemCount());
                 assertEquals(0x37, success.operation());
                 assertEquals(0, success.resultStatus());
@@ -3877,6 +3947,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult success = response.itemAt(0);
                     ClientBatchItemResult failure = response.itemAt(1);
                     ClientBatchItemResult pending = response.itemAt(2)) {
+                NativeBridgeCoverageTest.assertResponseMappers(success, "setDefaultsResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(failure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(pending, null);
                 assertEquals(3, response.itemCount());
                 assertEquals(0x36, success.operation());
                 assertEquals(0, success.resultStatus());
@@ -3962,6 +4035,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult.ValidateResponse validateResponse =
                             result.validateResponse().orElseThrow();
                     TtlvStructureView responseTtlv = validateResponse.responseTtlv().view()) {
+                NativeBridgeCoverageTest.assertResponseMappers(result, "validateResponse");
                 assertEquals(1, response.itemCount());
                 assertEquals(0x17, result.operation());
                 assertEquals(0, result.resultStatus());
@@ -4055,6 +4129,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult success = response.itemAt(0);
                     ClientBatchItemResult failure = response.itemAt(1);
                     ClientBatchItemResult pending = response.itemAt(2)) {
+                NativeBridgeCoverageTest.assertResponseMappers(success, "rekeyResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(failure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(pending, null);
                 assertEquals(3, response.itemCount());
                 assertEquals(0x04, success.operation());
                 assertEquals(0, success.resultStatus());
@@ -4145,6 +4222,8 @@ final class ClientFacadeTlsIntegrationTest {
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult retrieve = response.itemAt(0);
                     ClientBatchItemResult seedResult = response.itemAt(1)) {
+                NativeBridgeCoverageTest.assertResponseMappers(retrieve, "rngRetrieveResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(seedResult, "rngSeedResponse");
                 assertEquals(2, response.itemCount());
                 assertEquals(0x25, retrieve.operation());
                 assertEquals(0, retrieve.resultStatus());
@@ -4235,6 +4314,10 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult retrievePending = response.itemAt(1);
                     ClientBatchItemResult seedFailure = response.itemAt(2);
                     ClientBatchItemResult seedPending = response.itemAt(3)) {
+                NativeBridgeCoverageTest.assertResponseMappers(retrieveFailure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(retrievePending, "rngRetrieveResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(seedFailure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(seedPending, "rngSeedResponse");
                 assertEquals(4, response.itemCount());
                 assertEquals(0x25, retrieveFailure.operation());
                 assertEquals(1, retrieveFailure.resultStatus());
@@ -4340,6 +4423,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult success = response.itemAt(1);
                     ClientBatchItemResult failure = response.itemAt(2);
                     ClientBatchItemResult pending = response.itemAt(3)) {
+                NativeBridgeCoverageTest.assertResponseMappers(success, "rekeyKeyPairResponse");
+                NativeBridgeCoverageTest.assertResponseMappers(failure, null);
+                NativeBridgeCoverageTest.assertResponseMappers(pending, null);
                 assertEquals(4, response.itemCount());
                 assertEquals(1, created.operation());
                 assertEquals(0, created.resultStatus());
@@ -4487,6 +4573,7 @@ final class ClientFacadeTlsIntegrationTest {
             ClientBatchItemResult.ObtainLeaseResponse lease;
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult item = response.itemAt(0)) {
+                NativeBridgeCoverageTest.assertResponseMappers(item, "obtainLeaseResponse");
                 assertEquals(1, response.itemCount());
                 assertEquals(0x10, item.operation());
                 assertEquals(0, item.resultStatus());
@@ -5971,6 +6058,7 @@ final class ClientFacadeTlsIntegrationTest {
                 try (ClientBatchResponse response = client.execute(batch, limits)) {
                     assertEquals(1, response.itemCount());
                     try (ClientBatchItemResult source = response.itemAt(0)) {
+                        NativeBridgeCoverageTest.assertResponseMappers(source, "encryptResponse");
                         copied = source.encryptResponse().orElseThrow();
                     }
                 }
@@ -5986,6 +6074,7 @@ final class ClientFacadeTlsIntegrationTest {
                 try (ClientBatchResponse response = client.execute(batch, limits)) {
                     assertEquals(1, response.itemCount());
                     try (ClientBatchItemResult source = response.itemAt(0)) {
+                        NativeBridgeCoverageTest.assertResponseMappers(source, "decryptResponse");
                         copied = source.decryptResponse().orElseThrow();
                     }
                 }
@@ -6297,6 +6386,65 @@ final class ClientFacadeTlsIntegrationTest {
                         item(0x42000a, 7, "Comment".getBytes(StandardCharsets.UTF_8))));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x0c),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] getAttributeListMinimalResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "minimal-attribute-list-object".getBytes(StandardCharsets.UTF_8)),
+                enumeration(0x42013b, 0x42002f));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x0c),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] exportResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] attributes = structure(0x420125, enumeration(0x42001d, 1));
+        byte[] anyObject = structure(0x42008f,
+                structure(0x420040,
+                        item(0x420045, 8, "KMIPKit-export-fixture".getBytes(StandardCharsets.US_ASCII))));
+        byte[] payload = structure(0x42007c,
+                enumeration(0x420057, 7),
+                item(0x420094, 7, "export-fixture".getBytes(StandardCharsets.UTF_8)),
+                attributes,
+                anyObject);
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 43),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] getResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] object = structure(0x42008f,
+                structure(0x420040,
+                        item(0x420045, 8,
+                                "KMIPKit-get-fixture".getBytes(StandardCharsets.US_ASCII))));
+        byte[] payload = structure(0x42007c,
+                enumeration(0x420057, 2),
+                item(0x420094, 2, integer(-17)),
+                object);
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 10),
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 enumeration(0x42007f, 0),
                 payload);
