@@ -84,7 +84,7 @@
 - [x] T056 Update `specs/053-api-parity-facade/gap-matrix.md` and traceability only where executable evidence verifies closure.
 - [x] T057 Run format, Clippy, full local tests, C/JNI/Python consumers, generator and export audits; record coverage/remote status in specs/053-api-parity-facade/implementation-evidence.md.
 - [x] T058 Review OASIS sources, all 750 declarations, security effects and QA acceptance; complete specs/053-api-parity-facade/checklists/normative-requirements.md.
-- [x] T059 Confirm distinct Red/Green/Refactor commits, push the initial branch, open draft PR #133 against `feature/KMIPKIT-0052-typed-responses`, and record the URL in specs/053-api-parity-facade/implementation-evidence.md. PR #133 was later closed as superseded; the canonical release-alias draft is PR #150, with the same head commit, based on PR #149.
+- [x] T059 Confirm distinct Red/Green/Refactor commits, push the initial branch, open draft PR #133 against `feature/KMIPKIT-0052-typed-responses`, and record the URL in specs/053-api-parity-facade/implementation-evidence.md. PR #133 was later closed as superseded; canonical draft PR #150 is based on PR #149. The release-alias branch initially shared implementation head `47e6aaee4` with #133 and now includes the #149 update through merge commit `8407ed352`.
 
 ## Converged work from implementation review
 - [x] T060 [US1] Add named typed constructors/readers for all applicable KMIPKIT-0048 attributes and typed `AttributeSet` insert/read/iteration across C, Java, and Python, retaining generic Item access and repeated values.
