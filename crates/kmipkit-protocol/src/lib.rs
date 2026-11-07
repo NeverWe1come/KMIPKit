@@ -577,3 +577,15 @@ mod s2c_response_builder_tests;
 #[cfg(test)]
 #[path = "../tests/unit/kmip20_tests.rs"]
 mod kmip20_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/link_normalizer_tests.rs"]
+mod link_normalizer_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kmip30_operations_tests.rs"]
+mod kmip30_operations_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kem_tests.rs"]
+mod kem_tests;
