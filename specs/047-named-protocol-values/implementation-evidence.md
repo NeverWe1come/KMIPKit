@@ -38,6 +38,23 @@
   the C consumer test.
 - Generated C coverage-scope Refactor: `80785a3ee` made the coverage test's
   four generated paths explicit; the focused test passed.
+- C literal escaping Red: `07ee17296` added a test for quotes, backslashes,
+  newlines, tabs, and UTF-8 bytes. It failed because the generator emitted
+  control characters directly into a C string literal.
+- C literal escaping Green: `a684b53ae` changed generated C string values to
+  fixed-width octal UTF-8 byte escapes; the focused regression test passed.
+- C literal escaping Refactor: `7fee54ea4` expanded the escaping loop for
+  direct review without changing its output; the focused test and generator
+  check passed.
+- C renderer call-site Red: `779ef92a2` added a fixture asserting that
+  Enumeration names, Bit Mask names, and mask-list names all use the safe
+  encoder. It failed because only one of the three outputs was safe.
+- C renderer call-site Green: `e03b04c11` routed the Enumeration and Bit Mask
+  name helpers through the shared encoder and regenerated the C header; all
+  three output assertions passed.
+- C renderer call-site Refactor: `5a8b69dbb` centralized the case-line renderer
+  used by both KMIP value kinds without changing generated output; the full
+  generator test file and `--check` passed.
 
 ## Local verification
 
@@ -88,17 +105,20 @@ The following checks passed on the feature worktree:
 - `PYTHONPATH=scripts/tests python -B -m unittest test_workflow -q` (92 tests
   passed after adding the named-value generator check to the normative job).
 - `PYTHONPATH=scripts/tests python -B -m unittest test_coverage_gate.CoverageGateTests.test_catalog_generated_named_value_sources_are_excluded_from_raw_coverage -v` (passed).
-- `python -B -m unittest tools.normative_catalog.tests.test_generate_named_values tools.api_manifest.tests.test_binding_exports -q` (59 tests passed).
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_named_values tools.api_manifest.tests.test_binding_exports -q` (61 tests passed after the renderer regression tests).
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_named_values -q` (8 tests passed, including C string and renderer escaping regressions).
+- `python -B tools/api_manifest/audit_binding_exports.py --c-only --repo-root .` (1,701 exact C declarations matched, no issues).
 - `python -B tools/normative_catalog/generate_named_values.py --check` and
   `python -B tools/api_manifest/generate.py --check` (both passed).
 - Final follow-up verification after the CI and generated-C coverage corrections:
   `PYTHONPATH=scripts/tests python -B -m unittest test_coverage_gate test_multilanguage_coverage test_workflow -q`
   (191 tests passed, 3 skipped because Windows disallows required directory
-  symlinks); `python -B -m unittest
-  tools.normative_catalog.tests.test_generate_named_values
-  tools.api_manifest.tests.test_binding_exports -q` (59 passed); both
+  symlinks); `python -B -m unittest tools.normative_catalog.tests.test_generate_named_values tools.api_manifest.tests.test_binding_exports -q` (61 passed); both
   `generate_named_values.py --check` and `api_manifest/generate.py --check`
   passed; `git diff --check` passed.
+  The C consumer compiled with WSL GCC using `-std=c11 -Wall -Wextra -Werror`
+  and executed successfully against the regenerated header. The C export
+  audit matched 1,701/1,701 declarations with no issues.
 - `python -B tools/normative_catalog/reconcile_named_value_manifest.py --check --repo-root .`.
 - `python -B tools/normative_catalog/generate_named_values.py --check --repo-root .`.
 - `python -B tools/api_manifest/audit_binding_exports.py --c-only --repo-root .`:
@@ -127,11 +147,7 @@ aggregate coverage remain pending. The recorded Windows checks pass, but T007
 remains open until the required cross-platform aggregate coverage and hosted
 platform controls are available and their results are recorded.
 
-The Codex Security diff scan for base `7ea1fac2b8eb55e40a57d1da0c86fbf6d420b6f1`
-and head `a782fa24027922bb5dff81f3f15343293f0b84de` completed with no findings
-(scan `011da8a8-e23b-429b-8a52-10ebc0fd4641`). It reviewed the 18 changed files
-and relevant project security guidance. This is a scoped diff review, not the
-independent human security review required before release.
+The earlier security scan for the 0047 range ending at `fe24d0dc55542745f769128825fad6f7fa984018` reported one low-likelihood generated-C string-injection finding (scan `ca8666d0-2c52-40b2-8ca8-1bcfb600284a`). The follow-up commits above encode all generated C names as fixed-width octal UTF-8 bytes and route every lookup form through the shared encoder. A follow-up security review of the fixed head is still required. This scoped review is not the independent human security review required before release.
 
 ## Integration status
 
