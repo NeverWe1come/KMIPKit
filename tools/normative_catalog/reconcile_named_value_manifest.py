@@ -18,7 +18,8 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 MANIFEST_PATH = "specification/api/public-api.json"
-MAX_MANIFEST_BYTES = 40 * 1024 * 1024
+# Keep manifest reads bounded while allowing the current 48 MiB inventory and one measured growth increment.
+MAX_MANIFEST_BYTES = 64 * 1024 * 1024
 CAPABILITY_ID = "named_protocol_values"
 C_ONLY_MASK_CAPABILITY_ID = "named_protocol_mask_single_bit_lookup"
 SPEC_ID = "KMIPKIT-0047"

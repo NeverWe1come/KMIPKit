@@ -14,6 +14,12 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_public_manifest_bound_covers_current_input_with_bounded_headroom(self) -> None:
+        manifest_size = (ROOT / reconcile_named_value_manifest.MANIFEST_PATH).stat().st_size
+
+        self.assertEqual(64 * 1024 * 1024, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
+        self.assertLessEqual(manifest_size, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
+
     def test_bitmask_java_helper_names_use_camel_case(self) -> None:
         group = generate_named_values.NamedGroup(
             "mask-1",
