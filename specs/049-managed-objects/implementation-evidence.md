@@ -65,8 +65,27 @@ or release-level interoperability evidence is claimed for this feature.
 
 - T043 completed through terminal-based `gh pr create`.
 - Draft PR: https://github.com/NeverWe1come/KMIPKit/pull/116
-- Verified state: `OPEN`, `isDraft: true`.
-- Base: `feature/KMIPKIT-0048-typed-attributes` (PR #115).
-- Original PR-open head: `ed22113a260b4d01ad9163f2729890c47c85eece`; the branch now also includes merge commit `37bb75154` and the evidence update in this commit.
+- Original PR-open head: `ed22113a260b4d01ad9163f2729890c47c85eece` (historical).
+
+## Current PR metadata and verification basis (2026-11-07)
+
+- Immediately before this documentation-only refresh, `git status` was clean;
+  the local branch and `origin/feature/KMIPKIT-0049-managed-objects` both
+  resolved to `28d209fd0a159376a8b7ca2b58c71704b37cc9a2`.
+- `gh pr view 116` reported `OPEN`, draft, base
+  `feature/KMIPKIT-0048-typed-attributes` at
+  `a4fffdbac60563b0aeac5795902230df8e00039a`, and head
+  `feature/KMIPKIT-0049-managed-objects` at
+  `28d209fd0a159376a8b7ca2b58c71704b37cc9a2`.
+- The Windows local verification above applies to the source/test tree at
+  `0a5f661c9a7964825dab597d4472f8edee2cca69`, which is an ancestor of the
+  audited head. The name-only diff from that source snapshot to the audited
+  head contained only these documentation/evidence files:
+  `specs/047-named-protocol-values/implementation-evidence.md`,
+  `specs/047-named-protocol-values/tasks.md`,
+  `specs/048-typed-attributes/implementation-evidence.md`, and this file.
+  No implementation, test, or generated path changed after that verified
+  source snapshot. This refresh also changes documentation only.
+- Remote CI checks were not queried under the maintainer's billing instruction.
 
 Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.
