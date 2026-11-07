@@ -1,10 +1,10 @@
 # Tasks: KMIPKIT-0053 Four-Language API Parity and Final Facade
 
 **Input**: spec.md, plan.md, gap-matrix.md, contracts, traceability.md.
-**Prerequisite**: Stacked on KMIPKIT-0052 / draft PR #123. Scope and base are approved in approval-record.md.
+**Initial prerequisite**: Stacked on KMIPKIT-0052 / draft PR #123 when work began. The current canonical release-synchronized stack is PR #150 based on KMIPKIT-0052 PR #149, which is based on PR #143. See approval-record.md for the superseded #133 history. Scope and initial base approval are recorded there.
 
 ## Phase 1: Baseline and contracts
-- [x] T001 Record baseline commit, branch, predecessor PR #123, platform, and approval in specs/053-api-parity-facade/implementation-evidence.md.
+- [x] T001 Record the initial baseline commit, branch, predecessor PR #123, platform, and approval in specs/053-api-parity-facade/implementation-evidence.md; retain #123 as historical and identify the current #149/#150 stack there.
 - [x] T002 Add manifest inventory tests for the 750 candidates, four capabilities, and unowned routes in tools/api_manifest/tests/test_reconcile_0053_api_parity.py.
 - [x] T003 Add common ABI ownership, null-output, stale-handle, and redaction tests in crates/kmipkit-ffi/tests/support/api_parity_0053_tests.rs.
 - [x] T004 Add clean external package consumers for Rust, C, Java, and Python in tests/consumers/0053-parity/.
@@ -84,7 +84,7 @@
 - [x] T056 Update `specs/053-api-parity-facade/gap-matrix.md` and traceability only where executable evidence verifies closure.
 - [x] T057 Run format, Clippy, full local tests, C/JNI/Python consumers, generator and export audits; record coverage/remote status in specs/053-api-parity-facade/implementation-evidence.md.
 - [x] T058 Review OASIS sources, all 750 declarations, security effects and QA acceptance; complete specs/053-api-parity-facade/checklists/normative-requirements.md.
-- [x] T059 Confirm distinct Red/Green/Refactor commits, push branch, open draft PR against feature/KMIPKIT-0052-typed-responses, and record URL in specs/053-api-parity-facade/implementation-evidence.md. Draft PR: https://github.com/NeverWe1come/KMIPKit/pull/133.
+- [x] T059 Confirm distinct Red/Green/Refactor commits, push the initial branch, open draft PR #133 against `feature/KMIPKIT-0052-typed-responses`, and record the URL in specs/053-api-parity-facade/implementation-evidence.md. PR #133 was later closed as superseded; the canonical release-alias draft is PR #150, with the same head commit, based on PR #149.
 
 ## Converged work from implementation review
 - [x] T060 [US1] Add named typed constructors/readers for all applicable KMIPKIT-0048 attributes and typed `AttributeSet` insert/read/iteration across C, Java, and Python, retaining generic Item access and repeated values.

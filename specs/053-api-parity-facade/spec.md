@@ -146,7 +146,7 @@ An application developer can use KMIPKit from the documented package surface, wi
 ## Assumptions
 
 - The maintainer's direct approval of the complete Phase 5 plan approves this scope and the ordered 0047→0053 sequence. The maintained plan establishes OASIS KMIP 2.1 as the source of truth and permits recommended project choices where the standard does not prescribe an API shape.
-- This branch is the final Phase 5 feature branch and starts from the pushed KMIPKIT-0052 head; its draft PR targets `feature/KMIPKIT-0052-typed-responses` until the predecessor chain is integrated.
+- Implementation initially started from the pushed KMIPKIT-0052 head, and draft PR #133 first targeted `feature/KMIPKIT-0052-typed-responses`. The current canonical release-synchronized draft is PR #150, based on KMIPKIT-0052 PR #149 (which is based on PR #143). PR #133 was closed as superseded because GitHub would not change the base of a stacked PR; the release-alias branch has the same head commit.
 - KMIPKIT-0047 through KMIPKIT-0052 contain the Rust reference implementations and approved semantics. This feature adds/reconciles foreign bindings and does not alter those Rust contracts except for source-compatible fixes required to expose a missing equivalent behavior.
 - A language API may represent a capability through an idiomatic typed wrapper instead of mirroring Rust method names, provided the data, wire output, errors, validation, ownership, and generic fallback are equivalent and the manifest records that mapping.
 - The 62 direct attribute types and the 56-operation client scope are inherited from the source-checked records in KMIPKIT-0048 and KMIPKIT-0050; Certificate Attributes has no direct TTLV tag and Set Endpoint Role is deferred to 1.1.

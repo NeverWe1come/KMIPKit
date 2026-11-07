@@ -1,6 +1,6 @@
 # KMIPKIT-0053 Existing-Capability Gap Matrix
 
-Baseline: commit a1ae6b402 on feature/KMIPKIT-0052-typed-responses, 2026-11-06.
+Initial baseline: commit a1ae6b402 on `feature/KMIPKIT-0052-typed-responses`, 2026-11-06. This was the pre-implementation stack; the current release-synchronized stack is PR #150 based on KMIPKIT-0052 PR #149 (itself based on PR #143).
 
 | Capability | Baseline | KMIPKIT-0053 gap | Closure evidence |
 |---|---|---|---|
@@ -10,7 +10,7 @@ Baseline: commit a1ae6b402 on feature/KMIPKIT-0052-typed-responses, 2026-11-06.
 | Parameters (0050) | Rust has all 18 Table 59 members and typed setters. 106 declarations blocked. | C/Java/Python constructors/readers/setters; retain generic Structure and future values. | Table 59 matrix and mappings for 106 declarations. |
 | Request Authentication (0050) | Rust attaches one Authentication to ClientBatch; two declarations blocked. | Foreign batch API and header/scope/lifecycle checks. | Deterministic one-/multi-item tests and mappings for both declarations. |
 | Pre-send validation (0051) | Rust has schema-aware reports and rejects before I/O. The synced manifest contained 934 blocked Rust export candidates. | Expose the shared report, map the 12 direct lower-level aliases, exclude only exact representation/trait routes, and prove all schema-string identities dispatch. | 934-candidate inventory; 12 verified alias mappings; 922 exact exclusions; C/Java/Python report parity, NotSent/zero-write tests, and full schema-name inventory. |
-| Response and TTLV (0052) | Rust has typed readers/raw views; PR #123 adds owned C/JNI/CFFI copies. | Audit/fill typed response and async result parity without changing 0052 semantics. | 56-operation matrix and nested vendor tests in four languages. |
+| Response and TTLV (0052) | Rust has typed readers/raw views. The original stacked PR #123 added owned C/JNI/CFFI copies; its release-synchronized successor is PR #149. | Audit/fill typed response and async result parity without changing 0052 semantics. | 56-operation matrix and nested vendor tests in four languages. |
 | Operations/package/facade | Rust implements 56 operations and one-crate facade. Foreign routes need behavior/options parity evidence. | Verify operation/options/results and runnable packages; no low-level exchange exposure. | Consumer tests, version sync, Rust one-crate example. |
 
 ## Manifest Baseline
