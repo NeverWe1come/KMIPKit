@@ -102,6 +102,26 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
 
+    def _declaration_for_export(
+        self,
+        declaration_ids: list[str],
+        language: str,
+        expected_export: str,
+    ) -> dict[str, object]:
+        self.assertEqual(len(declaration_ids), len(set(declaration_ids)), language)
+        self.assertTrue(set(declaration_ids) <= set(self.declarations_by_id))
+        matching = [
+            self.declarations_by_id[declaration_id]
+            for declaration_id in declaration_ids
+            if self.declarations_by_id[declaration_id]
+            .get("languageMappings", {})
+            .get(language, {})
+            .get("name")
+            == expected_export
+        ]
+        self.assertEqual(1, len(matching), f"{expected_export}: {language}")
+        return matching[0]
+
     def test_both_operations_are_verified_against_the_approved_owner(self) -> None:
         self.assertEqual(set(OPERATIONS), set(self.operations))
         for operation_id, expected in OPERATIONS.items():
@@ -144,19 +164,11 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     self.assertEqual(expected[endpoint], actual_mappings)
                     for language in LANGUAGES:
                         declaration_ids = operation["declarations"][language]
-                        self.assertEqual(len(declaration_ids), len(set(declaration_ids)), language)
-                        self.assertTrue(set(declaration_ids) <= set(self.declarations_by_id))
-                        matching = [
-                            self.declarations_by_id[declaration_id]
-                            for declaration_id in declaration_ids
-                            if self.declarations_by_id[declaration_id]
-                            .get("languageMappings", {})
-                            .get(language, {})
-                            .get("name")
-                            == expected[endpoint][language]
-                        ]
-                        self.assertEqual(1, len(matching), f"{endpoint} declaration: {language}")
-                        declaration = matching[0]
+                        declaration = self._declaration_for_export(
+                            declaration_ids,
+                            language,
+                            expected[endpoint][language],
+                        )
                         self.assertEqual(operation_id, declaration["capabilityId"])
                         self.assertEqual("verified", declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])
