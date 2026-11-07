@@ -524,6 +524,14 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
         outcome.close()
 
 
+def test_pending_status_is_not_added_to_base_or_cancel_response_types() -> None:
+    assert not hasattr(client.AsyncOperationResponseV1, "is_pending")
+    assert not hasattr(client.AsyncCancelResponse, "is_pending")
+    assert hasattr(client.AsyncPollResponse, "is_pending")
+    assert hasattr(client.AsyncProcessResponse, "is_pending")
+    assert hasattr(client.AsyncQueryAsyncRequestsResponse, "is_pending")
+
+
 def test_async_typed_response_readers_return_none_for_other_operations(
     monkeypatch,
 ) -> None:
