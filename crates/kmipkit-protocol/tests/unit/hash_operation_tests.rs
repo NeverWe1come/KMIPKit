@@ -141,48 +141,56 @@ fn request_requires_a_hashing_algorithm_in_cryptographic_parameters() {
 }
 
 #[test]
-fn request_requires_single_part_data_and_omits_it_for_multipart() {
+fn request_requires_data_for_single_part_but_accepts_it_for_multipart() {
     assert!(
         HashRequest::new(parameters(6)).to_ttlv_payload().is_err(),
         "Table 235 requires Data for a single-part request"
     );
 
     let multipart = HashRequest::new(parameters(6))
+        .with_data(OperationData::ByteString(SecretBytes::new(
+            b"part".to_vec(),
+        )))
         .with_correlation_value(SecretBytes::new(b"stream-id".to_vec()))
-        .with_init_indicator(false)
-        .with_final_indicator(false)
         .to_ttlv_payload()
-        .expect("Table 235 omits Data on caller-controlled multipart requests");
+        .expect("caller-provided Data is accepted for a multipart Hash request");
     assert_eq!(
         field_tags(&multipart),
-        [
-            0x0042_002B,
-            CORRELATION_VALUE,
-            INIT_INDICATOR,
-            FINAL_INDICATOR
-        ]
+        [0x0042_002B, DATA, CORRELATION_VALUE]
     );
     let multipart_view = multipart.view();
     assert_eq!(
         snapshot(&multipart_view.children()[1]),
+        (DATA, b"part".to_vec())
+    );
+    assert_eq!(
+        snapshot(&multipart_view.children()[2]),
         (CORRELATION_VALUE, b"stream-id".to_vec())
     );
 }
 
 #[test]
-fn request_rejects_data_when_multipart_framing_is_supplied() {
+fn request_accepts_data_with_initial_multipart_framing() {
     let result = HashRequest::new(parameters(6))
         .with_data(OperationData::ByteString(SecretBytes::new(
             b"part".to_vec(),
         )))
-        .with_correlation_value(SecretBytes::new(b"stream-id".to_vec()))
-        .with_init_indicator(false)
+        .with_init_indicator(true)
         .to_ttlv_payload();
 
     assert!(
-        result.is_err(),
-        "multipart progression is explicitly shaped"
+        result.is_ok(),
+        "Init Indicator exempts Data from the generic requirement; it does not forbid Data"
     );
+}
+
+#[test]
+fn request_allows_final_part_to_omit_data() {
+    let final_part_without_data = HashRequest::new(parameters(6))
+        .with_correlation_value(SecretBytes::new(b"stream-id".to_vec()))
+        .with_final_indicator(true)
+        .to_ttlv_payload();
+    assert!(final_part_without_data.is_ok());
 }
 
 #[test]
