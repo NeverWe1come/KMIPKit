@@ -117,6 +117,18 @@ def _operation_mapping(
 ) -> dict[str, str]:
     """Select the existing one-item batch operation as the language equivalent."""
     operation_id = operation["operationId"]
+    method = next((
+        method for method, suffix in DIRECT_METHODS.items()
+        if operation_id == f"KMIPKIT-ELEM-OP-C2S-{suffix}"
+    ), None)
+    if method is None:
+        raise ReconciliationError(f"operation has no reviewed direct method: {operation_id}")
+    first, *rest = method.split("_")
+    exact_names = {
+        "c": f"kmipkit_client_batch_item_{method}",
+        "java": "org.kmipkit.extensions.ClientBatchItem." + first + "".join(part.title() for part in rest),
+        "python": f"kmipkit.extensions.client_batch_item_{method}",
+    }
     candidates = [
         row for row in declarations_by_id.values()
         if row.get("capabilityId") == operation_id
@@ -127,11 +139,7 @@ def _operation_mapping(
         if not mapping:
             continue
         name = mapping.get("name", "")
-        if language == "c" and name.startswith("kmipkit_client_batch_item_") and "_response_" not in name:
-            return copy.deepcopy(mapping)
-        if language == "java" and name.startswith("org.kmipkit.extensions.ClientBatchItem."):
-            return copy.deepcopy(mapping)
-        if language == "python" and name.startswith("kmipkit.extensions.client_batch_item_"):
+        if name == exact_names.get(language):
             return copy.deepcopy(mapping)
     raise ReconciliationError(
         f"operation {operation.get('operationId')} has no reviewed {language} batch-item route"
