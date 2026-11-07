@@ -87,6 +87,14 @@ class Reconcile0052ResponseNavigationTests(unittest.TestCase):
         self.assertIn(
             "kmipkit_client_batch_item_response_raw_ttlv", capability["mappings"]["c"]
         )
+        self.assertIn(
+            "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+            capability["parityEvidenceIds"],
+        )
+        self.assertIn(
+            "bindings/python/tests/test_async_operation_mapping.py",
+            capability["parityEvidenceIds"],
+        )
 
     def test_reconciliation_is_deterministic_and_does_not_mutate_input(self) -> None:
         original = copy.deepcopy(self.manifest)
