@@ -33,9 +33,11 @@ EVIDENCE = [
     "crates/kmipkit-protocol/tests/message_accessors.rs",
     "crates/kmipkit-ttlv/tests/public_api.rs",
     "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+    "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/python/tests/test_response_raw_navigation.py",
+    "bindings/python/tests/test_async_operation_mapping.py",
 ]
 JAVA_BRIDGE_EXCLUSIONS = [
     {
@@ -398,6 +400,20 @@ def _async_typed_public_declarations() -> list[dict[str, Any]]:
             "kmipkit_client_async_operation_response_v1_t.is_pending",
             "org.kmipkit.extensions.AsyncProcessResponse.isPending",
             "kmipkit.client.AsyncProcessResponse.is_pending",
+        ),
+        (
+            "query_pending",
+            "kmipkit_client::ClientOperationOutcome::is_pending",
+            "kmipkit_client_async_operation_response_v1_t.is_pending",
+            "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending",
+            "kmipkit.client.AsyncQueryAsyncRequestsResponse.is_pending",
+        ),
+        (
+            "query_correlation",
+            "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+            "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value",
+            "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.withAsynchronousCorrelationValue",
+            "kmipkit.client.AsyncQueryAsyncRequestsResponse.with_asynchronous_correlation_value",
         ),
         (
             "process_payload_count",

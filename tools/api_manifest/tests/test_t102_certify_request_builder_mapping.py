@@ -156,7 +156,7 @@ BLOCKED_AFTER = 221
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-DECLARATIONS_SHA256 = "09d1e9f4b68ae00d56a103a86e7396d55912e643245659df612c35d5f40f8055"
+DECLARATIONS_SHA256 = "df2f8671c8f124d0085a609c12cae6f7908ab42335837dafe275b8d6777dc295"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
