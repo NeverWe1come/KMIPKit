@@ -145,3 +145,11 @@ actionable findings. No Table 286 payload schema was inferred; KMIP v2.1 §8.6
 Table 399 remains the basis for requiring the correlation value on Pending
 responses. Coverage and remote CI remain deferred under the maintainer
 instruction.
+
+## Final response-payload traceability reconciliation — 2026-11-08
+
+The profile report maps KMIPKIT-REQ-SPEC-8-001 to six executable cases for client-message extension presence and response-payload absence/presence by result status. The regression expectation listed only four; it now includes all six catalog mappings. No normative rule or implementation behavior changed.
+
+- Red: python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_keeps_evidence_incomplete_with_runtime_ready_baseline_and_pinned_fixtures failed with the expected four-versus-six mismatch.
+- Green: the same focused test passed after reconciling the expected test references.
+- Regression suite: python -B -m unittest tools.normative_catalog.tests.test_report passed 75 tests with one existing skip.
