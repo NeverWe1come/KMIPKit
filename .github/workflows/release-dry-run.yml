@@ -1,0 +1,129 @@
+name: Release Packaging Dry-Run
+
+on:
+  pull_request:
+    branches:
+      - master
+      - 'release/**'
+    paths:
+      - '.github/workflows/release-dry-run.yml'
+      - 'tools/release_packaging/**'
+      - 'bindings/c/package.toml'
+      - 'bindings/java/pom.xml'
+      - 'bindings/java/build.gradle.kts'
+      - 'bindings/python/pyproject.toml'
+      - 'Cargo.toml'
+      - 'crates/**/Cargo.toml'
+  push:
+    branches:
+      - 'release/**'
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  metadata-and-rust-crates-dry-run:
+    name: Metadata & Rust Crates Dry-Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal --default 1.94
+
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+
+      - name: Set up uv Python 3.12
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
+        with:
+          enable-cache: false
+          version: '0.12.23'
+          python-version: '3.12'
+          activate-environment: true
+          no-project: true
+
+      - name: Run packaging unit tests
+        run: python -B -m unittest discover -s tools/release_packaging/tests -p "test_*.py" -v
+
+      - name: Verify release metadata synchronization
+        run: python -B tools/release_packaging/dry_run.py verify-metadata --repo-root .
+
+      - name: Stage and verify Rust crates dry-run
+        run: python -B tools/release_packaging/dry_run.py stage-rust --repo-root . --output-dir dist/release-dry-run/rust
+
+      - name: Upload Rust crates artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: rust-crates-dry-run
+          path: dist/release-dry-run/rust/
+
+  native-packages-dry-run:
+    name: Native Packages Dry-Run (${{ matrix.target }})
+    needs: metadata-and-rust-crates-dry-run
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-glibc-x86_64
+          - os: macos-latest
+            target: macos-x86_64
+          - os: windows-latest
+            target: windows-x86_64-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal --default 1.94
+
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up uv Python 3.12
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
+        with:
+          enable-cache: false
+          version: '0.12.23'
+          python-version: '3.12'
+          activate-environment: true
+          no-project: true
+
+      - name: Build kmipkit-ffi release
+        run: cargo build --release -p kmipkit-ffi --locked
+
+      - name: Stage C distribution package
+        run: python -B tools/release_packaging/dry_run.py stage-c --repo-root . --output-dir dist/release-dry-run/c --target ${{ matrix.target }}
+
+      - name: Stage Java Maven Central package
+        run: python -B tools/release_packaging/dry_run.py stage-java --repo-root . --output-dir dist/release-dry-run/java
+
+      - name: Install maturin for Python packaging
+        run: 'uv pip install --only-binary :all: maturin==1.9.4 cffi==1.17.1'
+
+      - name: Stage Python PyPI package
+        run: python -B tools/release_packaging/dry_run.py stage-python --repo-root . --output-dir dist/release-dry-run/python
+
+      - name: Assemble release artifact checksums
+        run: python -B tools/release_packaging/dry_run.py assemble-manifest --input-dir dist/release-dry-run --output-dir dist/release-dry-run/bundle
+
+      - name: Upload native package artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: native-packages-${{ matrix.target }}
+          path: dist/release-dry-run/
