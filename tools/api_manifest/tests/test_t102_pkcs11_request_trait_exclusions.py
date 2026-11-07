@@ -92,7 +92,8 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             row["exportName"]
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
-            and row.get("exportName", "").startswith(PROTOCOL_PREFIX) and not is_pre_send_validation_trait(row)
+            and row.get("exportName", "").startswith(PROTOCOL_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -201,6 +202,7 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-client"
             and "Pkcs11Request" in row.get("exportName", "")
+
             and not is_pre_send_validation_trait(row)
         }
         self.assertIn("kmipkit_client::Pkcs11Request", client_rows)

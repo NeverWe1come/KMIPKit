@@ -138,7 +138,8 @@ class T102ExportGetRequestTraitExclusionTests(unittest.TestCase):
 
             declarations = {
                 row["exportName"] for row in self.manifest["publicDeclarations"]
-                if row.get("packageId") == PACKAGE and row.get("exportName", "").startswith(prefix) and not is_pre_send_validation_trait(row)
+                if row.get("packageId") == PACKAGE and row.get("exportName", "").startswith(prefix)
+                and not is_pre_send_validation_trait(row)
             }
             exclusions = {
                 row["exportName"]: row for row in self.manifest["approvedExclusions"]

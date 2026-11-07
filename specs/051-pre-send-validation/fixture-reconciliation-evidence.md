@@ -53,3 +53,19 @@ The manifest and product source remain unchanged by these corrections.
   matched counts, the focused generic-reconciler, shared-inventory, and exact
   manifest-inventory checks passed all 11 tests.
 - The affected compiled C ABI coverage suite passed all 50 tests.
+
+## Refactor
+
+Predicate formatting in 18 historical fixture modules was clarified after
+the Green commit. Comparing parsed Python ASTs against `d5b78cc28` confirmed
+that every module has identical executable structure. The five focused
+modules passed all 17 tests again, and `git diff --check` passed.
+
+The final API generator check verified all 12 outputs, the feature-specific
+shared inventory check passed, and `cargo fmt --all --check` passed. Runtime
+source and manifest inputs were unchanged after the passing Rust and binding
+audits, so those snapshots remain applicable.
+
+Development evidence is separated into the merge/Red commit `8079b65ed`, the
+focused regression Red commit `788c57004`, the Green commit `d5b78cc28`, and
+the subsequent fixture-format Refactor commit.

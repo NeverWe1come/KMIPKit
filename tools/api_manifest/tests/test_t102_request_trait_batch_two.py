@@ -224,7 +224,8 @@ class T102RequestTraitBatchTwoTests(unittest.TestCase):
                 (row["packageId"], row["exportName"])
                 for row in self.manifest["publicDeclarations"]
                 if row.get("packageId") == "rust-kmipkit-protocol"
-                and row.get("exportName", "").startswith(prefix) and not is_pre_send_validation_trait(row)
+                and row.get("exportName", "").startswith(prefix)
+                and not is_pre_send_validation_trait(row)
             }
             exclusions = {
                 (row["packageId"], row["exportName"]): row

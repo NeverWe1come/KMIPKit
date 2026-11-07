@@ -118,7 +118,8 @@ class T102MixedTraitBatchTests(unittest.TestCase):
             (row["packageId"], row["exportName"])
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == package
-            and row.get("exportName", "").startswith(prefix) and not is_pre_send_validation_trait(row)
+            and row.get("exportName", "").startswith(prefix)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             (row["packageId"], row["exportName"]): row

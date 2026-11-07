@@ -104,7 +104,8 @@ class T102LifecycleRequestTraitExclusionTests(unittest.TestCase):
                 self.assertEqual(observed_conditional, conditional)
                 self.assertEqual(observed_excluded, expected)
                 self.assertEqual((len(observed_direct), len(observed_conditional)), (6, 5))
-            declarations = {(row["packageId"], row["exportName"]) for row in self.manifest["publicDeclarations"] if row.get("packageId") == "rust-kmipkit-protocol" and row.get("exportName", "").startswith(prefix) and not is_pre_send_validation_trait(row)}
+            declarations = {(row["packageId"], row["exportName"]) for row in self.manifest["publicDeclarations"] if row.get("packageId") == "rust-kmipkit-protocol" and row.get("exportName", "").startswith(prefix)
+            and not is_pre_send_validation_trait(row)}
             exclusions = {(row["packageId"], row["exportName"]): row for row in self.manifest.get("approvedExclusions", []) if row.get("packageId") == "rust-kmipkit-protocol" and row.get("exportName", "").startswith(prefix)}
             with self.subTest(type=name, manifest=True):
                 self.assertEqual(declarations, set())
