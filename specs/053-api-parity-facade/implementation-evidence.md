@@ -1,5 +1,12 @@
 # KMIPKIT-0053 Implementation Evidence
 
+## Final review corrections and TDD record (2026-11-07)
+
+- Independent review found two overly broad audit checks. The Query scope-transfer predicate accepted any query-named export, and the API manifest generator did not compare named C attribute tag values to the normative catalog. Both were fixed with exact allowlists/catalog-derived validation.
+- Red commit `04de5955e` adds the failing regression cases. Before Green, the Query case accepted `FutureQueryExtension`, and the standard-attribute case failed because a manifest value changed from the catalog did not raise an error. Green commit `1da1667a7` restricts Query transfer to `QUERY_RESPONSE_EXCLUSION_EXPORTS` and requires the complete named C attribute map to equal catalog-derived tags. The focused tests pass after Green.
+- Final verification after these corrections: the reconciler suite passed 44 tests; `python -B tools/api_manifest/reconcile_0053_api_parity.py` reported `+0 functions`; `python -B tools/api_manifest/generate.py --check` verified all 12 outputs; and the generator's catalog-mismatch regression passed under the pinned test dependencies. `git diff --check` passed.
+- The branch history also contains distinct Red/Green/Refactor triplets for typed attributes (`a2194c5eb` / `e7de08ffe` / `6cfbd2996`), managed objects (`c30f229b2` / `87c33af14` / `a32d29538`), and parameters/authentication (`e535e8024` / `44b0537bf` / `e71bf8a9c`).
+
 ## Current closure status (2026-11-07)
 
 - Scope: T001-T056 and T060-T066 are complete. T057 local verification and T058 normative/QA review are complete; T059 remains open for Red/Green/Refactor commit closure, push, and draft PR creation.
