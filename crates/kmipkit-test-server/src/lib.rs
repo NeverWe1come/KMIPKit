@@ -20,7 +20,9 @@
     clippy::return_self_not_must_use,
     clippy::unnecessary_wraps,
     clippy::vec_init_then_push,
-    clippy::bool_to_int_with_if
+    clippy::bool_to_int_with_if,
+    clippy::manual_let_else,
+    clippy::single_match_else
 )]
 
 pub mod codec;

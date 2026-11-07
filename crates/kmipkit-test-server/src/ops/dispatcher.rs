@@ -64,6 +64,7 @@ pub const TAG_KEY_MATERIAL: u32 = 0x0042_0043;
 pub const TAG_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 pub const TAG_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 pub const TAG_ATTRIBUTES: u32 = 0x0042_0125;
+pub const TAG_ATTRIBUTE_NAME: u32 = 0x0042_000A;
 pub const TAG_IV_COUNTER_NONCE: u32 = 0x0042_003A;
 pub const TAG_VALIDITY_INDICATOR: u32 = 0x0042_009A;
 pub const TAG_MAC_DATA: u32 = 0x0042_004F;
@@ -416,14 +417,18 @@ impl Dispatcher {
 
             GET_ATTRIBUTE_LIST_OPERATION => {
                 let id = resolve_id(payload, id_placeholder)?;
-                let _obj = self
+                let obj = self
                     .store
                     .get(&id)
                     .ok_or((REASON_ITEM_NOT_FOUND, "item not found"))?;
-                Ok(vec![ttlv_item(
-                    TAG_UNIQUE_IDENTIFIER,
-                    Value::text_string(id),
-                )])
+                let mut res = vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id))];
+                for key in obj.attributes.keys() {
+                    res.push(ttlv_item(
+                        TAG_ATTRIBUTE_NAME,
+                        Value::text_string(key.clone()),
+                    ));
+                }
+                Ok(res)
             }
 
             ADD_ATTRIBUTE_OPERATION => {

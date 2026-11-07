@@ -19,7 +19,7 @@ pub fn hash(algo_enum: u32, data: &[u8]) -> Result<Vec<u8>, String> {
         0x0000_0005 => &SHA256,
         0x0000_0006 => &SHA384,
         0x0000_0007 => &SHA512,
-        _ => &SHA256, // default to SHA-256
+        _ => return Err(format!("unsupported hash algorithm {algo_enum:#010x}")),
     };
     let d = digest(algorithm, data);
     Ok(d.as_ref().to_vec())
@@ -30,7 +30,7 @@ pub fn hmac(algo_enum: u32, key: &[u8], data: &[u8]) -> Result<Vec<u8>, String> 
         0x0000_0005 => HMAC_SHA256,
         0x0000_0006 => HMAC_SHA384,
         0x0000_0007 => HMAC_SHA512,
-        _ => HMAC_SHA256,
+        _ => return Err(format!("unsupported HMAC algorithm {algo_enum:#010x}")),
     };
     let key = HmacKey::new(algorithm, key);
     let tag = hmac_sign(&key, data);
@@ -42,7 +42,7 @@ pub fn hmac_verify_tag(algo_enum: u32, key: &[u8], data: &[u8], mac: &[u8]) -> b
         0x0000_0005 => HMAC_SHA256,
         0x0000_0006 => HMAC_SHA384,
         0x0000_0007 => HMAC_SHA512,
-        _ => HMAC_SHA256,
+        _ => return false,
     };
     let key = HmacKey::new(algorithm, key);
     hmac_verify(&key, data, mac).is_ok()
@@ -55,14 +55,10 @@ pub fn encrypt_aes(
     iv: Option<&[u8]>,
     data: &[u8],
 ) -> Result<(Vec<u8>, Option<Vec<u8>>), String> {
-    // If key is 16 bytes: AES-128; if 32 bytes: AES-256. If other length, adjust to 32 bytes.
-    let effective_key = if key.len() == 16 || key.len() == 32 {
-        key.to_vec()
-    } else {
-        let mut padded = key.to_vec();
-        padded.resize(32, 0);
-        padded
-    };
+    if key.len() != 16 && key.len() != 32 {
+        return Err("invalid AES key length (must be 16 or 32 bytes)".to_string());
+    }
+    let effective_key = key.to_vec();
 
     let iv_bytes = match iv {
         Some(v) if v.len() == 12 => v.to_vec(),
@@ -106,13 +102,10 @@ pub fn encrypt_aes(
 }
 
 pub fn decrypt_aes(key: &[u8], iv: Option<&[u8]>, ciphertext: &[u8]) -> Result<Vec<u8>, String> {
-    let effective_key = if key.len() == 16 || key.len() == 32 {
-        key.to_vec()
-    } else {
-        let mut padded = key.to_vec();
-        padded.resize(32, 0);
-        padded
-    };
+    if key.len() != 16 && key.len() != 32 {
+        return Err("invalid AES key length (must be 16 or 32 bytes)".to_string());
+    }
+    let effective_key = key.to_vec();
 
     let iv_bytes = match iv {
         Some(v) if v.len() == 12 => v.to_vec(),
