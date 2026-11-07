@@ -98,18 +98,7 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     assert_eq!(status, SUCCESS);
     assert!(!outcome.is_null());
     let mut typed_present = u8::MAX;
-    let mut typed_poll = kmipkit_client_async_poll_response_v1_t {
-        struct_size: 0,
-        abi_version: 0,
-        is_pending: 0,
-        has_asynchronous_correlation_value: 0,
-        asynchronous_correlation_value: kmipkit_byte_span_v1_t {
-            data: ptr::null(),
-            length: 0,
-        },
-        has_response_payload: 0,
-        reserved: 0,
-    };
+    let mut typed_poll = kmipkit_client_async_operation_response_v1_t::default();
     assert_eq!(
         kmipkit_client_async_operation_outcome_poll_response_v1(
             outcome,
@@ -120,22 +109,26 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     );
     assert_eq!(typed_present, 1);
     assert_eq!(typed_poll.abi_version, 1);
+    assert_eq!(typed_poll.operation, 0x1a);
     assert_eq!(typed_poll.is_pending, 1);
     assert_eq!(typed_poll.has_asynchronous_correlation_value, 1);
-    assert_eq!(typed_poll.asynchronous_correlation_value.length, expected_correlation.len() as u64);
+    assert_eq!(
+        typed_poll.asynchronous_correlation_value.length,
+        expected_correlation.len() as u64
+    );
     assert_eq!(typed_poll.has_response_payload, 0);
-    let mut typed_cancel = kmipkit_client_async_cancel_response_v1_t {
-        struct_size: 0,
-        abi_version: 0,
-        cancellation_result: 0,
-        has_echoed_correlation_value: 0,
-        echoed_correlation_value: kmipkit_byte_span_v1_t {
-            data: ptr::null(),
-            length: 0,
+    // SAFETY: the borrowed correlation span is backed by the live outcome handle.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                typed_poll.asynchronous_correlation_value.data,
+                expected_correlation.len(),
+            )
         },
-        has_response_payload: 0,
-        reserved: 0,
-    };
+        expected_correlation
+    );
+    assert_c_consumer_typed_response(outcome, 0x1a, 2, 1, 0, 0, &expected_correlation, 0, 0);
+    let mut typed_cancel = kmipkit_client_async_operation_response_v1_t::default();
     assert_eq!(
         kmipkit_client_async_operation_outcome_cancel_response_v1(
             outcome,
@@ -531,8 +524,61 @@ fn query_async_requests_executes_once_and_has_no_operation_correlation_value() {
     assert!(!outcome.is_null());
     assert_query_async_requests_metadata(outcome);
     assert_query_async_requests_has_no_correlation(outcome);
+    assert_c_consumer_typed_response(outcome, 0x39, 0, 0, 0, 0, &[], 1, 0);
 
     kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+#[test]
+fn cancel_and_process_typed_readers_are_called_from_the_compiled_c_consumer() {
+    let correlation = [0x00, 0xff, 0x80, 0x23];
+    let responses = vec![
+        cancel_response(&correlation),
+        process_pending_response(&correlation),
+    ];
+    let (client, peer, exchange_count) = client_with_responses(responses);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut cancel_outcome = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute_cancel(
+            client_handle,
+            correlation.as_ptr(),
+            u64::try_from(correlation.len()).expect("correlation length fits ABI"),
+            limits_handle,
+            &raw mut cancel_outcome,
+        ),
+        SUCCESS
+    );
+    assert_c_consumer_typed_response(cancel_outcome, 0x19, 0, 0, 1, 1, &correlation, 1, 0);
+    kmipkit_client_async_operation_outcome_release(cancel_outcome);
+
+    let mut process_outcome = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute_process(
+            client_handle,
+            correlation.as_ptr(),
+            u64::try_from(correlation.len()).expect("correlation length fits ABI"),
+            1,
+            1,
+            limits_handle,
+            &raw mut process_outcome,
+        ),
+        SUCCESS
+    );
+    assert_c_consumer_typed_response(process_outcome, 0x3a, 2, 1, 0, 0, &correlation, 1, 0);
+    kmipkit_client_async_operation_outcome_release(process_outcome);
+
+    peer.join().expect("the two-exchange test peer completes");
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 2);
     kmipkit_codec_limits_release(limits_handle);
     kmipkit_client_release(client_handle);
 }
@@ -688,6 +734,120 @@ fn query_async_requests_response(correlation: &[u8]) -> Vec<u8> {
             ),
         ],
     )
+}
+
+fn cancel_response(correlation: &[u8]) -> Vec<u8> {
+    response_message(
+        0x19,
+        0,
+        None,
+        Some(ttlv_structure(
+            0x0042_007c,
+            [
+                ttlv_item(0x0042_0006, 0x08, correlation),
+                ttlv_enumeration(0x0042_0012, 1),
+            ],
+        )),
+    )
+}
+
+fn process_pending_response(correlation: &[u8]) -> Vec<u8> {
+    response_message(
+        0x3a,
+        2,
+        Some(correlation),
+        Some(ttlv_structure(0x0042_007c, [])),
+    )
+}
+
+fn response_message(
+    operation: u32,
+    result_status: u32,
+    correlation: Option<&[u8]>,
+    payload: Option<Vec<u8>>,
+) -> Vec<u8> {
+    let operation_item = ttlv_enumeration(0x0042_005c, operation);
+    let status_item = ttlv_enumeration(0x0042_007f, result_status);
+    let response_item = match (correlation, payload) {
+        (Some(correlation), Some(payload)) => ttlv_structure(
+            0x0042_000f,
+            [
+                operation_item,
+                status_item,
+                ttlv_item(0x0042_0006, 0x08, correlation),
+                payload,
+            ],
+        ),
+        (Some(correlation), None) => ttlv_structure(
+            0x0042_000f,
+            [
+                operation_item,
+                status_item,
+                ttlv_item(0x0042_0006, 0x08, correlation),
+            ],
+        ),
+        (None, Some(payload)) => {
+            ttlv_structure(0x0042_000f, [operation_item, status_item, payload])
+        }
+        (None, None) => ttlv_structure(0x0042_000f, [operation_item, status_item]),
+    };
+    ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            response_item,
+        ],
+    )
+}
+
+fn assert_c_consumer_typed_response(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    operation: u32,
+    result_status: u32,
+    is_pending: u32,
+    has_cancellation_result: u32,
+    cancellation_result: u32,
+    correlation: &[u8],
+    has_payload: u32,
+    payload_member_count: u64,
+) {
+    let (correlation_data, correlation_length) = if correlation.is_empty() {
+        (ptr::null(), 0)
+    } else {
+        (
+            correlation.as_ptr(),
+            u64::try_from(correlation.len()).expect("correlation length fits ABI"),
+        )
+    };
+    // SAFETY: C receives the live outcome and a correlation slice retained for this call.
+    let result = unsafe {
+        super::kmipkit_client_abi_c_consumer_reads_async_response_v1(
+            outcome,
+            operation,
+            result_status,
+            is_pending,
+            has_cancellation_result,
+            cancellation_result,
+            correlation_data,
+            correlation_length,
+            has_payload,
+            payload_member_count,
+        )
+    };
+    assert_eq!(
+        result, 1,
+        "compiled C consumer rejected typed operation {operation:#x}"
+    );
 }
 
 fn assert_query_async_requests_metadata(

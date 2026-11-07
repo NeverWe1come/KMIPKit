@@ -4700,6 +4700,83 @@
           }
         ]
       }
+    },
+    {
+      "id": "AsyncOperationResponseV1",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientOperationOutcome",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_client_async_operation_response_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "operation",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "name": "is_pending",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_cancellation_result",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cancellation_result",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_asynchronous_correlation_value",
+            "type": "uint32_t"
+          },
+          {
+            "name": "asynchronous_correlation_value",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "has_response_payload",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "response_payload_member_count",
+            "type": "uint64_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "AsyncOperationResponseV1"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "AsyncOperationResponseV1"
+      }
     }
   ],
   "functions": [
@@ -34331,7 +34408,7 @@
       "c": {
         "symbol": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
         "documentation": [
-          "Copies a successful generic Response Payload as a caller-owned TTLV structure."
+          "Copies a present generic Response Payload as a caller-owned TTLV structure."
         ],
         "parameters": [
           {
@@ -47130,6 +47207,358 @@
           "internal"
         ],
         "returnType": "ttlv.Structure"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "kmipkit_client_async_operation_outcome_cancel_response_v1",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_cancel_response_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response",
+            "type": "*mut kmipkit_client_async_operation_response_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_async_operation_outcome_cancel_response_v1",
+        "documentation": [
+          "Returns the typed Cancel result and borrowed echo span; inspect its Response Payload as generic TTLV."
+        ],
+        "parameters": [
+          {
+            "name": "outcome",
+            "kind": "handle",
+            "type": "kmipkit_client_async_operation_outcome_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_response",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_client_async_operation_response_v1_t *",
+            "valueType": "kmipkit_client_async_operation_response_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "AsyncOperationOutcome",
+        "method": "cancelResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_extensions_AsyncOperationOutcome_readCancelResponseV1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<AsyncCancelResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "AsyncOperationOutcome.cancel_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_cancel_response_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "AsyncCancelResponse | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "kmipkit_client_async_operation_outcome_poll_response_v1",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_poll_response_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response",
+            "type": "*mut kmipkit_client_async_operation_response_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_async_operation_outcome_poll_response_v1",
+        "documentation": [
+          "Returns Pending state and borrowed correlation metadata; any terminal Response Payload remains generic TTLV."
+        ],
+        "parameters": [
+          {
+            "name": "outcome",
+            "kind": "handle",
+            "type": "kmipkit_client_async_operation_outcome_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_response",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_client_async_operation_response_v1_t *",
+            "valueType": "kmipkit_client_async_operation_response_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "AsyncOperationOutcome",
+        "method": "pollResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_extensions_AsyncOperationOutcome_readPollResponseV1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<AsyncPollResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "AsyncOperationOutcome.poll_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_poll_response_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "AsyncPollResponse | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "kmipkit_client_async_operation_outcome_process_response_v1",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_process_response_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response",
+            "type": "*mut kmipkit_client_async_operation_response_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_async_operation_outcome_process_response_v1",
+        "documentation": [
+          "Returns Pending state, payload presence/count, and borrowed correlation metadata."
+        ],
+        "parameters": [
+          {
+            "name": "outcome",
+            "kind": "handle",
+            "type": "kmipkit_client_async_operation_outcome_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_response",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_client_async_operation_response_v1_t *",
+            "valueType": "kmipkit_client_async_operation_response_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "AsyncOperationOutcome",
+        "method": "processResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_extensions_AsyncOperationOutcome_readProcessResponseV1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<AsyncProcessResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "AsyncOperationOutcome.process_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_process_response_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "AsyncProcessResponse | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response",
+            "type": "*mut kmipkit_client_async_operation_response_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+        "documentation": [
+          "Returns Query Asynchronous Requests status and generic TTLV. KMIP v2.1 §6.1.41 Table 286 caption/body discrepancy remains unresolved; no payload meaning is inferred."
+        ],
+        "parameters": [
+          {
+            "name": "outcome",
+            "kind": "handle",
+            "type": "kmipkit_client_async_operation_outcome_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_response",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_client_async_operation_response_v1_t *",
+            "valueType": "kmipkit_client_async_operation_response_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "AsyncOperationOutcome",
+        "method": "queryAsyncRequestsResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_extensions_AsyncOperationOutcome_readQueryAsyncRequestsResponseV1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<AsyncQueryAsyncRequestsResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "AsyncOperationOutcome.query_async_requests_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "AsyncQueryAsyncRequestsResponse | None"
       },
       "ordering": "not-applicable"
     }
@@ -630632,15 +631061,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_cancel_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.cancel_response"
         }
       },
       "parityEvidenceIds": [
@@ -630678,15 +631107,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_poll_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.poll_response"
         }
       },
       "parityEvidenceIds": [
@@ -630724,15 +631153,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_process_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.processResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.process_response"
         }
       },
       "parityEvidenceIds": [
@@ -630770,15 +631199,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.query_async_requests_response"
         }
       },
       "parityEvidenceIds": [
@@ -631049,15 +631478,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_cancel_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.cancel_response"
         }
       },
       "parityEvidenceIds": [
@@ -631095,15 +631524,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_poll_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.poll_response"
         }
       },
       "parityEvidenceIds": [
@@ -631141,15 +631570,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_process_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.processResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.process_response"
         }
       },
       "parityEvidenceIds": [
@@ -631187,15 +631616,15 @@
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_async_operation_outcome_metadata_v1"
+          "name": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1"
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1"
+          "name": "kmipkit.client.AsyncOperationOutcome.query_async_requests_response"
         }
       },
       "parityEvidenceIds": [
@@ -631437,6 +631866,2406 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-cancel-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_async_operation_outcome_cancel_response_v1",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::cancel_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_cancel_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.cancel_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-cancel-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::cancel_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_cancel_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.cancel_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-cancel-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.cancel_response",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::cancel_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_cancel_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.cancel_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-poll-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_async_operation_outcome_poll_response_v1",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::poll_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_poll_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.poll_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-poll-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::poll_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_poll_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.poll_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-poll-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.poll_response",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::poll_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_poll_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.poll_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-process-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_async_operation_outcome_process_response_v1",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::process_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_process_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.processResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.process_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-process-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.processResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::process_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_process_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.processResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.process_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-process-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.process_response",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::process_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_process_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.processResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.process_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-query_async_requests-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::query_async_requests_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.query_async_requests_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-query_async_requests-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::query_async_requests_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.query_async_requests_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-query_async_requests-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.query_async_requests_response",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::query_async_requests_response"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_query_async_requests_response_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.query_async_requests_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-view-c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_client_async_operation_response_v1_t",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-view-java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.AsyncOperationResponseV1",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-view-python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.AsyncOperationResponseV1",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-cancel-view-java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.AsyncCancelResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-cancel-view-python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.AsyncCancelResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-poll-view-java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.AsyncPollResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-poll-view-python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.AsyncPollResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-process-view-java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.AsyncProcessResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-process-view-python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.AsyncProcessResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-query_async_requests-view-java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncQueryAsyncRequestsResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-query_async_requests-view-python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.AsyncQueryAsyncRequestsResponse",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncQueryAsyncRequestsResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-result-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncOperationResponseV1.result",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.result_status"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1.result"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1.result"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-result-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncOperationResponseV1.result",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.result_status"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1.result"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1.result"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-raw-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncOperationResponseV1.raw",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.has_response_payload"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1.raw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1.raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-raw-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncOperationResponseV1.raw",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.has_response_payload"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1.raw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1.raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-cancel_result-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CancelResponse::cancellation_result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.cancellation_result"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse.cancellation_result"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-cancel_result-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncCancelResponse.cancellation_result",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CancelResponse::cancellation_result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.cancellation_result"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse.cancellation_result"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-poll_pending-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncPollResponse.isPending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::PollResponse::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-poll_pending-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncPollResponse.is_pending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::PollResponse::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-process_pending-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncProcessResponse.isPending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-process_pending-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncProcessResponse.is_pending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-process_payload_count-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::payload_member_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.response_payload_member_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.payload_member_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-process_payload_count-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncProcessResponse.payload_member_count",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::payload_member_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.response_payload_member_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.payload_member_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-correlation-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncPollResponse.withAsynchronousCorrelationValue",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-correlation-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncPollResponse.with_asynchronous_correlation_value",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-cancel_correlation-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncCancelResponse.withEchoedCorrelationValue",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CancelResponse::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse.withEchoedCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse.with_echoed_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-cancel_correlation-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncCancelResponse.with_echoed_correlation_value",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CancelResponse::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse.withEchoedCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse.with_echoed_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-process_correlation-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncProcessResponse.withAsynchronousCorrelationValue",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-process_correlation-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncProcessResponse.with_asynchronous_correlation_value",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-operation",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.operation",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::operation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.operation"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.operation"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationMetadataV1.operation"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-result_status",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.result_status",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.result_status"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_status"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-is_pending",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.is_pending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-has_cancellation_result",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.has_cancellation_result",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.has_cancellation_result"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse.cancellation_result"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-cancellation_result",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.cancellation_result",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.cancellation_result"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncCancelResponse.cancellation_result"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-has_asynchronous_correlation_value",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.has_asynchronous_correlation_value",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.has_asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-asynchronous_correlation_value",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncPollResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncPollResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-has_response_payload",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.has_response_payload",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.has_response_payload"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationResponseV1.raw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationResponseV1.raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-response-field-response_payload_member_count",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.response_payload_member_count",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProcessResponse::payload_member_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.response_payload_member_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncProcessResponse.payload_member_count"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_response_raw_navigation.py"
       ]
@@ -846840,6 +849669,246 @@
         "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
       },
       "evidence": "Reviewed against KMIPKIT-0052-FR-006 and KMIPKIT-0052-FR-007. Applications use the typed ClientBatchItemResult.responseHeaderTtlv() facade; this exact bridge member transfers an owned native TTLV handle."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.struct_size",
+      "reason": "C ABI record size framing.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 requires a versioned C response view; this field carries ABI framing and has no semantic accessor in the owner-backed Rust, Java, or Python response views."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.abi_version",
+      "reason": "C ABI record version framing.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 requires a versioned C response view; this field carries ABI framing and has no semantic accessor in the owner-backed Rust, Java, or Python response views."
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_client_async_operation_response_v1_t.reserved",
+      "reason": "Reserved C ABI layout field.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 requires a versioned C response view; this field carries ABI framing and has no semantic accessor in the owner-backed Rust, Java, or Python response views."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncOperationResponseV1.__init__",
+      "reason": "The base response-view constructor is an implementation detail; typed wrappers are created only by an outcome reader.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncOperationResponseV1.__slots__",
+      "reason": "This exact Python storage layout member has no independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncCancelResponse.__init__",
+      "reason": "This exact constructor assembles an owner-backed view from an outcome and FFI record; callers obtain it from cancel_response().",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncCancelResponse.__slots__",
+      "reason": "This exact Python storage layout member has no independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncCancelResponse.raw",
+      "reason": "This inherited alias is the generic raw() accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncCancelResponse.result",
+      "reason": "This inherited alias is the result accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncPollResponse.__init__",
+      "reason": "This exact constructor assembles an owner-backed view from an outcome and FFI record; callers obtain it from poll_response().",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncPollResponse.__slots__",
+      "reason": "This exact Python storage layout member has no independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncPollResponse.raw",
+      "reason": "This inherited alias is the generic raw() accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncPollResponse.result",
+      "reason": "This inherited alias is the result accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncProcessResponse.__init__",
+      "reason": "This exact constructor assembles an owner-backed view from an outcome and FFI record; callers obtain it from process_response().",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncProcessResponse.__slots__",
+      "reason": "This exact Python storage layout member has no independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncProcessResponse.raw",
+      "reason": "This inherited alias is the generic raw() accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncProcessResponse.result",
+      "reason": "This inherited alias is the result accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncQueryAsyncRequestsResponse.__init__",
+      "reason": "This exact constructor assembles an owner-backed view from an outcome and FFI record; callers obtain it from query_async_requests_response().",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncQueryAsyncRequestsResponse.raw",
+      "reason": "This inherited alias is the generic raw() accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.AsyncQueryAsyncRequestsResponse.result",
+      "reason": "This inherited alias is the result accessor already mapped on AsyncOperationResponseV1; it adds no separate capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "evidence": "KMIPKIT-0052-FR-001 and FR-007 require operation-specific, owner-backed response views. The typed outcome readers and base view members are mapped directly; these exact Python constructor, storage, and inherited alias names do not add independent behavior."
     }
   ],
   "apiLevels": [
@@ -861137,32 +864206,95 @@
           "kmipkit_client::ClientBatchItemResponse::raw",
           "kmipkit_client::ClientBatchItemResponse::response_header_raw",
           "kmipkit_client::ClientBatchResponse::response_header_raw",
+          "kmipkit_client::ClientOperationOutcome",
           "kmipkit_client::ClientOperationOutcome::cancel_response",
+          "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "kmipkit_client::ClientOperationOutcome::is_pending",
+          "kmipkit_client::ClientOperationOutcome::operation",
           "kmipkit_client::ClientOperationOutcome::poll_response",
           "kmipkit_client::ClientOperationOutcome::process_response",
           "kmipkit_client::ClientOperationOutcome::query_async_requests_response",
           "kmipkit_client::ClientOperationOutcome::raw",
+          "kmipkit_client::ClientOperationOutcome::result",
+          "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "kmipkit_protocol::CancelResponse::cancellation_result",
+          "kmipkit_protocol::CancelResponse::with_asynchronous_correlation_value",
+          "kmipkit_protocol::PollResponse::is_pending",
+          "kmipkit_protocol::ProcessResponse::is_pending",
+          "kmipkit_protocol::ProcessResponse::payload_member_count",
+          "kmipkit_protocol::ProcessResponse::with_asynchronous_correlation_value",
           "kmipkit_protocol::ResponseBatchItemView::raw",
           "kmipkit_protocol::ResponseHeaderView::raw",
           "kmipkit_ttlv::Item::as_structure"
         ],
         "c": [
-          "kmipkit_client_async_operation_outcome_metadata_v1",
+          "kmipkit_client_async_operation_outcome_cancel_response_v1",
+          "kmipkit_client_async_operation_outcome_poll_response_v1",
+          "kmipkit_client_async_operation_outcome_process_response_v1",
+          "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
           "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "kmipkit_client_async_operation_response_v1_t",
+          "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value",
+          "kmipkit_client_async_operation_response_v1_t.cancellation_result",
+          "kmipkit_client_async_operation_response_v1_t.has_asynchronous_correlation_value",
+          "kmipkit_client_async_operation_response_v1_t.has_cancellation_result",
+          "kmipkit_client_async_operation_response_v1_t.has_response_payload",
+          "kmipkit_client_async_operation_response_v1_t.is_pending",
+          "kmipkit_client_async_operation_response_v1_t.operation",
+          "kmipkit_client_async_operation_response_v1_t.response_payload_member_count",
+          "kmipkit_client_async_operation_response_v1_t.result_status",
           "kmipkit_client_batch_item_response_header_ttlv",
           "kmipkit_client_batch_item_response_raw_ttlv",
           "kmipkit_ttlv_value_view_structure"
         ],
         "java": [
-          "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "org.kmipkit.extensions.AsyncCancelResponse",
+          "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult",
+          "org.kmipkit.extensions.AsyncCancelResponse.withEchoedCorrelationValue",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.operation",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus",
+          "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse",
+          "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse",
+          "org.kmipkit.extensions.AsyncOperationOutcome.processResponse",
+          "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse",
           "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "org.kmipkit.extensions.AsyncOperationResponseV1",
+          "org.kmipkit.extensions.AsyncOperationResponseV1.raw",
+          "org.kmipkit.extensions.AsyncOperationResponseV1.result",
+          "org.kmipkit.extensions.AsyncPollResponse",
+          "org.kmipkit.extensions.AsyncPollResponse.isPending",
+          "org.kmipkit.extensions.AsyncPollResponse.withAsynchronousCorrelationValue",
+          "org.kmipkit.extensions.AsyncProcessResponse",
+          "org.kmipkit.extensions.AsyncProcessResponse.isPending",
+          "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount",
+          "org.kmipkit.extensions.AsyncProcessResponse.withAsynchronousCorrelationValue",
+          "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse",
           "org.kmipkit.extensions.ClientBatchItemResult.raw",
           "org.kmipkit.extensions.ClientBatchItemResult.responseHeaderTtlv",
           "org.kmipkit.ttlv.TtlvValueView.structure"
         ],
         "python": [
-          "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "kmipkit.client.AsyncCancelResponse",
+          "kmipkit.client.AsyncCancelResponse.cancellation_result",
+          "kmipkit.client.AsyncCancelResponse.with_echoed_correlation_value",
+          "kmipkit.client.AsyncOperationMetadataV1.operation",
+          "kmipkit.client.AsyncOperationMetadataV1.result_status",
+          "kmipkit.client.AsyncOperationOutcome.cancel_response",
+          "kmipkit.client.AsyncOperationOutcome.poll_response",
+          "kmipkit.client.AsyncOperationOutcome.process_response",
+          "kmipkit.client.AsyncOperationOutcome.query_async_requests_response",
           "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "kmipkit.client.AsyncOperationResponseV1",
+          "kmipkit.client.AsyncOperationResponseV1.raw",
+          "kmipkit.client.AsyncOperationResponseV1.result",
+          "kmipkit.client.AsyncPollResponse",
+          "kmipkit.client.AsyncPollResponse.is_pending",
+          "kmipkit.client.AsyncPollResponse.with_asynchronous_correlation_value",
+          "kmipkit.client.AsyncProcessResponse",
+          "kmipkit.client.AsyncProcessResponse.is_pending",
+          "kmipkit.client.AsyncProcessResponse.payload_member_count",
+          "kmipkit.client.AsyncProcessResponse.with_asynchronous_correlation_value",
+          "kmipkit.client.AsyncQueryAsyncRequestsResponse",
           "kmipkit.client.BatchItemResult.raw",
           "kmipkit.client.BatchItemResult.response_header_ttlv",
           "kmipkit.ttlv.ttlv_value_view_structure"

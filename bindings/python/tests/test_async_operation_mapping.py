@@ -339,6 +339,8 @@ def _outcome_stubs(
     *,
     response_correlation: bytes | None = None,
     cancellation_result: int | None = None,
+    outcome_kind: int = int(client.BatchOutcome.COMPLETED),
+    result_status: int = 0,
     response_payload_structure: ttlv.Structure | None = None,
 ) -> SimpleNamespace:
     outcome_handle = ffi.cast("kmipkit_client_async_operation_outcome_t *", 42)
@@ -352,8 +354,8 @@ def _outcome_stubs(
         output.struct_size = ffi.sizeof("kmipkit_client_async_operation_metadata_v1_t")
         output.abi_version = 1
         output.operation = operation
-        output.outcome_kind = int(client.BatchOutcome.COMPLETED)
-        output.result_status = 0
+        output.outcome_kind = outcome_kind
+        output.result_status = result_status
         output.has_result_reason = 0
         output.result_reason = 0
         output.has_cancellation_result = int(cancellation_result is not None)
@@ -394,35 +396,59 @@ def _outcome_stubs(
 
 def _typed_outcome_stubs(operation: int, *, is_pending: bool = False,
                          payload_member_count: int | None = None,
-                         has_payload: bool = False) -> SimpleNamespace:
+                         has_payload: bool = False,
+                         correlation: bytes | None = None,
+                         payload_structure: ttlv.Structure | None = None) -> SimpleNamespace:
     """Build typed-reader ABI stubs without allocating another native owner."""
-    stubs = _outcome_stubs(operation, [])
+    stubs = _outcome_stubs(
+        operation,
+        [],
+        response_correlation=correlation,
+        cancellation_result=1 if operation == 0x19 else None,
+        outcome_kind=(
+            int(client.BatchOutcome.PENDING)
+            if is_pending
+            else int(client.BatchOutcome.COMPLETED)
+        ),
+        result_status=2 if is_pending else 0,
+        response_payload_structure=payload_structure,
+    )
+    native_correlation = (
+        ffi.new("uint8_t[]", correlation) if correlation is not None else ffi.NULL
+    )
 
-    def read(expected: int, fields: dict[str, int | bool | None]):
+    def read(expected: int):
         def invoke(_outcome, present, output) -> int:
             present[0] = int(operation == expected)
             if present[0]:
-                output.struct_size = 32
-                output.abi_version = 1
-                output.reserved = 0
-                output.is_pending = int(is_pending)
-                output.has_response_payload = int(has_payload)
-                output.payload_member_count = payload_member_count or 0
-                output.cancellation_result = int(fields.get("cancellation_result") or 0)
-                output.has_echoed_correlation_value = int(
-                    fields.get("has_echoed_correlation_value", 0)
+                output.struct_size = ffi.sizeof(
+                    "kmipkit_client_async_operation_response_v1_t"
                 )
+                output.abi_version = 1
+                output.operation = expected
+                output.result_status = 2 if is_pending else 0
+                output.is_pending = int(is_pending)
+                output.has_cancellation_result = int(expected == 0x19)
+                output.cancellation_result = 1 if expected == 0x19 else 0
+                output.has_asynchronous_correlation_value = int(
+                    correlation is not None
+                )
+                output.asynchronous_correlation_value.data = native_correlation
+                output.asynchronous_correlation_value.length = len(correlation or b"")
+                output.has_response_payload = int(has_payload)
+                output.reserved = 0
+                output.response_payload_member_count = payload_member_count or 0
             return 0
 
         return invoke
 
     stubs.kmipkit_client_async_operation_outcome_cancel_response_v1 = read(
-        0x19, {"cancellation_result": 1, "has_echoed_correlation_value": 1}
+        0x19
     )
-    stubs.kmipkit_client_async_operation_outcome_poll_response_v1 = read(0x1A, {})
-    stubs.kmipkit_client_async_operation_outcome_process_response_v1 = read(0x3A, {})
+    stubs.kmipkit_client_async_operation_outcome_poll_response_v1 = read(0x1A)
+    stubs.kmipkit_client_async_operation_outcome_process_response_v1 = read(0x3A)
     stubs.kmipkit_client_async_operation_outcome_query_async_requests_response_v1 = read(
-        0x39, {}
+        0x39
     )
     return stubs
 
@@ -443,18 +469,41 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
         operation,
         is_pending=operation in (0x1A, 0x3A),
         payload_member_count=0,
-        has_payload=operation in (0x19, 0x3A, 0x39),
+        has_payload=operation in (0x3A, 0x39),
+        correlation=(b"typed-correlation" if operation in (0x19, 0x1A, 0x3A) else None),
+        payload_structure=(
+            ttlv.ttlv_structure_create()
+            if operation in (0x3A, 0x39)
+            else None
+        ),
     )
     monkeypatch.setattr(client, "lib", stubs)
-    monkeypatch.setattr(client, "ffi", _TypedResponseTestFfi(ffi))
     outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
     try:
         typed = getattr(outcome, reader)()
         assert typed is not None
         assert typed.result.operation == operation
-        assert typed.raw is not None
+        if operation in (0x3A, 0x39):
+            raw = typed.raw
+            assert raw is not None
+            try:
+                with ttlv.ttlv_structure_view(raw) as view:
+                    assert ttlv.ttlv_structure_view_item_count(view) == 0
+            finally:
+                raw.close()
+        else:
+            assert typed.raw is None
         if operation == 0x19:
             assert typed.cancellation_result == 1
+            observed: list[bytes] = []
+
+            def inspect_echo(value: memoryview) -> None:
+                assert value.readonly
+                assert bytes(value) == b"typed-correlation"
+                observed.append(bytes(value))
+
+            assert typed.with_echoed_correlation_value(inspect_echo)
+            assert observed == [b"typed-correlation"]
         if operation in (0x1A, 0x3A):
             assert typed.is_pending
         if operation == 0x3A:
@@ -468,7 +517,6 @@ def test_async_typed_response_readers_return_none_for_other_operations(
 ) -> None:
     stubs = _typed_outcome_stubs(0x1A, is_pending=True, has_payload=False)
     monkeypatch.setattr(client, "lib", stubs)
-    monkeypatch.setattr(client, "ffi", _TypedResponseTestFfi(ffi))
     outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
     try:
         assert outcome.poll_response() is not None
@@ -479,28 +527,17 @@ def test_async_typed_response_readers_return_none_for_other_operations(
         outcome.close()
 
 
-class _TypedResponseTestFfi:
-    """Delegate normal CFFI calls while supplying future v1 output records."""
-
-    def __init__(self, base) -> None:
-        self._base = base
-
-    def __getattr__(self, name: str):
-        return getattr(self._base, name)
-
-    def new(self, declaration: str, *args):
-        if declaration.startswith("kmipkit_client_async_") and declaration.endswith(
-            "_response_v1_t *"
-        ):
-            return SimpleNamespace()
-        return self._base.new(declaration, *args)
-
-    def sizeof(self, declaration: str) -> int:
-        if declaration.startswith("kmipkit_client_async_") and declaration.endswith(
-            "_response_v1_t"
-        ):
-            return 32
-        return self._base.sizeof(declaration)
+def test_async_response_view_uses_the_outcome_lifetime(monkeypatch) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    view = outcome.poll_response()
+    assert view is not None
+    outcome.close()
+    with pytest.raises(errors.InvalidInputError):
+        _ = view.result
+    with pytest.raises(errors.InvalidInputError):
+        _ = view.is_pending
 
 
 def _cancel_response_payload(
