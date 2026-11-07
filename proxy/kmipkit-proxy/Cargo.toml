@@ -18,17 +18,19 @@ all-clouds = ["aws", "azure", "gcp", "oci"]
 aws = []
 azure = []
 gcp = []
-oci = []
+oci = ["dep:reqwest"]
 
 [dependencies]
 async-trait = "0.1"
 aws-lc-rs = { version = "=1.18.1", default-features = false, features = ["prebuilt-nasm"] }
+base64 = "0.22"
 bytes = { version = "=1.12.1", default-features = false, features = ["std"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 kmipkit-protocol = { path = "../../crates/kmipkit-protocol" }
 kmipkit-transport = { path = "../../crates/kmipkit-transport" }
 kmipkit-ttlv = { path = "../../crates/kmipkit-ttlv" }
 rcgen = { version = "=0.14.10", default-features = false, features = ["aws_lc_rs"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-no-provider"], optional = true }
 roxmltree = "=0.21.1"
 rustls = { version = "=0.23.46", default-features = false, features = ["aws_lc_rs", "std"] }
 serde = { version = "1.0", features = ["derive"] }

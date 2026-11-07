@@ -99,7 +99,10 @@ pub struct OciConfig {
     pub crypto_endpoint: Option<String>,
     pub management_endpoint: Option<String>,
     pub secrets_endpoint: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub secret_name_prefix: Option<String>,
     pub envelope_master_kek_id: Option<String>,
+    pub auth_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
