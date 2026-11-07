@@ -33,6 +33,9 @@ jobs:
       - name: Install Rust 1.94
         run: rustup toolchain install 1.94 --profile minimal --default 1.94
 
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+
       - name: Set up uv Python 3.12
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
         with:
