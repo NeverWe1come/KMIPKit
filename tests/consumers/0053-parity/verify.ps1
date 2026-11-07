@@ -4,6 +4,7 @@ param()
 $ErrorActionPreference = 'Stop'
 $consumerRoot = $PSScriptRoot
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $consumerRoot '..\..\..')).Path
+$pythonProject = Join-Path $consumerRoot 'python'
 $fixtureRoot = Join-Path $repositoryRoot 'bindings\python\tests\fixtures\login-mtls'
 $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("kmipkit-0053-" + [guid]::NewGuid().ToString('N'))
 $readyFile = Join-Path $temporaryRoot 'ready.txt'
@@ -16,13 +17,14 @@ $previousFixtures = $env:KMIPKIT_CONSUMER_TEST_FIXTURES
 
 New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
 try {
-    $server = Start-Process -FilePath 'python' -ArgumentList @(
+    $server = Start-Process -FilePath 'uv' -ArgumentList @(
+        'run', '--locked', '--python', '3.12', '--project', $pythonProject, 'python',
         (Join-Path $consumerRoot 'local_ping_responder.py'),
         '--ready-file', $readyFile,
         '--fixture-dir', $fixtureRoot,
         '--connections', '4'
     ) -WindowStyle Hidden -PassThru -RedirectStandardError $serverErrorFile
-    for ($attempt = 0; $attempt -lt 100 -and -not (Test-Path -LiteralPath $readyFile); $attempt++) {
+    for ($attempt = 0; $attempt -lt 1800 -and -not (Test-Path -LiteralPath $readyFile); $attempt++) {
         if ($server.HasExited) { throw 'The loopback mTLS Ping fixture exited before becoming ready.' }
         Start-Sleep -Milliseconds 100
     }

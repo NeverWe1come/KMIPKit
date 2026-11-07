@@ -141,6 +141,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let limits = CodecLimits::defaults();
     let result = execute_ping(&mut client, &limits)?;
     let item = result.get(0).ok_or("Ping response item is missing")?;
+    assert_eq!(item.outcome().result().status().raw(), 0);
     assert!(item.outcome().response().ping().is_some());
     let raw = item.raw().ok_or("Ping Response Payload is missing")?;
     assert_eq!(raw.children().len(), 0);

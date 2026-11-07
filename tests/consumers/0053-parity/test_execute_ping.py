@@ -5,8 +5,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
+import struct
 import subprocess
 import unittest
+
+from local_ping_responder import _is_ping_request, _item, _structure
 
 
 CONSUMER_ROOT = Path(__file__).resolve().parent
@@ -19,6 +22,16 @@ EXPECTED_LINES = (
 
 
 class ExecutePingConsumerTests(unittest.TestCase):
+    def test_fixture_accepts_exactly_one_ping_operation(self) -> None:
+        operation = _item(0x42005C, 5, struct.pack(">I", 0x3B))
+        other_operation = _item(0x42005C, 5, struct.pack(">I", 0x18))
+        ping_item = _structure(0x42000F, operation)
+        query_item = _structure(0x42000F, other_operation)
+        self.assertTrue(_is_ping_request(_structure(0x420078, ping_item)))
+        self.assertFalse(_is_ping_request(_structure(0x420078, ping_item, query_item)))
+        multiple_operations = _structure(0x42000F, operation, other_operation)
+        self.assertFalse(_is_ping_request(_structure(0x420078, multiple_operations)))
+
     def test_all_external_consumers_execute_ping_and_inspect_raw_ttlv(self) -> None:
         if os.name == "nt":
             shell = shutil.which("pwsh") or shutil.which("powershell")

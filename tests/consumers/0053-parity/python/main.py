@@ -136,6 +136,7 @@ def main() -> None:
             batch = client.Batch.create()
             batch.add_item(extensions.client_batch_item_ping())
             result = kmip_client.execute(batch, limits)
+            raw = None
             try:
                 item_result = result.items[0]
                 assert item_result.ping_response is True
@@ -144,10 +145,13 @@ def main() -> None:
                 assert raw is not None
                 with ttlv.ttlv_structure_view(raw) as raw_view:
                     assert ttlv.ttlv_structure_view_item_count(raw_view) == 0
-                raw.close()
                 print("python: Ping result and raw TTLV verified")
             finally:
-                result.close()
+                try:
+                    if raw is not None:
+                        raw.close()
+                finally:
+                    result.close()
 
 if __name__ == "__main__":
     main()

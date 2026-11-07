@@ -8,7 +8,8 @@ java_native="$repository_root/bindings/java/target/native"
 fixture_root="$repository_root/bindings/python/tests/fixtures/login-mtls"
 temporary_root=$(mktemp -d "${TMPDIR:-/tmp}/kmipkit-0053.XXXXXX")
 ready_file="$temporary_root/ready.txt"
-python3 "$consumer_root/local_ping_responder.py" \
+uv run --locked --python 3.12 --project "$consumer_root/python" python \
+    "$consumer_root/local_ping_responder.py" \
     --ready-file "$ready_file" --fixture-dir "$fixture_root" --connections 4 &
 responder_pid=$!
 cleanup() {
@@ -18,7 +19,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 attempt=0
-while [ ! -f "$ready_file" ] && [ "$attempt" -lt 100 ]; do
+while [ ! -f "$ready_file" ] && [ "$attempt" -lt 1800 ]; do
     if ! kill -0 "$responder_pid" 2>/dev/null; then
         echo "The loopback mTLS Ping fixture exited before becoming ready." >&2
         exit 1

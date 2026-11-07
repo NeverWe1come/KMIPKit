@@ -57,6 +57,47 @@ def _read_frame(stream: ssl.SSLSocket) -> bytes:
     return header + _read_exact(stream, body_length)
 
 
+def _children(value: bytes) -> list[tuple[int, int, bytes]]:
+    children: list[tuple[int, int, bytes]] = []
+    offset = 0
+    while offset < len(value):
+        if len(value) - offset < 8:
+            raise RuntimeError("consumer sent a truncated TTLV child header")
+        tag = int.from_bytes(value[offset : offset + 3], "big")
+        item_type = value[offset + 3]
+        length = int.from_bytes(value[offset + 4 : offset + 8], "big")
+        value_start = offset + 8
+        value_end = value_start + length
+        padded_end = value_end + (-length) % 8
+        if padded_end > len(value) or any(value[value_end:padded_end]):
+            raise RuntimeError("consumer sent a truncated TTLV child or nonzero padding")
+        children.append((tag, item_type, value[value_start:value_end]))
+        offset = padded_end
+    return children
+
+
+def _is_ping_request(frame: bytes) -> bool:
+    if frame[:4] != bytes.fromhex("42007801"):
+        return False
+    body_length = int.from_bytes(frame[4:8], "big")
+    if body_length != len(frame) - 8:
+        return False
+    top_level = _children(frame[8:])
+    batch_items = [
+        value for tag, item_type, value in top_level if tag == 0x42000F and item_type == 1
+    ]
+    if len(batch_items) != 1:
+        return False
+    operations = [
+        value
+        for tag, item_type, value in _children(batch_items[0])
+        if tag == 0x42005C and item_type == 5
+    ]
+    return len(operations) == 1 and len(operations[0]) == 4 and int.from_bytes(
+        operations[0], "big"
+    ) == 0x3B
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ready-file", type=Path, required=True)
@@ -86,8 +127,7 @@ def main() -> None:
                 if stream.version() != "TLSv1.3" or not peer_cert:
                     raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
                 request = _read_frame(stream)
-                ping_operation = bytes.fromhex("42005c05000000040000003b")
-                if request[:4] != bytes.fromhex("42007801") or ping_operation not in request:
+                if not _is_ping_request(request):
                     raise RuntimeError("fixture accepts only a KMIP Ping request")
                 stream.sendall(_ping_response())
 
