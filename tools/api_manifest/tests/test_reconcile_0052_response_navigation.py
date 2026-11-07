@@ -33,10 +33,14 @@ class Reconcile0052ResponseNavigationTests(unittest.TestCase):
                 "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
             },
         )
-        self.assertEqual(len(result["publicDeclarations"]), 78)
+        self.assertEqual(len(result["publicDeclarations"]), 82)
         declaration_ids = {row["declarationId"] for row in result["publicDeclarations"]}
         self.assertTrue(
             {
+                "kmipkit-0052-async-wrapper-query_pending-java",
+                "kmipkit-0052-async-wrapper-query_pending-python",
+                "kmipkit-0052-async-wrapper-query_correlation-java",
+                "kmipkit-0052-async-wrapper-query_correlation-python",
                 "kmipkit-0052-async-cancel-c",
                 "kmipkit-0052-async-cancel-java",
                 "kmipkit-0052-async-cancel-python",

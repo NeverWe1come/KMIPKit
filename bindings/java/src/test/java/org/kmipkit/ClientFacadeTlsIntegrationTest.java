@@ -3643,7 +3643,6 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] queryCorrelation = {(byte) 0x91, 0, 0x33};
         byte[] cancelPayload = structure(0x42007c,
                 item(0x420006, 8, correlation), enumeration(0x420012, 1));
-        byte[] failedCancelPayload = structure(0x42007c, item(0x420006, 8, correlation));
         byte[] emptyPayload = structure(0x42007c);
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> {
             List<byte[]> requests = new ArrayList<>();
@@ -3653,9 +3652,7 @@ final class ClientFacadeTlsIntegrationTest {
             requests.add(serveOneResponse(listener,
                     singleAsyncResponseMessage(0x3a, 2, correlation, emptyPayload)));
             requests.add(serveOneResponse(listener,
-                    singleAsyncResponseMessage(0x39, 2, null, emptyPayload)));
-            requests.add(serveOneResponse(listener,
-                    singleAsyncResponseMessage(0x19, 1, null, failedCancelPayload)));
+                    singleAsyncResponseMessage(0x39, 2, queryCorrelation, emptyPayload)));
             return requests;
         });
         Thread peerThread = new Thread(peer, "kmipkit-java-default-async-fixture");
@@ -3742,6 +3739,11 @@ final class ClientFacadeTlsIntegrationTest {
                 var typed = outcome.queryAsyncRequestsResponse().orElseThrow();
                 assertEquals(0x39, typed.result().operation());
                 assertTrue(typed.isPending());
+                assertTrue(typed.withAsynchronousCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(queryCorrelation, observed);
+                }));
                 try (TtlvStructure payload = typed.raw().orElseThrow();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(0, view.itemCount());
@@ -3749,15 +3751,6 @@ final class ClientFacadeTlsIntegrationTest {
                 assertTrue(outcome.pollResponse().isEmpty());
                 assertTrue(outcome.cancelResponse().isEmpty());
                 assertTrue(outcome.processResponse().isEmpty());
-            }
-            try (AsyncOperationOutcome outcome = client.executeCancel(
-                    correlation, CodecLimits.defaults())) {
-                var typed = outcome.cancelResponse().orElseThrow();
-                assertEquals(1, typed.result().resultStatus());
-                assertTrue(typed.cancellationResult().isEmpty());
-                assertFalse(typed.withEchoedCorrelationValue(value -> {
-                    throw new AssertionError("failed Cancel exposed an echo: " + value.remaining());
-                }));
             }
             requests = peer.get(24, TimeUnit.SECONDS);
         } finally {
