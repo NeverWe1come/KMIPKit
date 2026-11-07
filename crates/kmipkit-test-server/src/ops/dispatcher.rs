@@ -735,7 +735,10 @@ impl Dispatcher {
                 }
                 *id_placeholder = Some(id.clone());
 
-                Ok(vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id))])
+                Ok(vec![ttlv_item(
+                    TAG_UNIQUE_IDENTIFIER,
+                    Value::text_string(id),
+                )])
             }
 
             ENCAPSULATE_OPERATION => {

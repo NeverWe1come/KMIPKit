@@ -58,8 +58,8 @@ mod mac_verify;
 mod message;
 mod modify_attribute;
 mod multipart;
-mod obtain_lease;
 mod object_class;
+mod obtain_lease;
 mod operation_data;
 mod ping;
 mod pkcs11;
@@ -175,8 +175,8 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
-pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use object_class::ObjectClass;
+pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};

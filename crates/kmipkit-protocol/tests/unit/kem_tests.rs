@@ -27,7 +27,11 @@ fn test_encapsulate_request_and_response() {
 
     let ciphertext = vec![0x01, 0x02, 0x03, 0x04];
     let shared_secret = vec![0xAA, 0xBB, 0xCC, 0xDD];
-    let resp = EncapsulateResponse::new("public-key-uuid-456", ciphertext.clone(), shared_secret.clone());
+    let resp = EncapsulateResponse::new(
+        "public-key-uuid-456",
+        ciphertext.clone(),
+        shared_secret.clone(),
+    );
     assert_eq!(resp.unique_identifier(), "public-key-uuid-456");
     assert_eq!(resp.ciphertext(), &ciphertext);
     assert_eq!(resp.shared_secret(), &shared_secret);

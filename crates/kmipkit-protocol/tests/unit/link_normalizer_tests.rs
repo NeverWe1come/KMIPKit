@@ -1,4 +1,4 @@
-//! Unit tests for LinkNormalizer (KMIP 2.x generic link <-> KMIP 3.0 typed link) (KMIPKIT-0071).
+//! Unit tests for `LinkNormalizer` (KMIP 2.x generic link <-> KMIP 3.0 typed link) (KMIPKIT-0071).
 
 use crate::link_normalizer::{LinkNormalizer, LinkType};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
@@ -18,17 +18,22 @@ fn test_generic_link_converts_to_discrete_v3_typed_link() {
         .try_push(ttlv_item(0x0042_0048, Value::enumeration(0x0000_0101))) // Certificate link type
         .unwrap();
     link_struct
-        .try_push(ttlv_item(0x0042_0049, Value::text_string(target_id.to_string()))) // Linked Object Identifier
+        .try_push(ttlv_item(
+            0x0042_0049,
+            Value::text_string(target_id.to_string()),
+        )) // Linked Object Identifier
         .unwrap();
 
     let generic_link = ttlv_item(0x0042_0047, Value::structure(link_struct));
 
-    let typed_link = LinkNormalizer::normalize_to_v3(&generic_link).expect("valid conversion to v3");
+    let typed_link =
+        LinkNormalizer::normalize_to_v3(&generic_link).expect("valid conversion to v3");
     // Should have tag 0x0042_0153 (Certificate Link)
     assert_eq!(typed_link.tag().raw(), 0x0042_0153);
 
     // Roundtrip back to v2 generic link
-    let roundtripped = LinkNormalizer::normalize_to_v2(&typed_link).expect("valid conversion to v2");
+    let roundtripped =
+        LinkNormalizer::normalize_to_v2(&typed_link).expect("valid conversion to v2");
     assert_eq!(roundtripped.tag().raw(), 0x0042_0047);
 }
 
@@ -54,7 +59,10 @@ fn test_all_eleven_supported_link_types_roundtrip() {
             .try_push(ttlv_item(0x0042_0048, Value::enumeration(v2_enum)))
             .unwrap();
         link_struct
-            .try_push(ttlv_item(0x0042_0049, Value::text_string("linked-obj-uuid".to_string())))
+            .try_push(ttlv_item(
+                0x0042_0049,
+                Value::text_string("linked-obj-uuid".to_string()),
+            ))
             .unwrap();
 
         let generic_link = ttlv_item(0x0042_0047, Value::structure(link_struct));

@@ -43,8 +43,11 @@ impl DeactivateRequest {
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
         let mut s = Structure::new();
-        s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(self.unique_identifier))?)
-            .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string(self.unique_identifier),
+        )?)
+        .map_err(|e| e.to_string())?;
         Ok(s)
     }
 }
@@ -75,8 +78,11 @@ impl DeactivateResponse {
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
         let mut s = Structure::new();
-        s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(self.unique_identifier))?)
-            .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string(self.unique_identifier),
+        )?)
+        .map_err(|e| e.to_string())?;
         Ok(s)
     }
 }
@@ -107,8 +113,11 @@ impl EncapsulateRequest {
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
         let mut s = Structure::new();
-        s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(self.unique_identifier))?)
-            .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string(self.unique_identifier),
+        )?)
+        .map_err(|e| e.to_string())?;
         Ok(s)
     }
 }
@@ -157,12 +166,21 @@ impl EncapsulateResponse {
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
         let mut s = Structure::new();
-        s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(self.unique_identifier))?)
-            .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(CIPHERTEXT_TAG, Value::byte_string(self.ciphertext))?)
-            .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(SHARED_SECRET_TAG, Value::byte_string(self.shared_secret))?)
-            .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string(self.unique_identifier),
+        )?)
+        .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            CIPHERTEXT_TAG,
+            Value::byte_string(self.ciphertext),
+        )?)
+        .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            SHARED_SECRET_TAG,
+            Value::byte_string(self.shared_secret),
+        )?)
+        .map_err(|e| e.to_string())?;
         Ok(s)
     }
 }
@@ -200,10 +218,16 @@ impl DecapsulateRequest {
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
         let mut s = Structure::new();
-        s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(self.unique_identifier))?)
-            .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(CIPHERTEXT_TAG, Value::byte_string(self.ciphertext))?)
-            .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string(self.unique_identifier),
+        )?)
+        .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            CIPHERTEXT_TAG,
+            Value::byte_string(self.ciphertext),
+        )?)
+        .map_err(|e| e.to_string())?;
         Ok(s)
     }
 }
@@ -241,10 +265,16 @@ impl DecapsulateResponse {
     /// Returns an error if structure push fails.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
         let mut s = Structure::new();
-        s.try_push(ttlv_item(UNIQUE_IDENTIFIER_TAG, Value::text_string(self.unique_identifier))?)
-            .map_err(|e| e.to_string())?;
-        s.try_push(ttlv_item(SHARED_SECRET_TAG, Value::byte_string(self.shared_secret))?)
-            .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string(self.unique_identifier),
+        )?)
+        .map_err(|e| e.to_string())?;
+        s.try_push(ttlv_item(
+            SHARED_SECRET_TAG,
+            Value::byte_string(self.shared_secret),
+        )?)
+        .map_err(|e| e.to_string())?;
         Ok(s)
     }
 }

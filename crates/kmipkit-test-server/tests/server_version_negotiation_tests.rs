@@ -351,7 +351,10 @@ async fn test_server_in_kmip21_mode_rejects_kmip30_operations() {
 
     let mut item_struct = Structure::new();
     item_struct
-        .try_push(ttlv_item(TAG_OPERATION, Value::enumeration(DEACTIVATE_OPERATION)))
+        .try_push(ttlv_item(
+            TAG_OPERATION,
+            Value::enumeration(DEACTIVATE_OPERATION),
+        ))
         .unwrap();
 
     let mut msg_struct = Structure::new();

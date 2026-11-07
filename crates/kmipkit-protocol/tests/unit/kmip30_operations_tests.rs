@@ -1,8 +1,6 @@
-//! Unit tests for OASIS KMIP 3.0 operations, system objects, and VersionGate (KMIPKIT-0071).
+//! Unit tests for OASIS KMIP 3.0 operations, system objects, and `VersionGate` (KMIPKIT-0071).
 
-use crate::{
-    ObjectClass, ObjectType, ProtocolVersion, VersionGate, VersionGateError,
-};
+use crate::{ObjectClass, ObjectType, ProtocolVersion, VersionGate, VersionGateError};
 
 const CREATE_USER_OPERATION: u32 = 0x0000_003C;
 const CREATE_GROUP_OPERATION: u32 = 0x0000_003D;
@@ -74,7 +72,10 @@ fn kmip30_object_class_and_system_object_types() {
     assert_eq!(ObjectClass::SystemObject.to_raw(), 2);
     assert_eq!(ObjectClass::MetadataObject.to_raw(), 3);
 
-    assert_eq!(ObjectClass::from_raw(1), Some(ObjectClass::CryptographicObject));
+    assert_eq!(
+        ObjectClass::from_raw(1),
+        Some(ObjectClass::CryptographicObject)
+    );
     assert_eq!(ObjectClass::from_raw(2), Some(ObjectClass::SystemObject));
     assert_eq!(ObjectClass::from_raw(3), Some(ObjectClass::MetadataObject));
     assert_eq!(ObjectClass::from_raw(99), None);

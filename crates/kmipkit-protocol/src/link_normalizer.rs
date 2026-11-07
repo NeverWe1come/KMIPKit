@@ -103,7 +103,7 @@ impl LinkNormalizer {
     ///
     /// # Errors
     ///
-    /// Returns an error if the tag is not 0x0042_0047, or if required fields are missing.
+    /// Returns an error if the tag is not `0x0042_0047`, or if required fields are missing.
     pub fn normalize_to_v3(generic_link: &Item) -> Result<Item, String> {
         if generic_link.tag().raw() != 0x0042_0047 {
             return Err("Expected KMIP 2.x generic Link tag 0x0042_0047".into());
@@ -136,8 +136,10 @@ impl LinkNormalizer {
             }
         });
 
-        let lt = link_type.ok_or_else(|| "Missing or unrecognized Link Type in generic Link".to_string())?;
-        let id = linked_id.ok_or_else(|| "Missing Linked Object Identifier in generic Link".to_string())?;
+        let lt = link_type
+            .ok_or_else(|| "Missing or unrecognized Link Type in generic Link".to_string())?;
+        let id = linked_id
+            .ok_or_else(|| "Missing Linked Object Identifier in generic Link".to_string())?;
 
         let tag = RawTag::new(lt.v3_tag())
             .map_err(|e| e.to_string())?
@@ -153,8 +155,12 @@ impl LinkNormalizer {
     ///
     /// Returns an error if the tag is not a supported discrete typed link tag.
     pub fn normalize_to_v2(typed_link: &Item) -> Result<Item, String> {
-        let lt = LinkType::from_v3_tag(typed_link.tag().raw())
-            .ok_or_else(|| format!("Tag 0x{:08X} is not a recognized KMIP 3.0 discrete typed link", typed_link.tag().raw()))?;
+        let lt = LinkType::from_v3_tag(typed_link.tag().raw()).ok_or_else(|| {
+            format!(
+                "Tag 0x{:08X} is not a recognized KMIP 3.0 discrete typed link",
+                typed_link.tag().raw()
+            )
+        })?;
 
         let mut linked_id = None;
         typed_link.with_value(|view| {
@@ -173,18 +179,29 @@ impl LinkNormalizer {
             }
         });
 
-        let id = linked_id.ok_or_else(|| "Missing Linked Object Identifier in typed link".to_string())?;
+        let id = linked_id
+            .ok_or_else(|| "Missing Linked Object Identifier in typed link".to_string())?;
 
         let mut link_struct = Structure::new();
-        let tag_type = RawTag::new(0x0042_0048).map_err(|e| e.to_string())?.try_checked().map_err(|e| e.to_string())?;
-        let item_type = Item::new(tag_type, Value::enumeration(lt.v2_enumeration())).map_err(|e| e.to_string())?;
+        let tag_type = RawTag::new(0x0042_0048)
+            .map_err(|e| e.to_string())?
+            .try_checked()
+            .map_err(|e| e.to_string())?;
+        let item_type = Item::new(tag_type, Value::enumeration(lt.v2_enumeration()))
+            .map_err(|e| e.to_string())?;
         link_struct.try_push(item_type).map_err(|e| e.to_string())?;
 
-        let tag_id = RawTag::new(0x0042_0049).map_err(|e| e.to_string())?.try_checked().map_err(|e| e.to_string())?;
+        let tag_id = RawTag::new(0x0042_0049)
+            .map_err(|e| e.to_string())?
+            .try_checked()
+            .map_err(|e| e.to_string())?;
         let item_id = Item::new(tag_id, Value::text_string(id)).map_err(|e| e.to_string())?;
         link_struct.try_push(item_id).map_err(|e| e.to_string())?;
 
-        let link_tag = RawTag::new(0x0042_0047).map_err(|e| e.to_string())?.try_checked().map_err(|e| e.to_string())?;
+        let link_tag = RawTag::new(0x0042_0047)
+            .map_err(|e| e.to_string())?
+            .try_checked()
+            .map_err(|e| e.to_string())?;
         Item::new(link_tag, Value::structure(link_struct)).map_err(|e| e.to_string())
     }
 }
