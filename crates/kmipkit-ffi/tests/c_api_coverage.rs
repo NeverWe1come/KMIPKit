@@ -5140,6 +5140,16 @@ fn derive_key_response_item() -> Vec<u8> {
 fn cryptographic_response_items() -> [Vec<u8>; 6] {
     let correlation = [0x41, 0x00, 0x42];
     let response_identifier = b"response-id";
+    let crypto_payload = |middle: Vec<u8>| {
+        structure(
+            0x0042_007C,
+            [
+                ttlv_item(0x0042_0094, 0x07, response_identifier),
+                middle,
+                ttlv_item(0x0042_00D6, 0x08, &correlation),
+            ],
+        )
+    };
     [
         structure(
             0x0042_000F,
@@ -5162,14 +5172,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                 enumeration(0x0042_005C, 35),
                 ttlv_item(0x0042_0093, 0x08, b"mac-00"),
                 enumeration(0x0042_007F, 0),
-                structure(
-                    0x0042_007C,
-                    [
-                        ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        ttlv_item(0x0042_00C6, 0x08, b"mac-response-data"),
-                        ttlv_item(0x0042_00D6, 0x08, &correlation),
-                    ],
-                ),
+                crypto_payload(ttlv_item(0x0042_00C6, 0x08, b"mac-response-data")),
             ],
         ),
         structure(
@@ -5178,14 +5181,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                 enumeration(0x0042_005C, 36),
                 ttlv_item(0x0042_0093, 0x08, b"macvfy"),
                 enumeration(0x0042_007F, 0),
-                structure(
-                    0x0042_007C,
-                    [
-                        ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        enumeration(0x0042_009B, 1),
-                        ttlv_item(0x0042_00D6, 0x08, &correlation),
-                    ],
-                ),
+                crypto_payload(enumeration(0x0042_009B, 1)),
             ],
         ),
         structure(
@@ -5194,14 +5190,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                 enumeration(0x0042_005C, 33),
                 ttlv_item(0x0042_0093, 0x08, b"sign00"),
                 enumeration(0x0042_007F, 0),
-                structure(
-                    0x0042_007C,
-                    [
-                        ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        ttlv_item(0x0042_00C3, 0x08, b"signature-response-data"),
-                        ttlv_item(0x0042_00D6, 0x08, &correlation),
-                    ],
-                ),
+                crypto_payload(ttlv_item(0x0042_00C3, 0x08, b"signature-response-data")),
             ],
         ),
         structure(

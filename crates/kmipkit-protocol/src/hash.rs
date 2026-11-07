@@ -35,8 +35,7 @@ impl HashRequest {
         }
     }
 
-    /// Supplies Data for this part (§7.9). It is required for single-part
-    /// requests and may be present on multipart requests (§6.1.24, Table 235).
+    /// Supplies the optional single-part Data value (§7.9).
     #[must_use]
     pub fn with_data(mut self, data: OperationData) -> Self {
         self.data = Some(data);
@@ -67,8 +66,8 @@ impl HashRequest {
     /// Validates the locally knowable single-part or multipart shape.
     ///
     /// # Errors
-    /// Returns an error if required Data is absent or the multipart framing
-    /// conflicts with the supplied correlation and indicators.
+    /// Returns an error if required single-part Data is absent or multipart
+    /// framing conflicts with the supplied Data.
     pub fn validate_multipart_shape(&self) -> Result<(), ProtocolError> {
         common::validate_framing(
             self.data.is_some(),

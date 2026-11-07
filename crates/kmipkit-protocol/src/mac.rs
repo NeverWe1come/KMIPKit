@@ -58,7 +58,7 @@ impl MacRequest {
         self
     }
 
-    /// Supplies request Data (§7.9), including for multipart progression.
+    /// Supplies single-part request Data (§7.9).
     #[must_use]
     pub fn with_data(mut self, value: OperationData) -> Self {
         self.data = Some(value);
