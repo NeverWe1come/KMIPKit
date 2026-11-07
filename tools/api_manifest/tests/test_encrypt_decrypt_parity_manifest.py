@@ -98,6 +98,9 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
             if row["operationId"] in OPERATIONS
         }
         self.functions = {row["id"]: row for row in self.manifest["functions"]}
+        self.declarations_by_id = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
+        }
 
     def test_both_operations_are_verified_against_the_approved_owner(self) -> None:
         self.assertEqual(set(OPERATIONS), set(self.operations))
@@ -141,11 +144,19 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     self.assertEqual(expected[endpoint], actual_mappings)
                     for language in LANGUAGES:
                         declaration_ids = operation["declarations"][language]
-                        self.assertEqual(2, len(declaration_ids), language)
-                        declaration = next(
-                            row for row in self.manifest["publicDeclarations"]
-                            if row["declarationId"] == declaration_ids[0 if endpoint == "request" else 1]
-                        )
+                        self.assertEqual(len(declaration_ids), len(set(declaration_ids)), language)
+                        self.assertTrue(set(declaration_ids) <= set(self.declarations_by_id))
+                        matching = [
+                            self.declarations_by_id[declaration_id]
+                            for declaration_id in declaration_ids
+                            if self.declarations_by_id[declaration_id]
+                            .get("languageMappings", {})
+                            .get(language, {})
+                            .get("name")
+                            == expected[endpoint][language]
+                        ]
+                        self.assertEqual(1, len(matching), f"{endpoint} declaration: {language}")
+                        declaration = matching[0]
                         self.assertEqual(operation_id, declaration["capabilityId"])
                         self.assertEqual("verified", declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])
