@@ -88,8 +88,22 @@ def _rust_u32_literal(value: int) -> str:
 
 
 def _c_string(value: str) -> str:
-    escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-    return f'"{escaped}"'
+    # Fixed-width octal byte escapes avoid C's greedy hex escapes, trigraphs,
+    # source-encoding differences, and literal control characters.
+    escaped_bytes: list[str] = []
+    for byte in value.encode("utf-8"):
+        if 0x20 <= byte <= 0x7E and byte not in {0x22, 0x3F, 0x5C}:
+            escaped_bytes.append(chr(byte))
+        else:
+            escaped_bytes.append(f"\\{byte:03o}")
+    return f'"{"".join(escaped_bytes)}"'
+
+
+def _render_c_name_case(kind: str, group: NamedGroup, value: NamedValue) -> str:
+    return (
+        f"    case KMIPKIT_{kind}_{group.identifier}_{value.identifier}: "
+        f"return {_c_string(value.name)};"
+    )
 
 
 def _source_provenance(source_refs: tuple[tuple[str, str], ...]) -> str:
@@ -310,8 +324,7 @@ def _render_c(values: CatalogValues) -> str:
             if kind == "ENUMERATION":
                 lines.extend([f"static inline const char *{prefix}_name(uint32_t raw) {{", "    switch (raw) {"])
                 for value in group.values:
-                    escaped = value.name.replace("\\", "\\\\").replace('"', '\\"')
-                    lines.append(f'    case KMIPKIT_ENUMERATION_{group.identifier}_{value.identifier}: return "{escaped}";')
+                    lines.append(_render_c_name_case(kind, group, value))
                 lines.extend(["    default: return 0;", "    }", "}", ""])
             else:
                 lines.extend([
@@ -321,8 +334,7 @@ def _render_c(values: CatalogValues) -> str:
                     "    switch (bit) {",
                 ])
                 for value in group.values:
-                    escaped = value.name.replace("\\", "\\\\").replace('"', '\\"')
-                    lines.append(f'    case KMIPKIT_BITMASK_{group.identifier}_{value.identifier}: return "{escaped}";')
+                    lines.append(_render_c_name_case(kind, group, value))
                 lines.extend([
                     "    default: return 0;",
                     "    }",

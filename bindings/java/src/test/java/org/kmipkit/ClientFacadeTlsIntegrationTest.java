@@ -68,6 +68,7 @@ import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.SplitKeyReference;
 import org.kmipkit.extensions.TransportConfiguration;
+import org.kmipkit.extensions.WireEncoding;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.UsageAllocationContext;
 import org.kmipkit.internal.NativeHandle;
@@ -94,9 +95,64 @@ final class ClientFacadeTlsIntegrationTest {
     };
     private static final String RNG_RETRIEVED_SENTINEL = "KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
     private static final int LARGE_RESPONSE_DATA_BYTES = 16 * 1024 * 1024 + 1;
+    private static final byte[] JSON_DISCOVER_VERSIONS_RESPONSE = """
+            {"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"UniqueBatchItemID","type":"ByteString","value":"6974656d2d30"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[]}]}]}
+            """.getBytes(StandardCharsets.UTF_8);
 
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void executeWithOptionsUsesJsonForRequestAndResponseAndNullUsesConfiguredDefault() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("encoding-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("encoding-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[][]> peer = new FutureTask<>(() -> serveTtlvThenJson(listener));
+        Thread peerThread = new Thread(peer, "kmipkit-java-encoding-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .build();
+                Client client = Client.create(configuration, transport)) {
+            try (ClientBatchResponse response = client.executeWithOptions(
+                            ClientBatch.create().add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0))),
+                            CodecLimits.defaults(), (WireEncoding) null)) {
+                assertEquals(1, response.itemCount());
+            }
+            try (ClientBatchResponse response = client.executeWithOptions(
+                            ClientBatch.create().add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0))),
+                            CodecLimits.defaults(), WireEncoding.JSON)) {
+                assertEquals(1, response.itemCount());
+            }
+            byte[][] requests = peer.get(12, TimeUnit.SECONDS);
+            assertEquals(2, requests.length);
+            assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
+                    new byte[] {requests[0][0], requests[0][1], requests[0][2]});
+            assertEquals((int) '{', requests[1][0]);
+        } finally {
+            listener.close();
+        }
+    }
 
     // OASIS KMIP v2.1 §6.1.7 Tables 183–185; §6.1.19 Tables 220–222;
     // §6.1.18 Tables 217–219; §6.1.25 Table 238; §7.18 Table 370;
@@ -1620,7 +1676,7 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure importAttributes = TtlvStructure.create();
                 TtlvStructure importAnyObject = importAnyObjectStructure()) {
             assertThrows(InvalidInputException.class,
-                    () -> client.executeWithOptions(null, null, null));
+                    () -> client.executeWithOptions(null, null, (WireEncoding) null));
             assertNativeRequestOptionsRejected(client, new long[11]);
             long[] invalidTimeoutKind = new long[12];
             invalidTimeoutKind[0] = 3;
@@ -4771,7 +4827,7 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42000d, 2, integer(1)));
         byte[] sentinel = "KMIPKit-response-sentinel".getBytes(StandardCharsets.US_ASCII);
         byte[] payload = structure(0x42007c,
-                item(0x4200c4, 8, new byte[] {0x5a}), item(0x540001, 8, sentinel));
+                item(0x4200c6, 8, new byte[] {0x5a}), item(0x540001, 8, sentinel));
         byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(35)),
                 item(0x420093, 8, uniqueBatchItemId(0)), item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
@@ -5685,6 +5741,51 @@ final class ClientFacadeTlsIntegrationTest {
                 return request;
             }
         });
+    }
+
+    private static byte[][] serveTtlvThenJson(SSLServerSocket listener) throws Exception {
+        byte[][] requests = new byte[2][];
+        for (int index = 0; index < requests.length; index++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                requests[index] = index == 0
+                        ? readFrame(socket.getInputStream())
+                        : readJsonDocument(socket.getInputStream());
+                OutputStream output = socket.getOutputStream();
+                output.write(index == 0 ? discoverVersionsResponseMessage(1) : JSON_DISCOVER_VERSIONS_RESPONSE);
+                output.flush();
+            }
+        }
+        return requests;
+    }
+
+    private static byte[] readJsonDocument(InputStream input) throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        int value;
+        while ((value = input.read()) != -1) {
+            output.write(value);
+            if (inString) {
+                if (escaped) {
+                    escaped = false;
+                } else if (value == '\\') {
+                    escaped = true;
+                } else if (value == '"') {
+                    inString = false;
+                }
+            } else if (value == '"') {
+                inString = true;
+            } else if (value == '{') {
+                depth++;
+            } else if (value == '}' && --depth == 0) {
+                return output.toByteArray();
+            }
+        }
+        throw new IllegalStateException("JSON request document is incomplete");
     }
 
     private static byte[] readFrame(InputStream input) throws Exception {

@@ -37,7 +37,7 @@ PULL_REQUEST_JOB_IDS = (
     "dependency-policy",
 )
 ALL_COVERAGE_SCOPES = ("rust", "ffi-c", "java", "python", "jni")
-CLASS_ORDER = ("documentation", "java", "python", "c-consumer", "jni", "full")
+CLASS_ORDER = ("documentation", "interop", "java", "python", "c-consumer", "jni", "full")
 KNOWN_CLASSES = set(CLASS_ORDER)
 KNOWN_STATUSES = {"A", "M", "D", "T", "U", "X", "B", "R", "C"}
 
@@ -100,6 +100,9 @@ def _path_class(path: str) -> tuple[str, str]:
         return "documentation", "feature specification or traceability documentation changed"
     if path.startswith("changelog.d/") and path.endswith(".md"):
         return "documentation", "release-note documentation changed"
+
+    if path.startswith("interop/"):
+        return "interop", "external interoperability suite file changed"
 
     if path.startswith("bindings/java/native/"):
         if name in {"build.sh", "build.ps1", "CMakeLists.txt"}:
@@ -219,7 +222,7 @@ def classify_changes(
 
     selected: set[str] = set()
     scopes: set[str] = set()
-    if "documentation" in class_reasons:
+    if "documentation" in class_reasons or "interop" in class_reasons:
         selected.add("docs-contracts")
     if "java" in class_reasons:
         selected.update(("language-java", "coverage-java", "coverage-gate"))

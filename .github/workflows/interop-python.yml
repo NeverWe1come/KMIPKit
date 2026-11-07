@@ -1,0 +1,50 @@
+name: Interop Python Validator
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+      - 'feature/**'
+    paths:
+      - 'interop/python-kmip-validator/**'
+      - 'interop/shared/**'
+      - '.github/workflows/interop-python.yml'
+  pull_request:
+    paths:
+      - 'interop/python-kmip-validator/**'
+      - 'interop/shared/**'
+      - '.github/workflows/interop-python.yml'
+
+jobs:
+  validate-python:
+    name: Build & Validate Python Project
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: interop/python-kmip-validator
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # actions/setup-python v5.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Run Unit Tests
+        run: |
+          PYTHONPATH=src python3 -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Validate Against Cosmian Profile
+        run: |
+          PYTHONPATH=src python3 -m kmipkit_validator run \
+            --capabilities ../shared/profiles/cosmian-kms.json \
+            --output-dir ./results
+
+      - name: Verify Output Reports Generated
+        run: |
+          test -f results/results.json
+          test -f results/report.md
+          test -f results/report.html

@@ -5,6 +5,10 @@
 //! low-level contract is caller-byte exchange over TLS 1.3/mTLS, with one
 //! response frame per connection and zeroization of KMIPKit-owned staged
 //! request bytes before release.
+//!
+//! Text document syntax follows OASIS KMIP Profiles v2.1 §§5.4 (XML) and 5.5
+//! (JSON). One-document-per-connection completion and closure are the `KMIPKit`
+//! interpretation recorded in ADR-0018, not an OASIS raw-TLS framing claim.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
@@ -25,6 +29,10 @@ use rcgen::{
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection};
+
+#[path = "support/hot_reload.rs"]
+mod hot_reload;
+use hot_reload::{TempFile, pem};
 
 #[path = "../src/config.rs"]
 #[allow(dead_code)]
@@ -160,6 +168,170 @@ fn raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame() {
         "the raw connection closes after the single response frame"
     );
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
+}
+
+#[test]
+fn raw_tls_json_response_is_framed_across_fragments_and_closes_after_one_document() {
+    const FRAGMENTS: &[&[u8]] = &[br#"{"tag":"Response"#, br#"Message","value":"#, br"[]}"];
+    let expected = FRAGMENTS.concat();
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("a complete fragmented JSON response is framed");
+    assert_eq!(response.as_bytes(), expected);
+    assert!(
+        peer.closed_after_response,
+        "the client closes after one document"
+    );
+    assert_eq!(peer.request_bytes.as_slice(), fixtures::REQUEST_SENTINEL);
+}
+
+#[test]
+fn raw_tls_xml_response_is_framed_across_fragments() {
+    const FRAGMENTS: &[&[u8]] = &[
+        b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><ResponseMessage>",
+        b"<ResponseHeader>",
+        b"</ResponseHeader><BatchItem/>",
+        b"</ResponseMessage>",
+    ];
+    let expected = FRAGMENTS.concat();
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Xml,
+    );
+
+    let response = result.expect("a complete fragmented XML response is framed");
+    assert_eq!(response.as_bytes(), expected);
+    assert!(
+        peer.closed_after_response,
+        "the client closes after one document"
+    );
+}
+
+#[test]
+fn raw_tls_json_returns_one_document_and_closes_before_delayed_surplus() {
+    const FRAGMENTS: &[&[u8]] = &[b"{}", b" false"];
+    let (result, _peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("the first complete JSON document ends the exchange");
+    assert_eq!(response.as_bytes(), b"{}");
+}
+
+#[test]
+fn raw_tls_xml_returns_one_document_and_closes_before_delayed_surplus() {
+    const FRAGMENTS: &[&[u8]] = &[b"<ResponseMessage/>", b"<Unexpected/>"];
+    let (result, _peer) = exchange_action_with_encoding(
+        PeerAction::RespondFragments(FRAGMENTS),
+        1024,
+        config::WireEncoding::Xml,
+    );
+
+    let response = result.expect("the first complete XML document ends the exchange");
+    assert_eq!(response.as_bytes(), b"<ResponseMessage/>");
+}
+
+#[test]
+fn raw_tls_rejects_incomplete_and_malformed_text_documents() {
+    for (encoding, response) in [
+        (
+            config::WireEncoding::Json,
+            &b"{\"tag\":\"ResponseMessage\""[..],
+        ),
+        (config::WireEncoding::Json, &b"[1,2,3]"[..]),
+        (config::WireEncoding::Xml, &b"<ResponseMessage>"[..]),
+        (
+            config::WireEncoding::Xml,
+            &b"<!DOCTYPE ResponseMessage>"[..],
+        ),
+    ] {
+        let (result, peer) =
+            exchange_action_with_encoding(PeerAction::RespondBytes(response), 1024, encoding);
+        let error = result.expect_err("incomplete or malformed text input is rejected");
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert!(
+            peer.closed_after_response,
+            "the client closes after the invalid document"
+        );
+    }
+}
+
+#[test]
+fn raw_tls_reports_cross_encoding_responses_as_protocol_mismatches() {
+    for (selected, response) in [
+        (config::WireEncoding::Ttlv, &b"{}"[..]),
+        (config::WireEncoding::Ttlv, &b"<ResponseMessage/>"[..]),
+        (config::WireEncoding::Json, &RESPONSE_FRAME[..]),
+        (config::WireEncoding::Json, &b"<ResponseMessage/>"[..]),
+        (config::WireEncoding::Xml, &RESPONSE_FRAME[..]),
+        (config::WireEncoding::Xml, &b"{}"[..]),
+    ] {
+        let (result, peer) =
+            exchange_action_with_encoding(PeerAction::RespondBytes(response), 1024, selected);
+        let error = result.expect_err("a response in another supported encoding is rejected");
+        assert_eq!(
+            error.cause_category(),
+            TransportCauseCategory::EncodingMismatch
+        );
+        assert_eq!(
+            error.delivery_state(),
+            RequestDeliveryState::ResponseStarted
+        );
+        assert!(peer.closed_after_response);
+    }
+}
+
+#[test]
+fn raw_tls_discards_text_surplus_after_one_document_and_enforces_actual_byte_limit() {
+    let trailing = br#"{"tag":"ResponseMessage","value":[]} false"#;
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(trailing),
+        1024,
+        config::WireEncoding::Json,
+    );
+    let response = result.expect("the complete first JSON document ends the exchange");
+    assert_eq!(
+        response.as_bytes(),
+        br#"{"tag":"ResponseMessage","value":[]}"#
+    );
+    assert!(peer.closed_after_response);
+
+    let limited = b"<ResponseMessage/>";
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(limited),
+        limited.len() - 1,
+        config::WireEncoding::Xml,
+    );
+    let error = result.expect_err("the actual XML bytes are checked against the local cap");
+    assert_eq!(
+        error.delivery_state(),
+        RequestDeliveryState::ResponseStarted
+    );
+    assert!(peer.closed_after_response);
+}
+
+#[test]
+fn raw_tls_accepts_a_text_document_at_its_exact_sub_header_byte_cap() {
+    let response_bytes = b"{}";
+    let (result, peer) = exchange_action_with_encoding(
+        PeerAction::RespondBytes(response_bytes),
+        response_bytes.len(),
+        config::WireEncoding::Json,
+    );
+
+    let response = result.expect("text framing has no TTLV header minimum");
+    assert_eq!(response.as_bytes(), response_bytes);
+    assert!(peer.closed_after_response);
 }
 
 /// Proves the staged request owner is cleaned up when the peer closes after
@@ -1179,6 +1351,134 @@ fn raw_tls_rejects_server_certificate_revoked_by_caller_crl() {
     );
 }
 
+#[test]
+fn raw_tls_hot_reloads_client_certificate_and_key_from_disk_between_exchanges() {
+    let pki = PolicyPki::generate(SERVER_NAME, false);
+    let (client2_cert_der, client2_key_der) = pki.generate_additional_client(5555);
+
+    let cert_file = TempFile::write(&pem("CERTIFICATE", &pki.client_chain_der()[0]));
+    let key_file = TempFile::write(&pem("PRIVATE KEY", &pki.client_key_der()));
+
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer_config = server_config(&pki, true);
+    let listener = listener.into_inner();
+    let first_peer_config = Arc::clone(&peer_config);
+    let second_peer_config = Arc::clone(&peer_config);
+
+    let peer = thread::spawn(move || {
+        let first = run_peer(
+            &listener,
+            first_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        );
+        let second = run_peer(
+            &listener,
+            second_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        );
+        (first, second)
+    });
+
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        address.port(),
+    ))
+    .tls_server_name(SERVER_NAME)
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            &pki.authority_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
+
+    let mut adapter = RawTlsTransport::new(config).expect("adapter initializes");
+
+    let first_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert!(first_result.is_ok());
+
+    // Rotate credential files on disk to client 2
+    cert_file.overwrite(&pem("CERTIFICATE", &client2_cert_der));
+    key_file.overwrite(&pem("PRIVATE KEY", &client2_key_der));
+
+    let second_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert!(second_result.is_ok());
+
+    let (first_peer, second_peer) = peer.join().expect("peer threads complete");
+    assert_eq!(
+        first_peer.client_certificate,
+        Some(pki.client_chain_der()[0].clone())
+    );
+    assert_eq!(second_peer.client_certificate, Some(client2_cert_der));
+}
+
+#[test]
+fn raw_tls_mismatched_or_corrupt_credential_file_fails_closed_as_not_sent() {
+    let pki = PolicyPki::generate(SERVER_NAME, false);
+    let (client2_cert_der, _client2_key_der) = pki.generate_additional_client(7777);
+
+    let cert_file = TempFile::write(&pem("CERTIFICATE", &pki.client_chain_der()[0]));
+    let key_file = TempFile::write(&pem("PRIVATE KEY", &pki.client_key_der()));
+
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer_config = server_config(&pki, true);
+    let listener = listener.into_inner();
+    let first_peer_config = Arc::clone(&peer_config);
+
+    let peer = thread::spawn(move || {
+        run_peer(
+            &listener,
+            first_peer_config,
+            fixtures::REQUEST_SENTINEL.len(),
+            PeerAction::RespondBytes(&RESPONSE_FRAME),
+        )
+    });
+
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::raw_tls(
+        "127.0.0.1",
+        address.port(),
+    ))
+    .tls_server_name(SERVER_NAME)
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            &pki.authority_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
+
+    let mut adapter = RawTlsTransport::new(config).expect("adapter initializes");
+
+    let first_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    assert!(first_result.is_ok());
+    let _ = peer.join();
+
+    // Rotate cert to client 2, but corrupt the private key file
+    cert_file.overwrite(&pem("CERTIFICATE", &client2_cert_der));
+    key_file
+        .overwrite(b"-----BEGIN PRIVATE KEY-----\ncorrupted-garbage\n-----END PRIVATE KEY-----\n");
+
+    let second_result = adapter.exchange(fixtures::REQUEST_SENTINEL, RESPONSE_LIMIT);
+    let error = second_result.expect_err("corrupted key file must fail closed");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+}
+
 fn exchange(
     config: config::TransportConfig,
     request: &[u8],
@@ -1218,6 +1518,31 @@ fn exchange_action(
     max_response_bytes: usize,
 ) -> (Result<TransportResponse, TransportError>, PeerObservation) {
     exchange_action_with_response_allocation_observer(action, max_response_bytes, None)
+}
+
+fn exchange_action_with_encoding(
+    action: PeerAction,
+    max_response_bytes: usize,
+    encoding: config::WireEncoding,
+) -> (Result<TransportResponse, TransportError>, PeerObservation) {
+    let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
+    let listener = LoopbackTcpListener::bind().expect("the TLS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_peer(
+        listener.into_inner(),
+        server_config(&pki, true),
+        fixtures::REQUEST_SENTINEL.len(),
+        action,
+    );
+    let config = client_config(&pki, &pki, address.port(), SERVER_NAME, Vec::new());
+    let mut adapter = raw_tls::new_for_test(config, None);
+    let result = adapter.exchange_with_options(
+        fixtures::REQUEST_SENTINEL,
+        max_response_bytes,
+        &RequestOptions::default().with_wire_encoding(encoding),
+    );
+    let peer = peer.join().expect("the local TLS peer thread completes");
+    (result, peer)
 }
 
 fn exchange_action_with_response_allocation_observer(
@@ -1465,6 +1790,7 @@ fn server_config(pki: &impl PkiMaterial, require_client_auth: bool) -> Arc<Serve
 enum PeerAction {
     RespondOnce,
     RespondBytes(&'static [u8]),
+    RespondFragments(&'static [&'static [u8]]),
     RespondCoalesced,
     CloseWithoutResponse,
     CloseAfterHandshake,
@@ -1482,6 +1808,7 @@ struct PeerObservation {
     handshake_failed: bool,
     protocol_version: Option<rustls::ProtocolVersion>,
     client_identity_present: bool,
+    client_certificate: Option<Vec<u8>>,
     request_bytes: Vec<u8>,
     closed_after_response: bool,
 }
@@ -1710,6 +2037,9 @@ fn run_peer(
     observation.client_identity_present = connection
         .peer_certificates()
         .is_some_and(|certificates| !certificates.is_empty());
+    observation.client_certificate = connection
+        .peer_certificates()
+        .and_then(|certificates| certificates.first().map(|cert| cert.to_vec()));
     if request_len == 0 {
         return observation;
     }
@@ -1728,40 +2058,12 @@ fn run_peer(
     }
 
     match action {
-        PeerAction::RespondOnce | PeerAction::RespondBytes(_) | PeerAction::RespondCoalesced => {
-            let response_write = match action {
-                PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME),
-                PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes),
-                PeerAction::RespondCoalesced => connection.writer().write_all(&TWO_RESPONSE_FRAMES),
-                _ => {
-                    return observation;
-                }
-            };
-            if response_write.is_err() {
-                return observation;
-            }
-            while connection.wants_write() {
-                if Instant::now() >= deadline || connection.write_tls(&mut stream).is_err() {
-                    return observation;
-                }
-            }
-            if stream.shutdown(Shutdown::Write).is_err() {
-                return observation;
-            }
-            let mut encrypted = [0_u8; 1024];
-            loop {
-                if Instant::now() >= deadline {
-                    break;
-                }
-                match stream.read(&mut encrypted) {
-                    Ok(0) => {
-                        observation.closed_after_response = true;
-                        break;
-                    }
-                    Ok(_) => {}
-                    Err(_) => break,
-                }
-            }
+        PeerAction::RespondOnce
+        | PeerAction::RespondBytes(_)
+        | PeerAction::RespondFragments(_)
+        | PeerAction::RespondCoalesced => {
+            observation.closed_after_response =
+                respond_and_wait_for_close(&mut connection, &mut stream, action, deadline).is_ok();
         }
         PeerAction::CloseWithoutResponse
         | PeerAction::CloseAfterHandshake
@@ -1772,6 +2074,71 @@ fn run_peer(
         PeerAction::HoldAfterRequestFor(duration) => thread::sleep(duration),
     }
     observation
+}
+
+fn respond_and_wait_for_close(
+    connection: &mut ServerConnection,
+    stream: &mut TcpStream,
+    action: PeerAction,
+    deadline: Instant,
+) -> io::Result<()> {
+    match action {
+        PeerAction::RespondOnce => connection.writer().write_all(&RESPONSE_FRAME)?,
+        PeerAction::RespondBytes(bytes) => connection.writer().write_all(bytes)?,
+        PeerAction::RespondFragments(fragments) => {
+            write_response_fragments(connection, stream, fragments, deadline)?;
+        }
+        PeerAction::RespondCoalesced => {
+            connection.writer().write_all(&TWO_RESPONSE_FRAMES)?;
+        }
+        _ => return Err(io::Error::other("peer action does not carry a response")),
+    }
+    while connection.wants_write() {
+        if Instant::now() >= deadline {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "test response deadline elapsed",
+            ));
+        }
+        connection.write_tls(stream)?;
+    }
+    stream.shutdown(Shutdown::Write)?;
+    let mut encrypted = [0_u8; 1024];
+    loop {
+        if Instant::now() >= deadline {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "test response close deadline elapsed",
+            ));
+        }
+        match stream.read(&mut encrypted) {
+            Ok(0) => return Ok(()),
+            Ok(_) => {}
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+fn write_response_fragments(
+    connection: &mut ServerConnection,
+    stream: &mut TcpStream,
+    fragments: &[&[u8]],
+    deadline: Instant,
+) -> io::Result<()> {
+    for fragment in fragments {
+        connection.writer().write_all(fragment)?;
+        while connection.wants_write() {
+            if Instant::now() >= deadline {
+                return Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "fragmented test response deadline elapsed",
+                ));
+            }
+            connection.write_tls(stream)?;
+        }
+        thread::sleep(Duration::from_millis(5));
+    }
+    Ok(())
 }
 
 fn accept_before_deadline(listener: &TcpListener) -> io::Result<(TcpStream, std::net::SocketAddr)> {
@@ -1915,6 +2282,18 @@ impl PolicyPki {
         }
     }
 
+    fn generate_additional_client(&self, serial: u64) -> (Vec<u8>, Vec<u8>) {
+        let issuer = Issuer::from_params(&self.ca_params, &self.ca_key);
+        let (client, client_key) = policy_leaf(
+            "client.kmipkit.test",
+            ExtendedKeyUsagePurpose::ClientAuth,
+            SerialNumber::from(serial),
+            CertificateValidity::Current,
+            &issuer,
+        );
+        (client.der().to_vec(), client_key.serialize_der())
+    }
+
     fn revoking_server_crl_der(&self) -> Vec<u8> {
         let issuer = Issuer::from_params(&self.ca_params, &self.ca_key);
         let crl = CertificateRevocationListParams {
@@ -2000,4 +2379,86 @@ fn policy_leaf(
         .signed_by(&key, issuer)
         .expect("test leaf certificate signing succeeds");
     (certificate, key)
+}
+
+fn spawn_resumption_peer(
+    listener: TcpListener,
+    config: Arc<ServerConfig>,
+) -> thread::JoinHandle<Vec<Option<rustls::HandshakeKind>>> {
+    thread::spawn(move || {
+        let mut kinds = Vec::new();
+        for _ in 0..2 {
+            let Ok((mut stream, _)) = accept_before_deadline(&listener) else {
+                break;
+            };
+            if stream.set_nonblocking(false).is_err()
+                || stream.set_read_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
+                || stream.set_write_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
+            {
+                break;
+            }
+            let Ok(mut connection) = ServerConnection::new(Arc::clone(&config)) else {
+                break;
+            };
+            let deadline = Instant::now() + PEER_OPERATION_TIMEOUT;
+            while connection.is_handshaking() {
+                if Instant::now() >= deadline || connection.complete_io(&mut stream).is_err() {
+                    break;
+                }
+            }
+            kinds.push(connection.handshake_kind());
+            let mut request_bytes = Vec::new();
+            if !read_plaintext_exact(
+                &mut connection,
+                &mut stream,
+                deadline,
+                fixtures::REQUEST_SENTINEL.len(),
+                &mut request_bytes,
+            ) {
+                break;
+            }
+            if connection.writer().write_all(&RESPONSE_FRAME).is_err() {
+                break;
+            }
+            while connection.wants_write() {
+                if connection.write_tls(&mut stream).is_err() {
+                    break;
+                }
+            }
+            let _ = stream.flush();
+            thread::sleep(Duration::from_millis(50));
+        }
+        kinds
+    })
+}
+
+#[test]
+fn consecutive_raw_tls_exchanges_resume_tls13_session() {
+    let pki = EphemeralPki::generate().expect("the test PKI is valid");
+    let listener = LoopbackTcpListener::bind().expect("the peer binds loopback");
+    let address = listener.local_addr();
+    let server_config = server_config(&pki, true);
+
+    let peer = spawn_resumption_peer(listener.into_inner(), server_config);
+    let mut adapter = RawTlsTransport::new(public_client_config(&pki, address.port(), SERVER_NAME))
+        .expect("the raw TLS adapter initializes");
+
+    let first = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the first raw TLS exchange succeeds");
+    assert_eq!(first.as_bytes(), &RESPONSE_FRAME);
+
+    let second = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the second raw TLS exchange succeeds");
+    assert_eq!(second.as_bytes(), &RESPONSE_FRAME);
+
+    let kinds = peer.join().expect("the peer completes");
+    assert_eq!(
+        kinds,
+        vec![
+            Some(rustls::HandshakeKind::Full),
+            Some(rustls::HandshakeKind::Resumed)
+        ]
+    );
 }

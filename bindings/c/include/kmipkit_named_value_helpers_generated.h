@@ -990,9 +990,9 @@ static inline const char *KMIPKIT_ENUMERATION_SHREDDING_ALGORITHM_name(uint32_t 
 static inline const char *KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_name(uint32_t raw) {
     switch (raw) {
     case KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_XOR: return "XOR";
-    case KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_POLYNOMIAL_SHARING_GF_216: return "Polynomial Sharing GF (2¹⁶)";
+    case KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_POLYNOMIAL_SHARING_GF_216: return "Polynomial Sharing GF (2\302\271\342\201\266)";
     case KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_POLYNOMIAL_SHARING_PRIME_FIELD: return "Polynomial Sharing Prime Field";
-    case KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_POLYNOMIAL_SHARING_GF_28: return "Polynomial Sharing GF (2⁸)";
+    case KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_POLYNOMIAL_SHARING_GF_28: return "Polynomial Sharing GF (2\342\201\270)";
     default: return 0;
     }
 }

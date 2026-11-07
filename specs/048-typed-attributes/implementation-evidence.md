@@ -136,3 +136,65 @@ Remote CI remains unavailable under the maintainer's billing-related
 instruction, and full platform/adapter coverage remains outside this local
 evidence. This feature is stacked on `feature/KMIPKIT-0047-named-values`; it is
 not merged into `release/1.0.0`.
+
+## Release-stack synchronization (2026-11-07)
+
+Merged the current 0047 release-stack head
+`3b0e3143978792efc5889841af0a4b4ded879469` into this feature branch. The
+resolution keeps the 2026-11-07 binding audit report and documentation from
+0047, combines both features' generated-source coverage exclusions, and
+preserves the four Decrypt capability and normative-requirement corrections.
+No declaration or exclusion export key from either parent is lost.
+
+The reviewed manifest input was reconciled with
+`python -B tools/api_manifest/reconcile_0048_typed_attributes.py --report specs/048-typed-attributes/reports/rust-export-report-2026-11-07.json --write`,
+then all 12 outputs were regenerated with
+`python -B tools/api_manifest/generate.py --write`. The resulting inventory
+has 11,874 public declarations and 16,818 approved exclusions. The T102
+declaration and other-manifest fingerprints now pin this combined inventory;
+the operation fingerprint and normalization logic are unchanged.
+
+Fresh local verification:
+
+- `cargo fmt --all --check` passed.
+- `cargo clippy --offline --locked -p kmipkit-protocol --all-targets --all-features -- -D warnings` passed.
+- `cargo test --offline --locked -p kmipkit-protocol --all-features` passed:
+  1,277 unit tests, all integration tests, and 3 doctests.
+- `python -B -m unittest tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_t102_manifest_size_limit tools.api_manifest.tests.test_c_api_docs tools.api_manifest.tests.test_t102_response_view_mappings tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest tools.api_manifest.tests.test_047_binding_audit_reconciliation tools.api_manifest.tests.test_t102_remaining_response_view_mappings -q`
+  passed all 32 tests after refreshing the combined-inventory snapshots.
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_attribute_types tools.normative_catalog.tests.test_generate_named_values scripts.tests.test_coverage_gate -q`
+  passed 92 tests with 3 Windows symlink-privilege skips.
+- `python -B tools/normative_catalog/generate_attribute_types.py --check`
+  verified both outputs, and
+  `python -B tools/normative_catalog/generate_named_values.py --check`
+  verified all four language outputs.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- Repeating the 0048 reconciliation without `--write` reported zero added
+  declarations and zero added exclusions.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/048-typed-attributes/reports/rust-export-report-post-sync-2026-11-07.json --check`
+  passed with 21,507 observed routes, 6,285 exact matches, 15,222 exclusions,
+  and zero missing, unobserved, kind, conditional, or unsupported-scope issues.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py` generated the
+  paired 0048 inventory and its `--check` passed. The mapped shared inventory
+  remains 3,697 declarations; typed attribute parity stays blocked for 0053.
+- The expanded parity/shared-inventory run initially passed 43 of 52 tests
+  and raised nine errors because it combined the historical 0047 Rust audit
+  with the current 0048 manifest. The official auditors now use the two new
+  `post-sync` snapshots under this feature's reports directory. Current-source
+  tests pin their exact counts and paths; the 0047 Rust, shared-inventory, and
+  binding snapshots remain byte-identical to the incoming parent.
+- `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_catalog_parity tools.api_manifest.tests.test_t109_binding_export_audit_reconciliation tools.api_manifest.tests.test_shared_rust_inventory -q`
+  then passed all 52 tests in 116.861 seconds, without failures or errors.
+- `python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_rust_public_access_paths -q`
+  passed against the new Rust snapshot, including all 33 conditional Any
+  lifetime routes and exact exclusion reconciliation.
+- The whitespace check of all conflict-resolution files passed. The full
+  merge diff retains two pre-existing whitespace diagnostics from the incoming
+  release stack: a final blank line in
+  `interop/c-kmip-validator/src/c_validator.c` and trailing whitespace in
+  `interop/shared/vectors/generate_vectors.py`. Neither file was edited by
+  this resolution.
+
+The local untracked Rust audit report and all target directories were
+preserved. No hosted CI status was queried, and this synchronization does not
+add fresh coverage or cross-platform evidence.
