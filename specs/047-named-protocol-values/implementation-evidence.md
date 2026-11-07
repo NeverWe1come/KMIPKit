@@ -16,6 +16,13 @@
 - Green: `8e3907a04` implements generation and the four language surfaces.
 - Refactor: `b50e199c5` centralizes source provenance without changing output.
 - Coverage exclusion contract and rationale: `11fc263f7`, `fe55c99d7`.
+- Coverage-policy correction Red: `9bf16b9e4` changed boundary tests to reject
+  90% TTLV/protocol and changed-code coverage; the old gate failed those tests
+  by accepting 90%.
+- Coverage-policy correction Green: `7b295798f` raised those gate thresholds
+  to the repository contract's 95% and synchronized the current policy docs.
+- Coverage-policy correction Refactor: `a29220c54` centralized the threshold
+  constants without changing behavior.
 
 ## Local verification
 
@@ -57,6 +64,12 @@ The following checks passed on the feature worktree:
   `PYTHONPATH=scripts/tests python -B -m unittest test_coverage_gate test_multilanguage_coverage -v`
   (94 tests passed, 3 skipped because Windows disallows the symlinks those
   cases require).
+- Post-correction coverage/workflow suites:
+  `PYTHONPATH=scripts/tests python -B -m unittest test_coverage_gate test_multilanguage_coverage test_workflow -q`
+  (190 tests passed, 3 skipped because Windows disallows directory symlinks).
+  This run verifies that 90% fails, exactly 95% passes for TTLV/protocol and
+  changed production code in both aggregate and scoped evaluation paths, and
+  the 85% transport/FFI/binding floors and 90% workspace floor remain intact.
 - `python -B tools/normative_catalog/reconcile_named_value_manifest.py --check --repo-root .`.
 - `python -B tools/normative_catalog/generate_named_values.py --check --repo-root .`.
 - `python -B tools/api_manifest/audit_binding_exports.py --c-only --repo-root .`:
