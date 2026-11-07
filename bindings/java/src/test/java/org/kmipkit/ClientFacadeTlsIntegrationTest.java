@@ -3676,20 +3676,62 @@ final class ClientFacadeTlsIntegrationTest {
                     correlation, CodecLimits.defaults())) {
                 assertEquals(0x1a, outcome.metadataV1().operation());
                 assertTrue(outcome.metadataV1().outcomeKind().isPending());
+                var typed = outcome.pollResponse().orElseThrow();
+                assertTrue(typed.isPending());
+                assertEquals(0x1a, typed.result().operation());
+                assertTrue(typed.withAsynchronousCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(correlation, observed);
+                    return true;
+                }));
+                assertTrue(typed.raw().isEmpty());
+                assertTrue(outcome.cancelResponse().isEmpty());
+                assertTrue(outcome.processResponse().isEmpty());
+                assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeCancel(
                     correlation, CodecLimits.defaults())) {
                 assertEquals(0x19, outcome.metadataV1().operation());
                 assertEquals(1, outcome.metadataV1().cancellationResult().orElseThrow());
+                var typed = outcome.cancelResponse().orElseThrow();
+                assertEquals(0x19, typed.result().operation());
+                assertEquals(1, typed.cancellationResult().orElseThrow());
+                assertTrue(typed.withEchoedCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(correlation, observed);
+                    return true;
+                }));
+                try (TtlvStructure payload = typed.raw().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(2, view.itemCount());
+                }
+                assertTrue(outcome.pollResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeProcess(
                     correlation, CodecLimits.defaults(), OptionalLong.empty())) {
                 assertEquals(0x3a, outcome.metadataV1().operation());
+                var typed = outcome.processResponse().orElseThrow();
+                assertFalse(typed.isPending());
+                assertEquals(0, typed.payloadMemberCount().orElseThrow());
+                try (TtlvStructure payload = typed.raw().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(0, view.itemCount());
+                }
+                assertTrue(outcome.cancelResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequests(
                     CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
                     OptionalLong.of(2))) {
                 assertEquals(0x39, outcome.metadataV1().operation());
+                var typed = outcome.queryAsyncRequestsResponse().orElseThrow();
+                assertEquals(0x39, typed.result().operation());
+                try (TtlvStructure payload = typed.raw().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(0, view.itemCount());
+                }
+                assertTrue(outcome.pollResponse().isEmpty());
             }
             requests = peer.get(24, TimeUnit.SECONDS);
         } finally {

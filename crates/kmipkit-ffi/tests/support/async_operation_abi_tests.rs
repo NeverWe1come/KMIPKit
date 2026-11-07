@@ -97,6 +97,55 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
 
     assert_eq!(status, SUCCESS);
     assert!(!outcome.is_null());
+    let mut typed_present = u8::MAX;
+    let mut typed_poll = kmipkit_client_async_poll_response_v1_t {
+        struct_size: 0,
+        abi_version: 0,
+        is_pending: 0,
+        has_asynchronous_correlation_value: 0,
+        asynchronous_correlation_value: kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        },
+        has_response_payload: 0,
+        reserved: 0,
+    };
+    assert_eq!(
+        kmipkit_client_async_operation_outcome_poll_response_v1(
+            outcome,
+            &raw mut typed_present,
+            &raw mut typed_poll,
+        ),
+        SUCCESS
+    );
+    assert_eq!(typed_present, 1);
+    assert_eq!(typed_poll.abi_version, 1);
+    assert_eq!(typed_poll.is_pending, 1);
+    assert_eq!(typed_poll.has_asynchronous_correlation_value, 1);
+    assert_eq!(typed_poll.asynchronous_correlation_value.length, expected_correlation.len() as u64);
+    assert_eq!(typed_poll.has_response_payload, 0);
+    let mut typed_cancel = kmipkit_client_async_cancel_response_v1_t {
+        struct_size: 0,
+        abi_version: 0,
+        cancellation_result: 0,
+        has_echoed_correlation_value: 0,
+        echoed_correlation_value: kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        },
+        has_response_payload: 0,
+        reserved: 0,
+    };
+    assert_eq!(
+        kmipkit_client_async_operation_outcome_cancel_response_v1(
+            outcome,
+            &raw mut typed_present,
+            &raw mut typed_cancel,
+        ),
+        SUCCESS
+    );
+    assert_eq!(typed_present, 0);
+    assert_eq!(typed_cancel.abi_version, 0);
     assert_pending_metadata(outcome);
     assert_exact_correlation(outcome, &expected_correlation);
     assert_response_payload_is_absent(outcome);
