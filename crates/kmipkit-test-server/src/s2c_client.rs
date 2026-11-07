@@ -16,7 +16,7 @@ use crate::ops::dispatcher::{
 };
 use crate::pki::AutoPki;
 
-/// Outbound TLS client capable of pushing Server-to-Client operations to a [`ClientListener`].
+/// Outbound TLS client capable of pushing Server-to-Client operations to a client listener.
 pub struct S2cClient {
     connector: TlsConnector,
 }
