@@ -74,6 +74,33 @@ class NamedValueGeneratorTests(unittest.TestCase):
             [row["capabilityId"] for row in reconciled["capabilities"]],
         )
 
+    def test_manifest_reconciliation_removes_stale_generated_rows_owned_by_spec(self) -> None:
+        stale = {
+            "declarationId": "kmipkit-0047-java-stale-name",
+            "packageId": "java-kmipkit",
+            "exportName": "org.kmipkit.protocol.KmipValues.Mask.known_bits",
+            "capabilityId": "named_protocol_values",
+            "approvalSource": reconcile_named_value_manifest.APPROVAL_SOURCE,
+        }
+        current = {
+            "declarationId": "kmipkit-0047-java-current-name",
+            "packageId": "java-kmipkit",
+            "exportName": "org.kmipkit.protocol.KmipValues.Mask.knownBits",
+            "capabilityId": "named_protocol_values",
+            "approvalSource": reconcile_named_value_manifest.APPROVAL_SOURCE,
+        }
+        reconciled = reconcile_named_value_manifest.reconcile(
+            {
+                "requirementIds": [],
+                "capabilities": [],
+                "publicDeclarations": [stale],
+            },
+            [current],
+            {"rust": [], "c": [], "java": [current["exportName"]], "python": []},
+        )
+
+        self.assertEqual([current], reconciled["publicDeclarations"])
+
     def test_catalog_contains_the_approved_named_value_surface(self) -> None:
         catalog: dict[str, Any] = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")

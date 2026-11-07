@@ -71,6 +71,16 @@ class BindingAuditReconciliationTests(unittest.TestCase):
         )
         self.assertEqual("python-export", declaration["kind"])
 
+    def test_named_value_manifest_has_no_stale_snake_case_java_mask_helpers(self) -> None:
+        stale = [
+            row["exportName"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == "named_protocol_values"
+            and row.get("packageId") == "java-kmipkit"
+            and row.get("exportName", "").endswith((".known_bits", ".unknown_bits"))
+        ]
+        self.assertEqual([], stale)
+
 
 if __name__ == "__main__":
     unittest.main()
