@@ -7,6 +7,9 @@ from pathlib import Path
 import shutil
 import struct
 import subprocess
+import sys
+import tempfile
+import time
 import unittest
 
 from local_ping_responder import _is_ping_request, _item, _structure
@@ -31,6 +34,48 @@ class ExecutePingConsumerTests(unittest.TestCase):
         self.assertFalse(_is_ping_request(_structure(0x420078, ping_item, query_item)))
         multiple_operations = _structure(0x42000F, operation, other_operation)
         self.assertFalse(_is_ping_request(_structure(0x420078, multiple_operations)))
+
+    def test_fixture_records_its_process_id_for_runner_cleanup(self) -> None:
+        repository_root = CONSUMER_ROOT.parents[2]
+        fixture_root = repository_root / "bindings/python/tests/fixtures/login-mtls"
+        with tempfile.TemporaryDirectory(prefix="kmipkit-0053-fixture-") as temporary:
+            ready_file = Path(temporary) / "ready.txt"
+            pid_file = Path(temporary) / "responder.pid"
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(CONSUMER_ROOT / "local_ping_responder.py"),
+                    "--ready-file",
+                    str(ready_file),
+                    "--pid-file",
+                    str(pid_file),
+                    "--fixture-dir",
+                    str(fixture_root),
+                    "--connections",
+                    "1",
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            try:
+                deadline = time.monotonic() + 10
+                while time.monotonic() < deadline:
+                    if process.poll() is not None:
+                        error = process.stderr.read() if process.stderr is not None else ""
+                        self.fail(f"fixture exited before readiness: {error}")
+                    if ready_file.exists() and pid_file.exists():
+                        break
+                    time.sleep(0.01)
+                self.assertTrue(ready_file.exists(), "fixture did not publish its ready port")
+                self.assertEqual(pid_file.read_text(encoding="ascii"), str(process.pid))
+            finally:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=5)
 
     def test_all_external_consumers_execute_ping_and_inspect_raw_ttlv(self) -> None:
         if os.name == "nt":
