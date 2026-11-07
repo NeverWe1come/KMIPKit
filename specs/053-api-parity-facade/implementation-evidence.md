@@ -9,7 +9,7 @@
 
 ## Current closure status (2026-11-07)
 
-- Scope: T001-T056 and T060-T066 are complete. T057 local verification and T058 normative/QA review are complete; T059 remains open for Red/Green/Refactor commit closure, push, and draft PR creation.
+- Scope: T001-T059 and T060-T066 are complete. T057 local verification and T058 normative/QA review are complete; T059 is complete with the branch pushed and draft PR [#133](https://github.com/NeverWe1come/KMIPKit/pull/133) opened against `feature/KMIPKIT-0052-typed-responses`.
 - Reconciliation: all 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (56 Rust trait-implementation members and the Rust-only `EncryptionKeyInformation::with_typed_cryptographic_parameters` helper). No baseline candidate is unresolved. One internal C block-copy bridge exclusion is additional to the 750-candidate set.
 - The seven KMIPKIT-0053-owned capabilities are `verified`; their 1,470 associated public declaration rows are verified. All 56 client-initiated operations are verified and have executable Rust/C/Java/Python evidence.
 - Fresh compiled export audits match every declaration exactly: Rust 7,844/7,844; C 1,866/1,866; Java 2,161/2,161; Python 2,347/2,347. All four report zero missing, unobserved, kind-mismatched, or audit-error entries. The Rust audit used toolchain 1.94.0; the binding audit completed all three packages.
@@ -19,7 +19,7 @@
 - The independent QA review found no normative mismatch. It confirmed the 693/57 baseline split, 354 unique KMIPKIT-0053 exclusion pairs (including the additional C bridge exclusion), and existing evidence files. An independent security review of the KMIPKIT-0053 surface reported zero actionable findings. Neither replaces the qualified human security review required before 1.0.
 - `candidate-resolutions/rust-export-audit.json`, `java-export-audit.json`, and `python-export-audit.json` preserve the earlier pre-reconciliation snapshots used to create exact resolution records; their old mismatch counters are historical. The fresh final audit counts above are authoritative for closure.
 - Deferred by maintainer instruction: hosted GitHub CI and all coverage thresholds. They remain release gates and are not claimed as passed. Linux/macOS runs, live interoperability against two independent KMIP servers, and qualified human security review also remain release gates. No profile conformance, certification, or release-readiness claim is made.
-- Draft PR: pending publication against `feature/KMIPKIT-0052-typed-responses`.
+- Draft PR: [#133](https://github.com/NeverWe1come/KMIPKit/pull/133), open and stacked on `feature/KMIPKIT-0052-typed-responses`.
 
 The dated notes below are chronological implementation records. Their intermediate candidate counts and open-task statements are superseded by the current closure status above.
 
