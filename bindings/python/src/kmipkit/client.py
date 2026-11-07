@@ -1584,7 +1584,7 @@ class AsyncCancelResponse(AsyncOperationResponseV1):
 
     __slots__ = ("_cancellation_result",)
 
-    def __init__(self, outcome: AsyncOperationOutcome, response) -> None:
+    def __init__(self, outcome: AsyncOperationOutcome, response: Any) -> None:
         super().__init__(outcome)
         self._cancellation_result = (
             int(response.cancellation_result)
@@ -1612,7 +1612,7 @@ class AsyncPollResponse(AsyncOperationResponseV1):
 
     __slots__ = ("_is_pending",)
 
-    def __init__(self, outcome: AsyncOperationOutcome, response) -> None:
+    def __init__(self, outcome: AsyncOperationOutcome, response: Any) -> None:
         super().__init__(outcome)
         self._is_pending = bool(response.is_pending)
 
@@ -1634,7 +1634,7 @@ class AsyncProcessResponse(AsyncOperationResponseV1):
 
     __slots__ = ("_is_pending", "_payload_member_count")
 
-    def __init__(self, outcome: AsyncOperationOutcome, response) -> None:
+    def __init__(self, outcome: AsyncOperationOutcome, response: Any) -> None:
         super().__init__(outcome)
         self._is_pending = bool(response.is_pending)
         self._payload_member_count = (
@@ -1665,7 +1665,7 @@ class AsyncProcessResponse(AsyncOperationResponseV1):
 class AsyncQueryAsyncRequestsResponse(AsyncOperationResponseV1):
     """Typed Query Asynchronous Requests result with generic, uninterpreted payload."""
 
-    def __init__(self, outcome: AsyncOperationOutcome, _response) -> None:
+    def __init__(self, outcome: AsyncOperationOutcome, _response: Any) -> None:
         super().__init__(outcome)
 
     @property
