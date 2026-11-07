@@ -56,8 +56,8 @@ class BindingAuditReconciliationTests(unittest.TestCase):
         )
         self.assertEqual(
             [
-                "public org.kmipkit.extensions.ClientBatchResponse executeWithOptions(org.kmipkit.extensions.ClientBatch, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions)",
-                "public org.kmipkit.extensions.ClientBatchResponse executeWithOptions(org.kmipkit.extensions.ClientBatch, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.WireEncoding)",
+                "public org.kmipkit.extensions.ClientBatchResponse executeWithOptions(org.kmipkit.extensions.ClientBatch, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException",
+                "public org.kmipkit.extensions.ClientBatchResponse executeWithOptions(org.kmipkit.extensions.ClientBatch, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.WireEncoding) throws org.kmipkit.ClientOperationException",
             ],
             declaration["javaSignatures"],
         )

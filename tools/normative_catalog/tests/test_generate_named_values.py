@@ -14,6 +14,32 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_bitmask_java_helper_names_use_camel_case(self) -> None:
+        group = generate_named_values.NamedGroup(
+            "mask-1",
+            "Cryptographic Usage Mask",
+            "CRYPTOGRAPHIC_USAGE_MASK",
+            (),
+        )
+
+        known = reconcile_named_value_manifest._language_names(
+            "bitmask", group, "known_bits"
+        )
+        unknown = reconcile_named_value_manifest._language_names(
+            "bitmask", group, "unknown_bits"
+        )
+
+        self.assertEqual(
+            "org.kmipkit.protocol.KmipValues.CryptographicUsageMask.knownBits",
+            known["java"],
+        )
+        self.assertEqual(
+            "org.kmipkit.protocol.KmipValues.CryptographicUsageMask.unknownBits",
+            unknown["java"],
+        )
+        self.assertTrue(known["rust"].endswith("::known_bits"))
+        self.assertTrue(known["python"].endswith(".known_bits"))
+
     def test_manifest_reconciliation_preserves_existing_declaration_order(self) -> None:
         existing = [
             {"declarationId": "z-existing", "exportName": "Existing Z"},
