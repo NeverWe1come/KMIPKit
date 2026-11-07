@@ -329,6 +329,9 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             route_data.get("rustKindCorrections", []),
             route_data.get("languageMappingCorrections", []),
         )
+        reconciled = reconcile_0053_api_parity.apply_declaration_corrections(
+            reconciled, route_data.get("declarationCorrections", [])
+        )
         reconciled = reconcile_0053_api_parity.add_approved_exclusions(
             reconciled, route_data["approvedExclusions"]
         )
@@ -340,6 +343,52 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             and declaration.get("capabilityId") == "typed_cryptographic_parameters"
         ]
         self.assertEqual([], remaining)
+
+    def test_declaration_corrections_reattribute_decrypt_helpers_exactly(self) -> None:
+        manifest = json.loads(
+            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        corrections = route_data["declarationCorrections"]
+        result = reconcile_0053_api_parity.apply_declaration_corrections(
+            manifest, corrections
+        )
+        replay = reconcile_0053_api_parity.apply_declaration_corrections(
+            result, corrections
+        )
+        self.assertEqual(result, replay)
+        declarations = {row["declarationId"]: row for row in result["publicDeclarations"]}
+        operations = {row["operationId"]: row for row in result["operations"]}
+        encrypt_refs = operations["KMIPKIT-ELEM-OP-C2S-ENCRYPT"]["declarations"]["rust"]
+        decrypt_refs = operations["KMIPKIT-ELEM-OP-C2S-DECRYPT"]["declarations"]["rust"]
+        for correction in corrections:
+            declaration = declarations[correction["declarationId"]]
+            target = declarations[correction["targetDeclarationId"]]
+            self.assertEqual(correction["exportName"], declaration["exportName"])
+            self.assertEqual(target["capabilityId"], declaration["capabilityId"])
+            self.assertEqual(target["requirementIds"], declaration["requirementIds"])
+            self.assertEqual(
+                {
+                    "rust": declaration["languageMappings"]["rust"],
+                    "c": target["languageMappings"]["c"],
+                    "java": target["languageMappings"]["java"],
+                    "python": target["languageMappings"]["python"],
+                },
+                declaration["languageMappings"],
+            )
+            self.assertTrue(set(correction["evidencePaths"]) <= set(declaration["parityEvidenceIds"]))
+            if declaration["packageId"] == "rust-kmipkit":
+                self.assertNotIn(declaration["declarationId"], encrypt_refs)
+                self.assertIn(declaration["declarationId"], decrypt_refs)
+
+        stale = copy.deepcopy(corrections)
+        stale[0]["sourceDeclarationId"] = stale[0]["targetDeclarationId"]
+        with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
+            reconcile_0053_api_parity.apply_declaration_corrections(manifest, stale)
 
     def test_managed_object_java_routes_match_exported_camel_case_methods(self) -> None:
         route_data = json.loads(

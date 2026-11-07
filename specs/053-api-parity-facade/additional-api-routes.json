@@ -53866,6 +53866,68 @@
       }
     }
   ],
+  "declarationCorrections": [
+    {
+      "declarationId": "rust-observed-3f4f85a696c50c205347",
+      "exportName": "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+      "sourceDeclarationId": "rust-observed-1d348fbc402eec43bee5",
+      "targetDeclarationId": "rust-observed-3756dbcdfaa634b6b076",
+      "reason": "DecryptRequest authenticated-encryption setters were incorrectly grouped under Encrypt; align their capability, requirement references, and foreign operation mappings with the approved DecryptRequest declaration.",
+      "evidencePaths": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+      ],
+      "fromCapabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "toCapabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT"
+    },
+    {
+      "declarationId": "rust-observed-44a49712122e9a2527a7",
+      "exportName": "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_tag",
+      "sourceDeclarationId": "rust-observed-1d348fbc402eec43bee5",
+      "targetDeclarationId": "rust-observed-3756dbcdfaa634b6b076",
+      "reason": "DecryptRequest authenticated-encryption setters were incorrectly grouped under Encrypt; align their capability, requirement references, and foreign operation mappings with the approved DecryptRequest declaration.",
+      "evidencePaths": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+      ],
+      "fromCapabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "toCapabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT"
+    },
+    {
+      "declarationId": "rust-observed-576971cc1c9d14849f2c",
+      "exportName": "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+      "sourceDeclarationId": "rust-observed-f1de5a85d740c4e6b4a7",
+      "targetDeclarationId": "rust-observed-8ca41d7c884a9320716f",
+      "reason": "DecryptRequest authenticated-encryption setters were incorrectly grouped under Encrypt; align their capability, requirement references, and foreign operation mappings with the approved DecryptRequest declaration.",
+      "evidencePaths": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+      ],
+      "fromCapabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "toCapabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT"
+    },
+    {
+      "declarationId": "rust-observed-9ba5e392ae91e3287aa8",
+      "exportName": "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
+      "sourceDeclarationId": "rust-observed-f1de5a85d740c4e6b4a7",
+      "targetDeclarationId": "rust-observed-8ca41d7c884a9320716f",
+      "reason": "DecryptRequest authenticated-encryption setters were incorrectly grouped under Encrypt; align their capability, requirement references, and foreign operation mappings with the approved DecryptRequest declaration.",
+      "evidencePaths": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+      ],
+      "fromCapabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "toCapabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT"
+    }
+  ],
   "candidateResolutions": [
     {
       "declarationId": "kmipkit-0048-kmipkit-00e89f06438cb886b4d0",

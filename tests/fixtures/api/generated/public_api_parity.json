@@ -281639,6 +281639,8 @@
           "rust-observed-16a922b1eaed487c90fd",
           "rust-observed-22cfd4c9296714a371e4",
           "rust-observed-3756dbcdfaa634b6b076",
+          "rust-observed-3f4f85a696c50c205347",
+          "rust-observed-44a49712122e9a2527a7",
           "rust-observed-5d9c965d87d4176eba10",
           "rust-observed-8af1ccc0b8fc5d075a96",
           "rust-observed-96b6ed8e8e8da80e7eb8",
@@ -282168,9 +282170,7 @@
           "rust-observed-1d348fbc402eec43bee5",
           "rust-observed-2deb5855eb026913bf13",
           "rust-observed-3bad175b274488a95b8e",
-          "rust-observed-3f4f85a696c50c205347",
           "rust-observed-3f5dd98cdcb182a82c1f",
-          "rust-observed-44a49712122e9a2527a7",
           "rust-observed-46d9aa508c970518c66c",
           "rust-observed-5e6812311daf1e4e60e6",
           "rust-observed-739ed0db6c0f8fd4e591",
@@ -613795,22 +613795,22 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-3f4f85a696c50c205347",
       "declarationState": "verified",
       "exportName": "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_additional_data",
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_encrypt",
+          "name": "kmipkit_client_batch_item_decrypt",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -613847,11 +613847,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -619200,22 +619201,22 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-44a49712122e9a2527a7",
       "declarationState": "verified",
       "exportName": "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_tag",
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_encrypt",
+          "name": "kmipkit_client_batch_item_decrypt",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -619252,11 +619253,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -635416,22 +635418,22 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-576971cc1c9d14849f2c",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_encrypt",
+          "name": "kmipkit_client_batch_item_decrypt",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -635468,11 +635470,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -699249,22 +699252,22 @@
         "path": "specs/019-cryptographic-operations/spec.md",
         "status": "Approved"
       },
-      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
       "declarationId": "rust-observed-9ba5e392ae91e3287aa8",
       "declarationState": "verified",
       "exportName": "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_encrypt",
+          "name": "kmipkit_client_batch_item_decrypt",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -699301,11 +699304,12 @@
         "KMIPKIT-REQ-SPEC-4.16-001-002",
         "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-        "KMIPKIT-REQ-SPEC-6.1.17-006"
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {

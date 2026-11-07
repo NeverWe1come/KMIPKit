@@ -2878,6 +2878,201 @@ def resolve_public_declarations(
     return result
 
 
+def apply_declaration_corrections(
+    manifest: dict[str, Any], corrections: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Correct exact approved declaration ownership using same-package operation anchors."""
+    if not isinstance(corrections, list):
+        raise ReconciliationError("declaration corrections must be a list")
+    result = copy.deepcopy(manifest)
+    declarations = result.get("publicDeclarations")
+    operations = result.get("operations")
+    if not isinstance(declarations, list) or not isinstance(operations, list):
+        raise ReconciliationError("declaration corrections require declarations and operations")
+    by_id = {row.get("declarationId"): row for row in declarations}
+    if len(by_id) != len(declarations):
+        raise ReconciliationError("declaration correction input contains duplicate IDs")
+    seen: set[str] = set()
+    required_fields = {
+        "declarationId",
+        "exportName",
+        "sourceDeclarationId",
+        "targetDeclarationId",
+        "fromCapabilityId",
+        "toCapabilityId",
+        "reason",
+        "evidencePaths",
+    }
+
+    for correction in corrections:
+        if not isinstance(correction, dict) or set(correction) != required_fields:
+            raise ReconciliationError("declaration correction has missing or unrecognized fields")
+        declaration_id = correction.get("declarationId")
+        if (
+            not isinstance(declaration_id, str)
+            or not declaration_id.strip()
+            or any(marker in declaration_id for marker in "*?")
+            or declaration_id in seen
+        ):
+            raise ReconciliationError("declaration correction IDs must be exact and unique")
+        seen.add(declaration_id)
+
+        declaration = by_id.get(declaration_id)
+        source = by_id.get(correction.get("sourceDeclarationId"))
+        target = by_id.get(correction.get("targetDeclarationId"))
+        reason = correction.get("reason")
+        evidence = correction.get("evidencePaths")
+        if (
+            declaration is None
+            or source is None
+            or target is None
+            or not isinstance(reason, str)
+            or not reason.strip()
+            or not isinstance(evidence, list)
+            or not evidence
+            or any(
+                not isinstance(path, str)
+                or not path.strip()
+                or Path(path).is_absolute()
+                or "\\" in path
+                or ".." in Path(path).parts
+                or not Path(path).is_file()
+                for path in evidence
+            )
+            or len(evidence) != len(set(evidence))
+        ):
+            raise ReconciliationError("declaration correction needs exact records and evidence")
+        approval = declaration.get("approvalSource")
+        if (
+            declaration.get("exportName") != correction.get("exportName")
+            or declaration.get("kind") != "associated-item"
+            or declaration.get("packageId") not in LANGUAGE_PACKAGES["rust"]
+            or declaration.get("declarationState") != "verified"
+            or declaration.get("parityScope") != "four-language"
+            or source.get("packageId") != declaration.get("packageId")
+            or target.get("packageId") != declaration.get("packageId")
+            or source.get("declarationState") != "verified"
+            or target.get("declarationState") != "verified"
+            or source.get("capabilityId") != correction.get("fromCapabilityId")
+            or target.get("capabilityId") != correction.get("toCapabilityId")
+            or correction.get("fromCapabilityId") == correction.get("toCapabilityId")
+            or not isinstance(approval, dict)
+            or approval != source.get("approvalSource")
+            or approval != target.get("approvalSource")
+            or approval.get("status") != "Approved"
+        ):
+            raise ReconciliationError("declaration correction does not match its exact approved anchors")
+
+        mappings = (
+            declaration.get("languageMappings"),
+            source.get("languageMappings"),
+            target.get("languageMappings"),
+        )
+        if any(
+            not isinstance(language_mappings, dict)
+            or set(language_mappings) != set(REQUIRED_LANGUAGES)
+            for language_mappings in mappings
+        ):
+            raise ReconciliationError("declaration correction anchors require four-language mappings")
+        expected_language_mappings = {
+            "rust": {
+                "packageId": declaration["packageId"],
+                "name": declaration["exportName"],
+            },
+            **{
+                language: copy.deepcopy(target["languageMappings"][language])
+                for language in ("c", "java", "python")
+            },
+        }
+        for language in ("c", "java", "python"):
+            if (
+                expected_language_mappings[language].get("packageId")
+                not in LANGUAGE_PACKAGES[language]
+                or not isinstance(expected_language_mappings[language].get("name"), str)
+                or not expected_language_mappings[language]["name"].strip()
+            ):
+                raise ReconciliationError("declaration correction target mapping is invalid")
+
+        already_corrected = (
+            declaration.get("capabilityId") == target.get("capabilityId")
+            and declaration.get("requirementIds") == target.get("requirementIds")
+            and declaration.get("languageMappings") == expected_language_mappings
+            and set(evidence) <= set(declaration.get("parityEvidenceIds", []))
+        )
+        if already_corrected:
+            _move_operation_declaration_reference(
+                operations,
+                declaration_id,
+                correction["fromCapabilityId"],
+                correction["toCapabilityId"],
+            )
+            continue
+        for language in ("c", "java", "python"):
+            if declaration["languageMappings"][language] != source["languageMappings"][language]:
+                raise ReconciliationError("declaration correction source mapping no longer matches")
+        if (
+            declaration.get("capabilityId") != source.get("capabilityId")
+            or declaration.get("requirementIds") != source.get("requirementIds")
+            or declaration.get("languageMappings")
+            != {
+                "rust": {
+                    "packageId": declaration["packageId"],
+                    "name": declaration["exportName"],
+                },
+                **{
+                    language: copy.deepcopy(source["languageMappings"][language])
+                    for language in ("c", "java", "python")
+                },
+            }
+        ):
+            raise ReconciliationError("declaration correction source state differs from its reviewed anchor")
+
+        declaration["capabilityId"] = target["capabilityId"]
+        declaration["requirementIds"] = copy.deepcopy(target["requirementIds"])
+        declaration["languageMappings"] = expected_language_mappings
+        declaration["parityEvidenceIds"] = sorted(
+            set(declaration.get("parityEvidenceIds", [])) | set(evidence)
+        )
+        _move_operation_declaration_reference(
+            operations,
+            declaration_id,
+            correction["fromCapabilityId"],
+            correction["toCapabilityId"],
+        )
+
+    return result
+
+
+def _move_operation_declaration_reference(
+    operations: list[dict[str, Any]], declaration_id: str, source_id: str, target_id: str
+) -> None:
+    """Move only existing exact operation references, preserving language scope."""
+    source_operations = [row for row in operations if row.get("operationId") == source_id]
+    target_operations = [row for row in operations if row.get("operationId") == target_id]
+    if len(source_operations) != 1 or len(target_operations) != 1:
+        raise ReconciliationError("declaration correction operation anchors are ambiguous")
+    source_refs = source_operations[0].get("declarations")
+    target_refs = target_operations[0].get("declarations")
+    if not isinstance(source_refs, dict) or not isinstance(target_refs, dict):
+        raise ReconciliationError("declaration correction operation mappings are malformed")
+    for language, references in source_refs.items():
+        if not isinstance(references, list) or declaration_id not in references:
+            continue
+        if references.count(declaration_id) != 1:
+            raise ReconciliationError("source operation repeats a declaration correction ID")
+        references.remove(declaration_id)
+        target_language_refs = target_refs.get(language)
+        if not isinstance(target_language_refs, list):
+            raise ReconciliationError("target operation lacks the corrected language mapping")
+        if declaration_id not in target_language_refs:
+            target_language_refs.append(declaration_id)
+            target_language_refs.sort()
+    for operation in operations:
+        for references in operation.get("declarations", {}).values():
+            if declaration_id in references and operation.get("operationId") not in {source_id, target_id}:
+                raise ReconciliationError("declaration correction ID is linked to another operation")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -2924,6 +3119,9 @@ def main() -> int:
         )
         result = apply_language_mapping_corrections(
             result, route_data.get("languageMappingCorrections", [])
+        )
+        result = apply_declaration_corrections(
+            result, route_data.get("declarationCorrections", [])
         )
         result = remove_approved_exclusions(
             result, route_data.get("removeApprovedExclusions", [])
