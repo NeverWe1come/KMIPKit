@@ -23,6 +23,21 @@
   to the repository contract's 95% and synchronized the current policy docs.
 - Coverage-policy correction Refactor: `a29220c54` centralized the threshold
   constants without changing behavior.
+- Generated-output CI check Red: `6d07a12b3` added a workflow contract test;
+  the focused test failed because the normative-inventory job had no named-
+  value generator check.
+- Generated-output CI check Green: `d99e95d7a` added the generator's `--check`
+  step. The workflow contract test and `generate_named_values.py --check`
+  passed.
+- Generated C coverage-scope Red: `4ba33ad33` asserted that the exact C helper
+  header is an explicit generated-code exclusion; the focused test failed
+  because that path was not recorded.
+- Generated C coverage-scope Green: `15578e9fe` recorded the exact exclusion
+  and corrected the testing guide: the header has `static inline` lookup
+  bodies, is not in the aggregate line-coverage inputs, and is exercised by
+  the C consumer test.
+- Generated C coverage-scope Refactor: `80785a3ee` made the coverage test's
+  four generated paths explicit; the focused test passed.
 
 ## Local verification
 
@@ -70,6 +85,20 @@ The following checks passed on the feature worktree:
   This run verifies that 90% fails, exactly 95% passes for TTLV/protocol and
   changed production code in both aggregate and scoped evaluation paths, and
   the 85% transport/FFI/binding floors and 90% workspace floor remain intact.
+- `PYTHONPATH=scripts/tests python -B -m unittest test_workflow -q` (92 tests
+  passed after adding the named-value generator check to the normative job).
+- `PYTHONPATH=scripts/tests python -B -m unittest test_coverage_gate.CoverageGateTests.test_catalog_generated_named_value_sources_are_excluded_from_raw_coverage -v` (passed).
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_named_values tools.api_manifest.tests.test_binding_exports -q` (59 tests passed).
+- `python -B tools/normative_catalog/generate_named_values.py --check` and
+  `python -B tools/api_manifest/generate.py --check` (both passed).
+- Final follow-up verification after the CI and generated-C coverage corrections:
+  `PYTHONPATH=scripts/tests python -B -m unittest test_coverage_gate test_multilanguage_coverage test_workflow -q`
+  (191 tests passed, 3 skipped because Windows disallows required directory
+  symlinks); `python -B -m unittest
+  tools.normative_catalog.tests.test_generate_named_values
+  tools.api_manifest.tests.test_binding_exports -q` (59 passed); both
+  `generate_named_values.py --check` and `api_manifest/generate.py --check`
+  passed; `git diff --check` passed.
 - `python -B tools/normative_catalog/reconcile_named_value_manifest.py --check --repo-root .`.
 - `python -B tools/normative_catalog/generate_named_values.py --check --repo-root .`.
 - `python -B tools/api_manifest/audit_binding_exports.py --c-only --repo-root .`:
@@ -84,9 +113,11 @@ reserved and wildcard placeholders, which intentionally do not become usable
 constants. The API manifest remains the reviewed input; generated outputs are
 not edited manually.
 
-The coverage gate excludes only the exact generated named-value files in Rust,
+The coverage gate records the exact generated named-value paths in Rust, C,
 Java, and Python, with the rationale and consumer tests recorded in
-`docs/development/testing.md`. Coverage thresholds are not weakened. The local
+`docs/development/testing.md`; the C header contains inline lookup code and is
+therefore called out explicitly even though C headers are outside the raw
+aggregate coverage inputs. Coverage thresholds are not weakened. The local
 Windows LLVM run is evidence only and does not replace the aggregate
 platform and adapter coverage gate. The aggregate command was not run because
 Ubuntu and macOS reports are not available in this local Windows worktree;
