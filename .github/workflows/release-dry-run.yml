@@ -1,11 +1,10 @@
 name: Release Packaging Dry-Run
 
 on:
-  push:
-    branches:
-      - release/*
-      - master
   pull_request:
+    branches:
+      - master
+      - 'release/**'
     paths:
       - '.github/workflows/release-dry-run.yml'
       - 'tools/release_packaging/**'
@@ -15,6 +14,10 @@ on:
       - 'bindings/python/pyproject.toml'
       - 'Cargo.toml'
       - 'crates/**/Cargo.toml'
+  push:
+    branches:
+      - 'release/**'
+      - master
   workflow_dispatch:
 
 permissions:
