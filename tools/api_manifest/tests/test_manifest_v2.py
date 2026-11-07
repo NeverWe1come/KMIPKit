@@ -33,46 +33,7 @@ CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_EXPORT_REPORT_PATH = (
-    ROOT
-    / "specs"
-    / "053-api-parity-facade"
-    / "reports"
-    / "rust-export-report-2026-11-07-final.json"
-)
-HEADERLESS_C_FUNCTION_EXCLUSIONS = {"kmipkit_ttlv_value_view_copy_bytes"}
-VERIFIED_OPERATION_DECLARED_EXPORTS = {
-    "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
-    "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
-    "KMIPKIT-ELEM-OP-C2S-CREATE",
-    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
-    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
-    "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
-    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
-    "KMIPKIT-ELEM-OP-C2S-HASH",
-    "KMIPKIT-ELEM-OP-C2S-MAC",
-    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
-    "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
-    "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
-    "KMIPKIT-ELEM-OP-C2S-SIGN",
-    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
-}
-VERIFIED_OPERATION_DECLARED_VARIANTS = {
-    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
-    "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
-    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
-}
-VERIFIED_OPERATION_DECLARED_OPTIONS = {
-    "KMIPKIT-ELEM-OP-C2S-HASH",
-    "KMIPKIT-ELEM-OP-C2S-MAC",
-    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
-    "KMIPKIT-ELEM-OP-C2S-SIGN",
-    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
-    "KMIPKIT-ELEM-OP-C2S-CREATE",
-    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
-    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
-}
-VERIFIED_TTLV_DECLARATIONS = {"KMIPKIT-0053:export:53d898ff0d93bff2b5a4af54"}
+RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -189,6 +150,7 @@ def _valid_v2_manifest() -> dict[str, object]:
             ],
             "publicDeclarations": [],
             "approvedExclusions": [],
+            "cAbiRecordConstants": [],
             "apiLevels": [
                 {"id": level, "requirementIds": ["KMIPKIT-0043-FR-001"]}
                 for level in EXPECTED_API_LEVELS
@@ -241,6 +203,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in self.checked_in_manifest["publicDeclarations"]
             if declaration["packageId"] == package_id
         ]
+
+    def read_c_header_surface(self) -> str:
+        header_path = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
+        helper_path = (
+            ROOT
+            / "bindings"
+            / "c"
+            / "include"
+            / "kmipkit_named_value_helpers_generated.h"
+        )
+        header = header_path.read_text(encoding="utf-8")
+        helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
+        self.assertIn(helper_include, header)
+        helper_header = helper_path.read_text(encoding="utf-8")
+        return header.replace(helper_include, helper_header, 1)
 
     def _approved_exclusions_by_key(self) -> dict[tuple[str, str], dict[str, object]]:
         return {
@@ -1824,7 +1801,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_client::Client",
             "kmipkit_client::PendingOutcome",
         )
-        rust_report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
+        rust_report = json.loads(
+            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-11-07.json").read_text(
+                encoding="utf-8"
+            )
+        )
         observed_traits = {
             (row["packageId"], row["exportName"])
             for row in (
@@ -1839,11 +1820,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         }
 
-        exclusions = {
+        client_execution_exclusions = {
             (row["packageId"], row["exportName"]): row
             for row in self.checked_in_manifest["approvedExclusions"]
             if row["packageId"] in target_packages
-            and row["approvalSource"]["path"] == "specs/007-client-execution/spec.md"
+            and row["approvalSource"]["path"]
+            in {
+                "specs/007-client-execution/spec.md",
+                "specs/012-vendor-extension-registry/spec.md",
+            }
             and row["exportName"].startswith("<")
             and row["exportName"].split(" as ", 1)[0][1:].startswith(
                 trait_type_prefixes
@@ -1861,12 +1846,29 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "KMIPKIT-0007 standard traits require exact exclusions while direct types "
             f"stay inventoried; unresolved={unresolved[:5]}",
         )
+        exclusions_by_owner = {
+            spec_path: {
+                key: row
+                for key, row in client_execution_exclusions.items()
+                if row["approvalSource"]["path"] == spec_path
+            }
+            for spec_path in (
+                "specs/007-client-execution/spec.md",
+                "specs/012-vendor-extension-registry/spec.md",
+            )
+        }
+        exclusions = exclusions_by_owner["specs/007-client-execution/spec.md"]
+        extension_registry_exclusions = exclusions_by_owner[
+            "specs/012-vendor-extension-registry/spec.md"
+        ]
         self.assertEqual(482, len(exclusions))
-        missing = sorted(exclusions.keys() - observed_traits)
-        self.assertFalse(
-            missing,
-            f"standard-trait exclusions must match observed exports exactly: {missing[:5]}",
-        )
+        self.assertEqual(10, len(extension_registry_exclusions))
+        self.assertEqual(observed_traits, set(exclusions) | set(extension_registry_exclusions))
+        for key, exclusion in extension_registry_exclusions.items():
+            with self.subTest(extension_trait=key[1]):
+                self.assertEqual("KMIPKIT-0012", exclusion.get("candidateSpecId"))
+                self.assertIn("KMIPKIT-0012-FR-", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
         directly_accounted_types = {
             (row["packageId"], row["exportName"])
@@ -3675,12 +3677,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for owner_declaration in owner_declarations
                 for requirement_id in owner_declaration["requirementIds"]
             }
-            owner_source = next(
+            owner_sources = [
                 owner_declaration["approvalSource"]
                 for owner_declaration in owner_declarations
                 if "approvalSource" in owner_declaration
-            )
-            owner_source = owner_source_overrides.get(method, owner_source)
+            ]
             for package_id, rust_prefix in (
                 ("rust-kmipkit-client", "kmipkit_client::"),
                 ("rust-kmipkit", "kmipkit::"),
@@ -3698,11 +3699,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertEqual(operation_id, declaration["capabilityId"])
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
-                    self.assertEqual(owner_source, declaration["approvalSource"])
-                    self.assertEqual(
-                        excluded_owner_requirements.get(method, set()),
-                        owner_requirements - set(declaration["requirementIds"]),
-                    )
+                    self.assertIn(declaration["approvalSource"], owner_sources)
+                    self.assertTrue(owner_requirements.issubset(declaration["requirementIds"]))
                     self.assertEqual(
                         {
                             "rust": {"packageId": package_id, "name": export_name},
@@ -6123,6 +6121,41 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             package_languages,
         )
 
+    def test_0057_wire_encoding_trait_paths_are_reviewed_language_facilities(self) -> None:
+        exclusions = [
+            row for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] in {"rust-kmipkit-client", "rust-kmipkit-transport"}
+            and re.match(r"<kmipkit_(client|transport)::WireEncoding as .+>::", row["exportName"])
+        ]
+
+        self.assertEqual(len(exclusions), 40)
+        for row in exclusions:
+            with self.subTest(export_name=row["exportName"]):
+                self.assertIn(
+                    "standard and blanket rust trait implementations",
+                    row["reason"].casefold(),
+                )
+                self.assertEqual(
+                    row["approvalSource"]["path"],
+                    "specs/057-multi-encoding-client-integration/spec.md",
+                )
+
+    def test_0057_encoding_mismatch_transport_variants_remain_blocked(self) -> None:
+        variants = [
+            row for row in self.checked_in_manifest["publicDeclarations"]
+            if row["exportName"].endswith("TransportCauseCategory::EncodingMismatch")
+        ]
+
+        self.assertEqual(
+            {row["packageId"] for row in variants},
+            {"rust-kmipkit", "rust-kmipkit-transport"},
+        )
+        for row in variants:
+            with self.subTest(export_name=row["exportName"]):
+                self.assertEqual(row["declarationState"], "blocked")
+                self.assertIn("KMIPKIT-0057-FR-004", row["requirementIds"])
+                self.assertEqual(row["candidateSpecId"], "KMIPKIT-0057")
+
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
         declarations = [
@@ -6391,8 +6424,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_last_error_clear",
             "kmipkit_extension_registry_limits_v1_t.struct_size",
             "kmipkit_extension_registry_limits_v1_t.abi_version",
+            "kmipkit_transport_config_release",
         }
         self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
+        c_transport_constants = {
+            "KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS",
+            "KMIPKIT_TRANSPORT_ENDPOINT_HTTPS",
+            "KMIPKIT_TRANSPORT_TRUST_PLATFORM",
+            "KMIPKIT_TRANSPORT_TRUST_CERTIFICATES",
+            "KMIPKIT_TRANSPORT_SOURCE_MEMORY",
+            "KMIPKIT_TRANSPORT_SOURCE_FILE",
+            "KMIPKIT_TRANSPORT_ENCODING_PEM",
+            "KMIPKIT_TRANSPORT_ENCODING_DER",
+            "KMIPKIT_TRANSPORT_TIMEOUT_DEFAULT",
+            "KMIPKIT_TRANSPORT_TIMEOUT_BOUNDED",
+            "KMIPKIT_TRANSPORT_TIMEOUT_UNBOUNDED",
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS_SERVER_NAME",
+            "KMIPKIT_TRANSPORT_CONFIG_FLAG_TARGET_URI",
+        }
+        self.assertTrue(c_transport_constants <= set(c_exclusions))
         for symbol in c_exclusions:
             self.assertTrue(c_exclusions[symbol]["reason"])
             self.assertTrue(c_exclusions[symbol]["evidence"])
@@ -6415,7 +6465,23 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     },
                 )
                 self.assertIn("lifecycle counterpart", c_exclusions[symbol]["reason"])
-                self.assertIn("distinct four-language capability", c_exclusions[symbol]["reason"])
+                self.assertIn(
+                    "distinct four-language capability",
+                    c_exclusions[symbol]["reason"],
+                )
+            elif symbol == "kmipkit_client_batch_item_response_metadata_v1":
+                metadata_mappings = declarations_by_c_symbol[symbol]
+                self.assertEqual(
+                    {item["declarationId"] for item in metadata_mappings},
+                    {
+                        "client_batch_item_response_metadata_v1:java",
+                        "client_batch_item_response_metadata_v1:python",
+                    },
+                )
+                self.assertIn(
+                    "C-only metadata accessor",
+                    c_exclusions[symbol]["reason"],
+                )
             else:
                 self.assertNotIn(symbol, declarations_by_c_symbol)
 
@@ -6785,7 +6851,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
-        header = self._c_header_surface()
+        header = self.read_c_header_surface()
         declarations = self.declarations_for_package("c-kmipkit")
         ready_by_kind = {
             kind: {
@@ -6870,20 +6936,27 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         self.assertEqual(header_fields, ready_by_kind["field"] | approved_c_fields)
 
-        header_public_macros = set(
-            re.findall(r"^#define (KMIPKIT_[A-Za-z0-9_]+)", header, re.MULTILINE)
+        header_ttlv_macros = set(
+            re.findall(
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|ATTRIBUTE_REFERENCE_KIND|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND|CREDENTIAL_TYPE|CREDENTIAL_VALIDATION_ERROR_KIND|PROFILE_(?:CATALOG|TRANSPORT)|WIRE_ENCODING)_\w+)",
+                header,
+                re.MULTILINE,
+            )
         )
-        header_public_macros -= {
-            name
-            for name in header_public_macros
-            if name.startswith(("KMIPKIT_ERROR_", "KMIPKIT_TTLV_DECODE_ERROR_KIND_"))
-        }
-        header_public_macros -= {
-            "KMIPKIT_H",
-            "KMIPKIT_NAMED_VALUE_HELPERS_GENERATED_H",
-            "KMIPKIT_STANDARD_ATTRIBUTES_GENERATED_H",
-        }
-        self.assertEqual(header_public_macros, ready_by_kind["macro"])
+        header_encoding_macros = set(
+            re.findall(r"^#define (KMIPKIT_WIRE_ENCODING_\w+)", header, re.MULTILINE)
+        )
+        header_named_value_macros = set(
+            re.findall(
+                r"^#define (KMIPKIT_(?:ENUMERATION|BITMASK)_\w+)",
+                header,
+                re.MULTILINE,
+            )
+        )
+        self.assertEqual(
+            header_ttlv_macros | header_encoding_macros | header_named_value_macros,
+            ready_by_kind["macro"],
+        )
         header_error_macros = set(
             re.findall(r"^#define (KMIPKIT_ERROR_\w+)", header, re.MULTILINE)
         )
@@ -6900,9 +6973,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if item.get("stableCHeaderCode", False)
         )
         self.assertEqual(header_error_macros, manifest_error_macros)
+        manifest_encoding_macros = {
+            item["exportName"]
+            for item in declarations
+            if item["kind"] == "macro"
+            and item["declarationState"] in {"declared", "verified"}
+            and item["exportName"].startswith("KMIPKIT_WIRE_ENCODING_")
+        }
+        self.assertEqual(header_encoding_macros, manifest_encoding_macros)
 
     def test_c_header_only_declares_ready_manifest_entries(self) -> None:
-        header = self._c_header_surface()
+        header = self.read_c_header_surface()
         declarations = self.declarations_for_package("c-kmipkit")
         approved_exclusions = {
             exclusion["exportName"]

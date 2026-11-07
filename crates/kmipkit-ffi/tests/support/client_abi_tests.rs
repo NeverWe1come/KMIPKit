@@ -1364,11 +1364,11 @@ fn successful_crypto_response_ttlv_cases() -> [SuccessfulCryptoResponseTtlvCase;
                 b"mac-verify-ttlv-success",
                 vec![
                     ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                    ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+                    ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
                     unknown.clone(),
                 ],
             ),
-            &[0x0042_0094, 0x0042_0128, 0x0054_0001],
+            &[0x0042_0094, 0x0042_009B, 0x0054_0001],
         ),
         (
             kmipkit_client_batch_item_response_sign_ttlv,
@@ -1402,12 +1402,12 @@ fn successful_crypto_response_ttlv_cases() -> [SuccessfulCryptoResponseTtlvCase;
                 b"signature-verify-ttlv-success",
                 vec![
                     ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                    ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+                    ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
                     ttlv_item(0x0042_00c2, 0x08, b"recovered"),
                     unknown,
                 ],
             ),
-            &[0x0042_0094, 0x0042_0128, 0x0042_00c2, 0x0054_0001],
+            &[0x0042_0094, 0x0042_009B, 0x0042_00c2, 0x0054_0001],
         ),
     ]
 }
@@ -1842,7 +1842,7 @@ fn ffi_successful_mac_verify_response_getter_returns_typed_fields() {
         b"mac-verify-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+            ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],
     );
@@ -1944,7 +1944,7 @@ fn ffi_successful_signature_verify_response_getter_returns_typed_fields() {
         b"signature-verify-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+            ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
             ttlv_item(0x0042_00c2, 0x08, b"recovered-response-data"),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],
@@ -6297,6 +6297,18 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_reads_async_response_v1(
+        outcome: *mut kmipkit_client_async_operation_outcome_t,
+        expected_operation: u32,
+        expected_result_status: u32,
+        expected_is_pending: u32,
+        expected_has_cancellation_result: u32,
+        expected_cancellation_result: u32,
+        expected_correlation: *const u8,
+        expected_correlation_length: u64,
+        expected_has_payload: u32,
+        expected_payload_member_count: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_rng_retrieve_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_data: *const u8,
@@ -9697,6 +9709,82 @@ fn ffi_constructs_a_client_from_validated_https_configuration() {
 
     kmipkit_client_release(client);
     kmipkit_client_configuration_release(client_configuration);
+}
+
+#[test]
+fn client_configuration_wire_encoding_is_immutable_and_defaults_to_ttlv() {
+    let mut limits = kmipkit_extension_registry_limits_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())
+            .expect("limits struct size fits ABI field"),
+        abi_version: 1,
+        max_definitions: 0,
+        max_schema_nodes: 0,
+        max_child_rules_per_structure: 0,
+        max_text_bytes_per_field: 0,
+        max_registry_text_bytes: 0,
+        max_discriminator_scalar_bytes: 0,
+        max_total_discriminator_scalar_bytes: 0,
+        max_constraint_members_per_rule: 0,
+        max_total_constraint_members: 0,
+        max_payload_index_records: 0,
+        max_lookup_comparisons: 0,
+        max_depth: 0,
+    };
+    assert_eq!(
+        kmipkit_extension_registry_limits_v1_default_values(&mut limits),
+        SUCCESS
+    );
+    let mut registry = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_create_v1(ptr::null_mut(), 0, &limits, &mut registry,),
+        SUCCESS
+    );
+    let mut ttlv_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_create(registry, &mut ttlv_configuration),
+        SUCCESS
+    );
+
+    let mut encoding = u32::MAX;
+    assert_eq!(
+        kmipkit_client_configuration_wire_encoding(ttlv_configuration, &mut encoding),
+        SUCCESS
+    );
+    assert_eq!(encoding, 0);
+
+    let mut json_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_wire_encoding(
+            ttlv_configuration,
+            1,
+            &mut json_configuration,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_configuration_wire_encoding(json_configuration, &mut encoding),
+        SUCCESS
+    );
+    assert_eq!(encoding, 1);
+    assert_eq!(
+        kmipkit_client_configuration_wire_encoding(ttlv_configuration, &mut encoding),
+        SUCCESS
+    );
+    assert_eq!(encoding, 0);
+
+    let mut invalid_output = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_wire_encoding(
+            ttlv_configuration,
+            u32::MAX,
+            &mut invalid_output,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(invalid_output.is_null());
+
+    kmipkit_client_configuration_release(json_configuration);
+    kmipkit_client_configuration_release(ttlv_configuration);
 }
 
 #[test]

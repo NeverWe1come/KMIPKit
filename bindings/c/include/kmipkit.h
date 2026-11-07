@@ -68,32 +68,37 @@ typedef uint32_t kmipkit_credential_validation_error_kind_t;
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_FIELD_OUT_OF_ORDER ((kmipkit_credential_validation_error_kind_t)5)
 #define KMIPKIT_CREDENTIAL_VALIDATION_ERROR_KIND_INVALID_TTLV_STRUCTURE ((kmipkit_credential_validation_error_kind_t)6)
 
+typedef uint32_t kmipkit_wire_encoding_t;
+#define KMIPKIT_WIRE_ENCODING_TTLV ((kmipkit_wire_encoding_t)0)
+#define KMIPKIT_WIRE_ENCODING_JSON ((kmipkit_wire_encoding_t)1)
+#define KMIPKIT_WIRE_ENCODING_XML ((kmipkit_wire_encoding_t)2)
+
 typedef uint8_t kmipkit_query_response_field_kind_t;
 #define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION ((kmipkit_query_response_field_kind_t)1)
 #define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING ((kmipkit_query_response_field_kind_t)2)
 #define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE ((kmipkit_query_response_field_kind_t)3)
 #define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN ((kmipkit_query_response_field_kind_t)4)
 
-#define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS ((uint32_t)5)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS ((uint32_t)1)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS ((uint32_t)7)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS ((uint32_t)10)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS ((uint32_t)9)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS ((uint32_t)3)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS ((uint32_t)2)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES ((uint32_t)8)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS ((uint32_t)6)
-#define KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS ((uint32_t)4)
-#define KMIPKIT_PROFILE_CATALOG_ROW_PROFILE ((uint32_t)1)
-#define KMIPKIT_PROFILE_CATALOG_ROW_REQUIREMENT ((uint32_t)2)
-#define KMIPKIT_PROFILE_CATALOG_ROW_SCOPE_BLOCKER ((uint32_t)4)
-#define KMIPKIT_PROFILE_CATALOG_ROW_STRING ((uint32_t)5)
-#define KMIPKIT_PROFILE_CATALOG_ROW_TEST_CASE ((uint32_t)3)
+#define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
 #define KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES ((uint32_t)1)
 #define KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_REQUIREMENTS ((uint32_t)2)
 #define KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES ((uint32_t)3)
+#define KMIPKIT_PROFILE_CATALOG_ROW_PROFILE ((uint32_t)1)
+#define KMIPKIT_PROFILE_CATALOG_ROW_REQUIREMENT ((uint32_t)2)
+#define KMIPKIT_PROFILE_CATALOG_ROW_TEST_CASE ((uint32_t)3)
+#define KMIPKIT_PROFILE_CATALOG_ROW_SCOPE_BLOCKER ((uint32_t)4)
+#define KMIPKIT_PROFILE_CATALOG_ROW_STRING ((uint32_t)5)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_DIRECT_SOURCE_CLAUSE_IDS ((uint32_t)1)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS ((uint32_t)2)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS ((uint32_t)3)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_UNRESOLVED_SCOPE_OBLIGATIONS ((uint32_t)4)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_DEPENDENCY_PROFILE_IDS ((uint32_t)5)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_TRANSPORT_REQUIREMENTS ((uint32_t)6)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_ENCODING_REQUIREMENTS ((uint32_t)7)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_TEST_CASES ((uint32_t)8)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_PROFILE_IDS ((uint32_t)9)
+#define KMIPKIT_PROFILE_CATALOG_RELATION_OFFICIAL_TEST_CASE_IDS ((uint32_t)10)
 #define KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_AUTHENTICATE ((uint32_t)1048576)
 #define KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_CERTIFICATE_SIGN ((uint32_t)4096)
 #define KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_CRL_SIGN ((uint32_t)8192)
@@ -863,6 +868,8 @@ typedef struct kmipkit_profile_readiness_view_v1_t kmipkit_profile_readiness_vie
 typedef struct kmipkit_profile_readiness_blocker_view_v1_t kmipkit_profile_readiness_blocker_view_v1_t;
 typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row_view_v1_t;
 typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
+typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
+typedef struct kmipkit_client_async_operation_response_v1_t kmipkit_client_async_operation_response_v1_t;
 typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
 typedef struct kmipkit_cryptographic_parameters_fields_v1_t kmipkit_cryptographic_parameters_fields_v1_t;
 typedef struct kmipkit_validation_report_t kmipkit_validation_report_t;
@@ -1112,6 +1119,21 @@ struct kmipkit_profile_catalog_row_view_v1_t {
     kmipkit_byte_span_v1_t mandatory_status;
     kmipkit_byte_span_v1_t fixture_availability;
     kmipkit_byte_span_v1_t text_value;
+};
+
+struct kmipkit_client_async_operation_response_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t result_status;
+    uint32_t is_pending;
+    uint32_t has_cancellation_result;
+    uint32_t cancellation_result;
+    uint32_t has_asynchronous_correlation_value;
+    kmipkit_byte_span_v1_t asynchronous_correlation_value;
+    uint32_t has_response_payload;
+    uint32_t reserved;
+    uint64_t response_payload_member_count;
 };
 
 struct kmipkit_cryptographic_parameters_fields_v1_t {
@@ -1545,7 +1567,7 @@ int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_req
 int32_t kmipkit_register_request_with_protection_storage_masks(kmipkit_register_request_t * request, kmipkit_ttlv_structure_t * masks, kmipkit_register_request_t ** out_request);
 /* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-006, KMIPKIT-0044-FR-007 */
 int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_create(kmipkit_client_batch_t ** out_batch);
 /* KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_request_time_stamp(kmipkit_client_batch_t * batch, int64_t time_stamp);
@@ -1555,7 +1577,7 @@ int32_t kmipkit_client_batch_request_time_stamp(kmipkit_client_batch_t * batch, 
 int32_t kmipkit_client_batch_set_order_option(kmipkit_client_batch_t * batch, uint8_t enabled);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t * batch, uint32_t indicator);
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t * batch, kmipkit_client_batch_item_t ** inout_item);
 /* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_add_error_continuation_value(kmipkit_client_batch_t * batch, uint32_t value);
@@ -1567,9 +1589,9 @@ int32_t kmipkit_client_batch_set_client_correlation_value(kmipkit_client_batch_t
  */
 /* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch_item_t * item, const uint8_t * id_data, uint64_t id_length, kmipkit_client_batch_item_t ** out_item);
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t * response, uint64_t index, kmipkit_client_batch_item_response_t ** out_item);
 /* Returns an owned read-only view of the indexed batch item. Getters expose item metadata only: Unique Batch Item ID and extension identity or criticality.
  * The view retains the batch owner lifetime without copying request payload bytes and remains valid after the original batch handle is released. Batch execution still consumes request items as usual; this view does not expose request payload access. Release the view with kmipkit_client_batch_item_release.
@@ -1598,7 +1620,7 @@ int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_b
  */
 /* KMIPKIT-0006-FR-008, KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
-/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
@@ -2304,7 +2326,7 @@ int32_t kmipkit_client_async_operation_outcome_correlation_value(kmipkit_client_
  */
 /* KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_async_operation_outcome_metadata_v1(kmipkit_client_async_operation_outcome_t * outcome, kmipkit_client_async_operation_metadata_v1_t * out_metadata);
-/* Copies a successful generic Response Payload as a caller-owned TTLV structure.
+/* Copies a present generic Response Payload as a caller-owned TTLV structure.
  */
 /* KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_async_operation_outcome_response_payload_ttlv(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_payload);
@@ -2787,6 +2809,14 @@ int32_t kmipkit_attribute_set_is_empty(kmipkit_attribute_set_t * attributes, uin
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-006, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_attribute_set_into_items(kmipkit_attribute_set_t * attributes, kmipkit_ttlv_structure_t ** out_items);
+/* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_configuration_wire_encoding(kmipkit_client_configuration_t * configuration, uint32_t * out_encoding);
+/* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_configuration_with_wire_encoding(kmipkit_client_configuration_t * configuration, kmipkit_wire_encoding_t encoding, kmipkit_client_configuration_t ** out_configuration);
+/* Pass -1 to use the configured default; pass 0, 1, or 2 for TTLV, JSON, or XML.
+ */
+/* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-002, KMIPKIT-0057-FR-004, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_execute_with_options(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, int32_t encoding_override, kmipkit_client_batch_response_t ** out_response);
 /* Copies the optional raw Response Payload as an independently owned TTLV structure.
  */
 /* KMIPKIT-0052-FR-002, KMIPKIT-0052-FR-003, KMIPKIT-0052-FR-007 */
@@ -2795,6 +2825,22 @@ int32_t kmipkit_client_batch_item_response_raw_ttlv(kmipkit_client_batch_item_re
  */
 /* KMIPKIT-0052-FR-006, KMIPKIT-0052-FR-007 */
 int32_t kmipkit_client_batch_item_response_header_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_structure);
+/* Returns the typed Cancel result and borrowed echo span; inspect its Response Payload as generic TTLV.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_cancel_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Returns Pending state and borrowed correlation metadata; any terminal Response Payload remains generic TTLV.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_poll_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Returns Pending state, payload presence/count, and borrowed correlation metadata.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_process_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Returns Query Asynchronous Requests status and generic TTLV. KMIP v2.1 §6.1.41 Table 286 caption/body discrepancy remains unresolved; no payload meaning is inferred.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_query_async_requests_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
 /* Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned.
  */
 /* KMIPKIT-0048-FR-001, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
@@ -3002,96 +3048,6 @@ int32_t kmipkit_client_batch_item_response_query_field_count(kmipkit_client_batc
  */
 /* KMIPKIT-0053-FR-008, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_client_batch_item_response_query_field_at(kmipkit_client_batch_item_response_t * item, uint64_t index, uint8_t * out_present, uint32_t * out_tag, uint8_t * out_kind, uint32_t * out_enumeration, kmipkit_ttlv_item_t ** out_item);
-/* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
- * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
- * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.
- */
-/* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_last_error_profile_validation_error_get_v1(kmipkit_profile_validation_error_t ** out_error);
-/* Copies the versioned details view; its UTF-8 pointer/length pairs remain valid while the supplied error handle remains open.
- * source_kind is 0 for no source, 1 for a clause ID, or 2 for a catalogued source-gap ID and locator. The view contains no object state or request payload.
- */
-/* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_error_view_get_v1(kmipkit_profile_validation_error_t * error, kmipkit_profile_validation_error_view_v1_t * out_view);
-/* Copies ordered child row; strings use text_value.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_catalog_relation_at_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t relation_index, kmipkit_profile_catalog_row_view_v1_t * out_row);
-/* Returns ordered child count.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_catalog_relation_count_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t * out_count);
-/* Catalog spans borrow static generated data.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_catalog_row_at_v1(uint32_t table, uint64_t index, kmipkit_profile_catalog_row_view_v1_t * out_row);
-/* Returns one generated table row count.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_catalog_table_count_v1(uint32_t table, uint64_t * out_count);
-/* Copies one redacted blocker into a versioned view borrowed from the readiness handle.
- * The handle must remain live without concurrent release during the call and while returned spans are read.
- * The output blocker view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.
- * The output blocker view must not overlap the handle's owned storage or any borrowed span.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_readiness_blocker_at_v1(kmipkit_profile_readiness_t * readiness, uint64_t index, kmipkit_profile_readiness_blocker_view_v1_t * out_view);
-/* Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input.
- * The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.
- * The profile_id parameter must point to an aligned, readable byte-span record; for a nonzero length, its data must point to readable bytes.
- * The records array may be NULL only when record_count is zero; otherwise it must be an aligned, readable array of record_count records.
- * Each nested requirement span with nonzero length must point to readable bytes.
- * Profile and evidence inputs must remain readable and unmodified until the call returns.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_readiness_evaluate_v1(const kmipkit_byte_span_v1_t * profile_id, const kmipkit_profile_evidence_record_v1_t * records, uint64_t record_count, kmipkit_profile_readiness_t ** out_readiness);
-/* Copies readiness fields into a versioned view borrowed from a live handle.
- * The handle must remain live without concurrent release during the call and while returned spans are read.
- * The output view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.
- * The output view must not overlap the handle's owned storage or any borrowed span.
- */
-/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_readiness_view_get_v1(kmipkit_profile_readiness_t * readiness, kmipkit_profile_readiness_view_v1_t * out_view);
-/* Returns one identifier span borrowed until the result handle is released.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_profile_id_at_v1(kmipkit_profile_validation_result_t * result, uint64_t index, kmipkit_byte_span_v1_t * out_span);
-/* Returns the number of selected identifiers.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_profile_id_count_v1(kmipkit_profile_validation_result_t * result, uint64_t * out_count);
-/* Returns one identifier span borrowed until the result handle is released.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_requirement_id_at_v1(kmipkit_profile_validation_result_t * result, uint64_t index, kmipkit_byte_span_v1_t * out_span);
-/* Returns the number of selected identifiers.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_requirement_id_count_v1(kmipkit_profile_validation_result_t * result, uint64_t * out_count);
-/* Resolves selected profiles and creates an owned result handle.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_selection_validate_v1(const kmipkit_profile_validation_selection_v1_t * selection, kmipkit_profile_validation_result_t ** out_result);
-/* Validates the selected profile rules using typed KMIP messages.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_validate_request_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request);
-/* Validates the selected profile rules using typed KMIP messages.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_validate_request_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, const kmipkit_profile_validation_context_v1_t * context);
-/* Validates the selected profile rules using typed KMIP messages.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_validate_response_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response);
-/* Validates the selected profile rules using typed KMIP messages.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response, const kmipkit_profile_validation_context_v1_t * context);
-/* Validates the selected profile rules using typed KMIP messages.
- */
-/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
-int32_t kmipkit_profile_validation_result_validate_transport_v1(kmipkit_profile_validation_result_t * result, uint32_t transport);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
@@ -3160,16 +3116,102 @@ int32_t kmipkit_response_message_from_ttlv(kmipkit_ttlv_structure_t * structure,
 int32_t kmipkit_response_message_header(kmipkit_response_message_t * message, kmipkit_response_header_view_t ** out_header);
 /* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_response_message_ttlv(kmipkit_response_message_t * message, kmipkit_ttlv_structure_t ** out_structure);
-/* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
-int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
+/* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
+ * Returns success and writes a null handle when no profile validation details are present; this leaves the last-error snapshot unchanged.
+ * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.
+ */
+/* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_last_error_profile_validation_error_get_v1(kmipkit_profile_validation_error_t ** out_error);
+/* Copies the versioned details view; its UTF-8 pointer/length pairs remain valid while the supplied error handle remains open.
+ * source_kind is 0 for no source, 1 for a clause ID, or 2 for a catalogued source-gap ID and locator. The view contains no object state or request payload.
+ */
+/* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_error_view_get_v1(kmipkit_profile_validation_error_t * error, kmipkit_profile_validation_error_view_v1_t * out_view);
+/* Canonical Rust evaluator; unknown profiles return success with a null handle. Bounded to 100,000 records and 16 MiB aggregate UTF-8 input.
+ * The output handle slot must be aligned writable storage and must not overlap the profile span, record array, or any requirement span.
+ * The profile_id parameter must point to an aligned, readable byte-span record; for a nonzero length, its data must point to readable bytes.
+ * The records array may be NULL only when record_count is zero; otherwise it must be an aligned, readable array of record_count records.
+ * Each nested requirement span with nonzero length must point to readable bytes.
+ * Profile and evidence inputs must remain readable and unmodified until the call returns.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_readiness_evaluate_v1(const kmipkit_byte_span_v1_t * profile_id, const kmipkit_profile_evidence_record_v1_t * records, uint64_t record_count, kmipkit_profile_readiness_t ** out_readiness);
+/* Copies readiness fields into a versioned view borrowed from a live handle.
+ * The handle must remain live without concurrent release during the call and while returned spans are read.
+ * The output view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.
+ * The output view must not overlap the handle's owned storage or any borrowed span.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_readiness_view_get_v1(kmipkit_profile_readiness_t * readiness, kmipkit_profile_readiness_view_v1_t * out_view);
+/* Copies one redacted blocker into a versioned view borrowed from the readiness handle.
+ * The handle must remain live without concurrent release during the call and while returned spans are read.
+ * The output blocker view must be aligned, readable, and writable storage initialized with the exact size and ABI version 1.
+ * The output blocker view must not overlap the handle's owned storage or any borrowed span.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_readiness_blocker_at_v1(kmipkit_profile_readiness_t * readiness, uint64_t index, kmipkit_profile_readiness_blocker_view_v1_t * out_view);
+/* Returns one generated table row count.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_table_count_v1(uint32_t table, uint64_t * out_count);
+/* Catalog spans borrow static generated data.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_row_at_v1(uint32_t table, uint64_t index, kmipkit_profile_catalog_row_view_v1_t * out_row);
+/* Returns ordered child count.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_relation_count_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t * out_count);
+/* Copies ordered child row; strings use text_value.
+ */
+/* KMIPKIT-0010-FR-010, KMIPKIT-0010-FR-017, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_catalog_relation_at_v1(uint32_t table, uint64_t row_index, uint32_t relation, uint64_t relation_index, kmipkit_profile_catalog_row_view_v1_t * out_row);
+/* Resolves selected profiles and creates an owned result handle.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_selection_validate_v1(const kmipkit_profile_validation_selection_v1_t * selection, kmipkit_profile_validation_result_t ** out_result);
+/* Returns the number of selected identifiers.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_profile_id_count_v1(kmipkit_profile_validation_result_t * result, uint64_t * out_count);
+/* Returns one identifier span borrowed until the result handle is released.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_profile_id_at_v1(kmipkit_profile_validation_result_t * result, uint64_t index, kmipkit_byte_span_v1_t * out_span);
+/* Returns the number of selected identifiers.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_requirement_id_count_v1(kmipkit_profile_validation_result_t * result, uint64_t * out_count);
+/* Returns one identifier span borrowed until the result handle is released.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_requirement_id_at_v1(kmipkit_profile_validation_result_t * result, uint64_t index, kmipkit_byte_span_v1_t * out_span);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_transport_v1(kmipkit_profile_validation_result_t * result, uint32_t transport);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_request_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_request_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, const kmipkit_profile_validation_context_v1_t * context);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_response_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response);
+/* Validates the selected profile rules using typed KMIP messages.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response, const kmipkit_profile_validation_context_v1_t * context);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.
  */
 /* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
 int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
-/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
-int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 #include "kmipkit_named_value_helpers_generated.h"
 
 #ifdef __cplusplus

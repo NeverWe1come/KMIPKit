@@ -89,8 +89,9 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit::TransportError::new",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
-RUST_REPORT_PATH = Path("specs/053-api-parity-facade/reports/rust-export-report-2026-11-07-final.json")
-REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-07.json")
+# The 0047 release-stack and 0048 snapshots remain immutable historical evidence.
+RUST_REPORT_PATH = Path("specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json")
+REPORT_PATH = Path("specs/051-pre-send-validation/reports/shared-rust-inventory-2026-11-07.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )

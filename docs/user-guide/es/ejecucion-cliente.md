@@ -205,8 +205,49 @@ fn main() {
 Create Split Key puede devolver varios Unique Identifier. Su petición anuncia
 `Maximum Response Size` como el menor valor entre el límite local de bytes de
 respuesta y el mayor KMIP Integer con signo. El cliente también impone el
-límite local antes de entrar en el decoder TTLV, aunque el servidor ignore el
-tamaño anunciado.
+límite local antes de entrar en el decodificador del formato seleccionado,
+aunque el servidor ignore el tamaño anunciado.
+
+Las APIs de lote de C, Java y Python exponen las mismas tres formas de
+petición: C usa `kmipkit_client_batch_item_create`,
+`kmipkit_client_batch_item_create_key_pair` y
+`kmipkit_client_batch_item_create_split_key`; Java usa
+`ClientBatchItem.create`, `createKeyPair` y `createSplitKey`; Python usa
+`extensions.client_batch_item_create`, `client_batch_item_create_key_pair` y
+`client_batch_item_create_split_key`. Create requiere una estructura
+Attributes, que puede estar vacía. Create Key Pair mantiene separados sus seis
+grupos opcionales de atributos y máscaras. Create Split Key conserva los
+valores con signo de partes y umbral, el valor abierto del método y el
+identificador de entrada y los bytes del campo primo cuando se proporcionan.
+
+Los accesores de respuesta exitosa conservan el tipo TTLV original de cada
+Unique Identifier. C ofrece `kmipkit_client_batch_item_response_create`,
+`..._create_key_pair` y el par acotado de cantidad/índice
+`..._create_split_key_count` / `..._create_split_key_unique_identifier_at`;
+Java expone `createResponse()`, `createKeyPairResponse()` y
+`createSplitKeyUniqueIdentifiers()`; Python expone los campos de respuesta
+correspondientes en `BatchItemResult`. Los identificadores de las claves
+privada y pública siguen siendo distintos, y los de las partes divididas
+conservan su orden en el mensaje.
+
+El accessor aditivo de C `kmipkit_client_batch_item_response_metadata_v2`
+expone la operación de origen sin convertir y el Result Message UTF-8 exacto y
+opcional. La estructura y la función v1 existentes no cambian. El puntero del
+mensaje se presta mientras siga abierto el handle del elemento de respuesta;
+cópialo antes de liberarlo. `ClientBatchItemResult.metadataV2()` en Java y
+`BatchItemResult.metadata_v2` en Python copian el mensaje a una cadena del
+runtime antes de cerrar la respuesta nativa. No se garantiza el borrado de
+esas copias externas al descartarlas. El límite del mensaje completo también
+acota el texto (16 MiB por defecto). Un mensaje ausente se distingue de uno
+presente pero vacío.
+
+Result Message es texto no confiable del servidor. Se obtiene mediante
+inspección explícita de metadata y se omite del formato predeterminado, logs,
+errores y diagnósticos. OASIS KMIP v2.1 §8.6, Tabla 399, lo marca opcional
+solo cuando Result Status no es Pending ni Success; §9.17 permite un mensaje
+descriptivo de error. Por eso los fixtures compartidos de éxito y Pending lo
+omiten y `creation.result-message-on-failure.v1` comprueba el texto y UTF-8
+exactos en una respuesta Operation Failed.
 
 Las APIs de lote de C, Java y Python exponen las mismas tres formas de
 petición: C usa `kmipkit_client_batch_item_create`,
@@ -284,10 +325,13 @@ descarta el padding, así que la API no promete reproducir byte por byte la
 respuesta de red.
 
 `Client::new` construye un cliente de producción a partir de una configuración
-inmutable del cliente y un `TransportConfig` validado. Acepta TTLV sobre TLS
-directo o TTLV sobre HTTPS/HTTP 1.1; no acepta transportes implementados por el
-llamador ni bytes de petición sin procesar. Consulta la [guía de transporte](transportes-produccion.md)
-para configurar la confianza, los plazos y el comportamiento de las conexiones.
+inmutable del cliente y un `TransportConfig` validado. Acepta TTLV, JSON o
+XML sobre TLS directo y HTTPS/HTTP 1.1; no acepta transportes implementados por
+el llamador ni bytes de petición sin procesar. La configuración inmutable usa
+TTLV de forma predeterminada y `RequestOptions` puede reemplazar la codificación
+en un intercambio. La petición y la respuesta usan el formato seleccionado.
+Consulta la [guía de transporte](transportes-produccion.md) para elegir el
+formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 
 ## Credenciales y capacidad de atestación
 
@@ -418,6 +462,22 @@ de solo lectura respaldada por almacenamiento temporal gestionado por KMIPKit.
 Ese almacenamiento se pone a cero antes de que el método vuelva, también si
 el callback lanza una excepción. Las copias que cree la aplicación son de su
 propiedad.
+
+Cada resultado asíncrono ofrece una vista tipada específica de la operación:
+`cancelResponse()`/`cancel_response()`, `pollResponse()`/`poll_response()`,
+`processResponse()`/`process_response()` y
+`queryAsyncRequestsResponse()`/`query_async_requests_response()`. Rust ofrece
+los lectores equivalentes en snake case y la ABI de C dispone de una función
+`_response_v1` para cada operación. Si la operación no coincide, el lector no
+devuelve valor. Cancel expone Cancellation Result; Poll y Process exponen el
+estado Pending; Process también informa si el payload está presente y cuántos
+miembros tiene. Las vistas toman prestado o conservan el resultado propietario,
+por lo que las vistas Java/Python dejan de ser utilizables al cerrar el
+resultado. `raw()` mantiene el acceso al payload TTLV genérico. Query
+Asynchronous Requests no interpreta su payload porque la Tabla 286 de KMIP
+v2.1 tiene una discrepancia entre el pie y el contenido. Los spans de C y los
+callbacks de Java/Python leen la correlación del resultado propietario sin
+guardar otra copia.
 
 ## Límites de recursos
 

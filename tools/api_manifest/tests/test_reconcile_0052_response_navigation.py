@@ -18,16 +18,68 @@ class Reconcile0052ResponseNavigationTests(unittest.TestCase):
             "approvedExclusions": [],
         }
 
-    def test_adds_response_contract_routes_and_exact_bridge_exclusions(self) -> None:
+    def test_adds_response_and_async_typed_contract_routes(self) -> None:
         result = reconcile(self.manifest)
 
-        self.assertEqual(len(result["functions"]), 2)
-        self.assertEqual(len(result["publicDeclarations"]), 28)
+        self.assertEqual(len(result["functions"]), 6)
+        self.assertEqual(
+            {row["id"] for row in result["functions"]},
+            {
+                "client_batch_item_response_raw_ttlv",
+                "client_batch_item_response_header_ttlv",
+                "kmipkit_client_async_operation_outcome_cancel_response_v1",
+                "kmipkit_client_async_operation_outcome_poll_response_v1",
+                "kmipkit_client_async_operation_outcome_process_response_v1",
+                "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+            },
+        )
+        self.assertEqual(len(result["publicDeclarations"]), 82)
+        declaration_ids = {row["declarationId"] for row in result["publicDeclarations"]}
+        self.assertTrue(
+            {
+                "kmipkit-0052-async-wrapper-query_pending-java",
+                "kmipkit-0052-async-wrapper-query_pending-python",
+                "kmipkit-0052-async-wrapper-query_correlation-java",
+                "kmipkit-0052-async-wrapper-query_correlation-python",
+                "kmipkit-0052-async-cancel-c",
+                "kmipkit-0052-async-cancel-java",
+                "kmipkit-0052-async-cancel-python",
+                "kmipkit-0052-async-poll-c",
+                "kmipkit-0052-async-poll-java",
+                "kmipkit-0052-async-poll-python",
+                "kmipkit-0052-async-process-c",
+                "kmipkit-0052-async-process-java",
+                "kmipkit-0052-async-process-python",
+                "kmipkit-0052-async-query_async_requests-c",
+                "kmipkit-0052-async-query_async_requests-java",
+                "kmipkit-0052-async-query_async_requests-python",
+            } <= declaration_ids
+        )
         self.assertEqual(
             {row["exportName"] for row in result["approvedExclusions"]},
             {
                 "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRawTtlv",
                 "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHeaderTtlv",
+                "kmipkit_client_async_operation_response_v1_t.struct_size",
+                "kmipkit_client_async_operation_response_v1_t.abi_version",
+                "kmipkit_client_async_operation_response_v1_t.reserved",
+                "kmipkit.client.AsyncOperationResponseV1.__init__",
+                "kmipkit.client.AsyncOperationResponseV1.__slots__",
+                "kmipkit.client.AsyncCancelResponse.__init__",
+                "kmipkit.client.AsyncCancelResponse.__slots__",
+                "kmipkit.client.AsyncCancelResponse.raw",
+                "kmipkit.client.AsyncCancelResponse.result",
+                "kmipkit.client.AsyncPollResponse.__init__",
+                "kmipkit.client.AsyncPollResponse.__slots__",
+                "kmipkit.client.AsyncPollResponse.raw",
+                "kmipkit.client.AsyncPollResponse.result",
+                "kmipkit.client.AsyncProcessResponse.__init__",
+                "kmipkit.client.AsyncProcessResponse.__slots__",
+                "kmipkit.client.AsyncProcessResponse.raw",
+                "kmipkit.client.AsyncProcessResponse.result",
+                "kmipkit.client.AsyncQueryAsyncRequestsResponse.__init__",
+                "kmipkit.client.AsyncQueryAsyncRequestsResponse.raw",
+                "kmipkit.client.AsyncQueryAsyncRequestsResponse.result",
             },
         )
         capability = result["capabilities"][0]
@@ -38,6 +90,14 @@ class Reconcile0052ResponseNavigationTests(unittest.TestCase):
         )
         self.assertIn(
             "kmipkit_client_batch_item_response_raw_ttlv", capability["mappings"]["c"]
+        )
+        self.assertIn(
+            "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+            capability["parityEvidenceIds"],
+        )
+        self.assertIn(
+            "bindings/python/tests/test_async_operation_mapping.py",
+            capability["parityEvidenceIds"],
         )
 
     def test_reconciliation_is_deterministic_and_does_not_mutate_input(self) -> None:

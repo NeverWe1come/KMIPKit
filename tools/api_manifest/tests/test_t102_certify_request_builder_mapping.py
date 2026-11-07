@@ -153,8 +153,11 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
-DECLARATIONS_SHA256 = "3d9e938320ed69d050969d4c110473fbb9e8ae668a19c56c16405ba6dad53aa1"
-OPERATIONS_SHA256 = "cb2f54c5cdcc043af4d818296d30f62a154437d4203bda32bdf7638284b618d5"
+# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
+# Snapshot includes final 0049 and exact 0050 constructor mappings.
+# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
+DECLARATIONS_SHA256 = "df2f8671c8f124d0085a609c12cae6f7908ab42335837dafe275b8d6777dc295"
+OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
 def canonical_sha256(value: object) -> str:
@@ -434,6 +437,24 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+        # The 930 blocked 0051 validation rows and predecessor stack additions
+        # remain inside the exact non-target fingerprint and
+        # cannot acquire four-language parity through snapshot normalization.
+        for capability, count in (
+            ("typed_object_attributes", 286),
+            ("typed_managed_objects_and_key_material", 356),
+        ):
+            with self.subTest(stack_capability=capability):
+                typed_rows = [
+                    row for row in other_declarations
+                    if row["capabilityId"] == capability
+                ]
+                self.assertEqual(count, len(typed_rows))
+                self.assertTrue(all(
+                    row["declarationState"] == "blocked"
+                    and row["candidateSpecId"] == "KMIPKIT-0053"
+                    for row in typed_rows
+                ))
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

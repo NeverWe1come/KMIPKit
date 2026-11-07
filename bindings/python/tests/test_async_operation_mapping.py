@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from contextlib import ExitStack
+from threading import Event, Thread
 from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, errors, ttlv
+from kmipkit import _handles, client, errors, ttlv
 from kmipkit._client_ffi import ffi
+from kmipkit._handles import _wrap_owned_handle
 
 
 def _released_correlation_view() -> memoryview:
@@ -382,6 +384,8 @@ def _outcome_stubs(
     *,
     response_correlation: bytes | None = None,
     cancellation_result: int | None = None,
+    outcome_kind: int = int(client.BatchOutcome.COMPLETED),
+    result_status: int = 0,
     response_payload_structure: ttlv.Structure | None = None,
 ) -> SimpleNamespace:
     outcome_handle = ffi.cast("kmipkit_client_async_operation_outcome_t *", 42)
@@ -395,8 +399,8 @@ def _outcome_stubs(
         output.struct_size = ffi.sizeof("kmipkit_client_async_operation_metadata_v1_t")
         output.abi_version = 1
         output.operation = operation
-        output.outcome_kind = int(client.BatchOutcome.COMPLETED)
-        output.result_status = 0
+        output.outcome_kind = outcome_kind
+        output.result_status = result_status
         output.has_result_reason = 0
         output.result_reason = 0
         output.has_cancellation_result = int(cancellation_result is not None)
@@ -433,6 +437,234 @@ def _outcome_stubs(
         kmipkit_client_async_operation_outcome_correlation_value=correlation,
         kmipkit_client_async_operation_outcome_response_payload_ttlv=response_payload,
     )
+
+
+def _typed_outcome_stubs(operation: int, *, is_pending: bool = False,
+                         payload_member_count: int | None = None,
+                         has_payload: bool = False,
+                         correlation: bytes | None = None,
+                         payload_structure: ttlv.Structure | None = None) -> SimpleNamespace:
+    """Build typed-reader ABI stubs without allocating another native owner."""
+    stubs = _outcome_stubs(
+        operation,
+        [],
+        response_correlation=correlation,
+        cancellation_result=1 if operation == 0x19 else None,
+        outcome_kind=(
+            int(client.BatchOutcome.PENDING)
+            if is_pending
+            else int(client.BatchOutcome.COMPLETED)
+        ),
+        result_status=2 if is_pending else 0,
+        response_payload_structure=payload_structure,
+    )
+    native_correlation = (
+        ffi.new("uint8_t[]", correlation) if correlation is not None else ffi.NULL
+    )
+
+    def read(expected: int):
+        def invoke(_outcome, present, output) -> int:
+            present[0] = int(operation == expected)
+            if present[0]:
+                output.struct_size = ffi.sizeof(
+                    "kmipkit_client_async_operation_response_v1_t"
+                )
+                output.abi_version = 1
+                output.operation = expected
+                output.result_status = 2 if is_pending else 0
+                output.is_pending = int(is_pending)
+                output.has_cancellation_result = int(expected == 0x19)
+                output.cancellation_result = 1 if expected == 0x19 else 0
+                output.has_asynchronous_correlation_value = int(
+                    correlation is not None
+                )
+                output.asynchronous_correlation_value.data = native_correlation
+                output.asynchronous_correlation_value.length = len(correlation or b"")
+                output.has_response_payload = int(has_payload)
+                output.reserved = 0
+                output.response_payload_member_count = payload_member_count or 0
+            return 0
+
+        return invoke
+
+    stubs.kmipkit_client_async_operation_outcome_cancel_response_v1 = read(
+        0x19
+    )
+    stubs.kmipkit_client_async_operation_outcome_poll_response_v1 = read(0x1A)
+    stubs.kmipkit_client_async_operation_outcome_process_response_v1 = read(0x3A)
+    stubs.kmipkit_client_async_operation_outcome_query_async_requests_response_v1 = read(
+        0x39
+    )
+    return stubs
+
+
+@pytest.mark.parametrize(
+    ("operation", "reader"),
+    [
+        (0x19, "cancel_response"),
+        (0x1A, "poll_response"),
+        (0x3A, "process_response"),
+        (0x39, "query_async_requests_response"),
+    ],
+)
+def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
+    monkeypatch, operation: int, reader: str
+) -> None:
+    stubs = _typed_outcome_stubs(
+        operation,
+        is_pending=operation in (0x1A, 0x3A, 0x39),
+        payload_member_count=0,
+        has_payload=operation in (0x3A, 0x39),
+        correlation=(
+            b"typed-correlation" if operation in (0x19, 0x1A, 0x3A, 0x39) else None
+        ),
+        payload_structure=(
+            ttlv.ttlv_structure_create()
+            if operation in (0x3A, 0x39)
+            else None
+        ),
+    )
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        typed = getattr(outcome, reader)()
+        assert typed is not None
+        assert typed.result.operation == operation
+        if operation in (0x3A, 0x39):
+            raw = typed.raw
+            assert raw is not None
+            try:
+                with ttlv.ttlv_structure_view(raw) as view:
+                    assert ttlv.ttlv_structure_view_item_count(view) == 0
+            finally:
+                raw.close()
+        else:
+            assert typed.raw is None
+        if operation == 0x19:
+            assert typed.cancellation_result == 1
+            observed: list[bytes] = []
+
+            def inspect_echo(value: memoryview) -> None:
+                assert value.readonly
+                assert bytes(value) == b"typed-correlation"
+                observed.append(bytes(value))
+
+            assert typed.with_echoed_correlation_value(inspect_echo)
+            assert observed == [b"typed-correlation"]
+        if operation in (0x1A, 0x3A, 0x39):
+            assert typed.is_pending
+        if operation == 0x39:
+            observed_correlation: list[bytes] = []
+
+            def inspect_query_correlation(value: memoryview) -> None:
+                assert value.readonly
+                observed_correlation.append(bytes(value))
+
+            assert typed.with_asynchronous_correlation_value(inspect_query_correlation)
+            assert observed_correlation == [b"typed-correlation"]
+        if operation == 0x3A:
+            assert typed.payload_member_count == 0
+    finally:
+        outcome.close()
+
+
+def test_pending_status_is_not_added_to_base_or_cancel_response_types() -> None:
+    assert not hasattr(client.AsyncOperationResponseV1, "is_pending")
+    assert not hasattr(client.AsyncCancelResponse, "is_pending")
+    assert hasattr(client.AsyncPollResponse, "is_pending")
+    assert hasattr(client.AsyncProcessResponse, "is_pending")
+    assert hasattr(client.AsyncQueryAsyncRequestsResponse, "is_pending")
+
+
+def test_async_typed_response_readers_return_none_for_other_operations(
+    monkeypatch,
+) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True, has_payload=False)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        assert outcome.poll_response() is not None
+        assert outcome.cancel_response() is None
+        assert outcome.process_response() is None
+        assert outcome.query_async_requests_response() is None
+    finally:
+        outcome.close()
+
+
+def test_async_response_view_uses_the_outcome_lifetime(monkeypatch) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    view = outcome.poll_response()
+    assert view is not None
+    outcome.close()
+    with pytest.raises(errors.InvalidInputError):
+        _ = view.result
+    with pytest.raises(errors.InvalidInputError):
+        _ = view.is_pending
+
+
+def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -> None:
+    expected = b"borrowed-correlation"
+    copy_started = Event()
+    allow_copy = Event()
+    close_finished = Event()
+    callback_values: list[bytes] = []
+    failures: list[BaseException] = []
+    response = SimpleNamespace(
+        has_asynchronous_correlation_value=1,
+        asynchronous_correlation_value=SimpleNamespace(
+            data=object(), length=len(expected)
+        ),
+    )
+    outcome_handle = ffi.cast("kmipkit_client_async_operation_outcome_t *", 47)
+    stubs = SimpleNamespace(
+        kmipkit_client_async_operation_outcome_release=lambda _handle: None
+    )
+
+    def delayed_buffer(_data, length):
+        copy_started.set()
+        assert client._NATIVE_CALL_LOCK._is_owned()
+        assert length == len(expected)
+        assert allow_copy.wait(timeout=5)
+        return expected
+
+    monkeypatch.setattr(client, "ffi", SimpleNamespace(buffer=delayed_buffer))
+    monkeypatch.setattr(client, "lib", stubs)
+    monkeypatch.setattr(_handles, "lib", stubs)
+    monkeypatch.setattr(client.AsyncOperationOutcome, "_typed_response", lambda *_args: response)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, outcome_handle)
+
+    def read_correlation() -> None:
+        try:
+            assert outcome._with_typed_correlation_value(
+                "kmipkit_client_async_operation_outcome_cancel_response_v1",
+                lambda view: callback_values.append(bytes(view)),
+            )
+        except BaseException as error:
+            failures.append(error)
+
+    def close_outcome() -> None:
+        outcome.close()
+        close_finished.set()
+
+    reader = Thread(target=read_correlation)
+    reader.start()
+    assert copy_started.wait(timeout=5)
+    closer = Thread(target=close_outcome)
+    closer.start()
+    try:
+        assert not close_finished.wait(timeout=0.05)
+    finally:
+        allow_copy.set()
+        reader.join(timeout=5)
+        closer.join(timeout=5)
+
+    assert not reader.is_alive()
+    assert not closer.is_alive()
+    assert failures == []
+    assert close_finished.is_set()
+    assert callback_values == [expected]
 
 
 def _cancel_response_payload(

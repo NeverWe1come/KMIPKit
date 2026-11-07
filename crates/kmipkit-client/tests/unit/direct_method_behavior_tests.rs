@@ -12,7 +12,7 @@ use std::time::Duration;
 use kmipkit_protocol::*;
 use kmipkit_transport::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, Transport, TransportCauseCategory,
-    TransportError, TransportResponse,
+    TransportError, TransportResponse, WireEncoding,
 };
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Structure, Value};
@@ -114,9 +114,14 @@ fn assert_direct_matches_batch<Request>(
     assert_eq!(default_bytes.borrow().len(), 1);
     assert_eq!(*direct_bytes.borrow(), *batch_bytes.borrow());
     assert_eq!(*default_bytes.borrow(), *batch_bytes.borrow());
-    assert_eq!(*direct_options.borrow(), vec![options]);
-    assert_eq!(*batch_options.borrow(), vec![options]);
-    assert_eq!(*default_options.borrow(), vec![RequestOptions::default()]);
+    // The client resolves its configured encoding before reaching the transport.
+    let resolved_options = options.with_wire_encoding(WireEncoding::Ttlv);
+    assert_eq!(*direct_options.borrow(), vec![resolved_options]);
+    assert_eq!(*batch_options.borrow(), vec![resolved_options]);
+    assert_eq!(
+        *default_options.borrow(),
+        vec![RequestOptions::default().with_wire_encoding(WireEncoding::Ttlv)]
+    );
 }
 
 #[test]

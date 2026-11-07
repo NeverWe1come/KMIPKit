@@ -4,9 +4,22 @@ Status: research and integration-test planning, not a conformance claim
 
 Research checked: 2026-10-11
 
-This document keeps two questions separate: what a server publicly declares for each KMIP operation, and what KMIPKit has actually exercised against a server. A declared operation is not an integration-test result. A passing integration test proves interoperability only for the recorded operation, payload, transport, product version, and configuration.
+This document keeps separate what a server publicly declares for each KMIP
+operation and what KMIPKit has actually exercised against a server. A declared
+operation is not an integration-test result. A passing integration test proves
+interoperability only for the recorded operation, payload, transport, product
+version, and configuration.
 
-KMIPKit 1.0 targets KMIP 2.1, TTLV, and client-initiated operations, including asynchronous request flows. Set Endpoint Role (§6.1.54) is the explicit exception: its mandatory success transition makes the local endpoint assume the server role, so both it and reverse-direction §6.2.5 are deferred to 1.1. Other server-initiated operations are outside 1.0 and planned for 1.1. The normative operation inventory below follows KMIP 2.1 Specification §§6.1 (57 client-to-server headings) and 6.2 (5 server-to-client headings); duplicate operation names are shown once per direction.
+KMIPKit 1.0 targets KMIP 2.1 with TTLV (the default), JSON, and XML over raw
+TLS and HTTPS, plus client-initiated operations including asynchronous
+request flows. Existing interoperability evidence is encoding-specific and
+does not imply JSON/XML support. Set Endpoint Role (§6.1.54) is the explicit
+exception: its mandatory success transition makes the local endpoint assume
+the server role, so both it and reverse-direction §6.2.5 are deferred to 1.1.
+Other server-initiated operations are outside 1.0 and planned for 1.1. The
+normative operation inventory follows KMIP 2.1 Specification §§6.1 (57
+client-to-server headings) and 6.2 (5 server-to-client headings); duplicate
+operation names are shown once per direction.
 
 ## Published operation support: Cosmian KMS and PyKMIP
 

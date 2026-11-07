@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tools.api_manifest.tests.pre_send_validation_routes import is_pre_send_validation_trait
+
 import json
 import unittest
 
@@ -130,6 +132,7 @@ FUNCTIONAL_STATES = {
     },
     "RegisterRequest": {
         "": "verified",
+        "::from_managed_object": "blocked",
         "::new": "declared",
         "::from_managed_object": "verified",
         "::with_opaque_object_context": "verified",
@@ -189,6 +192,7 @@ class T102RevocationRegisterTraitExclusionTests(unittest.TestCase):
                 for row in self.manifest["publicDeclarations"]
                 if row.get("packageId") == PACKAGE
                 and row.get("exportName", "").startswith(prefix)
+                and not is_pre_send_validation_trait(row)
             }
             exclusions = {
                 row["exportName"]: row
@@ -238,6 +242,16 @@ class T102RevocationRegisterTraitExclusionTests(unittest.TestCase):
                 and not row.get("exportName", "").startswith("<")
             }
             self.assertEqual(actual, expected)
+            if type_name == "RegisterRequest":
+                managed = next(
+                    row for row in self.manifest["publicDeclarations"]
+                    if row["packageId"] == PACKAGE
+                    and row["exportName"] == f"{protocol}::from_managed_object"
+                )
+                self.assertEqual("typed_managed_objects_and_key_material", managed["capabilityId"])
+                self.assertEqual("KMIPKIT-0053", managed["candidateSpecId"])
+                self.assertEqual(["KMIPKIT-0049-FR-006", "KMIPKIT-0049-FR-007"], managed["requirementIds"])
+                self.assertNotIn("languageMappings", managed)
 
             root = f"kmipkit::{type_name}"
             root_rows = [

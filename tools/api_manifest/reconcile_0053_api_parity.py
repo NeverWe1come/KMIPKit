@@ -2396,7 +2396,7 @@ def remove_approved_exclusions(
             or declaration_id in seen
         ):
             raise ReconciliationError(
-                "only exact approved QueryResponse, secret-cleanup, or four-language C function exclusions may be superseded"
+                "only an exact KMIPKIT-0020 exclusion for a QueryResponse route, an exact KMIPKIT-0053 secret-cleanup exclusion, or an exact approved four-language C function exclusion may be superseded"
             )
         seen.add(declaration_id)
 

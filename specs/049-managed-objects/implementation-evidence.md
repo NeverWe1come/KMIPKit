@@ -3,7 +3,7 @@
 ## Source and branch baseline
 
 - Authorized feature chain root: `feature/KMIPKIT-0043-t076-shared-client-mapping` (PR #104).
-- Immediate predecessor: `feature/KMIPKIT-0048-typed-attributes`, PR #115, latest synchronized commit `5c68f0006`.
+- Immediate predecessor: `feature/KMIPKIT-0048-typed-attributes`, PR #115, latest synchronized commit `ba01f43c45bfa851d3456713bcb840260bd332d8`.
 - Current feature branch: `feature/KMIPKIT-0049-managed-objects`; the maintainer authorized the phase stack to start from #104 and to use predecessor branches until eventual integration into `release/1.0.0`.
 - Pinned OASIS source: `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`, SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`.
 - Normative catalog: `specification/catalog/kmip-2.1.json`, SHA-256 `0D68D403956FE0BA4057BED346FDE57D1BC8938D975338E02BE2D435EC16FBEE`.
@@ -89,10 +89,201 @@ or release-level interoperability evidence is claimed for this feature.
   source snapshot. This refresh also changes documentation only.
 - Remote CI checks were not queried under the maintainer's billing instruction.
 
-The pushed #116 head includes the #115 follow-up merge above. The synchronized
-Linux workspace and adapter coverage results that include this change are
-recorded in `specs/053-api-parity-facade/implementation-evidence.md`.
+At that historical refresh, the local branch included the #115 follow-up
+merge above; the remote #116 head had not yet advanced to that commit.
 
-The macOS Rust platform report, hosted cross-platform coverage aggregation,
-and hosted CI remain outstanding; the PR is still a draft and the phase has
-not been declared complete.
+Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.
+
+
+## Reviewed predecessor synchronization (2026-11-07)
+
+Merged the reviewed and published 0048 predecessor head
+`ba01f43c45bfa851d3456713bcb840260bd332d8` from the existing 0049 head
+`cbe09ce2fc34a042357f31533de23b00c877c956`. The merge retains the predecessor's
+release-stack changes and its Red, Green, Refactor ownership-filter corrections.
+All incoming manifest declarations, exclusions, capabilities, and other sections
+are preserved exactly. All 356 0049 declarations and 566 0049 exclusions remain
+identical to the original 0049 parent. The 0049 model/runtime source and original
+source evidence are unchanged; four-language typed-object parity stays blocked
+for KMIPKIT-0053.
+
+The combined manifest contains 12,230 declarations and 17,384 approved
+exclusions. T102 totals and the declaration/other-manifest fingerprints now pin
+that exact combined inventory; the operation fingerprint and normalization
+logic are unchanged. The official 0049 reconciler reports zero missing rows,
+and the official generator produced all 12 outputs. No generated output was
+edited by hand.
+
+The official auditors generated current-source reports under
+`specs/049-managed-objects/reports/`. Current-snapshot references in the shared
+Rust auditor and inventory/schema tests now select this 0049 evidence. All 42
+incoming historical 0047/0048 reports remain byte-identical to the predecessor.
+
+Fresh verification against the final predecessor:
+
+- `cargo test --offline --locked -p kmipkit-protocol --all-features --quiet`
+  passed: 1,277 unit tests, all integration tests, and 3 doctests.
+- `cargo fmt --all --check` passed.
+- `cargo clippy --offline --locked -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  passed.
+- `python -B -m unittest tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_reconcile_0049_managed_objects -q`
+  passed all 16 tests, including all 14 0048 ownership-filter regressions.
+- The combined API regression command below passed all 92 tests in 153.882
+  seconds, with no failures, errors, or skips. It includes the original
+  87-test selection and the five newest 0048 ownership-filter regressions.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- `python -B tools/api_manifest/reconcile_0049_managed_objects.py --report specs/049-managed-objects/reports/rust-export-report-post-sync-2026-11-07.json`
+  reported zero added declarations and zero added exclusions.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/049-managed-objects/reports/rust-export-report-post-sync-2026-11-07.json --check`
+  passed: 22,429 observed routes, 6,641 exact manifest matches, 15,788 exact
+  exclusions, and zero missing, unobserved, kind, conditional, or scope issues.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/049-managed-objects/reports/shared-rust-inventory-post-sync-2026-11-07.json --check`
+  passed. The paired inventory retains 3,697 mapped shared declarations.
+- `python -B tools/api_manifest/audit_binding_exports.py --report specs/049-managed-objects/reports/binding-export-report-post-sync-2026-11-07.json --check`
+  passed for C (1,708 exact matches), Java (1,881), and Python (2,000), with
+  no missing routes, unobserved declarations, kind mismatches, or issues.
+- `python -B tools/normative_catalog/check_immutable_sources.py --base-sha cbe09ce2fc34a042357f31533de23b00c877c956 --repo-root .`
+  passed: pinned OASIS upstream sources match the original 0049 parent.
+
+Exact combined API command:
+
+```text
+python -B -m unittest tools.api_manifest.tests.test_reconcile_0049_managed_objects tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_t102_manifest_size_limit tools.api_manifest.tests.test_c_api_docs tools.api_manifest.tests.test_t102_response_view_mappings tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest tools.api_manifest.tests.test_047_binding_audit_reconciliation tools.api_manifest.tests.test_t102_remaining_response_view_mappings tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_catalog_parity tools.api_manifest.tests.test_t109_binding_export_audit_reconciliation tools.api_manifest.tests.test_shared_rust_inventory tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_rust_public_access_paths -q
+```
+
+The conflict-resolution paths pass the whitespace check. The complete merge
+retains the predecessor's two existing whitespace diagnostics: the final blank
+line in `interop/c-kmip-validator/src/c_validator.c` and trailing whitespace in
+`interop/shared/vectors/generate_vectors.py`. Neither file is changed by the
+resolution. Rust export auditing also emitted the established non-fatal Windows
+AWS-LC `stdalign_check.c` and missing NASM warnings.
+
+No PR was created, closed, or retargeted, and no remote CI status was queried.
+Untracked files and existing target directories were preserved; target sizes
+were not inspected. This synchronization adds no fresh coverage or platform
+aggregate. The feature remains in draft pending its existing external review,
+coverage, and cross-platform controls.
+
+
+## T102 non-target snapshot review correction (2026-11-07)
+
+Independent review reproduced two stale declaration fingerprints in the
+Certify request-builder and optional request-structure modules. The earlier
+92-test selection did not include these two modules. The extension-registry
+namespace module passed unchanged.
+
+Before updating either fingerprint, a semantic comparison against the reviewed
+0048 parent `ba01f43c45bfa851d3456713bcb840260bd332d8` confirmed that the merge
+adds exactly 356 managed-object declarations and removes or modifies no incoming
+declaration. Both affected target subsets and all incoming operation rows are
+unchanged. The fingerprint introduction history predates parts of the approved
+0047/release-stack and typed-attribute reconciliation, so the drift is historical
+snapshot coverage, not a new modification to the target mappings. Both operation
+fingerprints already match and require no change.
+
+### Red
+
+The two existing snapshot tests now also assert that their normalized non-target
+inventories retain all 286 typed-attribute and 356 typed-managed-object
+declarations and leave every such route blocked for KMIPKIT-0053. This prevents
+fixing the stale snapshots by dropping the stacked features or promoting parity.
+
+`python -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_client_extension_registry_namespace tools.api_manifest.tests.test_t102_optional_request_structure_mapping -q`
+ran 14 tests with exactly two expected assertion failures and no errors: Certify
+expected `06836a3a5acda28b85051dbfb9658beb6fb6c92ef7640b886bb8b7bcaa9455a9`
+versus `3477efd6002b5732681fb9601016ba82f83e069608ff4c26ca6f4d93ac21fa9d`,
+and optional structures expected
+`c5853de988901f59c51ba64d80accc51a4b873161da1a75ef1c3315b7e4ae541` versus
+`47183651eebdc81364d32a6155454357e30ecc65886d3acbfdd535831f2a516e`.
+The new inventory/parity assertions passed before each old fingerprint failed.
+No manifest, generated output, or production source changed in this Red step.
+
+
+### Expanded Red: complete T102 inventory fixtures
+
+After the initial Red commit `6df97ca68`, the complete command
+`python -B -m unittest discover -s tools/api_manifest/tests -p 'test_t102_*.py' -q`
+ran 399 tests in 132.496 seconds and exposed six failures plus one error beyond
+the now-corrected two fingerprints. This is preserved as Red evidence before
+updating those fixtures; no production validator or manifest is being changed.
+
+Replaying the seven exact failing cases against the immutable reviewed 0048
+manifest at `ba01f43c45bfa851d3456713bcb840260bd332d8` establishes provenance:
+
+- Three cases pass on 0048 and fail after 0049: Import request traits,
+  key-transfer request states, and Register request traits omit the new
+  `from_managed_object` routes. The implementation in `import.rs` and
+  `register.rs` derives Object Type from the supplied managed object; both
+  exact manifest routes intentionally remain blocked for KMIPKIT-0053.
+- Four cases already fail on 0048: two Locate expectations omit 23 approved
+  `kmipkit::protocol` aliases (12 of them request surfaces); the profile error
+  code fixture omits 20 aliases through the same public protocol namespace;
+  and the response-conversion fixture omits the approved-exclusion argument
+  supplied by the production generator entry point.
+- The latter error concerns exactly one approved C function target,
+  `kmipkit_client_batch_item_response_metadata_v1`, referenced by two ready
+  mappings. It does not justify accepting an unmatched target. The corrected
+  fixture must preserve explicit rejection when that exact approved target is
+  removed, together with its existing four-language wrong-target tests.
+
+The facade namespace is exported by
+`pub use kmipkit_protocol as protocol` in `crates/kmipkit/src/lib.rs`.
+Existing exact-ID, state, normative-requirement, and missing-target rejection
+checks remain the intended contracts; only their stale fixture inputs change.
+
+
+### Green
+
+The exact declaration fingerprints are now
+`3477efd6002b5732681fb9601016ba82f83e069608ff4c26ca6f4d93ac21fa9d` (Certify)
+and `47183651eebdc81364d32a6155454357e30ecc65886d3acbfdd535831f2a516e`
+(optional structures). Their target filters, normalization logic, and operation
+fingerprints are unchanged.
+
+The six expanded fixtures now pin the intended current inventory precisely:
+
+- Import/Register expected-state sets include only their exact new
+  `from_managed_object` methods as blocked routes. The tests also pin
+  KMIPKIT-0053, the typed-object capability, FR-006/FR-007, and absent foreign
+  mappings for these constructors.
+- Locate pins all 74 operation declaration IDs, with an explicit 23-entry
+  facade alias ID/name map and its 12 request aliases. Every alias must retain
+  its canonical declaration's capability, state, requirements, and approval;
+  server-only requirements remain rejected across the complete inventory.
+- Profile diagnostic tests pin all 80 exact paths across the four approved
+  public prefixes, including the 20 `kmipkit::protocol` aliases. Each namespace
+  still checks exact language targets, diagnostic codes, owner requirements,
+  and approval evidence.
+- The response-conversion fixture passes the same approved exclusions as the
+  production generator entry point. Removing the sole approved metadata C
+  target still raises `not an exact listed export`; all four wrong execution
+  mappings still raise their precise normalized-mapping diagnostic.
+
+Verification:
+
+- The three original reviewer modules passed all 14 tests after the fingerprint
+  correction.
+- The nine affected modules passed all 36 tests, with no failures/errors.
+- `python -B -m unittest discover -s tools/api_manifest/tests -p 'test_t102_*.py' -q`
+  passed all 399 tests in 144.441 seconds, with no failures, errors, or skips.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- `git diff --check` passed for this review correction.
+
+Only test fixtures and this evidence file differ from the synchronized source
+snapshot `5f8536a93f4e753d80ed8ac9544ed3e14399be17`. The production manifest,
+validators, runtime, generated outputs, and audit reports remain unchanged.
+No PR metadata or remote CI was queried or changed.
+
+
+### Refactor
+
+Green is recorded in `70d14c27e`. The touched ImportRequest state fixture is
+expanded from a single long line into one method/state pair per line so its
+new blocked typed constructor can be reviewed alongside the existing verified
+methods. Python AST comparison before/after confirms identical behavior.
+
+The nine affected modules were rerun after this readability-only change:
+36 tests passed in 4.908 seconds, with no failures or errors. The already
+passing 399-test T102 run was not repeated. `git diff --check` passed; the
+manifest, production validator, runtime, audit reports, and all 12 verified
+generated outputs remain unchanged from `5f8536a93`.

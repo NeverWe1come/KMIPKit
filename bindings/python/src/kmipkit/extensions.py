@@ -75,6 +75,14 @@ _LIMIT_FIELDS = (
 _VERSIONED_LIMITS_TYPE = "kmipkit_extension_registry_limits_v1_t"
 
 
+class WireEncoding(IntEnum):
+    """KMIP 2.1 message encoding selected for a client exchange."""
+
+    TTLV = 0
+    JSON = 1
+    XML = 2
+
+
 def _native_limits(values: tuple[int, ...]) -> Any:
     native = ffi.new(f"{_VERSIONED_LIMITS_TYPE} *")
     native.struct_size = ffi.sizeof(_VERSIONED_LIMITS_TYPE)
@@ -283,10 +291,34 @@ class ClientConfiguration(NativeHandle):
         limits: ExtensionRegistryLimits,
         *,
         _token: object,
+        wire_encoding: WireEncoding = WireEncoding.TTLV,
     ) -> None:
         super().__init__(handle, _token=_token, owner=definitions)
         self._definitions = definitions
         self.limits = limits
+        self._wire_encoding = wire_encoding
+
+    @property
+    def wire_encoding(self) -> WireEncoding:
+        """Return this immutable configuration's default wire encoding."""
+        return self._wire_encoding
+
+    def with_wire_encoding(self, encoding: WireEncoding) -> ClientConfiguration:
+        """Return a native configuration copy with a different wire encoding."""
+        if not isinstance(encoding, WireEncoding):
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_client_configuration_t",
+            "kmipkit_client_configuration_with_wire_encoding",
+            (self._pointer(), int(encoding)),
+        )
+        return _wrap_owned_handle(
+            ClientConfiguration,
+            handle,
+            self._definitions,
+            self.limits,
+            wire_encoding=encoding,
+        )
 
 
 class ValidatedExtensionValue(NativeHandle):
@@ -1201,6 +1233,21 @@ def client_configuration_extension_registry(
         ClientExtensionRegistry,
         handle, configuration._definitions, configuration.limits
     )
+
+
+def client_configuration_wire_encoding(
+    configuration: ClientConfiguration,
+) -> WireEncoding:
+    """Return the native default encoding configured for a KMIP client."""
+    value = _scalar(
+        "uint32_t",
+        lib.kmipkit_client_configuration_wire_encoding,
+        configuration._pointer(),
+    )
+    try:
+        return WireEncoding(value)
+    except ValueError:
+        errors.raise_for_status(4)
 
 
 def definition_count(registry: ClientExtensionRegistry) -> int:
@@ -3657,6 +3704,7 @@ __all__ = [
     "UniqueIdentifierKind",
     "TtlvPath",
     "ValidatedExtensionValue",
+    "WireEncoding",
     "client_batch_item_discover_versions",
     "client_batch_item_unique_batch_item_id",
     "client_batch_item_ping",
@@ -3715,6 +3763,7 @@ __all__ = [
     "client_batch_item_extension_identity_at",
     "with_unique_batch_item_id",
     "client_configuration_extension_registry",
+    "client_configuration_wire_encoding",
     "create_client_configuration",
     "create_client_extension_registry",
     "create_client_request_message_extension",

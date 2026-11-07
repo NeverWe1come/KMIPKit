@@ -142,6 +142,10 @@ impl TestTransport {
         }
     }
 
+    pub(crate) fn observe_options(&mut self, observer: Rc<RefCell<Vec<RequestOptions>>>) {
+        self.observed_options = Some(observer);
+    }
+
     pub(crate) fn exchange_with_options(
         &mut self,
         request: &[u8],

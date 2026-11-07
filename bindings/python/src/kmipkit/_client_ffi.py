@@ -361,6 +361,21 @@ ffi.cdef(
         uint32_t struct_size;
         uint32_t abi_version;
         uint32_t operation;
+        uint32_t result_status;
+        uint32_t is_pending;
+        uint32_t has_cancellation_result;
+        uint32_t cancellation_result;
+        uint32_t has_asynchronous_correlation_value;
+        kmipkit_byte_span_v1_t asynchronous_correlation_value;
+        uint32_t has_response_payload;
+        uint32_t reserved;
+        uint64_t response_payload_member_count;
+    } kmipkit_client_async_operation_response_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t operation;
         uint32_t outcome_kind;
         uint32_t result_status;
         uint32_t has_result_reason;
@@ -441,6 +456,12 @@ ffi.cdef(
         kmipkit_client_t *client,
         kmipkit_client_batch_t **batch,
         kmipkit_codec_limits_t *limits,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_options(
+        kmipkit_client_t *client,
+        kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        int32_t encoding_override,
         kmipkit_client_batch_response_t **out_response);
     int32_t kmipkit_client_execute_with_options_v1(
         kmipkit_client_t *client,
@@ -558,6 +579,22 @@ ffi.cdef(
     int32_t kmipkit_client_async_operation_outcome_metadata_v1(
         kmipkit_client_async_operation_outcome_t *outcome,
         kmipkit_client_async_operation_metadata_v1_t *out_metadata);
+    int32_t kmipkit_client_async_operation_outcome_cancel_response_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint8_t *out_present,
+        kmipkit_client_async_operation_response_v1_t *out_response);
+    int32_t kmipkit_client_async_operation_outcome_poll_response_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint8_t *out_present,
+        kmipkit_client_async_operation_response_v1_t *out_response);
+    int32_t kmipkit_client_async_operation_outcome_process_response_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint8_t *out_present,
+        kmipkit_client_async_operation_response_v1_t *out_response);
+    int32_t kmipkit_client_async_operation_outcome_query_async_requests_response_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint8_t *out_present,
+        kmipkit_client_async_operation_response_v1_t *out_response);
     int32_t kmipkit_client_async_operation_outcome_correlation_value(
         kmipkit_client_async_operation_outcome_t *outcome,
         uint8_t *out_present,

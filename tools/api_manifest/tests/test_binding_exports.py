@@ -107,6 +107,37 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(command[1], str(wrapper))
         self.assertEqual(classpath, "/tmp/jspecify.jar")
 
+    def test_c_record_fields_are_declared_by_the_manifest_record_layout(self):
+        manifest = {
+            "publicDeclarations": [],
+            "types": [],
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_probe_v1_t",
+                    "reason": "This exact C carrier has no independent four-language value type.",
+                    "cType": {
+                        "name": "kmipkit_probe_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "value", "type": "uint32_t"}],
+                    },
+                },
+            ],
+        }
+        report = {
+            "complete": True,
+            "declarations": [
+                AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t", "type", "1"),
+                AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t.value", "field", "1"),
+            ],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "c-kmipkit")
+
+        self.assertTrue(result["matchesManifest"])
+        self.assertEqual(result["counts"]["missingFromManifest"], 0)
+
     def test_java_compile_uses_gradle_configured_jspecify_classpath(self):
         repo_root = Path(__file__).resolve().parents[3]
         with tempfile.TemporaryDirectory() as directory:

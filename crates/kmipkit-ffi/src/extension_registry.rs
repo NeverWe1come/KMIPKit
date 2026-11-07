@@ -50,15 +50,15 @@ use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
     kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
     kmipkit_byte_span_v1_t, kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
-    kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
-    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
-    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
-    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
-    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
-    kmipkit_credential_view_t, kmipkit_cryptographic_parameters_fields_v1_t,
-    kmipkit_cryptographic_parameters_t, kmipkit_delete_attribute_request_t,
-    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_client_async_operation_outcome_t, kmipkit_client_async_operation_response_v1_t,
+    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
+    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
+    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_credential_view_t, kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
+    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -89,7 +89,7 @@ use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
-    ClientErrorCategory, ClientRequest,
+    ClientErrorCategory, ClientRequest, WireEncoding,
 };
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
@@ -652,7 +652,7 @@ enum HandleValue {
     ProfileValidationError(ProfileValidationError),
     ProfileValidationResult(ProfileValidationResult),
     ProfileReadiness(ProfileReadiness),
-    TransportConfig(TransportConfig),
+    TransportConfig(Box<TransportConfig>),
     Client(Box<std::sync::Mutex<Client>>),
     ClientBatch(Arc<Mutex<Option<ClientBatchBuilder>>>),
     ClientBatchResponse(Arc<ClientBatchResponse>),
@@ -4059,6 +4059,56 @@ pub extern "C" fn kmipkit_client_configuration_create(
         ));
         SUCCESS
     })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
+    configuration: *mut kmipkit_client_configuration_t,
+    encoding: u32,
+    out_configuration: *mut *mut kmipkit_client_configuration_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_configuration);
+        let encoding = try_ffi!(wire_encoding_from_abi(encoding));
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let configured = client_extension::ClientConfiguration::from_shared_registry(
+            configuration.shared_extension_registry(),
+        )
+        .with_wire_encoding(encoding);
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_wire_encoding(
+    configuration: *mut kmipkit_client_configuration_t,
+    out_encoding: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_encoding);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = configuration.wire_encoding() as u32;
+        SUCCESS
+    })
+}
+
+fn wire_encoding_from_abi(value: u32) -> Result<WireEncoding, i32> {
+    match value {
+        0 => Ok(WireEncoding::Ttlv),
+        1 => Ok(WireEncoding::Json),
+        2 => Ok(WireEncoding::Xml),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
 }
 
 #[unsafe(no_mangle)]

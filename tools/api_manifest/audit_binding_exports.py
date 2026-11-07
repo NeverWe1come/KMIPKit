@@ -933,6 +933,51 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
     return _report(records, issues)
 
 
+def _declared_c_record_fields(
+    manifest: dict[str, Any], package_rows: list[dict[str, Any]]
+) -> list[dict[str, str]]:
+    """Return record members declared by an included public C type layout."""
+    declared_types = {
+        row["exportName"] for row in package_rows
+        if row.get("kind") == "type" and row.get("declarationState") in {"declared", "verified"}
+    }
+    recorded_names = {row["exportName"] for row in package_rows}
+    excluded_names = {
+        row["exportName"]
+        for row in manifest.get("approvedExclusions", [])
+        if row.get("packageId") == "c-kmipkit"
+    }
+    declarations: list[dict[str, str]] = []
+    c_records = [
+        type_record.get("c", {})
+        for type_record in manifest.get("types", [])
+    ]
+    c_records.extend(
+        exclusion["cType"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+        and isinstance(exclusion.get("cType"), dict)
+    )
+    for c_record in c_records:
+        c_name = c_record.get("name")
+        if (
+            c_record.get("kind") != "fixed-width-value"
+            or not c_record.get("fields")
+            or (c_name not in declared_types and c_name not in excluded_names)
+        ):
+            continue
+        for field in c_record.get("fields", []):
+            export_name = f"{c_name}.{field['name']}"
+            if export_name not in recorded_names and export_name not in excluded_names:
+                declarations.append({
+                    "packageId": "c-kmipkit",
+                    "exportName": export_name,
+                    "kind": "field",
+                })
+                recorded_names.add(export_name)
+    return declarations
+
+
 def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     if package == "c-kmipkit":
@@ -949,8 +994,8 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             or row.get("kind") == "c-symbol"
             or row.get("exportName") in stable_error_codes
         ]
-    declaration_counts = Counter((row["packageId"], row["exportName"]) for row in package_rows)
-    duplicate_names = sorted(name for (package_id, name), count in declaration_counts.items() if count > 1)
+        # Record layouts are the authoritative C field inventory.
+        package_rows.extend(_declared_c_record_fields(manifest, package_rows))
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
                           if row.get("packageId") == package]
@@ -988,6 +1033,10 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                 })
 
     invalid_overlaps = sorted(declaration_exclusion_overlaps - signature_splits)
+    declaration_counts = Counter((row["packageId"], row["exportName"]) for row in package_rows)
+    duplicate_names = sorted(
+        name for (package_id, name), count in declaration_counts.items() if count > 1
+    )
     def canonical_kind(kind: str) -> str:
         if package == "python-kmipkit" and kind in {"function", "python-export"}:
             return "python-callable"

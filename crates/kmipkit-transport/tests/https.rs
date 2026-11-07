@@ -21,6 +21,10 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
+#[path = "support/hot_reload.rs"]
+mod hot_reload;
+use hot_reload::{TempFile, pem, server_config_with_multiple_roots};
+
 #[path = "../src/config.rs"]
 #[allow(dead_code)]
 mod config;
@@ -41,6 +45,9 @@ mod tls;
 #[path = "../src/worker.rs"]
 #[allow(dead_code)]
 mod worker;
+
+#[path = "unit/https_encoding_tests.rs"]
+mod encoding_tests;
 
 pub use config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
@@ -744,7 +751,7 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
             b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 8\r\nContent-Length: 9\r\n\r\nresponse",
         ),
         (
-            "invalid media type",
+            "cross-format media type",
             b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 8\r\n\r\nresponse",
         ),
         (
@@ -781,13 +788,19 @@ fn https_rejects_invalid_status_response_headers_and_encodings() {
 
     for (name, response) in cases {
         let result = exchange_raw_response(&pki, response, 64);
+        let expected_cause = if name == "cross-format media type" {
+            TransportCauseCategory::EncodingMismatch
+        } else {
+            TransportCauseCategory::Http
+        };
         match result {
             Err(error)
                 if error.delivery_state() == RequestDeliveryState::ResponseStarted
-                    && error.cause_category() == TransportCauseCategory::Http => {}
+                    && error.cause_category() == expected_cause => {}
             Err(error) => failures.push(format!(
-                "{name}: rejected with delivery state {:?}",
-                error.delivery_state()
+                "{name}: rejected as {:?} with delivery state {:?}",
+                error.cause_category(),
+                error.delivery_state(),
             )),
             Ok(_) => failures.push(format!("{name}: unexpectedly accepted the response")),
         }
@@ -853,7 +866,7 @@ fn public_https_adapter_rejects_non_ascii_content_type() {
 }
 
 #[test]
-fn public_https_adapter_rejects_unsupported_media_type() {
+fn public_https_adapter_classifies_another_supported_encoding() {
     let pki = EphemeralPki::generate().expect("the ephemeral test PKI is generated");
     let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
     let address = listener.local_addr();
@@ -872,9 +885,12 @@ fn public_https_adapter_rejects_unsupported_media_type() {
     let peer = peer.join().expect("the HTTP peer completes");
     assert!(peer.accepted, "the production adapter connects to the peer");
     assert!(peer.request.is_some(), "the peer captures the HTTP request");
-    let error = result.expect_err("unsupported media types are rejected");
+    let error = result.expect_err("a response using another KMIP encoding is rejected");
 
-    assert_eq!(error.cause_category(), TransportCauseCategory::Http);
+    assert_eq!(
+        error.cause_category(),
+        TransportCauseCategory::EncodingMismatch
+    );
     assert_eq!(
         error.delivery_state(),
         RequestDeliveryState::ResponseStarted
@@ -1066,6 +1082,95 @@ fn malformed_http_parser_error_invalidates_the_reusable_session() {
     let peer = peer.join().expect("the bounded reconnect peer completes");
     assert_eq!(peer.accepted_connections, 2);
     assert_eq!(peer.requests.len(), 2, "both exchanges reached the peer");
+}
+
+#[test]
+fn https_hot_reloads_client_credentials_and_invalidates_keepalive() {
+    let first_pki = EphemeralPki::generate().expect("the first ephemeral test PKI is generated");
+    let second_pki = EphemeralPki::generate().expect("the second ephemeral test PKI is generated");
+
+    let cert_file = TempFile::write(&pem(
+        "CERTIFICATE",
+        first_pki.client_identity().certificate_der(),
+    ));
+    let key_file = TempFile::write(&pem(
+        "PRIVATE KEY",
+        first_pki.client_identity().private_key_der(),
+    ));
+
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+
+    let server_conf =
+        server_config_with_multiple_roots(&first_pki, &[second_pki.authority_certificate_der()]);
+    let peer = spawn_reconnection_response_peer(
+        listener.into_inner(),
+        server_conf,
+        vec![
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 5\r\n\r\nfirst".to_vec(),
+            b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 6\r\n\r\nsecond".to_vec(),
+        ],
+    );
+
+    let config = kmipkit_transport::TransportConfig::builder(kmipkit_transport::Endpoint::https(
+        format!("https://127.0.0.1:{}", address.port()),
+    ))
+    .tls_server_name("server.kmipkit.test")
+    .client_identity(kmipkit_transport::ClientIdentity::new(
+        kmipkit_transport::CertificateInput::from_pem_file(&cert_file.path)
+            .expect("valid cert file"),
+        kmipkit_transport::PrivateKeyInput::from_pem_file(&key_file.path).expect("valid key file"),
+    ))
+    .trust_source(kmipkit_transport::TrustSource::certificate_authorities(
+        vec![kmipkit_transport::CertificateInput::from_pem(pem(
+            "CERTIFICATE",
+            first_pki.authority_certificate_der(),
+        ))],
+    ))
+    .build()
+    .expect("config builds");
+
+    let mut adapter = HttpsTransport::new(config).expect("adapter initializes");
+
+    let first_response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("first exchange succeeds");
+    assert_eq!(first_response.as_bytes(), b"first");
+
+    // Overwrite credential files on disk with second identity
+    cert_file.overwrite(&pem(
+        "CERTIFICATE",
+        second_pki.client_identity().certificate_der(),
+    ));
+    key_file.overwrite(&pem(
+        "PRIVATE KEY",
+        second_pki.client_identity().private_key_der(),
+    ));
+
+    let second_response = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("second exchange succeeds after hot reload");
+    assert_eq!(second_response.as_bytes(), b"second");
+
+    // Corrupt key to test reload error in HTTPS
+    key_file.overwrite(b"invalid-key-data");
+    let err = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .unwrap_err();
+    assert_eq!(err.delivery_state(), RequestDeliveryState::NotSent);
+
+    drop(adapter);
+    let peer = peer.join().expect("the bounded reconnect peer completes");
+    assert_eq!(peer.accepted_connections, 2);
+    assert_eq!(peer.client_certificates.len(), 2);
+    assert_eq!(
+        peer.client_certificates[0],
+        first_pki.client_identity().certificate_der()
+    );
+    assert_eq!(
+        peer.client_certificates[1],
+        second_pki.client_identity().certificate_der()
+    );
 }
 
 #[test]
@@ -1551,6 +1656,7 @@ struct SequencePeerObservation {
 struct RetryPeerObservation {
     accepted_connections: usize,
     requests: Vec<CapturedRequest>,
+    client_certificates: Vec<Vec<u8>>,
 }
 
 fn spawn_peer(
@@ -1732,6 +1838,18 @@ fn spawn_retry_probe_peer(
     listener: TcpListener,
     configuration: Arc<ServerConfig>,
 ) -> JoinHandle<RetryPeerObservation> {
+    spawn_retry_probe_peer_with_response(
+        listener,
+        configuration,
+        b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_vec(),
+    )
+}
+
+fn spawn_retry_probe_peer_with_response(
+    listener: TcpListener,
+    configuration: Arc<ServerConfig>,
+    response: Vec<u8>,
+) -> JoinHandle<RetryPeerObservation> {
     thread::spawn(move || {
         let _ = listener.set_nonblocking(true);
         let accept_deadline = Instant::now() + Duration::from_millis(750);
@@ -1771,8 +1889,10 @@ fn spawn_retry_probe_peer(
             }
             if let Some(request) = read_request(&mut tls) {
                 observation.requests.push(request);
-                let response = b"HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/octet-stream\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
-                let _ = tls.write_all(response);
+                if let Some(cert) = tls.conn.peer_certificates().and_then(|certs| certs.first()) {
+                    observation.client_certificates.push(cert.to_vec());
+                }
+                let _ = tls.write_all(&response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();
             }
@@ -1831,6 +1951,9 @@ fn spawn_reconnection_response_peer(
                     continue;
                 };
                 observation.requests.push(request);
+                if let Some(cert) = tls.conn.peer_certificates().and_then(|certs| certs.first()) {
+                    observation.client_certificates.push(cert.to_vec());
+                }
                 let _ = tls.write_all(&response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();
@@ -2331,4 +2454,106 @@ fn accept_before_deadline(listener: &TcpListener) -> io::Result<(TcpStream, Sock
             Err(error) => return Err(error),
         }
     }
+}
+
+fn spawn_idle_closed_keepalive_peer(
+    listener: TcpListener,
+    config: Arc<ServerConfig>,
+) -> thread::JoinHandle<usize> {
+    thread::spawn(move || {
+        let mut connections_accepted = 0;
+        if let Ok((stream1, _)) = accept_before_deadline(&listener) {
+            connections_accepted += 1;
+            let _ = stream1.set_nonblocking(false);
+            let _ = stream1.set_read_timeout(Some(PEER_TIMEOUT));
+            let _ = stream1.set_write_timeout(Some(PEER_TIMEOUT));
+            if let Ok(connection) = ServerConnection::new(Arc::clone(&config)) {
+                let mut tls = StreamOwned::new(connection, stream1);
+                let _ = read_request(&mut tls);
+                let response = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 4\r\n\r\none\n";
+                let _ = tls.write_all(response);
+                let _ = tls.flush();
+            }
+        }
+        thread::sleep(Duration::from_millis(50));
+        if let Ok((stream2, _)) = accept_before_deadline(&listener) {
+            connections_accepted += 1;
+            let _ = stream2.set_nonblocking(false);
+            let _ = stream2.set_read_timeout(Some(PEER_TIMEOUT));
+            let _ = stream2.set_write_timeout(Some(PEER_TIMEOUT));
+            if let Ok(connection) = ServerConnection::new(config) {
+                let mut tls = StreamOwned::new(connection, stream2);
+                let _ = read_request(&mut tls);
+                let response = b"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 4\r\n\r\ntwo\n";
+                let _ = tls.write_all(response);
+                let _ = tls.flush();
+            }
+        }
+        connections_accepted
+    })
+}
+
+#[test]
+fn idle_closed_keepalive_connection_reconnects_transparently() {
+    let pki = EphemeralPki::generate().expect("the test PKI is valid");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_idle_closed_keepalive_peer(listener.into_inner(), server_config(&pki));
+    let mut adapter = public_local_https_adapter(&pki, address);
+
+    let first = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the first HTTPS exchange succeeds");
+    assert_eq!(first.as_bytes(), b"one\n");
+
+    thread::sleep(Duration::from_millis(100));
+
+    let second = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect("the second exchange reconnects transparently on idle close");
+    assert_eq!(second.as_bytes(), b"two\n");
+
+    let accepted = peer.join().expect("peer finishes");
+    assert_eq!(accepted, 2, "peer accepted exactly two connections");
+}
+
+fn spawn_abort_mid_exchange_peer(
+    listener: TcpListener,
+    config: Arc<ServerConfig>,
+) -> thread::JoinHandle<usize> {
+    thread::spawn(move || {
+        let mut connections_accepted = 0;
+        if let Ok((stream, _)) = accept_before_deadline(&listener) {
+            connections_accepted += 1;
+            let _ = stream.set_nonblocking(false);
+            let _ = stream.set_read_timeout(Some(PEER_TIMEOUT));
+            let _ = stream.set_write_timeout(Some(PEER_TIMEOUT));
+            if let Ok(connection) = ServerConnection::new(config) {
+                let mut tls = StreamOwned::new(connection, stream);
+                let _ = read_request(&mut tls);
+            }
+        }
+        thread::sleep(Duration::from_millis(200));
+        connections_accepted
+    })
+}
+
+#[test]
+fn dispatched_request_never_retries_on_connection_failure() {
+    let pki = EphemeralPki::generate().expect("the test PKI is valid");
+    let listener = LoopbackTcpListener::bind().expect("the HTTPS peer binds loopback");
+    let address = listener.local_addr();
+    let peer = spawn_abort_mid_exchange_peer(listener.into_inner(), server_config(&pki));
+    let mut adapter = public_local_https_adapter(&pki, address);
+
+    let error = adapter
+        .exchange(fixtures::REQUEST_SENTINEL, 64)
+        .expect_err("abrupt disconnection after dispatch fails closed");
+    assert!(
+        error.delivery_state() == RequestDeliveryState::PossiblySent
+            || error.delivery_state() == RequestDeliveryState::ResponseStarted
+    );
+
+    let accepted = peer.join().expect("peer completes");
+    assert_eq!(accepted, 1, "no automatic retry was performed");
 }

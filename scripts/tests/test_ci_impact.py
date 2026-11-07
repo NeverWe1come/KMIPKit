@@ -95,6 +95,16 @@ class CiImpactTests(unittest.TestCase):
                 {"language-java", "ffi-sanitizer-jni", "coverage-jni", "coverage-gate"},
                 {"jni"},
             ),
+            "interop/shared/schemas/server-capabilities.schema.json": (
+                "interop",
+                {"docs-contracts"},
+                set(),
+            ),
+            "interop/rust-kmip-validator/src/main.rs": (
+                "interop",
+                {"docs-contracts"},
+                set(),
+            ),
         }
         for path, (path_class, expected_jobs, expected_scopes) in cases.items():
             with self.subTest(path=path):

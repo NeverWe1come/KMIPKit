@@ -134,6 +134,32 @@ API under ADR-0014. A typed result does not expose raw response bytes. See the
 [client execution guide](../user-guide/en/client-execution.md) and
 [ADR-0014](../adr/0014-public-transport-exchange-contract.md).
 
+### Wire encoding selection
+
+KMIPKIT-0057 exposes `WireEncoding::{Ttlv, Json, Xml}` on the typed client.
+The immutable client configuration defaults to TTLV and can select another
+encoding. `RequestOptions` supplies an optional per-exchange override. The
+resolved choice is override, configuration, then TTLV, and applies to both
+request encoding and response decoding through the same typed operation path.
+A mismatched response is a redacted protocol error; the client does not retry
+or fall back to another codec.
+
+Rust exposes the enum, configuration setter, and exchange override. C adds an
+enum and an additive execute-with-options entry point while preserving earlier
+execute symbols. Java exposes `ClientConfiguration.withWireEncoding` and
+`Client.executeWithOptions`; Python exposes `ClientConfiguration.with_wire_encoding`
+and `Client.execute(..., wire_encoding=None)`. The mappings and generated
+surfaces are recorded in `specification/api/public-api.json`; declaration
+parity does not establish full operation parity or release readiness.
+
+Both production transports carry the selected format. HTTPS uses the matching
+media type and body under the contextual interpretation documented in
+[ADR-0018](../adr/0018-multi-encoding-1-0-scope.md). Raw TLS uses the standard
+TTLV frame or reads one complete JSON/XML document incrementally and closes
+after the response; this framing is a KMIPKit decision, not an OASIS raw-TLS
+profile requirement. The low-level transport API remains a caller-owned byte
+exchange and does not perform this typed client's message selection.
+
 ### Managed-object lifecycle
 
 KMIPKIT-0018 adds typed Activate, Archive, Destroy, and Recover operations.
@@ -314,9 +340,17 @@ correlation storage is zeroized when the Pending value is dropped. The
 four-language API exposes explicit one-exchange methods for Poll, Cancel,
 Process, and Query Asynchronous Requests. Correlation bytes are preserved;
 there is no automatic polling, waiting, retry, or background execution. Their
-manifest rows remain `declared` while the Process Table 278 catalog gap and
-reviewer-owned checklists remain open. Query returns a generic TTLV response
-under KMIPKIT-DEC-015; this is not a complete conformance claim. See the
+response outcomes expose operation-specific readers in Rust, C, Java, and
+Python. Cancel exposes its Cancellation Result; Poll and Process expose their
+Pending state; Process also reports whether its required payload is present
+and its member count. The readers return absence for another operation. C
+uses fixed-width v1 records and borrowed spans, while Java and Python response
+views delegate to the owning outcome and become unusable when it is closed.
+Generic payload access remains available through `raw()`. Query Asynchronous
+Requests exposes its operation result and generic TTLV payload only because
+KMIP v2.1 §6.1.41 Table 286 has a caption/body discrepancy; no payload
+semantics are inferred. The Process Table 278 catalog gap and reviewer-owned
+checklists remain open. This is not a complete conformance claim. See the
 [client execution guide](../user-guide/en/client-execution.md).
 
 The managed Java and Python facades expose correlation bytes only inside an

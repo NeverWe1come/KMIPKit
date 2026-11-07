@@ -1080,3 +1080,26 @@ fn close_cancels_active_and_queued_work_with_bounded_shutdown() {
     );
     assert_eq!(queued_dispatches.load(Ordering::SeqCst), 0);
 }
+
+#[test]
+fn ensure_client_worker_expires_and_reports_timeout() {
+    let mut worker = None;
+    let mut spawner = None;
+    let deadline = Instant::now().checked_sub(Duration::from_secs(1));
+    let error = super::ensure_client_worker(&mut worker, &mut spawner, deadline)
+        .expect_err("expired deadline fails");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
+}
+
+#[test]
+fn ensure_client_worker_handles_spawn_failure() {
+    let mut worker = None;
+    let mut spawner = Some(
+        Box::new(|_| Err(std::io::Error::other("spawn failed"))) as super::WorkerSpawnerForTest
+    );
+    let error = super::ensure_client_worker(&mut worker, &mut spawner, None)
+        .expect_err("failing spawner returns error");
+    assert_eq!(error.delivery_state(), RequestDeliveryState::NotSent);
+    assert_eq!(error.cause_category(), TransportCauseCategory::Other);
+}

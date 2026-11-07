@@ -109,6 +109,48 @@ class Reconcile0050Tests(unittest.TestCase):
         with self.assertRaises(reconcile.ReconciliationError):
             reconcile.reconcile(_manifest(), invalid)
 
+    def test_direct_mapping_ignores_unlisted_metadata_and_prefix_lookalikes(self) -> None:
+        manifest = _manifest()
+        lookalikes = {
+            "c": "kmipkit_client_batch_item_metadata_v2_t.operation",
+            "java": "org.kmipkit.extensions.ClientBatchItem.unrelated",
+            "python": "kmipkit.extensions.client_batch_item_unrelated",
+        }
+        for language, name in lookalikes.items():
+            manifest["publicDeclarations"].insert(0, {
+                "declarationId": f"unlisted-{language}",
+                "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+                "languageMappings": {language: {"packageId": f"{language}-kmipkit", "name": name}},
+            })
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-client",
+            "kind": "associated-item",
+            "exportName": "kmipkit_client::Client::get",
+        }]}
+
+        result = reconcile.reconcile(manifest, report)
+        direct = result["publicDeclarations"][-1]
+
+        for language, expected in {
+            "c": "kmipkit_client_batch_item_get",
+            "java": "org.kmipkit.extensions.ClientBatchItem.get",
+            "python": "kmipkit.extensions.client_batch_item_get",
+        }.items():
+            with self.subTest(language=language):
+                self.assertEqual(expected, direct["languageMappings"][language]["name"])
+
+    def test_direct_mapping_rejects_missing_exact_batch_constructor(self) -> None:
+        manifest = _manifest()
+        manifest["publicDeclarations"][0]["languageMappings"]["c"]["name"] = "kmipkit_client_batch_item_metadata_v2_t.operation"
+        report = {"missingFromManifest": [{
+            "packageId": "rust-kmipkit-client",
+            "kind": "associated-item",
+            "exportName": "kmipkit_client::Client::get",
+        }]}
+
+        with self.assertRaises(reconcile.ReconciliationError):
+            reconcile.reconcile(manifest, report)
+
     def test_reconciliation_repairs_its_stale_approval_evidence(self) -> None:
         manifest = _manifest()
         stale_source = {

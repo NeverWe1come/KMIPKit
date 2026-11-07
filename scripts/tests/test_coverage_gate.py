@@ -700,13 +700,12 @@ trait Example { fn declaration(&self); }
 
     def test_catalog_generated_named_value_sources_are_excluded_from_raw_coverage(self) -> None:
         self.require_gate()
-        generated_sources = {
-            "crates/kmipkit-protocol/src/named_values_generated.rs",
-            "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java",
-            "bindings/python/src/kmipkit/protocol_values.py",
-        }
+        c_header = "bindings/c/include/kmipkit_named_value_helpers_generated.h"
+        rust_source = "crates/kmipkit-protocol/src/named_values_generated.rs"
+        java_source = "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java"
+        python_source = "bindings/python/src/kmipkit/protocol_values.py"
 
-        rust_source, java_source, python_source = sorted(generated_sources)
+        self.assertIn(c_header, GATE._CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS)
         self.assertFalse(GATE.is_coverage_source_path(rust_source))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

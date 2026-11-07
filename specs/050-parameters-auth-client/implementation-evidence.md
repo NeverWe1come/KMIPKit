@@ -174,15 +174,120 @@ environment warnings about NASM and an optional compiler probe.
   (`e30feefc-b9b4-416c-b625-eec029f8eede`) reviewed the changed
   `execute.rs`, found zero issues, and completed with full changed-file
   coverage. It was a static review; runtime tests are recorded separately.
-- At the time this evidence was recorded, the refreshed branch had not yet
-  been pushed. It is now pushed to draft PR #118 at head
-  `fb4191e6de85c4bbac275cc67e421058b33dc4ad`. Hosted CI remains unqueried.
+- This refreshed local branch has not yet been pushed to PR #118. Hosted CI
+  remains unqueried.
 
-The earlier Windows-only and no-Linux-results statements in this evidence
-describe the original 0050 snapshots. The synchronized 0053 stack later passed
-Linux workspace tests and Rust, C ABI, JNI, Java, and Python coverage; the
-exact commands and results are recorded in
-`specs/053-api-parity-facade/implementation-evidence.md`. These results
-include the 0050 changes. Windows Java adapter coverage has also been
-collected. The macOS Rust platform report, complete cross-platform aggregate,
-and hosted CI remain outstanding.
+
+## Final reviewed predecessor synchronization (2026-11-07)
+
+The final reviewed 0049 predecessor
+`4958510050a9274d193a6606beb005287bedcd97` is included through normal merge
+`062ed4e61`, starting from the original 0050 head
+`fb4191e6de85c4bbac275cc67e421058b33dc4ad`. Earlier synchronization and PR
+metadata above remain historical snapshots. The final 0049 follow-up changes
+only evidence and T102 regression files; its runtime and manifest inputs are
+identical to the audited `5f8536a93f4e753d80ed8ac9544ed3e14399be17` snapshot.
+
+All 12,230 incoming declarations, 17,384 exclusions, 32 capabilities, and other
+incoming manifest sections are preserved exactly. The official 0050 reconciler
+restores 184 declarations and 42 exclusions, producing 12,414 declarations and
+17,426 exclusions overall. All original 0050 exclusions and 180 of its 184
+declarations are unchanged. Four Discover Versions direct-method C mappings
+now correctly name `kmipkit_client_batch_item_discover_versions`; the old
+snapshot incorrectly selected a metadata type as the constructor. Typed
+parameters and request Authentication execution stay blocked for C, Java,
+and Python parity under KMIPKIT-0053.
+
+Integration exposed a prefix-selection defect in the official 0050 reconciler:
+operation-owned C metadata and similarly prefixed Java/Python routes could be
+selected before the constructor. The correction selects the exact constructor
+name from the existing direct-method inventory and requires its same-operation
+mapping already present in the reviewed manifest. It invents no language
+mapping and adds no export. Separate development evidence:
+
+| Phase | Commit | Result |
+|---|---|---|
+| Red | `93b31ac5d` | The 5-test 0050 reconciler module produced 4 expected assertion failures against the original code: C metadata and Java/Python lookalikes were selected, and a missing exact constructor did not fail closed. |
+| Green | `f6f2efa4d` | The combined 0048/0049/0050 reconciler command below passed all 21 tests. |
+| Refactor | `a67d56621` | Streamed candidates and documented the exact-constructor invariant. All 21 tests passed again; full real-input reconciliation reproduces the complete final manifest exactly, and the official current-report dry run adds zero rows. |
+
+The shared test transport retains both options-observer entry points. The 0050
+direct-method tests now expect the predecessor's documented resolved `Ttlv`
+selection at the transport boundary while still comparing exact caller timeouts
+and direct-versus-batch requests. The initial two expectation failures and the
+subsequent five-test pass were observed before committing the resolution.
+Authentication ownership, redaction, zeroization, delivery state, and one-exchange
+behavior remain covered by the original tests and their fresh runs below.
+
+Current reports live under `specs/050-parameters-auth-client/reports/`; the
+paired shared-audit defaults and current-snapshot tests select those reports.
+All 45 inherited 0047, 0048, and 0049 report files were verified byte-identical
+to the predecessor. No historical report was overwritten. The official generator
+regenerated all 12 outputs; no generated output was edited by hand.
+
+Fresh Windows verification against the final combination:
+
+- `python -B -m unittest discover -s tools/api_manifest/tests -p test_t102_*.py -q`
+  passed all 399 tests in 141.061 seconds, without failures, errors, or skips.
+  This is the single completed full T102 run against the final combination;
+  the earlier superseded-predecessor run was stopped and supplies no pass claim.
+- The exact combined API command below passed all 110 tests in 158.573 seconds,
+  without failures, errors, or skips. The two T102 declaration fingerprints were
+  recalculated against the combined manifest; operation fingerprints and
+  normalization logic remain unchanged.
+- `python -B -m unittest tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_reconcile_0049_managed_objects tools.api_manifest.tests.test_reconcile_0050_parameters_auth_client -q`
+  passed 21 tests: 14 ownership-filter regressions from 0048, 2 managed-object
+  regressions from 0049, and 5 constructor regressions from 0050. This command
+  passed again after the Refactor changes.
+- `cargo test --offline --locked -p kmipkit-client --all-features --lib request_authentication_tests`
+  passed 6 tests; `cargo test --offline --locked -p kmipkit-client --all-features --lib authentication_owner`
+  passed both ADR-0012 candidate-callsite lifecycle tests.
+- `cargo test --offline --locked -p kmipkit-client --all-features --lib direct_method`
+  passed 5 tests; `cargo test --offline --locked -p kmipkit-protocol --all-features --test cryptographic_parameters_public`
+  passed 9 parameter-contract tests.
+- `cargo test --offline --locked -p kmipkit-protocol -p kmipkit-client --all-features --quiet`
+  passed 698 client and 1,277 protocol unit tests, all selected integration
+  tests, one client doctest, and three protocol doctests. Three explicitly
+  ignored live-client integration tests remain ignored. This complete run
+  preceded the final test-only 0049 correction; its exercised protocol/client
+  Rust runtime and test sources are identical in the final tree. The focused
+  tests above were rerun after the final merge.
+- `cargo fmt --all --check` and
+  `cargo clippy --offline --locked --workspace --all-targets --all-features -- -D warnings`
+  passed on the final tree.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs
+  after the final predecessor merge.
+- Official Rust audit `--check`: 22,655 observed routes, 6,825 exact manifest
+  matches, 15,830 exclusions; zero missing, unobserved, kind, conditional, or
+  scope issues. The pre-reconciliation snapshot found exactly 226 0050 routes
+  missing and no other discrepancies. The report README records exact commands.
+- Paired shared Rust audit `--check`: passed, with 3,697 mapped declarations
+  and the current 0050 Rust report explicitly recorded as its source.
+- Official binding audit `--check`: C 1,708 exact matches, Java 1,881, Python
+  2,000. All inventories are complete with zero missing routes, unobserved
+  declarations, kind mismatches, or issues.
+- `python -B -m unittest scripts.tests.test_requirement_traceability -q`
+  passed 2 tests. The stable post-generation feature-traceability run passed
+  30 tests with one Windows symlink-privilege skip; its targeted typed-profile
+  evidence test also passed separately.
+- `python -B tools/normative_catalog/check_immutable_sources.py --base-sha fb4191e6de85c4bbac275cc67e421058b33dc4ad --repo-root .`
+  passed: pinned upstream OASIS bytes are unchanged.
+
+Exact combined API command:
+
+```text
+python -B -m unittest tools.api_manifest.tests.test_reconcile_0049_managed_objects tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_reconcile_0050_parameters_auth_client tools.api_manifest.tests.test_t102_manifest_size_limit tools.api_manifest.tests.test_c_api_docs tools.api_manifest.tests.test_t102_response_view_mappings tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest tools.api_manifest.tests.test_047_binding_audit_reconciliation tools.api_manifest.tests.test_t102_remaining_response_view_mappings tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_catalog_parity tools.api_manifest.tests.test_t109_binding_export_audit_reconciliation tools.api_manifest.tests.test_shared_rust_inventory tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_rust_public_access_paths tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_optional_request_structure_mapping -q
+```
+
+Authored synchronization paths pass `git diff --check`. The complete predecessor
+diff retains its two existing whitespace diagnostics: a final blank line in
+`interop/c-kmip-validator/src/c_validator.c` and trailing whitespace in
+`interop/shared/vectors/generate_vectors.py`. Neither is changed by this
+resolution. Rust commands emitted the established non-fatal Windows AWS-LC
+compiler-probe and missing NASM warnings.
+
+No PR metadata was changed, no alias was created, and remote CI was not queried.
+Existing untracked files and target directories were preserved; target sizes
+were never inspected. There is no fresh coverage measurement or cross-platform
+aggregate. Existing hosted CI, coverage, human review, and ADR-0012 hosted
+candidate-test gates remain outstanding; the branch remains draft.

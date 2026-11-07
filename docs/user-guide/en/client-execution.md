@@ -181,8 +181,48 @@ fn main() {
 Create Split Key may return repeated Unique Identifiers. Its request advertises
 `Maximum Response Size` as the smaller of the local response byte limit and
 the largest signed KMIP Integer. The client independently enforces its local
-byte cap before entering the TTLV decoder, including when a peer ignores the
-advertised size.
+byte cap before entering the selected message decoder, including when a peer
+ignores the advertised size.
+
+The C, Java, and Python batch-item APIs expose the same three request shapes:
+C uses `kmipkit_client_batch_item_create`,
+`kmipkit_client_batch_item_create_key_pair`, and
+`kmipkit_client_batch_item_create_split_key`; Java uses
+`ClientBatchItem.create`, `createKeyPair`, and `createSplitKey`; Python uses
+`extensions.client_batch_item_create`, `client_batch_item_create_key_pair`,
+and `client_batch_item_create_split_key`. Create requires an Attributes
+structure, which may be empty. Create Key Pair keeps its six optional attribute
+and mask groups separate. Create Split Key retains signed part and threshold
+values, the open method value, and the optional input identifier and prime
+field bytes.
+
+Successful response accessors preserve each Unique Identifier's original
+TTLV type. C provides `kmipkit_client_batch_item_response_create`,
+`..._create_key_pair`, and the bounded count/index pair
+`..._create_split_key_count` / `..._create_split_key_unique_identifier_at`;
+Java exposes `createResponse()`, `createKeyPairResponse()`, and
+`createSplitKeyUniqueIdentifiers()`; Python exposes the corresponding
+`BatchItemResult` response fields. Private and public key identifiers remain
+distinct, and split-key identifiers remain in response wire order.
+
+C's additive `kmipkit_client_batch_item_response_metadata_v2` exposes the raw
+source operation and exact optional UTF-8 Result Message. The existing v1
+metadata struct and function remain unchanged. The message pointer is borrowed
+while the response-item handle is open; copy it before releasing the handle.
+Java's `ClientBatchItemResult.metadataV2()` and Python's
+`BatchItemResult.metadata_v2` copy the message into their runtime string before
+the native response is closed. These external runtime copies are not guaranteed
+to be zeroized when discarded. The configured complete-message limit bounds
+the text (16 MiB by default). An absent message differs from a present empty
+message.
+
+Result Message is untrusted server text. It is available through explicit
+metadata inspection and is omitted from default formatting, logs, errors, and
+diagnostics. OASIS KMIP v2.1 §8.6, Table 399 makes it optional only when Result
+Status is neither Pending nor Success; §9.17 permits a descriptive error
+message. Accordingly, the shared success and Pending fixtures omit it, while
+`creation.result-message-on-failure.v1` checks exact text and UTF-8 preservation
+on an Operation Failed result.
 
 The C, Java, and Python batch-item APIs expose the same three request shapes:
 C uses `kmipkit_client_batch_item_create`,
@@ -257,10 +297,13 @@ discards padding, so the API does not promise byte-for-byte reproduction of a
 network response.
 
 `Client::new` constructs a production client from an immutable client
-configuration and a validated `TransportConfig`. It accepts raw TTLV over TLS
-or TTLV over HTTPS/HTTP 1.1; it does not accept caller-implemented transports
-or raw request bytes. See the [transport guide](production-transports.md) for
-trust configuration, timeouts, and connection behavior.
+configuration and a validated `TransportConfig`. It accepts TTLV, JSON, or
+XML over raw TLS and HTTPS/HTTP 1.1; it does not accept caller-implemented
+transports or raw request bytes. The immutable configuration defaults to TTLV,
+and `RequestOptions` can override the encoding for one exchange. The selected
+format applies to both request and response. See the
+[transport guide](production-transports.md) for selection, trust configuration,
+timeouts, and connection behavior.
 
 ## Credentials and attestation capability
 
@@ -382,6 +425,21 @@ Java and Python expose the correlation through an explicit callback as a
 read-only view backed by temporary KMIPKit-managed storage. The temporary
 storage is zeroized before the callback method returns, including when the
 callback raises. Any copy made by application code is caller-owned.
+
+Each async outcome offers an operation-specific response view: `cancelResponse()`/
+`cancel_response()`, `pollResponse()`/`poll_response()`,
+`processResponse()`/`process_response()`, and
+`queryAsyncRequestsResponse()`/`query_async_requests_response()`. Rust uses
+the corresponding snake-case readers, and the C ABI has one `_response_v1`
+function for each operation. A reader returns absence for another operation.
+Cancel exposes the Cancellation Result; Poll and Process expose Pending state;
+Process also exposes payload presence and member count. All views retain or
+borrow from the outcome owner, so Java/Python views cannot be used after the
+outcome is closed. Generic payload access remains available through `raw()`;
+Query Asynchronous Requests deliberately leaves its payload generic because
+KMIP v2.1 §6.1.41 Table 286 has a caption/body discrepancy. C correlation
+spans and Java/Python callbacks read the outcome-owned bytes without storing a
+second correlation copy.
 
 ## Resource limits
 

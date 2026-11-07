@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tools.api_manifest.tests.pre_send_validation_routes import is_pre_send_validation_trait
+
 import json
 import unittest
 
@@ -249,6 +251,8 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
                 for row in self.manifest["publicDeclarations"]
                 if row.get("packageId") == "rust-kmipkit-protocol"
                 and row.get("exportName", "").startswith(prefix)
+
+                and not is_pre_send_validation_trait(row)
             ]
             exclusions = [
                 row

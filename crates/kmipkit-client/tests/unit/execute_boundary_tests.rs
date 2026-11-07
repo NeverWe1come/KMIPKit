@@ -865,6 +865,7 @@ struct BoundaryAudit {
     rejection_reasons: Vec<String>,
     permit_calls: usize,
     writer_calls: usize,
+    codec_dispatch_calls: Vec<String>,
     misplaced_permit_calls: usize,
     misplaced_writer_calls: usize,
     misplaced_exchange_calls: usize,
@@ -892,6 +893,17 @@ impl BoundaryAudit {
 
     fn is_execute_root_scope(&self) -> bool {
         self.is_source_root(Path::new("execute.rs"))
+    }
+
+    fn is_codec_dispatch_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("encode_for_execute")
+            && self.current_impl_type.is_none()
+            && matches!(segments,
+                [root, codec, function]
+                if root == "crate"
+                    && matches!(codec.as_str(), "json_encoding" | "xml_codec")
+                    && function == "encode")
     }
 
     fn is_source_root(&self, source_path: &Path) -> bool {
@@ -1341,7 +1353,10 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             } else if path_mentions_permit(&segments) {
                 self.reject("OperationEncodingPermit is constructed outside mint");
             }
-            if is_writer_target(&segments) {
+            if self.is_codec_dispatch_call(&segments) {
+                self.codec_dispatch_calls.push(segments[1].clone());
+                self.record_repeatable_sensitive_call();
+            } else if is_writer_target(&segments) {
                 self.writer_calls += 1;
                 self.record_repeatable_sensitive_call();
                 if !is_writer_call(&segments) {
@@ -3454,7 +3469,15 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
         .iter()
         .filter_map(|(path, _)| path.file_name().and_then(|name| name.to_str()))
         .collect::<HashSet<_>>();
-    for expected in ["lib.rs", "error.rs", "execute.rs", "wire_encoder.rs"] {
+    for expected in [
+        "lib.rs",
+        "error.rs",
+        "execute.rs",
+        "wire_encoder.rs",
+        "json_encoding.rs",
+        "xml_codec.rs",
+        "wire_codec_common.rs",
+    ] {
         assert!(
             paths.contains(expected),
             "production source missing from audit: {expected}"
@@ -3487,10 +3510,58 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
     );
     assert_eq!(audit.misplaced_permit_calls, 0);
     assert_eq!(audit.misplaced_writer_calls, 0);
+    assert_eq!(audit.codec_dispatch_calls.len(), 2);
+    assert!(
+        audit
+            .codec_dispatch_calls
+            .iter()
+            .any(|codec| codec == "json_encoding")
+    );
+    assert!(
+        audit
+            .codec_dispatch_calls
+            .iter()
+            .any(|codec| codec == "xml_codec")
+    );
     assert_eq!(audit.exchange_calls, 1, "expected one transport exchange");
     assert_eq!(audit.misplaced_exchange_calls, 0);
     assert_eq!(audit.permit_struct_constructions, 1);
     assert_eq!(audit.misplaced_permit_struct_constructions, 0);
+}
+
+#[test]
+fn text_codec_dispatch_exception_is_limited_to_the_permitted_writer_scope() {
+    for codec in ["json_encoding", "xml_codec"] {
+        let canonical =
+            format!("fn encode_for_execute() {{ crate::{codec}::encode(item, limits); }}");
+        let parsed = syn::parse_file(&canonical).expect("codec fixture parses");
+        let mut accepted = BoundaryAudit::default();
+        accepted.visit_source_file(&parsed, Path::new("wire_encoder.rs"));
+        assert!(!accepted.is_rejected());
+        assert_eq!(accepted.codec_dispatch_calls, [codec]);
+
+        let mut wrong_file = BoundaryAudit::default();
+        wrong_file.visit_source_file(&parsed, Path::new("execute.rs"));
+        assert!(wrong_file.is_rejected());
+
+        for source in [
+            canonical.replace("encode_for_execute", "bypass_permit"),
+            canonical.replace("crate::", ""),
+            format!("fn encode_for_execute() {{ let writer = crate::{codec}::encode; }}"),
+            format!(
+                "fn encode_for_execute() {{ loop {{ crate::{codec}::encode(item, limits); }} }}"
+            ),
+            format!("mod hidden {{ {canonical} }}"),
+        ] {
+            let parsed = syn::parse_file(&source).expect("codec bypass fixture parses");
+            let mut rejected = BoundaryAudit::default();
+            rejected.visit_source_file(&parsed, Path::new("wire_encoder.rs"));
+            assert!(
+                rejected.is_rejected(),
+                "codec bypass must fail closed: {source}"
+            );
+        }
+    }
 }
 
 #[test]

@@ -265,6 +265,8 @@ int32_t kmipkit_client_batch_item_response_set_attribute(
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_execute_with_options(kmipkit_client_t*, kmipkit_client_batch_t**,
+        kmipkit_codec_limits_t*, int32_t, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_profiles_and_context_and_options_v1(
         kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
@@ -5869,6 +5871,35 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigura
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithWireEncoding(
+        JNIEnv* env, jclass, jlong raw_configuration, jint encoding) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_configuration_t>(env, [&](auto output) {
+            return kmipkit_client_configuration_with_wire_encoding(
+                    from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
+                    static_cast<kmipkit_wire_encoding_t>(encoding), output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWireEncoding(
+        JNIEnv* env, jclass, jlong raw_configuration) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t encoding = 0;
+        const int32_t status = kmipkit_client_configuration_wire_encoding(
+                from_java_handle<kmipkit_client_configuration_t>(raw_configuration), &encoding);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jint>(0);
+        }
+        if (encoding > 2) {
+            throw_invalid_input(env);
+            return static_cast<jint>(0);
+        }
+        return static_cast<jint>(encoding);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationExtensionRegistry(
         JNIEnv* env, jclass, jlong raw_configuration) {
     return guarded<jlong>(env, 0, [&] {
@@ -7328,6 +7359,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteGu
     return guarded<jlong>(env, 0, [&] {
         return execute_guarded_protection_item(env, raw_client, raw_context, raw_item,
                 raw_cost, raw_asynchronous_indicator, true, raw_limits);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithEncoding(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_batch, jlongArray raw_limits,
+        jint encoding_override) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        auto* batch = from_java_handle<kmipkit_client_batch_t>(raw_batch);
+        if (client == nullptr || batch == nullptr
+                || encoding_override < -1 || encoding_override > 2) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_client_batch_response_t* response = nullptr;
+        const int32_t status = kmipkit_client_execute_with_options(
+                client, &batch, limits.get(), encoding_override, &response);
+        if (status != 0) throw_status(env, status);
+        if (batch != nullptr) kmipkit_client_batch_release(batch);
+        if (status != 0) return static_cast<jlong>(0);
+        if (response == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(response);
     });
 }
 
@@ -11682,6 +11740,113 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_queryAsyncReque
             return kmipkit_query_async_requests_request_to_ttlv_payload(
                     from_java_handle<kmipkit_query_async_requests_request_t>(raw_request), output);
         });
+    });
+}
+
+using AsyncResponseReader = int32_t (*)(
+        kmipkit_client_async_operation_outcome_t*, uint8_t*,
+        kmipkit_client_async_operation_response_v1_t*);
+
+jlongArray read_async_response_v1(
+        JNIEnv* env, jlong raw_outcome, AsyncResponseReader reader) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        auto* outcome = from_java_handle<kmipkit_client_async_operation_outcome_t>(raw_outcome);
+        if (outcome == nullptr || reader == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        kmipkit_client_async_operation_response_v1_t response{};
+        uint8_t present = 0;
+        const int32_t status = reader(outcome, &present, &response);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present == 0) {
+            if (response.struct_size != 0 || response.abi_version != 0) throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present != 1 || response.struct_size != sizeof(response)
+                || response.abi_version != 1 || response.reserved != 0
+                || response.is_pending > 1 || response.has_cancellation_result > 1
+                || response.has_asynchronous_correlation_value > 1
+                || response.has_response_payload > 1
+                || (response.has_cancellation_result == 0 && response.cancellation_result != 0)
+                || (response.has_asynchronous_correlation_value == 0
+                        && (response.asynchronous_correlation_value.data != nullptr
+                                || response.asynchronous_correlation_value.length != 0))
+                || (response.has_asynchronous_correlation_value == 1
+                        && (response.asynchronous_correlation_value.length > 16 * 1024 * 1024
+                                || (response.asynchronous_correlation_value.length != 0
+                                        && response.asynchronous_correlation_value.data == nullptr)))
+                || (response.has_response_payload == 0
+                        && response.response_payload_member_count != 0)) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        const std::vector<jlong> values = {
+            response.abi_version, response.operation, response.result_status,
+            response.is_pending, response.has_cancellation_result,
+            response.cancellation_result, response.has_response_payload,
+            static_cast<jlong>(response.response_payload_member_count)};
+        jlongArray numbers = make_long_array(env, values);
+        if (numbers == nullptr || env->ExceptionCheck()) return static_cast<jlongArray>(nullptr);
+        return numbers;
+    });
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readCancelResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_cancel_response_v1);
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readPollResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_poll_response_v1);
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readProcessResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_process_response_v1);
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_readQueryAsyncRequestsResponseV1(
+        JNIEnv* env, jclass, jlong raw_outcome) {
+    return read_async_response_v1(env, raw_outcome,
+            kmipkit_client_async_operation_outcome_query_async_requests_response_v1);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_extensions_AsyncOperationOutcome_withCancelResponseCorrelationValueV1(
+        JNIEnv* env, jclass, jlong raw_outcome, jobject callback) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* outcome = from_java_handle<kmipkit_client_async_operation_outcome_t>(raw_outcome);
+        if (outcome == nullptr || callback == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        kmipkit_client_async_operation_response_v1_t response{};
+        uint8_t present = 0;
+        const int32_t status = kmipkit_client_async_operation_outcome_cancel_response_v1(
+                outcome, &present, &response);
+        if (!check_status(env, [&] { return status; })) return static_cast<jboolean>(JNI_FALSE);
+        if (present == 0) {
+            if (response.struct_size != 0 || response.abi_version != 0) throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        if (present != 1 || response.struct_size != sizeof(response)
+                || response.abi_version != 1 || response.has_asynchronous_correlation_value > 1) {
+            throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        if (response.has_asynchronous_correlation_value == 0) {
+            if (response.asynchronous_correlation_value.data != nullptr
+                    || response.asynchronous_correlation_value.length != 0) throw_invalid_input(env);
+            return static_cast<jboolean>(JNI_FALSE);
+        }
+        return call_with_correlation_value(env, response.asynchronous_correlation_value, callback);
     });
 }
 

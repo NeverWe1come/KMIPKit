@@ -136,7 +136,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_asynchronous_operations"
             | "client_batch_model"
             | "client_execution"
-            | "client_operation_identity"
+            | "wire_encoding_selection"
             | "client_profile_readiness"
             | "client_profile_validation"
             | "credential_secret_parity"

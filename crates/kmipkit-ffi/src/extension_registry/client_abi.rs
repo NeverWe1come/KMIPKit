@@ -850,7 +850,7 @@ pub extern "C" fn kmipkit_transport_config_create_v1(
         let configuration = try_ffi!(transport_config_from_v1(configuration));
         *out = try_ffi!(try_make_handle(
             Kind::TransportConfig,
-            HandleValue::TransportConfig(configuration),
+            HandleValue::TransportConfig(Box::new(configuration)),
         ));
         SUCCESS
     })
@@ -883,9 +883,10 @@ pub extern "C" fn kmipkit_client_create(
         }
         let client_configuration = client_extension::ClientConfiguration::from_shared_registry(
             configuration.shared_extension_registry(),
-        );
+        )
+        .with_wire_encoding(configuration.wire_encoding());
         let transport_configuration = match owned_payload(transport_handle, Kind::TransportConfig) {
-            Ok(HandleValue::TransportConfig(configuration)) => configuration,
+            Ok(HandleValue::TransportConfig(configuration)) => *configuration,
             Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
             Err(status) => return record_ffi_error(status),
         };
@@ -1349,6 +1350,38 @@ pub extern "C" fn kmipkit_client_execute(
             out_response,
             None,
             &RequestOptions::default(),
+            None,
+        )
+    })
+}
+
+/// Executes one typed batch with an optional wire-encoding override.
+///
+/// A value of -1 uses the immutable client configuration default; 0, 1, and 2
+/// select TTLV, JSON, and XML respectively.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    encoding_override: i32,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request_options = match encoding_override {
+            -1 => RequestOptions::default(),
+            0 => RequestOptions::default().with_wire_encoding(WireEncoding::Ttlv),
+            1 => RequestOptions::default().with_wire_encoding(WireEncoding::Json),
+            2 => RequestOptions::default().with_wire_encoding(WireEncoding::Xml),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            None,
+            &request_options,
             None,
         )
     })
@@ -3083,6 +3116,247 @@ pub unsafe extern "C" fn kmipkit_client_async_operation_outcome_metadata_v1(
     })
 }
 
+fn async_response_v1_struct_size() -> FfiResult<u32> {
+    u32::try_from(std::mem::size_of::<
+        kmipkit_client_async_operation_response_v1_t,
+    >())
+    .map_err(|_| ERROR_INTERNAL)
+}
+
+fn async_response_correlation_span(
+    value: Option<(*const u8, usize)>,
+) -> FfiResult<(u32, kmipkit_byte_span_v1_t)> {
+    value.map_or(
+        Ok((0, kmipkit_byte_span_v1_t::default())),
+        |(data, length)| {
+            Ok((
+                1,
+                kmipkit_byte_span_v1_t {
+                    data: if length == 0 { ptr::null() } else { data },
+                    length: u64::try_from(length).map_err(|_| ERROR_RESOURCE_LIMIT)?,
+                },
+            ))
+        },
+    )
+}
+
+fn cancel_response_echo_is_exposed(result_status: u32, has_cancellation_result: bool) -> bool {
+    result_status == 0 && has_cancellation_result
+}
+
+fn async_response_v1_output(
+    out_present: *mut u8,
+    out_response: *mut kmipkit_client_async_operation_response_v1_t,
+) -> FfiResult<()> {
+    if out_present.is_null()
+        || out_response.is_null()
+        || ffi_output_ranges_overlap(out_present, out_response)
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: both pointers are checked non-null and the caller provides writable output storage.
+    unsafe {
+        *out_present = 0;
+        *out_response = kmipkit_client_async_operation_response_v1_t::default();
+    }
+    Ok(())
+}
+
+/// Reads a typed Cancel response view with a correlation span borrowed from the outcome.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_cancel_response_v1(
+    outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
+    out_present: *mut u8,
+    out_response: *mut kmipkit_client_async_operation_response_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(async_response_v1_output(out_present, out_response));
+        let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(response) = outcome.cancel_response() else {
+            return SUCCESS;
+        };
+        let expose_echo = cancel_response_echo_is_exposed(
+            response.result().status().raw(),
+            response.cancellation_result().is_some(),
+        );
+        let (has_correlation, correlation) = if expose_echo {
+            try_ffi!(async_response_correlation_span(
+                response.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
+            ))
+        } else {
+            (0, kmipkit_byte_span_v1_t::default())
+        };
+        let output = kmipkit_client_async_operation_response_v1_t {
+            struct_size: try_ffi!(async_response_v1_struct_size()),
+            abi_version: 1,
+            operation: outcome.operation().raw(),
+            result_status: response.result().status().raw(),
+            is_pending: 0,
+            has_cancellation_result: u32::from(response.cancellation_result().is_some()),
+            cancellation_result: response
+                .cancellation_result()
+                .map_or(0, kmipkit_protocol::CancellationResult::raw),
+            has_asynchronous_correlation_value: has_correlation,
+            asynchronous_correlation_value: correlation,
+            has_response_payload: u32::from(outcome.raw().is_some()),
+            reserved: 0,
+            response_payload_member_count: 0,
+        };
+        // SAFETY: the output pointers were checked and initialized above.
+        unsafe {
+            *out_response = output;
+            *out_present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Reads a typed Poll response view with a correlation span borrowed from the outcome.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_poll_response_v1(
+    outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
+    out_present: *mut u8,
+    out_response: *mut kmipkit_client_async_operation_response_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(async_response_v1_output(out_present, out_response));
+        let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(response) = outcome.poll_response() else {
+            return SUCCESS;
+        };
+        let (has_correlation, correlation) = try_ffi!(async_response_correlation_span(
+            response.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
+        ));
+        let output = kmipkit_client_async_operation_response_v1_t {
+            struct_size: try_ffi!(async_response_v1_struct_size()),
+            abi_version: 1,
+            operation: outcome.operation().raw(),
+            result_status: response.result().status().raw(),
+            is_pending: u32::from(response.is_pending()),
+            has_cancellation_result: 0,
+            cancellation_result: 0,
+            has_asynchronous_correlation_value: has_correlation,
+            asynchronous_correlation_value: correlation,
+            has_response_payload: u32::from(outcome.raw().is_some()),
+            reserved: 0,
+            response_payload_member_count: 0,
+        };
+        // SAFETY: the output pointers were checked and initialized above.
+        unsafe {
+            *out_response = output;
+            *out_present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Reads a typed Process response view with borrowed correlation and payload-shape metadata.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_process_response_v1(
+    outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
+    out_present: *mut u8,
+    out_response: *mut kmipkit_client_async_operation_response_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(async_response_v1_output(out_present, out_response));
+        let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(response) = outcome.process_response() else {
+            return SUCCESS;
+        };
+        let (has_correlation, correlation) = try_ffi!(async_response_correlation_span(
+            response.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
+        ));
+        let payload_member_count = response.payload_member_count();
+        let Ok(response_payload_member_count) = u64::try_from(payload_member_count.unwrap_or(0))
+        else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        let output = kmipkit_client_async_operation_response_v1_t {
+            struct_size: try_ffi!(async_response_v1_struct_size()),
+            abi_version: 1,
+            operation: outcome.operation().raw(),
+            result_status: response.result().status().raw(),
+            is_pending: u32::from(response.is_pending()),
+            has_cancellation_result: 0,
+            cancellation_result: 0,
+            has_asynchronous_correlation_value: has_correlation,
+            asynchronous_correlation_value: correlation,
+            has_response_payload: u32::from(payload_member_count.is_some()),
+            reserved: 0,
+            response_payload_member_count,
+        };
+        // SAFETY: the output pointers were checked and initialized above.
+        unsafe {
+            *out_response = output;
+            *out_present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Reads Query Asynchronous Requests status; Table 286 payload content remains generic TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_query_async_requests_response_v1(
+    outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
+    out_present: *mut u8,
+    out_response: *mut kmipkit_client_async_operation_response_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(async_response_v1_output(out_present, out_response));
+        let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(response) = outcome.query_async_requests_response() else {
+            return SUCCESS;
+        };
+        let (has_correlation, correlation) = try_ffi!(async_response_correlation_span(
+            outcome.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
+        ));
+        let output = kmipkit_client_async_operation_response_v1_t {
+            struct_size: try_ffi!(async_response_v1_struct_size()),
+            abi_version: 1,
+            operation: outcome.operation().raw(),
+            result_status: response.result().status().raw(),
+            is_pending: u32::from(response.result().status().raw() == 2),
+            has_cancellation_result: 0,
+            cancellation_result: 0,
+            has_asynchronous_correlation_value: has_correlation,
+            asynchronous_correlation_value: correlation,
+            has_response_payload: u32::from(response.with_response_payload(|_| ()).is_some()),
+            reserved: 0,
+            response_payload_member_count: 0,
+        };
+        // SAFETY: the output pointers were checked and initialized above.
+        unsafe {
+            *out_response = output;
+            *out_present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Borrows the exact asynchronous correlation bytes while the outcome remains open.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_async_operation_outcome_correlation_value(
@@ -3118,7 +3392,7 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_correlation_value(
     })
 }
 
-/// Copies a successful operation's generic Response Payload into a caller-owned TTLV handle.
+/// Copies a present generic Response Payload into a caller-owned TTLV handle.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_async_operation_outcome_response_payload_ttlv(
     outcome: *mut kmipkit_client_async_operation_outcome_t,
@@ -3136,9 +3410,6 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_response_payload_ttlv(
         let Ok(outcome) = outcome.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        if outcome.result().status().raw() != 0 {
-            return SUCCESS;
-        }
         let Some(structure) =
             outcome.with_response_payload(|view| super::clone_structure_view(&view))
         else {

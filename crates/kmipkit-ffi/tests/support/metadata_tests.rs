@@ -107,6 +107,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "typed_object_attributes",
             "usage_allocation_guard",
             "vendor_extension_registry",
+            "wire_encoding_selection",
         ]
     );
     for capability in crate::public_api_generated::C_AVAILABLE_CAPABILITIES {
