@@ -53,6 +53,12 @@ tipada y presta el valor de correlación opaco mediante
 `asynchronous_correlation_value()`. KMIPKit no ejecuta Poll ni reintenta
 automáticamente.
 
+Los consumidores de paquetes de los cuatro lenguajes ejecutan Ping mediante
+sus APIs de cliente configuradas y un respondedor de prueba local limitado a
+loopback con TLS 1.3/mTLS. Esto comprueba la ejecución del cliente y la ruta del
+resultado tipado; el respondedor no es una implementación de servidor KMIP ni
+aporta evidencia de interoperabilidad.
+
 KMIPKit 1.0 se limita a KMIP 2.1. Esta parte emite y acepta únicamente la
 versión de protocolo 2.1 conforme a la decisión de producto registrada para
 [`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md); esto no afirma

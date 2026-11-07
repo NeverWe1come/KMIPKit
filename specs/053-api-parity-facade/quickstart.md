@@ -59,10 +59,12 @@ python -B -m unittest discover -s tests/docs -p test_0053_executable_consumer_ex
   `CryptographicParameters`, `Authentication` attached to `client.Batch`, Ping
   validation, and `ResponseMessage.from_ttlv` plus its response-item TTLV.
 
-The operation examples prepare and validate requests but deliberately do not
-call `Client.execute`: that requires a configured transport and a KMIP server.
-The synthetic response exercises the same public parser and generic TTLV
-accessors used for decoded responses; it is not a server response.
+Each external consumer now calls `Client.execute` for Ping over a configured
+TLS 1.3/mTLS transport and checks its typed result and generic Response Payload.
+The runner starts a loopback-only fixture responder from disposable test
+certificates; it is limited to Ping and does not count as interoperability
+evidence or as a KMIP server implementation. The separate synthetic response
+continues to exercise the public parser and generic TTLV accessors.
 
 These examples do not claim complete operation-checked response-reader parity.
 Typed foreign readers that check operation identity for Cancel, Poll, Process,
