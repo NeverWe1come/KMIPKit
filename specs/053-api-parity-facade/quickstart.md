@@ -1,31 +1,31 @@
 # KMIPKIT-0053 External Consumer Quickstart
 
-This quickstart runs four small applications from outside the language
-bindings' source directories. Each declares only the corresponding KMIPKit
-package as its KMIPKit dependency. These are package-surface and ownership
-smoke checks: they construct a Ping request, confirm its KMIP operation value,
-and create and navigate an empty generic TTLV Structure. They do not connect to
-a KMIP server or demonstrate the complete typed response matrix.
+The four external applications compile against the public Rust, C, Java, and
+Python package surfaces. They construct a typed attribute, managed object and
+key material, cryptographic parameters, and demo Authentication; locally
+validate and prepare a Ping client batch; then parse a synthetic successful
+Ping response and inspect its generic TTLV tree. The response is constructed
+in memory for this example. **There is no KMIP server required or contacted**, so the
+quickstart demonstrates package behavior and parsing, not transport
+interoperability or server acceptance. Demo values are non-secret placeholders.
 
 ## Prerequisites
 
-- A checkout of KMIPKit and network access for any dependencies not already
-  cached locally.
-- Rust and Cargo, with the Rust 1.94 toolchain installed (`rustup toolchain
-  install 1.94` if needed). The runner compiles the Rust consumer with this
-  toolchain.
-- On Windows: 64-bit Visual Studio C++ Build Tools, `vswhere.exe` at its
-  standard Visual Studio Installer path, and PowerShell. The C and JNI builds
-  use the MSVC x64 environment.
-- On Linux or macOS: a C compiler (`cc`), a JDK 17 toolchain, Maven, and a POSIX
-  shell. The JNI bridge must be buildable with the platform toolchain described
-  by `bindings/java/native/build.sh`.
-- Python 3.12 and `uv`. `uv` installs the editable Python binding from this
-  checkout and builds its native extension.
+- A KMIPKit checkout and network access only when uncached build dependencies
+  must be downloaded.
+- Rust and Cargo with toolchain 1.94 (`rustup toolchain install 1.94`).
+- On Windows, 64-bit Visual Studio C++ Build Tools, PowerShell, and
+  `vswhere.exe` at its standard Visual Studio Installer path.
+- On Linux or macOS, a C compiler (`cc`), JDK 17, Maven, and a POSIX shell.
+- Python 3.12 and `uv`.
 
 ## Run the consumers
 
-From the repository root, use the runner for the current platform:
+From the repository root, run the platform runner. It builds the native
+components, compiles each external package consumer, and runs the applications.
+The Java package is installed in Maven's user-local repository; its consumer
+uses the JNI library built from this checkout. Python resolves the local
+editable binding with the checked-in consumer lock file.
 
 ```powershell
 & .\tests\consumers\0053-parity\verify.ps1
@@ -35,44 +35,52 @@ From the repository root, use the runner for the current platform:
 ./tests/consumers/0053-parity/verify.sh
 ```
 
-The scripts build the required native components, compile each standalone
-consumer against the package interface, and run it. The Java package is
-installed in Maven's user-local repository; its consumer runs with the JNI
-library built from this checkout. The Python package is resolved through the
-consumer's local editable source and locked dependencies.
+The automated guide/source/runner wiring check can be run independently:
 
-## What each consumer checks
+```powershell
+python -B -m unittest discover -s tests/docs -p test_0053_executable_consumer_examples.py -v
+```
 
-- **Rust:** depends only on `kmipkit`; creates Ping and Query request models,
-  verifies Ping's operation value (`0x3b`), converts Query to a TTLV payload,
-  and compile-checks the `Client::new` and `Client::execute` signatures through
-  the facade.
-- **C:** includes the public `kmipkit.h`, creates Ping through the C ABI,
-  checks operation `0x3b`, creates a TTLV Structure and view, checks its child
-  count, then releases all handles.
-- **Java:** depends on the `org.kmipkit:kmipkit-java` package, creates Ping,
-  checks operation `0x3b`, and uses try-with-resources for the TTLV Structure
-  and borrowed view.
-- **Python:** depends on the `kmipkit` package, creates Ping and checks
-  operation `0x3b`, then uses context managers to close the TTLV Structure and
-  its view.
+## What each application demonstrates
 
-The runnable sources are [Rust](../../tests/consumers/0053-parity/rust/src/main.rs),
-[C](../../tests/consumers/0053-parity/c/main.c),
-[Java](../../tests/consumers/0053-parity/java/src/main/java/Consumer.java), and
-[Python](../../tests/consumers/0053-parity/python/main.py). The platform runners
-and package declarations are under
-[tests/consumers/0053-parity](../../tests/consumers/0053-parity/README.md).
+- **Rust:** `Attribute<typed::Comment>`, `ManagedObject::OpaqueObject`,
+  `KeyMaterial`, `CryptographicParametersBuilder`, `Authentication` attached
+  to `ClientBatch`, `ClientRequest::validation_report`, a Ping batch item, and
+  `ResponseMessage::try_from_ttlv` with generic `with_ttlv` access.
+- **C:** the corresponding public ABI constructors for a typed attribute,
+  opaque managed object, key material, Cryptographic Parameters, Credential
+  and Authentication; `kmipkit_client_batch_set_authentication`, Ping
+  validation, and `kmipkit_response_message_from_ttlv` followed by response
+  item TTLV access.
+- **Java:** `TypedAttribute`, `ManagedObject`, `KeyMaterial`,
+  `CryptographicParameters`, `Authentication` attached to `ClientBatch`, Ping
+  validation, and `ResponseMessage.fromTtlv` plus its response-item TTLV.
+- **Python:** `TypedAttribute`, `ManagedObject`, `KeyMaterial`,
+  `CryptographicParameters`, `Authentication` attached to `client.Batch`, Ping
+  validation, and `ResponseMessage.from_ttlv` plus its response-item TTLV.
+
+The operation examples prepare and validate requests but deliberately do not
+call `Client.execute`: that requires a configured transport and a KMIP server.
+The synthetic response exercises the same public parser and generic TTLV
+accessors used for decoded responses; it is not a server response.
+
+## Runnable sources
+
+- [Rust consumer](../../tests/consumers/0053-parity/rust/src/main.rs)
+- [C consumer](../../tests/consumers/0053-parity/c/main.c)
+- [Java consumer](../../tests/consumers/0053-parity/java/src/main/java/Consumer.java)
+- [Python consumer](../../tests/consumers/0053-parity/python/main.py)
+- [Consumer package declarations and runner notes](../../tests/consumers/0053-parity/README.md)
+- [Windows runner](../../tests/consumers/0053-parity/verify.ps1)
+- [POSIX runner](../../tests/consumers/0053-parity/verify.sh)
 
 ## API guides
 
-For broader usage and lifetime details, see the maintained language guides:
-
-- [English: language packages](../../docs/user-guide/en/language-packages.md),
+- English: [Language packages](../../docs/user-guide/en/language-packages.md),
   [client execution](../../docs/user-guide/en/client-execution.md),
   [typed bindings and response data](../../docs/user-guide/en/typed-bindings-and-response-data.md),
-  and [generic Query and Ping](../../docs/user-guide/en/query-ping.md).
-- [Español: paquetes de idiomas](../../docs/user-guide/es/paquetes-de-idiomas.md),
+  and [Query and Ping](../../docs/user-guide/en/query-ping.md).
+- Español: [Paquetes de idiomas](../../docs/user-guide/es/paquetes-de-idiomas.md),
   [ejecución del cliente](../../docs/user-guide/es/ejecucion-cliente.md),
   [objetos gestionados y material de clave](../../docs/user-guide/es/objetos-gestionados-y-material-de-clave.md),
   and [operaciones Query y Ping](../../docs/user-guide/es/operaciones-query-ping.md).

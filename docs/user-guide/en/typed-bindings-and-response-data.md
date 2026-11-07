@@ -134,3 +134,14 @@ Query field views expose the raw tag and Rust-selected field kind. Enumeration a
 Rust exposes the same classified members through <code>QueryResponseField</code>, typed convenience accessors, and <code>unknown_items()</code>. Its <code>to_ttlv_payload()</code> reconstructs the field sequence, retaining unknown Items and nested Structures. The query execution example in [Query and Ping](query-ping.md) shows how to obtain a Rust response; the Spanish counterpart is [Operaciones Query y Ping](../es/operaciones-query-ping.md). These API descriptions do not establish server support or interoperability.
 
 The high-level API does not expose transport byte exchange. Asynchronous outcomes remain explicit, and KMIPKit does not poll or retry a request automatically. See [Client execution](client-execution.md) for operation calls and delivery outcomes.
+
+## Runnable consumer examples
+
+Run the [KMIPKIT-0053 quickstart](../../../specs/053-api-parity-facade/quickstart.md)
+from the repository root to build and execute package consumers for all four
+languages. The applications construct and validate a Ping request locally,
+attach demo Authentication, and parse a synthetic response TTLV tree. They do
+not contact a KMIP server. The complete sources are [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
+[C](../../../tests/consumers/0053-parity/c/main.c),
+[Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java),
+and [Python](../../../tests/consumers/0053-parity/python/main.py).

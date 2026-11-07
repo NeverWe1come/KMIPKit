@@ -13,10 +13,10 @@ CONSUMERS = {
     "java": CONSUMER_ROOT / "java/src/main/java/Consumer.java",
     "python": CONSUMER_ROOT / "python/main.py",
 }
-GUIDES = (
-    ROOT / "docs/user-guide/en/typed-bindings-and-response-data.md",
-    ROOT / "docs/user-guide/es/enlaces-tipados-validacion-respuestas.md",
-)
+GUIDES = {
+    ROOT / "docs/user-guide/en/typed-bindings-and-response-data.md": "Runnable consumer examples",
+    ROOT / "docs/user-guide/es/enlaces-tipados-validacion-respuestas.md": "Ejemplos ejecutables",
+}
 QUICKSTART = ROOT / "specs/053-api-parity-facade/quickstart.md"
 MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -35,11 +35,10 @@ class ExecutableConsumerExampleTests(unittest.TestCase):
         expected_targets = {QUICKSTART.resolve()}
         expected_targets.update(path.resolve() for path in CONSUMERS.values())
 
-        for guide in GUIDES:
+        for guide, heading in GUIDES.items():
             with self.subTest(guide=guide):
                 document = guide.read_text(encoding="utf-8")
-                self.assertIn("Runnable consumer examples", document)
-                self.assertIn("Ejemplos ejecutables", document)
+                self.assertIn(heading, document)
                 linked_targets = self.resolved_markdown_targets(guide)
                 self.assertTrue(expected_targets.issubset(linked_targets))
 
@@ -56,7 +55,7 @@ class ExecutableConsumerExampleTests(unittest.TestCase):
     def test_each_consumer_exercises_its_package_capabilities(self) -> None:
         required_markers = {
             "rust": (
-                "TypedAttribute",
+                "Attribute::<typed::Comment>",
                 "ManagedObject",
                 "CryptographicParameters",
                 "Authentication",
@@ -78,7 +77,7 @@ class ExecutableConsumerExampleTests(unittest.TestCase):
                 "ManagedObject",
                 "CryptographicParameters",
                 "Authentication",
-                "ValidationReport",
+                ".validationReport()",
                 "ClientBatchItem.ping",
                 "ResponseMessage.fromTtlv",
             ),

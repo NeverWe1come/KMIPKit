@@ -134,3 +134,15 @@ Las vistas de campos Query exponen el tag bruto y el tipo de campo elegido por R
 Rust expone los mismos miembros clasificados mediante <code>QueryResponseField</code>, accesores tipados y <code>unknown_items()</code>. Su <code>to_ttlv_payload()</code> reconstruye la secuencia de campos y conserva los Items desconocidos y las Structures anidadas. El ejemplo de ejecución Query en [Operaciones Query y Ping](operaciones-query-ping.md) muestra cómo obtener una respuesta Rust; su equivalente en inglés es [Query and Ping](../en/query-ping.md). Estas descripciones de API no demuestran compatibilidad del servidor ni interoperabilidad.
 
 La API de alto nivel no expone el intercambio de bytes del transporte. Los resultados asíncronos siguen siendo explícitos y KMIPKit no consulta ni reintenta una petición automáticamente. Consulta [Ejecución del cliente](ejecucion-cliente.md) para ver las llamadas de operaciones y los resultados de entrega.
+
+## Ejemplos ejecutables
+
+Ejecuta el [quickstart de KMIPKIT-0053](../../../specs/053-api-parity-facade/quickstart.md)
+desde la raíz del repositorio para compilar y ejecutar consumidores externos de
+los cuatro paquetes. Los programas construyen y validan localmente una petición
+Ping, adjuntan una Authentication de demostración y analizan un árbol TTLV de
+respuesta sintético. No contactan con un servidor KMIP. Consulta los fuentes
+completos de [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
+[C](../../../tests/consumers/0053-parity/c/main.c),
+[Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java)
+y [Python](../../../tests/consumers/0053-parity/python/main.py).
