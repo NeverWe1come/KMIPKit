@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import socket
 import ssl
@@ -101,6 +102,7 @@ def _is_ping_request(frame: bytes) -> bool:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ready-file", type=Path, required=True)
+    parser.add_argument("--pid-file", type=Path, required=True)
     parser.add_argument("--fixture-dir", type=Path, required=True)
     parser.add_argument("--connections", type=int, default=4)
     args = parser.parse_args()
@@ -118,18 +120,22 @@ def main() -> None:
         listener.listen(args.connections)
         # Native/JNI builds run before Java connects in the consumer runner.
         listener.settimeout(180)
+        args.pid_file.write_text(str(os.getpid()), encoding="ascii")
         args.ready_file.write_text(str(listener.getsockname()[1]), encoding="ascii")
-        for connection_index in range(args.connections):
-            raw, _address = listener.accept()
-            raw.settimeout(10)
-            with raw, context.wrap_socket(raw, server_side=True) as stream:
-                peer_cert = stream.getpeercert(binary_form=True)
-                if stream.version() != "TLSv1.3" or not peer_cert:
-                    raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
-                request = _read_frame(stream)
-                if not _is_ping_request(request):
-                    raise RuntimeError("fixture accepts only a KMIP Ping request")
-                stream.sendall(_ping_response())
+        try:
+            for connection_index in range(args.connections):
+                raw, _address = listener.accept()
+                raw.settimeout(10)
+                with raw, context.wrap_socket(raw, server_side=True) as stream:
+                    peer_cert = stream.getpeercert(binary_form=True)
+                    if stream.version() != "TLSv1.3" or not peer_cert:
+                        raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
+                    request = _read_frame(stream)
+                    if not _is_ping_request(request):
+                        raise RuntimeError("fixture accepts only a KMIP Ping request")
+                    stream.sendall(_ping_response())
+        finally:
+            args.pid_file.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ $pythonProject = Join-Path $consumerRoot 'python'
 $fixtureRoot = Join-Path $repositoryRoot 'bindings\python\tests\fixtures\login-mtls'
 $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("kmipkit-0053-" + [guid]::NewGuid().ToString('N'))
 $readyFile = Join-Path $temporaryRoot 'ready.txt'
+$responderPidFile = Join-Path $temporaryRoot 'responder.pid'
 $serverErrorFile = Join-Path $temporaryRoot 'responder.err'
 $server = $null
 $hadPort = Test-Path Env:\KMIPKIT_CONSUMER_TEST_PORT
@@ -16,14 +17,27 @@ $hadFixtures = Test-Path Env:\KMIPKIT_CONSUMER_TEST_FIXTURES
 $previousFixtures = $env:KMIPKIT_CONSUMER_TEST_FIXTURES
 
 New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
+function Stop-PingFixture {
+    if (Test-Path -LiteralPath $responderPidFile) {
+        $responderProcessId = [int](Get-Content -LiteralPath $responderPidFile -Raw).Trim()
+        Stop-Process -Id $responderProcessId -Force -ErrorAction SilentlyContinue
+    }
+    if ($null -ne $server -and -not $server.HasExited) {
+        & taskkill.exe /PID $server.Id /T /F | Out-Null
+        $server.WaitForExit(5000) | Out-Null
+    }
+}
 try {
-    $server = Start-Process -FilePath 'uv' -ArgumentList @(
+    $serverArguments = @(
         'run', '--locked', '--python', '3.12', '--project', $pythonProject, 'python',
         (Join-Path $consumerRoot 'local_ping_responder.py'),
         '--ready-file', $readyFile,
+        '--pid-file', $responderPidFile,
         '--fixture-dir', $fixtureRoot,
         '--connections', '4'
-    ) -WindowStyle Hidden -PassThru -RedirectStandardError $serverErrorFile
+    ) | ForEach-Object { '"' + $_ + '"' }
+    $server = Start-Process -FilePath 'uv' -ArgumentList ($serverArguments -join ' ') `
+        -WindowStyle Hidden -PassThru -RedirectStandardError $serverErrorFile
     for ($attempt = 0; $attempt -lt 1800 -and -not (Test-Path -LiteralPath $readyFile); $attempt++) {
         if ($server.HasExited) { throw 'The loopback mTLS Ping fixture exited before becoming ready.' }
         Start-Sleep -Milliseconds 100
@@ -32,7 +46,7 @@ try {
     $env:KMIPKIT_CONSUMER_TEST_PORT = (Get-Content -LiteralPath $readyFile -Raw).Trim()
     $env:KMIPKIT_CONSUMER_TEST_FIXTURES = $fixtureRoot
 } catch {
-    if ($null -ne $server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+    Stop-PingFixture
     Remove-Item -LiteralPath $temporaryRoot -Recurse -Force
     throw
 }
@@ -84,7 +98,7 @@ finally {
     else { Remove-Item Env:\KMIPKIT_CONSUMER_TEST_PORT -ErrorAction SilentlyContinue }
     if ($hadFixtures) { $env:KMIPKIT_CONSUMER_TEST_FIXTURES = $previousFixtures }
     else { Remove-Item Env:\KMIPKIT_CONSUMER_TEST_FIXTURES -ErrorAction SilentlyContinue }
-    if ($null -ne $server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+    Stop-PingFixture
     if ((Test-Path -LiteralPath $serverErrorFile) -and (Get-Item -LiteralPath $serverErrorFile).Length -gt 0) {
         Get-Content -LiteralPath $serverErrorFile | ForEach-Object { Write-Error -Message $_ -ErrorAction Continue }
     }

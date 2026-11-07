@@ -8,11 +8,17 @@ java_native="$repository_root/bindings/java/target/native"
 fixture_root="$repository_root/bindings/python/tests/fixtures/login-mtls"
 temporary_root=$(mktemp -d "${TMPDIR:-/tmp}/kmipkit-0053.XXXXXX")
 ready_file="$temporary_root/ready.txt"
+responder_pid_file="$temporary_root/responder.pid"
 uv run --locked --python 3.12 --project "$consumer_root/python" python \
     "$consumer_root/local_ping_responder.py" \
-    --ready-file "$ready_file" --fixture-dir "$fixture_root" --connections 4 &
+    --ready-file "$ready_file" --pid-file "$responder_pid_file" \
+    --fixture-dir "$fixture_root" --connections 4 &
 responder_pid=$!
 cleanup() {
+    if [ -f "$responder_pid_file" ]; then
+        fixture_pid=$(cat "$responder_pid_file")
+        kill "$fixture_pid" 2>/dev/null || true
+    fi
     kill "$responder_pid" 2>/dev/null || true
     wait "$responder_pid" 2>/dev/null || true
     rm -rf -- "$temporary_root"

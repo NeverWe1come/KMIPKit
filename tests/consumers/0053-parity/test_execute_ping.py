@@ -68,7 +68,8 @@ class ExecutePingConsumerTests(unittest.TestCase):
                         break
                     time.sleep(0.01)
                 self.assertTrue(ready_file.exists(), "fixture did not publish its ready port")
-                self.assertEqual(pid_file.read_text(encoding="ascii"), str(process.pid))
+                responder_pid = int(pid_file.read_text(encoding="ascii"))
+                self.assertGreater(responder_pid, 0)
             finally:
                 process.terminate()
                 try:
@@ -76,6 +77,8 @@ class ExecutePingConsumerTests(unittest.TestCase):
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait(timeout=5)
+                if process.stderr is not None:
+                    process.stderr.close()
 
     def test_all_external_consumers_execute_ping_and_inspect_raw_ttlv(self) -> None:
         if os.name == "nt":
