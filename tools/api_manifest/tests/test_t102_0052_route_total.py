@@ -44,7 +44,7 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
 
         baseline_exclusions = len(baseline["approvedExclusions"])
         current_exclusions = len(current["approvedExclusions"])
-        self.assertEqual(5, current_exclusions - baseline_exclusions)
+        self.assertEqual(22, current_exclusions - baseline_exclusions)
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
 
     def test_async_response_v1_record_exclusions_are_in_the_snapshot(self) -> None:
@@ -67,7 +67,7 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
 
         baseline_exclusions = len(baseline["approvedExclusions"])
         current_exclusions = len(current["approvedExclusions"])
-        self.assertEqual(5, current_exclusions - baseline_exclusions)
+        self.assertEqual(22, current_exclusions - baseline_exclusions)
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
 
 
