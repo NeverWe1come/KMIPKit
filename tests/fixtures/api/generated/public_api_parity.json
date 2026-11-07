@@ -214850,6 +214850,552 @@
       "exportName": "<kmipkit_protocol::TransparentSymmetricKey as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::borrow::Borrow<kmipkit_protocol::cryptographic_parameters::CryptographicParameters>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_parameters::CryptographicParameters>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::convert::From<kmipkit_protocol::cryptographic_parameters::CryptographicParameters>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParameters as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::borrow::Borrow<kmipkit_protocol::cryptographic_parameters::CryptographicParametersBuilder>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_parameters::CryptographicParametersBuilder>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::convert::From<kmipkit_protocol::cryptographic_parameters::CryptographicParametersBuilder>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::default::Default>::default",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit::protocol::CryptographicParametersBuilder as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::borrow::Borrow<kmipkit_protocol::cryptographic_parameters::CryptographicParameters>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_parameters::CryptographicParameters>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::convert::From<kmipkit_protocol::cryptographic_parameters::CryptographicParameters>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParameters as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::borrow::Borrow<kmipkit_protocol::cryptographic_parameters::CryptographicParametersBuilder>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_parameters::CryptographicParametersBuilder>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::convert::From<kmipkit_protocol::cryptographic_parameters::CryptographicParametersBuilder>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan",
+        "kind": "feature-specification",
+        "path": "specs/050-parameters-auth-client/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0050",
+      "evidence": "KMIPKIT-0050-FR-001 through KMIPKIT-0050-FR-005; the public Cryptographic Parameters type and its exact supported routes are inventoried separately.",
+      "exportName": "<kmipkit_protocol::CryptographicParametersBuilder as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact compiler-visible Rust trait projection is behavior of the KMIPKIT-0050 Cryptographic Parameters model or builder, not an independent KMIP capability."
     }
   ],
   "capabilities": [
@@ -822829,6 +823375,3680 @@
       "requirementIds": [
         "KMIPKIT-0047-FR-003",
         "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-ea8b8bc39216e7122940",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::add_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_add_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::add_attribute",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-987dfa28942e2c7503f0",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::add_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_add_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::add_attribute_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-ba7578adaa7acfd0a39e",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::adjust_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_adjust_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.adjustAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_adjust_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::adjust_attribute",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-04f18ef373f407309e03",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::adjust_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_adjust_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.adjustAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_adjust_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::adjust_attribute_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-54ac0ef5f84b95890b84",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::decrypt",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::decrypt",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-725121b3aa74aac06128",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::decrypt_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::decrypt_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-64aaae35ad98e2f1a007",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::delegated_login",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::delegated_login",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-ea0505e373ce80247a8e",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::delegated_login_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::delegated_login_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-5c053df0fe07c6f7962a",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::delete_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delete_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deleteAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delete_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::delete_attribute",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-555ce7f7df13bb2cef5c",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::delete_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delete_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deleteAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delete_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::delete_attribute_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "kmipkit-0050-kmipkit-2b4a9c0268732c0adfc0",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::discover_versions",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_discover_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_discover_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::discover_versions",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "kmipkit-0050-kmipkit-cc85ebad4a85fa81905f",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::discover_versions_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_discover_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_discover_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::discover_versions_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-7264c765d99cf87d2a36",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::encrypt",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::encrypt",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-4d56f5942d8e70600941",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::encrypt_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::encrypt_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "declarationId": "kmipkit-0050-kmipkit-6e89edeef0dd8fa2d726",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.get",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+      "declarationId": "kmipkit-0050-kmipkit-942d6a2e00519e171b4c",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get_attribute_list_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_attribute_list",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getAttributeList",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_attribute_list",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get_attribute_list_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributeListJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attribute_list_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "tools/api_manifest/tests/test_get_attribute_list_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+      "declarationId": "kmipkit-0050-kmipkit-9ce28c1a889bc6ace8f4",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get_attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getAttributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get_attributes",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attributes_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+      "declarationId": "kmipkit-0050-kmipkit-4beaa50ca2b6a3bcacf3",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get_attributes_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getAttributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get_attributes_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attributes_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "declarationId": "kmipkit-0050-kmipkit-6763d7b08619e624ab62",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get_constraints_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get_constraints_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "kmipkit-0050-kmipkit-c60adf7da9f1915e7dfe",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get_usage_allocation_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get_usage_allocation_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "declarationId": "kmipkit-0050-kmipkit-8d92eb218e0273e24aad",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::get_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.get",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::get_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-INTEROP",
+      "declarationId": "kmipkit-0050-kmipkit-abb08f20b343d11542db",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::interop_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_interop",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.interop",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_interop",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::interop_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/InteropJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/InteropResponseMappingTest.java",
+        "bindings/python/tests/test_interop_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/interop_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/interop_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_interop_function_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_interop_request_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "declarationId": "kmipkit-0050-kmipkit-b71b57c66847395aa537",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::locate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::locate",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "declarationId": "kmipkit-0050-kmipkit-ce7649f180d4bd1e1df8",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::locate_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::locate_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOG",
+      "declarationId": "kmipkit-0050-kmipkit-ccd5f125562608b0817c",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::log_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_log",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.log",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_log",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::log_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/LogJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogResponseMappingTest.java",
+        "bindings/python/tests/test_log_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/log_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
+        "tools/api_manifest/tests/test_log_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_log_request_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-93d72ddefe3be4cfd2f1",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::login",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::login",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-95c8a3e53af9b5349c96",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::login_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::login_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
+      "declarationId": "kmipkit-0050-kmipkit-5504d81020af1de622a0",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::logout",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_logout",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.logout",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_logout",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::logout",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
+        "tools/api_manifest/tests/test_logout_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
+      "declarationId": "kmipkit-0050-kmipkit-e9bf979635fda5745e3e",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::logout_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_logout",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.logout",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_logout",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::logout_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
+        "tools/api_manifest/tests/test_logout_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-48e0f6e3f427d20930d9",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::modify_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_modify_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::modify_attribute",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-4f3e36e021517185a0e9",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::modify_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_modify_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::modify_attribute_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "declarationId": "kmipkit-0050-kmipkit-7f97d8b9638ab8ff4b64",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::rng_retrieve_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_retrieve",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::rng_retrieve_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_approved_alias_mapping.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+      "declarationId": "kmipkit-0050-kmipkit-9fd514635e534be71b80",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::rng_seed_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_seed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngSeed",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_seed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::rng_seed_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-02b28d68751b01e4b047",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::set_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::set_attribute",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_set_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-3b0248c6a8bd002dd8b6",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::set_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::set_attribute_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_set_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "declarationId": "kmipkit-0050-kmipkit-89b2a6ceae785a573a68",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::set_constraints_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::set_constraints_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "declarationId": "kmipkit-0050-kmipkit-6262539afee15e159e08",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::set_defaults_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_defaults",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_defaults",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::set_defaults_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_query_ping_operation.py",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "kmipkit-0050-kmipkit-e6243e0ad8ffb55d3059",
+      "declarationState": "verified",
+      "exportName": "kmipkit::Client::validate_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::validate_with_options",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "specs/028-diagnostics-interop/traceability.md",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-e9d5e4cf2d2820e8611c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::add_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_add_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::add_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-e988b14918af2b03d788",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::add_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_add_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.addAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_add_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::add_attribute_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-f0e476cd95b21722528c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::adjust_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_adjust_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.adjustAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_adjust_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::adjust_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-f182e0f1b56f67e3fee4",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::adjust_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_adjust_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.adjustAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_adjust_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::adjust_attribute_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-client-6b7fc3a86cf8708c00b0",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::decrypt",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::decrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-client-479af6c9c275c5780548",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::decrypt_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::decrypt_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-client-421a2906fa9c6a2c5444",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::delegated_login",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::delegated_login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-client-279caf979d2b3d1f7538",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::delegated_login_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::delegated_login_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_ticket_model_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-f2684180706944f34439",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::delete_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delete_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deleteAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delete_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::delete_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-627ad5e3e7ce66a7089a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::delete_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delete_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.deleteAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delete_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::delete_attribute_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_delete_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/delete_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "kmipkit-0050-kmipkit-client-6121dd5b5ba22b53a4aa",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::discover_versions",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_discover_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_discover_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::discover_versions",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "kmipkit-0050-kmipkit-client-7eb3c70a0b6c338faed2",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::discover_versions_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_discover_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_discover_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::discover_versions_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-client-d95d73d204778faa8ca7",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::encrypt",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::encrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "kmipkit-0050-kmipkit-client-9234c8c6a05b3d63702f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::encrypt_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::encrypt_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "declarationId": "kmipkit-0050-kmipkit-client-003598b1f571c58e65bf",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.get",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+      "declarationId": "kmipkit-0050-kmipkit-client-288a3d3fec5312158efb",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get_attribute_list_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_attribute_list",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getAttributeList",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_attribute_list",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_attribute_list_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributeListJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attribute_list_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs",
+        "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs",
+        "tools/api_manifest/tests/test_get_attribute_list_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+      "declarationId": "kmipkit-0050-kmipkit-client-6364194336a8273fefcd",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get_attributes",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getAttributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attributes_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+      "declarationId": "kmipkit-0050-kmipkit-client-2501434e9654bdcbc8fc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get_attributes_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_attributes",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getAttributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_attributes_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attributes_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "declarationId": "kmipkit-0050-kmipkit-client-201eda5835f4b47454bb",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get_constraints_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_constraints_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "kmipkit-0050-kmipkit-client-033439ae42696a5d9e08",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get_usage_allocation_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_usage_allocation_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "tools/api_manifest/tests/test_t102_get_usage_allocation_request_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "declarationId": "kmipkit-0050-kmipkit-client-44cd02d7c403c5053114",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::get_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.get",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-INTEROP",
+      "declarationId": "kmipkit-0050-kmipkit-client-06f1712c024cab49a2dc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::interop_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_interop",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.interop",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_interop",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::interop_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/InteropJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/InteropResponseMappingTest.java",
+        "bindings/python/tests/test_interop_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/interop_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/interop_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
+        "tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_interop_function_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_interop_request_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "declarationId": "kmipkit-0050-kmipkit-client-9b83de30229dcc9247fc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::locate",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "declarationId": "kmipkit-0050-kmipkit-client-4c125a1319ba5b62999a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::locate_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOG",
+      "declarationId": "kmipkit-0050-kmipkit-client-71868a1def680e7559a2",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::log_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_log",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.log",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_log",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::log_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/LogJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogResponseMappingTest.java",
+        "bindings/python/tests/test_log_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/log_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
+        "tools/api_manifest/tests/test_log_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_diagnostics_request_serializer_mapping.py",
+        "tools/api_manifest/tests/test_t102_log_request_members_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-client-6116e6ac0bb9ac5fcb4b",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::login",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "kmipkit-0050-kmipkit-client-883ea7d15fcff9f20a34",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::login_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::login_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
+      "declarationId": "kmipkit-0050-kmipkit-client-ae81f437beeab22c4132",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::logout",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_logout",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.logout",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_logout",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::logout",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
+        "tools/api_manifest/tests/test_logout_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
+      "declarationId": "kmipkit-0050-kmipkit-client-434af4a5196739c093cb",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::logout_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_logout",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.logout",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_logout",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::logout_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
+        "bindings/python/tests/test_logout_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
+        "tools/api_manifest/tests/test_logout_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_credential_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-7f568a3c80ee267a8e39",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::modify_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_modify_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::modify_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-126316d591ad8169cea1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::modify_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_modify_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::modify_attribute_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+      "declarationId": "kmipkit-0050-kmipkit-client-753e99b8ecc3b7e557ff",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::rng_retrieve_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_retrieve",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngRetrieve",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_retrieve",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::rng_retrieve_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_retrieve_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_approved_alias_mapping.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/027-rng-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+      "declarationId": "kmipkit-0050-kmipkit-client-56c41b0077ae45e6955d",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::rng_seed_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rng_seed",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rngSeed",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rng_seed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::rng_seed_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RngOperationMappingTest.java",
+        "bindings/python/tests/test_rng_native_integration.py",
+        "bindings/python/tests/test_rng_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs",
+        "tools/api_manifest/tests/test_rng_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_rng_pending_response_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-da93373bab3dee7a4611",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::set_attribute",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::set_attribute",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_set_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+      "declarationId": "kmipkit-0050-kmipkit-client-0ba3ada6f24e78d731d5",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::set_attribute_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_attribute",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setAttribute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_attribute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::set_attribute_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_set_attribute_operation.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "declarationId": "kmipkit-0050-kmipkit-client-63c355dff7030b747d99",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::set_constraints_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::set_constraints_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "declarationId": "kmipkit-0050-kmipkit-client-88947974b5283733357c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::set_defaults_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_defaults",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_defaults",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::set_defaults_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_query_ping_operation.py",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py",
+        "tools/api_manifest/tests/test_t102_policy_request_serializer_mapping.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/028-diagnostics-interop/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-VALIDATE",
+      "declarationId": "kmipkit-0050-kmipkit-client-362532a46f01f8586391",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::validate_with_options",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_validate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::validate_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidateJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ValidateResponseMappingTest.java",
+        "bindings/python/tests/test_validate_operation.py",
+        "crates/kmipkit-client/tests/unit/direct_method_surface_tests.rs",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
+        "specs/028-diagnostics-interop/traceability.md",
+        "tools/api_manifest/tests/test_validate_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-010",
+        "KMIPKIT-0050-FR-011"
       ]
     }
   ],

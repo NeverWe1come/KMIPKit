@@ -189,7 +189,8 @@ PKCS11_REQUEST_SETTER_IDS = {
 }
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
-OTHER_DECLARATIONS_SHA256 = "47183651eebdc81364d32a6155454357e30ecc65886d3acbfdd535831f2a516e"
+# Snapshot includes final 0049 and exact 0050 constructor mappings.
+OTHER_DECLARATIONS_SHA256 = "e42a0846513f16ebba1889a6413f9fa6514974023c5e0e7c5e62a6f498cba884"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
