@@ -5,8 +5,8 @@
 - Branch: `feature/KMIPKIT-0050-parameters-auth-client`.
 - Base: `feature/KMIPKIT-0049-managed-objects` (PR #116), as recorded in
   `approval-record.md`.
-- Latest synchronized predecessor commit: `28d209fd0` (PR #116); this branch
-  includes that parent through normal merge `c5e3051ef`.
+- At the initial 2026-11-07 audit snapshot, the latest synchronized predecessor
+  was `28d209fd0` (PR #116), included through normal merge `c5e3051ef`.
 - Scope: typed Cryptographic Parameters, request-scoped KMIP Authentication,
   direct Rust client methods, public API reconciliation, examples, and tests.
 
@@ -96,9 +96,8 @@ environment warnings about NASM and an optional compiler probe.
   before encoder limits apply; no remote path or exploitability was established.
 - Draft pull request: [#118](https://github.com/NeverWe1come/KMIPKit/pull/118),
   base `feature/KMIPKIT-0049-managed-objects`, head
-  `feature/KMIPKIT-0050-parameters-auth-client`, verified open and draft at
-  original PR-open commit `4f23fba09f791dbbd7f510188151a3683fef1dfb`. The
-  branch now includes the synchronized 0049 parent and this evidence update.
+  `feature/KMIPKIT-0050-parameters-auth-client`. The original PR-open head was
+  `4f23fba09f791dbbd7f510188151a3683fef1dfb` (historical).
 - ADR-0012 Decision 6 still requires hosted CI to run and pass these exact
   candidate-callsite tests before the production route can be merged, enabled,
   or released. CI was not queried under the maintainer's instruction during
@@ -106,3 +105,38 @@ environment warnings about NASM and an optional compiler probe.
   pass.
 - This evidence does not claim profile conformance, interoperability, human
   security approval, or release readiness.
+
+## Current PR metadata and verification basis (2026-11-07)
+
+- At the initial audit snapshot before either evidence refresh, the #118
+  worktree was clean at `ecbd9c978c625ba3648e49f74149287b54ae6c09`, matching
+  its local `origin` ref and `gh pr view 118` head. GitHub reported PR #118
+  `OPEN`, draft, with base ref OID
+  `28d209fd0a159376a8b7ca2b58c71704b37cc9a2` and head ref OID
+  `ecbd9c978c625ba3648e49f74149287b54ae6c09`.
+- PR #116's documentation-only evidence refresh was pushed as
+  `77b3d91ca2dd5597e2eb3a8e89bef957115bd537`. This branch incorporates that
+  parent through merge commit `79277e78f7484196ae2dd97c4d5d30ee4745a298`
+  (parents: initial #118 head `ecbd9c9…` and refreshed #116 head `77b3d91…`).
+  At this pre-push snapshot, the worktree is at that merge commit; GitHub still
+  reports the not-yet-pushed #118 head `ecbd9c9…` and base ref OID `28d209fd…`.
+- The full workspace verification listed above was recorded on the original
+  #118 source snapshot `4f23fba09f791dbbd7f510188151a3683fef1dfb`. The
+  0050-owned implementation and test paths are unchanged from that snapshot.
+  After predecessor synchronization to `28d209fd0`, the focused ADR-0012
+  candidate-callsite tests, formatting, and diff checks were rerun; the full
+  workspace suite and coverage were not rerun on the combined stack.
+- Compared with the original #118 source snapshot, the additional source/test
+  paths are predecessor-owned: `crates/kmipkit-protocol/src/profile.rs`,
+  `crates/kmipkit-protocol/tests/credential_contract.rs`,
+  `crates/kmipkit-protocol/tests/support/profile_context_unit.rs`,
+  `crates/kmipkit-protocol/tests/support/profile_unit.rs`, and
+  `crates/kmipkit-protocol/tests/unit/get_attribute_list_tests.rs`. They are
+  covered by the #049 workspace verification recorded against source snapshot
+  `0a5f661c9a7964825dab597d4472f8edee2cca69`; comparison from that snapshot to
+  #049's audited head `28d209fd0` contains documentation/evidence changes only.
+- Since the previous #118 audit head `c30f3d4b1f013c40c3886a7aff2b32de4a128400`,
+  the stack/evidence updates changed only documentation files, including the
+  merge above. This refresh also changes documentation only; no #050
+  implementation, test, or generated path is changed by it.
+- Remote CI checks were not queried under the maintainer's billing instruction.
