@@ -203,4 +203,3 @@ def test_failed_authentication_attachment_keeps_the_caller_owner_live():
         assert len(authentication.credentials) == 1
     finally:
         authentication.close()
-

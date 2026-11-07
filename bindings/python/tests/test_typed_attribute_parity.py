@@ -338,4 +338,3 @@ def test_typed_attribute_repr_and_validation_error_redact_sensitive_value():
         assert marker.decode() not in repr(typed)
         with typed.value as copied:
             assert marker.decode() not in repr(copied)
-

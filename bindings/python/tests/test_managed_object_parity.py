@@ -862,4 +862,3 @@ def test_oasis_hexadecimal_transparent_ec_formats_and_reserved_values():
         assert reserved_private.format_raw == 14
     with KeyMaterial.from_fields(15, []) as reserved_public:
         assert reserved_public.format_raw == 15
-

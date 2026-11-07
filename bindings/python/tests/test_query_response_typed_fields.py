@@ -238,4 +238,3 @@ def test_typed_query_structure_fields_are_absent_without_losing_raw_payload() ->
             assert ttlv.ttlv_structure_view_item_count(raw) == 1
     finally:
         response.close()
-
