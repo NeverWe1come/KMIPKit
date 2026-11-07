@@ -317,8 +317,10 @@ def _render_c(values: CatalogValues) -> str:
             if kind == "ENUMERATION":
                 lines.extend([f"static inline const char *{prefix}_name(uint32_t raw) {{", "    switch (raw) {"])
                 for value in group.values:
-                    escaped = value.name.replace("\\", "\\\\").replace('"', '\\"')
-                    lines.append(f'    case KMIPKIT_ENUMERATION_{group.identifier}_{value.identifier}: return "{escaped}";')
+                    lines.append(
+                        f"    case KMIPKIT_ENUMERATION_{group.identifier}_{value.identifier}: "
+                        f"return {_c_string(value.name)};"
+                    )
                 lines.extend(["    default: return 0;", "    }", "}", ""])
             else:
                 lines.extend([
@@ -328,8 +330,10 @@ def _render_c(values: CatalogValues) -> str:
                     "    switch (bit) {",
                 ])
                 for value in group.values:
-                    escaped = value.name.replace("\\", "\\\\").replace('"', '\\"')
-                    lines.append(f'    case KMIPKIT_BITMASK_{group.identifier}_{value.identifier}: return "{escaped}";')
+                    lines.append(
+                        f"    case KMIPKIT_BITMASK_{group.identifier}_{value.identifier}: "
+                        f"return {_c_string(value.name)};"
+                    )
                 lines.extend([
                     "    default: return 0;",
                     "    }",
