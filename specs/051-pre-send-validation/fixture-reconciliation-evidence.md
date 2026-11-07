@@ -32,3 +32,24 @@ tests and failed exactly once: its explicit 902-candidate assertion observed
 the stale zero constant. The exact 252 validation trait routes, existing
 owners, all 930 blocked additions, absence of parity promotions, and negative
 selector cases passed as characterization of the existing manifest.
+
+## Green
+
+The fixtures now keep the 902 current 0043 candidates distinct from the
+historical macro-lot IDs. Standard-trait assertions omit only the exact 252
+existing validation member routes recognized by the shared test selector.
+Separate tests pin every member, its existing owner, and its blocked state;
+future members, types, and packages are not recognized by that selector.
+The three non-target declaration fingerprints retain all 930 additions.
+The manifest and product source remain unchanged by these corrections.
+
+- The focused validation/Export/Get/Revoke modules passed nine tests.
+- The final four residual fixture cases and new inventory module passed all
+  17 tests in their five focused modules.
+- Full T102 discovery passed all 402 tests (the original 399 plus three new
+  regressions) in 111.376 seconds.
+- The current shared inventory fixture first failed with the expected
+  `23585 != 22655` stale predecessor count. After refreshing its observed and
+  matched counts, the focused generic-reconciler, shared-inventory, and exact
+  manifest-inventory checks passed all 11 tests.
+- The affected compiled C ABI coverage suite passed all 50 tests.

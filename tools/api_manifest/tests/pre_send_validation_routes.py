@@ -1,5 +1,9 @@
 """Exact 0051 trait routes kept separate from historical standard-trait slices."""
 
+from functools import cache
+import json
+from pathlib import Path
+
 REQUEST_TYPES = frozenset("""
 ActivateRequest AddAttributeRequest AdjustAttributeRequest ArchiveRequest
 CancelRequest CertifyRequest CheckRequest CreateKeyPairRequest CreateRequest
@@ -37,3 +41,21 @@ VALIDATION_TRAIT_ROUTES = frozenset(
 def is_pre_send_validation_trait(row: dict) -> bool:
     """Recognize only the 252 existing package/path pairs pinned by 0051."""
     return (row.get("packageId"), row.get("exportName")) in VALIDATION_TRAIT_ROUTES
+
+
+@cache
+def validation_stack_routes() -> frozenset[tuple[str, str]]:
+    """Read the exact added routes from the two independently audited snapshots."""
+    root = Path(__file__).resolve().parents[3]
+    reports = (
+        "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json",
+        "specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json",
+    )
+    inventories = []
+    for path in reports:
+        report = json.loads((root / path).read_text(encoding="utf-8"))
+        inventories.append({
+            (row["packageId"], row["exportName"])
+            for row in report["declarations"] + report["conditionalDeclarations"]
+        })
+    return frozenset(inventories[0] - inventories[1])

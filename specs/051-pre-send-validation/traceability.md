@@ -106,3 +106,12 @@ Normative identifiers in this feature use the prefix `KMIPKIT-0051-`. OASIS refe
 - `git diff --check` — passed.
 - The supplemental `tools.api_manifest.tests.test_manifest_v2` suite was also run. Its dated-report inventory assertion was refreshed for the 2026-11-06 Rust report and its focused inventory test now passes. The remaining 22 failures are hard-coded expectations in existing C-header/FFI inventory, historical Rust exclusion counts, and KMIPKIT-0091 operation mapping assertions; those corresponding product declarations and C headers were not changed by KMIPKIT-0051. This supplementary suite therefore remains a repository-level follow-up, distinct from the required T034 gates above.
 - Coverage was not run under the maintainer's active instruction to suspend coverage thresholds until the in-progress branch work is complete. Remote CI was not run per the instruction to disregard billing-blocked CI until further notice.
+
+## Predecessor synchronization — 2026-11-07
+
+Current synchronization evidence is recorded in
+[synchronization-evidence-2026-11-07.md](synchronization-evidence-2026-11-07.md).
+The feature-specific [audit reports](reports/README.md) replace the predecessor
+snapshot as the input for current inventory checks, while all predecessor and
+original 0051 reports remain preserved. The 930 existing validation rows and
+their owners remain blocked pending the KMIPKIT-0053 cross-language work.
