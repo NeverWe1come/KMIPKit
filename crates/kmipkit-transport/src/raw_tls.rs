@@ -11,16 +11,20 @@ use tokio_rustls::TlsConnector;
 use tokio_rustls::client::TlsStream;
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::config::TransportConfigError;
+use crate::config::{TransportConfigError, WireEncoding};
 use crate::resolver::{ResolveFailure, Resolver};
 use crate::secret::SecretBuffer;
 #[cfg(test)]
 use crate::secret::SecretBufferObserver;
 use crate::timeout::DeadlineIo;
 use crate::tls::{self, TlsClientConfig};
+#[path = "wire_framing.rs"]
+mod wire_framing;
+#[cfg(test)]
+use crate::worker::WorkerSpawnerForTest;
 #[cfg(test)]
 use crate::worker::WorkerTask;
-use crate::worker::{ClientWorker, ExchangeControl, WorkerError, WorkerStartError};
+use crate::worker::{ClientWorker, ExchangeControl, WorkerError, ensure_client_worker};
 use crate::{
     RequestDeliveryState, RequestOptions, TimeoutLimit, TimeoutPolicy, Transport,
     TransportCauseCategory, TransportConfig, TransportError, TransportResponse,
@@ -31,6 +35,14 @@ use crate::{
 mod error_mapping_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/raw_tls_text_buffer_tests.rs"]
+mod text_buffer_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/raw_tls_text_response_tests.rs"]
+mod text_response_tests;
+
+#[cfg(test)]
 use std::thread::JoinHandle;
 #[cfg(test)]
 use std::{
@@ -38,11 +50,8 @@ use std::{
     sync::{Mutex, MutexGuard},
 };
 
-#[cfg(test)]
-type WorkerSpawnerForTest =
-    Box<dyn FnOnce(WorkerTask) -> io::Result<JoinHandle<()>> + Send + 'static>;
-
 const RESPONSE_HEADER_LEN: usize = 8;
+// OASIS KMIP v2.1 §8.4 Table 397 uses Response Message, whose assigned tag is §11.56.
 const RESPONSE_STRUCTURE_TAG: [u8; 3] = [0x42, 0x00, 0x7B];
 const TTLV_STRUCTURE_TYPE: u8 = 0x01;
 
@@ -128,6 +137,7 @@ impl RawTlsTransport {
     ) -> Result<TransportResponse, TransportError> {
         let exchange_started = Instant::now();
         let policy = self.configuration.timeouts().with_overrides(options);
+        let wire_encoding = options.wire_encoding().unwrap_or_default();
         if request.len() > self.configuration.max_request_bytes() {
             return Err(safe_error(
                 RequestDeliveryState::NotSent,
@@ -135,11 +145,12 @@ impl RawTlsTransport {
                 io::Error::other("request exceeds configured limit"),
             ));
         }
-        if max_response_bytes < RESPONSE_HEADER_LEN {
+        let minimum_response_bytes = minimum_response_bytes(wire_encoding);
+        if max_response_bytes < minimum_response_bytes {
             return Err(safe_error(
                 RequestDeliveryState::NotSent,
                 TransportCauseCategory::Other,
-                io::Error::other("response limit is smaller than a TTLV header"),
+                io::Error::other("response limit is smaller than a response frame"),
             ));
         }
 
@@ -152,23 +163,12 @@ impl RawTlsTransport {
                 )
             })?;
 
-        if self.worker.is_none() {
+        ensure_client_worker(
+            &mut self.worker,
             #[cfg(test)]
-            let worker = match self.worker_spawner.take() {
-                Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
-                None => ClientWorker::start_until(total_deadline),
-            };
-            #[cfg(not(test))]
-            let worker = ClientWorker::start_until(total_deadline);
-            self.worker = Some(worker.map_err(|error| match error {
-                WorkerStartError::Deadline => timeout_error(RequestDeliveryState::NotSent),
-                error => safe_error(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    error,
-                ),
-            })?);
-        }
+            &mut self.worker_spawner,
+            total_deadline,
+        )?;
 
         #[cfg(test)]
         let request_owner = if let Some(observer) = self.observer.clone() {
@@ -185,6 +185,16 @@ impl RawTlsTransport {
                 error,
             )
         })?;
+
+        self.tls
+            .refresh_if_changed(&mut self.configuration)
+            .map_err(|error| {
+                safe_error(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    error,
+                )
+            })?;
 
         let host = self.host.clone();
         let port = self.port;
@@ -212,6 +222,7 @@ impl RawTlsTransport {
                     resolver,
                     client_config,
                     server_name,
+                    wire_encoding,
                     policy,
                     total_deadline,
                     max_response_bytes,
@@ -306,6 +317,7 @@ async fn exchange_on_worker(
     resolver: Resolver,
     client_config: Arc<rustls::ClientConfig>,
     server_name: ServerName<'static>,
+    wire_encoding: WireEncoding,
     policy: TimeoutPolicy,
     total_deadline: Option<Instant>,
     max_response_bytes: usize,
@@ -339,6 +351,7 @@ async fn exchange_on_worker(
     RawTlsConnection::new(tls_stream, policy, total_deadline, control)
         .exchange(
             request.as_slice(),
+            wire_encoding,
             max_response_bytes,
             #[cfg(test)]
             response_allocation_observer,
@@ -377,6 +390,7 @@ impl RawTlsConnection {
     async fn exchange(
         mut self,
         request: &[u8],
+        wire_encoding: WireEncoding,
         max_response_bytes: usize,
         #[cfg(test)] response_allocation_observer: Option<ResponseAllocationObserver>,
         #[cfg(test)] candidate_event_observer: Option<CandidateEventObserver>,
@@ -408,61 +422,169 @@ impl RawTlsConnection {
             .await
             .map_err(|error| io_error(error, self.control.delivery_state()))?;
 
-        let mut header = Zeroizing::new([0_u8; RESPONSE_HEADER_LEN]);
-        tokio::io::AsyncReadExt::read_exact(&mut self.io, header.as_mut())
-            .await
-            .map_err(|error| io_error(error, self.control.delivery_state()))?;
-
-        let response_value_len = response_value_length(&header[..]).ok_or_else(|| {
-            safe_error(
-                self.control.delivery_state(),
-                TransportCauseCategory::Other,
-                io::Error::new(io::ErrorKind::InvalidData, "invalid TTLV response header"),
-            )
-        })?;
-        let response_len = RESPONSE_HEADER_LEN
-            .checked_add(response_value_len)
-            .filter(|length| *length <= max_response_bytes)
-            .ok_or_else(|| {
-                safe_error(
-                    self.control.delivery_state(),
-                    TransportCauseCategory::Other,
-                    io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        "response exceeds configured limit",
-                    ),
-                )
-            })?;
-
-        #[cfg(test)]
-        let allocation = if let Some(observer) = response_allocation_observer {
-            ResponseBuffer::with_header_and_allocation_observer_for_test(
-                response_len,
-                &header[..],
-                &observer,
-            )
-        } else {
-            ResponseBuffer::with_header(response_len, &header[..])
-        };
-        #[cfg(not(test))]
-        let allocation = ResponseBuffer::with_header(response_len, &header[..]);
-        let mut response = allocation.map_err(|error| {
-            safe_error(
-                self.control.delivery_state(),
-                TransportCauseCategory::Other,
-                error,
-            )
-        })?;
-        if response_len > RESPONSE_HEADER_LEN {
-            tokio::io::AsyncReadExt::read_exact(
-                &mut self.io,
-                &mut response.bytes[RESPONSE_HEADER_LEN..],
-            )
-            .await
-            .map_err(|error| io_error(error, self.control.delivery_state()))?;
-        }
-        Ok(response.into_transport_response())
+        read_response(
+            &mut self.io,
+            wire_encoding,
+            max_response_bytes,
+            &self.control,
+            #[cfg(test)]
+            response_allocation_observer,
+        )
+        .await
     }
+}
+
+fn minimum_response_bytes(encoding: WireEncoding) -> usize {
+    if encoding == WireEncoding::Ttlv {
+        RESPONSE_HEADER_LEN
+    } else {
+        1
+    }
+}
+
+async fn read_response<R>(
+    reader: &mut R,
+    wire_encoding: WireEncoding,
+    max_response_bytes: usize,
+    control: &ExchangeControl,
+    #[cfg(test)] allocation_observer: Option<ResponseAllocationObserver>,
+) -> Result<TransportResponse, TransportError>
+where
+    R: tokio::io::AsyncRead + Unpin,
+{
+    if wire_encoding != WireEncoding::Ttlv {
+        return read_text_response(reader, wire_encoding, max_response_bytes, control).await;
+    }
+
+    let mut header = Zeroizing::new([0_u8; RESPONSE_HEADER_LEN]);
+    tokio::io::AsyncReadExt::read_exact(reader, &mut header[..1])
+        .await
+        .map_err(|error| io_error(error, control.delivery_state()))?;
+    if is_text_document_prefix(header[0]) {
+        return Err(encoding_mismatch_error(control));
+    }
+    tokio::io::AsyncReadExt::read_exact(reader, &mut header[1..])
+        .await
+        .map_err(|error| io_error(error, control.delivery_state()))?;
+
+    let response_value_len = response_value_length(&header[..]).ok_or_else(|| {
+        safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Other,
+            io::Error::new(io::ErrorKind::InvalidData, "invalid TTLV response header"),
+        )
+    })?;
+    let response_len = RESPONSE_HEADER_LEN
+        .checked_add(response_value_len)
+        .filter(|length| *length <= max_response_bytes)
+        .ok_or_else(|| {
+            safe_error(
+                control.delivery_state(),
+                TransportCauseCategory::Other,
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "response exceeds configured limit",
+                ),
+            )
+        })?;
+
+    #[cfg(test)]
+    let allocation = if let Some(observer) = allocation_observer {
+        ResponseBuffer::with_header_and_allocation_observer_for_test(
+            response_len,
+            &header[..],
+            &observer,
+        )
+    } else {
+        ResponseBuffer::with_header(response_len, &header[..])
+    };
+    #[cfg(not(test))]
+    let allocation = ResponseBuffer::with_header(response_len, &header[..]);
+    let mut response = allocation.map_err(|error| {
+        safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Other,
+            error,
+        )
+    })?;
+    if response_len > RESPONSE_HEADER_LEN {
+        tokio::io::AsyncReadExt::read_exact(reader, &mut response.bytes[RESPONSE_HEADER_LEN..])
+            .await
+            .map_err(|error| io_error(error, control.delivery_state()))?;
+    }
+    Ok(response.into_transport_response())
+}
+
+async fn read_text_response<R>(
+    reader: &mut R,
+    wire_encoding: WireEncoding,
+    max_response_bytes: usize,
+    control: &ExchangeControl,
+) -> Result<TransportResponse, TransportError>
+where
+    R: tokio::io::AsyncRead + Unpin,
+{
+    let mut framer = wire_framing::TextDocumentFramer::new(wire_encoding).map_err(|error| {
+        safe_error(
+            control.delivery_state(),
+            TransportCauseCategory::Other,
+            error,
+        )
+    })?;
+    let mut response = ResponseBuffer::with_empty();
+    let mut chunk = Zeroizing::new([0_u8; 4096]);
+    loop {
+        let bytes_read = tokio::io::AsyncReadExt::read(reader, &mut chunk[..])
+            .await
+            .map_err(|error| io_error(error, control.delivery_state()))?;
+        if bytes_read == 0 {
+            return Err(safe_error(
+                control.delivery_state(),
+                TransportCauseCategory::Other,
+                io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "response document ended before its root was complete",
+                ),
+            ));
+        }
+
+        for byte in chunk.iter().copied().take(bytes_read) {
+            response
+                .append_text_byte(byte, max_response_bytes)
+                .map_err(|error| {
+                    safe_error(
+                        control.delivery_state(),
+                        TransportCauseCategory::Other,
+                        error,
+                    )
+                })?;
+            framer.feed(byte).map_err(|error| {
+                let cause = if error.kind() == io::ErrorKind::Unsupported {
+                    TransportCauseCategory::EncodingMismatch
+                } else {
+                    TransportCauseCategory::Other
+                };
+                safe_error(control.delivery_state(), cause, error)
+            })?;
+            if framer.is_complete() {
+                // The first complete document is this exchange's response. Closing this
+                // one-exchange connection discards any surplus, matching TTLV framing.
+                return Ok(response.into_transport_response());
+            }
+        }
+    }
+}
+
+fn is_text_document_prefix(byte: u8) -> bool {
+    matches!(byte, b'{' | b'<' | b' ' | b'\t' | b'\r' | b'\n' | 0xef)
+}
+
+fn encoding_mismatch_error(control: &ExchangeControl) -> TransportError {
+    safe_error(
+        control.delivery_state(),
+        TransportCauseCategory::EncodingMismatch,
+        io::Error::other("response encoding did not match selected encoding"),
+    )
 }
 
 #[allow(clippy::too_many_arguments)] // The cfg(test) candidate observer is per adapter.
@@ -565,6 +687,52 @@ struct ResponseBuffer {
 }
 
 impl ResponseBuffer {
+    fn with_empty() -> Self {
+        Self {
+            bytes: Vec::new(),
+            #[cfg(test)]
+            drop_observer: None,
+        }
+    }
+
+    #[cfg(test)]
+    fn with_empty_and_observer_for_test(observer: ResponseBufferDropObserver) -> Self {
+        Self {
+            bytes: Vec::new(),
+            drop_observer: Some(observer),
+        }
+    }
+
+    fn append_text_byte(&mut self, byte: u8, limit: usize) -> io::Result<()> {
+        let new_len = self
+            .bytes
+            .len()
+            .checked_add(1)
+            .filter(|length| *length <= limit)
+            .ok_or_else(|| io::Error::other("response document exceeds configured limit"))?;
+        if new_len > self.bytes.capacity() {
+            let capacity = self
+                .bytes
+                .capacity()
+                .saturating_mul(2)
+                .max(new_len)
+                .min(limit);
+            let mut replacement = Vec::new();
+            replacement
+                .try_reserve_exact(capacity)
+                .map_err(|_| io::Error::other("response document allocation failed"))?;
+            replacement.extend_from_slice(&self.bytes);
+            self.bytes.as_mut_slice().zeroize();
+            #[cfg(test)]
+            if let Some(observer) = &self.drop_observer {
+                observer.record_replaced_allocation(self.bytes.as_slice());
+            }
+            self.bytes = replacement;
+        }
+        self.bytes.push(byte);
+        Ok(())
+    }
+
     fn with_header(length: usize, header: &[u8]) -> io::Result<Self> {
         let header = header
             .get(..RESPONSE_HEADER_LEN)
@@ -717,6 +885,7 @@ struct ResponseBufferDropObserver {
     initialized_len: Arc<std::sync::atomic::AtomicUsize>,
     contained_nonzero_bytes: Arc<std::sync::atomic::AtomicBool>,
     initialized_range_was_zero: Arc<std::sync::atomic::AtomicBool>,
+    replaced_allocations_were_zero: Arc<std::sync::atomic::AtomicBool>,
 }
 
 #[cfg(test)]
@@ -727,6 +896,7 @@ impl ResponseBufferDropObserver {
             initialized_len: Arc::default(),
             contained_nonzero_bytes: Arc::default(),
             initialized_range_was_zero: Arc::default(),
+            replaced_allocations_were_zero: Arc::new(std::sync::atomic::AtomicBool::new(true)),
         }
     }
 
@@ -753,6 +923,18 @@ impl ResponseBufferDropObserver {
 
     fn initialized_range_was_zero(&self) -> bool {
         self.initialized_range_was_zero
+            .load(std::sync::atomic::Ordering::SeqCst)
+    }
+
+    fn record_replaced_allocation(&self, allocation: &[u8]) {
+        self.replaced_allocations_were_zero.store(
+            allocation.iter().all(|byte| *byte == 0),
+            std::sync::atomic::Ordering::SeqCst,
+        );
+    }
+
+    fn replaced_allocations_were_zero(&self) -> bool {
+        self.replaced_allocations_were_zero
             .load(std::sync::atomic::Ordering::SeqCst)
     }
 }

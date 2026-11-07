@@ -258,7 +258,7 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
         ]
     else:
         existing_capabilities.append(capability)
-    updated["capabilities"] = sorted(existing_capabilities, key=lambda row: row["capabilityId"])
+    updated["capabilities"] = existing_capabilities
 
     existing_declarations = list(updated["publicDeclarations"])
     by_id = {row["declarationId"]: row for row in existing_declarations}
@@ -271,7 +271,13 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
         ):
             raise ValueError(f"named-value declaration conflicts with existing {declaration['declarationId']}")
         by_id[declaration["declarationId"]] = declaration
-    updated["publicDeclarations"] = sorted(by_id.values(), key=lambda row: row["declarationId"])
+    existing_ids = {row["declarationId"] for row in existing_declarations}
+    reconciled = [by_id[row["declarationId"]] for row in existing_declarations]
+    reconciled.extend(
+        by_id[declaration_id]
+        for declaration_id in sorted(by_id.keys() - existing_ids)
+    )
+    updated["publicDeclarations"] = reconciled
     return updated
 
 

@@ -170,19 +170,51 @@ fn request_requires_single_part_data_and_omits_it_for_multipart() {
 }
 
 #[test]
-fn request_rejects_data_when_multipart_framing_is_supplied() {
-    let result = HashRequest::new(parameters(6))
+fn request_accepts_data_for_multipart() {
+    let multipart = HashRequest::new(parameters(6))
         .with_data(OperationData::ByteString(SecretBytes::new(
             b"part".to_vec(),
         )))
         .with_correlation_value(SecretBytes::new(b"stream-id".to_vec()))
-        .with_init_indicator(false)
+        .to_ttlv_payload()
+        .expect("caller-provided Data is accepted for a multipart Hash request");
+    assert_eq!(
+        field_tags(&multipart),
+        [0x0042_002B, DATA, CORRELATION_VALUE]
+    );
+    let multipart_view = multipart.view();
+    assert_eq!(
+        snapshot(&multipart_view.children()[1]),
+        (DATA, b"part".to_vec())
+    );
+    assert_eq!(
+        snapshot(&multipart_view.children()[2]),
+        (CORRELATION_VALUE, b"stream-id".to_vec())
+    );
+}
+
+#[test]
+fn request_accepts_data_with_initial_multipart_framing() {
+    let result = HashRequest::new(parameters(6))
+        .with_data(OperationData::ByteString(SecretBytes::new(
+            b"part".to_vec(),
+        )))
+        .with_init_indicator(true)
         .to_ttlv_payload();
 
     assert!(
-        result.is_err(),
-        "multipart progression is explicitly shaped"
+        result.is_ok(),
+        "Init Indicator exempts Data from the generic requirement; it does not forbid Data"
     );
+}
+
+#[test]
+fn request_allows_final_part_to_omit_data() {
+    let final_part_without_data = HashRequest::new(parameters(6))
+        .with_correlation_value(SecretBytes::new(b"stream-id".to_vec()))
+        .with_final_indicator(true)
+        .to_ttlv_payload();
+    assert!(final_part_without_data.is_ok());
 }
 
 #[test]

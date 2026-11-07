@@ -7,13 +7,47 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from tools.normative_catalog import generate_named_values
+from tools.normative_catalog import generate_named_values, reconcile_named_value_manifest
 
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_manifest_reconciliation_preserves_existing_declaration_order(self) -> None:
+        existing = [
+            {"declarationId": "z-existing", "exportName": "Existing Z"},
+            {"declarationId": "a-existing", "exportName": "Existing A"},
+        ]
+        new_declarations = [
+            {"declarationId": "named-z", "approvalSource": {"path": "specs/047-named-protocol-values/spec.md"}},
+            {"declarationId": "named-a", "approvalSource": {"path": "specs/047-named-protocol-values/spec.md"}},
+        ]
+        existing_capabilities = [
+            {"capabilityId": "z-capability"},
+            {"capabilityId": "a-capability"},
+        ]
+        manifest = {
+            "requirementIds": [],
+            "capabilities": existing_capabilities,
+            "publicDeclarations": existing,
+        }
+
+        reconciled = reconcile_named_value_manifest.reconcile(
+            manifest,
+            new_declarations,
+            {"rust": [], "c": [], "java": [], "python": []},
+        )
+
+        self.assertEqual(
+            ["z-existing", "a-existing", "named-a", "named-z"],
+            [row["declarationId"] for row in reconciled["publicDeclarations"]],
+        )
+        self.assertEqual(
+            ["z-capability", "a-capability", "named_protocol_values"],
+            [row["capabilityId"] for row in reconciled["capabilities"]],
+        )
+
     def test_catalog_contains_the_approved_named_value_surface(self) -> None:
         catalog: dict[str, Any] = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")

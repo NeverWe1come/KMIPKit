@@ -31,3 +31,11 @@ fn session_store_keeps_tls12_disabled_and_redacts_its_debug_output() {
     assert!(debug.contains("ticket_count: 0"));
     assert!(debug.contains("[REDACTED]"));
 }
+
+#[test]
+fn session_store_clear_empties_ticket_cache() {
+    let store = TlsSessionStore::new(Arc::new(FixedClock));
+    assert_eq!(store.count(), 0);
+    store.clear();
+    assert_eq!(store.count(), 0);
+}

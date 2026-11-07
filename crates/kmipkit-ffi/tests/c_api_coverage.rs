@@ -79,6 +79,10 @@ const MAX_TEST_TTLV_VALUE_BYTES: usize = 8_388_608;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 unsafe extern "C" {
+    fn kmipkit_public_client_surface_probe() -> i32;
+}
+
+unsafe extern "C" {
     fn kmipkit_ttlv_decode(
         data: *const u8,
         length: u64,
@@ -94,6 +98,97 @@ fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
     let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
     assert_eq!(item_count, 2);
+}
+
+#[test]
+fn public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoint() {
+    // SAFETY: The C probe owns and releases its temporary handles and passes
+    // only null client inputs to the override entry point, so it performs no I/O.
+    let status = unsafe { kmipkit_public_client_surface_probe() };
+    assert_eq!(status, 0, "public C declarations and ABI calls must agree");
+}
+
+#[test]
+fn public_c_client_executes_a_valid_json_override_over_mutual_tls() {
+    const JSON_RESPONSE: &[u8] = br#"{"tag":"ResponseMessage","value":[{"tag":"ResponseHeader","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]},{"tag":"TimeStamp","type":"DateTime","value":"1970-01-01T00:00:01Z"},{"tag":"BatchCount","type":"Integer","value":1}]},{"tag":"BatchItem","value":[{"tag":"Operation","type":"Enumeration","value":"DiscoverVersions"},{"tag":"ResultStatus","type":"Enumeration","value":"Success"},{"tag":"ResponsePayload","value":[{"tag":"ProtocolVersion","value":[{"tag":"ProtocolVersionMajor","type":"Integer","value":2},{"tag":"ProtocolVersionMinor","type":"Integer","value":1}]}]}]}]}"#;
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let identity = pki.client_identity();
+    let certificates = identity.certificate_chain_der();
+    let private_key = zeroize::Zeroizing::new(identity.private_key_der().to_vec());
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TLS port is available");
+    let port = listener
+        .local_addr()
+        .expect("the fake TLS server has a local address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("the fake TLS peer can bound its accept wait");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || -> io::Result<()> {
+        let deadline = Instant::now() + Duration::from_secs(3);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(accepted) => break accepted,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    if Instant::now() >= deadline {
+                        return Err(io::Error::new(
+                            io::ErrorKind::TimedOut,
+                            "the public C client did not connect",
+                        ));
+                    }
+                    thread::sleep(Duration::from_millis(5));
+                }
+                Err(error) => return Err(error),
+            }
+        };
+        stream.set_nonblocking(false)?;
+        stream.set_read_timeout(Some(Duration::from_secs(5)))?;
+        stream.set_write_timeout(Some(Duration::from_secs(5)))?;
+        let connection = ServerConnection::new(server_config)
+            .expect("the mutual-TLS server configuration is valid");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_json_document(&mut tls)?;
+        let request_message_tag = b"\"tag\":\"RequestMessage\"";
+        if !request.starts_with(b"{")
+            || !request
+                .windows(request_message_tag.len())
+                .any(|window| window == request_message_tag)
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "C override did not send a JSON RequestMessage",
+            ));
+        }
+        tls.write_all(JSON_RESPONSE)?;
+        tls.flush()?;
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+        Ok(())
+    });
+
+    // SAFETY: each pointer refers to immutable certificate or key bytes owned by `pki` and
+    // remains live throughout the synchronous C call.
+    let status = unsafe {
+        kmipkit_public_client_execute_json_override(
+            port,
+            certificates[0].as_ptr(),
+            u64::try_from(certificates[0].len()).expect("certificate length fits the ABI"),
+            certificates[1].as_ptr(),
+            u64::try_from(certificates[1].len()).expect("certificate length fits the ABI"),
+            private_key.as_ptr(),
+            u64::try_from(private_key.len()).expect("key length fits the ABI"),
+            pki.authority_certificate_der().as_ptr(),
+            u64::try_from(pki.authority_certificate_der().len())
+                .expect("trust certificate length fits the ABI"),
+        )
+    };
+    let peer_result = peer
+        .join()
+        .expect("the local JSON TLS peer thread completes");
+
+    peer_result.expect("the peer accepted a JSON request and returned its response");
+    assert_eq!(status, 0, "public C construction and JSON exchange succeed");
 }
 
 #[test]
@@ -349,6 +444,17 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_extra_ffi_paths() -> i32;
     fn kmipkit_client_abi_c_consumer_profile_readiness_contract() -> i32;
     fn kmipkit_client_abi_c_consumer_profile_validation_result_contract() -> i32;
+    fn kmipkit_public_client_execute_json_override(
+        port: u16,
+        leaf_certificate: *const u8,
+        leaf_certificate_length: u64,
+        intermediate_certificate: *const u8,
+        intermediate_certificate_length: u64,
+        private_key: *const u8,
+        private_key_length: u64,
+        trust_root: *const u8,
+        trust_root_length: u64,
+    ) -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
         raw_tags: *const u32,
         enumeration_value: u32,
@@ -4492,6 +4598,52 @@ fn read_ttlv_frame(stream: &mut impl Read) -> io::Result<Vec<u8>> {
     Ok(frame)
 }
 
+fn read_json_document(stream: &mut impl Read) -> io::Result<Vec<u8>> {
+    let mut document = Vec::new();
+    let mut depth = 0_i32;
+    let mut in_string = false;
+    let mut escaped = false;
+    loop {
+        let mut next = [0_u8; 1];
+        stream.read_exact(&mut next)?;
+        let byte = next[0];
+        document.push(byte);
+        if document.len() > MAX_TEST_TTLV_VALUE_BYTES {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "the JSON request exceeded the test limit",
+            ));
+        }
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if byte == b'\\' {
+                escaped = true;
+            } else if byte == b'"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match byte {
+            b'"' => in_string = true,
+            b'{' | b'[' => depth += 1,
+            b'}' | b']' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Ok(document);
+                }
+                if depth < 0 {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "the JSON request had unbalanced delimiters",
+                    ));
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
 #[test]
 fn test_peer_rejects_remote_ttlv_length_before_allocating() {
     let mut stream = std::io::Cursor::new([0_u8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]);
@@ -4988,6 +5140,16 @@ fn derive_key_response_item() -> Vec<u8> {
 fn cryptographic_response_items() -> [Vec<u8>; 6] {
     let correlation = [0x41, 0x00, 0x42];
     let response_identifier = b"response-id";
+    let crypto_payload = |middle: Vec<u8>| {
+        structure(
+            0x0042_007C,
+            [
+                ttlv_item(0x0042_0094, 0x07, response_identifier),
+                middle,
+                ttlv_item(0x0042_00D6, 0x08, &correlation),
+            ],
+        )
+    };
     [
         structure(
             0x0042_000F,
@@ -5010,14 +5172,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                 enumeration(0x0042_005C, 35),
                 ttlv_item(0x0042_0093, 0x08, b"mac-00"),
                 enumeration(0x0042_007F, 0),
-                structure(
-                    0x0042_007C,
-                    [
-                        ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        ttlv_item(0x0042_00C4, 0x08, b"mac-response-data"),
-                        ttlv_item(0x0042_00D6, 0x08, &correlation),
-                    ],
-                ),
+                crypto_payload(ttlv_item(0x0042_00C6, 0x08, b"mac-response-data")),
             ],
         ),
         structure(
@@ -5026,14 +5181,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                 enumeration(0x0042_005C, 36),
                 ttlv_item(0x0042_0093, 0x08, b"macvfy"),
                 enumeration(0x0042_007F, 0),
-                structure(
-                    0x0042_007C,
-                    [
-                        ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        enumeration(0x0042_0128, 1),
-                        ttlv_item(0x0042_00D6, 0x08, &correlation),
-                    ],
-                ),
+                crypto_payload(enumeration(0x0042_009B, 1)),
             ],
         ),
         structure(
@@ -5042,14 +5190,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                 enumeration(0x0042_005C, 33),
                 ttlv_item(0x0042_0093, 0x08, b"sign00"),
                 enumeration(0x0042_007F, 0),
-                structure(
-                    0x0042_007C,
-                    [
-                        ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        ttlv_item(0x0042_00C3, 0x08, b"signature-response-data"),
-                        ttlv_item(0x0042_00D6, 0x08, &correlation),
-                    ],
-                ),
+                crypto_payload(ttlv_item(0x0042_00C3, 0x08, b"signature-response-data")),
             ],
         ),
         structure(
@@ -5062,7 +5203,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                     0x0042_007C,
                     [
                         ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        enumeration(0x0042_0128, 1),
+                        enumeration(0x0042_009B, 1),
                         ttlv_item(0x0042_00C2, 0x08, b"recovered-response-data"),
                         ttlv_item(0x0042_00D6, 0x08, &correlation),
                     ],
@@ -5245,7 +5386,7 @@ fn mac_response_missing_unique_identifier() -> Vec<u8> {
     let payload = structure(
         0x0042_007C,
         [
-            ttlv_item(0x0042_00C4, 0x08, &[0x5a]),
+            ttlv_item(0x0042_00C6, 0x08, &[0x5a]),
             ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
         ],
     );

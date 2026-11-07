@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/server-capabilities.schema.json",
+  "title": "KMIP Server Capability Profile",
+  "type": "object",
+  "required": ["server", "transports", "encodings", "operations"],
+  "properties": {
+    "schema_version": { "type": "string", "default": "1.0" },
+    "server": {
+      "type": "object",
+      "required": ["id", "vendor", "product"],
+      "properties": {
+        "id": { "type": "string" },
+        "vendor": { "type": "string" },
+        "product": { "type": "string" },
+        "version": { "type": "string" },
+        "kmip_versions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "transports": {
+      "type": "object",
+      "properties": {
+        "raw_tls": {
+          "type": "object",
+          "required": ["supported"],
+          "properties": {
+            "supported": { "type": "boolean" },
+            "default_port": { "type": "integer" }
+          }
+        },
+        "https": {
+          "type": "object",
+          "required": ["supported"],
+          "properties": {
+            "supported": { "type": "boolean" },
+            "default_path": { "type": "string" }
+          }
+        }
+      }
+    },
+    "encodings": {
+      "type": "object",
+      "required": ["TTLV", "JSON", "XML"],
+      "properties": {
+        "TTLV": {
+          "type": "object",
+          "required": ["supported"],
+          "properties": {
+            "supported": { "type": "boolean" },
+            "transports": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "JSON": {
+          "type": "object",
+          "required": ["supported"],
+          "properties": {
+            "supported": { "type": "boolean" },
+            "transports": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "XML": {
+          "type": "object",
+          "required": ["supported"],
+          "properties": {
+            "supported": { "type": "boolean" },
+            "transports": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "properties": {
+        "mtls_client_cert": { "type": "boolean", "default": true },
+        "username_password": { "type": "boolean", "default": false }
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "batching": { "type": "boolean", "default": true },
+        "asynchronous_operations": { "type": "boolean", "default": false },
+        "id_placeholder": { "type": "boolean", "default": true }
+      }
+    },
+    "operations": {
+      "type": "object",
+      "description": "Map of operation name to capability descriptor",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "object_types": { "type": "array", "items": { "type": "string" } },
+          "algorithms": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "managed_objects": {
+      "type": "object",
+      "description": "Map of object type to support status",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": { "type": "boolean" }
+        }
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Map of attribute name to supported operations",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "read": { "type": "boolean" },
+          "create": { "type": "boolean" },
+          "modify": { "type": "boolean" },
+          "delete": { "type": "boolean" }
+        }
+      }
+    },
+    "cryptographic_algorithms": {
+      "type": "object",
+      "description": "Map of algorithm to key lengths, modes, and curves",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "lengths": { "type": "array", "items": { "type": "integer" } },
+          "modes": { "type": "array", "items": { "type": "string" } },
+          "curves": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

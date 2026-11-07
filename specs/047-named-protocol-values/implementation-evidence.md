@@ -171,3 +171,36 @@ email addresses with the account's GitHub noreply address; repository content
 is unchanged. Hosted status checks were not queried under the maintainer's
 instruction to ignore remote CI during the GitHub billing issue. T007 remains
 open for the cross-platform aggregate coverage and hosted platform controls.
+
+## Release synchronization update (2026-11-07)
+
+The #104 squash merge is present in `release/1.0.0`. The feature branch was
+synchronized with release commit `e008ef224d49108e9899fd2c9a98a67545c78469`.
+The merge preserved the later release features; generated API outputs were
+recreated from the release manifest plus KMIPKIT-0047 inputs. The reconciler
+now retains the existing capability and declaration order and appends new
+declarations deterministically. This avoids reordering the release inventory;
+`test_manifest_reconciliation_preserves_existing_declaration_order` covers the
+regression.
+
+Local verification on this synchronized tree:
+
+- `cargo fmt --all --check` and
+  `cargo clippy --offline -p kmipkit-protocol --all-targets --all-features -- -D warnings` passed.
+- `cargo test --offline -p kmipkit --test named_values_public_api` passed (1 test).
+- The focused named-value, T073 documentation, and T102 manifest checks passed
+  (21 tests); the focused coverage gate suites passed (99 tests, 3 skipped for
+  unavailable Windows symlink privileges).
+- The C11 named-value consumer compiled with MSVC `/W4 /WX` and ran
+  successfully. The C ABI export audit passed (1 test).
+- The Java `NamedProtocolValuesTest` Gradle task passed; Python's
+  `test_protocol_values.py` passed (1 test) after building the editable package.
+- `reconcile_named_value_manifest.py --check`, `generate_named_values.py
+  --check`, and `api_manifest/generate.py --check` passed; the latter verified
+  all 12 generated API files.
+
+The full `test_generate` module was stopped after a single generated-manifest
+case continued for several minutes; the named-header generation and export
+audit cases were run separately and passed. No hosted CI status was queried.
+T007 remains open for the macOS and hosted aggregate coverage evidence, so the
+draft PR remains pending that release control.

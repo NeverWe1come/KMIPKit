@@ -4,9 +4,10 @@ Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
 client execution, KMIPKIT-0013 production transport, the Rust lifecycle
 operation additions in KMIPKIT-0036, Register Opaque Object context in
-KMIPKIT-0044, and four-language operation mappings in KMIPKIT-0043, including
-PKCS#11 and Set Defaults (§6.1.53, T067).
-Last reviewed: 2026-10-21
+KMIPKIT-0044, four-language operation mappings in KMIPKIT-0043, including
+PKCS#11 and Set Defaults (§6.1.53, T067), and approved multi-encoding scope
+in KMIPKIT-0054–0057
+Last reviewed: 2026-11-06
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
@@ -45,10 +46,12 @@ remains a release requirement before 1.0.
 ## 1. Overview
 
 KMIPKit is designed as a client library for Rust, C, Java, and Python. Its
-target architecture converts typed KMIP 2.1 operations into TTLV and sends
-them to a configured server through raw TLS or HTTPS. One Rust core owns the
-wire model and protocol behavior; the C ABI and language adapters are planned
-to translate types and lifecycle conventions without reimplementing KMIP
+target architecture encodes typed KMIP 2.1 operations as TTLV (the default),
+JSON, or XML and sends them to a configured server through raw TLS or HTTPS.
+One Rust core owns the wire model and protocol behavior; TTLV, JSON, and XML
+share the same ordered item model, with encoding-specific parsers and
+serializers. The C ABI and language adapters are planned to translate types
+and lifecycle conventions without reimplementing KMIP
 ([architecture](../architecture/overview.md#system-shape)). The current
 implemented surface is distinguished from that target in the evidence table
 below.
@@ -63,7 +66,7 @@ flowchart LR
     subgraph Native[KMIPKit process boundary]
         Binding[Rust typed API; KMIPKIT-0044 Register-context parity in C/Java/Python; full lifecycle parity deferred]
         Core[Protocol model and client]
-        Parser[Bounded TTLV codec]
+        Parser[Private TTLV JSON and XML codecs]
         TLS[TLS 1.3 transport]
         Ext[Extension definitions]
     end
@@ -86,7 +89,10 @@ flowchart LR
 
 The generic TTLV value model, bounded public decoder, typed client execution,
 low-level transport contract, and production raw TLS and HTTPS adapters are
-implemented. KMIPKIT-0013 connects the currently supported typed operations to
+implemented. JSON/XML codecs are approved 1.0 scope but remain planned in
+KMIPKIT-0055 and KMIPKIT-0056; no codec behavior or support claim is inferred
+from this threat-model update. KMIPKIT-0013 connects the currently supported
+typed operations to
 those adapters through a private worker. KMIPKIT-0036 adds the nine listed
 Rust lifecycle operations through that same request path. C, Java, and Python
 parity for those nine operations is deferred to KMIPKIT-0043. KMIPKIT-0044
@@ -122,6 +128,7 @@ Evidence: `specs/022-object-lifecycle/spec.md:80-115`;
 |---|---|---|---|
 | Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
 | Public TTLV decoder (implemented) | Decode one bounded untrusted item into the public generic tree | Memory and CPU bounds, malformed-input rejection, unknown value preservation, no raw-byte retention | `crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`; `crates/kmipkit-ttlv/src/codec/mod.rs:18-24,181-209` |
+| JSON/XML codecs (approved, implementation planned) | Encode/decode bounded KMIP documents over the shared ordered item model | Parser allocation/depth/count bounds; no XML DTD, external entities, schema fetch, or network access; duplicate/malformed input rejection; payload-free errors and no format fallback | KMIPKIT-0054 common wire codec contract; KMIPKIT-0055 and KMIPKIT-0056 draft specifications |
 | Private client outbound writer (implemented) | Encodes the closed typed request set, including the nine KMIPKIT-0036 lifecycle operations, through `Client::execute`; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroizing encoded owner, redacted diagnostics | `crates/kmipkit-client/src/wire_encoder.rs:358-368`; `crates/kmipkit-client/src/execute.rs:3820-3867`; ADR-0012; specs/007-client-execution |
 | Typed protocol client (implemented for the current request set) | Validates requests, correlates responses, and invokes one production adapter exchange | Extension-registry provenance, typed response validation, request-delivery evidence, response-size check before decoding, no retry | `crates/kmipkit-client/src/execute.rs`; `crates/kmipkit-client/tests/production_client.rs`; specs/013-production-transport |
 | Managed-object lifecycle operations (Rust implemented) | Typed Certify, Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and Revoke requests and results | Server responses remain untrusted; the client checks response-to-request correspondence and parses typed results. Each convenience method sends one request batch through one exchange and performs no automatic retry or Poll. Server object state, lifecycle links, lease tracking, and policy decisions remain server-owned | `crates/kmipkit-client/src/execute.rs:161-185,2931-3275,3820-3867,5181-5301`; `crates/kmipkit-protocol/src/check.rs:127-222,282-352`; `specs/022-object-lifecycle/data-model.md:34-43`; C/Java/Python parity: KMIPKIT-0043 |
