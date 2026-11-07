@@ -16,11 +16,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-PACKAGES = {
-    "rust-kmipkit": "kmipkit",
-    "rust-kmipkit-client": "kmipkit_client",
-    "rust-kmipkit-protocol": "kmipkit_protocol",
-}
+PACKAGES = (
+    ("rust-kmipkit", "kmipkit"),
+    ("rust-kmipkit", "kmipkit::protocol"),
+    ("rust-kmipkit-client", "kmipkit_client"),
+    ("rust-kmipkit-protocol", "kmipkit_protocol"),
+)
 VARIANT_CODES = {
     "EmptySelection": "empty_selection",
     "DuplicateProfile": "duplicate_profile",
@@ -70,7 +71,7 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
         }
         expected = {
             (package, f"{crate}::ProfileValidationErrorCode{suffix}")
-            for package, crate in PACKAGES.items()
+            for package, crate in PACKAGES
             for suffix in (
                 "",
                 "::as_str",
@@ -78,12 +79,16 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
             )
         }
         self.assertEqual(expected, set(rows))
-        self.assertEqual(60, len(rows))
+        self.assertEqual(80, len(rows))
         self.assertEqual(18, len(VARIANT_CODES))
 
         declarations = self.manifest["publicDeclarations"]
         for (package, export_name), row in rows.items():
-            crate = PACKAGES[package]
+            crate = next(
+                prefix for source_package, prefix in PACKAGES
+                if source_package == package
+                and export_name.startswith(f"{prefix}::ProfileValidationErrorCode")
+            )
             suffix = export_name.removeprefix(f"{crate}::ProfileValidationErrorCode")
             expected_kind = "type" if not suffix else (
                 "associated-item" if suffix == "::as_str" else "variant"
@@ -124,15 +129,17 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
         for language, (_, target) in LANGUAGE_TARGETS.items():
             self.assertIn(target, capability["mappings"][language])
 
-        for package, crate in PACKAGES.items():
+        for package, crate in PACKAGES:
             code_accessor = next(
                 row
                 for row in declarations
                 if row["packageId"] == package
                 and row["exportName"] == f"{crate}::ProfileValidationError::code"
             )
-            for (row_package, _), row in rows.items():
-                if row_package == package:
+            for (row_package, row_export), row in rows.items():
+                if row_package == package and row_export.startswith(
+                    f"{crate}::ProfileValidationErrorCode"
+                ):
                     self.assertEqual(row["requirementIds"], code_accessor["requirementIds"])
                     self.assertEqual(row["approvalSource"], code_accessor["approvalSource"])
 

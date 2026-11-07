@@ -230,3 +230,46 @@ The facade namespace is exported by
 `pub use kmipkit_protocol as protocol` in `crates/kmipkit/src/lib.rs`.
 Existing exact-ID, state, normative-requirement, and missing-target rejection
 checks remain the intended contracts; only their stale fixture inputs change.
+
+
+### Green
+
+The exact declaration fingerprints are now
+`3477efd6002b5732681fb9601016ba82f83e069608ff4c26ca6f4d93ac21fa9d` (Certify)
+and `47183651eebdc81364d32a6155454357e30ecc65886d3acbfdd535831f2a516e`
+(optional structures). Their target filters, normalization logic, and operation
+fingerprints are unchanged.
+
+The six expanded fixtures now pin the intended current inventory precisely:
+
+- Import/Register expected-state sets include only their exact new
+  `from_managed_object` methods as blocked routes. The tests also pin
+  KMIPKIT-0053, the typed-object capability, FR-006/FR-007, and absent foreign
+  mappings for these constructors.
+- Locate pins all 74 operation declaration IDs, with an explicit 23-entry
+  facade alias ID/name map and its 12 request aliases. Every alias must retain
+  its canonical declaration's capability, state, requirements, and approval;
+  server-only requirements remain rejected across the complete inventory.
+- Profile diagnostic tests pin all 80 exact paths across the four approved
+  public prefixes, including the 20 `kmipkit::protocol` aliases. Each namespace
+  still checks exact language targets, diagnostic codes, owner requirements,
+  and approval evidence.
+- The response-conversion fixture passes the same approved exclusions as the
+  production generator entry point. Removing the sole approved metadata C
+  target still raises `not an exact listed export`; all four wrong execution
+  mappings still raise their precise normalized-mapping diagnostic.
+
+Verification:
+
+- The three original reviewer modules passed all 14 tests after the fingerprint
+  correction.
+- The nine affected modules passed all 36 tests, with no failures/errors.
+- `python -B -m unittest discover -s tools/api_manifest/tests -p 'test_t102_*.py' -q`
+  passed all 399 tests in 144.441 seconds, with no failures, errors, or skips.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- `git diff --check` passed for this review correction.
+
+Only test fixtures and this evidence file differ from the synchronized source
+snapshot `5f8536a93f4e753d80ed8ac9544ed3e14399be17`. The production manifest,
+validators, runtime, generated outputs, and audit reports remain unchanged.
+No PR metadata or remote CI was queried or changed.
