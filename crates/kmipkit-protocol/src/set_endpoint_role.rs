@@ -96,6 +96,35 @@ pub struct SetEndpointRoleRequest {
     vendor_identification: Option<String>,
 }
 
+fn parse_role_fields(
+    payload: &kmipkit_ttlv::StructureView<'_>,
+) -> (Option<EndpointRole>, Option<String>) {
+    let mut endpoint_role = None;
+    let mut vendor_identification = None;
+    for field in payload.children() {
+        match field.tag().raw() {
+            ENDPOINT_ROLE_TAG => {
+                if let Some(raw) = field.with_value(|v| match v {
+                    ValueView::Enumeration(e) => Some(*e),
+                    _ => None,
+                }) {
+                    endpoint_role = Some(EndpointRole::from_raw(raw));
+                }
+            }
+            VENDOR_IDENTIFICATION_TAG => {
+                if let Some(text) = field.with_value(|v| match v {
+                    ValueView::TextString(s) => Some(s.to_string()),
+                    _ => None,
+                }) {
+                    vendor_identification = Some(text);
+                }
+            }
+            _ => {}
+        }
+    }
+    (endpoint_role, vendor_identification)
+}
+
 impl SetEndpointRoleRequest {
     /// Creates a new Set Endpoint Role request for the specified role.
     #[must_use]
@@ -161,32 +190,7 @@ impl SetEndpointRoleRequest {
             return Err(SetEndpointRoleError::UnexpectedOperation);
         }
         let (endpoint_role, vendor_identification) = item
-            .with_request_payload(|payload| {
-                let mut endpoint_role = None;
-                let mut vendor_identification = None;
-                for field in payload.children() {
-                    match field.tag().raw() {
-                        ENDPOINT_ROLE_TAG => {
-                            if let Some(raw) = field.with_value(|v| match v {
-                                ValueView::Enumeration(e) => Some(*e),
-                                _ => None,
-                            }) {
-                                endpoint_role = Some(EndpointRole::from_raw(raw));
-                            }
-                        }
-                        VENDOR_IDENTIFICATION_TAG => {
-                            if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) => Some(s.to_string()),
-                                _ => None,
-                            }) {
-                                vendor_identification = Some(text);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-                Some((endpoint_role, vendor_identification))
-            })
+            .with_request_payload(|payload| Some(parse_role_fields(&payload)))
             .ok_or(SetEndpointRoleError::MissingPayload)?
             .ok_or(SetEndpointRoleError::InvalidPayloadStructure)?;
 
@@ -272,32 +276,7 @@ impl SetEndpointRoleResponse {
         }
 
         let (endpoint_role, vendor_identification) = item
-            .with_response_payload(|payload| {
-                let mut endpoint_role = None;
-                let mut vendor_identification = None;
-                for field in payload.children() {
-                    match field.tag().raw() {
-                        ENDPOINT_ROLE_TAG => {
-                            if let Some(raw) = field.with_value(|v| match v {
-                                ValueView::Enumeration(e) => Some(*e),
-                                _ => None,
-                            }) {
-                                endpoint_role = Some(EndpointRole::from_raw(raw));
-                            }
-                        }
-                        VENDOR_IDENTIFICATION_TAG => {
-                            if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) => Some(s.to_string()),
-                                _ => None,
-                            }) {
-                                vendor_identification = Some(text);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-                Some((endpoint_role, vendor_identification))
-            })
+            .with_response_payload(|payload| Some(parse_role_fields(&payload)))
             .ok_or(SetEndpointRoleError::MissingPayload)?
             .ok_or(SetEndpointRoleError::InvalidPayloadStructure)?;
 
