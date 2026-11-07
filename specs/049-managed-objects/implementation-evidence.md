@@ -273,3 +273,17 @@ Only test fixtures and this evidence file differ from the synchronized source
 snapshot `5f8536a93f4e753d80ed8ac9544ed3e14399be17`. The production manifest,
 validators, runtime, generated outputs, and audit reports remain unchanged.
 No PR metadata or remote CI was queried or changed.
+
+
+### Refactor
+
+Green is recorded in `70d14c27e`. The touched ImportRequest state fixture is
+expanded from a single long line into one method/state pair per line so its
+new blocked typed constructor can be reviewed alongside the existing verified
+methods. Python AST comparison before/after confirms identical behavior.
+
+The nine affected modules were rerun after this readability-only change:
+36 tests passed in 4.908 seconds, with no failures or errors. The already
+passing 399-test T102 run was not repeated. `git diff --check` passed; the
+manifest, production validator, runtime, audit reports, and all 12 verified
+generated outputs remain unchanged from `5f8536a93`.
