@@ -30388,51 +30388,6 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientOperationOutcome::raw",
     ),
     (
-        "kmipkit-0052-response_batch_item_raw",
-        "rust-kmipkit-protocol",
-        "kmipkit_protocol::ResponseBatchItemView::raw",
-    ),
-    (
-        "kmipkit-0052-response_header_view_raw",
-        "rust-kmipkit-protocol",
-        "kmipkit_protocol::ResponseHeaderView::raw",
-    ),
-    (
-        "kmipkit-0052-item_as_structure",
-        "rust-kmipkit-ttlv",
-        "kmipkit_ttlv::Item::as_structure",
-    ),
-    (
-        "kmipkit-0052-client_response_raw_facade",
-        "rust-kmipkit",
-        "kmipkit::ClientBatchItemResponse::raw",
-    ),
-    (
-        "kmipkit-0052-client_response_header_facade",
-        "rust-kmipkit",
-        "kmipkit::ClientBatchItemResponse::response_header_raw",
-    ),
-    (
-        "kmipkit-0052-operation_outcome_raw_facade",
-        "rust-kmipkit",
-        "kmipkit::ClientOperationOutcome::raw",
-    ),
-    (
-        "kmipkit-0052-response_batch_item_raw_facade",
-        "rust-kmipkit",
-        "kmipkit::protocol::ResponseBatchItemView<'a>::raw",
-    ),
-    (
-        "kmipkit-0052-response_header_view_raw_facade",
-        "rust-kmipkit",
-        "kmipkit::protocol::ResponseHeaderView<'a>::raw",
-    ),
-    (
-        "kmipkit-0052-item_as_structure_facade",
-        "rust-kmipkit",
-        "kmipkit::ttlv::Item::as_structure",
-    ),
-    (
         "kmipkit-0052-batch_response_header_raw",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchResponse::response_header_raw",
@@ -30458,6 +30413,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientOperationOutcome::query_async_requests_response",
     ),
     (
+        "kmipkit-0052-response_batch_item_raw",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ResponseBatchItemView::raw",
+    ),
+    (
+        "kmipkit-0052-response_header_view_raw",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ResponseHeaderView::raw",
+    ),
+    (
+        "kmipkit-0052-item_as_structure",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::Item::as_structure",
+    ),
+    (
+        "kmipkit-0052-operation_outcome_raw_facade",
+        "rust-kmipkit",
+        "kmipkit::ClientOperationOutcome::raw",
+    ),
+    (
         "kmipkit-0052-batch_response_header_raw_facade",
         "rust-kmipkit",
         "kmipkit::ClientBatchResponse::response_header_raw",
@@ -30481,5 +30456,30 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0052-query_async_typed_response_facade",
         "rust-kmipkit",
         "kmipkit::ClientOperationOutcome::query_async_requests_response",
+    ),
+    (
+        "kmipkit-0052-response_batch_item_raw_facade",
+        "rust-kmipkit",
+        "kmipkit::protocol::ResponseBatchItemView<'a>::raw",
+    ),
+    (
+        "kmipkit-0052-response_header_view_raw_facade",
+        "rust-kmipkit",
+        "kmipkit::protocol::ResponseHeaderView<'a>::raw",
+    ),
+    (
+        "kmipkit-0052-item_as_structure_facade",
+        "rust-kmipkit",
+        "kmipkit::ttlv::Item::as_structure",
+    ),
+    (
+        "kmipkit-0052-client_response_raw_facade",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchItemResponse::raw",
+    ),
+    (
+        "kmipkit-0052-client_response_header_facade",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchItemResponse::response_header_raw",
     ),
 ];
