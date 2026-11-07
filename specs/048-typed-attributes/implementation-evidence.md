@@ -146,9 +146,10 @@ resolution keeps the 2026-11-07 binding audit report and documentation from
 preserves the four Decrypt capability and normative-requirement corrections.
 No declaration or exclusion export key from either parent is lost.
 
-The reviewed manifest input was reconciled with
-`python -B tools/api_manifest/reconcile_0048_typed_attributes.py --report specs/048-typed-attributes/reports/rust-export-report-2026-11-07.json --write`,
-then all 12 outputs were regenerated with
+The reviewed manifest input can be reconciled using its tracked post-sync
+audit with
+`python -B tools/api_manifest/reconcile_0048_typed_attributes.py --report specs/048-typed-attributes/reports/rust-export-report-post-sync-2026-11-07.json --write`.
+All 12 outputs were regenerated with
 `python -B tools/api_manifest/generate.py --write`. The resulting inventory
 has 11,874 public declarations and 16,818 approved exclusions. The T102
 declaration and other-manifest fingerprints now pin this combined inventory;
@@ -198,3 +199,44 @@ Fresh local verification:
 The local untracked Rust audit report and all target directories were
 preserved. No hosted CI status was queried, and this synchronization does not
 add fresh coverage or cross-platform evidence.
+
+## Reconciler review follow-up (2026-11-07)
+
+The review identified that the reconciler accepted every missing `<...>`
+associated-item path as a 0048 trait exclusion before checking its owner.
+The correction validates the exact package namespace and visible attribute
+owner before producing either an exclusion or a declaration. A typed value
+appearing only in a trait argument does not establish ownership.
+
+- RED `34d14bfc6`: the minimal transport
+  `<kmipkit_transport::TlsConfig as core::fmt::Debug>::fmt` regression failed
+  with `ReconciliationError not raised`.
+- GREEN `957eaf5f8`: all 12 reconciler tests passed, including foreign owners
+  in accepted packages, package/crate mismatches, root-name collisions, typed
+  trait arguments, and valid typed projections in both published crates.
+- REFACTOR: the package namespaces and exact root-type names are centralized
+  in constants; ownership and reconciliation behavior remain unchanged.
+
+Fresh verification after the refactor:
+
+- The focused reconciliation, manifest size, C documentation, T102 response
+  views, Encrypt/Decrypt, and 0047 binding-reconciliation suites passed all
+  35 tests.
+- Removing the 286 typed declarations and 2,072 0048 trait exclusions from a
+  copy of the current manifest and reconciling those exact observed routes
+  reconstructed the original manifest without any difference.
+- `cargo fmt --all --check` passed.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- The exact Rust audit ran with the pinned offline compiler and a temporary
+  report destination. It passed with 21,507 observed routes, 6,285 exact
+  matches, 15,222 exclusions, and zero missing, unobserved, kind, conditional,
+  or inventory issues.
+- The documented reconciliation command above was run in a temporary export
+  made with `git checkout-index --all`. That export contained only tracked
+  files and lacked the pre-existing untracked report. The command exited 0,
+  reported zero added declarations/exclusions, and preserved the complete
+  manifest content.
+- Review confirmed that only the reconciler, its tests, and this evidence
+  document changed; `git diff --check` passed. The existing untracked report,
+  target directories, and all generated artifacts were preserved. No hosted
+  CI status was queried.
