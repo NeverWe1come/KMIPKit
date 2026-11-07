@@ -3,13 +3,16 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{
+    Item, ItemType, ModelError, RawTag, Structure, StructureView, Value, ValueView,
+};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     AttributeSet, KmipOperationResult, ObjectType, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes,
-    UniqueIdentifier,
+    ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, SecretBytes, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0005;
@@ -233,19 +236,7 @@ impl DeriveKeyRequest {
     /// identifier, missing required output attributes, or invalid TTLV
     /// structure.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if crate::attribute::validate_single_instance_attribute_items(
-            self.attributes.as_items(),
-            Some(self.object_type.raw()),
-            true,
-        )
-        .is_err()
-            || self.unique_identifiers.is_empty()
-            || self.unique_identifiers.iter().any(is_id_placeholder)
-            || !has_required_output_attributes(self.object_type, &self.attributes)
-            || !self
-                .derivation_parameters
-                .valid_for_method(self.derivation_method)
-        {
+        if !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -279,6 +270,83 @@ impl DeriveKeyRequest {
         push(&mut payload, ATTRIBUTES, Value::structure(attributes))?;
         Ok(payload)
     }
+
+    fn validation_report(&self) -> ValidationReport {
+        if crate::attribute::validate_single_instance_attribute_items(
+            self.attributes.as_items(),
+            Some(self.object_type.raw()),
+            true,
+        )
+        .is_err()
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§4, Table 46",
+                },
+            );
+        }
+        if self.unique_identifiers.is_empty()
+            || self.unique_identifiers.iter().any(is_id_placeholder)
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Unique Identifier",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.14, Table 205",
+                },
+            );
+        }
+        if !has_required_output_attributes(self.object_type, &self.attributes) {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.14, Table 205",
+                },
+            );
+        }
+        if !self
+            .derivation_parameters
+            .valid_for_method(self.derivation_method)
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Derivation Parameters",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§7.12, Table 364",
+                },
+            );
+        }
+        let extension_report = self.derivation_parameters.extension_validation_report();
+        if !extension_report.is_valid() {
+            return extension_report;
+        }
+        if let Some(parameters) = &self.derivation_parameters.cryptographic_parameters {
+            return crate::validation::validate_nested_structure_with_prefix(
+                &parameters.view(),
+                crate::NestedStructureSchema::CryptographicParameters,
+                &crate::ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Derivation Parameters")
+                    .field("Cryptographic Parameters"),
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for DeriveKeyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::DeriveKey;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
+    }
 }
 
 impl fmt::Debug for DeriveKeyRequest {
@@ -295,6 +363,47 @@ impl fmt::Debug for DeriveKeyRequest {
 }
 
 impl DerivationParameters {
+    fn extension_validation_report(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        for item in self.extensions.view().children() {
+            let (name, expected_type, code) = match item.tag().raw() {
+                CRYPTOGRAPHIC_PARAMETERS => (
+                    "Cryptographic Parameters",
+                    ItemType::Structure,
+                    "KMIPKIT-0051-R221",
+                ),
+                INITIALIZATION_VECTOR => (
+                    "Initialization Vector",
+                    ItemType::ByteString,
+                    "KMIPKIT-0051-R222",
+                ),
+                DERIVATION_DATA => ("Derivation Data", ItemType::ByteString, "KMIPKIT-0051-R223"),
+                SALT => ("Salt", ItemType::ByteString, "KMIPKIT-0051-R224"),
+                ITERATION_COUNT => ("Iteration Count", ItemType::Integer, "KMIPKIT-0051-R225"),
+                _ => continue,
+            };
+            let path = crate::ValidationPath::root()
+                .field("Request Payload")
+                .field("Derivation Parameters")
+                .field(name);
+            let source = if item.item_type() == expected_type {
+                ValidationSourceRef::ProjectRule("KMIPKIT-0051-P005")
+            } else {
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§7.12, Table 364",
+                }
+            };
+            let issue_code = if item.item_type() == expected_type {
+                "KMIPKIT-0051-P005"
+            } else {
+                code
+            };
+            report.append(crate::validation::issue_report(issue_code, path, source));
+        }
+        report
+    }
+
     fn valid_for_method(&self, method: DerivationMethod) -> bool {
         match method.raw() {
             // §7.12 Table 364 requires both Salt and Iteration Count for PBKDF2.

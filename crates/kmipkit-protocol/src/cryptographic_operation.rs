@@ -20,6 +20,7 @@ pub(crate) const INIT_INDICATOR: u32 = 0x0042_00D7;
 pub(crate) const FINAL_INDICATOR: u32 = 0x0042_00D8;
 // OASIS KMIP v2.1 §11.56, Table 487.
 pub(crate) const MAC_DATA: u32 = 0x0042_00C6;
+pub(crate) const DATA_LENGTH: u32 = 0x0042_00C4;
 pub(crate) const SIGNATURE_DATA: u32 = 0x0042_00C3;
 pub(crate) const VALIDITY_INDICATOR: u32 = 0x0042_009B;
 pub(crate) const SUCCESS: u32 = 0;

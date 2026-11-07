@@ -86,7 +86,16 @@ impl EncryptRequest {
             self.correlation_value.is_some(),
             self.init_indicator,
             self.final_indicator,
-        )
+        )?;
+        if self.invalid_initial_only_aead_fields() {
+            return Err(crate::cryptographic_operation::request_error());
+        }
+        Ok(())
+    }
+
+    pub(crate) const fn invalid_initial_only_aead_fields(&self) -> bool {
+        self.authenticated_encryption_additional_data.is_some()
+            && (self.correlation_value.is_some() || matches!(self.init_indicator, Some(false)))
     }
 
     /// Supplies the optional ordered Cryptographic Parameters Structure.
@@ -94,6 +103,10 @@ impl EncryptRequest {
     pub fn with_cryptographic_parameters(mut self, parameters: Structure) -> Self {
         self.cryptographic_parameters = Some(parameters);
         self
+    }
+
+    pub(crate) const fn cryptographic_parameters(&self) -> Option<&Structure> {
+        self.cryptographic_parameters.as_ref()
     }
 
     /// Supplies typed Cryptographic Parameters for this request.
@@ -151,6 +164,7 @@ impl EncryptRequest {
     /// Data/multipart request shape is invalid under §6.1, or Cryptographic
     /// Parameters fail their local §4.16 validation.
     pub fn to_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        self.validate_multipart_shape()?;
         let mut payload = Structure::new();
         if let Some(identifier) = self.unique_identifier {
             push(

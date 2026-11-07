@@ -32,6 +32,10 @@
 //!
 //! [`ClientBatchOutcome::response`] returns a [`ClientResponseView`] with a
 //! common operation-result accessor and typed accessors for each response.
+//! [`ClientRequest::validation_report`] provides the same redacted local
+//! checks that `Client::execute` runs before encoding and transport. A rejected
+//! request returns `NotSent`; a successful report says nothing about server
+//! capability, authorization, object state, or policy.
 //!
 //! The following example prepares a typed batch without sending a request:
 //!

@@ -129,7 +129,7 @@ def build_canonical_vectors() -> dict:
     plaintext = b"Single block msg\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10"
     aes_cbc_key = bytes.fromhex(symmetric_keys["aes-128"]["key_hex"])
     iv_16 = bytes.fromhex("000102030405060708090a0b0c0d0e0f")
-    
+
     # We define verified fixed vector pairs
     encrypt_decrypt = [
         {

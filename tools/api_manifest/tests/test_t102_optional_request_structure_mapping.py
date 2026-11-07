@@ -190,7 +190,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-OTHER_DECLARATIONS_SHA256 = "e42a0846513f16ebba1889a6413f9fa6514974023c5e0e7c5e62a6f498cba884"
+OTHER_DECLARATIONS_SHA256 = "06c80c2c63ee8163f9e4f7d18be21ee2f377fce239b3cd05b0008ad5cdff5722"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -375,7 +375,8 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
-        # Stack additions remain inside the exact non-target fingerprint and
+        # The 930 blocked 0051 validation rows and predecessor stack additions
+        # remain inside the exact non-target fingerprint and
         # cannot acquire four-language parity through snapshot normalization.
         for capability, count in (
             ("typed_object_attributes", 286),

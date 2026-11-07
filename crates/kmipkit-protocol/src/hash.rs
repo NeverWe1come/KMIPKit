@@ -7,8 +7,9 @@ use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     CryptographicOperationError, CryptographicOperationErrorKind,
-    CryptographicOperationResponseContext, KmipOperationResult, OperationData, ProtocolError,
-    ResponseBatchItemView, SecretBytes,
+    CryptographicOperationResponseContext, KmipOperationResult, NestedStructureSchema,
+    OperationData, ProtocolError, RequestPayloadSchema, ResponseBatchItemView, SecretBytes,
+    ValidateKmipRequest, ValidationPath, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0027;
@@ -116,6 +117,46 @@ impl HashRequest {
         }
         append_framing(&mut payload, self.correlation, self.init, self.final_part)?;
         Ok(payload)
+    }
+}
+
+impl ValidateKmipRequest for HashRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Hash;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if self.validate_multipart_shape().is_err() {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Data",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.24, Table 235",
+                },
+            ));
+        }
+        let has_hashing_algorithm = self.parameters.view().children().iter().any(|field| {
+            field.tag().raw() == common::HASHING_ALGORITHM
+                && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        });
+        if !has_hashing_algorithm {
+            report.append(crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Cryptographic Parameters",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.24, Table 235",
+                },
+            ));
+        }
+        report.append(crate::validation::validate_nested_structure_with_prefix(
+            &self.parameters.view(),
+            NestedStructureSchema::CryptographicParameters,
+            &ValidationPath::root()
+                .field("Request Payload")
+                .field("Cryptographic Parameters"),
+        ));
+        report
     }
 }
 

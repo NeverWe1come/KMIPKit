@@ -8,7 +8,8 @@ use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, ValueView};
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     GetRequest, KeyCompressionType, KeyFormatType, KeyWrapType, KmipOperationResult, ObjectType,
-    ProtocolError, ResponseBatchItemView, ResultValidationError, UniqueIdentifier,
+    ProtocolError, RequestPayloadSchema, ResponseBatchItemView, ResultValidationError,
+    UniqueIdentifier, ValidateKmipRequest, ValidationReport,
 };
 
 const OPERATION: u32 = 0x0000_002B;
@@ -99,6 +100,14 @@ impl ExportRequest {
 impl Default for ExportRequest {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl ValidateKmipRequest for ExportRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Export;
+
+    fn validate(&self) -> ValidationReport {
+        self.selectors.validate()
     }
 }
 

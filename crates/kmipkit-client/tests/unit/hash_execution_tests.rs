@@ -30,7 +30,7 @@ const GENERAL_FAILURE: u32 = 0x0000_0100;
 const PENDING: u32 = 2;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const DATA: u32 = 0x0042_00C2;
-const GENERIC_RESPONSE_TAG: u32 = 0x0042_00D6;
+const GENERIC_RESPONSE_TAG: u32 = 0x0054_0001;
 const GENERIC_RESPONSE_BYTES: &[u8] = b"hash-client-generic-ttlv";
 
 #[derive(Default)]

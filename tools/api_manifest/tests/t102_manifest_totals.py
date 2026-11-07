@@ -1,7 +1,8 @@
 """Current manifest totals and historical T102 Rust audit snapshot totals."""
 
-T102_BLOCKED_CANDIDATES = 0
-T102_PUBLIC_DECLARATIONS = 12_414
+# The 902 new 0051 validation rows retain the generic reconciler's 0043 candidate owner.
+T102_BLOCKED_CANDIDATES = 902
+T102_PUBLIC_DECLARATIONS = 13_344
 T102_APPROVED_EXCLUSIONS = 17_426
 T102_RUST_AUDIT_MANIFEST = 3_287
 T102_RUST_AUDIT_EXCLUDED = 7_176

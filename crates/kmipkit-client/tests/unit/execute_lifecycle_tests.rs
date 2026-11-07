@@ -14,12 +14,17 @@
 
 use std::cell::{Cell, RefCell};
 use std::error::Error;
+use std::fmt::Write as _;
 use std::rc::Rc;
 
+use kmipkit_protocol::{
+    AttributeSet, CreateRequest, HashRequest, InteropRequest, ObjectType, OperationData,
+    Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
+};
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
-use kmipkit_ttlv::{Item, ValueView};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;
 
 use crate::ClientErrorCategory;
@@ -185,6 +190,24 @@ fn single_item_request_may_include_or_omit_unique_batch_item_id() {
         let encoded = captured
             .as_ref()
             .expect("the fake transport captures the encoded request");
+        if expected_id.is_none() {
+            let expected_hex = concat!(
+                "42007801000000984200770100000048420069010000002042006A0200000004",
+                "000000020000000042006B020000000400000001000000004200D30600000008",
+                "000000000000000142000D0200000004000000010000000042000F0100000040",
+                "42005C05000000040000001E0000000042007901000000284200690100000020",
+                "42006A0200000004000000020000000042006B02000000040000000100000000"
+            );
+            let (hex_pairs, _) = expected_hex.as_bytes().as_chunks::<2>();
+            let expected_bytes = hex_pairs
+                .iter()
+                .map(|pair| {
+                    let pair = std::str::from_utf8(pair).expect("hex fixture is ASCII");
+                    u8::from_str_radix(pair, 16).expect("hex fixture has valid digits")
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(encoded.as_slice(), expected_bytes);
+        }
         let message = decode(encoded.as_slice()).expect("the captured request is valid TTLV");
         let (field_count, encoded_ids) = unique_batch_item_ids(&message);
 
@@ -287,6 +310,274 @@ fn invalid_batch_and_option_inputs_are_rejected_before_exchange() {
         assert_eq!(fake.borrow().exchange_count(), 0);
         assert_eq!(fake.borrow().write_call_count(), 0);
     }
+}
+
+#[test]
+fn typed_request_preflight_uses_borrowed_protocol_validation() {
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string("first".to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string("second".to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+    let request = ClientRequest::Create(CreateRequest::new(ObjectType::from_raw(7), attributes));
+
+    assert!(request.validate_local_shape().is_err());
+}
+
+#[test]
+fn invalid_typed_request_is_not_encoded_or_written() {
+    const CANARY: &str = "PREFLIGHT_CANARY";
+    let comment = RawTag::new(0x0042_00fd)
+        .expect("Comment is a valid raw tag")
+        .try_checked()
+        .expect("Comment is an allocated KMIP tag");
+    let attributes = AttributeSet::try_new([
+        Item::new(comment, Value::text_string(CANARY.to_owned()))
+            .expect("first Comment is valid TTLV"),
+        Item::new(comment, Value::text_string(CANARY.to_owned()))
+            .expect("second Comment is valid TTLV"),
+    ])
+    .expect("generic AttributeSet preserves operation-level repetitions");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(
+        CreateRequest::new(ObjectType::from_raw(7), attributes),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("invalid typed input must fail before transport exchange");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    let display = error.to_string();
+    let debug = format!("{error:?}");
+    let mut canary_hex = String::new();
+    for byte in CANARY.as_bytes() {
+        write!(&mut canary_hex, "{byte:02X}").expect("writing to a String is infallible");
+    }
+    assert!(!display.contains(CANARY));
+    assert!(!debug.contains(CANARY));
+    assert!(!display.contains(&canary_hex));
+    assert!(!debug.contains(&canary_hex));
+}
+
+#[test]
+fn malformed_pkcs11_function_is_not_sent() {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(
+        Pkcs11Request::new(Structure::new()),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+#[test]
+fn malformed_hash_parameters_are_not_sent() {
+    const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+    const HASHING_ALGORITHM: u32 = 0x0042_0038;
+    const CANARY: &[u8] = b"HASH_PREFLIGHT_SECRET_CANARY";
+
+    let mut parameters = Structure::new();
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(HASHING_ALGORITHM)
+                    .expect("Hashing Algorithm tag is valid")
+                    .try_checked()
+                    .expect("Hashing Algorithm is allocated"),
+                Value::enumeration(6),
+            )
+            .expect("Hashing Algorithm is valid TTLV"),
+        )
+        .expect("parameters fixture is valid generic TTLV");
+    parameters
+        .try_push(
+            Item::new(
+                RawTag::new(BLOCK_CIPHER_MODE)
+                    .expect("Block Cipher Mode tag is valid")
+                    .try_checked()
+                    .expect("Block Cipher Mode is allocated"),
+                Value::enumeration(9),
+            )
+            .expect("Block Cipher Mode is valid TTLV"),
+        )
+        .expect("parameters fixture is valid generic TTLV");
+    let request = ClientRequest::Hash(
+        HashRequest::new(parameters)
+            .with_data(OperationData::ByteString(SecretBytes::new(CANARY.to_vec()))),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(request));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("invalid nested Hash parameters must fail preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains("HASH_PREFLIGHT_SECRET_CANARY"));
+    assert!(!format!("{error:?}").contains("HASH_PREFLIGHT_SECRET_CANARY"));
+}
+
+#[test]
+fn diagnostic_extension_cannot_override_interop_fields_before_transport() {
+    const INTEROP_FUNCTION: u32 = 0x0042_0160;
+    const CANARY: &str = "INTEROP_EXTENSION_PREFLIGHT_CANARY";
+    let extension = Item::new(
+        RawTag::new(INTEROP_FUNCTION)
+            .expect("Interop Function tag is valid")
+            .try_checked()
+            .expect("Interop Function is allocated"),
+        Value::text_string(CANARY.to_owned()),
+    )
+    .expect("extension fixture is valid TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Interop(
+        InteropRequest::new(1, SecretText::new("synthetic-id".to_owned()))
+            .with_extension(extension),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("an extension cannot override a defined Interop field");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains(CANARY));
+    assert!(!format!("{error:?}").contains(CANARY));
+}
+
+#[test]
+fn malformed_pkcs11_function_canary_is_redacted_before_transport() {
+    const FUNCTION: u32 = 0x0042_015A;
+    const CANARY: &str = "PREFLIGHT_SECRET_CANARY_0051";
+
+    let mut function = Structure::new();
+    function
+        .try_push(
+            Item::new(
+                RawTag::new(FUNCTION)
+                    .expect("PKCS#11 Function is a valid tag")
+                    .try_checked()
+                    .expect("PKCS#11 Function is allocated"),
+                Value::text_string(CANARY.to_owned()),
+            )
+            .expect("malformed PKCS#11 Function is still valid generic TTLV"),
+        )
+        .expect("function fixture is valid generic TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Pkcs11(
+        Pkcs11Request::new(function),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("malformed PKCS#11 Function is rejected during typed preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert!(!error.to_string().contains(CANARY));
+    assert!(!format!("{error:?}").contains(CANARY));
+}
+
+#[test]
+fn malformed_nested_defaults_are_not_sent() {
+    const OBJECT_DEFAULTS: u32 = 0x0042_0153;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+
+    let mut object_defaults = Structure::new();
+    object_defaults
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_TYPE)
+                    .expect("Object Type tag is valid")
+                    .try_checked()
+                    .expect("Object Type is allocated"),
+                Value::enumeration(2),
+            )
+            .expect("Object Type is valid TTLV"),
+        )
+        .expect("Object Defaults fixture is valid generic TTLV");
+    let mut defaults_information = Structure::new();
+    defaults_information
+        .try_push(
+            Item::new(
+                RawTag::new(OBJECT_DEFAULTS)
+                    .expect("Object Defaults tag is valid")
+                    .try_checked()
+                    .expect("Object Defaults is allocated"),
+                Value::structure(object_defaults),
+            )
+            .expect("Object Defaults is a valid Structure"),
+        )
+        .expect("Defaults Information fixture is valid generic TTLV");
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::SetDefaults(
+        SetDefaultsRequest::new().with_defaults_information(defaults_information),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("missing required nested Attributes is rejected before encoding");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
 }
 
 fn pending_response() -> Vec<u8> {

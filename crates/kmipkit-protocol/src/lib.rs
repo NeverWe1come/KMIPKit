@@ -1,4 +1,10 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
+//!
+//! Client request models implement [`ValidateKmipRequest`] for borrowed,
+//! value-free local validation. Generic TTLV Structures require an explicit
+//! [`ValidationSchema`] with [`validate_structure`]; the validator never
+//! guesses an operation schema from tags. Unknown tags, future values, and
+//! extensions remain available to the caller.
 #![forbid(unsafe_code)]
 
 #[cfg(test)]
@@ -97,6 +103,23 @@ mod signature_verify;
 mod ticket;
 mod typed_attributes;
 mod validate;
+mod validation;
+
+#[cfg(test)]
+#[path = "../tests/unit/validation_report_tests.rs"]
+mod validation_report_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/validation_schema_tests.rs"]
+mod validation_schema_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/validation_redaction_tests.rs"]
+mod validation_redaction_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/typed_request_validation_tests.rs"]
+mod typed_request_validation_tests;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -216,6 +239,11 @@ pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
+pub use validation::{
+    NestedStructureSchema, RequestPayloadSchema, ValidateKmipRequest, ValidationCode,
+    ValidationIssue, ValidationPath, ValidationPathSegment, ValidationReport, ValidationSchema,
+    ValidationSeverity, ValidationSourceRef, validate_structure,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]

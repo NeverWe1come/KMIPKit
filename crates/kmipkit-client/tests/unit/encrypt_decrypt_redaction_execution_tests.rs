@@ -48,7 +48,7 @@ const ENCRYPT_RESPONSE_TAG: &str = "KMIP_T036_CLIENT_ENCRYPT_RESPONSE_TAG_AE04";
 const RAW_RESPONSE_SENTINEL: &str = "KMIP_T036_CLIENT_RAW_RESPONSE_BODY_4AA8";
 const MALFORMED_RESPONSE_SENTINEL: &str = "KMIP_T036_CLIENT_MALFORMED_DATA_108E";
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum CryptoOperation {
     Encrypt,
     Decrypt,
@@ -76,6 +76,40 @@ impl CryptoOperation {
                 .with_correlation_value(SecretBytes::new(
                     ENCRYPT_REQUEST_CORRELATION.as_bytes().to_vec(),
                 ))
+                .with_final_indicator(true);
+                let protocol_debug = format!("{request:?}");
+                (ClientRequest::Encrypt(request), protocol_debug)
+            }
+            Self::Decrypt => {
+                let request = DecryptRequest::new(
+                    identifier,
+                    Some(OperationData::ByteString(SecretBytes::new(
+                        DECRYPT_REQUEST_DATA.as_bytes().to_vec(),
+                    ))),
+                )
+                .with_iv_counter_nonce(SecretBytes::new(DECRYPT_REQUEST_IV.as_bytes().to_vec()))
+                .with_correlation_value(SecretBytes::new(
+                    DECRYPT_REQUEST_CORRELATION.as_bytes().to_vec(),
+                ))
+                .with_final_indicator(true);
+                let protocol_debug = format!("{request:?}");
+                (ClientRequest::Decrypt(request), protocol_debug)
+            }
+        }
+    }
+
+    fn initial_aead_request(self) -> (ClientRequest, String) {
+        let identifier = Some(UniqueIdentifier::TextString("t036-client-key".to_owned()));
+        match self {
+            Self::Encrypt => {
+                let request = EncryptRequest::new(
+                    identifier,
+                    Some(OperationData::ByteString(SecretBytes::new(
+                        ENCRYPT_REQUEST_DATA.as_bytes().to_vec(),
+                    ))),
+                )
+                .with_iv_counter_nonce(SecretBytes::new(ENCRYPT_REQUEST_IV.as_bytes().to_vec()))
+                .with_init_indicator(true)
                 .with_final_indicator(true)
                 .with_authenticated_encryption_additional_data(SecretBytes::new(
                     ENCRYPT_REQUEST_AAD.as_bytes().to_vec(),
@@ -91,9 +125,7 @@ impl CryptoOperation {
                     ))),
                 )
                 .with_iv_counter_nonce(SecretBytes::new(DECRYPT_REQUEST_IV.as_bytes().to_vec()))
-                .with_correlation_value(SecretBytes::new(
-                    DECRYPT_REQUEST_CORRELATION.as_bytes().to_vec(),
-                ))
+                .with_init_indicator(true)
                 .with_final_indicator(true)
                 .with_authenticated_encryption_additional_data(SecretBytes::new(
                     DECRYPT_REQUEST_AAD.as_bytes().to_vec(),
@@ -113,12 +145,25 @@ impl CryptoOperation {
                 ENCRYPT_REQUEST_DATA,
                 ENCRYPT_REQUEST_IV,
                 ENCRYPT_REQUEST_CORRELATION,
-                ENCRYPT_REQUEST_AAD,
             ],
             Self::Decrypt => &[
                 DECRYPT_REQUEST_DATA,
                 DECRYPT_REQUEST_IV,
                 DECRYPT_REQUEST_CORRELATION,
+            ],
+        }
+    }
+
+    const fn initial_aead_request_sentinels(self) -> &'static [&'static str] {
+        match self {
+            Self::Encrypt => &[
+                ENCRYPT_REQUEST_DATA,
+                ENCRYPT_REQUEST_IV,
+                ENCRYPT_REQUEST_AAD,
+            ],
+            Self::Decrypt => &[
+                DECRYPT_REQUEST_DATA,
+                DECRYPT_REQUEST_IV,
                 DECRYPT_REQUEST_AAD,
                 DECRYPT_REQUEST_TAG,
             ],
@@ -281,21 +326,48 @@ fn assert_client_secret_redacted(secret: &SecretBytes, sentinel: &str) {
     assert_absent(&display, &[sentinel], "client SecretBytes Display");
 }
 
+fn assert_request_error_redacted(
+    operation: CryptoOperation,
+    request: ClientRequest,
+    sentinels: &'static [&'static str],
+) {
+    let sentinels_seen = Rc::new(Cell::new(false));
+    let mut client = Client::for_test(EchoRequestFailureTransport {
+        sentinels_seen: Rc::clone(&sentinels_seen),
+        expected_sentinels: sentinels,
+    });
+    let Err(error) = client.execute(
+        ClientBatch::new(ClientBatchItem::new(request)),
+        &CodecLimits::defaults(),
+    ) else {
+        panic!("the fake transport reports the request I/O failure");
+    };
+    assert!(
+        sentinels_seen.get(),
+        "the fake request body contains every {operation:?} sentinel"
+    );
+    let debug = format!("{error:?}");
+    let display = error.to_string();
+    let chain = format_error_chain(&error);
+    assert_absent(&debug, sentinels, "request error Debug");
+    assert_absent(&display, sentinels, "request error Display");
+    assert_absent(&chain, sentinels, "request error chain");
+}
+
 #[test]
 fn client_and_protocol_request_debug_redact_all_encrypt_and_decrypt_inputs() {
     for operation in OPERATIONS {
-        let (request, protocol_debug) = operation.request();
-        assert_absent(
-            &protocol_debug,
-            operation.request_sentinels(),
-            "typed protocol request Debug",
-        );
-        let client_debug = format!("{request:?}");
-        assert_absent(
-            &client_debug,
-            operation.request_sentinels(),
-            "typed client request Debug",
-        );
+        for ((request, protocol_debug), sentinels) in [
+            (operation.request(), operation.request_sentinels()),
+            (
+                operation.initial_aead_request(),
+                operation.initial_aead_request_sentinels(),
+            ),
+        ] {
+            assert_absent(&protocol_debug, sentinels, "typed protocol request Debug");
+            let client_debug = format!("{request:?}");
+            assert_absent(&client_debug, sentinels, "typed client request Debug");
+        }
     }
 }
 
@@ -391,32 +463,14 @@ fn client_errors_and_source_chains_redact_malformed_payload_values() {
 #[test]
 fn client_errors_and_source_chains_redact_raw_request_and_response_bodies() {
     for operation in OPERATIONS {
-        let (request, _) = operation.request();
-        let sentinels_seen = Rc::new(Cell::new(false));
-        let mut client = Client::for_test(EchoRequestFailureTransport {
-            sentinels_seen: Rc::clone(&sentinels_seen),
-            expected_sentinels: operation.request_sentinels(),
-        });
-        let Err(error) = client.execute(
-            ClientBatch::new(ClientBatchItem::new(request)),
-            &CodecLimits::defaults(),
-        ) else {
-            panic!("the fake transport reports the request I/O failure");
-        };
-        assert!(
-            sentinels_seen.get(),
-            "the fake request body contains every operation sentinel"
+        let (continuation, _) = operation.request();
+        assert_request_error_redacted(operation, continuation, operation.request_sentinels());
+        let (initial, _) = operation.initial_aead_request();
+        assert_request_error_redacted(
+            operation,
+            initial,
+            operation.initial_aead_request_sentinels(),
         );
-        let debug = format!("{error:?}");
-        let display = error.to_string();
-        let chain = format_error_chain(&error);
-        assert_absent(&debug, operation.request_sentinels(), "request error Debug");
-        assert_absent(
-            &display,
-            operation.request_sentinels(),
-            "request error Display",
-        );
-        assert_absent(&chain, operation.request_sentinels(), "request error chain");
 
         let (result, exchanges) =
             execute_with_response(operation, RAW_RESPONSE_SENTINEL.as_bytes().to_vec());

@@ -7,8 +7,9 @@ use kmipkit_ttlv::{Structure, StructureView, Value};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
-    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, UniqueIdentifier,
+    KmipOperationResult, ProtocolError, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0004;
@@ -87,14 +88,8 @@ impl RekeyRequest {
     /// cardinality rules are violated or the generic TTLV model cannot
     /// represent the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if let Some(attributes) = self.attributes.as_ref() {
-            let view = attributes.view();
-            crate::attribute::validate_single_instance_attribute_items(
-                view.children(),
-                Some(SYMMETRIC_KEY_OBJECT_TYPE),
-                true,
-            )
-            .map_err(|_| common::request_error())?;
+        if !self.validation_report().is_valid() {
+            return Err(common::request_error());
         }
 
         let mut payload = Structure::new();
@@ -119,6 +114,37 @@ impl RekeyRequest {
             )?;
         }
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if let Some(attributes) = self.attributes.as_ref() {
+            let view = attributes.view();
+            if crate::attribute::validate_single_instance_attribute_items(
+                view.children(),
+                Some(SYMMETRIC_KEY_OBJECT_TYPE),
+                true,
+            )
+            .is_err()
+            {
+                return crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Attributes",
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§4, Table 46; §6.1.46, Table 305",
+                    },
+                );
+            }
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for RekeyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Rekey;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

@@ -10,8 +10,8 @@ use kmipkit_ttlv::{Item, Structure, StructureView};
 use crate::cryptographic_operation;
 
 use crate::{
-    KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, SecretText,
+    KmipOperationResult, ProtocolError, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, SecretText, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_002c;
@@ -66,6 +66,29 @@ impl LogRequest {
         )?;
         crate::diagnostics::append_extensions(&mut payload, self.extensions, &[LOG_MESSAGE])?;
         Ok(payload)
+    }
+}
+
+impl ValidateKmipRequest for LogRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Log;
+
+    fn validate(&self) -> ValidationReport {
+        if self
+            .extensions
+            .iter()
+            .any(|extension| extension.tag().raw() == LOG_MESSAGE)
+        {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Log Message",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.29, Table 250",
+                },
+            )
+        } else {
+            ValidationReport::default()
+        }
     }
 }
 

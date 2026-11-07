@@ -8,7 +8,8 @@ use kmipkit_ttlv::{Structure, StructureView, Value};
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes, UniqueIdentifier,
+    RequestPayloadSchema, ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes,
+    UniqueIdentifier, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0006;
@@ -95,34 +96,7 @@ impl CertifyRequest {
     /// source-defined Attribute cardinality rules are not met, or a generic
     /// Structure cannot be represented.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if let Some(attributes) = self.attributes.as_ref() {
-            let view = attributes.view();
-            crate::attribute::validate_single_instance_attribute_items(
-                view.children(),
-                Some(CERTIFICATE_OBJECT_TYPE),
-                true,
-            )
-            .map_err(|_| common::request_error())?;
-        }
-
-        let has_request_value = self.certificate_request_value.is_some();
-        if has_request_value && self.certificate_request_type.is_none() {
-            return Err(invalid_request());
-        }
-        let has_explicit_public_key_identifier = self
-            .unique_identifier
-            .as_ref()
-            .is_some_and(|identifier| !matches!(identifier, UniqueIdentifier::Enumeration(1)));
-        if !has_request_value && !has_explicit_public_key_identifier {
-            return Err(invalid_request());
-        }
-        if !has_request_value
-            && self.certificate_request_type.is_none()
-            && !self
-                .attributes
-                .as_ref()
-                .is_some_and(contains_certificate_type)
-        {
+        if !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -159,6 +133,81 @@ impl CertifyRequest {
             )?;
         }
         Ok(payload)
+    }
+}
+
+impl CertifyRequest {
+    fn validation_report(&self) -> ValidationReport {
+        if let Some(attributes) = self.attributes.as_ref() {
+            let view = attributes.view();
+            if crate::attribute::validate_single_instance_attribute_items(
+                view.children(),
+                Some(CERTIFICATE_OBJECT_TYPE),
+                true,
+            )
+            .is_err()
+            {
+                return crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Attributes",
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§4, Table 46",
+                    },
+                );
+            }
+        }
+
+        let has_request_value = self.certificate_request_value.is_some();
+        if has_request_value && self.certificate_request_type.is_none() {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Certificate Request Type",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.6, Table 179",
+                },
+            );
+        }
+        let has_explicit_public_key_identifier = self
+            .unique_identifier
+            .as_ref()
+            .is_some_and(|identifier| !matches!(identifier, UniqueIdentifier::Enumeration(1)));
+        if !has_request_value && !has_explicit_public_key_identifier {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Unique Identifier",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.6, Table 179",
+                },
+            );
+        }
+        if !has_request_value
+            && self.certificate_request_type.is_none()
+            && !self
+                .attributes
+                .as_ref()
+                .is_some_and(contains_certificate_type)
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Certificate Request Type",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.6, Table 179",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for CertifyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Certify;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

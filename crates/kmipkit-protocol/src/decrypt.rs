@@ -88,6 +88,20 @@ impl DecryptRequest {
             self.correlation_value.is_some(),
             self.init_indicator,
             self.final_indicator,
+        )?;
+        let (additional_data, authentication_tag) = self.invalid_initial_only_aead_fields();
+        if additional_data || authentication_tag {
+            return Err(crate::cryptographic_operation::request_error());
+        }
+        Ok(())
+    }
+
+    pub(crate) const fn invalid_initial_only_aead_fields(&self) -> (bool, bool) {
+        let is_not_initial =
+            self.correlation_value.is_some() || matches!(self.init_indicator, Some(false));
+        (
+            self.authenticated_encryption_additional_data.is_some() && is_not_initial,
+            self.authenticated_encryption_tag.is_some() && is_not_initial,
         )
     }
 
@@ -96,6 +110,10 @@ impl DecryptRequest {
     pub fn with_cryptographic_parameters(mut self, parameters: Structure) -> Self {
         self.cryptographic_parameters = Some(parameters);
         self
+    }
+
+    pub(crate) const fn cryptographic_parameters(&self) -> Option<&Structure> {
+        self.cryptographic_parameters.as_ref()
     }
 
     /// Supplies typed Cryptographic Parameters for this request.
@@ -160,6 +178,7 @@ impl DecryptRequest {
     /// Data/multipart request shape is invalid under §6.1, or Cryptographic
     /// Parameters fail their local §4.16 validation.
     pub fn to_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        self.validate_multipart_shape()?;
         let mut payload = Structure::new();
         if let Some(identifier) = self.unique_identifier {
             push(

@@ -3851,6 +3851,8 @@ fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
     })
 }
 
+// Keep the ordered wire assertion together so the selectors remain auditable against KMIP tables.
+#[allow(clippy::too_many_lines)]
 fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
     const BATCH_ITEM: u32 = 0x0042_000F;
     const OPERATION: u32 = 0x0042_005C;
@@ -3861,6 +3863,8 @@ fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
     const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
     const KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
     const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 
     fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
         let mut matching = structure
@@ -3917,7 +3921,26 @@ fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
                     })
                     && children[4].tag().raw() == KEY_WRAPPING_SPECIFICATION
                     && children[4].with_value(|value| {
-                        matches!(value, ValueView::Structure(actual) if actual.children().is_empty())
+                        let ValueView::Structure(specification) = value else {
+                            return false;
+                        };
+                        let fields = specification.children();
+                        fields.len() == 2
+                            && fields[0].tag().raw() == WRAPPING_METHOD
+                            && fields[0].with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == 1)
+                            })
+                            && fields[1].tag().raw() == ENCRYPTION_KEY_INFORMATION
+                            && fields[1].with_value(|value| {
+                                let ValueView::Structure(key_info) = value else {
+                                    return false;
+                                };
+                                key_info.children().len() == 1
+                                    && key_info.children()[0].tag().raw() == UNIQUE_IDENTIFIER
+                                    && key_info.children()[0].with_value(|value| {
+                                        matches!(value, ValueView::TextString(actual) if actual == "wrapping-key")
+                                    })
+                            })
                     })
             })
         })
@@ -4226,20 +4249,51 @@ fn c_import_payload_matches(item: &Item) -> bool {
 }
 
 fn c_import_object_is_preserved(item: &Item) -> bool {
-    const VENDOR_FIELD: u32 = 0x0054_1234;
+    const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
     const OBJECT_BYTES: &[u8] = &[0xde, 0xad, 0x00, 0xff];
 
     item.with_value(|value| {
         let ValueView::Structure(object) = value else {
             return false;
         };
-        let Some(index) = c_unique_child_index(&object, VENDOR_FIELD) else {
+        let Some(type_index) = c_unique_child_index(&object, SECRET_DATA_TYPE) else {
             return false;
         };
-        object.children().len() == 1
-            && object.children()[index].with_value(
-                |value| matches!(value, ValueView::ByteString(actual) if actual == OBJECT_BYTES),
-            )
+        let Some(block_index) = c_unique_child_index(&object, KEY_BLOCK) else {
+            return false;
+        };
+        object.children().len() == 2
+            && object.children()[type_index]
+                .with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == 1))
+            && object.children()[block_index].with_value(|value| {
+                let ValueView::Structure(block) = value else {
+                    return false;
+                };
+                let Some(format_index) = c_unique_child_index(&block, KEY_FORMAT_TYPE) else {
+                    return false;
+                };
+                let Some(key_value_index) = c_unique_child_index(&block, KEY_VALUE) else {
+                    return false;
+                };
+                block.children().len() == 2
+                    && block.children()[format_index].with_value(
+                        |value| matches!(value, ValueView::Enumeration(actual) if *actual == 1),
+                    )
+                    && block.children()[key_value_index].with_value(|value| {
+                        let ValueView::Structure(key_value) = value else {
+                            return false;
+                        };
+                        key_value.children().len() == 1
+                            && key_value.children()[0].tag().raw() == KEY_MATERIAL
+                            && key_value.children()[0].with_value(|value| {
+                                matches!(value, ValueView::ByteString(actual) if actual == OBJECT_BYTES)
+                            })
+                    })
+            })
     })
 }
 

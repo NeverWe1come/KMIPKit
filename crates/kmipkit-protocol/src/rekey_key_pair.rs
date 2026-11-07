@@ -8,7 +8,8 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     AttributeSet, KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    RequestPayloadSchema, ResponseBatchItemView, ResultMessage, ResultValidationError,
+    UniqueIdentifier, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_001d;
@@ -129,18 +130,9 @@ impl RekeyKeyPairRequest {
     /// cardinality rules are violated or a generic TTLV model constraint
     /// prevents representing the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        validate_attribute_group(
-            self.common_attributes.as_ref(),
-            Some(PRIVATE_KEY_OBJECT_TYPE),
-        )?;
-        validate_attribute_group(
-            self.private_key_attributes.as_ref(),
-            Some(PRIVATE_KEY_OBJECT_TYPE),
-        )?;
-        validate_attribute_group(
-            self.public_key_attributes.as_ref(),
-            Some(PUBLIC_KEY_OBJECT_TYPE),
-        )?;
+        if !self.validation_report().is_valid() {
+            return Err(common::request_error());
+        }
 
         let mut payload = Structure::new();
         if let Some(identifier) = self.private_key_unique_identifier {
@@ -180,6 +172,43 @@ impl RekeyKeyPairRequest {
             self.public_protection_storage_masks,
         )?;
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        for (attributes, object_type) in [
+            (
+                self.common_attributes.as_ref(),
+                Some(PRIVATE_KEY_OBJECT_TYPE),
+            ),
+            (
+                self.private_key_attributes.as_ref(),
+                Some(PRIVATE_KEY_OBJECT_TYPE),
+            ),
+            (
+                self.public_key_attributes.as_ref(),
+                Some(PUBLIC_KEY_OBJECT_TYPE),
+            ),
+        ] {
+            if validate_attribute_group(attributes, object_type).is_err() {
+                return crate::validation::request_issue_report(
+                    "KMIPKIT-0051-P005",
+                    "Attributes",
+                    ValidationSourceRef::Oasis {
+                        document: "KMIP v2.1",
+                        reference: "§4, Table 46; §6.1.47, Table 310",
+                    },
+                );
+            }
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for RekeyKeyPairRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::RekeyKeyPair;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

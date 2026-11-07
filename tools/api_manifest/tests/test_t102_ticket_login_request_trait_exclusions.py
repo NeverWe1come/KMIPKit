@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tools.api_manifest.tests.pre_send_validation_routes import is_pre_send_validation_trait
+
 import json
 import unittest
 
@@ -179,6 +181,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
             declarations = {
                 (x["packageId"], x["exportName"]) for x in self.manifest["publicDeclarations"]
                 if x.get("packageId") == PACKAGE and x.get("exportName", "").startswith(prefix)
+                and not is_pre_send_validation_trait(x)
             }
             exclusions = {
                 (x["packageId"], x["exportName"]): x for x in self.manifest["approvedExclusions"]
