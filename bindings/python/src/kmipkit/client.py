@@ -1464,19 +1464,23 @@ class AsyncOperationOutcome(_ClientHandle):
     ) -> bool:
         if not callable(callback):
             errors.raise_for_status(4)
-        response = self._typed_response(symbol, {
-            "kmipkit_client_async_operation_outcome_cancel_response_v1": 0x19,
-            "kmipkit_client_async_operation_outcome_poll_response_v1": 0x1A,
-            "kmipkit_client_async_operation_outcome_process_response_v1": 0x3A,
-        }[symbol])
-        if response is None or response.has_asynchronous_correlation_value == 0:
-            return False
-        span = response.asynchronous_correlation_value
-        secret = (
-            bytearray(ffi.buffer(span.data, int(span.length)))
-            if span.length
-            else bytearray()
-        )
+        with _NATIVE_CALL_LOCK:
+            response = self._typed_response(
+                symbol,
+                {
+                    "kmipkit_client_async_operation_outcome_cancel_response_v1": 0x19,
+                    "kmipkit_client_async_operation_outcome_poll_response_v1": 0x1A,
+                    "kmipkit_client_async_operation_outcome_process_response_v1": 0x3A,
+                }[symbol],
+            )
+            if response is None or response.has_asynchronous_correlation_value == 0:
+                return False
+            span = response.asynchronous_correlation_value
+            secret = (
+                bytearray(ffi.buffer(span.data, int(span.length)))
+                if span.length
+                else bytearray()
+            )
         borrowed: memoryview | None = None
         try:
             borrowed = memoryview(secret).toreadonly()
@@ -1575,6 +1579,11 @@ class AsyncOperationResponseV1:
         """Return an owned generic TTLV copy of this response payload, if present."""
         return self._outcome.response_payload_ttlv
 
+    @property
+    def is_pending(self) -> bool:
+        """Return whether this operation response has Pending status."""
+        return self.result.result_status == 2
+
 
 class AsyncCancelResponse(AsyncOperationResponseV1):
     """Typed Cancel fields with its echoed correlation value retained in raw TTLV."""
@@ -1664,6 +1673,12 @@ class AsyncQueryAsyncRequestsResponse(AsyncOperationResponseV1):
 
     def __init__(self, outcome: AsyncOperationOutcome, _response) -> None:
         super().__init__(outcome)
+
+    def with_asynchronous_correlation_value(
+        self, callback: Callable[[memoryview], object]
+    ) -> bool:
+        """Borrow the response correlation value for this callback."""
+        return self._outcome.with_asynchronous_correlation_value(callback)
 
 
 class Batch(_ClientHandle):

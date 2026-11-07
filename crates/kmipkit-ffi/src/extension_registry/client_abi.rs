@@ -3009,6 +3009,10 @@ fn async_response_correlation_span(
     )
 }
 
+fn cancel_response_echo_is_exposed(result_status: u32, has_cancellation_result: bool) -> bool {
+    result_status == 0 && has_cancellation_result
+}
+
 fn async_response_v1_output(
     out_present: *mut u8,
     out_response: *mut kmipkit_client_async_operation_response_v1_t,
@@ -3046,9 +3050,17 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_cancel_response_v1(
         let Some(response) = outcome.cancel_response() else {
             return SUCCESS;
         };
-        let (has_correlation, correlation) = try_ffi!(async_response_correlation_span(
-            response.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
-        ));
+        let expose_echo = cancel_response_echo_is_exposed(
+            response.result().status().raw(),
+            response.cancellation_result().is_some(),
+        );
+        let (has_correlation, correlation) = if expose_echo {
+            try_ffi!(async_response_correlation_span(
+                response.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
+            ))
+        } else {
+            (0, kmipkit_byte_span_v1_t::default())
+        };
         let output = kmipkit_client_async_operation_response_v1_t {
             struct_size: try_ffi!(async_response_v1_struct_size()),
             abi_version: 1,
@@ -3188,16 +3200,19 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_query_async_requests_re
         let Some(response) = outcome.query_async_requests_response() else {
             return SUCCESS;
         };
+        let (has_correlation, correlation) = try_ffi!(async_response_correlation_span(
+            outcome.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len())),
+        ));
         let output = kmipkit_client_async_operation_response_v1_t {
             struct_size: try_ffi!(async_response_v1_struct_size()),
             abi_version: 1,
             operation: outcome.operation().raw(),
             result_status: response.result().status().raw(),
-            is_pending: 0,
+            is_pending: u32::from(response.result().status().raw() == 2),
             has_cancellation_result: 0,
             cancellation_result: 0,
-            has_asynchronous_correlation_value: 0,
-            asynchronous_correlation_value: kmipkit_byte_span_v1_t::default(),
+            has_asynchronous_correlation_value: has_correlation,
+            asynchronous_correlation_value: correlation,
             has_response_payload: u32::from(response.with_response_payload(|_| ()).is_some()),
             reserved: 0,
             response_payload_member_count: 0,
