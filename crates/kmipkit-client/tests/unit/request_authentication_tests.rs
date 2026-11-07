@@ -89,6 +89,28 @@ fn authentication_count(request: &RequestMessage) -> usize {
         .count()
 }
 
+fn authentication_children_ptr(request: &RequestMessage) -> Option<*const Item> {
+    request.with_ttlv(|message| {
+        let header = message
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == REQUEST_HEADER)?;
+        header.with_value(|value| {
+            let ValueView::Structure(header) = value else {
+                return None;
+            };
+            let authentication = header
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == AUTHENTICATION)?;
+            authentication.with_value(|value| match value {
+                ValueView::Structure(authentication) => Some(authentication.children().as_ptr()),
+                _ => None,
+            })
+        })
+    })
+}
+
 fn contains_text(structure: &kmipkit_ttlv::StructureView<'_>, expected: &str) -> bool {
     structure.children().iter().any(|field| {
         field.with_value(|value| match value {
@@ -174,6 +196,23 @@ fn authentication_is_emitted_once_in_request_header_order_for_one_item() {
         tags.iter()
             .position(|tag| *tag == ATTESTATION_CAPABLE_INDICATOR)
             < tags.iter().position(|tag| *tag == AUTHENTICATION)
+    );
+}
+
+#[test]
+fn authentication_tree_is_moved_into_the_request_without_cloning() {
+    let authentication = authentication();
+    let original_children = authentication.with_ttlv(|value| value.children().as_ptr());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
+        .with_authentication(authentication);
+
+    let request = request_message_for_test(batch, &CodecLimits::defaults())
+        .expect("Authentication is moved into the request message");
+
+    assert_eq!(
+        authentication_children_ptr(&request),
+        Some(original_children),
+        "request construction preserves the original Authentication allocation"
     );
 }
 
