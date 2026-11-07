@@ -261,3 +261,17 @@ rationale. Its focused test passed. Named-value generation, named-value
 manifest reconciliation, API manifest generation, and the affected API audit
 are being checked on this worktree; the full hosted matrix must still pass on
 the updated PR before this specification can be marked ready.
+
+## Bounded API-manifest input limit (2026-11-08)
+
+The full stacked Phase 5 manifest is 50,011,632 bytes (47.7 MiB), exceeding
+the previous 40 MiB input limit. Red evidence: the new boundary test failed
+because the approved bound was still 41,943,040 bytes. Green: the reconciler
+now uses a 64 MiB cap, giving bounded headroom while rejecting inputs above that
+cap. The boundary test confirms the checked-in manifest fits and pins the cap.
+
+Verification passed: `python -B -m unittest
+ tools.normative_catalog.tests.test_generate_named_values` (14 tests),
+`generate_named_values.py --check`, `reconcile_named_value_manifest.py --check`,
+`api_manifest/generate.py --check` (12 outputs), and `git diff --check`. The
+manifest required no regeneration; its contents were already reconciled.
