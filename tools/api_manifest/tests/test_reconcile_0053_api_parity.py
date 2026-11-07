@@ -1206,52 +1206,56 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertEqual([corrected], result["approvedExclusions"])
 
     def test_corrects_only_exact_managed_object_variant_counterparts(self) -> None:
-        cases = [
-            (
-                "rust-kmipkit",
-                "kmipkit::protocol::ManagedFieldValue::BigInteger",
-                "managed_value_field_item_read:rust",
-                "rust-observed-a95a34edc0285cd6ad3a",
-            ),
-            (
-                "rust-kmipkit-protocol",
-                "kmipkit_protocol::ManagedValueKind::KeyBlock",
-                "managed_object_from_item:c",
-                "rust-observed-0d3351bf7b7739e95d55",
-            ),
-        ]
-        for package_id, export_name, previous_id, corrected_id in cases:
-            with self.subTest(export_name=export_name):
-                previous = {
-                    "packageId": package_id,
-                    "exportName": export_name,
-                    "counterpartDeclarationIds": [previous_id],
-                }
-                corrected = {
-                    **previous,
-                    "counterpartDeclarationIds": [corrected_id],
-                }
-                self.assertTrue(
-                    reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
-                        previous, corrected
-                    )
+        package_namespaces = {
+            "rust-kmipkit": "kmipkit::protocol",
+            "rust-kmipkit-protocol": "kmipkit_protocol",
+        }
+        tested_routes = 0
+        for package_id, namespace in package_namespaces.items():
+            for enum_name, suffixes in (
+                reconcile_0053_api_parity.MANAGED_OBJECT_VARIANT_SUFFIXES.items()
+            ):
+                previous_id, corrected_id = (
+                    reconcile_0053_api_parity.MANAGED_OBJECT_VARIANT_COUNTERPARTS[
+                        (package_id, enum_name)
+                    ]
                 )
+                for suffix in suffixes:
+                    export_name = f"{namespace}::{enum_name}::{suffix}"
+                    previous = {
+                        "packageId": package_id,
+                        "exportName": export_name,
+                        "counterpartDeclarationIds": [previous_id],
+                    }
+                    corrected = {
+                        **previous,
+                        "counterpartDeclarationIds": [corrected_id],
+                    }
+                    with self.subTest(export_name=export_name):
+                        self.assertTrue(
+                            reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
+                                previous, corrected
+                            )
+                        )
+                    tested_routes += 1
 
-                changed_reason = {**corrected, "reason": "unreviewed change"}
-                self.assertFalse(
-                    reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
-                        previous, changed_reason
+                    changed_reason = {**corrected, "reason": "unreviewed change"}
+                    self.assertFalse(
+                        reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
+                            previous, changed_reason
+                        )
                     )
-                )
-                unrelated_variant = {
-                    **corrected,
-                    "exportName": export_name.rsplit("::", 1)[0] + "::Unreviewed",
-                }
-                self.assertFalse(
-                    reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
-                        previous, unrelated_variant
+                    unrelated_variant = {
+                        **corrected,
+                        "exportName": f"{namespace}::{enum_name}::Unreviewed",
+                    }
+                    self.assertFalse(
+                        reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
+                            previous, unrelated_variant
+                        )
                     )
-                )
+
+        self.assertEqual(62, tested_routes)
 
     def test_validates_capability_and_counterpart_for_rust_shape_exclusion(self) -> None:
         exclusion = {

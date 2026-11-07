@@ -115,6 +115,43 @@ LANGUAGE_PACKAGES = {
     "python": {"python-kmipkit"},
 }
 REQUIRED_LANGUAGES = frozenset(LANGUAGE_PACKAGES)
+MANAGED_OBJECT_VARIANT_SUFFIXES = {
+    "ManagedFieldValue": frozenset(
+        {
+            "BigInteger", "BigInteger::0", "Boolean", "Boolean::0",
+            "ByteString", "ByteString::0", "DateTime", "DateTime::0",
+            "DateTimeExtended", "DateTimeExtended::0", "Enumeration",
+            "Enumeration::0", "Integer", "Integer::0", "Interval",
+            "Interval::0", "LongInteger", "LongInteger::0", "Structure",
+            "TextString", "TextString::0", "Unknown", "Unknown::0",
+        }
+    ),
+    "ManagedValueKind": frozenset(
+        {
+            "KeyBlock", "KeyMaterial", "KeyMaterial::0", "KeyValue",
+            "KeyValue::0", "KeyWrappingData", "ManagedObject",
+            "ManagedObject::0",
+        }
+    ),
+}
+MANAGED_OBJECT_VARIANT_COUNTERPARTS = {
+    ("rust-kmipkit", "ManagedFieldValue"): (
+        "managed_value_field_item_read:rust",
+        "rust-observed-a95a34edc0285cd6ad3a",
+    ),
+    ("rust-kmipkit", "ManagedValueKind"): (
+        "managed_object_from_item:c",
+        "rust-observed-ba76f0e0208f5cac6eae",
+    ),
+    ("rust-kmipkit-protocol", "ManagedFieldValue"): (
+        "managed_value_field_item_read:rust",
+        "rust-observed-2a78ab726eb8c96d0e37",
+    ),
+    ("rust-kmipkit-protocol", "ManagedValueKind"): (
+        "managed_object_from_item:c",
+        "rust-observed-0d3351bf7b7739e95d55",
+    ),
+}
 DECLARATION_RESOLUTION_COMMON_FIELDS = frozenset(
     {
         "declarationId",
@@ -2652,39 +2689,6 @@ def _is_exact_0053_managed_object_counterpart_correction(
     previous: dict[str, Any], corrected: dict[str, Any]
 ) -> bool:
     """Correct only the exact managed-object enum-shape counterpart records."""
-    suffixes = {
-        "ManagedFieldValue": {
-            "BigInteger", "BigInteger::0", "Boolean", "Boolean::0",
-            "ByteString", "ByteString::0", "DateTime", "DateTime::0",
-            "DateTimeExtended", "DateTimeExtended::0", "Enumeration",
-            "Enumeration::0", "Integer", "Integer::0", "Interval",
-            "Interval::0", "LongInteger", "LongInteger::0", "Structure",
-            "TextString", "TextString::0", "Unknown", "Unknown::0",
-        },
-        "ManagedValueKind": {
-            "KeyBlock", "KeyMaterial", "KeyMaterial::0", "KeyValue",
-            "KeyValue::0", "KeyWrappingData", "ManagedObject",
-            "ManagedObject::0",
-        },
-    }
-    counterparts = {
-        ("rust-kmipkit", "ManagedFieldValue"): (
-            "managed_value_field_item_read:rust",
-            "rust-observed-a95a34edc0285cd6ad3a",
-        ),
-        ("rust-kmipkit", "ManagedValueKind"): (
-            "managed_object_from_item:c",
-            "rust-observed-ba76f0e0208f5cac6eae",
-        ),
-        ("rust-kmipkit-protocol", "ManagedFieldValue"): (
-            "managed_value_field_item_read:rust",
-            "rust-observed-2a78ab726eb8c96d0e37",
-        ),
-        ("rust-kmipkit-protocol", "ManagedValueKind"): (
-            "managed_object_from_item:c",
-            "rust-observed-0d3351bf7b7739e95d55",
-        ),
-    }
     package_id = previous.get("packageId")
     package = "kmipkit::protocol" if package_id == "rust-kmipkit" else (
         "kmipkit_protocol" if package_id == "rust-kmipkit-protocol" else None
@@ -2692,12 +2696,14 @@ def _is_exact_0053_managed_object_counterpart_correction(
     export_name = previous.get("exportName")
     if not isinstance(package, str) or not isinstance(export_name, str):
         return False
-    for enum_name, allowed_suffixes in suffixes.items():
+    for enum_name, allowed_suffixes in MANAGED_OBJECT_VARIANT_SUFFIXES.items():
         prefix = f"{package}::{enum_name}::"
         if not export_name.startswith(prefix):
             continue
         suffix = export_name.removeprefix(prefix)
-        old_id, new_id = counterparts[(package_id, enum_name)]
+        old_id, new_id = MANAGED_OBJECT_VARIANT_COUNTERPARTS[
+            (package_id, enum_name)
+        ]
         if (
             suffix not in allowed_suffixes
             or corrected.get("packageId") != package_id
