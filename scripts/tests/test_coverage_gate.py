@@ -509,6 +509,26 @@ class CoverageGateTests(unittest.TestCase):
             with self.assertRaisesRegex(GATE.CoverageDataError, "outside the source file"):
                 GATE.parse_llvm_export(document, root)
 
+    def test_overlapping_segment_mapping_never_exceeds_summary_covered_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {\n    work();\n}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 3, 2, 1, 0, 0, 0]]))
+            document["data"][0]["files"][0]["summary"]["lines"] = {
+                "count": 2,
+                "covered": 1,
+                "percent": 50.0,
+            }
+
+            report = GATE.parse_llvm_export(document, root)
+
+        lines = report["crates/kmipkit-ttlv/src/lib.rs"]
+        self.assertEqual(3, len(lines))
+        self.assertEqual(1, sum(count > 0 for count in lines.values()))
+
     def test_llvm_report_rejects_missing_schema_and_invalid_counts(self) -> None:
         self.require_gate()
         with self.assertRaises(GATE.CoverageDataError):
