@@ -34,6 +34,7 @@ one and links both directions.
 - [ADR-0019: File-backed TLS hot-reload](0019-file-backed-tls-hot-reload.md) (Proposed)
 - [ADR-0020: TLS 1.3 session resumption without 0-RTT and HTTPS idle reconnect](0020-tls13-session-resumption-and-keepalive.md) (Accepted)
 - [ADR-0021: Server-to-Client operations and role inversion scope for KMIPKit](0021-server-to-client-operations-scope.md) (Accepted)
+- [ADR-0022: Multi-version modern KMIP architecture](0022-multi-version-modern-kmip-architecture.md) (Accepted)
 
 ## Template
 
