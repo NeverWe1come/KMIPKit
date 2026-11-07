@@ -262,6 +262,16 @@ class CiImpactTests(unittest.TestCase):
         self.assertEqual(base, plan["base_sha"])
         self.assertEqual(merge, plan["merge_sha"])
 
+    def test_copy_only_classifies_destination_path(self) -> None:
+        impact = self.require_impact()
+        plan = impact.classify_changes(
+            [{"status": "C100", "paths": ["crates/kmipkit/src/lib.rs", "proxy/kmipkit-proxy/src/lib.rs"]}],
+            base_sha="a" * 40,
+            merge_sha="b" * 40,
+        )
+        self.assertEqual({"proxy"}, set(plan["classes"]))
+        self.assertFalse(plan["full"])
+
     def test_diff_failures_return_explicit_full_fallback(self) -> None:
         impact = self.require_impact()
         with tempfile.TemporaryDirectory() as temporary:

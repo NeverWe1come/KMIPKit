@@ -202,7 +202,8 @@ def classify_changes(
             expected_path_count = 2 if kind in {"R", "C"} else 1
             if len(paths) != expected_path_count:
                 raise ImpactPlanError(f"Changed-file status {status!r} has the wrong number of paths.")
-            for raw_path in paths:
+            check_paths = [paths[1]] if kind == "C" else paths
+            for raw_path in check_paths:
                 if not isinstance(raw_path, str):
                     raise ImpactPlanError("A changed-file path is not text.")
                 path_class, reason = _path_class(raw_path)
