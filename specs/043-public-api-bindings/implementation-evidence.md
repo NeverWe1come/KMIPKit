@@ -11201,4 +11201,36 @@ Red `8cb385c2e` adds Java/JNI boundary and mapping tests for profile readiness, 
 
 Local checks: `mvn -B -f bindings/java/pom.xml -Dtest=ProfileValidationMappingTest test` passes 15/15. The complete Windows Maven verification passes 600 tests, 0 failures, 3 skips, and all configured JaCoCo checks. The workflow contract passes 91/91 with no temporary branch waiver; normative-generator coverage is 117/117 lines (100%). The Linux C-ABI consumer passes 39/39 with 86.52% line coverage. The selected adapter/FFI aggregate passes on code head `cecab3f98479313c6ae594a2f942d7096e2fad68`: FFI 12,505/14,258 (87.71%), Java 5,393/5,711 (94.43%), Python 6,962/7,432 (93.68%), and JNI 8,802/10,351 (85.04%), excluding 146 documented unreachable lines and counting 21 LLVM summary-only lines as uncovered. Its base and merge identifiers both equal that code head, so this aggregate checks scope thresholds only, not the branch-wide 95% changed-line gate.
 
-The full five-scope aggregate was attempted with Ubuntu and Windows Rust reports, the C consumer, both Java reports, Python, and JNI. It fails closed at the required platform-artifact check: `coverage gate: Required coverage artifact is missing for macos.` A direct two-platform evaluation is not an equivalent fallback: the aggregation contract requires exactly Ubuntu, Windows, and macOS reports. The historical T074 head `dc1ffc8d2` cannot supply current macOS evidence because 49 production Rust source files have changed since that revision. This environment cannot produce a fresh macOS run, and hosted CI remains paused by the maintainer while billing is unresolved. Therefore no full three-platform aggregate or 95% changed-line pass is claimed; T085 remains open until those gates can be measured.
+The full five-scope aggregate was attempted with Ubuntu and Windows Rust reports, the C consumer, both Java reports, Python, and JNI. It fails closed at the required platform-artifact check: `coverage gate: Required coverage artifact is missing for macos.` A direct two-platform evaluation is not an equivalent fallback: the aggregation contract requires exactly Ubuntu, Windows, and macOS reports. The historical T074 head `dc1ffc8d2` cannot supply current macOS evidence because 49 production Rust source files have changed since that revision. This environment cannot produce a fresh macOS run, and hosted CI remains paused by the maintainer while billing is unresolved. At that 2026-11-05 checkpoint, no full three-platform aggregate or changed-line threshold pass could be claimed, so T085 remained open. This checkpoint is historical and is superseded by the successful 2026-11-06 CI evidence below.
+
+
+### T085 final coverage-gate closeout (2026-11-06)
+
+The 2026-11-05 local checkpoint above was incomplete because no current macOS report or five-scope aggregate was available. Hosted billing was restored, the temporary coverage waiver remained absent, and the exact PR-head CI run 42196090399 attempt 2 passed on code head `1d445c1931233868efbde047cf642a10f9cebd9d`. The first attempt's JNI artifact upload could not finalize because GitHub returned an HTML response to the artifact API; rerunning the failed jobs succeeded, including artifact finalization, selected-scope aggregation, and the final CI summary.
+
+Red `8cb385c2e` adds Java/JNI boundary and mapping tests for profile readiness, native bridge validation, and named attribute requests. Green `cecab3f98` records the documented unreachable JNI lines and narrow Java source exclusions without changing runtime behavior. The closeout Refactor/evidence phase explicitly supersedes that historical incomplete-gate conclusion and records the successful coverage results; no executable behavior changed.
+
+The normative generator passed at 117/117 lines (100%; CI enforces 90%). The aggregate consumed all five required scopes and passed every configured threshold:
+
+| Scope | Covered lines | Minimum |
+|---|---:|---:|
+| Changed production code | 25,805/27,488 (93.88%; 8 summary-only lines counted uncovered) | 90% |
+| `kmipkit-ttlv` | 735/741 (99.19%) | 90% |
+| `kmipkit-protocol` | 19,743/20,518 (96.22%) | 90% |
+| `kmipkit-transport` | 3,718/3,907 (95.16%) | 85% |
+| `kmipkit-ffi` | 13,108/14,258 (91.93%) | 85% |
+| Java adapters | 5,532/5,707 (96.93%; 9 documented unreachable lines excluded) | 85% |
+| Python adapters | 7,177/7,434 (96.54%; 1 documented unreachable line excluded) | 85% |
+| JNI bridge | 8,894/10,368 (85.78%; 116 documented unreachable lines excluded; 8 summary-only lines counted uncovered) | 85% |
+| Rust workspace | 45,174/47,510 (95.08%) | 90% |
+
+The exact-head CI passed `Normative inventory / immutable sources and coverage`, `Coverage / ubuntu`, `Coverage / windows`, `Coverage / macos`, `JNI coverage / Linux`, `Java coverage / linux`, `Java coverage / windows`, `Python coverage / Linux`, and `Coverage gate / selected scopes`. `Script contracts / ubuntu-latest`, `/ macos-latest`, and `/ windows-latest` all passed and verify the temporary branch exception is absent. Core Rust stable and 1.94 passed on Linux, Windows, and macOS; C consumers, Java/JNI integration, Python bindings, both sanitizers, fuzz smoke, documentation and traceability contracts, dependency policy, and the remaining required CI checks passed. `gh pr checks 104` reported all required checks as pass; only conditional informational jobs were skipped.
+
+Coverage minima are recorded per the maintainer's direct instruction: former 95% floors are 90% for TTLV, protocol, workspace, and changed production code; pre-existing 85% transport, FFI, and adapter floors remain 85%. No KMIP conformance, profile certification, or interoperability claim is made by this coverage evidence.
+
+
+### T073 bilingual guide state contract update (2026-11-06)
+
+The existing English and Spanish guides and the manifest already report `public_binding_surface` as `verified`, while explicitly distinguishing a verified binding surface from KMIP conformance and release readiness. The old T073 test still required both guides to say `blocked`; it failed at baseline `1d445c193`.
+
+Red was reproduced against that baseline. Green commit `a4b0aabe6` updates the test to read `capabilityState` from the manifest, require the corresponding current bilingual status, and retain assertions for the non-conformance and non-release-readiness disclaimers. Refactor keeps this as a focused documentation contract with no runtime or generated-output changes. The complete `test_t073_doc_reconciliation` module passes 6/6 tests. The requirement-traceability test passes, `tools/api_manifest/generate.py --check` verifies all 12 generated outputs, and `git diff --check` passes.

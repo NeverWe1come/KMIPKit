@@ -14916,3 +14916,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
 #[cfg(test)]
 #[path = "../tests/support/profile_unit.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../tests/support/profile_context_unit.rs"]
+mod context_index_tests;

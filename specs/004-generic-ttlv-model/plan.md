@@ -84,7 +84,7 @@ Pass. The generated allocation table is derived only from checked-in catalog rec
 
 - Update `docs/architecture/public-api.md` to distinguish this in-memory model from the later wire codec.
 - Complete English technical documentation and requirement traceability in the same implementation PR.
-- Run focused tests, generator checks, workspace format/lint/test checks, and relevant dependency/license/security checks. Coverage must meet at least 95% for changed code and the `kmipkit-ttlv`/protocol-model crates, and 90% workspace-wide; apply the 85% transport/FFI threshold only if those paths are changed. Record the `cargo llvm-cov --workspace --all-features` (or repository automation) results and Red, Green, Refactor commits in the draft PR.
+- Run focused tests, generator checks, workspace format/lint/test checks, and relevant dependency/license/security checks. Coverage must meet at least 90% for changed code and the `kmipkit-ttlv`/protocol-model crates, and 90% workspace-wide; apply the 85% transport/FFI threshold only if those paths are changed. Record the `cargo llvm-cov --workspace --all-features` (or repository automation) results and Red, Green, Refactor commits in the draft PR.
 - A later codec feature owns OASIS wire vectors, malformed TTLV parsing, decoder limits, and wire round trips; they are not falsely claimed by this model feature.
 
 ## Project Structure

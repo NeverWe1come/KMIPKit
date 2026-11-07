@@ -11,6 +11,12 @@ from kmipkit import client, errors, ttlv
 from kmipkit._client_ffi import ffi
 
 
+def _released_correlation_view() -> memoryview:
+    value = memoryview(b"correlation")
+    value.release()
+    return value
+
+
 @pytest.mark.parametrize(
     "source",
     [
@@ -31,6 +37,59 @@ def test_correlation_staging_is_wipeable_for_all_buffer_inputs(source) -> None:
 
     assert isinstance(raw, bytearray)
     assert raw == bytearray(len(expected))
+
+
+@pytest.mark.parametrize(
+    "source_factory",
+    [
+        pytest.param(lambda: object(), id="not-a-buffer"),
+        pytest.param(_released_correlation_view, id="released-memoryview"),
+    ],
+)
+def test_poll_rejects_invalid_correlation_before_native_call(
+    monkeypatch, source_factory
+) -> None:
+    native_calls: list[object] = []
+    client_handle = object.__new__(client.Client)
+    limits = ttlv.codec_limits_defaults()
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_poll=lambda *args: native_calls.append(args)
+        ),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client_handle.execute_poll(source_factory(), limits)
+    finally:
+        limits.close()
+
+    assert native_calls == []
+
+
+def test_poll_wipes_staged_correlation_if_native_buffer_creation_fails(monkeypatch):
+    staged_values: list[bytearray] = []
+
+    class FailingBufferBridge:
+        NULL = ffi.NULL
+
+        @staticmethod
+        def from_buffer(_ctype, staged: bytearray):
+            staged_values.append(staged)
+            raise BufferError("buffer bridge unavailable")
+
+    client_handle = object.__new__(client.Client)
+    limits = ttlv.codec_limits_defaults()
+    monkeypatch.setattr(client, "ffi", FailingBufferBridge)
+    try:
+        with pytest.raises(BufferError, match="buffer bridge unavailable"):
+            client_handle.execute_poll(b"correlation-secret", limits)
+    finally:
+        limits.close()
+
+    assert staged_values == [bytearray(len(b"correlation-secret"))]
 
 
 def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
@@ -704,3 +763,153 @@ def test_query_async_requests_distinguishes_absent_from_present_empty_filters(
         limits.close()
 
     assert released == [stubs.outcome_handle, stubs.outcome_handle]
+
+
+def test_query_async_request_error_wipes_every_staged_correlation(monkeypatch) -> None:
+    expected = (b"first\x00\xff", b"second\x80\x00")
+    observed: list[tuple[bytes, ...]] = []
+    borrowed_spans: list[object] = []
+
+    def execute_query(
+        _client,
+        has_correlations,
+        spans,
+        correlation_count,
+        _has_operations,
+        _operations,
+        _operation_count,
+        _has_indicator,
+        _indicator,
+        _limits,
+        _output,
+    ) -> int:
+        assert int(has_correlations) == 1
+        values = tuple(
+            bytes(ffi.buffer(spans[index].data, int(spans[index].length)))
+            for index in range(int(correlation_count))
+        )
+        observed.append(values)
+        borrowed_spans.extend(spans[index].data for index in range(int(correlation_count)))
+        return 4
+
+    def last_error(status, category, cause, delivery) -> int:
+        status[0] = 4
+        category[0] = int(errors.ClientErrorCategory.VALIDATION)
+        cause[0] = int(errors.ClientErrorCause.INVALID_INPUT)
+        delivery[0] = int(errors.DeliveryState.NOT_SENT)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_query_async_requests=execute_query,
+            kmipkit_last_error_get=last_error,
+        ),
+    )
+    monkeypatch.setattr(client.Client, "_pointer", lambda _self: object())
+    limits = ttlv.codec_limits_create(1024, 32, 16)
+    instance = object.__new__(client.Client)
+
+    try:
+        with pytest.raises(errors.ClientExecutionError) as failure:
+            client.Client.execute_query_async_requests(
+                instance, limits, correlation_values=expected
+            )
+        assert failure.value.delivery is errors.DeliveryState.NOT_SENT
+    finally:
+        limits.close()
+
+    assert observed == [expected]
+    assert [bytes(ffi.buffer(pointer, len(value))) for pointer, value in zip(borrowed_spans, expected)] == [
+        bytes(len(value)) for value in expected
+    ]
+
+
+def test_async_outcome_preserves_present_optional_metadata_and_unknown_outcome(
+    monkeypatch,
+) -> None:
+    released: list[object] = []
+    stubs = _outcome_stubs(0x39, released, cancellation_result=0)
+    message = b"server result message"
+    message_storage = ffi.new("uint8_t[]", message)
+
+    def metadata(_outcome, output) -> int:
+        output.struct_size = ffi.sizeof("kmipkit_client_async_operation_metadata_v1_t")
+        output.abi_version = 1
+        output.operation = 0x39
+        output.outcome_kind = 0xF000_0003
+        output.result_status = 1
+        output.has_result_reason = 1
+        output.result_reason = 0x8000_0001
+        output.has_cancellation_result = 1
+        output.cancellation_result = 0
+        output.has_result_message = 1
+        output.reserved = 0
+        output.result_message_data = message_storage
+        output.result_message_length = len(message)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                **stubs.__dict__,
+                "kmipkit_client_async_operation_outcome_metadata_v1": metadata,
+            }
+        ),
+    )
+    outcome = client._wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        copied = outcome.metadata_v1
+        assert copied.operation == 0x39
+        assert copied.outcome == 0xF000_0003
+        assert copied.result_status == 1
+        assert copied.result_reason == 0x8000_0001
+        assert copied.cancellation_result == 0
+        assert copied.result_message == message.decode()
+        assert message.decode() not in repr(copied)
+    finally:
+        outcome.close()
+
+    assert released == [stubs.outcome_handle]
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        pytest.param("has_result_reason", 2, id="reason-presence"),
+        pytest.param("has_cancellation_result", 2, id="cancellation-presence"),
+        pytest.param("has_result_message", 2, id="message-presence"),
+    ],
+)
+def test_async_outcome_rejects_invalid_optional_metadata_presence_flags(
+    monkeypatch, field: str, invalid_value: int
+) -> None:
+    released: list[object] = []
+    stubs = _outcome_stubs(0x1A, released)
+    original_metadata = stubs.kmipkit_client_async_operation_outcome_metadata_v1
+
+    def malformed_metadata(outcome, output) -> int:
+        original_metadata(outcome, output)
+        setattr(output, field, invalid_value)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                **stubs.__dict__,
+                "kmipkit_client_async_operation_outcome_metadata_v1": malformed_metadata,
+            }
+        ),
+    )
+    outcome = client._wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            _ = outcome.metadata_v1
+    finally:
+        outcome.close()
+    assert released == [stubs.outcome_handle]

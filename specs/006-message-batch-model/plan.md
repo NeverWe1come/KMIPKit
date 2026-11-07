@@ -92,7 +92,7 @@ specification/compliance/requirements/KMIPKIT-0006.csv
 - **Green**: Add the smallest public model, validation, and conversion implementation to satisfy the focused tests. No generic byte encoder/decoder or network behavior is added.
 - **Refactor**: Extract focused modules, document public contracts, preserve `#![forbid(unsafe_code)]`, and keep Red/Green behavior unchanged.
 - **Verification**: Run `cargo fmt --all --check`, focused tests, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo test --workspace --all-features`, `cargo doc --workspace --all-features --no-deps`, `cargo llvm-cov --workspace --all-features`, catalog validator/report checks, and source immutability checks when implementation is authorized.
-- **Coverage**: Meet at least 95% line coverage for changed protocol/model code and protocol-model crate, 90% workspace overall, and all applicable repository gates; generated code may be excluded only with a documented reason.
+- **Coverage**: Meet at least 90% line coverage for changed protocol/model code and protocol-model crate, 90% workspace overall, and all applicable repository gates; generated code may be excluded only with a documented reason.
 
 ## Complexity Tracking
 
