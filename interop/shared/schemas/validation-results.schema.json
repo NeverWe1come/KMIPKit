@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/validation-results.schema.json",
+  "title": "KMIP 2.1 Validation Suite Results",
+  "type": "object",
+  "required": ["run_id", "timestamp", "language", "server_id", "summary", "results"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "language": { "type": "string", "enum": ["rust", "c", "java", "python"] },
+    "server_id": { "type": "string" },
+    "summary": {
+      "type": "object",
+      "required": ["total_cases", "passed", "failed", "unsupported_by_server"],
+      "properties": {
+        "total_cases": { "type": "integer" },
+        "passed": { "type": "integer" },
+        "failed": { "type": "integer" },
+        "unsupported_by_server": { "type": "integer" },
+        "unexpected_success": { "type": "integer" }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["case_id", "operation", "status"],
+        "properties": {
+          "case_id": { "type": "string" },
+          "operation": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "unsupported_skipped",
+              "unsupported_verified_rejected",
+              "unexpected_success"
+            ]
+          },
+          "encodings_verified": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "api_levels_verified": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "duration_ms": { "type": "number" },
+          "error_detail": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "result_reason": { "type": "string" },
+              "encoding": { "type": "string" },
+              "api_level": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

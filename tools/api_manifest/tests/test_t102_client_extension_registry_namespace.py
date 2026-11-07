@@ -25,6 +25,8 @@ EXPECTED_CHILD_EXPORTS = {
     "kmipkit_client::extension_registry::RegisteredExtensionValue",
     "kmipkit_client::extension_registry::ClientConfiguration::extension_registry",
     "kmipkit_client::extension_registry::ClientConfiguration::new",
+    "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+    "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
     "kmipkit_client::extension_registry::client_extension_registry",
     "kmipkit_client::extension_registry::definition_at",
     "kmipkit_client::extension_registry::definition_count",
@@ -72,9 +74,18 @@ class ClientExtensionRegistryNamespaceTests(unittest.TestCase):
             if package_id == PACKAGE and export_name.startswith(f"{NAMESPACE}::")
         }
         self.assertEqual(EXPECTED_CHILD_EXPORTS, set(children))
+        wire_encoding_exports = {
+            "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+            "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
+        }
         for export_name, declaration in children.items():
             with self.subTest(export=export_name):
-                self.assertEqual("vendor_extension_registry", declaration["capabilityId"])
+                expected_capability = (
+                    "wire_encoding_selection"
+                    if export_name in wire_encoding_exports
+                    else "vendor_extension_registry"
+                )
+                self.assertEqual(expected_capability, declaration["capabilityId"])
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(

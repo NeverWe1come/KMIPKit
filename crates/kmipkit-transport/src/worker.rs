@@ -21,7 +21,7 @@ use tokio::runtime::{Builder, Runtime};
 use tokio::sync::{mpsc as async_mpsc, watch};
 
 use crate::timeout::finalize_timeout;
-use crate::{RequestDeliveryState, TransportError, TransportResponse};
+use crate::{RequestDeliveryState, TransportCauseCategory, TransportError, TransportResponse};
 
 const QUEUED: u8 = 0;
 const PREPARING: u8 = 1;
@@ -1016,6 +1016,39 @@ impl fmt::Display for WorkerShutdownError {
 }
 
 impl Error for WorkerShutdownError {}
+
+#[cfg(test)]
+pub(crate) type WorkerSpawnerForTest =
+    Box<dyn FnOnce(WorkerTask) -> io::Result<thread::JoinHandle<()>> + Send + 'static>;
+
+pub(crate) fn ensure_client_worker(
+    worker: &mut Option<ClientWorker>,
+    #[cfg(test)] worker_spawner: &mut Option<WorkerSpawnerForTest>,
+    total_deadline: Option<Instant>,
+) -> Result<(), TransportError> {
+    if worker.is_none() {
+        #[cfg(test)]
+        let new_worker = match worker_spawner.take() {
+            Some(spawner) => ClientWorker::start_with_spawner_until(spawner, total_deadline),
+            None => ClientWorker::start_until(total_deadline),
+        };
+        #[cfg(not(test))]
+        let new_worker = ClientWorker::start_until(total_deadline);
+        *worker = Some(new_worker.map_err(|error| match error {
+            WorkerStartError::Deadline => TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Timeout,
+                error,
+            ),
+            error => TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                error,
+            ),
+        })?);
+    }
+    Ok(())
+}
 
 #[cfg(test)]
 #[path = "../tests/worker.rs"]

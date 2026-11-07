@@ -3,7 +3,7 @@
 ## Source and branch baseline
 
 - Authorized feature chain root: `feature/KMIPKIT-0043-t076-shared-client-mapping` (PR #104).
-- Immediate predecessor: `feature/KMIPKIT-0048-typed-attributes`, PR #115, latest synchronized commit `5c68f0006`.
+- Immediate predecessor: `feature/KMIPKIT-0048-typed-attributes`, PR #115, latest synchronized commit `ba01f43c45bfa851d3456713bcb840260bd332d8`.
 - Current feature branch: `feature/KMIPKIT-0049-managed-objects`; the maintainer authorized the phase stack to start from #104 and to use predecessor branches until eventual integration into `release/1.0.0`.
 - Pinned OASIS source: `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`, SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`.
 - Normative catalog: `specification/catalog/kmip-2.1.json`, SHA-256 `0D68D403956FE0BA4057BED346FDE57D1BC8938D975338E02BE2D435EC16FBEE`.
@@ -89,7 +89,77 @@ or release-level interoperability evidence is claimed for this feature.
   source snapshot. This refresh also changes documentation only.
 - Remote CI checks were not queried under the maintainer's billing instruction.
 
-The current local branch now includes the #115 follow-up merge above; the
-remote #116 head has not yet been advanced to this commit.
+At that historical refresh, the local branch included the #115 follow-up
+merge above; the remote #116 head had not yet advanced to that commit.
 
 Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.
+
+
+## Reviewed predecessor synchronization (2026-11-07)
+
+Merged the reviewed and published 0048 predecessor head
+`ba01f43c45bfa851d3456713bcb840260bd332d8` from the existing 0049 head
+`cbe09ce2fc34a042357f31533de23b00c877c956`. The merge retains the predecessor's
+release-stack changes and its Red, Green, Refactor ownership-filter corrections.
+All incoming manifest declarations, exclusions, capabilities, and other sections
+are preserved exactly. All 356 0049 declarations and 566 0049 exclusions remain
+identical to the original 0049 parent. The 0049 model/runtime source and original
+source evidence are unchanged; four-language typed-object parity stays blocked
+for KMIPKIT-0053.
+
+The combined manifest contains 12,230 declarations and 17,384 approved
+exclusions. T102 totals and the declaration/other-manifest fingerprints now pin
+that exact combined inventory; the operation fingerprint and normalization
+logic are unchanged. The official 0049 reconciler reports zero missing rows,
+and the official generator produced all 12 outputs. No generated output was
+edited by hand.
+
+The official auditors generated current-source reports under
+`specs/049-managed-objects/reports/`. Current-snapshot references in the shared
+Rust auditor and inventory/schema tests now select this 0049 evidence. All 42
+incoming historical 0047/0048 reports remain byte-identical to the predecessor.
+
+Fresh verification against the final predecessor:
+
+- `cargo test --offline --locked -p kmipkit-protocol --all-features --quiet`
+  passed: 1,277 unit tests, all integration tests, and 3 doctests.
+- `cargo fmt --all --check` passed.
+- `cargo clippy --offline --locked -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  passed.
+- `python -B -m unittest tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_reconcile_0049_managed_objects -q`
+  passed all 16 tests, including all 14 0048 ownership-filter regressions.
+- The combined API regression command below passed all 92 tests in 153.882
+  seconds, with no failures, errors, or skips. It includes the original
+  87-test selection and the five newest 0048 ownership-filter regressions.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
+- `python -B tools/api_manifest/reconcile_0049_managed_objects.py --report specs/049-managed-objects/reports/rust-export-report-post-sync-2026-11-07.json`
+  reported zero added declarations and zero added exclusions.
+- `python -B tools/api_manifest/audit_rust_exports.py --report specs/049-managed-objects/reports/rust-export-report-post-sync-2026-11-07.json --check`
+  passed: 22,429 observed routes, 6,641 exact manifest matches, 15,788 exact
+  exclusions, and zero missing, unobserved, kind, conditional, or scope issues.
+- `python -B tools/api_manifest/audit_shared_rust_inventory.py --report specs/049-managed-objects/reports/shared-rust-inventory-post-sync-2026-11-07.json --check`
+  passed. The paired inventory retains 3,697 mapped shared declarations.
+- `python -B tools/api_manifest/audit_binding_exports.py --report specs/049-managed-objects/reports/binding-export-report-post-sync-2026-11-07.json --check`
+  passed for C (1,708 exact matches), Java (1,881), and Python (2,000), with
+  no missing routes, unobserved declarations, kind mismatches, or issues.
+- `python -B tools/normative_catalog/check_immutable_sources.py --base-sha cbe09ce2fc34a042357f31533de23b00c877c956 --repo-root .`
+  passed: pinned OASIS upstream sources match the original 0049 parent.
+
+Exact combined API command:
+
+```text
+python -B -m unittest tools.api_manifest.tests.test_reconcile_0049_managed_objects tools.api_manifest.tests.test_reconcile_0048_typed_attributes tools.api_manifest.tests.test_t102_manifest_size_limit tools.api_manifest.tests.test_c_api_docs tools.api_manifest.tests.test_t102_response_view_mappings tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest tools.api_manifest.tests.test_047_binding_audit_reconciliation tools.api_manifest.tests.test_t102_remaining_response_view_mappings tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_catalog_parity tools.api_manifest.tests.test_t109_binding_export_audit_reconciliation tools.api_manifest.tests.test_shared_rust_inventory tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_rust_public_access_paths -q
+```
+
+The conflict-resolution paths pass the whitespace check. The complete merge
+retains the predecessor's two existing whitespace diagnostics: the final blank
+line in `interop/c-kmip-validator/src/c_validator.c` and trailing whitespace in
+`interop/shared/vectors/generate_vectors.py`. Neither file is changed by the
+resolution. Rust export auditing also emitted the established non-fatal Windows
+AWS-LC `stdalign_check.c` and missing NASM warnings.
+
+No PR was created, closed, or retargeted, and no remote CI status was queried.
+Untracked files and existing target directories were preserved; target sizes
+were not inspected. This synchronization adds no fresh coverage or platform
+aggregate. The feature remains in draft pending its existing external review,
+coverage, and cross-platform controls.

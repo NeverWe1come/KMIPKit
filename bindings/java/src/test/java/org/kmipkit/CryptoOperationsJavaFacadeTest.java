@@ -517,13 +517,13 @@ final class CryptoOperationsJavaFacadeTest {
                     fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
                 }
             }
-            case "mac" -> fields.add(ttlvItem(0x4200c4, 8, SECRET_MARKER));
+            case "mac" -> fields.add(ttlvItem(0x4200c6, 8, SECRET_MARKER));
             case "macVerify" -> {
-                if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
+                if (includeValidityIndicator) fields.add(ttlvEnumeration(0x42009b, 0xffff_fffe));
             }
             case "sign" -> fields.add(ttlvItem(0x4200c3, 8, SECRET_MARKER));
             case "signatureVerify" -> {
-                if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
+                if (includeValidityIndicator) fields.add(ttlvEnumeration(0x42009b, 0xffff_fffe));
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
             }
             default -> throw new AssertionError("unknown crypto response");

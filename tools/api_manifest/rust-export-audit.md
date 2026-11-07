@@ -152,6 +152,40 @@ manifest owner path, otherwise uses the already blocked
 `public_binding_surface` candidate. It does not add signatures, mappings, or
 approved exclusions.
 
+## Release synchronization snapshot (2026-11-07)
+
+The KMIPKIT-0047 branch was synchronized with the #104 release merge and its
+named-value exports were reconciled through both the `kmipkit` facade and the
+public `kmipkit-protocol` crate. The refreshed report at
+`specs/043-public-api-bindings/reports/rust-export-report-2026-11-07.json`
+contains 19,149 compiler-observed paths, 5,999 exact manifest declarations,
+and 13,150 exact approved exclusions. There are zero missing or unobserved
+paths, kind mismatches, unsupported inventory issues, or conditional-state and
+condition mismatches. The Windows Rust 1.94.0 all-features `--check` passed.
+This is a source snapshot and does not replace the supported-platform CI
+matrix.
+
+## Typed-attribute synchronization snapshot (2026-11-07)
+
+The 0047 report above remains historical evidence for its release-stack head.
+After the 0048 merge, the official audit writes its current source snapshot to
+`specs/048-typed-attributes/reports/rust-export-report-post-sync-2026-11-07.json`:
+21,507 observed Rust paths, 6,285 exact manifest declarations, and 15,222 exact
+approved exclusions, with no unresolved audit discrepancies. Reproduce it with:
+
+```text
+python -B tools/api_manifest/audit_rust_exports.py --report specs/048-typed-attributes/reports/rust-export-report-post-sync-2026-11-07.json --check
+python -B tools/api_manifest/audit_shared_rust_inventory.py
+python -B tools/api_manifest/audit_shared_rust_inventory.py --check
+```
+
+The shared auditor now defaults to that paired 0048 input and writes
+`specs/048-typed-attributes/reports/shared-rust-inventory-post-sync-2026-11-07.json`.
+It retains the exact export, exclusion, owner, and parity checks. The mapped
+shared declaration count remains 3,697; the 0048 typed-attribute declarations
+remain blocked for binding parity under KMIPKIT-0053. Neither 0047 report is
+overwritten by these commands.
+
 ## Development verification
 
 The focused tests exercise public/private reachability, aliases, local and
