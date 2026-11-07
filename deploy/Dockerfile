@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 # Build kmipkit-proxy binary with all supported cloud providers
-RUN cargo build --release --manifest-path proxy/kmipkit-proxy/Cargo.toml --features all-clouds
+RUN cargo build --locked --release --manifest-path proxy/kmipkit-proxy/Cargo.toml --features all-clouds
 
 # Minimal runtime image
 FROM debian:bookworm-slim
