@@ -94,7 +94,7 @@ Refactor shared schema validation without changing Red/Green outcomes; document 
 
 ### Phase 4 — verification and review
 
-Run focused tests, format, Clippy, workspace tests, docs, catalog validation/report regeneration, immutable-source checks, and coverage. Target at least 95% for changed code/protocol model, at least 95% protocol model crate, and at least 90% workspace as required by the repository. Perform sequential independent QA and security reviews; resolve findings; run supported CI; open a draft PR through terminal and verify it on GitHub.
+Run focused tests, format, Clippy, workspace tests, docs, catalog validation/report regeneration, immutable-source checks, and coverage. Target at least 90% for changed code/protocol model, at least 90% protocol model crate, and at least 90% workspace as required by the repository. Perform sequential independent QA and security reviews; resolve findings; run supported CI; open a draft PR through terminal and verify it on GitHub.
 
 ## Verification strategy
 

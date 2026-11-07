@@ -1116,3 +1116,57 @@ fn credential_value_exposes_raw_type_and_scoped_ttlv_without_rebuilding() {
         );
     }
 }
+
+#[test]
+fn typed_credential_variants_preserve_raw_types_and_scoped_ttlv() {
+    let cases = [
+        (
+            1,
+            structure([item(USERNAME, Value::text_string("alice".to_owned()))]),
+            vec![USERNAME],
+        ),
+        (
+            2,
+            structure([item(
+                DEVICE_SERIAL_NUMBER,
+                Value::text_string("serial-id".to_owned()),
+            )]),
+            vec![DEVICE_SERIAL_NUMBER],
+        ),
+        (
+            3,
+            structure([
+                item(NONCE, Value::structure(valid_nonce_value())),
+                item(ATTESTATION_TYPE, Value::enumeration(0xF123_4567)),
+                item(
+                    ATTESTATION_MEASUREMENT,
+                    Value::byte_string(vec![0x80, 0xFE]),
+                ),
+            ]),
+            vec![NONCE, ATTESTATION_TYPE, ATTESTATION_MEASUREMENT],
+        ),
+        (
+            5,
+            structure([
+                item(USERNAME, Value::text_string("alice".to_owned())),
+                item(TIME_STAMP, Value::date_time_extended(1_800_000_000)),
+                item(HASHED_PASSWORD, Value::byte_string(vec![0x80, 0xFE])),
+            ]),
+            vec![USERNAME, TIME_STAMP, HASHED_PASSWORD],
+        ),
+    ];
+
+    for (raw_type, source, expected_tags) in cases {
+        let value = credential_value(raw_type, source)
+            .expect("the known credential variant is valid for its type");
+        assert_eq!(value.credential_type_raw(), raw_type);
+        assert_eq!(
+            value.with_ttlv(|view| view
+                .children()
+                .iter()
+                .map(|field| field.tag().raw())
+                .collect::<Vec<_>>()),
+            expected_tags
+        );
+    }
+}

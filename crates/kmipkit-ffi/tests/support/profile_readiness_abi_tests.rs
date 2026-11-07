@@ -654,3 +654,366 @@ fn catalog_ffi_matches_every_generated_rust_row_and_ordered_relation() {
         );
     }
 }
+
+fn profile_byte_span(bytes: &[u8]) -> kmipkit_byte_span_v1_t {
+    kmipkit_byte_span_v1_t {
+        data: bytes.as_ptr(),
+        length: u64::try_from(bytes.len()).expect("test span length fits the ABI"),
+    }
+}
+
+fn assert_readiness_evaluate_status(
+    profile_id: *const kmipkit_byte_span_v1_t,
+    records: *const kmipkit_profile_evidence_record_v1_t,
+    record_count: u64,
+    expected_status: i32,
+) {
+    let mut readiness = ptr::dangling_mut();
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+            profile_id,
+            records,
+            record_count,
+            &raw mut readiness,
+        )),
+        expected_status
+    );
+    assert!(readiness.is_null());
+}
+
+fn evidence_record(requirement_id: kmipkit_byte_span_v1_t) -> kmipkit_profile_evidence_record_v1_t {
+    kmipkit_profile_evidence_record_v1_t {
+        struct_size: abi_size::<kmipkit_profile_evidence_record_v1_t>(),
+        abi_version: 1,
+        requirement_id,
+        passed: 1,
+        reserved_0: 0,
+        reserved_1: 0,
+        reserved_2: 0,
+        reserved_3: 0,
+        reserved_4: 0,
+        reserved_5: 0,
+        reserved_6: 0,
+    }
+}
+
+fn set_evidence_reserved(
+    record: &mut kmipkit_profile_evidence_record_v1_t,
+    index: usize,
+    value: u8,
+) {
+    match index {
+        0 => record.reserved_0 = value,
+        1 => record.reserved_1 = value,
+        2 => record.reserved_2 = value,
+        3 => record.reserved_3 = value,
+        4 => record.reserved_4 = value,
+        5 => record.reserved_5 = value,
+        6 => record.reserved_6 = value,
+        _ => unreachable!("reserved field index is bounded by the test"),
+    }
+}
+
+#[test]
+fn readiness_evaluate_rejects_invalid_spans_and_reserved_evidence_fields() {
+    let profile_id = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let profile_span = profile_byte_span(profile_id);
+    assert_readiness_evaluate_status(ptr::null(), ptr::null(), 0, ERROR_INVALID_INPUT);
+
+    let invalid_utf8 = [0xff];
+    let invalid_profile_span = profile_byte_span(&invalid_utf8);
+    assert_readiness_evaluate_status(
+        &raw const invalid_profile_span,
+        ptr::null(),
+        0,
+        ERROR_INVALID_INPUT,
+    );
+    assert_readiness_evaluate_status(&raw const profile_span, ptr::null(), 1, ERROR_INVALID_INPUT);
+
+    let unknown_profile_span = profile_byte_span(b"vendor.profile.unknown");
+    assert_readiness_evaluate_status(&raw const unknown_profile_span, ptr::null(), 0, SUCCESS);
+
+    let mut record = evidence_record(profile_byte_span(b"KMIP-REQ-EXAMPLE"));
+    for reserved_index in 0..7 {
+        set_evidence_reserved(&mut record, reserved_index, 1);
+        assert_readiness_evaluate_status(
+            &raw const profile_span,
+            &raw const record,
+            1,
+            ERROR_INVALID_INPUT,
+        );
+        set_evidence_reserved(&mut record, reserved_index, 0);
+    }
+
+    let invalid_evidence = [0xff];
+    record.requirement_id = profile_byte_span(&invalid_evidence);
+    assert_readiness_evaluate_status(
+        &raw const profile_span,
+        &raw const record,
+        1,
+        ERROR_INVALID_INPUT,
+    );
+}
+
+fn assert_readiness_view_rejects_invalid_headers(view: &mut kmipkit_profile_readiness_view_v1_t) {
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_view_get_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+        )),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_view_get_v1(
+            ptr::null_mut(),
+            &raw mut *view,
+        )),
+        ERROR_INVALID_INPUT
+    );
+    view.abi_version = 2;
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_view_get_v1(
+            ptr::null_mut(),
+            &raw mut *view,
+        )),
+        ERROR_INVALID_INPUT
+    );
+}
+
+fn assert_blocker_view_rejects_invalid_headers(
+    view: &mut kmipkit_profile_readiness_blocker_view_v1_t,
+) {
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_blocker_at_v1(
+            ptr::null_mut(),
+            0,
+            ptr::null_mut(),
+        )),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_blocker_at_v1(
+            ptr::null_mut(),
+            0,
+            &raw mut *view,
+        )),
+        ERROR_INVALID_INPUT
+    );
+    view.abi_version = 2;
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_blocker_at_v1(
+            ptr::null_mut(),
+            0,
+            &raw mut *view,
+        )),
+        ERROR_INVALID_INPUT
+    );
+}
+
+#[test]
+fn readiness_accessors_reject_invalid_headers_handles_and_blocker_indexes() {
+    let mut readiness_view = kmipkit_profile_readiness_view_v1_t {
+        struct_size: abi_size::<kmipkit_profile_readiness_view_v1_t>(),
+        abi_version: 1,
+        ..Default::default()
+    };
+    assert_readiness_view_rejects_invalid_headers(&mut readiness_view);
+    let mut blocker_view = initialized_blocker_view();
+    assert_blocker_view_rejects_invalid_headers(&mut blocker_view);
+
+    let profile_span = profile_byte_span(b"KMIPKIT-PROFILE-BASELINE-CLIENT");
+    let mut readiness = ptr::null_mut();
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_evaluate_v1(
+            &raw const profile_span,
+            ptr::null(),
+            0,
+            &raw mut readiness,
+        )),
+        SUCCESS
+    );
+    assert!(!readiness.is_null());
+    readiness_view.abi_version = 1;
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_view_get_v1(
+            readiness,
+            &raw mut readiness_view,
+        )),
+        SUCCESS
+    );
+    assert!(readiness_view.blocker_count > 0);
+
+    blocker_view.abi_version = 1;
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_readiness_blocker_at_v1(
+            readiness,
+            0,
+            &raw mut blocker_view,
+        )),
+        SUCCESS
+    );
+    assert_eq!(
+        span_text(blocker_view.kind).as_deref(),
+        Some("missing_requirement_record")
+    );
+    for invalid_index in [readiness_view.blocker_count, u64::MAX] {
+        assert_eq!(
+            test_pointer_ffi_call!(kmipkit_profile_readiness_blocker_at_v1(
+                readiness,
+                invalid_index,
+                &raw mut blocker_view,
+            )),
+            ERROR_INVALID_INPUT
+        );
+    }
+    kmipkit_profile_readiness_release(readiness);
+}
+
+fn assert_profile_catalog_count_errors(count: &mut u64) {
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_table_count_v1(
+            u32::MAX,
+            &raw mut *count,
+        )),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(*count, 0);
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_table_count_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            ptr::null_mut(),
+        )),
+        ERROR_INVALID_INPUT
+    );
+}
+
+fn assert_profile_catalog_row_errors(row: &mut crate::kmipkit_profile_catalog_row_view_v1_t) {
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_row_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            0,
+            ptr::null_mut(),
+        )),
+        ERROR_INVALID_INPUT
+    );
+    for (struct_size, abi_version) in [(row.struct_size - 1, 1), (row.struct_size, 2)] {
+        row.struct_size = struct_size;
+        row.abi_version = abi_version;
+        assert_eq!(
+            test_pointer_ffi_call!(kmipkit_profile_catalog_row_at_v1(
+                KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+                0,
+                &raw mut *row,
+            )),
+            ERROR_INVALID_INPUT
+        );
+    }
+    row.struct_size = abi_size::<crate::kmipkit_profile_catalog_row_view_v1_t>();
+    row.abi_version = 1;
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_row_at_v1(
+            u32::MAX,
+            0,
+            &raw mut *row,
+        )),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_row_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            u64::MAX,
+            &raw mut *row,
+        )),
+        ERROR_INVALID_INPUT
+    );
+}
+
+fn assert_profile_catalog_relation_count_errors(count: &mut u64) {
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_relation_count_v1(
+            u32::MAX,
+            0,
+            0,
+            &raw mut *count,
+        )),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(*count, 0);
+    for (table, row_index, relation) in [
+        (KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, u64::MAX, 1),
+        (KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 0, u32::MAX),
+        (KMIPKIT_PROFILE_CATALOG_TABLE_PROFILE_TEST_CASES, 0, 1),
+    ] {
+        assert_eq!(
+            test_pointer_ffi_call!(kmipkit_profile_catalog_relation_count_v1(
+                table,
+                row_index,
+                relation,
+                &raw mut *count,
+            )),
+            ERROR_INVALID_INPUT
+        );
+        assert_eq!(*count, 0);
+    }
+}
+
+fn assert_profile_catalog_relation_at_boundaries(
+    row: &mut crate::kmipkit_profile_catalog_row_view_v1_t,
+) {
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_relation_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+            0,
+            ptr::null_mut(),
+        )),
+        ERROR_INVALID_INPUT
+    );
+    let mut relation_count = 0;
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_relation_count_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+            &raw mut relation_count,
+        )),
+        SUCCESS
+    );
+    assert!(relation_count > 0);
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_relation_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+            0,
+            &raw mut *row,
+        )),
+        SUCCESS
+    );
+    assert_eq!(
+        test_pointer_ffi_call!(kmipkit_profile_catalog_relation_at_v1(
+            KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES,
+            0,
+            KMIPKIT_PROFILE_CATALOG_RELATION_SOURCE_CLAUSE_IDS,
+            relation_count,
+            &raw mut *row,
+        )),
+        ERROR_INVALID_INPUT
+    );
+}
+
+#[test]
+fn profile_catalog_ffi_clears_outputs_and_rejects_invalid_selectors() {
+    let mut count = u64::MAX;
+    assert_profile_catalog_count_errors(&mut count);
+    let mut row = crate::kmipkit_profile_catalog_row_view_v1_t {
+        struct_size: abi_size::<crate::kmipkit_profile_catalog_row_view_v1_t>(),
+        abi_version: 1,
+        ..Default::default()
+    };
+    assert_profile_catalog_row_errors(&mut row);
+    count = u64::MAX;
+    assert_profile_catalog_relation_count_errors(&mut count);
+    assert_profile_catalog_relation_at_boundaries(&mut row);
+}

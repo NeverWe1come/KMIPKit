@@ -6,13 +6,10 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
 AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
-AUDIT_REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "binding-export-report-2026-11-01.json"
+AUDIT_REPORT_PATH = Path(
+    "specs/043-public-api-bindings/reports/binding-export-audit-2026-11-05.json"
 )
+AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
 
 
 class CApiDocumentationTests(unittest.TestCase):
@@ -22,7 +19,7 @@ class CApiDocumentationTests(unittest.TestCase):
         self.assertIn("../../specification/api/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
-            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-11-01.json",
+            f"../../{AUDIT_REPORT_PATH.as_posix()}",
             documentation,
         )
         self.assertIn("audit_binding_exports.py", documentation)

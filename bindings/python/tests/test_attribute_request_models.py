@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from kmipkit import attribute_operations, errors, extensions, ttlv
@@ -162,4 +164,89 @@ def test_attribute_set_facade_validates_append_and_preserves_owned_order():
             assert attributes.closed
             with ttlv.ttlv_structure_view(transferred) as view:
                 assert ttlv.ttlv_structure_view_item_count(view) == 2
+    limits.close()
+
+
+def test_attribute_request_factories_reject_wrong_typed_arguments() -> None:
+    reference = extensions.AttributeReference.tag(0x0042_0022)
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations._validate_identifier(object())  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations._validate_identifier(extensions.UniqueIdentifier.integer(7))
+
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.AddAttributeRequest.create(None, None)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.AdjustAttributeRequest.create(None, object(), 1)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.DeleteAttributeRequest.create(None, object(), None)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.DeleteAttributeRequest.create(None, None, object())  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.ModifyAttributeRequest.create(None, None, None)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.SetAttributeRequest.create(None, None)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.GetAttributesRequest.create(None, (reference, object()))  # type: ignore[arg-type]
+
+
+def test_attribute_set_rejects_wrong_handles_and_invalid_native_empty_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        attribute_operations.AttributeSet.try_new(None)  # type: ignore[arg-type]
+
+    source = ttlv.ttlv_structure_create()
+    with source, attribute_operations.AttributeSet.try_new(source) as attributes:
+        with pytest.raises(errors.InvalidInputError):
+            attributes.try_push(None)  # type: ignore[arg-type]
+
+        native_lib = attribute_operations._client_lib
+        monkeypatch.setattr(
+            attribute_operations,
+            "_client_lib",
+            SimpleNamespace(
+                kmipkit_attribute_set_is_empty=lambda _attributes, output: output.__setitem__(0, 2) or 0
+            ),
+        )
+        with pytest.raises(errors.InvalidInputError):
+            attributes.is_empty()
+        monkeypatch.setattr(attribute_operations, "_client_lib", native_lib)
+
+
+def test_empty_attribute_set_closes_normally() -> None:
+    source = ttlv.ttlv_structure_create()
+    with source:
+        attributes = attribute_operations.AttributeSet.try_new(source)
+        attributes.close()
+        assert attributes.closed
+
+
+def test_attribute_request_optional_selectors_remain_absent_and_required_copies_are_owned():
+    limits, item = _attribute_item()
+    reference = extensions.AttributeReference.tag(0x0042_0022)
+
+    with attribute_operations.AdjustAttributeRequest.create(None, reference, 1) as request:
+        request._adjustment_type = None
+        with pytest.raises(errors.InvalidInputError):
+            _ = request.adjustment_type
+        request._attribute_reference_value = None
+        with pytest.raises(errors.InvalidInputError):
+            _ = request.attribute_reference
+        assert request.adjustment_value is None
+
+    with attribute_operations.DeleteAttributeRequest.create(None, None, None) as request:
+        assert request.current_attribute is None
+        assert request.attribute_reference is None
+
+    with attribute_operations.ModifyAttributeRequest.create(None, None, item) as request:
+        assert request.current_attribute is None
+        with request.new_attribute as copied:
+            assert copied is not None
+
+    with attribute_operations.SetAttributeRequest.create(None, item) as request:
+        with request.new_attribute as copied:
+            assert copied is not None
+
+    item.close()
     limits.close()

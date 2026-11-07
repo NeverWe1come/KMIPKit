@@ -1518,6 +1518,685 @@ def test_batch_result_dispatches_get_locate_and_log_mappers(
     assert released == ["item", "response"]
 
 
+_BATCH_RESULT_MAPPER_CASES = [
+    pytest.param(0x0C, "_get_attribute_list_response", "get_attribute_list_response", False, id="get-attribute-list"),
+    pytest.param(0x0B, "_get_attributes_response", "get_attributes_response", False, id="get-attributes"),
+    pytest.param(0x0D, "_add_attribute_response", "add_attribute_response", False, id="add-attribute"),
+    pytest.param(0x31, "_set_attribute_response", "set_attribute_response", False, id="set-attribute"),
+    pytest.param(0x30, "_adjust_attribute_response", "adjust_attribute_response", False, id="adjust-attribute"),
+    pytest.param(0x0F, "_delete_attribute_response", "delete_attribute_response", False, id="delete-attribute"),
+    pytest.param(0x0E, "_modify_attribute_response", "modify_attribute_response", False, id="modify-attribute"),
+    pytest.param(0x37, "_set_constraints_response", "set_constraints_response", False, id="set-constraints"),
+    pytest.param(0x17, "_validate_response", "validate_response", False, id="validate"),
+    pytest.param(0x12, "_lifecycle_response", "activate_response", False, id="activate"),
+    pytest.param(0x15, "_lifecycle_response", "archive_response", False, id="archive"),
+    pytest.param(0x14, "_lifecycle_response", "destroy_response", False, id="destroy"),
+    pytest.param(0x16, "_lifecycle_response", "recover_response", False, id="recover"),
+    pytest.param(0x25, "_rng_retrieve_response", "rng_retrieve_response", True, id="rng-retrieve"),
+    pytest.param(0x26, "_rng_seed_response", "rng_seed_response", True, id="rng-seed"),
+]
+
+
+def _install_batch_result_mapper_stubs(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    operation: int,
+    outcome: client.BatchOutcome = client.BatchOutcome.COMPLETED,
+    result_status: int = 0,
+) -> tuple[object, object, list[tuple[str, tuple[object, ...]]], list[str]]:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    calls: list[tuple[str, tuple[object, ...]]] = []
+    released: list[str] = []
+
+    def metadata(_item: object, output: object) -> int:
+        _initialize_metadata_v2(output)
+        output.operation = operation  # type: ignore[attr-defined]
+        output.outcome_kind = int(outcome)  # type: ignore[attr-defined]
+        output.result_status = result_status  # type: ignore[attr-defined]
+        return 0
+
+    def mapper(name: str):
+        def map_response(*arguments: object) -> object:
+            calls.append(
+                (
+                    name,
+                    (
+                        arguments[0]._pointer(),  # type: ignore[attr-defined]
+                        *arguments[1:],
+                    ),
+                )
+            )
+            return mapped_response
+
+        return map_response
+
+    mapped_response = object()
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, _index, output: output.__setitem__(0, item_pointer) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
+        kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
+    monkeypatch.setattr(client, "_discover_versions_supported_versions", lambda _item: None)
+    monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
+    monkeypatch.setattr(client, "_cryptographic_responses", lambda _item, _operation: (None,) * 7)
+    for case in _BATCH_RESULT_MAPPER_CASES:
+        _operation, mapper_name, _field_name, _allows_pending = case.values
+        if mapper_name == "_lifecycle_response":
+            monkeypatch.setattr(
+                client,
+                mapper_name,
+                lambda item, action, response_type, name=mapper_name: mapper(name)(
+                    item, action, response_type
+                ),
+            )
+        elif mapper_name == "_get_attribute_list_response":
+            monkeypatch.setattr(
+                client,
+                mapper_name,
+                lambda item, max_elements, max_bytes, name=mapper_name: mapper(name)(
+                    item, max_elements, max_bytes
+                ),
+            )
+        else:
+            monkeypatch.setattr(client, mapper_name, mapper(mapper_name))
+    return response_pointer, item_pointer, calls, released
+
+
+@pytest.mark.parametrize(
+    ("operation", "mapper_name", "response_field", "allows_pending"),
+    _BATCH_RESULT_MAPPER_CASES,
+)
+def test_batch_result_dispatches_attribute_validation_lifecycle_and_rng_mappers(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: int,
+    mapper_name: str,
+    response_field: str,
+    allows_pending: bool,
+) -> None:
+    response_pointer, item_pointer, calls, released = _install_batch_result_mapper_stubs(
+        monkeypatch, operation=operation
+    )
+    limits = ttlv.codec_limits_create(1024, 64, 17) if operation == 0x0C else None
+
+    try:
+        result = client._batch_result(response_pointer, limits)
+        try:
+            item = result.items[0]
+            mapped = getattr(item, response_field)
+            mapped = mapped() if response_field.startswith("rng_") else mapped
+            assert mapped is not None
+            assert len(calls) == 1
+            assert calls[0][0] == mapper_name
+            assert calls[0][1][0] == item_pointer
+            if operation == 0x0C:
+                assert calls[0][1][1:] == (17, 1024)
+        finally:
+            result.close()
+    finally:
+        if limits is not None:
+            limits.close()
+
+    assert released == ["item", "response"]
+
+
+@pytest.mark.parametrize(
+    ("operation", "mapper_name"),
+    [
+        pytest.param(0x37, "_set_constraints_response", id="set-constraints"),
+        pytest.param(0x17, "_validate_response", id="validate"),
+        pytest.param(0x12, "_lifecycle_response", id="activate"),
+        pytest.param(0x15, "_lifecycle_response", id="archive"),
+        pytest.param(0x14, "_lifecycle_response", id="destroy"),
+        pytest.param(0x16, "_lifecycle_response", id="recover"),
+    ],
+)
+@pytest.mark.parametrize(
+    ("outcome", "result_status"),
+    [
+        pytest.param(client.BatchOutcome.PENDING, 2, id="pending"),
+        pytest.param(client.BatchOutcome.COMPLETED, 1, id="failed"),
+    ],
+)
+def test_batch_result_skips_success_only_attribute_validation_and_lifecycle_mappers(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: int,
+    mapper_name: str,
+    outcome: client.BatchOutcome,
+    result_status: int,
+) -> None:
+    response_pointer, _item_pointer, calls, released = _install_batch_result_mapper_stubs(
+        monkeypatch,
+        operation=operation,
+        outcome=outcome,
+        result_status=result_status,
+    )
+
+    result = client._batch_result(response_pointer)
+    try:
+        assert result.items[0].outcome is outcome
+        assert calls == []
+    finally:
+        result.close()
+    assert released == ["item", "response"]
+
+
+@pytest.mark.parametrize(
+    ("operation", "mapper_name", "response_field"),
+    [
+        pytest.param(0x25, "_rng_retrieve_response", "rng_retrieve_response", id="retrieve"),
+        pytest.param(0x26, "_rng_seed_response", "rng_seed_response", id="seed"),
+    ],
+)
+@pytest.mark.parametrize(
+    ("outcome", "result_status", "expected_mapping"),
+    [
+        pytest.param(client.BatchOutcome.PENDING, 2, True, id="pending"),
+        pytest.param(client.BatchOutcome.COMPLETED, 0, True, id="success"),
+        pytest.param(client.BatchOutcome.COMPLETED, 1, False, id="failure"),
+    ],
+)
+def test_batch_result_maps_rng_responses_for_success_or_pending_only(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: int,
+    mapper_name: str,
+    response_field: str,
+    outcome: client.BatchOutcome,
+    result_status: int,
+    expected_mapping: bool,
+) -> None:
+    response_pointer, _item_pointer, calls, released = _install_batch_result_mapper_stubs(
+        monkeypatch,
+        operation=operation,
+        outcome=outcome,
+        result_status=result_status,
+    )
+
+    result = client._batch_result(response_pointer)
+    try:
+        response = getattr(result.items[0], response_field)()
+        assert (response is not None) is expected_mapping
+        assert len(calls) == int(expected_mapping)
+        if expected_mapping:
+            assert calls[0][0] == mapper_name
+    finally:
+        result.close()
+    assert released == ["item", "response"]
+
+
+_ATTRIBUTE_MUTATION_MAPPERS = [
+    ("_add_attribute_response", "kmipkit_client_batch_item_response_add_attribute"),
+    ("_set_attribute_response", "kmipkit_client_batch_item_response_set_attribute"),
+    ("_adjust_attribute_response", "kmipkit_client_batch_item_response_adjust_attribute"),
+    ("_delete_attribute_response", "kmipkit_client_batch_item_response_delete_attribute"),
+    ("_modify_attribute_response", "kmipkit_client_batch_item_response_modify_attribute"),
+]
+
+
+@pytest.mark.parametrize("mapper_name,symbol", _ATTRIBUTE_MUTATION_MAPPERS)
+@pytest.mark.parametrize("malformation", ["absent", "kind", "null-span", "invalid-utf8"])
+def test_attribute_mutation_response_mappers_reject_malformed_native_identifiers(
+    monkeypatch: pytest.MonkeyPatch,
+    mapper_name: str,
+    symbol: str,
+    malformation: str,
+) -> None:
+    backing = client.ffi.new("uint8_t[]", b"\xff") if malformation == "invalid-utf8" else None
+
+    def fill_response(_item: object, present: object, identifier: object) -> int:
+        present[0] = 0 if malformation == "absent" else 1  # type: ignore[index]
+        identifier.kind = 2 if malformation == "kind" else 1  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        identifier.text_length = (
+            1 if malformation in ("null-span", "invalid-utf8") else 0
+        )  # type: ignore[attr-defined]
+        if backing is not None:
+            identifier.text_data = client.ffi.cast(
+                "const uint8_t *", backing
+            )  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: fill_response}))
+    item = SimpleNamespace(_pointer=lambda: client.ffi.NULL)
+
+    with pytest.raises(errors.InvalidInputError):
+        getattr(client, mapper_name)(item)
+
+
+@pytest.mark.parametrize("mapper_name,symbol", _ATTRIBUTE_MUTATION_MAPPERS)
+def test_attribute_mutation_response_mappers_accept_empty_text_identifiers(
+    monkeypatch: pytest.MonkeyPatch,
+    mapper_name: str,
+    symbol: str,
+) -> None:
+    def fill_response(_item: object, present: object, identifier: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = 1  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        identifier.text_length = 0  # type: ignore[attr-defined]
+        identifier.text_data = client.ffi.NULL  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: fill_response}))
+    response = getattr(client, mapper_name)(
+        SimpleNamespace(_pointer=lambda: client.ffi.NULL)
+    )
+
+    expected_type = (
+        mapper_name.removeprefix("_").removesuffix("_response").title().replace("_", "")
+        + "Response"
+    )
+    assert type(response).__name__ == expected_type
+    assert response.unique_identifier == ""
+
+
+@pytest.mark.parametrize("present,count,maximum", [(0, 0, 10), (1, 11, 10)])
+def test_get_attribute_list_response_rejects_absent_or_over_limit_results(
+    monkeypatch: pytest.MonkeyPatch,
+    present: int,
+    count: int,
+    maximum: int,
+) -> None:
+    def fill_response(
+        _item: object,
+        out_present: object,
+        identifier: object,
+        _references: object,
+        _capacity: int,
+        out_count: object,
+    ) -> int:
+        out_present[0] = present  # type: ignore[index]
+        identifier.kind = 1  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        out_count[0] = count  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_get_attribute_list=fill_response),
+    )
+
+    with pytest.raises(errors.InvalidInputError if present == 0 else errors.ResourceLimitError):
+        client._get_attribute_list_response(
+            SimpleNamespace(_pointer=lambda: client.ffi.NULL), maximum, maximum * 16
+        )
+
+
+def test_get_attributes_response_returns_missing_payload_without_fabricating_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fill_response(
+        _item: object, present: object, identifier: object, _attributes: object
+    ) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = 1  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        identifier.text_length = 0  # type: ignore[attr-defined]
+        identifier.text_data = client.ffi.NULL  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_get_attributes=fill_response),
+    )
+    response = client._get_attributes_response(
+        SimpleNamespace(_pointer=lambda: client.ffi.NULL)
+    )
+
+    assert response.unique_identifier == ""
+    assert response.attributes is None
+
+
+@pytest.mark.parametrize("malformation", ["absent", "kind", "null-span", "invalid-utf8"])
+def test_get_attributes_response_releases_payload_on_invalid_identifier(
+    monkeypatch: pytest.MonkeyPatch,
+    malformation: str,
+) -> None:
+    releases: list[object] = []
+    attributes = client.ffi.cast("kmipkit_ttlv_structure_t *", 1)
+    invalid_utf8 = client.ffi.new("uint8_t[]", b"\xff")
+
+    def fill_response(_item: object, present: object, identifier: object, output: object) -> int:
+        present[0] = 0 if malformation == "absent" else 1  # type: ignore[index]
+        identifier.kind = 2 if malformation == "kind" else 1  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        identifier.text_length = (
+            1 if malformation in ("null-span", "invalid-utf8") else 0
+        )  # type: ignore[attr-defined]
+        identifier.text_data = (
+            client.ffi.cast("const uint8_t *", invalid_utf8)
+            if malformation == "invalid-utf8"
+            else client.ffi.NULL
+        )  # type: ignore[attr-defined]
+        output[0] = attributes  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_attributes=fill_response,
+            kmipkit_ttlv_structure_release=lambda handle: releases.append(handle),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._get_attributes_response(SimpleNamespace(_pointer=lambda: client.ffi.NULL))
+
+    assert releases == [attributes]
+
+
+def test_get_attributes_response_releases_payload_when_copy_conversion_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    releases: list[object] = []
+    attributes = client.ffi.cast("kmipkit_ttlv_structure_t *", 1)
+
+    def fill_response(_item: object, present: object, identifier: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = 1  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        identifier.text_length = 0  # type: ignore[attr-defined]
+        identifier.text_data = client.ffi.NULL  # type: ignore[attr-defined]
+        output[0] = attributes  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_attributes=fill_response,
+            kmipkit_ttlv_structure_release=lambda handle: releases.append(handle),
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("copy failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="copy failed"):
+        client._get_attributes_response(SimpleNamespace(_pointer=lambda: client.ffi.NULL))
+
+    assert releases == [attributes]
+
+
+def test_set_constraints_response_releases_payload_when_copy_conversion_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    releases: list[object] = []
+    payload = client.ffi.cast("kmipkit_ttlv_structure_t *", 1)
+
+    def fill_response(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = payload  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_set_constraints_ttlv=fill_response,
+            kmipkit_ttlv_structure_release=lambda handle: releases.append(handle),
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("copy failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="copy failed"):
+        client._set_constraints_response(SimpleNamespace(_pointer=lambda: client.ffi.NULL))
+
+    assert releases == [payload]
+
+
+@pytest.mark.parametrize("payload_present", [0, 1])
+def test_validate_response_releases_invalid_or_unmaterializable_payloads(
+    monkeypatch: pytest.MonkeyPatch,
+    payload_present: int,
+) -> None:
+    releases: list[object] = []
+    payload = client.ffi.cast("kmipkit_ttlv_structure_t *", 1)
+
+    def validate(_item: object, present: object, validity: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        validity[0] = 1  # type: ignore[index]
+        return 0
+
+    def validate_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = payload_present  # type: ignore[index]
+        output[0] = payload  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_validate=validate,
+            kmipkit_client_batch_item_response_validate_ttlv=validate_ttlv,
+            kmipkit_ttlv_structure_release=lambda handle: releases.append(handle),
+        ),
+    )
+    if payload_present:
+        monkeypatch.setattr(
+            ttlv,
+            "_structure_from_native_address",
+            lambda _address: (_ for _ in ()).throw(RuntimeError("copy failed")),
+        )
+
+    expected = RuntimeError if payload_present else errors.InvalidInputError
+    with pytest.raises(expected):
+        client._validate_response(SimpleNamespace(_pointer=lambda: client.ffi.NULL))
+
+    assert releases == [payload]
+
+
+@pytest.mark.parametrize(
+    ("present", "length_present", "length", "expected"),
+    [
+        (0, 0, 0, None),
+        (0, 1, 0, errors.InvalidInputError),
+        (0, 0, 1, errors.InvalidInputError),
+        (1, 0, 1, errors.InvalidInputError),
+    ],
+)
+def test_rng_seed_response_validates_optional_data_length(
+    monkeypatch: pytest.MonkeyPatch,
+    present: int,
+    length_present: int,
+    length: int,
+    expected: object,
+) -> None:
+    def fill_response(
+        _item: object,
+        out_present: object,
+        out_length_present: object,
+        out_length: object,
+    ) -> int:
+        out_present[0] = present  # type: ignore[index]
+        out_length_present[0] = length_present  # type: ignore[index]
+        out_length[0] = length  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_rng_seed=fill_response),
+    )
+    item = SimpleNamespace(_pointer=lambda: client.ffi.NULL)
+
+    if expected is None:
+        assert client._rng_seed_response(item) is None
+    else:
+        with pytest.raises(expected):
+            client._rng_seed_response(item)
+
+
+def _install_attribute_list_response_stub(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    identifier_kind: int = 1,
+    identifier_bytes: bytes | None = None,
+    identifier_null_span: bool = False,
+    reference: str = "none",
+    fill_present: int = 1,
+    fill_count_delta: int = 0,
+    payload_present: int = 0,
+    payload_handle: bool = False,
+    convert_payload_raises: bool = False,
+) -> list[object]:
+    calls = 0
+    releases: list[object] = []
+    owners: list[object] = []
+    payload_pointer = client.ffi.cast("kmipkit_ttlv_structure_t *", 1)
+
+    def pointer(data: bytes | None) -> object:
+        if data is None:
+            return client.ffi.NULL
+        owner = client.ffi.new("uint8_t[]", data)
+        owners.append(owner)
+        return client.ffi.cast("const uint8_t *", owner)
+
+    def get_attribute_list(
+        _item: object,
+        present: object,
+        identifier: object,
+        references: object,
+        _capacity: int,
+        count: object,
+    ) -> int:
+        nonlocal calls
+        calls += 1
+        present[0] = 1 if calls == 1 else fill_present  # type: ignore[index]
+        identifier.kind = identifier_kind  # type: ignore[attr-defined]
+        identifier.reserved = 0  # type: ignore[attr-defined]
+        identifier.text_length = (
+            1 if identifier_null_span else len(identifier_bytes or b"")
+        )  # type: ignore[attr-defined]
+        identifier.text_data = pointer(identifier_bytes)  # type: ignore[attr-defined]
+        expected_count = 1 if reference != "none" else 0
+        count[0] = (
+            expected_count if calls == 1 else expected_count + fill_count_delta
+        )  # type: ignore[index]
+        if calls == 2 and reference != "none":
+            value = references[0]  # type: ignore[index]
+            value.kind = (
+                1 if reference == "tag" else 3 if reference == "unknown" else 2
+            )  # type: ignore[attr-defined]
+            value.tag_value = (  # type: ignore[attr-defined]
+                0x0042_000D if reference == "tag" else 0
+            )
+            value.reserved = 1 if reference == "reserved" else 0  # type: ignore[attr-defined]
+            value.reserved2 = 0  # type: ignore[attr-defined]
+            vendor = b"\xff" if reference == "invalid-utf8" else b"vendor"
+            include_vendor = reference.startswith("vendor") or reference == "invalid-utf8"
+            value.vendor_identification_data = pointer(
+                vendor if include_vendor else None
+            )  # type: ignore[attr-defined]
+            value.vendor_identification_length = (
+                len(vendor) if include_vendor else 0
+            )  # type: ignore[attr-defined]
+            name = b"name"
+            if reference == "null-span":
+                value.attribute_name_data = client.ffi.NULL  # type: ignore[attr-defined]
+                value.attribute_name_length = 1  # type: ignore[attr-defined]
+            else:
+                include_name = reference.startswith("vendor")
+                value.attribute_name_data = pointer(
+                    name if include_name else None
+                )  # type: ignore[attr-defined]
+                value.attribute_name_length = (
+                    len(name) if include_name else 0
+                )  # type: ignore[attr-defined]
+        return 0
+
+    def payload_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = payload_present  # type: ignore[index]
+        output[0] = payload_pointer if payload_handle else client.ffi.NULL  # type: ignore[index]
+        return 0
+
+    native = SimpleNamespace(
+        kmipkit_client_batch_item_response_get_attribute_list=get_attribute_list,
+        kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv=payload_ttlv,
+        kmipkit_ttlv_structure_release=lambda handle: releases.append(handle),
+    )
+    monkeypatch.setattr(client, "lib", native)
+    if convert_payload_raises:
+        monkeypatch.setattr(
+            ttlv,
+            "_structure_from_native_address",
+            lambda _address: (_ for _ in ()).throw(RuntimeError("conversion failed")),
+        )
+    return releases
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"identifier_kind": 2},
+        {"identifier_null_span": True},
+        {"identifier_bytes": b"\xff"},
+        {"fill_present": 0},
+        {"fill_count_delta": 1},
+        {"reference": "reserved"},
+        {"reference": "unknown"},
+        {"reference": "null-span"},
+        {"reference": "invalid-utf8"},
+        {"reference": "tag"},
+        {"reference": "vendor-valid"},
+    ],
+)
+def test_get_attribute_list_response_rejects_malformed_identifiers_and_references(
+    monkeypatch: pytest.MonkeyPatch,
+    options: dict[str, object],
+) -> None:
+    _install_attribute_list_response_stub(monkeypatch, **options)
+
+    with pytest.raises(errors.InvalidInputError):
+        client._get_attribute_list_response(
+            SimpleNamespace(_pointer=lambda: client.ffi.NULL), 10, 1024
+        )
+
+
+def test_get_attribute_list_response_releases_payload_on_absence_or_conversion_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    releases = _install_attribute_list_response_stub(
+        monkeypatch, payload_present=0, payload_handle=True
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._get_attribute_list_response(
+            SimpleNamespace(_pointer=lambda: client.ffi.NULL), 10, 1024
+        )
+    assert len(releases) == 1
+
+    releases = _install_attribute_list_response_stub(
+        monkeypatch,
+        payload_present=1,
+        payload_handle=True,
+        convert_payload_raises=True,
+    )
+    with pytest.raises(RuntimeError, match="conversion failed"):
+        client._get_attribute_list_response(
+            SimpleNamespace(_pointer=lambda: client.ffi.NULL), 10, 1024
+        )
+    assert len(releases) == 1
+
+
 def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

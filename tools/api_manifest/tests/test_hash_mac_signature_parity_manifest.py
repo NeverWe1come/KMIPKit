@@ -6,6 +6,10 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.test_t101_hash_mac_signature_declaration_mapping import (
+    _expected_mapping_identities,
+)
+
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -18,6 +22,21 @@ OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": ("Signature Verify", "6.1.56"),
 }
 LANGUAGES = {"rust", "c", "java", "python"}
+T101_VERIFIED_IDENTITIES = _expected_mapping_identities()
+T101_VERIFIED_IDENTITIES.update(
+    (
+        "rust-kmipkit",
+        export_name.replace("kmipkit_protocol::", "kmipkit::protocol::", 1),
+    )
+    for package, export_name in tuple(T101_VERIFIED_IDENTITIES)
+    if package == "rust-kmipkit-protocol"
+)
+VERIFIED_RESPONSE_VALUE_EXPORTS = {
+    "kmipkit::protocol::MacVerifyResponse::validity_indicator",
+    "kmipkit_protocol::MacVerifyResponse::validity_indicator",
+    "kmipkit::protocol::SignatureVerifyResponse::validity_indicator",
+    "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
+}
 NORMATIVE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.32-001",
     "KMIPKIT-REQ-SPEC-6.1.33-001-001",
@@ -162,12 +181,13 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                         expected_declaration_state = (
                             "verified"
                             if declaration_id.startswith("T101:")
+                            or (
+                                declaration["packageId"],
+                                declaration["exportName"],
+                            )
+                            in T101_VERIFIED_IDENTITIES
                             or declaration["exportName"].endswith("Response::with_ttlv")
-                            or declaration["exportName"]
-                            in {
-                                "kmipkit_protocol::MacVerifyResponse::validity_indicator",
-                                "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
-                            }
+                            or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
                             else "declared"
                         )
                         self.assertIn(
