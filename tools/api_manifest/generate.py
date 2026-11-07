@@ -2172,6 +2172,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     error_ids = _require_unique(manifest["errorCategories"], "id", "error category IDs")
     _require_unique(manifest["types"], "id", "type IDs")
     _require_unique(manifest["functions"], "id", "function IDs")
+    c_abi_record_constants = manifest.get("cAbiRecordConstants", [])
+    c_abi_constant_names = _require_unique(
+        c_abi_record_constants, "name", "C ABI record constant names"
+    )
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
     approved_c_layouts = _ordered_approved_c_type_layouts(manifest)
@@ -2286,10 +2290,14 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     for record in requirement_bearing_records:
         if any(identifier not in root_requirements for identifier in record["requirementIds"]):
             raise ManifestError("manifest record references an unknown requirement ID")
+    for record in c_abi_record_constants:
+        if any(identifier not in root_requirements for identifier in record["requirementIds"]):
+            raise ManifestError("C ABI record constant references an unknown requirement ID")
     requirement_lists = [
         manifest["requirementIds"],
         *(record["requirementIds"] for record in [*manifest["types"], *manifest["functions"]]),
         *(record["requirementIds"] for record in requirement_bearing_records),
+        *(record["requirementIds"] for record in c_abi_record_constants),
     ]
     if any(identifiers != sorted(set(identifiers)) for identifiers in requirement_lists):
         raise ManifestError("requirement IDs must be unique and lexicographically sorted")
@@ -2303,6 +2311,30 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     }
     for type_record in manifest["types"]:
         _validate_c_value_layout(type_record["c"], c_type_names)
+    c_record_names = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "fixed-width-value" and record["c"].get("fields")
+    }
+    c_record_names.update(
+        (layout["name"], {"c": layout}) for layout in approved_c_layouts
+    )
+    c_only_exports = {
+        record["exportName"]
+        for record in manifest.get("approvedExclusions", [])
+        if record["packageId"] == "c-kmipkit"
+    }
+    if not c_abi_constant_names <= c_only_exports:
+        raise ManifestError("C ABI record constants must be recorded as C-only exports")
+    for constant in c_abi_record_constants:
+        record_name, separator, field_name = constant["field"].partition(".")
+        record = c_record_names.get(record_name)
+        field = None if not separator or record is None else next(
+            (item for item in record["c"]["fields"] if item["name"] == field_name),
+            None,
+        )
+        if field is None or field["type"] != "uint32_t":
+            raise ManifestError("C ABI record constant must identify a uint32_t record field")
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -3083,6 +3115,16 @@ def render_c_header(
         and (ready_c_exports is None or declaration["exportName"] in ready_c_exports)
         for declaration in manifest.get("publicDeclarations", [])
     ):
+        lines.append("")
+
+    for constant in manifest.get("cAbiRecordConstants", []):
+        if ready_c_exports is not None and constant["name"] not in ready_c_exports:
+            continue
+        lines.append(
+            f"/* C ABI record input for {constant['field']}: {constant['meaning']}. */"
+        )
+        lines.append(f"#define {constant['name']} ((uint32_t){constant['value']})")
+    if manifest.get("cAbiRecordConstants"):
         lines.append("")
 
     # Forward declarations make pointer members independent of manifest order.

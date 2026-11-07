@@ -1,15 +1,128 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-fn compile_public_client_api_consumer(workspace_root: &Path, consumer_header: &Path) {
-    let source = workspace_root.join("bindings/c/tests/public_client_api.c");
+struct Consumer {
+    source: &'static str,
+    library: &'static str,
+    entry_point: Option<&'static str>,
+    include_generated_header: bool,
+    warnings_as_errors: bool,
+}
+
+const CONSUMERS: [Consumer; 13] = [
+    Consumer {
+        source: "bindings/c/tests/extension_registry.c",
+        library: "kmipkit_extension_registry_c_consumer",
+        entry_point: Some("kmipkit_extension_registry_c_consumer_main"),
+        include_generated_header: true,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/client_abi_consumer.c",
+        library: "kmipkit_client_abi_c_consumer",
+        entry_point: Some("kmipkit_client_abi_c_consumer_main"),
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/managed_object_parity_consumer.c",
+        library: "kmipkit_managed_object_parity_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: true,
+    },
+    Consumer {
+        source: "bindings/c/tests/message_model_abi_consumer.c",
+        library: "kmipkit_message_model_abi_c_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/credential_type_abi_consumer.c",
+        library: "kmipkit_credential_type_abi_c_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/nonce_abi_consumer.c",
+        library: "kmipkit_nonce_abi_c_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/credential_abi_consumer.c",
+        library: "kmipkit_credential_abi_c_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/credential_secret_abi_consumer.c",
+        library: "kmipkit_credential_secret_abi_c_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+    Consumer {
+        source: "bindings/c/tests/typed_attribute_parity_consumer.c",
+        library: "kmipkit_typed_attribute_parity_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: true,
+    },
+    Consumer {
+        source: "bindings/c/tests/authentication_consumer.c",
+        library: "kmipkit_parameters_authentication_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: true,
+    },
+    Consumer {
+        source: "bindings/c/tests/request_validation_consumer.c",
+        library: "kmipkit_request_validation_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: true,
+    },
+    Consumer {
+        source: "bindings/c/tests/operation_parity_consumer.c",
+        library: "kmipkit_operation_parity_0053_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: true,
+    },
+    Consumer {
+        source: "bindings/c/tests/public_client_api.c",
+        library: "kmipkit_public_client_api_consumer",
+        entry_point: None,
+        include_generated_header: false,
+        warnings_as_errors: false,
+    },
+];
+
+fn compile_consumer(workspace_root: &Path, public_header: &Path, consumer: &Consumer) {
+    let source = workspace_root.join(consumer.source);
     println!("cargo:rerun-if-changed={}", source.display());
-    cc::Build::new()
+
+    let mut build = cc::Build::new();
+    build
         .file(source)
-        .include(consumer_header)
+        .include(public_header)
         .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11")
-        .compile("kmipkit_public_client_api_consumer");
+        .flag_if_supported("-std=c11");
+    if consumer.include_generated_header {
+        build.include(workspace_root.join("tests/fixtures/api/generated"));
+    }
+    if let Some(entry_point) = consumer.entry_point {
+        build.define("main", Some(entry_point));
+    }
+    if consumer.warnings_as_errors {
+        build.warnings_into_errors(true);
+    }
+    build.compile(consumer.library);
 }
 
 fn main() {
@@ -33,76 +146,7 @@ fn main() {
     println!("cargo:rerun-if-changed={}", internal_header.display());
     println!("cargo:rustc-link-search=native={}", target_deps.display());
 
-    compile_public_client_api_consumer(&workspace_root, &consumer_header);
-
-    let public_client_consumer = workspace_root.join("bindings/c/tests/client_abi_consumer.c");
-    println!(
-        "cargo:rerun-if-changed={}",
-        public_client_consumer.display()
-    );
-    let mut client_consumer = cc::Build::new();
-    client_consumer
-        .file(public_client_consumer)
-        .include(&consumer_header)
-        .define("main", Some("kmipkit_client_abi_c_consumer_main"))
-        .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11");
-    client_consumer.compile("kmipkit_client_abi_c_consumer");
-
-    let message_model_consumer =
-        workspace_root.join("bindings/c/tests/message_model_abi_consumer.c");
-    println!(
-        "cargo:rerun-if-changed={}",
-        message_model_consumer.display()
-    );
-    cc::Build::new()
-        .file(message_model_consumer)
-        .include(&consumer_header)
-        .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11")
-        .compile("kmipkit_message_model_abi_c_consumer");
-
-    let credential_type_consumer =
-        workspace_root.join("bindings/c/tests/credential_type_abi_consumer.c");
-    println!(
-        "cargo:rerun-if-changed={}",
-        credential_type_consumer.display()
-    );
-    cc::Build::new()
-        .file(credential_type_consumer)
-        .include(&consumer_header)
-        .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11")
-        .compile("kmipkit_credential_type_abi_c_consumer");
-
-    let nonce_consumer = workspace_root.join("bindings/c/tests/nonce_abi_consumer.c");
-    println!("cargo:rerun-if-changed={}", nonce_consumer.display());
-    cc::Build::new()
-        .file(nonce_consumer)
-        .include(&consumer_header)
-        .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11")
-        .compile("kmipkit_nonce_abi_c_consumer");
-
-    let credential_consumer = workspace_root.join("bindings/c/tests/credential_abi_consumer.c");
-    println!("cargo:rerun-if-changed={}", credential_consumer.display());
-    cc::Build::new()
-        .file(credential_consumer)
-        .include(&consumer_header)
-        .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11")
-        .compile("kmipkit_credential_abi_c_consumer");
-
-    let credential_secret_consumer =
-        workspace_root.join("bindings/c/tests/credential_secret_abi_consumer.c");
-    println!(
-        "cargo:rerun-if-changed={}",
-        credential_secret_consumer.display()
-    );
-    cc::Build::new()
-        .file(credential_secret_consumer)
-        .include(&consumer_header)
-        .flag_if_supported("/std:c11")
-        .flag_if_supported("-std=c11")
-        .compile("kmipkit_credential_secret_abi_c_consumer");
+    for consumer in &CONSUMERS {
+        compile_consumer(&workspace_root, &public_header, consumer);
+    }
 }
