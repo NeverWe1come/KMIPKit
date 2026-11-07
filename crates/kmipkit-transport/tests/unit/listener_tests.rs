@@ -840,7 +840,7 @@ fn https_server_connection_more_edge_cases() {
 }
 
 #[test]
-fn test_https_listener_request_parsing_variations() {
+fn test_https_listener_request_parsing_errors() {
     let pki = EphemeralPki::generate().expect("pki generation succeeds");
     let config = test_listener_config(&pki)
         .target_path("/kmip")
@@ -908,8 +908,22 @@ fn test_https_listener_request_parsing_variations() {
     assert!(err.is_err());
     let _ = conn.close();
     h3.join().unwrap();
+}
 
-    // Test 4: JSON content-type
+#[test]
+fn test_https_listener_request_content_type_encodings() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki)
+        .target_path("/kmip")
+        .max_request_bytes(1024)
+        .build()
+        .expect("config succeeds");
+
+    let mut listener = HttpsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+
+    // Test 1: JSON content-type
     let cfg4 = Arc::clone(&client_config);
     let h4 = thread::spawn(move || {
         let sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
@@ -931,7 +945,7 @@ fn test_https_listener_request_parsing_variations() {
     let _ = conn.close();
     h4.join().unwrap();
 
-    // Test 5: XML content-type
+    // Test 2: XML content-type
     let cfg5 = Arc::clone(&client_config);
     let h5 = thread::spawn(move || {
         let sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
