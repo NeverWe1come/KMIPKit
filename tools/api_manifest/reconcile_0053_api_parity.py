@@ -2771,6 +2771,82 @@ def _is_exact_legacy_model_error_approval_correction(
     return normalized_previous == corrected
 
 
+def _promote_resolved_candidate_capability(
+    capability: dict[str, Any],
+    declarations: list[dict[str, Any]],
+    package_languages: dict[str, str],
+) -> None:
+    if capability.get("candidateSpecId") != SPEC_ID or any(
+        declaration.get("declarationState") == "blocked"
+        for declaration in declarations
+    ):
+        return
+    ready = [
+        declaration
+        for declaration in declarations
+        if declaration.get("declarationState") in {"declared", "verified"}
+    ]
+    approval = next(
+        (
+            declaration.get("approvalSource")
+            for declaration in ready
+            if isinstance(declaration.get("approvalSource"), dict)
+            and declaration["approvalSource"].get("path") == APPROVAL_RECORD_PATH
+            and declaration["approvalSource"].get("status") == "Approved"
+        ),
+        None,
+    )
+    if not ready or approval is None:
+        return
+    languages = (
+        ("rust",)
+        if capability.get("parityScope") == "rust-only-adr"
+        else ("c",)
+        if capability.get("parityScope") == "c-only"
+        else tuple(sorted(REQUIRED_LANGUAGES))
+    )
+    mappings = {
+        language: sorted(
+            {
+                declaration["languageMappings"][language]["name"]
+                for declaration in ready
+                if isinstance(declaration.get("languageMappings"), dict)
+                and language in declaration["languageMappings"]
+                and isinstance(declaration["languageMappings"][language], dict)
+                and package_languages.get(
+                    declaration["languageMappings"][language].get("packageId")
+                )
+                == language
+            }
+        )
+        for language in languages
+    }
+    if any(not names for names in mappings.values()):
+        return
+    capability["capabilityState"] = "verified"
+    capability["ownerSpecId"] = SPEC_ID
+    capability["approvalEvidence"] = copy.deepcopy(approval)
+    capability["requirementIds"] = sorted(
+        set(capability.get("requirementIds", []))
+        | {
+            requirement
+            for declaration in ready
+            for requirement in declaration.get("requirementIds", [])
+        }
+    )
+    capability["parityEvidenceIds"] = sorted(
+        set(capability.get("parityEvidenceIds", []))
+        | {
+            evidence
+            for declaration in ready
+            for evidence in declaration.get("parityEvidenceIds", [])
+        }
+    )
+    capability["mappings"] = mappings
+    capability.pop("candidateSpecId", None)
+    capability.pop("blockedReason", None)
+
+
 def _synchronize_capability_mappings(manifest: dict[str, Any]) -> dict[str, Any]:
     """Rebuild capability route lists from their exact ready declarations."""
     result = copy.deepcopy(manifest)
@@ -2796,78 +2872,10 @@ def _synchronize_capability_mappings(manifest: dict[str, Any]) -> dict[str, Any]
             if isinstance(declaration, dict)
             and declaration.get("capabilityId") == capability_id
         ]
-        unresolved = any(
-            declaration.get("declarationState") == "blocked"
-            for declaration in capability_declarations
-        )
         if capability.get("capabilityState") == "blocked":
-            if capability.get("candidateSpecId") != SPEC_ID or unresolved:
-                continue
-            ready = [
-                declaration
-                for declaration in capability_declarations
-                if declaration.get("declarationState") in {"declared", "verified"}
-            ]
-            approval = next(
-                (
-                    declaration.get("approvalSource")
-                    for declaration in ready
-                    if isinstance(declaration.get("approvalSource"), dict)
-                    and declaration["approvalSource"].get("path")
-                    == APPROVAL_RECORD_PATH
-                    and declaration["approvalSource"].get("status") == "Approved"
-                ),
-                None,
+            _promote_resolved_candidate_capability(
+                capability, capability_declarations, package_languages
             )
-            if not ready or approval is None:
-                continue
-            languages = (
-                ("rust",)
-                if capability.get("parityScope") == "rust-only-adr"
-                else ("c",)
-                if capability.get("parityScope") == "c-only"
-                else tuple(sorted(REQUIRED_LANGUAGES))
-            )
-            mappings = {
-                language: sorted(
-                    {
-                        declaration["languageMappings"][language]["name"]
-                        for declaration in ready
-                        if isinstance(declaration.get("languageMappings"), dict)
-                        and language in declaration["languageMappings"]
-                        and isinstance(declaration["languageMappings"][language], dict)
-                        and package_languages.get(
-                            declaration["languageMappings"][language].get("packageId")
-                        )
-                        == language
-                    }
-                )
-                for language in languages
-            }
-            if any(not names for names in mappings.values()):
-                continue
-            capability["capabilityState"] = "verified"
-            capability["ownerSpecId"] = SPEC_ID
-            capability["approvalEvidence"] = copy.deepcopy(approval)
-            capability["requirementIds"] = sorted(
-                set(capability.get("requirementIds", []))
-                | {
-                    requirement
-                    for declaration in ready
-                    for requirement in declaration.get("requirementIds", [])
-                }
-            )
-            capability["parityEvidenceIds"] = sorted(
-                set(capability.get("parityEvidenceIds", []))
-                | {
-                    evidence
-                    for declaration in ready
-                    for evidence in declaration.get("parityEvidenceIds", [])
-                }
-            )
-            capability["mappings"] = mappings
-            capability.pop("candidateSpecId", None)
-            capability.pop("blockedReason", None)
             continue
         scope = capability.get("parityScope")
         languages = (
