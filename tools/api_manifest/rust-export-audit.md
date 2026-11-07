@@ -152,6 +152,19 @@ manifest owner path, otherwise uses the already blocked
 `public_binding_surface` candidate. It does not add signatures, mappings, or
 approved exclusions.
 
+## Release synchronization snapshot (2026-11-07)
+
+The KMIPKIT-0047 branch was synchronized with the #104 release merge and its
+named-value exports were reconciled through both the `kmipkit` facade and the
+public `kmipkit-protocol` crate. The refreshed report at
+`specs/043-public-api-bindings/reports/rust-export-report-2026-11-07.json`
+contains 19,149 compiler-observed paths, 5,999 exact manifest declarations,
+and 13,150 exact approved exclusions. There are zero missing or unobserved
+paths, kind mismatches, unsupported inventory issues, or conditional-state and
+condition mismatches. The Windows Rust 1.94.0 all-features `--check` passed.
+This is a source snapshot and does not replace the supported-platform CI
+matrix.
+
 ## Development verification
 
 The focused tests exercise public/private reachability, aliases, local and

@@ -204,3 +204,37 @@ case continued for several minutes; the named-header generation and export
 audit cases were run separately and passed. No hosted CI status was queried.
 T007 remains open for the macOS and hosted aggregate coverage evidence, so the
 draft PR remains pending that release control.
+
+The release-sync export reconciliation then exposed three API inventory issues:
+Java bitmask helper names used Rust/Python snake_case instead of the generated
+Java camelCase, bitmask `name` helpers were declared in languages that do not
+provide them, and several exact Java/Python binding details were stale. The
+reconciler now records single-bit mask name lookup as a C-only capability,
+removes stale Java/Python routes, and matches the two `Client.executeWithOptions`
+overloads and exact JNI exclusions. Focused regression tests cover these
+contracts. The current binding report was regenerated and the C, Java, and
+Python inventories all pass with zero missing, stale, kind-mismatched, or
+unclassified exports (1,708 C, 1,881 Java, and 2,000 Python declarations).
+`generate.py --check` and `generate_named_values.py --check` also pass. This is
+local Windows evidence; no hosted CI status was queried.
+
+The named-value exports are reachable through both the `kmipkit` facade and
+the public `kmipkit-protocol` crate, so the manifest records both audited Rust
+package paths. The refreshed Rust report at
+`specs/043-public-api-bindings/reports/rust-export-report-2026-11-07.json`
+matches all 5,999 manifest rows against 19,149 observed paths and 13,150 exact
+exclusions, with zero missing, stale, kind, issue, or conditional mismatches.
+The Rust crawler's Windows all-features `--check` exits 0. The shared-Rust
+inventory report was regenerated at
+`specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-07.json`;
+it accounts for 3,697 mapped declarations, 13,150 approved exclusions, and no
+unreconciled declarations. The C-header manifest tests now expand the generated
+named-value include, and the shared Rust checks allow the exact C-only metadata
+accessor mapping. The relevant manifest, shared-inventory, binding-audit, and
+named-value suites pass (42 focused tests total). `cargo fmt --all --check`,
+workspace Clippy, and `cargo test --offline --workspace --all-features` pass;
+the workspace run completed with 1,262 client tests passing plus the remaining
+crate tests and doctests. The full `test_manifest_v2` module was not completed
+because its repeated large-manifest validations take several minutes; its
+affected C-header, metadata, Rust inventory, and mapping tests passed in focused
+runs. Remote CI was not queried.
