@@ -135,5 +135,5 @@ The earlier statement that other platform results were outside this local
 evidence describes the original Windows-only 048 snapshot. Later synchronized
 Linux workspace, coverage, and adapter results that include this change are
 recorded in `specs/053-api-parity-facade/implementation-evidence.md`.
-Windows/macOS adapter artifacts, the complete cross-platform aggregate, and
-hosted CI remain outstanding.
+Windows Java adapter coverage has also been collected. The macOS Rust platform
+report, complete cross-platform aggregate, and hosted CI remain outstanding.

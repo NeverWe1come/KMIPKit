@@ -93,6 +93,6 @@ The pushed #116 head includes the #115 follow-up merge above. The synchronized
 Linux workspace and adapter coverage results that include this change are
 recorded in `specs/053-api-parity-facade/implementation-evidence.md`.
 
-Windows/macOS adapter artifacts, hosted cross-platform coverage aggregation,
+The macOS Rust platform report, hosted cross-platform coverage aggregation,
 and hosted CI remain outstanding; the PR is still a draft and the phase has
 not been declared complete.

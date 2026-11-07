@@ -107,6 +107,7 @@ The earlier note that Linux reports were unavailable describes the original
 passed Linux x86_64 workspace tests, Rust coverage, and C, JNI, Java, and
 Python adapter coverage; the exact commands and results are recorded in
 `specs/053-api-parity-facade/implementation-evidence.md`. This later Linux
-evidence includes the 047 changes. Windows/macOS adapter artifacts, the
+evidence includes the 047 changes. Windows Java adapter coverage has also been
+collected, as recorded in the 0053 evidence. The macOS Rust platform report,
 complete cross-platform coverage aggregate, and hosted CI remain outstanding;
 these are integration controls rather than unfinished local T007 work.

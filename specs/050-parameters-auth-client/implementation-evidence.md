@@ -183,5 +183,6 @@ describe the original 0050 snapshots. The synchronized 0053 stack later passed
 Linux workspace tests and Rust, C ABI, JNI, Java, and Python coverage; the
 exact commands and results are recorded in
 `specs/053-api-parity-facade/implementation-evidence.md`. These results
-include the 0050 changes. Windows/macOS adapter artifacts, the complete
-cross-platform aggregate, and hosted CI remain outstanding.
+include the 0050 changes. Windows Java adapter coverage has also been
+collected. The macOS Rust platform report, complete cross-platform aggregate,
+and hosted CI remain outstanding.
