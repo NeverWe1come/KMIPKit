@@ -148,6 +148,21 @@ def _marker_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
             structure.close()
 
 
+def _structure_tags(structure: ttlv.Structure) -> tuple[int, ...]:
+    with ttlv.ttlv_structure_view(structure) as view:
+        tags: list[int] = []
+        for index in range(ttlv.ttlv_structure_view_item_count(view)):
+            with ttlv.ttlv_structure_view_item_at(view, index) as item:
+                with ttlv.ttlv_item_view_tag(item) as tag:
+                    tags.append(ttlv.tag_value(tag))
+        return tuple(tags)
+
+
+def test_certificate_request_fixture_includes_required_oasis_table_3_fields() -> None:
+    with ttlv.codec_limits_defaults() as limits, _marker_structure(limits) as certificate_request:
+        assert _structure_tags(certificate_request) == (0x420019, 0x420140, 0x541101)
+
+
 def test_reprovision_sends_parameterless_and_certificate_request_items() -> None:
     port, received, failures, peer = _start_mtls_peer(_response_without_identifiers())
     config = extensions.create_client_configuration(
