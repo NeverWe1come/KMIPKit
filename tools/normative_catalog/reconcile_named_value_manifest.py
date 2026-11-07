@@ -278,6 +278,25 @@ def build_named_value_records(catalog: dict[str, Any]) -> tuple[list[dict[str, A
     return declarations, mappings
 
 
+def _upsert_capability(
+    capabilities: list[dict[str, Any]], capability: dict[str, Any]
+) -> list[dict[str, Any]]:
+    capability_id = capability["capabilityId"]
+    existing = [
+        row for row in capabilities if row.get("capabilityId") == capability_id
+    ]
+    if existing and existing[0].get("ownerSpecId") != SPEC_ID:
+        raise ValueError(
+            f"{capability_id} differs from its deterministic approved mapping"
+        )
+    if existing:
+        return [
+            capability if row.get("capabilityId") == capability_id else row
+            for row in capabilities
+        ]
+    return [*capabilities, capability]
+
+
 def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mappings: dict[str, list[str]]) -> dict[str, Any]:
     updated = dict(manifest)
     requirements = set(updated["requirementIds"])
@@ -318,23 +337,9 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
             }
         )
     for capability in capability_records:
-        capability_id = capability["capabilityId"]
-        existing = [
-            row
-            for row in existing_capabilities
-            if row.get("capabilityId") == capability_id
-        ]
-        if existing and existing[0].get("ownerSpecId") != SPEC_ID:
-            raise ValueError(
-                f"{capability_id} differs from its deterministic approved mapping"
-            )
-        if existing:
-            existing_capabilities = [
-                capability if row.get("capabilityId") == capability_id else row
-                for row in existing_capabilities
-            ]
-        else:
-            existing_capabilities.append(capability)
+        existing_capabilities = _upsert_capability(
+            existing_capabilities, capability
+        )
     updated["capabilities"] = existing_capabilities
 
     generated_ids = {row["declarationId"] for row in declarations}
