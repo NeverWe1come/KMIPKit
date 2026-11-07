@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - release/**
+      - 'feature/KMIPKIT-*'
   push:
     branches:
       - release/1.0.0

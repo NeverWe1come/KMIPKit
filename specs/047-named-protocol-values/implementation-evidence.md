@@ -238,3 +238,26 @@ crate tests and doctests. The full `test_manifest_v2` module was not completed
 because its repeated large-manifest validations take several minutes; its
 affected C-header, metadata, Rust inventory, and mapping tests passed in focused
 runs. Remote CI was not queried.
+
+## CI remediation evidence (2026-11-08)
+
+The stacked CI run for #141 exposed two regressions against the existing gates:
+Java and JNI line coverage were 83%, below the 85% requirement, and the script
+contract audit did not yet list three exact JNI bridge exclusions introduced by
+KMIPKIT-0057. The remote CI result is the Red evidence for this repair.
+
+The Java test `NamedProtocolValuesTest.everyGeneratedEnumerationValueHasANameAndPreservesUnknownValues`
+now exercises every assigned generated enumeration constant (644 assigned
+values across 64 enumeration lookup classes), checks that the four catalog
+classes with no assigned values stay empty, and verifies unknown values remain
+unnamed. `mvn -ntp clean verify` passed on this Windows worktree: 644 tests,
+641 passed and 3 skipped; JaCoCo line coverage was 6,335/6,628 (95.58%) and
+instruction coverage was 28,514/30,004 (95.03%), both above the 85% Java/JNI
+floor. The focused named-value test also passed (2 tests).
+
+The script contract test now enumerates the three KMIPKIT-0057 JNI bridge
+exclusions and checks their exact requirement references and raw-handle bridge
+rationale. Its focused test passed. Named-value generation, named-value
+manifest reconciliation, API manifest generation, and the affected API audit
+are being checked on this worktree; the full hosted matrix must still pass on
+the updated PR before this specification can be marked ready.
