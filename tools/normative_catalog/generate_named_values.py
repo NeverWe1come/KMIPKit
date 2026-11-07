@@ -90,13 +90,13 @@ def _rust_u32_literal(value: int) -> str:
 def _c_string(value: str) -> str:
     # Fixed-width octal byte escapes avoid C's greedy hex escapes, trigraphs,
     # source-encoding differences, and literal control characters.
-    escaped = "".join(
-        chr(byte)
-        if 0x20 <= byte <= 0x7E and byte not in {0x22, 0x3F, 0x5C}
-        else f"\\{byte:03o}"
-        for byte in value.encode("utf-8")
-    )
-    return f'"{escaped}"'
+    escaped_bytes: list[str] = []
+    for byte in value.encode("utf-8"):
+        if 0x20 <= byte <= 0x7E and byte not in {0x22, 0x3F, 0x5C}:
+            escaped_bytes.append(chr(byte))
+        else:
+            escaped_bytes.append(f"\\{byte:03o}")
+    return f'"{"".join(escaped_bytes)}"'
 
 
 def _source_provenance(source_refs: tuple[tuple[str, str], ...]) -> str:
