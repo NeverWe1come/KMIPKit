@@ -1,0 +1,48 @@
+---
+title: Security, Cryptography, and Threat Model
+description: Memory zeroization, anti-DoS parser limits, error redaction, and TLS invariants.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+Security is the core invariant of **KMIPKit**. This section summarizes memory protection guarantees and network defense policies defined in [docs/security/threat-model.md](../../../security/threat-model.md).
+
+---
+
+## 1. Cryptographic Secret Zeroization
+
+Any symmetric key, private key, or credential returned by a KMIP server is subject to zeroization:
+
+- **Rust**: Types implement `zeroize::Zeroize` and `zeroize::ZeroizeOnDrop`.
+- **C11**: Secrets reside in opaque buffers cleared via `kmipkit_secret_free()`, which overwrites memory using volatile zeroing prior to deallocation.
+- **Java 17+**: Secret objects implement `AutoCloseable` and purge the underlying native buffer upon exiting `try-with-resources`.
+- **Python 3.12+**: Secrets implement context managers (`with secret: ...`) and execute zeroization inside the native runtime when exiting the scope.
+
+---
+
+## 2. Defense-in-Depth in TTLV Decoders (Anti-DoS / Anti-OOM)
+
+To prevent resource exhaustion attacks from untrusted network payloads, decoders enforce boundaries **prior** to memory allocation:
+
+| Parameter | Default Limit | Purpose |
+| :--- | :--- | :--- |
+| **Maximum Message Size** | 16 MiB | Precludes heap exhaustion from oversized corrupted frames. |
+| **Maximum Nesting Depth** | 64 levels | Prevents stack overflow attacks caused by deeply nested structures. |
+| **Maximum Element Count** | 100,000 elements | Mitigates structure inflation vulnerabilities. |
+
+---
+
+## 3. Strict Redaction in Logs and Errors
+
+By architectural rule ([`AGENTS.md` §8](../../../AGENTS.md#L162-L182)):
+- **Never logged or formatted**: Private keys, symmetric key bytes, passwords, Kerberos tickets, OTP tokens, and raw protocol message bodies.
+- Sensitive types suppress standard `std::fmt::Debug` and `Display` output, rendering `[REDACTED]` instead.
+
+---
+
+## 4. Network and TLS 1.3 Invariants
+
+- **Mandatory TLS 1.3**: Modern cipher suites with forward secrecy via `rustls` and `aws-lc-rs`.
+- **Disabled TLS 0-RTT**: Mitigates transport-level replay attacks.
+- **Disabled HTTP Compression and Redirects**: Eliminates side-channel compression attacks (CRIME/BREACH).
+- **No Automatic Retries**: Failed KMIP requests are **never** retried automatically to prevent duplicate key creation or state corruption.

@@ -1,0 +1,87 @@
+---
+title: Test Server Master Manual (kmipkit-test-server)
+description: Complete guide for the multi-version KMIP 1.0-2.1 in-memory test server with JSON persistence and auto-PKI.
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+`kmipkit-test-server` is an autonomous, lightweight test server emulating enterprise KMS/HSM systems across **KMIP 1.0, 1.1, 1.2, 1.3, 1.4, 2.0, and 2.1** in **TTLV, JSON, and XML** formats over **Raw TLS 1.3** and **HTTPS/1.1**.
+
+---
+
+## 1. CLI Flags and Options
+
+```bash
+cargo run -p kmipkit-test-server -- [OPTIONS]
+```
+
+| Option | Description | Default |
+| :--- | :--- | :--- |
+| `--listen <ADDR>` | Address and port for Raw TLS 1.3 | `127.0.0.1:5696` |
+| `--https-listen <ADDR>` | Address and port for HTTPS/1.1 (`POST /kmip`) | `127.0.0.1:5697` |
+| `--export-pki <DIR>` | Exports root CA, server TLS, and client mTLS PEM credentials | Disabled |
+| `--data-dir <DIR>` | Directory for human-readable JSON object persistence | In-memory |
+| `--clean` | Clears data directory before startup | `false` |
+| `--print-env` | Prints shell environment variables for automated test harnesses | `false` |
+
+---
+
+## 2. Multi-Version Support (1.0 to 2.1)
+
+The test server automatically identifies client versions by inspecting the `ProtocolVersion` in the message header:
+
+- **KMIP 1.0 – 1.4**: Transparently normalizes legacy key-value attribute structures (`Attribute`, `TemplateAttribute`) to and from the canonical representation.
+- **KMIP 2.0 – 2.1**: Directly processes strongly-typed attributes and references.
+
+---
+
+## 3. Human-Readable JSON Storage
+
+When `--data-dir ./kmip-data` is specified, managed objects persist as readable JSON files:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "object_type": "SymmetricKey",
+  "state": "Active",
+  "algorithm": "AES",
+  "length_bits": 256,
+  "usage_mask": ["Encrypt", "Decrypt"],
+  "created_at": "2026-11-07T08:30:00Z"
+}
+```
+
+---
+
+## 4. Embedded In-Memory Unit Testing
+
+Instantiate the server directly inside automated tests without managing external processes:
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```rust
+#[test]
+fn test_embedded_server() {
+    use kmipkit_test_server::TestServer;
+    use kmipkit::client::Client;
+
+    let server = TestServer::start_ephemeral().unwrap();
+    let client = Client::connect(server.client_config()).unwrap();
+
+    let key_id = client.create_symmetric_key().execute().unwrap();
+    assert!(!key_id.is_empty());
+}
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```python
+def test_embedded():
+    from kmipkit_test_server import TestServer
+    from kmipkit import Client
+
+    with TestServer.start_ephemeral() as s:
+        with Client.connect(s.client_config) as client:
+            assert client.ping().execute() is True
+```
+  </TabItem>
+</Tabs>

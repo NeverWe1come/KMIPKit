@@ -1,0 +1,87 @@
+---
+title: Manual Maestro del Servidor de Pruebas (kmipkit-test-server)
+description: Guía completa del servidor de pruebas multi-versión KMIP 1.0-2.1 en memoria con persistencia en JSON y auto-PKI.
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+`kmipkit-test-server` es un servidor de pruebas autónomo y ligero que emula un KMS/HSM para versiones de **KMIP 1.0, 1.1, 1.2, 1.3, 1.4, 2.0 y 2.1** en formatos **TTLV, JSON y XML** sobre **Raw TLS 1.3** y **HTTPS/1.1**.
+
+---
+
+## 1. Opciones de Línea de Comandos (CLI)
+
+```bash
+cargo run -p kmipkit-test-server -- [OPCIONES]
+```
+
+| Flag | Descripción | Valor por Defecto |
+| :--- | :--- | :--- |
+| `--listen <ADDR>` | Dirección y puerto para Raw TLS 1.3 | `127.0.0.1:5696` |
+| `--https-listen <ADDR>` | Dirección y puerto para HTTPS/1.1 (`POST /kmip`) | `127.0.0.1:5697` |
+| `--export-pki <DIR>` | Exporta CA, certificado servidor y cliente mTLS en formato PEM | Desactivado |
+| `--data-dir <DIR>` | Directorio para almacenamiento persistente en JSON | En memoria |
+| `--clean` | Borra el almacén existente antes de iniciar | `false` |
+| `--print-env` | Imprime variables de entorno exportables para scripts de test | `false` |
+
+---
+
+## 2. Soporte Multi-Versión (1.0 a 2.1)
+
+El servidor detecta automáticamente la versión del cliente inspeccionando el `ProtocolVersion` de la cabecera:
+
+- **KMIP 1.0 – 1.4**: Traduce de forma transparente los atributos genéricos clave-valor (`Attribute`, `TemplateAttribute`) hacia y desde el modelo canónico.
+- **KMIP 2.0 – 2.1**: Procesa atributos fuertemente tipados y referencias directas.
+
+---
+
+## 3. Almacenamiento Legible en JSON
+
+Cuando se proporciona `--data-dir ./kmip-data`, los objetos criptográficos se persisten en disco como archivos JSON legibles por humanos:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "object_type": "SymmetricKey",
+  "state": "Active",
+  "algorithm": "AES",
+  "length_bits": 256,
+  "usage_mask": ["Encrypt", "Decrypt"],
+  "created_at": "2026-11-07T08:30:00Z"
+}
+```
+
+---
+
+## 4. Uso como Librería Embebida en Tests
+
+Puedes iniciar el servidor directamente dentro de tus pruebas sin procesos externos:
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```rust
+#[test]
+fn test_embedded_server() {
+    use kmipkit_test_server::TestServer;
+    use kmipkit::client::Client;
+
+    let server = TestServer::start_ephemeral().unwrap();
+    let client = Client::connect(server.client_config()).unwrap();
+
+    let key_id = client.create_symmetric_key().execute().unwrap();
+    assert!(!key_id.is_empty());
+}
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```python
+def test_embedded():
+    from kmipkit_test_server import TestServer
+    from kmipkit import Client
+
+    with TestServer.start_ephemeral() as s:
+        with Client.connect(s.client_config) as client:
+            assert client.ping().execute() is True
+```
+  </TabItem>
+</Tabs>

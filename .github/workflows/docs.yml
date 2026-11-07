@@ -1,0 +1,81 @@
+name: Documentation CI and Deployment
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+    paths:
+      - 'docs/**'
+      - 'specification/**'
+      - 'tools/docgen/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'specification/**'
+      - 'tools/docgen/**'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & Verify Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'docs/site/package-lock.json'
+
+      - name: Install Astro Dependencies
+        run: |
+          cd docs/site
+          npm ci
+
+      - name: Verify Catalog Documentation Generation
+        run: |
+          python3 tools/docgen/generate_docs.py
+          git diff --exit-code docs/ || (echo "Documentation out of sync with normative catalog. Run tools/docgen/generate_docs.py" && exit 1)
+
+      - name: Build Astro Starlight Portal
+        run: |
+          cd docs/site
+          npm run build
+
+      - name: Upload Pages Artifact
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/site/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

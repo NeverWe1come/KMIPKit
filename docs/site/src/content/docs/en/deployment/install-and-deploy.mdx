@@ -1,0 +1,101 @@
+---
+title: Installation, Compilation, and Deployment
+description: Package manager installation, C ABI shared library deployment, Docker containerization, and source compilation.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide covers deployment strategies for **KMIPKit** in production environments, covering native package managers, shared dynamic libraries, and container runtimes.
+
+---
+
+## 1. Package Manager Installation
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```bash
+cargo add kmipkit
+```
+  </TabItem>
+  <TabItem label="C" icon="c">
+```bash
+# Ubuntu / Debian
+sudo apt-get install -y libkmipkit-dev
+
+# RHEL / Fedora / Rocky
+sudo dnf install -y libkmipkit-devel
+
+# macOS (Homebrew)
+brew install kmipkit
+```
+  </TabItem>
+  <TabItem label="Java" icon="java">
+```xml
+<!-- Maven pom.xml -->
+<dependency>
+    <groupId>org.kmipkit</groupId>
+    <artifactId>kmipkit-client</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```bash
+pip install kmipkit
+```
+  </TabItem>
+</Tabs>
+
+---
+
+## 2. Deploying Shared Libraries (`kmipkit-ffi`)
+
+For C/C++, Java (JNI), and Python (CFFI), the Rust core distributes as a native dynamic library:
+
+| Platform | Library Name | Standard Directory | Environment Variable |
+| :--- | :--- | :--- | :--- |
+| **Linux (glibc / musl)** | `libkmipkit.so.1` | `/usr/local/lib/` | `LD_LIBRARY_PATH` |
+| **macOS (Darwin)** | `libkmipkit.1.dylib` | `/usr/local/lib/` | `DYLD_LIBRARY_PATH` |
+| **Windows (MSVC)** | `kmipkit.dll` | `C:\Windows\System32\` or next to binary | `PATH` |
+
+---
+
+## 3. Docker Containerization
+
+### Multi-Stage Build with Debian Slim
+```dockerfile
+# Stage 1: Build binary
+FROM rust:1.94-slim AS builder
+WORKDIR /app
+COPY . .
+RUN cargo build --release -p kmipkit-ffi
+
+# Stage 2: Runtime image
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/libkmipkit.so /usr/local/lib/libkmipkit.so.1
+RUN ldconfig
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENTRYPOINT ["/usr/bin/my-app"]
+```
+
+---
+
+## 4. Source Compilation
+
+Prerequisites:
+- **Rust Toolchain**: 1.94+ (Edition 2024).
+- **C Compiler**: GCC or Clang (for FFI targets).
+- **CMake**: 3.22+ (for `aws-lc-sys` cryptographic assembly build).
+
+```bash
+# Clone and verify workspace
+git clone https://github.com/NeverWe1come/KMIPKit.git
+cd KMIPKit
+
+# Compile release binaries
+cargo build --release --workspace
+
+# Run all tests
+cargo test --workspace --all-features
+```

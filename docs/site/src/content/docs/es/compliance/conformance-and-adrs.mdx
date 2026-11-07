@@ -1,0 +1,46 @@
+---
+title: Conformidad OASIS, ADRs y Gobernanza
+description: Jerarquía documental OASIS, registro de decisiones arquitectónicas (ADRs 0001-0020) y guía de contribución.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+Esta sección detalla los compromisos de conformidad con OASIS, las decisiones arquitectónicas registradas (ADRs) y las directrices de contribución al proyecto.
+
+---
+
+## 1. Jerarquía Documental de OASIS KMIP 2.1
+
+Al interpretar cualquier requerimiento de KMIPKit, se aplica el siguiente orden de precedencia inmutable ([`docs/compliance/document-hierarchy.md`](../../../compliance/document-hierarchy.md)):
+
+1. **Definiciones Normativas en Lenguaje de Computación**: Esquemas o tablas declaradas normativas por OASIS.
+2. **KMIP Specification 2.1 OASIS Standard**: Define mensajes, objetos, operaciones y reglas de codificación.
+3. **KMIP Profiles 2.1 OASIS Standard**: Restricciones normativas para perfiles de cliente y servidor.
+4. **Erratas Oficiales Aprobadas**: Solo erratas publicadas oficialmente por OASIS.
+5. **KMIP Test Cases 2.1**: Casos de prueba y ejemplos de vectores.
+6. **KMIP Usage Guide 2.1**: Guía informativa de diseño y mejores prácticas.
+7. **Material Derivado de KMIPKit**: Catálogo normativo, código generado y documentación (nunca prevalece sobre OASIS).
+
+---
+
+## 2. Registro de Decisiones de Arquitectura (ADRs)
+
+| ADR | Título | Estado | Decisión Principal |
+| :--- | :--- | :--- | :--- |
+| **ADR-0001** | Rust Core y C ABI | Aceptado | Núcleo único en Rust con ABI C11 estable basada en punteros opacos. |
+| **ADR-0002** | Alcance de la Release KMIP 2.1 | Aceptado | KMIP 2.1 cliente, TTLV, TLS 1.3 mTLS y sincronía de APIs en 1.0. |
+| **ADR-0003** | Workspace Layered de Cargo | Aceptado | 7 crates sincronizados: ttlv, protocol, transport, client, facade, ffi y test. |
+| **ADR-0004** | Catálogo Normativo y Generación | Aceptado | Código y documentación generados deterministamente desde el catálogo JSON. |
+| **ADR-0005** | Transporte y TLS 1.3 | Aceptado | rustls + aws-lc-rs, validación estricta de certificados y desactivación de 0-RTT. |
+| **ADR-0006** | API Pública en 3 Niveles | Aceptado | Builders de alto nivel, modelos tipados y escape hatch TTLV genérico. |
+| **ADR-0007** | Extensiones de Fabricante | Aceptado | Registro tipado para tags en el rango `0x54xxxx`. |
+| **ADR-0008** | Flujo de Desarrollo | Aceptado | Spec-Driven Development con Spec Kit y TDD estricto Red-Green-Refactor. |
+| **ADR-0009** | Conformidad y Fuentes OASIS | Aceptado | Trazabilidad del 100% desde requisitos normativos a tests. |
+| **ADR-0019** | Hot-Reload de Credenciales TLS | Aceptado | Recarga de certificados en caliente sin reiniciar la aplicación. |
+| **ADR-0020** | Reanudación de Sesión TLS 1.3 | Aceptado | Reanudación segura de sesión TLS para reducir latencia de handshake. |
+
+---
+
+## 3. Matriz de Conformidad OASIS en Vivo
+
+Consulta la [Matriz de Conformidad OASIS](./oasis-matrix/) para ver el estado de verificación de todos los perfiles de cliente y casos de prueba oficiales.

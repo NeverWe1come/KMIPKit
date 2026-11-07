@@ -1,0 +1,183 @@
+---
+title: Inicio Rápido en 3 Minutos
+description: De cero a tu primera clave simétrica en 3 minutos usando KMIPKit y el test server local.
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+Bienvenido a **KMIPKit**. En esta guía aprenderás a levantar un servidor KMIP local en un segundo y ejecutar un flujo criptográfico completo: descubrir versiones, crear una clave AES-256, activarla, cifrar/descifrar datos y destruirla.
+
+---
+
+## 1. Levantar el Servidor de Pruebas Local
+
+No necesitas un HSM físico ni Docker. Puedes iniciar `kmipkit-test-server` directamente:
+
+```bash
+# Iniciar servidor KMIP 2.1 en memoria con PKI automática en ./pki
+cargo run -p kmipkit-test-server -- --listen 127.0.0.1:5696 --export-pki ./pki
+```
+
+El servidor generará de forma autónoma una CA raíz (`pki/ca.pem`), un certificado de servidor TLS y un par de claves cliente mTLS (`pki/client.crt`, `pki/client.key`).
+
+---
+
+## 2. Código de Ejemplo Políglota
+
+Selecciona tu lenguaje preferido. Al cambiar de pestaña, **todos los bloques de código de la documentación cambiarán automáticamente**:
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```rust
+use kmipkit::client::Client;
+use kmipkit::config::{ClientConfig, TlsConfig};
+use kmipkit::models::{SymmetricAlgorithm, CryptographicUsage};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let tls = TlsConfig::builder()
+        .ca_certificate_file("pki/ca.pem")
+        .client_certificate_file("pki/client.crt")
+        .client_key_file("pki/client.key")
+        .build()?;
+
+    let config = ClientConfig::builder()
+        .endpoint("127.0.0.1:5696")
+        .tls(tls)
+        .build()?;
+
+    let client = Client::connect(config)?;
+
+    // 1. Crear clave simétrica AES-256
+    let key_id = client.create_symmetric_key()
+        .name("demo-aes-key")
+        .algorithm(SymmetricAlgorithm::Aes)
+        .length_bits(256)
+        .usage(CryptographicUsage::ENCRYPT | CryptographicUsage::DECRYPT)
+        .execute()?;
+
+    println!("Clave creada: {}", key_id);
+
+    // 2. Activar la clave
+    client.activate(&key_id).execute()?;
+
+    // 3. Cifrar datos en el servidor
+    let ciphertext = client.encrypt(&key_id)
+        .plaintext(b"Mensaje confidencial de prueba")
+        .execute()?;
+
+    // 4. Descifrar datos
+    let plaintext = client.decrypt(&key_id)
+        .ciphertext(&ciphertext)
+        .execute()?;
+
+    println!("Descifrado exitoso: {}", String::from_utf8_lossy(&plaintext));
+
+    // 5. Destruir clave
+    client.destroy(&key_id).execute()?;
+    println!("Clave destruida de forma segura.");
+
+    Ok(())
+}
+```
+  </TabItem>
+  <TabItem label="C" icon="c">
+```c
+#include <kmipkit/kmipkit.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    kmipkit_client_t* client = NULL;
+    kmipkit_config_t cfg;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.struct_size = sizeof(cfg);
+    cfg.abi_version = KMIPKIT_ABI_VERSION_1;
+    cfg.endpoint = "127.0.0.1:5696";
+    cfg.ca_cert_path = "pki/ca.pem";
+    cfg.client_cert_path = "pki/client.crt";
+    cfg.client_key_path = "pki/client.key";
+
+    if (kmipkit_client_connect(&cfg, &client) != KMIPKIT_STATUS_OK) {
+        fprintf(stderr, "Error conectando al servidor\n");
+        return 1;
+    }
+
+    kmipkit_key_create_params_t p;
+    memset(&p, 0, sizeof(p));
+    p.struct_size = sizeof(p);
+    p.algorithm = KMIPKIT_CRYPTO_ALGORITHM_AES;
+    p.length_bits = 256;
+    p.usage_mask = KMIPKIT_USAGE_ENCRYPT | KMIPKIT_USAGE_DECRYPT;
+
+    char key_id[64];
+    size_t key_len = sizeof(key_id);
+    if (kmipkit_client_create_symmetric_key(client, &p, key_id, &key_len) == KMIPKIT_STATUS_OK) {
+        printf("Clave creada: %s\n", key_id);
+        kmipkit_client_activate(client, key_id);
+        kmipkit_client_destroy(client, key_id);
+    }
+
+    kmipkit_client_free(client);
+    return 0;
+}
+```
+  </TabItem>
+  <TabItem label="Java" icon="java">
+```java
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.config.ClientConfig;
+import org.kmipkit.models.SymmetricAlgorithm;
+import org.kmipkit.models.CryptographicUsage;
+
+public class Quickstart {
+    public static void main(String[] args) {
+        var config = ClientConfig.builder()
+            .endpoint("127.0.0.1:5696")
+            .caCertificatePath("pki/ca.pem")
+            .clientCertificatePath("pki/client.crt")
+            .clientKeyPath("pki/client.key")
+            .build();
+
+        try (var client = KmipClient.connect(config)) {
+            String keyId = client.createSymmetricKey()
+                .name("demo-key")
+                .algorithm(SymmetricAlgorithm.AES)
+                .lengthBits(256)
+                .usage(CryptographicUsage.ENCRYPT, CryptographicUsage.DECRYPT)
+                .execute();
+
+            System.out.println("Clave creada: " + keyId);
+            client.activate(keyId).execute();
+            client.destroy(keyId).execute();
+        }
+    }
+}
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```python
+from kmipkit import Client, ClientConfig, TlsConfig
+from kmipkit.enums import SymmetricAlgorithm, CryptographicUsage
+
+tls = TlsConfig(
+    ca_file="pki/ca.pem",
+    cert_file="pki/client.crt",
+    key_file="pki/client.key",
+)
+config = ClientConfig(endpoint="127.0.0.1:5696", tls=tls)
+
+with Client.connect(config) as client:
+    key_id = (
+        client.create_symmetric_key()
+        .name("demo-key")
+        .algorithm(SymmetricAlgorithm.AES)
+        .length_bits(256)
+        .usage(CryptographicUsage.ENCRYPT | CryptographicUsage.DECRYPT)
+        .execute()
+    )
+    print(f"Clave creada: {key_id}")
+    client.activate(key_id).execute()
+    client.destroy(key_id).execute()
+```
+  </TabItem>
+</Tabs>

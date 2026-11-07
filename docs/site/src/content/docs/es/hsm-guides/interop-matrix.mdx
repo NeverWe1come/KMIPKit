@@ -1,0 +1,43 @@
+---
+title: Guías de Interoperabilidad con HSMs y KMS Comerciales
+description: Configuración mTLS, puertos y recomendaciones para Thales, Utimaco, Cosmian, Vault, Entrust y Fortanix.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+KMIPKit ha sido probado y verificado contra diversos servidores y HSMs comerciales. A continuación se presentan las configuraciones recomendadas y particularidades conocidas.
+
+---
+
+## 1. Matriz de Compatibilidad
+
+| Fabricante / Producto | Versión KMIP | Transporte Probado | Autenticación | Estado |
+| :--- | :--- | :--- | :--- | :--- |
+| **Thales CipherTrust Manager** | 2.1, 2.0, 1.4 | Raw TLS 5696 | mTLS (X.509) | <Badge text="VERIFICADO" variant="success" /> |
+| **Utimaco ESKM** | 2.1, 1.4 | Raw TLS 5696 | mTLS (X.509) | <Badge text="VERIFICADO" variant="success" /> |
+| **Cosmian KMS** | 2.1 | Raw TLS / HTTPS | mTLS (X.509) | <Badge text="VERIFICADO" variant="success" /> |
+| **HashiCorp Vault KMIP Engine** | 1.4, 2.0 | Raw TLS 5696 | mTLS (Client Cert Role) | <Badge text="COMPATIBLE" variant="note" /> |
+| **Fortanix DSM** | 2.1, 1.4 | Raw TLS / HTTPS | mTLS (API App Cert) | <Badge text="COMPATIBLE" variant="note" /> |
+
+---
+
+## 2. Thales CipherTrust Manager
+
+1. **Configuración de Interfaz**:
+   - En CipherTrust Manager, navegar a **Admin Settings > Interfaces > KMIP**.
+   - Habilitar el puerto estándar `5696` y seleccionar TLS 1.3 con mTLS obligatorio.
+2. **Registro de Certificado Cliente**:
+   - Cargar la CA corporativa en el Local CA Pool de CipherTrust.
+   - Asignar una política de acceso (*KMIP Access Policy*) vinculada al `Common Name` (CN) o SAN del certificado cliente.
+3. **Peculiaridades**:
+   - Requiere que el atributo `CryptographicUsageMask` se configure explícitamente durante la operación `Create`.
+
+---
+
+## 3. Utimaco ESKM
+
+1. **Configuración mTLS**:
+   - Descargar la CA raíz de ESKM desde la consola web.
+   - Registrar el certificado cliente en el grupo de clientes KMIP correspondiente.
+2. **Operaciones Soportadas**:
+   - Compatible al 100% con creación de claves simétricas AES, activación, derivación y rotación.

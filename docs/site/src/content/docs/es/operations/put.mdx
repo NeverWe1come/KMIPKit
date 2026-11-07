@@ -1,0 +1,58 @@
+---
+title: "Operación: Put"
+description: "Especificación normativa y ejemplos políglotas para la operación KMIP 2.1 Put."
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+<Badge text="KMIP 2.1" variant="tip" />
+<Badge text="1.1 Server" variant="caution" />
+<Badge text="OASIS §6.2.3" variant="default" />
+
+## 1. Propósito Normativo
+
+Ejecuta la operación Put conforme a OASIS KMIP 2.1 §6.2.3.
+
+## 2. Ejemplos de Invocación Políglota
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```rust
+// Rust
+let result = client
+    .put()
+    .execute()?;
+
+```
+  </TabItem>
+  <TabItem label="C" icon="c">
+```c
+/* C11 */
+kmipkit_status_t status = kmipkit_client_put(client, &params, &result);
+
+```
+  </TabItem>
+  <TabItem label="Java" icon="java">
+```java
+// Java 17+
+var result = client.put()
+    .execute();
+
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```python
+# Python 3.12+
+result = client.put().execute()
+
+```
+  </TabItem>
+</Tabs>
+
+## 3. Errores Comunes (ResultReason)
+
+| ResultStatus | ResultReason | Descripción |
+| :--- | :--- | :--- |
+| `OperationFailed` | `ItemNotFound` | El objeto solicitado no existe en el almacén. |
+| `OperationFailed` | `PermissionDenied` | Las credenciales mTLS no poseen permisos suficientes. |
+| `OperationFailed` | `CryptographicFailure` | Fallo criptográfico durante la ejecución del algoritmo. |

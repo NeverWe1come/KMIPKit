@@ -1,0 +1,48 @@
+---
+title: Seguridad, Criptografía y Modelo de Amenazas
+description: Borrado seguro de memoria, límites de decodificación anti-DoS y redacción de secretos.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+La seguridad es el principio fundacional de **KMIPKit**. Esta sección sintetiza las garantías de protección de memoria y defensas contra ataques de red conforme a [docs/security/threat-model.md](../../../security/threat-model.md).
+
+---
+
+## 1. Protección de Material Criptográfico en Memoria (Zeroization)
+
+Cualquier clave simétrica, clave privada o secreto devuelto por el servidor implementa borrado seguro de memoria:
+
+- **Rust**: Implementa la trait `zeroize::Zeroize` y `zeroize::ZeroizeOnDrop`.
+- **C11**: Asigna memoria en buffers opacos que deben liberarse con `kmipkit_secret_free()`, el cual sobreescribe la memoria con ceros volátiles antes de desasignar.
+- **Java 17+**: Los secretos implementan `AutoCloseable` y limpian el buffer nativo asociado al salir del bloque `try-with-resources`.
+- **Python 3.12+**: Los secretos implementan *context managers* (`with secret: ...`) y ejecutan zeroization en el motor nativo al terminar el bloque.
+
+---
+
+## 2. Defensa en Profundidad en Parsers TTLV (Anti-DoS / Anti-OOM)
+
+Para impedir ataques de agotamiento de memoria por mensajes maliciosos provenientes de la red, los decodificadores de KMIPKit aplican límites **antes** de reservar memoria:
+
+| Parámetro | Límite por Defecto | Justificación |
+| :--- | :--- | :--- |
+| **Tamaño Máximo de Mensaje** | 16 MiB | Evita agotamiento de memoria por tramas corruptas. |
+| **Profundidad Máxima de Anidamiento** | 64 niveles | Previene ataques de desbordamiento de pila (*stack overflow*). |
+| **Recuento Máximo de Elementos** | 100.000 elementos | Previene ataques de inflación de estructuras. |
+
+---
+
+## 3. Redacción Absoluta en Logs y Errores
+
+Por diseño arquitectónico ([`AGENTS.md` §8](../../../AGENTS.md#L162-L182)):
+- **Prohibido registrar o serializar**: claves privadas, claves simétricas, contraseñas, tickets Kerberos, tokens OTP y cuerpos brutos de peticiones/respuestas.
+- Los tipos de datos sensibles no implementan `std::fmt::Debug` ni `Display` de forma directa, mostrando siempre `[REDACTED]`.
+
+---
+
+## 4. Invariantes de Red y TLS 1.3
+
+- **TLS 1.3 Exclusivo**: Cifrado moderno con PFS y suites seguras (`rustls` + `aws-lc-rs`).
+- **Desactivación de TLS 0-RTT**: Previene ataques de repetición (*replay attacks*) a nivel de transporte.
+- **Desactivación de Redirecciones HTTP y Compresión**: Previene ataques de fuga de información como CRIME/BREACH.
+- **Prohibición de Reintentos Automáticos**: Un fallo en una petición KMIP **nunca** se reintenta automáticamente para evitar duplicación de claves o transacciones parciales.

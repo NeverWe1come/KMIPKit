@@ -1,0 +1,101 @@
+---
+title: Guía de Instalación, Compilación y Despliegue
+description: Instalación por gestor de paquetes, despliegue de bibliotecas compartidas C ABI, contenedores Docker y compilación.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Esta guía detalla los métodos de instalación y despliegue de **KMIPKit** en entornos de producción, cubriendo gestores de paquetes nativos, bibliotecas dinámicas compartidas y contenedores ultra-ligeros.
+
+---
+
+## 1. Instalación por Gestor de Paquetes
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```bash
+cargo add kmipkit
+```
+  </TabItem>
+  <TabItem label="C" icon="c">
+```bash
+# Ubuntu / Debian
+sudo apt-get install -y libkmipkit-dev
+
+# RHEL / Fedora / Rocky
+sudo dnf install -y libkmipkit-devel
+
+# macOS (Homebrew)
+brew install kmipkit
+```
+  </TabItem>
+  <TabItem label="Java" icon="java">
+```xml
+<!-- Maven pom.xml -->
+<dependency>
+    <groupId>org.kmipkit</groupId>
+    <artifactId>kmipkit-client</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```bash
+pip install kmipkit
+```
+  </TabItem>
+</Tabs>
+
+---
+
+## 2. Despliegue de la Biblioteca Compartida (`kmipkit-ffi`)
+
+Para C/C++, Java (JNI) y Python (CFFI), el motor central en Rust se distribuye como biblioteca compartida:
+
+| Sistema Operativo | Nombre de Archivo | Ubicación Estándar | Variable de Entorno |
+| :--- | :--- | :--- | :--- |
+| **Linux (glibc / musl)** | `libkmipkit.so.1` | `/usr/local/lib/` | `LD_LIBRARY_PATH` |
+| **macOS (Darwin)** | `libkmipkit.1.dylib` | `/usr/local/lib/` | `DYLD_LIBRARY_PATH` |
+| **Windows (MSVC)** | `kmipkit.dll` | `C:\Windows\System32\` o junto al ejecutable | `PATH` |
+
+---
+
+## 3. Empaquetado en Contenedores Docker
+
+### Imagen Multi-Etapa con Debian Slim
+```dockerfile
+# 1. Etapa de compilación
+FROM rust:1.94-slim AS builder
+WORKDIR /app
+COPY . .
+RUN cargo build --release -p kmipkit-ffi
+
+# 2. Etapa de ejecución
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/libkmipkit.so /usr/local/lib/libkmipkit.so.1
+RUN ldconfig
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENTRYPOINT ["/usr/bin/my-app"]
+```
+
+---
+
+## 4. Compilación desde Código Fuente
+
+Requisitos mínimos:
+- **Rust Toolchain**: 1.94+ (Edición 2024).
+- **Compilador C**: GCC o Clang (para soporte FFI).
+- **CMake**: 3.22+ (para compilar dependencias criptográficas `aws-lc-sys`).
+
+```bash
+# Clonar y verificar el workspace
+git clone https://github.com/NeverWe1come/KMIPKit.git
+cd KMIPKit
+
+# Compilar todos los crates con optimizaciones de release
+cargo build --release --workspace
+
+# Ejecutar las pruebas completas
+cargo test --workspace --all-features
+```

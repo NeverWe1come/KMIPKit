@@ -1,0 +1,55 @@
+---
+title: Enciclopedia del Protocolo KMIP (1.0 a 2.1)
+description: Objetos gestionados, anatomía de mensajes y codificación binaria TTLV explicada en detalle.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+El **Key Management Interoperability Protocol (KMIP)** de OASIS es el estándar de facto para la comunicación entre clientes de aplicaciones y sistemas de gestión de claves empresariales (KMS) y Módulos de Seguridad de Hardware (HSM).
+
+---
+
+## 1. Objetos Gestionados
+
+KMIP define tipos de objetos criptográficos con ciclos de vida auditables:
+
+| Objeto | Tipo TTLV | Descripción |
+| :--- | :--- | :--- |
+| **SymmetricKey** | `0x42008E` | Claves simétricas (AES-128/256, 3DES, ChaCha20) para cifrado masivo. |
+| **PublicKey** | `0x42007B` | Clave pública para verificación de firma o encapsulamiento. |
+| **PrivateKey** | `0x42007A` | Clave privada para firma digital y descifrado. Nunca sale en claro sin protección. |
+| **Certificate** | `0x42001D` | Certificados X.509 v3 o PGP vinculados a claves públicas. |
+| **SecretData** | `0x420085` | Contraseñas, semillas de claves, tokens OTP o secretos de alta entropía. |
+| **OpaqueObject** | `0x42005A` | Datos binarios arbitrarios protegidos por el KMS. |
+| **SplitKey** | `0x420088` | Partes compartidas de claves mediante esquemas de umbral (Shamir). |
+
+---
+
+## 2. Anatomía de la Codificación TTLV
+
+TTLV (**Tag-Type-Length-Value**) es un formato binario canónico alineado a múltiplos de 8 bytes:
+
+```text
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Tag (3 bytes)           |  Type (1 byte)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Length (4 bytes)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Value (variable length)                 |
+|                       ... (+ padding a 8 bytes)               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+- **Tag (3 bytes)**: Identificador hexadecimal (rango estándar `0x42xxxx`, extensiones `0x54xxxx`).
+- **Type (1 byte)**: Tipo primitivo (`0x01` Structure, `0x02` Integer, `0x04` Enumeration, `0x07` Byte String, etc.).
+- **Length (4 bytes)**: Longitud exacta en bytes del campo `Value`.
+- **Value**: Datos brutos con bytes de relleno nulos (`0x00`) para garantizar alineación a 8 bytes.
+
+---
+
+## 3. Evolución de Versiones: El Salto de KMIP 1.x a 2.x
+
+- **KMIP 1.0 – 1.4**: Utiliza estructuras genéricas `Attribute` consistentes en `AttributeName` (string) y `AttributeValue` (nodo anidado). Obligaba a empaquetar plantillas en `TemplateAttribute`.
+- **KMIP 2.0 – 2.1**: Simplifica drásticamente el modelo mediante **atributos tipados directos**. Cada atributo posee su propia etiqueta TTLV específica (ej. `CryptographicAlgorithm` es `0x420028` directo), mejorando el rendimiento de serialización y reduciendo errores.

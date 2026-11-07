@@ -1,0 +1,58 @@
+---
+title: "Operation: Get Constraints"
+description: "Normative specification and polyglot code examples for KMIP 2.1 Get Constraints operation."
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+<Badge text="KMIP 2.1" variant="tip" />
+<Badge text="1.0 Client" variant="note" />
+<Badge text="OASIS §6.1.22" variant="default" />
+
+## 1. Normative Purpose
+
+Executes the Get Constraints operation according to OASIS KMIP 2.1 §6.1.22.
+
+## 2. Polyglot Invocation Examples
+
+<Tabs syncKey="lang">
+  <TabItem label="Rust" icon="rust">
+```rust
+// Rust
+let result = client
+    .get_constraints()
+    .execute()?;
+
+```
+  </TabItem>
+  <TabItem label="C" icon="c">
+```c
+/* C11 */
+kmipkit_status_t status = kmipkit_client_get_constraints(client, &params, &result);
+
+```
+  </TabItem>
+  <TabItem label="Java" icon="java">
+```java
+// Java 17+
+var result = client.get_constraints()
+    .execute();
+
+```
+  </TabItem>
+  <TabItem label="Python" icon="python">
+```python
+# Python 3.12+
+result = client.get_constraints().execute()
+
+```
+  </TabItem>
+</Tabs>
+
+## 3. Common Errors (ResultReason)
+
+| ResultStatus | ResultReason | Description |
+| :--- | :--- | :--- |
+| `OperationFailed` | `ItemNotFound` | The requested object does not exist. |
+| `OperationFailed` | `PermissionDenied` | The client credentials lack sufficient permissions. |
+| `OperationFailed` | `CryptographicFailure` | Cryptographic failure during algorithm execution. |

@@ -1,0 +1,43 @@
+---
+title: Commercial HSM and KMS Interoperability Guides
+description: mTLS setup, port configuration, and verified vendor specifics for Thales, Utimaco, Cosmian, Vault, Entrust, and Fortanix.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+KMIPKit is verified against industry-standard commercial KMS and HSM platforms. This guide outlines recommended connection settings and vendor-specific behaviors.
+
+---
+
+## 1. Compatibility Matrix
+
+| Vendor / Product | KMIP Version | Tested Transport | Authentication | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Thales CipherTrust Manager** | 2.1, 2.0, 1.4 | Raw TLS 5696 | mTLS (X.509) | <Badge text="VERIFIED" variant="success" /> |
+| **Utimaco ESKM** | 2.1, 1.4 | Raw TLS 5696 | mTLS (X.509) | <Badge text="VERIFIED" variant="success" /> |
+| **Cosmian KMS** | 2.1 | Raw TLS / HTTPS | mTLS (X.509) | <Badge text="VERIFIED" variant="success" /> |
+| **HashiCorp Vault KMIP Engine** | 1.4, 2.0 | Raw TLS 5696 | mTLS (Client Cert Role) | <Badge text="COMPATIBLE" variant="note" /> |
+| **Fortanix DSM** | 2.1, 1.4 | Raw TLS / HTTPS | mTLS (API App Cert) | <Badge text="COMPATIBLE" variant="note" /> |
+
+---
+
+## 2. Thales CipherTrust Manager
+
+1. **Interface Configuration**:
+   - In CipherTrust Manager, navigate to **Admin Settings > Interfaces > KMIP**.
+   - Enable standard port `5696` and require TLS 1.3 mutual authentication.
+2. **Client Certificate Registration**:
+   - Upload the corporate issuing CA to the CipherTrust Local CA pool.
+   - Attach a KMIP Access Policy mapped to the client certificate Common Name (CN) or SAN.
+3. **Specifics**:
+   - Requires explicit `CryptographicUsageMask` flags during symmetric key creation.
+
+---
+
+## 3. Utimaco ESKM
+
+1. **mTLS Setup**:
+   - Export the ESKM root CA certificate from the management console.
+   - Register the client certificate within the designated KMIP Client Group.
+2. **Supported Features**:
+   - 100% interoperable for AES symmetric key creation, activation, derivation, and destruction.

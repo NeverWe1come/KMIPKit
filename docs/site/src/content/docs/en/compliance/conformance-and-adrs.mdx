@@ -1,0 +1,46 @@
+---
+title: OASIS Conformance, ADRs, and Governance
+description: OASIS document hierarchy, Architecture Decision Records (ADRs 0001-0020), and contribution guidelines.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+This section details OASIS conformance commitments, recorded architectural decisions (ADRs), and contributor governance.
+
+---
+
+## 1. OASIS KMIP 2.1 Document Hierarchy
+
+When interpreting any KMIP requirement, the following precedence order applies ([`docs/compliance/document-hierarchy.md`](../../../compliance/document-hierarchy.md)):
+
+1. **Normative Computer Language Definitions**: Schemas or machine-readable files designated normative by OASIS.
+2. **KMIP Specification 2.1 OASIS Standard**: Defines protocol messages, objects, attributes, and encoding rules.
+3. **KMIP Profiles 2.1 OASIS Standard**: Normative profiles constraining client and server behavior.
+4. **Official Approved Errata**: Officially published errata from the OASIS TC.
+5. **KMIP Test Cases 2.1**: Informative vectors and conformance examples.
+6. **KMIP Usage Guide 2.1**: Informative design patterns and recommendations.
+7. **KMIPKit Derived Material**: Machine-readable catalog, generated code, and documentation (never overrides OASIS).
+
+---
+
+## 2. Architecture Decision Records (ADRs)
+
+| ADR | Title | Status | Core Decision |
+| :--- | :--- | :--- | :--- |
+| **ADR-0001** | Rust Core and C ABI | Accepted | Single Rust core with stable C11 ABI using opaque handles and panic containment. |
+| **ADR-0002** | KMIP 2.1 Release Scope | Accepted | KMIP 2.1 client, TTLV, TLS 1.3 mTLS, and synchronous APIs in 1.0. |
+| **ADR-0003** | Layered Cargo Workspace | Accepted | Synchronized crates: ttlv, protocol, transport, client, facade, ffi, and test-support. |
+| **ADR-0004** | Normative Catalog and Generation | Accepted | Deterministic code and documentation generation from reviewed JSON catalog. |
+| **ADR-0005** | Transport and TLS 1.3 | Accepted | rustls + aws-lc-rs, mandatory hostname checking, and disabled 0-RTT. |
+| **ADR-0006** | Three-Level Public API | Accepted | High-level builders, typed KMIP models, and generic TTLV escape hatch. |
+| **ADR-0007** | Vendor Extension Model | Accepted | Preserves unknown vendor tags in the range `0x54xxxx`. |
+| **ADR-0008** | Development Workflow | Accepted | Spec-Driven Development via Spec Kit and strict Red-Green-Refactor TDD. |
+| **ADR-0009** | Conformance and OASIS Sources | Accepted | 100% normative traceability to test cases and immutable upstream fixtures. |
+| **ADR-0019** | File-Backed TLS Hot Reload | Accepted | Hot credential reload without application restart. |
+| **ADR-0020** | TLS 1.3 Session Resumption | Accepted | Resumption hardening reducing handshake roundtrip latency. |
+
+---
+
+## 3. Live OASIS Conformance Matrix
+
+Review the [OASIS Conformance Matrix](./oasis-matrix/) for current test verification across all official client profiles.

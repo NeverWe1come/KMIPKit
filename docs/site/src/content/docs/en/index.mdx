@@ -1,0 +1,39 @@
+---
+title: KMIPKit
+description: Enterprise-grade client library and infrastructure for OASIS KMIP 2.1 across Rust, C, Java, and Python.
+template: splash
+hero:
+  tagline: High-performance, memory-safe cryptographic infrastructure for OASIS KMIP 2.1 with functional parity across Rust, C, Java, and Python.
+  actions:
+    - text: Quickstart (3 min)
+      link: /en/getting-started/quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: Operations Dictionary
+      link: /en/operations/
+      icon: open-book
+      variant: secondary
+    - text: Test Server Manual
+      link: /en/testing-and-harness/test-server/
+      icon: rocket
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Key Capabilities
+
+<CardGrid stagger>
+  <Card title="4-Language Parity" icon="seti:rust">
+    Single Rust 2024 core with idiomatic client APIs for **Rust**, **C11**, **Java 17+**, and **Python 3.12+**. Zero semantic drift.
+  </Card>
+  <Card title="Strict OASIS KMIP 2.1" icon="document">
+    Complete coverage of client-initiated operations, binary TTLV framing, Raw TLS 1.3 mTLS, and HTTPS/1.1 transport.
+  </Card>
+  <Card title="Integrated Test Server" icon="puzzle">
+    Test locally without physical HSMs using `kmipkit-test-server`: multi-version 1.0–2.1 simulation, auto-generated PKI, and file-based JSON storage.
+  </Card>
+  <Card title="Zero-Trust Security" icon="warning">
+    Zeroization of in-memory secret material, strict parser resource limits against DoS, and redacted error context.
+  </Card>
+</CardGrid>
