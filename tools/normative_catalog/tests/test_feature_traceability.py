@@ -1969,6 +1969,47 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 if "::" in reference:
                     self.assertTrue(self._is_executable_test_ref(reference), reference)
 
+    def test_response_payload_outcome_accessors_are_traced_by_their_current_test_names(self) -> None:
+        obsolete_reference = (
+            "crates/kmipkit-protocol/tests/message_accessors.rs::"
+            "response_batch_and_extension_accessors_preserve_all_result_shapes"
+        )
+        expected_references = {
+            "crates/kmipkit-protocol/tests/message_accessors.rs::failure_response_payload_raw_is_absent",
+            "crates/kmipkit-protocol/tests/message_accessors.rs::success_response_payload_raw_preserves_empty_structure_and_extensions",
+            "crates/kmipkit-protocol/tests/message_accessors.rs::pending_response_payload_raw_preserves_empty_shape_and_correlation",
+        }
+
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirement = next(
+            record
+            for record in catalog["requirements"]
+            if record["requirement_id"] == "KMIPKIT-REQ-SPEC-8-001"
+        )
+        catalog_references = set(requirement["verification_refs"])
+        self.assertNotIn(obsolete_reference, catalog_references)
+        self.assertTrue(expected_references.issubset(catalog_references))
+
+        with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream))
+        rows_by_id = {row["requirement_id"]: row for row in rows}
+        functional_reference_ids = {
+            "KMIPKIT-0006-FR-005",
+            "KMIPKIT-0006-FR-011",
+        }
+        for requirement_id in functional_reference_ids:
+            references = set(rows_by_id[requirement_id]["test_ids"].split("; "))
+            self.assertNotIn(obsolete_reference, references)
+            self.assertIn(
+                "crates/kmipkit-protocol/tests/message_accessors.rs::success_response_payload_raw_preserves_empty_structure_and_extensions",
+                references,
+            )
+        self.assertTrue(
+            expected_references.issubset(
+                set(rows_by_id["KMIPKIT-0006-FR-005"]["test_ids"].split("; "))
+            )
+        )
+
     def test_multi_item_identifier_requirement_cites_exact_oasis_table(self) -> None:
         with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
             rows = list(csv.DictReader(stream))
