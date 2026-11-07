@@ -682,11 +682,20 @@ trait Example { fn declaration(&self); }
         self.require_gate()
         generated_sources = {
             "crates/kmipkit-protocol/src/named_values_generated.rs",
+            "bindings/c/include/kmipkit_named_value_helpers_generated.h",
             "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java",
             "bindings/python/src/kmipkit/protocol_values.py",
         }
 
-        rust_source, java_source, python_source = sorted(generated_sources)
+        self.assertIn(
+            "bindings/c/include/kmipkit_named_value_helpers_generated.h",
+            GATE._CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS,
+        )
+        c_header, java_source, python_source, rust_source = sorted(generated_sources)
+        self.assertEqual(
+            c_header,
+            "bindings/c/include/kmipkit_named_value_helpers_generated.h",
+        )
         self.assertFalse(GATE.is_coverage_source_path(rust_source))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
