@@ -104,7 +104,10 @@ environment warnings about NASM and an optional compiler probe.
   identified a local resource concern: caller-supplied `Authentication` was
   deep-cloned before encoder limits apply. The 0050 follow-up now moves that
   owned TTLV tree into the request without cloning; this removes the temporary
-  amplification path. A separate security diff scan is pending for that fix.
+  amplification path. The follow-up Codex Security diff scan reviewed
+  `crates/kmipkit-client/src/execute.rs`, recorded zero findings, and completed
+  with full changed-file coverage (scan
+  `e30feefc-b9b4-416c-b625-eec029f8eede`).
 - Draft pull request: [#118](https://github.com/NeverWe1come/KMIPKit/pull/118),
   base `feature/KMIPKIT-0049-managed-objects`, head
   `feature/KMIPKIT-0050-parameters-auth-client`. The original PR-open head was
