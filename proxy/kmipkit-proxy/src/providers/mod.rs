@@ -33,6 +33,20 @@ impl CloudTagMap {
     pub fn get(&self, key: &str) -> Option<&String> {
         self.0.get(key)
     }
+
+    pub fn remove(&mut self, k: &str) -> Option<String> {
+        self.0.remove(k)
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 /// Key creation specification.
