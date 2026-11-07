@@ -7125,7 +7125,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     for row in self.checked_in_manifest["functions"]
                     if row["c"]["symbol"] == symbol
                 )
-                self.assertRegex(header, rf"(?m)^{re.escape(function['c']['returnType'])} {re.escape(symbol)}\(")
+                prototype_prefix = f"{function['c']['returnType']} {symbol}("
+                self.assertTrue(
+                    any(line.startswith(prototype_prefix) for line in header.splitlines()),
+                    f"public C prototype missing: {symbol}",
+                )
                 declarations = [
                     row
                     for row in self.checked_in_manifest["publicDeclarations"]
