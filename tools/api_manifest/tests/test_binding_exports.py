@@ -1062,6 +1062,15 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.add("registerRequestWithProtectionStorageMasks")
+        wire_encoding_bridge_members = {
+            "org.kmipkit.NativeExtensionRegistry.clientConfigurationWireEncoding",
+            "org.kmipkit.NativeExtensionRegistry.clientConfigurationWithWireEncoding",
+            "org.kmipkit.NativeExtensionRegistry.clientExecuteWithEncoding",
+        }
+        native_members.update(
+            member.removeprefix("org.kmipkit.NativeExtensionRegistry.")
+            for member in wire_encoding_bridge_members
+        )
         expected_native = {
             ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
             for member in native_members
@@ -1087,6 +1096,7 @@ class BindingExportAuditTests(unittest.TestCase):
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
+            multi_encoding_bridge = key[1] in wire_encoding_bridge_members
             combined_approved_references = any(
                 reference_group in evidence
                 for reference_group in (
@@ -1096,7 +1106,8 @@ class BindingExportAuditTests(unittest.TestCase):
             )
             self.assertTrue(
                 "KMIPKIT-0043-FR-021" in evidence
-                or combined_approved_references,
+                or combined_approved_references
+                or multi_encoding_bridge,
                 evidence,
             )
             bridge_owner = {
@@ -1120,7 +1131,11 @@ class BindingExportAuditTests(unittest.TestCase):
                 "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
             }.get(key[1])
             if bridge_owner is None:
-                if key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions":
+                if multi_encoding_bridge:
+                    self.assertIn("KMIPKIT-0057-FR-001", evidence)
+                    self.assertIn("KMIPKIT-0057-FR-005", evidence)
+                    self.assertIn("raw-handle JNI bridge plumbing", exclusion["reason"])
+                elif key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions":
                     self.assertIn("KMIPKIT-0040-FR-002/004", evidence)
                     self.assertIn("KMIPKIT-0043-FR-008", evidence)
                     self.assertIn("KMIPKIT-0043-FR-021", evidence)
@@ -1162,6 +1177,7 @@ class BindingExportAuditTests(unittest.TestCase):
                         or "KMIPKIT-0004-FR-001" in evidence
                         or "KMIPKIT-0012-FR-010" in evidence
                         or "KMIPKIT-0044-FR-001/007" in evidence
+                        or (multi_encoding_bridge and "KMIPKIT-0057-FR-001" in evidence)
                         or (
                             "KMIPKIT-0043-FR-008" in evidence
                             and "KMIPKIT-0043-FR-021" in evidence
