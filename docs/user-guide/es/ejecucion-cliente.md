@@ -447,6 +447,22 @@ Ese almacenamiento se pone a cero antes de que el método vuelva, también si
 el callback lanza una excepción. Las copias que cree la aplicación son de su
 propiedad.
 
+Cada resultado asíncrono ofrece una vista tipada específica de la operación:
+`cancelResponse()`/`cancel_response()`, `pollResponse()`/`poll_response()`,
+`processResponse()`/`process_response()` y
+`queryAsyncRequestsResponse()`/`query_async_requests_response()`. Rust ofrece
+los lectores equivalentes en snake case y la ABI de C dispone de una función
+`_response_v1` para cada operación. Si la operación no coincide, el lector no
+devuelve valor. Cancel expone Cancellation Result; Poll y Process exponen el
+estado Pending; Process también informa si el payload está presente y cuántos
+miembros tiene. Las vistas toman prestado o conservan el resultado propietario,
+por lo que las vistas Java/Python dejan de ser utilizables al cerrar el
+resultado. `raw()` mantiene el acceso al payload TTLV genérico. Query
+Asynchronous Requests no interpreta su payload porque la Tabla 286 de KMIP
+v2.1 tiene una discrepancia entre el pie y el contenido. Los spans de C y los
+callbacks de Java/Python leen la correlación del resultado propietario sin
+guardar otra copia.
+
 ## Límites de recursos
 
 `CodecLimits` se aplica a cada ejecución de una petición. Sus valores
