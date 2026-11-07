@@ -284,10 +284,16 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
     return True
 
 
+def _is_excluded_coverage_source_path(path: str | Path) -> bool:
+    """Return whether a normalized project-relative path is excluded from line coverage."""
+    normalized = str(path).replace("\\", "/").lstrip("./")
+    return normalized in _COVERAGE_SOURCE_EXCLUSIONS
+
+
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
-    if normalized in _COVERAGE_SOURCE_EXCLUSIONS:
+    if _is_excluded_coverage_source_path(normalized):
         return False
     if _is_rust_source_tree_path(normalized):
         return True
@@ -884,7 +890,7 @@ def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> di
             if not isinstance(source_name, str) or Path(source_name).name != source_name:
                 raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
             source_path = source_root.joinpath(*package_path.parts, source_name)
-            if source_path.relative_to(root).as_posix() in _COVERAGE_SOURCE_EXCLUSIONS:
+            if _is_excluded_coverage_source_path(source_path.relative_to(root).as_posix()):
                 continue
             source = _coverage_report_source(source_path, root, "JaCoCo")
             if source in report:
