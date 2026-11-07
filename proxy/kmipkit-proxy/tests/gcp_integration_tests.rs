@@ -25,9 +25,9 @@
 
 #[cfg(feature = "gcp")]
 mod gcp_tests {
+    use base64::Engine;
     use std::sync::Arc;
     use std::time::Duration;
-    use base64::Engine;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use zeroize::Zeroizing;
 
@@ -165,9 +165,8 @@ mod gcp_tests {
         let wrapped = kmipkit_proxy::envelope::AutoEnvelope::wrap_key(&master_kek, &raw_material)
             .expect("wrap succeeds");
         let serialized = wrapped.to_bytes();
-        let deserialized =
-            kmipkit_proxy::envelope::WrappedEnvelopeKey::from_bytes(&serialized)
-                .expect("deserialize succeeds");
+        let deserialized = kmipkit_proxy::envelope::WrappedEnvelopeKey::from_bytes(&serialized)
+            .expect("deserialize succeeds");
         assert_eq!(wrapped, deserialized);
 
         let unwrapped =
