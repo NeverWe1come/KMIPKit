@@ -890,6 +890,14 @@ trait Example { fn declaration(&self); }
             )
         )
 
+    def test_schema_contract_module_is_kept_outside_production_coverage(self) -> None:
+        self.require_gate()
+        relative_test_path = "crates/kmipkit-protocol/tests/support/schema_contract_tests.rs"
+        test_path = REPOSITORY_ROOT / relative_test_path
+
+        self.assertTrue(test_path.is_file())
+        self.assertFalse(GATE.is_coverage_source_path(relative_test_path))
+
     def test_path_attribute_keeps_suffix_named_production_module_in_coverage(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:

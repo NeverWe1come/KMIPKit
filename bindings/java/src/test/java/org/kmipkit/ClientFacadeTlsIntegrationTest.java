@@ -1726,7 +1726,7 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure derivationParameters = TtlvStructure.create();
                 TtlvStructure derivedAttributes = deriveKeyAttributes();
                 TtlvStructure importAttributes = TtlvStructure.create();
-                TtlvStructure importAnyObject = wrappedImportAnyObjectStructure(CodecLimits.defaults())) {
+                TtlvStructure importAnyObject = importAnyObjectStructure()) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, (WireEncoding) null));
             assertNativeRequestOptionsRejected(client, new long[11]);
@@ -1796,10 +1796,10 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.locate(null, null, null, null, createAttributes)
                             .withUniqueBatchItemId(uniqueBatchItemId(21)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    2, Boolean.FALSE, 2L, importAttributes, importAnyObject)
+                                    8, Boolean.FALSE, null, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(22)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    2, Boolean.FALSE, 2L, importAttributes, importAnyObject)
+                                    8, Boolean.FALSE, null, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(23)))
                     .add(ClientBatchItem.interop(0xf1234567L,
                                     "interop-integration-test".getBytes(StandardCharsets.UTF_8))
@@ -5250,6 +5250,16 @@ final class ClientFacadeTlsIntegrationTest {
         } catch (RuntimeException failure) {
             attributes.close();
             throw failure;
+        }
+    }
+
+    private static TtlvStructure importAnyObjectStructure() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure object = TtlvStructure.create();
+        try (TtlvItem opaqueObject = registerOpaqueObject()) {
+            return TtlvStructure.withItem(object, opaqueObject, limits);
+        } finally {
+            object.close();
         }
     }
 

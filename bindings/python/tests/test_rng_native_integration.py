@@ -66,6 +66,14 @@ def _rng_response_message() -> bytes:
     return _ttlv_structure(0x42007B, header, retrieve, seed)
 
 
+def test_rng_seed_response_fixture_uses_oasis_data_length_tag() -> None:
+    # OASIS KMIP 2.1, Section 6.1.50 Table 320 and Section 7.10 Table 362.
+    response = _rng_response_message()
+
+    assert _ttlv_item(0x4200C4, 2, struct.pack(">i", 0)) in response
+    assert _ttlv_item(0x4200D5, 2, struct.pack(">i", 0)) not in response
+
+
 def _rng_failure_pending_response_message() -> bytes:
     version = _ttlv_structure(
         0x420069,
@@ -201,10 +209,7 @@ def test_rng_operations_cross_native_cffi_over_mutual_tls() -> None:
         assert len(received_requests) == 1
         request = received_requests[0]
         assert _contains_bytes(request, _enumeration(0x42005C, 0x25))
-        assert _contains_bytes(
-            request,
-            _ttlv_item(0x4200C4, 2, struct.pack(">i", len(_RETRIEVED))),
-        )
+        assert _contains_bytes(request, _ttlv_item(0x4200C4, 2, struct.pack(">i", len(_RETRIEVED))))
         assert _contains_bytes(request, _enumeration(0x42005C, 0x26))
         assert _contains_bytes(request, _ttlv_item(0x4200C2, 8, _SEED)), (
             "RNG Seed must preserve caller-supplied bytes"

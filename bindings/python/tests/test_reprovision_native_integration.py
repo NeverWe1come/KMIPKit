@@ -134,7 +134,7 @@ def _request_payloads(encoded: bytes) -> list[list[_TtlvSpan]]:
     return payloads
 
 
-def _marker_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
+def _certificate_request_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
     structure = ttlv.ttlv_structure_create()
     fields = (
         (0x420019, "enumeration", 1),
@@ -161,6 +161,24 @@ def _marker_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
         raise
 
 
+def _structure_tags(structure: ttlv.Structure) -> tuple[int, ...]:
+    with ttlv.ttlv_structure_view(structure) as view:
+        tags: list[int] = []
+        for index in range(ttlv.ttlv_structure_view_item_count(view)):
+            with ttlv.ttlv_structure_view_item_at(view, index) as item:
+                with ttlv.ttlv_item_view_tag(item) as tag:
+                    tags.append(ttlv.tag_value(tag))
+        return tuple(tags)
+
+
+def test_certificate_request_fixture_includes_required_oasis_table_3_fields() -> None:
+    # OASIS KMIP 2.1, Section 2.2, Table 3 requires both child fields.
+    with ttlv.codec_limits_defaults() as limits, _certificate_request_structure(
+        limits
+    ) as certificate_request:
+        assert _structure_tags(certificate_request) == (0x420019, 0x420140, 0x541101)
+
+
 def test_reprovision_sends_parameterless_and_certificate_request_items() -> None:
     port, received, failures, peer = _start_mtls_peer(_response_without_identifiers())
     config = extensions.create_client_configuration(
@@ -182,7 +200,7 @@ def test_reprovision_sends_parameterless_and_certificate_request_items() -> None
                     extensions.client_batch_item_reprovision(), _BATCH_IDS[0]
                 )
             )
-            with _marker_structure(limits) as certificate_request:
+            with _certificate_request_structure(limits) as certificate_request:
                 batch.add_item(
                     extensions.with_unique_batch_item_id(
                         extensions.client_batch_item_reprovision(
@@ -203,7 +221,7 @@ def test_reprovision_sends_parameterless_and_certificate_request_items() -> None
         certificate_request = payloads[1][0]
         assert tuple(
             field.tag for field in _children(received[0], certificate_request)
-    ) == (0x420019, 0x420140, 0x541101)
+        ) == (0x420019, 0x420140, 0x541101)
         assert failures.empty() and result is not None
         assert all(item.operation == 0x35 and item.result_status == 0 for item in result.items)
         reprovision_response = result.items[0].reprovision_response
