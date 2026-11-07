@@ -95,6 +95,11 @@ Red/Green/Refactor and verification evidence in this file.
   passed for both generated Rust outputs.
 - `python -B tools/api_manifest/generate.py --check` verified all 12 generated
   outputs.
+- After merging the current 0047 head (`a2dbcccac`) into this stack at
+  `43b6fef5f`, `python -B tools/api_manifest/generate.py --check --repo-root .`
+  again verified all 12 outputs, including the regenerated Java public parity
+  fixture. `python -B -m unittest tools.api_manifest.tests.test_parity -v`
+  passed all 24 parity tests.
 - `python -B tools/api_manifest/audit_rust_exports.py --check` passed with
   6,265 exact matches, zero missing routes, zero unobserved declarations, zero
   kind mismatches, and zero audit issues.

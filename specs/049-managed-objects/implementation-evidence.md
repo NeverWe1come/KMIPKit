@@ -3,7 +3,7 @@
 ## Source and branch baseline
 
 - Authorized feature chain root: `feature/KMIPKIT-0043-t076-shared-client-mapping` (PR #104).
-- Immediate predecessor: `feature/KMIPKIT-0048-typed-attributes`, PR #115, commit `48f8ceac29eea37ac6a65fa81fc9580af33930bd`.
+- Immediate predecessor: `feature/KMIPKIT-0048-typed-attributes`, PR #115, latest synchronized commit `25b727f10`.
 - Current feature branch: `feature/KMIPKIT-0049-managed-objects`; the maintainer authorized the phase stack to start from #104 and to use predecessor branches until eventual integration into `release/1.0.0`.
 - Pinned OASIS source: `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`, SHA-256 `8BF9D914C097E98A6509AA1FFCBF03406F738066E940597AEE93D0A5E07ADDCF`.
 - Normative catalog: `specification/catalog/kmip-2.1.json`, SHA-256 `0D68D403956FE0BA4057BED346FDE57D1BC8938D975338E02BE2D435EC16FBEE`.
@@ -47,6 +47,7 @@ The Red tests cover all nine object tags and fields, the §3.1–§3.3 key struc
 - `python -B tools/api_manifest/generate.py --check`: passed; all 12 generated outputs are current.
 - Rust public-route audit: passed; 6,621 manifest declarations matched, 0 missing, 0 issues, and 15,748 exact exclusions.
 - Binding public-route audit: passed with exit code 0.
+- After synchronizing with #115 in merge commit `37bb75154`, the API manifest generator again verified all 12 outputs, and `python -B -m unittest tools.api_manifest.tests.test_reconcile_0049_managed_objects -v` passed both tests. `cargo clippy --offline --workspace --all-targets --all-features -- -D warnings` passed across the workspace. Windows emitted the same non-fatal AWS-LC `stdalign_check.c` and missing NASM warnings described above.
 - Windows-local coverage: `cargo llvm-cov --offline --workspace --all-features --json --output-path "$env:TEMP\kmipkit-0049-workspace-final-coverage.json" --quiet` completed successfully and ran the workspace tests. After repository source preflight and the exact documented-exclusion rules, the current report measures `kmipkit-protocol` at 21,067/21,891 (96.24%), the Rust workspace at 45,896/48,819 (94.01%), and changed executable production code at 772/806 (95.78%). The 25 new exclusions cover only impossible `ValueView`/TTLV variant fallthroughs after validated private model invariants; each has an adjacent source comment. The generated files excluded by repository policy remain subject to generator checks and consumer tests.
 - T040's Windows-local protocol, changed-code, and global numeric thresholds pass. This is not the full cross-platform aggregate: reports from Linux/macOS and the C, Java, Python, and JNI coverage scopes are not part of this local run. The required hosted coverage and platform checks remain outstanding, so the PR must stay in draft.
 - Independent QA identified malformed parsed SplitKey/SecretData and transparent RSA structures, missing wrapping key information, and documentation gaps. Red tests demonstrated the defects; the corresponding Green commits, expanded examples, and borrowed validation refactor remediate them. Independent security review also identified avoidable secret-bearing TTLV clones; these validation routes now borrow the source Item. No FFI, transport, or unsafe code changed.
@@ -55,12 +56,17 @@ The Red tests cover all nine object tags and fields, the §3.1–§3.3 key struc
 
 ## Remaining evidence
 
+The branch remains a draft pending hosted CI and the complete Linux/macOS plus
+language-adapter coverage aggregate. These external platform results were not
+queried during the GitHub billing issue. No independent human security review
+or release-level interoperability evidence is claimed for this feature.
+
 ## Pull request
 
 - T043 completed through terminal-based `gh pr create`.
 - Draft PR: https://github.com/NeverWe1come/KMIPKit/pull/116
 - Verified state: `OPEN`, `isDraft: true`.
 - Base: `feature/KMIPKIT-0048-typed-attributes` (PR #115).
-- Head: `feature/KMIPKIT-0049-managed-objects`, commit `ed22113a260b4d01ad9163f2729890c47c85eece`.
+- Original PR-open head: `ed22113a260b4d01ad9163f2729890c47c85eece`; the branch now also includes merge commit `37bb75154` and the evidence update in this commit.
 
 Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.

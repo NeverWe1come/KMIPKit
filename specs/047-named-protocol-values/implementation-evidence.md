@@ -26,10 +26,23 @@ The following checks passed on the feature worktree:
 - `cargo clippy --offline --package kmipkit-protocol --package kmipkit --all-targets --all-features -- -D warnings`
 - `cargo test --offline --workspace --all-features` (full workspace; passed
   after updating the C capability expectation and facade query).
-- `cargo llvm-cov --offline --workspace --all-features --summary-only` (passed
-  on Windows; this single-platform raw workspace line summary is 89.65%, while
-  the repository release gate aggregates the Linux, Windows, macOS, C, Java,
-  Python, and JNI reports and is not represented by this local run).
+- `cargo llvm-cov --offline --workspace --all-features --json --output-path
+  <temporary-report>` completed on Windows, followed by
+  `python -B scripts/coverage_gate.py normalize --workspace . --input
+  <temporary-report> --output <temporary-normalized-report>`. The raw Rust
+  workspace result was 47,714/51,744 lines (92.21%). After applying only the
+  documented exclusions for the generated `profiles_generated.rs` and
+  `named_values_generated.rs`, it was 47,680/50,683 (94.07%). Per-crate
+  excluded-line results were: `kmipkit-ttlv` 748/761 (98.29%),
+  `kmipkit-protocol` 21,517/22,492 (95.67%), `kmipkit-transport` 3,790/4,056
+  (93.44%), `kmipkit-ffi` 13,646/15,047 (90.69%), `kmipkit-client`
+  6,176/6,429 (96.06%), `kmipkit-test-support` 1,758/1,853 (94.87%), and
+  `kmipkit` 45/45 (100%). The 90% workspace floor, 95% TTLV/protocol floors,
+  and 85% transport/FFI floors pass for this Windows Rust report. There were
+  no changed executable production lines to score: the production additions
+  are generated value declarations (covered by consumer tests and the exact
+  generated-file exclusions) plus public re-exports. This local result does
+  not represent the Linux/macOS or C/Java/Python/JNI reports.
 - Rust public facade consumer test for generated values and future raw values.
 - MSVC C11 consumer compile with `/W4 /WX` and execution of
   `bindings/c/tests/named_values.c`.
@@ -62,8 +75,12 @@ The coverage gate excludes only the exact generated named-value files in Rust,
 Java, and Python, with the rationale and consumer tests recorded in
 `docs/development/testing.md`. Coverage thresholds are not weakened. The local
 Windows LLVM run is evidence only and does not replace the aggregate
-platform and adapter coverage gate. Remote platform CI and full adapter
-aggregate coverage are still pending.
+platform and adapter coverage gate. The aggregate command was not run because
+Ubuntu and macOS reports are not available in this local Windows worktree;
+remote CI was not queried under the maintainer's instruction to ignore it
+during the GitHub billing issue. Cross-platform reports and full adapter
+aggregate coverage remain pending. T007 therefore remains open even though
+the applicable Windows Rust coverage thresholds now pass locally.
 
 The Codex Security diff scan for base `7ea1fac2b8eb55e40a57d1da0c86fbf6d420b6f1`
 and head `a782fa24027922bb5dff81f3f15343293f0b84de` completed with no findings
