@@ -1,0 +1,53 @@
+"""Executable acceptance check for the four-language Ping consumers."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import unittest
+
+
+CONSUMER_ROOT = Path(__file__).resolve().parent
+EXPECTED_LINES = (
+    "rust: Ping result and raw TTLV verified",
+    "c: Ping result and raw TTLV verified",
+    "java: Ping result and raw TTLV verified",
+    "python: Ping result and raw TTLV verified",
+)
+
+
+class ExecutePingConsumerTests(unittest.TestCase):
+    def test_all_external_consumers_execute_ping_and_inspect_raw_ttlv(self) -> None:
+        if os.name == "nt":
+            shell = shutil.which("pwsh") or shutil.which("powershell")
+            self.assertIsNotNone(shell, "PowerShell is required for the Windows consumer runner")
+            command = [
+                shell or "pwsh",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(CONSUMER_ROOT / "verify.ps1"),
+            ]
+        else:
+            command = ["sh", str(CONSUMER_ROOT / "verify.sh")]
+
+        completed = subprocess.run(
+            command,
+            cwd=CONSUMER_ROOT.parents[2],
+            capture_output=True,
+            text=True,
+            timeout=600,
+            check=False,
+        )
+        output = completed.stdout + completed.stderr
+        self.assertEqual(completed.returncode, 0, output)
+        for expected in EXPECTED_LINES:
+            with self.subTest(language=expected.split(":", 1)[0]):
+                self.assertIn(expected, output)
+
+
+if __name__ == "__main__":
+    unittest.main()
