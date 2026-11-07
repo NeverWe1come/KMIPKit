@@ -18,11 +18,39 @@ class Reconcile0052ResponseNavigationTests(unittest.TestCase):
             "approvedExclusions": [],
         }
 
-    def test_adds_response_contract_routes_and_exact_bridge_exclusions(self) -> None:
+    def test_adds_response_and_async_typed_contract_routes(self) -> None:
         result = reconcile(self.manifest)
 
-        self.assertEqual(len(result["functions"]), 2)
-        self.assertEqual(len(result["publicDeclarations"]), 28)
+        self.assertEqual(len(result["functions"]), 6)
+        self.assertEqual(
+            {row["id"] for row in result["functions"]},
+            {
+                "client_batch_item_response_raw_ttlv",
+                "client_batch_item_response_header_ttlv",
+                "kmipkit_client_async_operation_outcome_cancel_response_v1",
+                "kmipkit_client_async_operation_outcome_poll_response_v1",
+                "kmipkit_client_async_operation_outcome_process_response_v1",
+                "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+            },
+        )
+        self.assertEqual(len(result["publicDeclarations"]), 78)
+        declaration_ids = {row["declarationId"] for row in result["publicDeclarations"]}
+        self.assertTrue(
+            {
+                "kmipkit-0052-async-cancel-c",
+                "kmipkit-0052-async-cancel-java",
+                "kmipkit-0052-async-cancel-python",
+                "kmipkit-0052-async-poll-c",
+                "kmipkit-0052-async-poll-java",
+                "kmipkit-0052-async-poll-python",
+                "kmipkit-0052-async-process-c",
+                "kmipkit-0052-async-process-java",
+                "kmipkit-0052-async-process-python",
+                "kmipkit-0052-async-query_async_requests-c",
+                "kmipkit-0052-async-query_async_requests-java",
+                "kmipkit-0052-async-query_async_requests-python",
+            } <= declaration_ids
+        )
         self.assertEqual(
             {row["exportName"] for row in result["approvedExclusions"]},
             {
