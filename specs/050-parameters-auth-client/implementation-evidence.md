@@ -5,8 +5,8 @@
 - Branch: `feature/KMIPKIT-0050-parameters-auth-client`.
 - Base: `feature/KMIPKIT-0049-managed-objects` (PR #116), as recorded in
   `approval-record.md`.
-- Latest synchronized predecessor commit: `15f4cee81` (PR #116); this branch
-  includes that parent through a normal merge.
+- Latest synchronized predecessor commit: `28d209fd0` (PR #116); this branch
+  includes that parent through normal merge `c5e3051ef`.
 - Scope: typed Cryptographic Parameters, request-scoped KMIP Authentication,
   direct Rust client methods, public API reconciliation, examples, and tests.
 
@@ -35,6 +35,9 @@ Successful Windows checks on this branch:
   both ADR-0012 candidate-callsite lifecycle tests: ownership survives a
   successful exchange and is zeroized afterward; a partial-write failure
   zeroizes the owner, reports the delivery outcome, and does not retry.
+- After synchronizing to predecessor head `28d209fd0`, the same focused command
+  passed again (2 tests); `cargo fmt --all --check` and `git diff --check` also
+  passed.
 - `cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw-local.json`
   (full Windows workspace test and coverage instrumentation completed).
 - `python scripts/coverage_gate.py normalize --workspace . --input coverage-raw-local.json --output coverage-local.json`.
