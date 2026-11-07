@@ -146,9 +146,12 @@ resolution keeps the 2026-11-07 binding audit report and documentation from
 preserves the four Decrypt capability and normative-requirement corrections.
 No declaration or exclusion export key from either parent is lost.
 
-The reviewed manifest input can be reconciled using its tracked post-sync
+The final manifest can be checked for idempotence using its tracked post-sync
 audit with
 `python -B tools/api_manifest/reconcile_0048_typed_attributes.py --report specs/048-typed-attributes/reports/rust-export-report-post-sync-2026-11-07.json --write`.
+That final audit has no missing routes; it is not a reconstruction input.
+The tracked pre-reconciliation report and its reproducible derivation and
+isolated restoration command are documented in [the audit evidence guide](reports/README.md).
 All 12 outputs were regenerated with
 `python -B tools/api_manifest/generate.py --write`. The resulting inventory
 has 11,874 public declarations and 16,818 approved exclusions. The T102
@@ -222,16 +225,16 @@ Fresh verification after the refactor:
 - The focused reconciliation, manifest size, C documentation, T102 response
   views, Encrypt/Decrypt, and 0047 binding-reconciliation suites passed all
   35 tests.
-- Removing the 286 typed declarations and 2,072 0048 trait exclusions from a
-  copy of the current manifest and reconciling those exact observed routes
-  reconstructed the original manifest without any difference.
+- Reconstruction of the 286 typed declarations and 2,072 0048 trait exclusions
+  is verified using the tracked pre-reconciliation report and official
+  comparison/reconciliation procedure in [the audit evidence guide](reports/README.md).
 - `cargo fmt --all --check` passed.
 - `python -B tools/api_manifest/generate.py --check` verified all 12 outputs.
 - The exact Rust audit ran with the pinned offline compiler and a temporary
   report destination. It passed with 21,507 observed routes, 6,285 exact
   matches, 15,222 exclusions, and zero missing, unobserved, kind, conditional,
   or inventory issues.
-- The documented reconciliation command above was run in a temporary export
+- The documented idempotence command above was run in a temporary export
   made with `git checkout-index --all`. That export contained only tracked
   files and lacked the pre-existing untracked report. The command exited 0,
   reported zero added declarations/exclusions, and preserved the complete
@@ -240,3 +243,39 @@ Fresh verification after the refactor:
   document changed; `git diff --check` passed. The existing untracked report,
   target directories, and all generated artifacts were preserved. No hosted
   CI status was queried.
+
+## Scoped ownership and reconstruction follow-up (2026-11-07)
+
+The broader `attribute::` namespace also contains earlier generic attribute
+APIs. Those exports are not owned by 0048 merely because they share a module.
+
+- RED `70d917aa8`: the two regressions for the `ClientAttributeMutation`
+  Debug projection and `client_vendor_attribute_mutation_is_prohibited`
+  failed with `ReconciliationError not raised`.
+- GREEN `d5c070936`: the filter now accepts the `attribute::typed` marker
+  namespace and exact permitted root-type names/members, including the
+  `attribute::` aliases of those types. All 14 reconciler tests pass; the
+  unrelated projection and function are rejected.
+- REFACTOR: the marker namespace is centralized as a named scope constant.
+  The existing 286 typed declarations and 2,072 exact projections remain
+  unchanged.
+
+The final post-sync report has no missing routes and proves final audit
+consistency and idempotence only. The tracked pre-reconciliation report is
+instead derived with the official auditor's `compare` implementation, using
+the same compiler observations against a manifest with exactly the 0048
+declarations/exclusions removed. Its deterministic input and complete
+restoration command are recorded in [the audit evidence guide](reports/README.md).
+
+The guide's Python block was executed verbatim in an export containing only
+tracked files. It regenerated a byte-identical pre-reconciliation report and
+invoked the official reconciler against a temporary baseline, restoring
+`+286 declarations, +2072 exclusions` and the complete original manifest.
+The historical untracked audit and final post-sync reports were untouched.
+
+Fresh verification also passed all 14 focused reconciler tests,
+`cargo fmt --all --check`, the 12-output API generator `--check`, and the
+official exact Rust audit. That final audit still reports 21,507 observed
+routes, 6,285 exact matches, 15,222 exclusions, and zero discrepancies.
+`git diff --check` passed. No hosted CI was queried and no other feature
+worktree, PR metadata, or branch alias was changed.

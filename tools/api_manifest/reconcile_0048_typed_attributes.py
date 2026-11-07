@@ -48,6 +48,7 @@ TYPED_ATTRIBUTE_ROOT_TYPES = frozenset({
     "AttributeView", "CurrentAttribute", "NewAttribute",
     "UniqueIdentifierValue", "UniqueIdentifierView",
 })
+TYPED_ATTRIBUTE_MARKER_NAMESPACE = "attribute::typed"
 UNIMPLEMENTED_MASK_NAME_EXPORTS = {
     "rust-kmipkit": {
         "kmipkit::protocol::named_values_generated::values::bitmask::cryptographic_usage_mask::name",
@@ -250,7 +251,9 @@ def _is_typed_attribute_route(package_id: str, export_name: str) -> bool:
     if prefix is None or not owner.startswith(prefix):
         return False
     relative_owner = owner.removeprefix(prefix).split("<", 1)[0]
-    if relative_owner == "attribute::typed" or relative_owner.startswith("attribute::typed::"):
+    if relative_owner == TYPED_ATTRIBUTE_MARKER_NAMESPACE or relative_owner.startswith(
+        TYPED_ATTRIBUTE_MARKER_NAMESPACE + "::"
+    ):
         return True
     relative_owner = relative_owner.removeprefix("attribute::")
     return relative_owner.split("::", 1)[0] in TYPED_ATTRIBUTE_ROOT_TYPES
