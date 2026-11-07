@@ -471,7 +471,9 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
         is_pending=operation in (0x1A, 0x3A, 0x39),
         payload_member_count=0,
         has_payload=operation in (0x3A, 0x39),
-        correlation=(b"typed-correlation" if operation in (0x19, 0x1A, 0x3A) else None),
+        correlation=(
+            b"typed-correlation" if operation in (0x19, 0x1A, 0x3A, 0x39) else None
+        ),
         payload_structure=(
             ttlv.ttlv_structure_create()
             if operation in (0x3A, 0x39)
@@ -507,6 +509,15 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
             assert observed == [b"typed-correlation"]
         if operation in (0x1A, 0x3A, 0x39):
             assert typed.is_pending
+        if operation == 0x39:
+            observed_correlation: list[bytes] = []
+
+            def inspect_query_correlation(value: memoryview) -> None:
+                assert value.readonly
+                observed_correlation.append(bytes(value))
+
+            assert typed.with_asynchronous_correlation_value(inspect_query_correlation)
+            assert observed_correlation == [b"typed-correlation"]
         if operation == 0x3A:
             assert typed.payload_member_count == 0
     finally:

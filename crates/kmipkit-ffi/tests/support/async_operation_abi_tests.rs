@@ -1,6 +1,13 @@
 use super::*;
 
 #[test]
+fn cancel_echo_is_exposed_only_for_success_with_a_validated_result() {
+    assert!(cancel_response_echo_is_exposed(0, true));
+    assert!(!cancel_response_echo_is_exposed(1, false));
+    assert!(!cancel_response_echo_is_exposed(0, false));
+}
+
+#[test]
 fn standalone_poll_request_exposes_its_owned_correlation_bytes() {
     let expected_correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
     let mut request = ptr::null_mut();
@@ -584,48 +591,6 @@ fn cancel_and_process_typed_readers_are_called_from_the_compiled_c_consumer() {
 }
 
 #[test]
-fn cancel_failure_does_not_expose_a_payload_correlation_as_an_echo() {
-    let correlation = [0x00, 0xff, 0x80, 0x23];
-    let response = response_message(
-        0x19,
-        1,
-        None,
-        Some(ttlv_structure(
-            0x0042_007c,
-            [ttlv_item(0x0042_0006, 0x08, &correlation)],
-        )),
-    );
-    let (client, peer, exchange_count) = client_with_responses(vec![response]);
-    let client_handle = make_handle(
-        Kind::Client,
-        HandleValue::Client(Box::new(Mutex::new(client))),
-    );
-    let limits_handle = make_handle(
-        Kind::CodecLimits,
-        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
-    );
-    let mut outcome = ptr::null_mut();
-    assert_eq!(
-        kmipkit_client_execute_cancel(
-            client_handle,
-            correlation.as_ptr(),
-            u64::try_from(correlation.len()).expect("correlation length fits ABI"),
-            limits_handle,
-            &raw mut outcome,
-        ),
-        SUCCESS
-    );
-    peer.join().expect("the failure-response test peer completes");
-    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
-    assert!(!outcome.is_null());
-    assert_c_consumer_typed_response(outcome, 0x19, 1, 0, 0, 0, &[], 1, 0);
-
-    kmipkit_client_async_operation_outcome_release(outcome);
-    kmipkit_codec_limits_release(limits_handle);
-    kmipkit_client_release(client_handle);
-}
-
-#[test]
 fn query_async_requests_with_options_executes_and_returns_one_outcome() {
     let expected_correlation = [0x00, 0xff, 0x80];
     let response = query_async_requests_response(&expected_correlation, 2);
@@ -676,8 +641,8 @@ fn query_async_requests_with_options_executes_and_returns_one_outcome() {
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
     assert!(!outcome.is_null());
     assert_query_async_requests_metadata(outcome, 2, BATCH_OUTCOME_PENDING);
-    assert_query_async_requests_has_no_correlation(outcome);
-    assert_c_consumer_typed_response(outcome, 0x39, 2, 1, 0, 0, &[], 1, 0);
+    assert_exact_correlation(outcome, &expected_correlation);
+    assert_c_consumer_typed_response(outcome, 0x39, 2, 1, 0, 0, &expected_correlation, 1, 0);
 
     kmipkit_client_async_operation_outcome_release(outcome);
     kmipkit_codec_limits_release(limits_handle);
@@ -747,6 +712,20 @@ fn query_async_requests_with_options_rejects_invalid_presence_flags_and_counts()
 }
 
 fn query_async_requests_response(correlation: &[u8], result_status: u32) -> Vec<u8> {
+    let mut response_fields = vec![
+        ttlv_enumeration(0x0042_005c, 0x39),
+        ttlv_enumeration(0x0042_007f, result_status),
+    ];
+    if result_status == 2 {
+        response_fields.push(ttlv_item(0x0042_0006, 0x08, correlation));
+    }
+    response_fields.push(ttlv_structure(
+        0x0042_007c,
+        [ttlv_structure(
+            0x0042_0176,
+            [ttlv_item(0x0042_0006, 0x08, correlation)],
+        )],
+    ));
     ttlv_structure(
         0x0042_007b,
         [
@@ -761,20 +740,7 @@ fn query_async_requests_response(correlation: &[u8], result_status: u32) -> Vec<
                     ttlv_integer(0x0042_000d, 1),
                 ],
             ),
-            ttlv_structure(
-                0x0042_000f,
-                [
-                    ttlv_enumeration(0x0042_005c, 0x39),
-                    ttlv_enumeration(0x0042_007f, result_status),
-                    ttlv_structure(
-                        0x0042_007c,
-                        [ttlv_structure(
-                            0x0042_0176,
-                            [ttlv_item(0x0042_0006, 0x08, correlation)],
-                        )],
-                    ),
-                ],
-            ),
+            ttlv_structure_from_children(0x0042_000f, response_fields),
         ],
     )
 }
@@ -850,6 +816,14 @@ fn response_message(
             ),
             response_item,
         ],
+    )
+}
+
+fn ttlv_structure_from_children(tag: u32, children: Vec<Vec<u8>>) -> Vec<u8> {
+    ttlv_item(
+        tag,
+        0x01,
+        &children.into_iter().flatten().collect::<Vec<_>>(),
     )
 }
 
