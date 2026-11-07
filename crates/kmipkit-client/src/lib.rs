@@ -349,6 +349,10 @@ mod validate_execution_tests;
 mod pkcs11_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/client_version_tests.rs"]
+mod client_version_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/server_to_client_tests.rs"]
 mod server_to_client_tests;
 
