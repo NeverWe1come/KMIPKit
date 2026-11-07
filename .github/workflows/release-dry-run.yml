@@ -111,7 +111,7 @@ jobs:
         run: python -B tools/release_packaging/dry_run.py stage-java --repo-root . --output-dir dist/release-dry-run/java
 
       - name: Install maturin for Python packaging
-        run: uv pip install --only-binary :all: maturin==1.9.4 cffi==1.17.1
+        run: 'uv pip install --only-binary :all: maturin==1.9.4 cffi==1.17.1'
 
       - name: Stage Python PyPI package
         run: python -B tools/release_packaging/dry_run.py stage-python --repo-root . --output-dir dist/release-dry-run/python
