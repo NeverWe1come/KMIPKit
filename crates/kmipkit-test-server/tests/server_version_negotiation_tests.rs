@@ -1,13 +1,9 @@
 //! Tests for KMIP 2.0 version negotiation and enforcement in kmipkit-test-server.
+#![allow(clippy::similar_names)]
 
-use std::time::Duration;
-
+use kmipkit_test_server::codec::Format;
 use kmipkit_test_server::ops::dispatcher::*;
 use kmipkit_test_server::{ServerConfig, TestServer};
-use kmipkit_transport::{
-    CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TimeoutLimit, TimeoutPolicy,
-    TransportConfig, TrustSource,
-};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -16,7 +12,7 @@ fn ttlv_item(raw_tag: u32, value: Value) -> Item {
     Item::new(tag, value).unwrap()
 }
 
-fn build_raw_tls_stream(
+async fn build_raw_tls_stream(
     pki: &kmipkit_test_server::AutoPki,
     port: u16,
 ) -> tokio_rustls::client::TlsStream<tokio::net::TcpStream> {
@@ -49,18 +45,18 @@ fn build_raw_tls_stream(
     std_stream.set_nonblocking(true).unwrap();
     let tokio_stream = tokio::net::TcpStream::from_std(std_stream).unwrap();
 
-    futures::executor::block_on(connector.connect(server_name, tokio_stream)).unwrap()
+    connector.connect(server_name, tokio_stream).await.unwrap()
 }
 
 #[tokio::test]
 async fn test_server_responds_with_requested_kmip20_version() {
-    let tmp = tempfile::tempdir().unwrap();
+    let dir = std::env::temp_dir().join(format!("kmip20-resp-ver-{}", std::process::id()));
     let config = ServerConfig::new()
-        .with_data_dir(tmp.path())
+        .with_data_dir(&dir)
         .with_clean(true);
     let handle = TestServer::start(config).await.unwrap();
 
-    let mut stream = build_raw_tls_stream(handle.pki(), handle.port());
+    let mut stream = build_raw_tls_stream(handle.pki(), handle.port()).await;
 
     // Build Request Message with ProtocolVersion (2, 0)
     let mut version_struct = Structure::new();
@@ -99,14 +95,13 @@ async fn test_server_responds_with_requested_kmip20_version() {
         .unwrap();
 
     let request_item = ttlv_item(TAG_REQUEST_MESSAGE, Value::structure(msg_struct));
-    let mut wire_bytes = Vec::new();
-    kmipkit_ttlv::codec::encode(&request_item, &mut wire_bytes).unwrap();
+    let wire_bytes = Format::Ttlv.encode(&request_item).unwrap();
 
     stream.write_all(&wire_bytes).await.unwrap();
 
     let mut resp_buf = vec![0u8; 4096];
     let n = stream.read(&mut resp_buf).await.unwrap();
-    let resp_item = kmipkit_ttlv::codec::decode(&resp_buf[..n]).unwrap();
+    let resp_item = Format::Ttlv.decode(&resp_buf[..n]).unwrap();
 
     // Verify response header protocol version is strictly (2, 0)
     resp_item.with_value(|view| {
@@ -131,18 +126,19 @@ async fn test_server_responds_with_requested_kmip20_version() {
     });
 
     handle.shutdown().await.unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[tokio::test]
 async fn test_server_in_kmip20_mode_rejects_kmip21_operations() {
-    let tmp = tempfile::tempdir().unwrap();
+    let dir = std::env::temp_dir().join(format!("kmip20-reject-21-{}", std::process::id()));
     let config = ServerConfig::new()
-        .with_data_dir(tmp.path())
+        .with_data_dir(&dir)
         .with_clean(true)
         .with_protocol_version(2, 0);
     let handle = TestServer::start(config).await.unwrap();
 
-    let mut stream = build_raw_tls_stream(handle.pki(), handle.port());
+    let mut stream = build_raw_tls_stream(handle.pki(), handle.port()).await;
 
     // Build Request Message with ProtocolVersion (2, 0) requesting Export (0x3A)
     let mut version_struct = Structure::new();
@@ -178,14 +174,13 @@ async fn test_server_in_kmip20_mode_rejects_kmip21_operations() {
         .unwrap();
 
     let request_item = ttlv_item(TAG_REQUEST_MESSAGE, Value::structure(msg_struct));
-    let mut wire_bytes = Vec::new();
-    kmipkit_ttlv::codec::encode(&request_item, &mut wire_bytes).unwrap();
+    let wire_bytes = Format::Ttlv.encode(&request_item).unwrap();
 
     stream.write_all(&wire_bytes).await.unwrap();
 
     let mut resp_buf = vec![0u8; 4096];
     let n = stream.read(&mut resp_buf).await.unwrap();
-    let resp_item = kmipkit_ttlv::codec::decode(&resp_buf[..n]).unwrap();
+    let resp_item = Format::Ttlv.decode(&resp_buf[..n]).unwrap();
 
     // Verify batch item response has STATUS_OPERATION_FAILED and REASON_OPERATION_NOT_SUPPORTED
     resp_item.with_value(|view| {
@@ -198,20 +193,21 @@ async fn test_server_in_kmip20_mode_rejects_kmip21_operations() {
                     let mut found_reason = false;
                     for child in b_struct.children() {
                         if child.tag().raw() == TAG_RESULT_STATUS {
-                            assert!(child.with_value(|v| matches!(v, kmipkit_ttlv::ValueView::Enumeration(STATUS_OPERATION_FAILED))));
+                            assert!(child.with_value(|v| matches!(v, kmipkit_ttlv::ValueView::Enumeration(val) if *val == STATUS_OPERATION_FAILED)));
                             found_status = true;
                         }
                         if child.tag().raw() == TAG_RESULT_REASON {
-                            assert!(child.with_value(|v| matches!(v, kmipkit_ttlv::ValueView::Enumeration(REASON_OPERATION_NOT_SUPPORTED))));
+                            assert!(child.with_value(|v| matches!(v, kmipkit_ttlv::ValueView::Enumeration(val) if *val == REASON_OPERATION_NOT_SUPPORTED)));
                             found_reason = true;
                         }
                     }
-                    assert!(found_status);
-                    assert!(found_reason);
+                    assert!(found_status, "expected STATUS_OPERATION_FAILED in response");
+                    assert!(found_reason, "expected REASON_OPERATION_NOT_SUPPORTED in response");
                 }
             });
         }
     });
 
     handle.shutdown().await.unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
 }

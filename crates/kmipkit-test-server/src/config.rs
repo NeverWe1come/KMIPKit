@@ -16,6 +16,8 @@ pub struct ServerConfig {
     pub require_client_cert: bool,
     /// Whether to wipe the data directory on startup.
     pub clean: bool,
+    /// Fixed or maximum protocol version to enforce (e.g., (2, 0) or (2, 1)).
+    pub protocol_version: Option<(u32, u32)>,
 }
 
 impl Default for ServerConfig {
@@ -26,6 +28,7 @@ impl Default for ServerConfig {
             export_pki: None,
             require_client_cert: true,
             clean: false,
+            protocol_version: None,
         }
     }
 }
@@ -33,6 +36,11 @@ impl Default for ServerConfig {
 impl ServerConfig {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn with_protocol_version(mut self, major: u32, minor: u32) -> Self {
+        self.protocol_version = Some((major, minor));
+        self
     }
 
     pub fn with_listen_addr(mut self, addr: SocketAddr) -> Self {
