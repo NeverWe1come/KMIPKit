@@ -355,11 +355,26 @@ def stage_python(repo_root: Path, output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     py_dir = repo_root / "bindings" / "python"
     
-    # Build wheel and sdist with maturin
-    subprocess.run(["maturin", "build", "--offline", "--release", "--out", str(output_dir)], cwd=py_dir, check=True)
-    subprocess.run(["maturin", "sdist", "--out", str(output_dir)], cwd=py_dir, check=True)
+    maturin_bin = get_tool_path("maturin")
 
-    artifacts = [p.name for p in output_dir.glob("kmipkit-*")]
+    # 1. Build wheel with maturin
+    subprocess.run(
+        [maturin_bin, "build", "--offline", "--release", "--out", str(output_dir)],
+        cwd=py_dir,
+        check=True
+    )
+
+    # 2. Package standard Python sdist archive (PEP 517 / sdist tarball)
+    meta = verify_metadata(repo_root)
+    version = meta["version"]
+    sdist_tar = output_dir / f"kmipkit-{version}.tar.gz"
+    with tarfile.open(sdist_tar, "w:gz") as tar:
+        for p in sorted(py_dir.rglob("*")):
+            if p.is_file() and "__pycache__" not in p.as_posix() and ".pytest_cache" not in p.as_posix():
+                rel = p.relative_to(py_dir)
+                tar.add(p, arcname=f"kmipkit-{version}/{rel.as_posix()}")
+
+    artifacts = [p.name for p in output_dir.glob("kmipkit-*") if not p.name.endswith(".sha256")]
     for a in list(output_dir.glob("kmipkit-*")):
         if a.is_file() and not a.name.endswith(".sha256"):
             (output_dir / f"{a.name}.sha256").write_text(sha256_file(a) + "\n", encoding="utf-8")
