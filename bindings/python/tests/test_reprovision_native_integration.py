@@ -134,7 +134,7 @@ def _request_payloads(encoded: bytes) -> list[list[_TtlvSpan]]:
     return payloads
 
 
-def _marker_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
+def _certificate_request_structure(limits: ttlv.CodecLimits) -> ttlv.Structure:
     structure = ttlv.ttlv_structure_create()
     fields = (
         (0x420019, "enumeration", 1),
@@ -172,7 +172,10 @@ def _structure_tags(structure: ttlv.Structure) -> tuple[int, ...]:
 
 
 def test_certificate_request_fixture_includes_required_oasis_table_3_fields() -> None:
-    with ttlv.codec_limits_defaults() as limits, _marker_structure(limits) as certificate_request:
+    # OASIS KMIP 2.1, Section 2.2, Table 3 requires both child fields.
+    with ttlv.codec_limits_defaults() as limits, _certificate_request_structure(
+        limits
+    ) as certificate_request:
         assert _structure_tags(certificate_request) == (0x420019, 0x420140, 0x541101)
 
 
@@ -197,7 +200,7 @@ def test_reprovision_sends_parameterless_and_certificate_request_items() -> None
                     extensions.client_batch_item_reprovision(), _BATCH_IDS[0]
                 )
             )
-            with _marker_structure(limits) as certificate_request:
+            with _certificate_request_structure(limits) as certificate_request:
                 batch.add_item(
                     extensions.with_unique_batch_item_id(
                         extensions.client_batch_item_reprovision(

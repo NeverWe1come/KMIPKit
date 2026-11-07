@@ -67,6 +67,7 @@ def _rng_response_message() -> bytes:
 
 
 def test_rng_seed_response_fixture_uses_oasis_data_length_tag() -> None:
+    # OASIS KMIP 2.1, Section 6.1.50 Table 320 and Section 7.10 Table 362.
     response = _rng_response_message()
 
     assert _ttlv_item(0x4200C4, 2, struct.pack(">i", 0)) in response
