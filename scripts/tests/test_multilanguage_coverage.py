@@ -176,6 +176,35 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             parsed,
         )
 
+    def test_jacoco_parser_ignores_catalog_generated_named_value_sources(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / "bindings/java/src/main/java/org/kmipkit/protocol"
+            source_root.mkdir(parents=True)
+            source_root.joinpath("CryptographicParameters.java").write_text(
+                "class CryptographicParameters {}\n", encoding="utf-8"
+            )
+            source_root.joinpath("KmipValues.java").write_text(
+                "class KmipValues {}\n", encoding="utf-8"
+            )
+            report = """<?xml version="1.0"?>
+            <report name="KMIPKit"><package name="org/kmipkit/protocol">
+              <sourcefile name="CryptographicParameters.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+              <sourcefile name="KmipValues.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+            </package></report>"""
+
+            parsed = GATE.parse_jacoco_report(report, root)
+
+        self.assertEqual(
+            {
+                "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java": {
+                    1: 1
+                }
+            },
+            parsed,
+        )
+
     def test_jacoco_parser_ignores_all_null_marked_package_info_sources(self) -> None:
         self.require_gate()
         metadata_packages = (
