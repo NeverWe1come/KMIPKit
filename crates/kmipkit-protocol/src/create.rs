@@ -51,7 +51,7 @@ impl ObjectType {
         self.0
     }
 
-    /// Returns the exact raw unsigned Enumeration value (alias for [`raw`]).
+    /// Returns the exact raw unsigned Enumeration value (alias for [`Self::raw`]).
     #[must_use]
     pub const fn to_raw(self) -> u32 {
         self.0
