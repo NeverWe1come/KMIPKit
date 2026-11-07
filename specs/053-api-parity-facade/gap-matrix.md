@@ -18,7 +18,7 @@ At the start of KMIPKIT-0053, the reviewed manifest had 750 candidate declaratio
 
 ## Current Reconciliation Status (2026-11-07)
 
-- All 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (56 Rust trait-implementation members plus the Rust-only `EncryptionKeyInformation::with_typed_cryptographic_parameters` helper). There are no unresolved candidates.
+- All 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (50 enum-field artifacts, four trait implementation members, two module artifacts, and the Rust-only `EncryptionKeyInformation::with_typed_cryptographic_parameters` helper). There are no unresolved candidates.
 - One internal C ABI block-copy bridge has a separate exact exclusion outside the original 750 candidates. The feature has 354 unique KMIPKIT-0053 package/export exclusions overall, each with an exact reason and evidence paths.
 - All seven capabilities owned by this feature are `verified`, with 1,470 associated public declaration rows verified. The 56 client-initiated operation entries are verified with executable Rust/C/Java/Python evidence; Query typed fields and generic raw access are covered in every binding.
 - Fresh compiled export audits match exactly: Rust 7,844/7,844, C 1,866/1,866, Java 2,161/2,161, and Python 2,347/2,347. Each audit reports zero missing, unobserved, kind-mismatched, or audit-error entries. The earlier snapshots in `candidate-resolutions/` are retained as provenance for the candidate-resolution process and are superseded by these final audits.

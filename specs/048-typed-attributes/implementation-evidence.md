@@ -110,11 +110,12 @@ Red/Green/Refactor and verification evidence in this file.
 
 ## Remaining controls and limitations
 
-Local verification was performed on Windows. A broader API-wide Python test
-suite has an unrelated inherited failure in
-`test_encrypt_decrypt_parity_manifest`, which expects only two Rust routes for
-each operation while the current manifest contains additional API route
-records; the corresponding test module is not included in the focused run
-above. CI on other platforms and remote CI remain outside this local evidence.
-This feature is stacked on `feature/KMIPKIT-0047-named-values`; it is not
-merged into `release/1.0.0`.
+Local verification for this specification was performed on Windows. The
+broader `test_encrypt_decrypt_parity_manifest` failure described in the
+original review was resolved downstream in KMIPKIT-0053: the test now selects
+canonical declarations by ID, and the four DecryptRequest helper routes are
+attributed to Decrypt with §6.1.11 requirements. The updated five-test module
+passes. Cross-platform and remote-CI results remain outside this local
+evidence; hosted CI is currently ignored under the maintainer's billing
+instruction. This feature remains stacked and is not merged into
+`release/1.0.0`.

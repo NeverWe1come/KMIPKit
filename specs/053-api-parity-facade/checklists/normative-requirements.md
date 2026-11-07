@@ -8,7 +8,7 @@
 - [x] All 56 operations and asynchronous outcomes have equivalent language access.
 - [x] Response header/payload and nested vendor TTLV follow KMIPKIT-0052.
 - [x] Unknown values, bits, and generic TTLV remain available.
-- [x] All 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (56 Rust trait members and one Rust helper); the additional C block-copy bridge has its own exact exclusion.
+- [x] All 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (50 enum-field artifacts, four trait implementation members, two module artifacts, and one Rust helper); the additional C block-copy bridge has its own exact exclusion.
 - [x] Fresh compiled Rust/C/Java/Python export audits match all 7,844 / 1,866 / 2,161 / 2,347 declarations respectively, with zero missing, unobserved, kind-mismatched, or audit-error entries.
 - [x] Independent review checked normative references, security effects, evidence paths, and the KMIPKIT-0053 exclusion set; no normative mismatch remains.
 - [x] Redaction, release, zeroization, ABI, and bilingual limitations are verified.
@@ -16,4 +16,4 @@
 
 ## Verification record
 
-Windows x86_64 local results are recorded in `specs/053-api-parity-facade/implementation-evidence.md`. Hosted CI and coverage thresholds are deferred by maintainer instruction; Linux/macOS runs, the independent two-server interoperability gate, and qualified human security review remain outside this branch's completed evidence.
+Windows x86_64 local results, including full-workspace Rust line coverage that meets each local numeric threshold, are recorded in `specs/053-api-parity-facade/implementation-evidence.md`. Cross-platform/binding coverage aggregation and hosted CI are outstanding (hosted CI is being ignored under the maintainer's billing instruction); Linux/macOS runs, the independent two-server interoperability gate, and qualified human security review also remain outside this branch's completed evidence.

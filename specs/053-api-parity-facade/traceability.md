@@ -23,4 +23,8 @@ Exact source tables are inherited from specs 048–052 and reference the pinned 
 - P006: Generated outputs are written only by the pinned generator.
 
 ## Verification Record
-Add exact commands/platforms before the draft PR update. Coverage and hosted CI remain release gates, temporarily deferred by direct instruction.
+- Windows x86_64: `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and `cargo test --workspace --all-features --locked` passed.
+- Windows x86_64 Rust line coverage: `cargo llvm-cov --workspace --all-features --locked --json --output-path <temp>/kmipkit-0053-final-coverage.json` passed after `python scripts/coverage_gate.py preflight --workspace .`. The normalized report contains all 140 eligible production files; workspace 93.50%, TTLV 99.06%, protocol 96.13%, client 97.43%, transport 95.16%, FFI 86.70%, and test-support 95.84%.
+- `python -B tools/api_manifest/reconcile_0053_api_parity.py --write` is idempotent and reports `+0 functions`; `python -B tools/api_manifest/generate.py --check` verifies all 12 generated outputs. The full API route reconciliation and Encrypt/Decrypt parity tests pass.
+- The Reconciler, binding export audits, full Rust workspace, Java suite, Python suite, and compiled Rust/C/Java/Python package consumers passed locally as listed in `implementation-evidence.md`.
+- The all-platform and binding coverage aggregation remains outstanding. The maintainer instructed us to ignore hosted GitHub CI while billing is unavailable. No Linux/macOS, two-server interoperability, or qualified human security review result is claimed.
