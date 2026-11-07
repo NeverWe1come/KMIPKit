@@ -910,6 +910,7 @@ typedef struct kmipkit_profile_readiness_blocker_view_v1_t kmipkit_profile_readi
 typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row_view_v1_t;
 typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
 typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
+typedef struct kmipkit_client_async_operation_response_v1_t kmipkit_client_async_operation_response_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1168,6 +1169,21 @@ struct kmipkit_profile_catalog_row_view_v1_t {
     kmipkit_byte_span_v1_t mandatory_status;
     kmipkit_byte_span_v1_t fixture_availability;
     kmipkit_byte_span_v1_t text_value;
+};
+
+struct kmipkit_client_async_operation_response_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t result_status;
+    uint32_t is_pending;
+    uint32_t has_cancellation_result;
+    uint32_t cancellation_result;
+    uint32_t has_asynchronous_correlation_value;
+    kmipkit_byte_span_v1_t asynchronous_correlation_value;
+    uint32_t has_response_payload;
+    uint32_t reserved;
+    uint64_t response_payload_member_count;
 };
 
 struct kmipkit_client_batch_item_metadata_v1_t {
@@ -1649,7 +1665,7 @@ int32_t kmipkit_client_async_operation_outcome_extension_ttlv_at(kmipkit_client_
  */
 /* KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_async_operation_outcome_metadata_v1(kmipkit_client_async_operation_outcome_t * outcome, kmipkit_client_async_operation_metadata_v1_t * out_metadata);
-/* Copies a successful generic Response Payload as a caller-owned TTLV structure.
+/* Copies a present generic Response Payload as a caller-owned TTLV structure.
  */
 /* KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_async_operation_outcome_response_payload_ttlv(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_payload);
@@ -2644,6 +2660,22 @@ int32_t kmipkit_hashed_password_timestamp_sequence_new(uint8_t has_last_timestam
  */
 /* KMIPKIT-0008-FR-007, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-010-001 */
 int32_t kmipkit_hashed_password_timestamp_sequence_record(kmipkit_hashed_password_timestamp_sequence_t * sequence, int64_t timestamp);
+/* Returns the typed Cancel result and borrowed echo span; inspect its Response Payload as generic TTLV.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_cancel_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Returns Pending state and borrowed correlation metadata; any terminal Response Payload remains generic TTLV.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_poll_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Returns Pending state, payload presence/count, and borrowed correlation metadata.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_process_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Returns Query Asynchronous Requests status and generic TTLV. KMIP v2.1 §6.1.41 Table 286 caption/body discrepancy remains unresolved; no payload meaning is inferred.
+ */
+/* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
+int32_t kmipkit_client_async_operation_outcome_query_async_requests_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
 /* Queries presence and count; successful Create Split Key responses preserve one-or-more identifiers in wire order, subject to the local response-size limit.
  */
 /* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */

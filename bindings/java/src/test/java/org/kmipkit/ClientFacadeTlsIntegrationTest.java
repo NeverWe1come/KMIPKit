@@ -52,6 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.AsyncOperationOutcome;
+import org.kmipkit.extensions.AsyncPollResponse;
 import org.kmipkit.extensions.BatchOutcomeKind;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
@@ -3649,7 +3650,7 @@ final class ClientFacadeTlsIntegrationTest {
             requests.add(serveOneResponse(listener,
                     singleAsyncResponseMessage(0x19, 0, null, cancelPayload)));
             requests.add(serveOneResponse(listener,
-                    singleAsyncResponseMessage(0x3a, 0, null, emptyPayload)));
+                    singleAsyncResponseMessage(0x3a, 2, correlation, emptyPayload)));
             requests.add(serveOneResponse(listener,
                     singleAsyncResponseMessage(0x39, 0, null, emptyPayload)));
             return requests;
@@ -3657,6 +3658,7 @@ final class ClientFacadeTlsIntegrationTest {
         Thread peerThread = new Thread(peer, "kmipkit-java-default-async-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
+        AsyncPollResponse[] retainedPoll = new AsyncPollResponse[1];
 
         List<byte[]> requests;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
@@ -3677,19 +3679,20 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0x1a, outcome.metadataV1().operation());
                 assertTrue(outcome.metadataV1().outcomeKind().isPending());
                 var typed = outcome.pollResponse().orElseThrow();
+                retainedPoll[0] = typed;
                 assertTrue(typed.isPending());
                 assertEquals(0x1a, typed.result().operation());
                 assertTrue(typed.withAsynchronousCorrelationValue(value -> {
                     byte[] observed = new byte[value.remaining()];
                     value.get(observed);
                     assertArrayEquals(correlation, observed);
-                    return true;
                 }));
                 assertTrue(typed.raw().isEmpty());
                 assertTrue(outcome.cancelResponse().isEmpty());
                 assertTrue(outcome.processResponse().isEmpty());
                 assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
+            assertThrows(InvalidInputException.class, retainedPoll[0]::isPending);
             try (AsyncOperationOutcome outcome = client.executeCancel(
                     correlation, CodecLimits.defaults())) {
                 assertEquals(0x19, outcome.metadataV1().operation());
@@ -3701,25 +3704,33 @@ final class ClientFacadeTlsIntegrationTest {
                     byte[] observed = new byte[value.remaining()];
                     value.get(observed);
                     assertArrayEquals(correlation, observed);
-                    return true;
                 }));
                 try (TtlvStructure payload = typed.raw().orElseThrow();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(2, view.itemCount());
                 }
                 assertTrue(outcome.pollResponse().isEmpty());
+                assertTrue(outcome.processResponse().isEmpty());
+                assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeProcess(
-                    correlation, CodecLimits.defaults(), OptionalLong.empty())) {
+                    correlation, CodecLimits.defaults(), OptionalLong.of(1))) {
                 assertEquals(0x3a, outcome.metadataV1().operation());
                 var typed = outcome.processResponse().orElseThrow();
-                assertFalse(typed.isPending());
+                assertTrue(typed.isPending());
                 assertEquals(0, typed.payloadMemberCount().orElseThrow());
+                assertTrue(typed.withAsynchronousCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(correlation, observed);
+                }));
                 try (TtlvStructure payload = typed.raw().orElseThrow();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(0, view.itemCount());
                 }
                 assertTrue(outcome.cancelResponse().isEmpty());
+                assertTrue(outcome.pollResponse().isEmpty());
+                assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequests(
                     CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
@@ -3732,6 +3743,8 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(0, view.itemCount());
                 }
                 assertTrue(outcome.pollResponse().isEmpty());
+                assertTrue(outcome.cancelResponse().isEmpty());
+                assertTrue(outcome.processResponse().isEmpty());
             }
             requests = peer.get(24, TimeUnit.SECONDS);
         } finally {

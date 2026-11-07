@@ -10818,3 +10818,92 @@ cleanup:
     kmipkit_ttlv_structure_release(request);
     return result;
 }
+
+int kmipkit_client_abi_c_consumer_reads_async_response_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint32_t expected_operation,
+        uint32_t expected_result_status,
+        uint32_t expected_is_pending,
+        uint32_t expected_has_cancellation_result,
+        uint32_t expected_cancellation_result,
+        const uint8_t *expected_correlation,
+        uint64_t expected_correlation_length,
+        uint32_t expected_has_payload,
+        uint64_t expected_payload_member_count) {
+    typedef int32_t (*reader_fn)(
+            kmipkit_client_async_operation_outcome_t *, uint8_t *,
+            kmipkit_client_async_operation_response_v1_t *);
+    const uint32_t operations[] = {UINT32_C(0x19), UINT32_C(0x1a),
+            UINT32_C(0x3a), UINT32_C(0x39)};
+    const reader_fn readers[] = {
+        kmipkit_client_async_operation_outcome_cancel_response_v1,
+        kmipkit_client_async_operation_outcome_poll_response_v1,
+        kmipkit_client_async_operation_outcome_process_response_v1,
+        kmipkit_client_async_operation_outcome_query_async_requests_response_v1};
+    size_t selected = sizeof(operations) / sizeof(operations[0]);
+    kmipkit_client_async_operation_response_v1_t response = {0};
+    uint8_t present = UINT8_MAX;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    uint8_t payload_present = UINT8_MAX;
+    int result = 0;
+    int failure_stage = 1;
+
+    if (outcome == NULL || expected_correlation_length > UINT64_C(16777216) ||
+            (expected_correlation_length != 0 && expected_correlation == NULL) ||
+            expected_is_pending > 1 || expected_has_cancellation_result > 1 ||
+            expected_has_payload > 1) {
+        return 0;
+    }
+    for (size_t index = 0; index < sizeof(operations) / sizeof(operations[0]); ++index) {
+        if (operations[index] == expected_operation) selected = index;
+    }
+    if (selected == sizeof(operations) / sizeof(operations[0]) ||
+            readers[selected](outcome, &present, &response) != 0 || present != 1 ||
+            response.struct_size != sizeof(response) || response.abi_version != 1 ||
+            response.operation != expected_operation ||
+            response.result_status != expected_result_status ||
+            response.is_pending != expected_is_pending ||
+            response.has_cancellation_result != expected_has_cancellation_result ||
+            response.cancellation_result != expected_cancellation_result ||
+            response.has_asynchronous_correlation_value !=
+                    (expected_correlation_length != 0 || expected_correlation != NULL) ||
+            response.has_response_payload != expected_has_payload ||
+            response.response_payload_member_count != expected_payload_member_count ||
+            response.reserved != 0 ||
+            response.asynchronous_correlation_value.length != expected_correlation_length ||
+            (expected_correlation_length == 0 &&
+                    response.asynchronous_correlation_value.data != NULL) ||
+            (expected_correlation_length != 0 &&
+                    (response.asynchronous_correlation_value.data == NULL ||
+                            memcmp(response.asynchronous_correlation_value.data,
+                                    expected_correlation,
+                                    (size_t)expected_correlation_length) != 0))) {
+        failure_stage = 2;
+        goto cleanup;
+    }
+
+    if (kmipkit_client_async_operation_outcome_response_payload_ttlv(
+                outcome, &payload_present, &payload) != 0 ||
+            payload_present != expected_has_payload ||
+            ((payload_present == 0) != (payload == NULL))) {
+        failure_stage = 3;
+        goto cleanup;
+    }
+
+    for (size_t index = 0; index < sizeof(operations) / sizeof(operations[0]); ++index) {
+        if (index == selected) continue;
+        kmipkit_client_async_operation_response_v1_t mismatch = {0};
+        uint8_t mismatch_present = UINT8_MAX;
+        if (readers[index](outcome, &mismatch_present, &mismatch) != 0 ||
+                mismatch_present != 0 || mismatch.struct_size != 0 ||
+                mismatch.abi_version != 0) {
+            failure_stage = 4 + (int)index;
+            goto cleanup;
+        }
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(payload);
+    return result == 1 ? 1 : -failure_stage;
+}
