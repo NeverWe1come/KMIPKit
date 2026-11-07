@@ -81,6 +81,26 @@ class BindingAuditReconciliationTests(unittest.TestCase):
         ]
         self.assertEqual([], stale)
 
+    def test_bitmask_single_bit_name_lookup_is_c_only(self) -> None:
+        rows = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if "KMIPKIT-0047-FR-004" in row.get("requirementIds", [])
+            and row.get("exportName", "").endswith("name")
+        ]
+        self.assertEqual(3, len(rows))
+        self.assertEqual({"c-kmipkit"}, {row["packageId"] for row in rows})
+        self.assertEqual(
+            {"named_protocol_mask_single_bit_lookup"},
+            {row["capabilityId"] for row in rows},
+        )
+        capability = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "named_protocol_mask_single_bit_lookup"
+        )
+        self.assertEqual("c-only", capability["parityScope"])
+
 
 if __name__ == "__main__":
     unittest.main()

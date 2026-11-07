@@ -40,6 +40,71 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertTrue(known["rust"].endswith("::known_bits"))
         self.assertTrue(known["python"].endswith(".known_bits"))
 
+    def test_bitmask_name_helper_is_reconciled_as_c_only(self) -> None:
+        root = ROOT
+        catalog = reconcile_named_value_manifest.load_validated_catalog(
+            reconcile_named_value_manifest.safe_read_bytes(
+                root,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=reconcile_named_value_manifest.MAX_BYTES,
+            ),
+            root,
+            require_complete=True,
+        )
+        declarations, mappings = reconcile_named_value_manifest.build_named_value_records(catalog)
+        reconciled = reconcile_named_value_manifest.reconcile(
+            {"requirementIds": [], "capabilities": [], "publicDeclarations": []},
+            declarations,
+            mappings,
+        )
+
+        bitmask_name_rows = [
+            row
+            for row in reconciled["publicDeclarations"]
+            if "KMIPKIT-0047-FR-004" in row.get("requirementIds", [])
+            and row.get("exportName", "").endswith("name")
+        ]
+        self.assertEqual(3, len(bitmask_name_rows))
+        self.assertEqual({"c-kmipkit"}, {row["packageId"] for row in bitmask_name_rows})
+        self.assertEqual(
+            {"named_protocol_mask_single_bit_lookup"},
+            {row["capabilityId"] for row in bitmask_name_rows},
+        )
+        capability = next(
+            row
+            for row in reconciled["capabilities"]
+            if row["capabilityId"] == "named_protocol_mask_single_bit_lookup"
+        )
+        self.assertEqual("c-only", capability["parityScope"])
+
+    def test_rust_named_values_are_mapped_through_facade_and_protocol_crate(self) -> None:
+        root = ROOT
+        catalog = reconcile_named_value_manifest.load_validated_catalog(
+            reconcile_named_value_manifest.safe_read_bytes(
+                root,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=reconcile_named_value_manifest.MAX_BYTES,
+            ),
+            root,
+            require_complete=True,
+        )
+        declarations, _ = reconcile_named_value_manifest.build_named_value_records(catalog)
+        rows = [
+            row
+            for row in declarations
+            if row["exportName"].endswith(
+                "named_values_generated::values::bitmask::cryptographic_usage_mask::AUTHENTICATE"
+            )
+        ]
+
+        self.assertEqual(
+            {
+                ("rust-kmipkit", "kmipkit::protocol::named_values_generated::values::bitmask::cryptographic_usage_mask::AUTHENTICATE"),
+                ("rust-kmipkit-protocol", "kmipkit_protocol::named_values_generated::values::bitmask::cryptographic_usage_mask::AUTHENTICATE"),
+            },
+            {(row["packageId"], row["exportName"]) for row in rows},
+        )
+
     def test_manifest_reconciliation_preserves_existing_declaration_order(self) -> None:
         existing = [
             {"declarationId": "z-existing", "exportName": "Existing Z"},
