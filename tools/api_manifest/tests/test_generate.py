@@ -684,6 +684,13 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         ):
             generate._validate_v2_manifest(manifest, schema, catalog, ROOT)
 
+    def test_partial_manifest_without_attribute_capability_needs_no_tag_rows(self) -> None:
+        catalog = json.loads((ROOT / generate.CATALOG_PATH).read_text(encoding="utf-8"))
+
+        generate._validate_standard_attribute_catalog_values(
+            {"capabilities": [], "publicDeclarations": []}, catalog
+        )
+
     def test_declared_c_symbol_signature_is_emitted_from_its_declaration(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declaration = copy.deepcopy(

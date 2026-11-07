@@ -1776,6 +1776,18 @@ def _validate_standard_attribute_catalog_values(
             continue
         if isinstance(c_name, str) and c_name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_"):
             actual[c_name] = declaration.get("cValue")
+    has_ready_attribute_capability = any(
+        isinstance(capability, dict)
+        and capability.get("capabilityId") == "typed_object_attributes"
+        and capability.get("capabilityState") in {"declared", "verified"}
+        for capability in manifest.get("capabilities", [])
+    )
+    if not actual and not has_ready_attribute_capability:
+        return
+    if actual and not has_ready_attribute_capability:
+        raise ManifestError(
+            "standard attribute declarations require the typed-object-attributes capability"
+        )
     if actual != expected:
         raise ManifestError(
             "standard attribute value does not match the normative catalog"
