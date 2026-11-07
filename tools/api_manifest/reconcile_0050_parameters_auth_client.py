@@ -124,17 +124,15 @@ def _operation_mapping(
     if method is None:
         raise ReconciliationError(f"operation has no reviewed direct method: {operation_id}")
     first, *rest = method.split("_")
+    # Metadata shares operation ownership; only the exact constructor is equivalent.
     exact_names = {
         "c": f"kmipkit_client_batch_item_{method}",
         "java": "org.kmipkit.extensions.ClientBatchItem." + first + "".join(part.title() for part in rest),
         "python": f"kmipkit.extensions.client_batch_item_{method}",
     }
-    candidates = [
-        row for row in declarations_by_id.values()
-        if row.get("capabilityId") == operation_id
-        and row.get("languageMappings", {}).get(language)
-    ]
-    for candidate in candidates:
+    for candidate in declarations_by_id.values():
+        if candidate.get("capabilityId") != operation_id:
+            continue
         mapping = candidate.get("languageMappings", {}).get(language)
         if not mapping:
             continue
