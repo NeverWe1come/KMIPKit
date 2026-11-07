@@ -59,6 +59,7 @@ final class GetAttributeListJavaFacadeTest {
 
         assertEquals("object-7", mapped.uniqueIdentifier().text());
         assertEquals(3, mapped.attributeReferences().size());
+        assertTrue(mapped.toString().contains("redacted"));
         assertEquals(0x0054_0001L, mapped.attributeReferences().get(0).tagValue().orElseThrow());
         assertEquals("vendor", mapped.attributeReferences().get(1)
                 .vendorIdentification().orElseThrow());
@@ -94,6 +95,53 @@ final class GetAttributeListJavaFacadeTest {
                         new Object[] {new long[] {1}, null, new long[0], new long[0],
                                 new String[0], new String[0], new long[] {0}},
                         CodecLimits.defaults().maxElements(), CodecLimits.defaults().maxMessageBytes()));
+    }
+
+    @Test
+    void malformedAbsentResponseAndNegativeLimitsAreRejected() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetAttributeListResponse(
+                        new Object[0], -1, CodecLimits.defaults().maxMessageBytes()));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetAttributeListResponse(
+                        new Object[] {new long[] {0}, null, new long[] {1}, new long[] {0},
+                                new String[] {null}, new String[] {null}, new long[] {0}},
+                        CodecLimits.defaults().maxElements(), CodecLimits.defaults().maxMessageBytes()));
+    }
+
+    @Test
+    void invalidNativeAttributeReferenceReleasesItsOwnedPayload() {
+        try (TtlvStructure payload = TtlvStructure.create()) {
+            long ownedHandle = payload.nativeHandleOwner().transfer();
+            Object[] values = {
+                new long[] {1},
+                UniqueIdentifier.textString("object-7"),
+                new long[] {99},
+                new long[] {0},
+                new String[] {null},
+                new String[] {null},
+                new long[] {ownedHandle}
+            };
+
+            assertThrows(InvalidInputException.class,
+                    () -> ClientBatchItemResult.parseGetAttributeListResponse(
+                            values, CodecLimits.defaults().maxElements(),
+                            CodecLimits.defaults().maxMessageBytes()));
+            ResponseTtlvTestSupport.assertReleased(ownedHandle);
+        }
+    }
+
+    @Test
+    void absentIdentifierResponsesRejectUnexpectedValues() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseLifecycleIdentifierResponse(
+                        new Object[] {new long[] {0}, "unexpected"}, "Revoke"));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseAdjustAttributeResponse(
+                        new Object[] {new long[] {0}, "unexpected"}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseDeleteAttributeResponse(
+                        new Object[] {new long[] {0}, "unexpected"}));
     }
 
     @Test

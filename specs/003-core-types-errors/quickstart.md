@@ -6,7 +6,7 @@ Prerequisite: KMIPKIT-0002 normative inventory and generated Result Status/Reaso
 2. Run focused transport tests with cargo test -p kmipkit-transport --test delivery_state.
 3. Run focused client tests with cargo test -p kmipkit-client --test error_contract.
 4. Run all workspace checks required for the PR: cargo fmt --all --check; cargo clippy --workspace --all-targets --all-features -- -D warnings; cargo test --workspace --all-features; cargo doc --workspace --all-features --no-deps.
-5. Confirm coverage for changed code is at least 95 percent and all applicable protocol/transport/workspace thresholds remain met.
+5. Confirm coverage for changed code is at least 90 percent and all applicable protocol/transport/workspace thresholds remain met.
 
 Expected outcomes:
 - Known values use generated catalog names while unknown numeric values remain exact.

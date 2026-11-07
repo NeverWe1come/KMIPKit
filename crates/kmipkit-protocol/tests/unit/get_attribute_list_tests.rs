@@ -264,6 +264,21 @@ fn successful_response_exposes_typed_payload_as_generic_ttlv() {
 }
 
 #[test]
+fn failure_response_has_no_operation_payload_to_reencode() {
+    let message = response_message(1, Some(0x0000_000C), Some("permission denied"), None);
+    let response = GetAttributeListResponse::try_from_response_item(response_item(&message))
+        .expect("a non-success response needs no Get Attribute List payload");
+
+    assert_eq!(response.result().status().raw(), 1);
+    assert!(
+        response
+            .to_ttlv_payload()
+            .expect("a non-success response has no payload to encode")
+            .is_none()
+    );
+}
+
+#[test]
 fn response_reencoding_preserves_unallocated_raw_tag_enumeration() {
     const UNKNOWN_RAW_TAG: u32 = 0xFFFF_FFFE;
     let message = response_message(

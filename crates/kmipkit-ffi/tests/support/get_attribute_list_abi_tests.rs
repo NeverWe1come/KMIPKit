@@ -1,7 +1,7 @@
 use super::*;
 use crate::kmipkit_attribute_reference_v1_t;
 use kmipkit_client::ClientRequest;
-use kmipkit_protocol::GetAttributeListRequest;
+use kmipkit_protocol::{AttributeReference, GetAttributeListRequest, GetAttributesRequest};
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
@@ -439,6 +439,51 @@ fn typed_get_attribute_list_hides_operation_fields_for_failure() {
     assert!(identifier.text_data.is_null());
     assert_eq!(identifier.text_length, 0);
     kmipkit_client_batch_item_response_release(failure);
+}
+
+#[test]
+fn typed_get_attribute_list_hides_a_successful_different_operation() {
+    let request = ClientRequest::get_attributes(
+        GetAttributesRequest::try_new(
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
+            [AttributeReference::tag(0x0042_002f)],
+        )
+        .expect("the request reference is unique"),
+    );
+    let response = successful_cryptographic_item(
+        request,
+        0x0b,
+        b"attribute-list-wrong-operation",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"object-7"),
+            ttlv_structure(
+                0x0042_0125,
+                [ttlv_item(0x0042_002f, 0x09, &7_i64.to_be_bytes())],
+            ),
+        ],
+    );
+    let mut present = u8::MAX;
+    let mut identifier = empty_unique_identifier_record();
+    let mut count = u64::MAX;
+    assert_eq!(
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                response,
+                &raw mut present,
+                &raw mut identifier,
+                ptr::null_mut(),
+                0,
+                &raw mut count,
+            )
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    assert_eq!(identifier.text_length, 0);
+    assert_eq!(count, 0);
+    kmipkit_client_batch_item_response_release(response);
 }
 
 fn empty_unique_identifier_record() -> kmipkit_unique_identifier_v1_t {

@@ -1,0 +1,1516 @@
+{
+  "sourceCommit": "e1826395ae28c5c670399720bbf0a4f9ee98d6e0",
+  "candidateSpecId": "KMIPKIT-0021",
+  "count": 377,
+  "sha256": "f612e24ee5e7caebe571b44e4764f6b57a6a0de5bd17e9aab57c9b64b725c282",
+  "identities": [
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::Client::hash"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::Client::mac"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::Client::mac_verify"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::Client::sign"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::Client::signature_verify"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Hash"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Hash::0"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Mac"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Mac::0"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Sign"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Sign::0"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientOperation::Hash"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientOperation::Mac"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientOperation::Sign"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientRequest::Hash::0"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientRequest::Mac::0"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientRequest::Sign::0"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientRequest::mac"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientRequest::sign"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientResponseView::hash"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientResponseView::mac"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientResponseView::mac_verify"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientResponseView::sign"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientResponseView::signature_verify"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::Owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::clone_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as alloc::borrow::ToOwned>::to_owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as alloc::string::ToString>::to_string"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::clone::Clone>::clone"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::clone::Clone>::clone_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::clone::CloneToUninit>::clone_to_uninit"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::cmp::Eq>::assert_receiver_is_total_eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::cmp::PartialEq>::eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::cmp::PartialEq>::ne"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::error::Error>::cause"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::error::Error>::description"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::error::Error>::provide"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::error::Error>::source"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::error::Error>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashError as core::fmt::Display>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::borrow::Borrow<kmipkit_protocol::hash::HashRequest>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::borrow::BorrowMut<kmipkit_protocol::hash::HashRequest>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::convert::From<kmipkit_protocol::hash::HashRequest>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashRequest as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::borrow::Borrow<kmipkit_protocol::hash::HashResponse>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::borrow::BorrowMut<kmipkit_protocol::hash::HashResponse>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::convert::From<kmipkit_protocol::hash::HashResponse>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::HashResponse as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::Owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::clone_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as alloc::borrow::ToOwned>::to_owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as alloc::string::ToString>::to_string"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::clone::Clone>::clone"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::clone::Clone>::clone_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::clone::CloneToUninit>::clone_to_uninit"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::cmp::Eq>::assert_receiver_is_total_eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::cmp::PartialEq>::eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::cmp::PartialEq>::ne"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::error::Error>::cause"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::error::Error>::description"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::error::Error>::provide"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::error::Error>::source"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::error::Error>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacError as core::fmt::Display>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::borrow::Borrow<kmipkit_protocol::mac::MacRequest>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::borrow::BorrowMut<kmipkit_protocol::mac::MacRequest>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::convert::From<kmipkit_protocol::mac::MacRequest>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::default::Default>::default"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacRequest as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::borrow::Borrow<kmipkit_protocol::mac::MacResponse>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::borrow::BorrowMut<kmipkit_protocol::mac::MacResponse>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::convert::From<kmipkit_protocol::mac::MacResponse>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacResponse as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::Owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::clone_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as alloc::borrow::ToOwned>::to_owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as alloc::string::ToString>::to_string"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::clone::Clone>::clone"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::clone::Clone>::clone_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::clone::CloneToUninit>::clone_to_uninit"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::cmp::Eq>::assert_receiver_is_total_eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::cmp::PartialEq>::eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::cmp::PartialEq>::ne"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::error::Error>::cause"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::error::Error>::description"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::error::Error>::provide"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::error::Error>::source"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::error::Error>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyError as core::fmt::Display>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::borrow::Borrow<kmipkit_protocol::mac_verify::MacVerifyRequest>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::borrow::BorrowMut<kmipkit_protocol::mac_verify::MacVerifyRequest>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::convert::From<kmipkit_protocol::mac_verify::MacVerifyRequest>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::default::Default>::default"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyRequest as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::borrow::Borrow<kmipkit_protocol::mac_verify::MacVerifyResponse>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::borrow::BorrowMut<kmipkit_protocol::mac_verify::MacVerifyResponse>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::convert::From<kmipkit_protocol::mac_verify::MacVerifyResponse>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MacVerifyResponse as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::Owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::clone_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as alloc::borrow::ToOwned>::to_owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as alloc::string::ToString>::to_string"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::clone::Clone>::clone"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::clone::Clone>::clone_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::clone::CloneToUninit>::clone_to_uninit"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::cmp::Eq>::assert_receiver_is_total_eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::cmp::PartialEq>::eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::cmp::PartialEq>::ne"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::error::Error>::cause"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::error::Error>::description"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::error::Error>::provide"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::error::Error>::source"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::error::Error>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignError as core::fmt::Display>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::borrow::Borrow<kmipkit_protocol::sign::SignRequest>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::borrow::BorrowMut<kmipkit_protocol::sign::SignRequest>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::convert::From<kmipkit_protocol::sign::SignRequest>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::default::Default>::default"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignRequest as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::borrow::Borrow<kmipkit_protocol::sign::SignResponse>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::borrow::BorrowMut<kmipkit_protocol::sign::SignResponse>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::convert::From<kmipkit_protocol::sign::SignResponse>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignResponse as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::Owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::clone_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as alloc::borrow::ToOwned>::to_owned"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as alloc::string::ToString>::to_string"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::borrow::Borrow<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::borrow::BorrowMut<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::clone::Clone>::clone"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::clone::Clone>::clone_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::clone::CloneToUninit>::clone_to_uninit"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::cmp::Eq>::assert_receiver_is_total_eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::cmp::PartialEq>::eq"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::cmp::PartialEq>::ne"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::convert::From<kmipkit_protocol::cryptographic_operation::CryptographicOperationError>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::cause"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::description"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::provide"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::source"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::error::Error>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyError as core::fmt::Display>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::borrow::Borrow<kmipkit_protocol::signature_verify::SignatureVerifyRequest>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::borrow::BorrowMut<kmipkit_protocol::signature_verify::SignatureVerifyRequest>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::convert::From<kmipkit_protocol::signature_verify::SignatureVerifyRequest>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::default::Default>::default"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyRequest as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::any::Any>::type_id"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::borrow::Borrow<kmipkit_protocol::signature_verify::SignatureVerifyResponse>>::borrow"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::borrow::BorrowMut<kmipkit_protocol::signature_verify::SignatureVerifyResponse>>::borrow_mut"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::convert::From<kmipkit_protocol::signature_verify::SignatureVerifyResponse>>::from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::convert::Into<U>>::into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::convert::TryFrom<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::convert::TryFrom<U>>::try_from"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::convert::TryInto<U>>::Error"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::convert::TryInto<U>>::try_into"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::SignatureVerifyResponse as core::fmt::Debug>::fmt"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashError"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashError::kind"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::new"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::response_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::to_ttlv_payload"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::validate_multipart_shape"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::with_correlation_value"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::with_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::with_final_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashRequest::with_init_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashResponse::result"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashResponse::try_from_pending_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashResponse::try_from_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashResponse::try_from_response_item_with_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::HashResponse::with_ttlv"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacError"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacError::kind"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::new"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::response_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::to_ttlv_payload"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::validate_multipart_shape"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::with_correlation_value"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::with_cryptographic_parameters"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::with_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::with_final_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::with_init_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacRequest::with_unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacResponse::result"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacResponse::try_from_pending_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacResponse::try_from_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacResponse::try_from_response_item_with_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacResponse::with_ttlv"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyError"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyError::kind"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::new"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::to_ttlv_payload"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::validate_multipart_shape"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::verification_response_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_correlation_value"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_cryptographic_parameters"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_final_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_init_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_mac_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyRequest::with_unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyResponse::result"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyResponse::try_from_pending_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyResponse::try_from_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyResponse::try_from_response_item_with_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::MacVerifyResponse::with_ttlv"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignError"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignError::kind"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::new"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::response_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::to_ttlv_payload"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::validate_multipart_shape"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_correlation_value"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_cryptographic_parameters"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_digested_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_final_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_init_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignRequest::with_unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignResponse::result"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignResponse::try_from_pending_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignResponse::try_from_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignResponse::try_from_response_item_with_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignResponse::with_ttlv"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyError"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyError::kind"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::new"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::to_ttlv_payload"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::validate_multipart_shape"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::verification_response_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_correlation_value"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_cryptographic_parameters"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_digested_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_final_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_init_indicator"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_signature_data"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyRequest::with_unique_identifier"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyResponse::result"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyResponse::try_from_pending_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyResponse::try_from_response_item"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyResponse::try_from_response_item_with_context"
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::SignatureVerifyResponse::with_ttlv"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::Client::hash"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::Client::mac"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::Client::mac_verify"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::Client::sign"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::Client::signature_verify"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchOutcome::Hash"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchOutcome::Hash::0"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchOutcome::Mac"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchOutcome::Mac::0"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchOutcome::Sign"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientBatchOutcome::Sign::0"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientOperation::Hash"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientOperation::Mac"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientOperation::Sign"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::Hash"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::Hash::0"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::Mac"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::Mac::0"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::Sign"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::Sign::0"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::hash"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::mac"
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientRequest::sign"
+    }
+  ]
+}

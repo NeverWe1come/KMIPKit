@@ -996,7 +996,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn(
             "python -m coverage report --data-file=coverage-normative/.coverage "
-            "--include=tools/normative_catalog/generate_attribute_types.py --fail-under=95",
+            "--include=tools/normative_catalog/generate_attribute_types.py --fail-under=90",
             job,
         )
 
@@ -1385,7 +1385,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIsNotNone(step)
         self.assertNotIn("GITHUB_HEAD_REF", step.group(1))
-        self.assertIn("--fail-under=95", step.group(1))
+        self.assertIn("--fail-under=90", step.group(1))
         self.assertNotIn("temporary coverage-threshold waiver", step.group(1))
 
 

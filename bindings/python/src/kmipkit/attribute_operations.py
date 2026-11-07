@@ -115,7 +115,9 @@ class AttributeSet(NativeHandle):
             )
         )
         errors.raise_for_status(status)
-        return _wrap_owned_handle(cls, output[0])
+        address = int(_client_ffi.cast("uintptr_t", output[0]))
+        handle = ffi.cast("kmipkit_attribute_set_t *", address)
+        return _wrap_owned_handle(cls, handle)
 
     @synchronized_native_call
     def try_push(self, item: ttlv.TtlvItem) -> None:
