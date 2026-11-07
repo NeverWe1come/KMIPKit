@@ -390,6 +390,98 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         with self.assertRaises(reconcile_0053_api_parity.ReconciliationError):
             reconcile_0053_api_parity.apply_declaration_corrections(manifest, stale)
 
+    def test_declaration_corrections_resume_partial_predecessor_state(self) -> None:
+        manifest = json.loads(
+            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        declarations = {row["declarationId"]: row for row in manifest["publicDeclarations"]}
+        partial = copy.deepcopy(manifest)
+        partial_declarations = {
+            row["declarationId"]: row for row in partial["publicDeclarations"]
+        }
+        for correction in route_data["declarationCorrections"]:
+            declaration = partial_declarations[correction["declarationId"]]
+            source = declarations[correction["sourceDeclarationId"]]
+            target = declarations[correction["targetDeclarationId"]]
+            declaration["capabilityId"] = target["capabilityId"]
+            declaration["requirementIds"] = copy.deepcopy(target["requirementIds"])
+            for language in ("c", "java", "python"):
+                declaration["languageMappings"][language] = copy.deepcopy(
+                    source["languageMappings"][language]
+                )
+
+        result = reconcile_0053_api_parity.apply_declaration_corrections(
+            partial, route_data["declarationCorrections"]
+        )
+        replay = reconcile_0053_api_parity.apply_declaration_corrections(
+            result, route_data["declarationCorrections"]
+        )
+        self.assertEqual(result, replay)
+        reconciled = {row["declarationId"]: row for row in result["publicDeclarations"]}
+        for correction in route_data["declarationCorrections"]:
+            declaration = reconciled[correction["declarationId"]]
+            target = reconciled[correction["targetDeclarationId"]]
+            self.assertEqual(target["capabilityId"], declaration["capabilityId"])
+            self.assertEqual(target["requirementIds"], declaration["requirementIds"])
+            for language in ("c", "java", "python"):
+                self.assertEqual(
+                    target["languageMappings"][language],
+                    declaration["languageMappings"][language],
+                )
+
+    def test_generic_ttlv_additions_match_the_canonical_approved_source(self) -> None:
+        manifest = json.loads(
+            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        approved_spec = Path("specs/004-generic-ttlv-model/spec.md").read_text(
+            encoding="utf-8"
+        )
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        capability = next(
+            row
+            for row in manifest["capabilities"]
+            if row["capabilityId"] == "generic_ttlv_model"
+        )
+        canonical_approval = {
+            "kind": "feature-specification",
+            "path": "specs/004-generic-ttlv-model/spec.md",
+            "status": "Approved",
+            "evidence": next(
+                line
+                for line in approved_spec.splitlines()
+                if line.startswith("**Status**: Approved ")
+            ),
+        }
+        self.assertEqual(canonical_approval, capability["approvalEvidence"])
+        declarations = {
+            row["exportName"]: row
+            for row in route_data["publicDeclarations"]
+            if row["exportName"]
+            in {
+                "org.kmipkit.ttlv.TtlvValueView.bytes",
+                "kmipkit.ttlv.ttlv_value_view_bytes",
+            }
+        }
+        self.assertEqual(
+            {
+                "org.kmipkit.ttlv.TtlvValueView.bytes",
+                "kmipkit.ttlv.ttlv_value_view_bytes",
+            },
+            set(declarations),
+        )
+        for declaration in declarations.values():
+            self.assertEqual(canonical_approval, declaration["approvalSource"])
+            self.assertEqual("Approved", declaration["approvalSource"]["status"])
+
     def test_managed_object_java_routes_match_exported_camel_case_methods(self) -> None:
         route_data = json.loads(
             Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
