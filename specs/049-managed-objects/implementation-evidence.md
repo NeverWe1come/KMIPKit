@@ -89,7 +89,10 @@ or release-level interoperability evidence is claimed for this feature.
   source snapshot. This refresh also changes documentation only.
 - Remote CI checks were not queried under the maintainer's billing instruction.
 
-The current local branch now includes the #115 follow-up merge above; the
-remote #116 head has not yet been advanced to this commit.
+The pushed #116 head includes the #115 follow-up merge above. The synchronized
+Linux workspace and adapter coverage results that include this change are
+recorded in `specs/053-api-parity-facade/implementation-evidence.md`.
 
-Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.
+Windows/macOS adapter artifacts, hosted cross-platform coverage aggregation,
+and hosted CI remain outstanding; the PR is still a draft and the phase has
+not been declared complete.

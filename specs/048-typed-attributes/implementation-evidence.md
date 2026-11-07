@@ -130,3 +130,10 @@ and Refactor `5d942198c`. The Green commit changes the reviewed manifest input
 and regenerates parity outputs; the Refactor extracts declaration selection
 by public route name. KMIPKIT-0053 inherits the same test, manifest mapping,
 and generated fixtures through the approved PR stack.
+
+The earlier statement that other platform results were outside this local
+evidence describes the original Windows-only 048 snapshot. Later synchronized
+Linux workspace, coverage, and adapter results that include this change are
+recorded in `specs/053-api-parity-facade/implementation-evidence.md`.
+Windows/macOS adapter artifacts, the complete cross-platform aggregate, and
+hosted CI remain outstanding.

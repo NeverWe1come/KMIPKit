@@ -174,5 +174,14 @@ environment warnings about NASM and an optional compiler probe.
   (`e30feefc-b9b4-416c-b625-eec029f8eede`) reviewed the changed
   `execute.rs`, found zero issues, and completed with full changed-file
   coverage. It was a static review; runtime tests are recorded separately.
-- This refreshed local branch has not yet been pushed to PR #118. Hosted CI
-  remains unqueried.
+- At the time this evidence was recorded, the refreshed branch had not yet
+  been pushed. It is now pushed to draft PR #118 at head
+  `fb4191e6de85c4bbac275cc67e421058b33dc4ad`. Hosted CI remains unqueried.
+
+The earlier Windows-only and no-Linux-results statements in this evidence
+describe the original 0050 snapshots. The synchronized 0053 stack later passed
+Linux workspace tests and Rust, C ABI, JNI, Java, and Python coverage; the
+exact commands and results are recorded in
+`specs/053-api-parity-facade/implementation-evidence.md`. These results
+include the 0050 changes. Windows/macOS adapter artifacts, the complete
+cross-platform aggregate, and hosted CI remain outstanding.

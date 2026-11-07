@@ -96,5 +96,17 @@ The feature branch is intended to target
 PR [#114](https://github.com/NeverWe1come/KMIPKit/pull/114) is open against
 that branch. The remote branch push succeeded after replacing private commit
 email addresses with the account's GitHub noreply address; repository content
-is unchanged. At the last check, GitHub reported no status checks yet. T007
-remains open for the aggregate coverage and remote platform controls.
+is unchanged. At the last check, GitHub reported no status checks yet. The
+cross-platform aggregate and remote platform controls remain outstanding;
+T007's local verification task is complete.
+
+## Later verification on the synchronized 0053 stack (2026-11-07)
+
+The earlier note that Linux reports were unavailable describes the original
+047 local verification snapshot. The synchronized 0053 stack subsequently
+passed Linux x86_64 workspace tests, Rust coverage, and C, JNI, Java, and
+Python adapter coverage; the exact commands and results are recorded in
+`specs/053-api-parity-facade/implementation-evidence.md`. This later Linux
+evidence includes the 047 changes. Windows/macOS adapter artifacts, the
+complete cross-platform coverage aggregate, and hosted CI remain outstanding;
+these are integration controls rather than unfinished local T007 work.
