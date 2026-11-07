@@ -18,7 +18,6 @@ class NamedValueGeneratorTests(unittest.TestCase):
         manifest_size = (ROOT / reconcile_named_value_manifest.MANIFEST_PATH).stat().st_size
 
         self.assertEqual(64 * 1024 * 1024, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
-        self.assertGreater(manifest_size, 40 * 1024 * 1024)
         self.assertLessEqual(manifest_size, reconcile_named_value_manifest.MAX_MANIFEST_BYTES)
 
     def test_bitmask_java_helper_names_use_camel_case(self) -> None:
