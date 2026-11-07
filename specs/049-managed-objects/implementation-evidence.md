@@ -197,3 +197,36 @@ and optional structures expected
 `47183651eebdc81364d32a6155454357e30ecc65886d3acbfdd535831f2a516e`.
 The new inventory/parity assertions passed before each old fingerprint failed.
 No manifest, generated output, or production source changed in this Red step.
+
+
+### Expanded Red: complete T102 inventory fixtures
+
+After the initial Red commit `6df97ca68`, the complete command
+`python -B -m unittest discover -s tools/api_manifest/tests -p 'test_t102_*.py' -q`
+ran 399 tests in 132.496 seconds and exposed six failures plus one error beyond
+the now-corrected two fingerprints. This is preserved as Red evidence before
+updating those fixtures; no production validator or manifest is being changed.
+
+Replaying the seven exact failing cases against the immutable reviewed 0048
+manifest at `ba01f43c45bfa851d3456713bcb840260bd332d8` establishes provenance:
+
+- Three cases pass on 0048 and fail after 0049: Import request traits,
+  key-transfer request states, and Register request traits omit the new
+  `from_managed_object` routes. The implementation in `import.rs` and
+  `register.rs` derives Object Type from the supplied managed object; both
+  exact manifest routes intentionally remain blocked for KMIPKIT-0053.
+- Four cases already fail on 0048: two Locate expectations omit 23 approved
+  `kmipkit::protocol` aliases (12 of them request surfaces); the profile error
+  code fixture omits 20 aliases through the same public protocol namespace;
+  and the response-conversion fixture omits the approved-exclusion argument
+  supplied by the production generator entry point.
+- The latter error concerns exactly one approved C function target,
+  `kmipkit_client_batch_item_response_metadata_v1`, referenced by two ready
+  mappings. It does not justify accepting an unmatched target. The corrected
+  fixture must preserve explicit rejection when that exact approved target is
+  removed, together with its existing four-language wrong-target tests.
+
+The facade namespace is exported by
+`pub use kmipkit_protocol as protocol` in `crates/kmipkit/src/lib.rs`.
+Existing exact-ID, state, normative-requirement, and missing-target rejection
+checks remain the intended contracts; only their stale fixture inputs change.
