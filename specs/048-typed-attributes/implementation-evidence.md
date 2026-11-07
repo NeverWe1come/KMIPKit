@@ -124,3 +124,9 @@ passes. Cross-platform and remote-CI results remain outside this local
 evidence; hosted CI is currently ignored under the maintainer's billing
 instruction. This feature remains stacked and is not merged into
 `release/1.0.0`.
+
+The correction's separate TDD commits are Red `d3c5cfa79`, Green `7cafcaa02`,
+and Refactor `5d942198c`. The Green commit changes the reviewed manifest input
+and regenerates parity outputs; the Refactor extracts declaration selection
+by public route name. KMIPKIT-0053 inherits the same test, manifest mapping,
+and generated fixtures through the approved PR stack.

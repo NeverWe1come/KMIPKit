@@ -17,6 +17,7 @@
 | Cryptographic Parameters model | `c4028f6e6`, `1b5381e3c` | `823eb040c` | `d0d7d396b` (subsequent API cleanup) |
 | Operation parameter setters | `50f0c045f` | `cc4cca605` | `d0d7d396b` |
 | Request Header Authentication | `72bb37335`, `311374bb3` | `45dc27944` | `f000939e5` |
+| Authentication TTLV ownership | `96f34ec0f` | `9e22b5326` | `a91267df7` |
 | Complete direct Client API | `3c5927b3e` | `c3faccac9` | `d70a1071b` |
 | Direct method transport parity | `3b8c5a025` | `f0a98a151` | `d0d7d396b`, `f34495eb3` |
 
@@ -44,6 +45,14 @@ Successful Windows checks on this branch:
 - `cargo test -p kmipkit-protocol --all-features --test cryptographic_parameters_public`
   (9 tests passed).
 - Focused direct-method parity and option-forwarding tests passed.
+- `cargo test --offline -p kmipkit-client --all-features request_authentication_tests`
+  (6 tests passed), including a pointer-identity regression test proving the
+  caller-owned authentication TTLV tree is moved into the request without a
+  deep clone.
+- After the ownership fix, `cargo fmt --all --check` and
+  `cargo clippy --offline -p kmipkit-client --all-targets --all-features -- -D warnings`
+  passed. The Refactor commit `a91267df7` keeps the ownership move at the
+  request-header construction boundary.
 - `python -m unittest tools.api_manifest.tests.test_reconcile_0050_parameters_auth_client`
   (3 tests passed).
 - `python tools/api_manifest/generate.py --check` (12 generated outputs current).
@@ -91,9 +100,14 @@ environment warnings about NASM and an optional compiler probe.
   gate's documented generated-source exclusions.
 - Independent security review and Codex Security diff scan found no confirmed
   security defect. The scan reviewed 15 changed files and recorded zero
-  findings (scan `ab320995-27a7-4417-8bdc-17bed9db42a6`). The reviewer noted an
-  unconfirmed resource concern: caller-supplied `Authentication` is deep-cloned
-  before encoder limits apply; no remote path or exploitability was established.
+  findings (scan `ab320995-27a7-4417-8bdc-17bed9db42a6`). Its follow-up review
+  identified a local resource concern: caller-supplied `Authentication` was
+  deep-cloned before encoder limits apply. The 0050 follow-up now moves that
+  owned TTLV tree into the request without cloning; this removes the temporary
+  amplification path. The follow-up Codex Security diff scan reviewed
+  `crates/kmipkit-client/src/execute.rs`, recorded zero findings, and completed
+  with full changed-file coverage (scan
+  `e30feefc-b9b4-416c-b625-eec029f8eede`).
 - Draft pull request: [#118](https://github.com/NeverWe1come/KMIPKit/pull/118),
   base `feature/KMIPKIT-0049-managed-objects`, head
   `feature/KMIPKIT-0050-parameters-auth-client`. The original PR-open head was
@@ -140,3 +154,25 @@ environment warnings about NASM and an optional compiler probe.
   merge above. This refresh also changes documentation only; no #050
   implementation, test, or generated path is changed by it.
 - Remote CI checks were not queried under the maintainer's billing instruction.
+
+## Latest predecessor synchronization and follow-up (2026-11-07)
+
+- This local branch now includes the latest #116 head `cbe09ce2f` through
+  merge commit `1adb90894`. The merge carries the corrected Decrypt manifest
+  attribution and regenerated parity fixtures from #115.
+- After synchronization, the six focused Authentication tests passed, the
+  focused Encrypt/Decrypt manifest module passed all 5 tests, and
+  `python -B tools/api_manifest/generate.py --check --repo-root .` verified all
+  12 generated outputs.
+- The authentication ownership follow-up separately passed
+  `cargo fmt --all --check`,
+  `cargo clippy --offline -p kmipkit-client --all-targets --all-features -- -D warnings`,
+  and the 6 focused Authentication tests. Its Red, Green, and Refactor commits
+  are listed above. Full workspace tests and coverage have not been rerun on
+  the combined latest stack.
+- The follow-up Codex Security diff scan
+  (`e30feefc-b9b4-416c-b625-eec029f8eede`) reviewed the changed
+  `execute.rs`, found zero issues, and completed with full changed-file
+  coverage. It was a static review; runtime tests are recorded separately.
+- This refreshed local branch has not yet been pushed to PR #118. Hosted CI
+  remains unqueried.
