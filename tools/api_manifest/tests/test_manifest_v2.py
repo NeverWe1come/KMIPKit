@@ -7113,6 +7113,29 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(header_functions, ready_functions)
         self.assertEqual(header_types, ready_types)
 
+    def test_superseded_four_language_functions_remain_in_the_public_c_header(self) -> None:
+        header = self.read_c_header_surface()
+        for symbol in (
+            "kmipkit_client_batch_item_response_metadata_v1",
+            "kmipkit_transport_config_create_v1",
+        ):
+            with self.subTest(symbol=symbol):
+                function = next(
+                    row
+                    for row in self.checked_in_manifest["functions"]
+                    if row["c"]["symbol"] == symbol
+                )
+                self.assertRegex(header, rf"(?m)^{re.escape(function['c']['returnType'])} {re.escape(symbol)}\(")
+                declarations = [
+                    row
+                    for row in self.checked_in_manifest["publicDeclarations"]
+                    if row["packageId"] == "c-kmipkit"
+                    and row["kind"] == "c-symbol"
+                    and row["exportName"] == symbol
+                    and row["declarationState"] in {"declared", "verified"}
+                ]
+                self.assertEqual(len(declarations), 1)
+
     def test_opaque_register_binding_support_exports_are_excluded(self) -> None:
         declarations = self.declarations_for_package("c-kmipkit")
         declarations += self.declarations_for_package("java-kmipkit")
