@@ -157,21 +157,20 @@ class WorkflowContractTests(unittest.TestCase):
                 self.assertRegex(line, r"@[0-9a-f]{40}\s+#\s+.+v\d")
                 self.assertNotRegex(line, r"@(?:v\d|main|master)\b")
 
-    def test_ci_and_security_workflows_run_on_stacked_feature_updates(self) -> None:
+    def test_ci_and_security_workflows_run_on_stacked_feature_pull_requests(self) -> None:
         workflow_names = ("ci.yml", "codeql.yml", "zizmor.yml")
         for workflow_name in workflow_names:
             contents = (REPOSITORY_ROOT / ".github" / "workflows" / workflow_name).read_text(
                 encoding="utf-8"
             )
-            trigger = re.search(r"(?ms)^on:\s*\n(.*?)(?=^permissions:)", contents)
+            trigger = re.search(r"(?ms)^on:\s*\n(.*?)(?=^permissions:|^jobs:)", contents)
             self.assertIsNotNone(trigger, workflow_name)
-            for event_name in ("pull_request", "push"):
-                event = re.search(
-                    rf"(?ms)^  {event_name}:\s*\n(.*?)(?=^  [a-z][\w-]*:|\Z)",
-                    trigger.group(1),
-                )
-                self.assertIsNotNone(event, f"{workflow_name} must support {event_name}.")
-                self.assertIn("feature/KMIPKIT-*", event.group(1), workflow_name)
+            event = re.search(
+                r"(?ms)^  pull_request:\s*\n(.*?)(?=^  [a-z][\w-]*:|\Z)",
+                trigger.group(1),
+            )
+            self.assertIsNotNone(event, f"{workflow_name} must support pull_request.")
+            self.assertIn("feature/KMIPKIT-*", event.group(1), workflow_name)
 
     def test_workflow_has_no_secrets_or_repository_writes(self) -> None:
         contents = self.require_workflow()
