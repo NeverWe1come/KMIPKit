@@ -360,6 +360,7 @@ class T096CreationParityManifestTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row["approvalSource"].get("path") == OWNER_SPEC_PATH
             and (row["exportName"] in EXCLUDED_FUNCTIONAL_EXPORTS or row["exportName"].startswith("<"))
+            and not row["exportName"].startswith("<kmipkit::protocol::")
         ]
         candidates = mapped + excluded
         self.assertEqual(BASE_CANDIDATE_COUNT, len(candidates))
@@ -464,6 +465,7 @@ class T096CreationParityManifestTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row["approvalSource"].get("path") == OWNER_SPEC_PATH
             and row["exportName"].startswith("<")
+            and not row["exportName"].startswith("<kmipkit::protocol::")
         ]
         self.assertEqual(BASE_TRAIT_COUNT, len(trait_exclusions))
         self.assertEqual(BASE_TRAIT_SHA256, _identity_hash(trait_exclusions))

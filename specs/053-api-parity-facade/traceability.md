@@ -21,6 +21,7 @@ Exact source tables are inherited from specs 048–052 and reference the pinned 
 - P004: Authentication is caller-owned, one-message scoped, never client-global.
 - P005: Foreign owners have explicit close/release; only KMIPKit-owned copies are promised zeroization.
 - P006: Generated outputs are written only by the pinned generator.
+- P007: Rust uses typed validation schema enums while C, Java, and Python use explicit schema identifiers; all names accepted by the Rust model are kept in exact parser parity, including the explicitly unsupported `SetEndpointRole` descriptor.
 
 ## Verification Record
 - Windows x86_64: `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and `cargo test --workspace --all-features --locked` passed.

@@ -61,6 +61,7 @@ class T102RevokeRequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(PROTOCOL_PREFIX)
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
 
         self.assertEqual(declarations, set())

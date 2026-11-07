@@ -906735,7 +906735,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906763,7 +906763,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906791,7 +906791,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906819,7 +906819,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906847,7 +906847,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906875,7 +906875,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906903,7 +906903,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906931,7 +906931,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906959,7 +906959,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -906987,7 +906987,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907015,7 +907015,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907043,7 +907043,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907071,7 +907071,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907099,7 +907099,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907127,7 +907127,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907155,7 +907155,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907183,7 +907183,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907211,7 +907211,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907239,7 +907239,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907267,7 +907267,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907295,7 +907295,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907323,7 +907323,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907351,7 +907351,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907379,7 +907379,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907407,7 +907407,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907435,7 +907435,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907463,7 +907463,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907491,7 +907491,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907519,7 +907519,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907547,7 +907547,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -907575,7 +907575,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909245,7 +909245,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909273,7 +909273,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909301,7 +909301,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909329,7 +909329,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909357,7 +909357,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909385,7 +909385,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909413,7 +909413,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909441,7 +909441,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909469,7 +909469,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909497,7 +909497,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909525,7 +909525,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909553,7 +909553,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909581,7 +909581,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909609,7 +909609,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909637,7 +909637,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909665,7 +909665,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909693,7 +909693,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909721,7 +909721,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909749,7 +909749,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909777,7 +909777,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909805,7 +909805,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909833,7 +909833,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909861,7 +909861,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909889,7 +909889,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909917,7 +909917,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909945,7 +909945,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -909973,7 +909973,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -910001,7 +910001,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -910029,7 +910029,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -910057,7 +910057,7 @@
       "artifactKind": "rust-enum-variant",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -910085,7 +910085,7 @@
       "artifactKind": "rust-enum-field",
       "reason": "Rust enum variant/tuple-field shape is represented as part of its parent declaration and is not a separate cross-language route.",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "approvalSource": {
         "kind": "feature-specification",
@@ -945736,6 +945736,7 @@
           "rust-observed-8af1ccc0b8fc5d075a96",
           "rust-observed-96b6ed8e8e8da80e7eb8",
           "rust-observed-b061731ea9cbb62d75dc",
+          "rust-observed-b2486fc2309245873c9f",
           "rust-observed-b4b67df542fca2f83a99",
           "rust-observed-c10276aa63fa7bbe7ee7",
           "rust-observed-d386bb6bf2a66f5cf991",
@@ -946260,6 +946261,7 @@
           "rust-observed-168bc3b785183639f50c",
           "rust-observed-1d348fbc402eec43bee5",
           "rust-observed-2deb5855eb026913bf13",
+          "rust-observed-33fd79e33d97cf5a3203",
           "rust-observed-3bad175b274488a95b8e",
           "rust-observed-3f5dd98cdcb182a82c1f",
           "rust-observed-46d9aa508c970518c66c",

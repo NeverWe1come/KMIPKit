@@ -21,6 +21,14 @@ PACKAGES = {
     "rust-kmipkit-client": "kmipkit_client",
     "rust-kmipkit-protocol": "kmipkit_protocol",
 }
+TYPE_PATHS = {
+    "rust-kmipkit": (
+        "kmipkit::ProfileValidationErrorCode",
+        "kmipkit::protocol::ProfileValidationErrorCode",
+    ),
+    "rust-kmipkit-client": ("kmipkit_client::ProfileValidationErrorCode",),
+    "rust-kmipkit-protocol": ("kmipkit_protocol::ProfileValidationErrorCode",),
+}
 VARIANT_CODES = {
     "EmptySelection": "empty_selection",
     "DuplicateProfile": "duplicate_profile",
@@ -69,8 +77,9 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
             if "ProfileValidationErrorCode" in row["exportName"]
         }
         expected = {
-            (package, f"{crate}::ProfileValidationErrorCode{suffix}")
-            for package, crate in PACKAGES.items()
+            (package, f"{type_path}{suffix}")
+            for package, type_paths in TYPE_PATHS.items()
+            for type_path in type_paths
             for suffix in (
                 "",
                 "::as_str",
@@ -78,13 +87,18 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
             )
         }
         self.assertEqual(expected, set(rows))
-        self.assertEqual(60, len(rows))
+        self.assertEqual(80, len(rows))
         self.assertEqual(18, len(VARIANT_CODES))
 
         declarations = self.manifest["publicDeclarations"]
         for (package, export_name), row in rows.items():
             crate = PACKAGES[package]
-            suffix = export_name.removeprefix(f"{crate}::ProfileValidationErrorCode")
+            type_path = next(
+                candidate
+                for candidate in TYPE_PATHS[package]
+                if export_name.startswith(candidate)
+            )
+            suffix = export_name.removeprefix(type_path)
             expected_kind = "type" if not suffix else (
                 "associated-item" if suffix == "::as_str" else "variant"
             )

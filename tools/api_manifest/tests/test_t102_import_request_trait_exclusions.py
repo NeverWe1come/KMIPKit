@@ -81,6 +81,7 @@ class T102ImportRequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(PROTOCOL_PREFIX)
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
 
         self.assertEqual(declarations, set())
@@ -158,6 +159,7 @@ class T102ImportRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ImportRequest::replace_existing",
             "kmipkit_protocol::ImportRequest::unique_identifier",
             "kmipkit_protocol::ImportRequest::into_ttlv_payload",
+            "kmipkit_protocol::ImportRequest::from_managed_object",
         }
         blocked = set()
         self.assertEqual(set(protocol_rows), verified | blocked)

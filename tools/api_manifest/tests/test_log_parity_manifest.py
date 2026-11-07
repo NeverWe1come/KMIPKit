@@ -15,9 +15,15 @@ GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_a
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
-REQUIREMENTS = {
+OPERATION_REQUIREMENTS = {
     *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 7, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
+}
+REQUIREMENTS = OPERATION_REQUIREMENTS | {
+    "KMIPKIT-0050-FR-010",
+    "KMIPKIT-0050-FR-011",
+    "KMIPKIT-0053-FR-008",
+    "KMIPKIT-0053-FR-012",
 }
 TRACEABILITY_IDS = {
     "KMIPKIT-028-T250-MESSAGE",
@@ -81,13 +87,16 @@ ALLOWED_LOG_DECLARATION_MAPPINGS = {
     "rust": EXPECTED_MAPPINGS["rust"]
     | {
         "kmipkit::Client::log",
+        "kmipkit::Client::log_with_options",
         "kmipkit::ClientBatchOutcome::Log",
         "kmipkit::ClientBatchOutcome::Log::0",
         "kmipkit::ClientOperation::Log",
         "kmipkit::ClientRequest::Log",
         "kmipkit::ClientRequest::Log::0",
         "kmipkit::ClientRequest::log",
+        "kmipkit::ClientResponseView<'a>::log",
         "kmipkit_client::Client::log",
+        "kmipkit_client::Client::log_with_options",
         "kmipkit_client::ClientBatchOutcome::Log",
         "kmipkit_client::ClientBatchOutcome::Log::0",
         "kmipkit_client::ClientOperation::Log",
@@ -153,12 +162,12 @@ class LogParityManifestTests(unittest.TestCase):
             operation_id=OPERATION_ID,
             languages=LANGUAGES,
             expected_mappings=EXPECTED_MAPPINGS,
-            required_requirements=REQUIREMENTS,
+            required_requirements=OPERATION_REQUIREMENTS,
             expected_approval_source=OWNER_SPEC,
         )
         for language, expected in EXPECTED_MAPPINGS.items():
             self.assertTrue(expected <= actual_mappings[language], language)
-        self.assertEqual(REQUIREMENTS, linked_requirements)
+        self.assertEqual(OPERATION_REQUIREMENTS, linked_requirements)
 
         traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
             encoding="utf-8"

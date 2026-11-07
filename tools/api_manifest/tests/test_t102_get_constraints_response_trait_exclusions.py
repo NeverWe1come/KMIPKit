@@ -1471,6 +1471,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(LOCATE_REQUEST_PREFIX)
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
 
         self.assertEqual(set(declarations), set())

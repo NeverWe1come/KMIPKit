@@ -219950,7 +219950,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:a4aeb08eae35c47623cd866f",
       "declarationKind": "variant",
@@ -219978,7 +219978,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:151f2eacc19660b183af4b21",
       "declarationKind": "field",
@@ -220006,7 +220006,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:be223757347f7f7f227c4f1c",
       "declarationKind": "variant",
@@ -220034,7 +220034,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:5f6e8884792b23a212127653",
       "declarationKind": "field",
@@ -220062,7 +220062,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:8936edb47d241b47b1605bd6",
       "declarationKind": "variant",
@@ -220090,7 +220090,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:a5af8bfe1fd6fe352d0b0ec1",
       "declarationKind": "field",
@@ -220118,7 +220118,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:a1a96ae25055f4ba1d77239e",
       "declarationKind": "variant",
@@ -220146,7 +220146,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:2d4e2ab08f33d94c1873ef0e",
       "declarationKind": "field",
@@ -220174,7 +220174,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:d713a95e2b0f1ff6300e47cd",
       "declarationKind": "variant",
@@ -220202,7 +220202,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:6c5da50afd2868dcfacfc74f",
       "declarationKind": "field",
@@ -220230,7 +220230,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:f611e943f6df126910cd7df1",
       "declarationKind": "variant",
@@ -220258,7 +220258,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:4165f111032c1f5585010a1c",
       "declarationKind": "field",
@@ -220286,7 +220286,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:fd337bf882b4edf6bf742288",
       "declarationKind": "variant",
@@ -220314,7 +220314,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:a74161036995d7c32b9e7d6d",
       "declarationKind": "field",
@@ -220342,7 +220342,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:2e2ad324ef9b379e34754568",
       "declarationKind": "variant",
@@ -220370,7 +220370,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:f0410f957d1549cd171064dd",
       "declarationKind": "field",
@@ -220398,7 +220398,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:43a9cddbea1db2dcb9552385",
       "declarationKind": "variant",
@@ -220426,7 +220426,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:8f299276692cfe2647242f3c",
       "declarationKind": "field",
@@ -220454,7 +220454,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:9d4f11ae2ec56e4b94885c30",
       "declarationKind": "variant",
@@ -220482,7 +220482,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:86c8f0475552271845066182",
       "declarationKind": "variant",
@@ -220510,7 +220510,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:8c175cf5194cf26e5cf75124",
       "declarationKind": "field",
@@ -220538,7 +220538,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:da3a21ac4569418c1b0a326b",
       "declarationKind": "variant",
@@ -220566,7 +220566,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-a95a34edc0285cd6ad3a"
       ],
       "declarationId": "KMIPKIT-0053:exclude:146daa62145ec37eb4775e42",
       "declarationKind": "field",
@@ -220594,7 +220594,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:6f868375ee121fd9dbdb0a08",
       "declarationKind": "variant",
@@ -220622,7 +220622,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:614057859c22fc25520a76be",
       "declarationKind": "variant",
@@ -220650,7 +220650,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:f4d4784683b1005371db1dfd",
       "declarationKind": "field",
@@ -220678,7 +220678,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:bb0a96b1c7fd1770b5fb5d7e",
       "declarationKind": "variant",
@@ -220706,7 +220706,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:1be1a7142ba03bae144c2c94",
       "declarationKind": "field",
@@ -220734,7 +220734,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:ef9b3276709b9b274517e147",
       "declarationKind": "variant",
@@ -220762,7 +220762,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:cd2267b9a6b3a3d4661a7c4d",
       "declarationKind": "variant",
@@ -220790,7 +220790,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-ba76f0e0208f5cac6eae"
       ],
       "declarationId": "KMIPKIT-0053:exclude:ece372116a227467a3ce0334",
       "declarationKind": "field",
@@ -222460,7 +222460,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:38303f3b15e6725ead588f2a",
       "declarationKind": "variant",
@@ -222488,7 +222488,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:1a17603895663319afa5c99d",
       "declarationKind": "field",
@@ -222516,7 +222516,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:ebbf8b55369f069099436342",
       "declarationKind": "variant",
@@ -222544,7 +222544,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:47482d00111e9fa9fa327519",
       "declarationKind": "field",
@@ -222572,7 +222572,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:f537d6641c0c20a8ba0927a8",
       "declarationKind": "variant",
@@ -222600,7 +222600,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:5dd85f0a633eb526c220735f",
       "declarationKind": "field",
@@ -222628,7 +222628,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:2327e954e4f17f1c010b6719",
       "declarationKind": "variant",
@@ -222656,7 +222656,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:3252a766e34c9837f96d375f",
       "declarationKind": "field",
@@ -222684,7 +222684,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:0781504ebc7d33e97c82ecd5",
       "declarationKind": "variant",
@@ -222712,7 +222712,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:853b253d92cdb2a6d0185e1b",
       "declarationKind": "field",
@@ -222740,7 +222740,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:4139c9d2cf8cd9314ab4b4b1",
       "declarationKind": "variant",
@@ -222768,7 +222768,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:2a36d5b3d5400f45dd8f4ea8",
       "declarationKind": "field",
@@ -222796,7 +222796,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:d3650b166d6dbd471afa9bee",
       "declarationKind": "variant",
@@ -222824,7 +222824,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:830b63f3234284c77ae9b0d3",
       "declarationKind": "field",
@@ -222852,7 +222852,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:dfe2c391eb3a8cdd7b1c9f02",
       "declarationKind": "variant",
@@ -222880,7 +222880,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:c3fcd8f66b1504f360543728",
       "declarationKind": "field",
@@ -222908,7 +222908,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:f56c10efc6e6bce4eaa5e898",
       "declarationKind": "variant",
@@ -222936,7 +222936,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:82802fc81e5a15d31885bce7",
       "declarationKind": "field",
@@ -222964,7 +222964,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:f4a66a612e34f4a4d432896f",
       "declarationKind": "variant",
@@ -222992,7 +222992,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:2a34319c4d21cedc982a87f4",
       "declarationKind": "variant",
@@ -223020,7 +223020,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:d459e8e2e7c7b2bb8495ce64",
       "declarationKind": "field",
@@ -223048,7 +223048,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:8a10dccec346897884bbbc03",
       "declarationKind": "variant",
@@ -223076,7 +223076,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_value_field_item_read:rust"
+        "rust-observed-2a78ab726eb8c96d0e37"
       ],
       "declarationId": "KMIPKIT-0053:exclude:2b3bf951fae178c37e2b0bcc",
       "declarationKind": "field",
@@ -223104,7 +223104,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:7911cf8ce00ea57de8d7018b",
       "declarationKind": "variant",
@@ -223132,7 +223132,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:d13c8ab4230b3aba190b9a35",
       "declarationKind": "variant",
@@ -223160,7 +223160,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:dd98cee1af3d49262134fdf1",
       "declarationKind": "field",
@@ -223188,7 +223188,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:fb1512b5707839ae042cd119",
       "declarationKind": "variant",
@@ -223216,7 +223216,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:5f27cf92baeaf04b1028689d",
       "declarationKind": "field",
@@ -223244,7 +223244,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:c518c1f2264f1dd2a03982ec",
       "declarationKind": "variant",
@@ -223272,7 +223272,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:a58ae3b0e0a9ebf787d78c34",
       "declarationKind": "variant",
@@ -223300,7 +223300,7 @@
       "candidateSpecId": "KMIPKIT-0053",
       "capabilityId": "typed_managed_objects_and_key_material",
       "counterpartDeclarationIds": [
-        "managed_object_from_item:c"
+        "rust-observed-0d3351bf7b7739e95d55"
       ],
       "declarationId": "KMIPKIT-0053:exclude:71852257ee674d7e82a25b62",
       "declarationKind": "field",
@@ -316316,6 +316316,7 @@
           "rust-observed-8af1ccc0b8fc5d075a96",
           "rust-observed-96b6ed8e8e8da80e7eb8",
           "rust-observed-b061731ea9cbb62d75dc",
+          "rust-observed-b2486fc2309245873c9f",
           "rust-observed-b4b67df542fca2f83a99",
           "rust-observed-c10276aa63fa7bbe7ee7",
           "rust-observed-d386bb6bf2a66f5cf991",
@@ -316840,6 +316841,7 @@
           "rust-observed-168bc3b785183639f50c",
           "rust-observed-1d348fbc402eec43bee5",
           "rust-observed-2deb5855eb026913bf13",
+          "rust-observed-33fd79e33d97cf5a3203",
           "rust-observed-3bad175b274488a95b8e",
           "rust-observed-3f5dd98cdcb182a82c1f",
           "rust-observed-46d9aa508c970518c66c",

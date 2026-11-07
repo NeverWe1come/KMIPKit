@@ -29,6 +29,16 @@ SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-022",
 }
 LANGUAGES = {"rust", "c", "java", "python"}
+
+
+def _is_0053_namespace_alias(row: dict[str, object]) -> bool:
+    return (
+        row.get("packageId") == "rust-kmipkit"
+        and isinstance(row.get("exportName"), str)
+        and row["exportName"].startswith(
+            ("kmipkit::protocol::", "<kmipkit::protocol::")
+        )
+    )
 OPERATION_REQUIREMENTS = {
     "add_attribute": "KMIPKIT-0016-FR-003",
     "adjust_attribute": "KMIPKIT-0016-FR-004",
@@ -305,11 +315,13 @@ class T097AttributeParityManifestTests(unittest.TestCase):
             row
             for row in self.manifest["publicDeclarations"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+            and not _is_0053_namespace_alias(row)
         ]
         excluded = [
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+            and not _is_0053_namespace_alias(row)
         ]
         candidates = mapped + excluded
         self.assertEqual(BASE_CANDIDATE_COUNT, len(candidates))
@@ -336,11 +348,13 @@ class T097AttributeParityManifestTests(unittest.TestCase):
             row
             for row in self.manifest["publicDeclarations"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+            and not _is_0053_namespace_alias(row)
         ]
         excluded = [
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC_PATH
+            and not _is_0053_namespace_alias(row)
         ]
         resolved = mapped + excluded
         self.assertEqual(MAPPED_COUNT, len(mapped))
@@ -770,7 +784,12 @@ class T097AttributeParityManifestTests(unittest.TestCase):
         self.assertTrue(operation_rows)
         for row in operation_rows:
             with self.subTest(declaration=row["exportName"]):
-                self.assertIn("KMIPKIT-0016-FR-006", row["requirementIds"])
+                expected_requirement = "KMIPKIT-0016-FR-006"
+                if row["exportName"].endswith("Client::get_attributes_with_options"):
+                    expected_requirement = "KMIPKIT-0050-FR-011"
+                elif row["exportName"].endswith("Client::get_attributes"):
+                    expected_requirement = "KMIPKIT-0050-FR-010"
+                self.assertIn(expected_requirement, row["requirementIds"])
                 self.assertNotIn("KMIPKIT-0016-FR-007", row["requirementIds"])
 
 

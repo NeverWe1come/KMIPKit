@@ -120,9 +120,9 @@ exclusion:
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 1,746 | 1,701 | 1,701 | 45 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 2,490 | 1,874 | 1,874 | 616 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 2,906 | 1,990 | 1,990 | 916 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 1,912 | 1,866 | 1,866 | 46 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 2,830 | 2,161 | 2,161 | 669 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,322 | 2,347 | 2,347 | 975 | 0 | 0 | 0 | 0 | yes |
 
 The Java scanner records public inherited members from package-private helper
 bases under each concrete public facade, while members inherited from an

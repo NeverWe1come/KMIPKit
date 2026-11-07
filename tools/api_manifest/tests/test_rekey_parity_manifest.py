@@ -108,6 +108,12 @@ class RekeyParityManifestTests(unittest.TestCase):
             self.assertTrue(declaration_ids, f"Re-key has no {language} declarations")
             for declaration_id in declaration_ids:
                 declaration = self.declarations[declaration_id]
+                # KMIPKIT-0053 aliases the existing operation API under
+                # `kmipkit::protocol`; this test remains scoped to KMIPKIT-0036.
+                if declaration.get("approvalSource", {}).get("path") != OWNER_SPEC:
+                    continue
+                if declaration.get("exportName", "").startswith("kmipkit::protocol::"):
+                    continue
                 self.assertEqual(OPERATION_ID, declaration["capabilityId"])
                 self.assertEqual("verified", declaration["declarationState"])
                 self.assertTrue(declaration["parityEvidenceIds"])
@@ -139,6 +145,8 @@ class RekeyParityManifestTests(unittest.TestCase):
         declarations = [
             row for row in self.manifest["publicDeclarations"]
             if row.get("capabilityId") == OPERATION_ID
+            and row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and not row.get("exportName", "").startswith("kmipkit::protocol::")
         ]
         self.assertEqual(47, len(declarations))
         functions = {

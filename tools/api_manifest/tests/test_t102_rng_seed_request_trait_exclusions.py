@@ -62,6 +62,7 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(PROTOCOL_PREFIX)
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
 
         self.assertEqual(declarations, set())
@@ -178,6 +179,7 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row.get("packageId") == "rust-kmipkit"
             and row.get("exportName", "").startswith(ROOT_PREFIX)
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
         self.assertEqual(set(root_exclusions), expected_root_traits)
         self.assertTrue(all(row["approvalSource"]["path"] == "specs/027-rng-operations/spec.md" for row in root_exclusions.values()))

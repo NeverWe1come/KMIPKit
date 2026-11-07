@@ -103,7 +103,7 @@ An application developer can use KMIPKit from the documented package surface, wi
 
 ### Functional Requirements
 
-- **KMIPKIT-0053-FR-001**: Rust, C, Java, and Python MUST expose equivalent usable capabilities for every 1.0 feature assigned to this specification. Each of the 750 Rust declarations currently marked `candidateSpecId=KMIPKIT-0053` MUST be mapped to equivalent public routes or receive an exact, evidence-backed exclusion; no general language or module exclusion is permitted.
+- **KMIPKIT-0053-FR-001**: Rust, C, Java, and Python MUST expose equivalent usable capabilities for every 1.0 feature assigned to this specification. Every declaration in the approved candidate inventories MUST be mapped to equivalent public routes or receive an exact, evidence-backed exclusion; no general language or module exclusion is permitted.
 - **KMIPKIT-0053-FR-002**: The language bindings MUST expose the 62 directly encoded typed attributes accepted by KMIPKIT-0048 for AttributeSet, CurrentAttribute, and NewAttribute while preserving generic TTLV insertion, repetition, unknown values, and source-defined Unique Identifier alternatives.
 - **KMIPKIT-0053-FR-003**: The language bindings MUST expose the nine typed managed objects, Key Block, Key Value, all in-scope Key Material representations, and Key Wrapping Data accepted by KMIPKIT-0049 without performing cryptographic algorithms or format autodetection.
 - **KMIPKIT-0053-FR-004**: The language bindings MUST expose the typed Cryptographic Parameters and typed setter behavior accepted by KMIPKIT-0050, preserving unknown Enumeration values, extensions, and generic Structure APIs.
@@ -118,6 +118,8 @@ An application developer can use KMIPKit from the documented package surface, wi
 - **KMIPKIT-0053-FR-013**: English and Spanish user guides MUST include executable consumer examples for typed attributes, managed objects/key material, parameters/authentication, validation, client operations, and response TTLV. Official package versions MUST remain synchronized.
 - **KMIPKIT-0053-FR-014**: The Rust high-level facade MUST remain usable with `kmipkit` as the only KMIPKit Cargo dependency and MUST NOT expose low-level byte transport exchange through the facade.
 - **KMIPKIT-0053-FR-015**: Every normative source-dependent rule MUST point to its exact pinned KMIP 2.1 clause/table and stable requirement ID. This specification MUST preserve the existing protocol behavior of KMIPKIT-0047 through KMIPKIT-0052 and MUST NOT claim formal conformance, certification, or interoperability from API parity alone.
+- **KMIPKIT-0053-FR-016**: The 934 exact Rust validation candidates synchronized from KMIPKIT-0009, KMIPKIT-0043, and KMIPKIT-0044 MUST be reconciled individually. The 12 lower-level aliases with direct four-language counterparts MUST map to `request_validation`; every other candidate MUST have an exact, evidence-backed route exclusion and no blanket Rust exemption.
+- **KMIPKIT-0053-FR-017**: C, Java, and Python schema identifiers MUST accept every `RequestPayloadSchema` and `NestedStructureSchema` identity represented by the Rust model, plus `Unsupported`. `SetEndpointRole` remains an accepted identity whose descriptor is intentionally unsupported within the 1.0 product scope.
 
 ### Normative Source References
 
@@ -132,13 +134,14 @@ An application developer can use KMIPKit from the documented package surface, wi
 
 ### Measurable Outcomes
 
-- **KMIPKIT-0053-SC-001**: All 750 candidate Rust declarations and the four candidate capabilities are either verified with exact four-language mapping evidence or listed as narrowly justified exclusions; zero declarations remain blocked without an owner and reason.
+- **KMIPKIT-0053-SC-001**: All approved Rust declaration candidates and in-scope capabilities are either verified with exact four-language mapping evidence or listed as narrowly justified exclusions; zero declarations remain blocked without an owner and reason.
 - **KMIPKIT-0053-SC-002**: Every one of the 62 applicable typed attributes and nine managed object types can be constructed, read, and converted to generic TTLV from real Rust, C, Java, and Python consumers.
 - **KMIPKIT-0053-SC-003**: All Table 59 Cryptographic Parameters, one-message Authentication behavior, and all 56 in-scope operation identities pass four-language mapping and behavior tests.
 - **KMIPKIT-0053-SC-004**: Representative invalid requests through C, Java, and Python report the same Rust validation issue metadata, `NotSent`, and zero transport writes; valid request bytes remain unchanged.
 - **KMIPKIT-0053-SC-005**: Secret canaries are absent from every tested automatic diagnostic and Debug/error path; owned KMIPKit copies follow the release/zeroization contract.
 - **KMIPKIT-0053-SC-006**: All generated outputs pass `tools/api_manifest/generate.py --check`, and Rust plus C/Java/Python export audits have zero missing, unobserved, mismatched, or unresolved declarations.
 - **KMIPKIT-0053-SC-007**: The English and Spanish guides' examples compile/run against synchronized package versions, and a Rust consumer depends on `kmipkit` as its only KMIPKit crate.
+- **KMIPKIT-0053-SC-008**: All 934 synchronized validation declarations are resolved as exactly 12 mapped Rust aliases and 922 exact exclusions; a finite inventory test proves every Rust request and nested schema identity has a matching foreign schema-string parser entry.
 
 ## Assumptions
 

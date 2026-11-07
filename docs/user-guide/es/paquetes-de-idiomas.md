@@ -204,8 +204,8 @@ tabla.
 | `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 | `named_protocol_mask_single_bit_lookup` | declared | Los indicadores de un solo bit asignados tienen nombres basados en el catálogo; los bits desconocidos se conservan. |
 | `typed_object_attributes` | verified | Los 62 atributos tipados aplicables tienen rutas de construcción y lectura en los cuatro lenguajes; el TTLV genérico conserva valores repetidos y desconocidos. |
-| `typed_managed_objects_and_key_material` | blocked | Existen modelos tipados en Rust, pero la reconciliación de rutas en los cuatro lenguajes está incompleta; no se debe tratar esta capacidad como disponible. |
-| `typed_cryptographic_parameters` | blocked | Existen parámetros tipados en Rust, pero la reconciliación de rutas en los cuatro lenguajes está incompleta; no se debe tratar esta capacidad como disponible. |
+| `typed_managed_objects_and_key_material` | verified | Las rutas tipadas de objetos gestionados y material de clave están reconciliadas en Rust, C, Java y Python. Esto verifica el mapeo de API y la paridad del ciclo de vida, no la conformidad KMIP ni la preparación de la release. |
+| `typed_cryptographic_parameters` | verified | Los parámetros criptográficos tipados están reconciliados en Rust, C, Java y Python, con propiedad y limpieza explícitas de secretos. Esto verifica el mapeo de API y la paridad del ciclo de vida, no la conformidad KMIP ni la preparación de la release. |
 | `request_message_authentication` | verified | La autenticación propiedad del llamador se adjunta a la cabecera de un único Request Message y se aplica a sus Batch Items ordenados. |
 | `response_ttlv_navigation` | verified | El acceso tipado a respuestas y la navegación TTLV genérica propia conservan campos anidados, repetidos, desconocidos y de fabricante en los cuatro lenguajes. |
 | `request_validation` | verified | La validación con esquema informa de los problemas comprobables localmente antes del envío; las peticiones no válidas permanecen en `NotSent`. |

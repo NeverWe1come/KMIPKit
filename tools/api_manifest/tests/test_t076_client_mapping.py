@@ -4467,7 +4467,7 @@ class T076ClientMappingTests(unittest.TestCase):
             with self.subTest(operation=name):
                 operation = operations[name]
                 self.assertEqual(operation_id, operation["operationId"])
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("KMIPKIT-0009", operation["featureSpecId"])
                 self.assertEqual(

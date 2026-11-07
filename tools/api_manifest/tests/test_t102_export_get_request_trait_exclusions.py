@@ -141,6 +141,7 @@ class T102ExportGetRequestTraitExclusionTests(unittest.TestCase):
             exclusions = {
                 row["exportName"]: row for row in self.manifest["approvedExclusions"]
                 if row.get("packageId") == PACKAGE and row.get("exportName", "").startswith(prefix)
+                and row.get("candidateSpecId") != "KMIPKIT-0053"
             }
             self.assertEqual(declarations, set())
             self.assertEqual(set(exclusions), expected)

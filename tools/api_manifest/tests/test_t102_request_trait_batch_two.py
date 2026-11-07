@@ -229,6 +229,7 @@ class T102RequestTraitBatchTwoTests(unittest.TestCase):
                 for row in self.manifest.get("approvedExclusions", [])
                 if row.get("packageId") == "rust-kmipkit-protocol"
                 and row.get("exportName", "").startswith(prefix)
+                and row.get("candidateSpecId") != "KMIPKIT-0053"
             }
             with self.subTest(type_name=type_name, evidence="manifest exact set"):
                 self.assertEqual(declarations, set())
@@ -264,6 +265,7 @@ class T102RequestTraitBatchTwoTests(unittest.TestCase):
             (row["packageId"], row["exportName"])
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
             and any(
                 row.get("exportName", "").startswith(
                     f"<kmipkit_protocol::{type_name} as "

@@ -178,9 +178,9 @@ SECRET_WRAPPER_REQUIREMENTS = {
 RUST_EXPORT_INVENTORY = (
     ROOT
     / "specs"
-    / "043-public-api-bindings"
+    / "053-api-parity-facade"
     / "reports"
-    / "rust-export-report-2026-11-01.json"
+    / "rust-export-report-2026-11-07-final.json"
 )
 
 
@@ -292,7 +292,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         }
         self.assertEqual(VALIDATION_ERROR_EXPORTS, rust_exports)
         self.assertEqual(
-            {"c-kmipkit", "java-kmipkit", "python-kmipkit", "rust-kmipkit-protocol"},
+            {"c-kmipkit", "java-kmipkit", "python-kmipkit", "rust-kmipkit-protocol", "rust-kmipkit"},
             {row["packageId"] for row in records},
         )
         for record in records:
@@ -349,6 +349,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::DeviceCredential",
                         "kmipkit_protocol::UsernameAndPasswordCredential",
                         "kmipkit_protocol::HashedPasswordCredential",
+                        "kmipkit_protocol::HashedPasswordTimestampSequence",
+                        "kmipkit_protocol::HashedPasswordTimestampSequenceError",
                         "kmipkit_protocol::Authentication",
                         "kmipkit_protocol::CredentialView",
                         "kmipkit_protocol::CredentialValue",
@@ -370,7 +372,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         }
         self.assertIn("kmipkit_protocol::Authentication", owner_paths)
         self.assertIn("kmipkit_protocol::CredentialView", owner_paths)
-        self.assertEqual(17, len(owner_paths), "the credential owner type inventory changed")
+        self.assertEqual(19, len(owner_paths), "the credential owner type inventory changed")
 
         inventory_rows = inventory["declarations"] + inventory["conditionalDeclarations"]
         trait_exports: set[str] = set()
@@ -385,7 +387,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             and ">::" in row["exportName"]
         ]
         trait_exports = {row["exportName"] for row in trait_path_rows}
-        self.assertEqual(222, len(trait_exports), "the exact T092 trait declarations changed")
+        self.assertEqual(258, len(trait_exports), "the exact T092 trait declarations changed")
 
         for export_name in sorted(trait_exports):
             owner_expression, trait_member = export_name[1:].split(" as ", 1)
@@ -441,7 +443,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 self.assertEqual("::".join(identity[3]), exported_trait.split("<", 1)[0])
                 self.assertEqual(identity[7], exported_member)
             trait_exports.add(export_name)
-        self.assertEqual(222, len(trait_exports), "the reviewed T092 trait slice changed")
+        self.assertEqual(258, len(trait_exports), "the reviewed T092 trait slice changed")
 
         owner_exclusions = [
             row

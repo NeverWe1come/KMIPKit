@@ -87,7 +87,7 @@ class T102ResponseContextExclusionTests(unittest.TestCase):
         }
         self.assertEqual(operation_ids, set(operations))
         for operation in operations.values():
-            self.assertEqual("declared", operation["apiState"])
+            self.assertEqual("verified", operation["apiState"])
             self.assertEqual({"rust", "c", "java", "python"}, set(operation["declarations"]))
             self.assertTrue(all(operation["declarations"][language] for language in ("rust", "c", "java", "python")))
         self.assertEqual(T102_PUBLIC_DECLARATIONS, len(self.manifest["publicDeclarations"]))

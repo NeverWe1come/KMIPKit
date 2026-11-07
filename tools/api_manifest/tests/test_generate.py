@@ -43,6 +43,13 @@ V2_GENERATED_OUTPUTS = (
     "tests/fixtures/api/generated/public_api_parity.json",
     "tests/fixtures/api/generated/kmipkit_internal.h",
 )
+GENERATED_EVIDENCE_PATHS = (
+    *V2_GENERATED_OUTPUTS,
+    "bindings/c/include/kmipkit_standard_attributes_generated.h",
+    "bindings/python/src/kmipkit/_generated/standard_attribute.py",
+    "crates/kmipkit-protocol/src/typed_attributes_generated.rs",
+    "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+)
 GENERATED_OUTPUT_MAP = {
     "rustFfi": GENERATED_OUTPUTS[0],
     "cHeader": GENERATED_OUTPUTS[1],
@@ -131,9 +138,16 @@ def _create_repo(parent: Path) -> Path:
         for record in manifest.get(collection_name, []):
             evidence_paths = record.get("evidencePaths", [])
             if isinstance(evidence_paths, list):
-                referenced_paths.update(
-                    path for path in evidence_paths if isinstance(path, str)
-                )
+                for index, evidence_path in enumerate(evidence_paths):
+                    if evidence_path in GENERATED_EVIDENCE_PATHS:
+                        relocated_path = (
+                            "tests/fixtures/api/manifest-input-evidence/"
+                            + evidence_path
+                        )
+                        relocated_generated_evidence[relocated_path] = evidence_path
+                        evidence_paths[index] = relocated_path
+                    elif isinstance(evidence_path, str):
+                        referenced_paths.add(evidence_path)
             for source_name in ("approvalSource", "approvalEvidence", "acceptedEvidence"):
                 source = record.get(source_name)
                 if not isinstance(source, dict):
@@ -146,7 +160,7 @@ def _create_repo(parent: Path) -> Path:
                         referenced_paths.add(str(Path(*parts[:2]) / "spec.md"))
             evidence_ids = record.get("parityEvidenceIds", [])
             for index, evidence_id in enumerate(evidence_ids):
-                if evidence_id in V2_GENERATED_OUTPUTS:
+                if evidence_id in GENERATED_EVIDENCE_PATHS:
                     relocated_path = (
                         "tests/fixtures/api/manifest-input-evidence/" + evidence_id
                     )

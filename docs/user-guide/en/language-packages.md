@@ -200,8 +200,8 @@ changes to this table.
 | `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
 | `named_protocol_mask_single_bit_lookup` | declared | Catalog-backed names are available for assigned single-bit mask flags; unknown bits remain preserved. |
 | `typed_object_attributes` | verified | The 62 applicable typed attributes have four-language construction and read routes while generic TTLV preserves repeated and unknown values. |
-| `typed_managed_objects_and_key_material` | blocked | Rust typed models exist, but four-language route reconciliation is incomplete; do not treat this capability as available. |
-| `typed_cryptographic_parameters` | blocked | Rust typed parameters exist, but four-language route reconciliation is incomplete; do not treat this capability as available. |
+| `typed_managed_objects_and_key_material` | verified | Typed managed-object and key-material routes are reconciled across Rust, C, Java, and Python. This verifies API mapping and lifecycle parity, not KMIP conformance or release readiness. |
+| `typed_cryptographic_parameters` | verified | Typed cryptographic parameters are reconciled across Rust, C, Java, and Python with explicit secret ownership and cleanup. This verifies API mapping and lifecycle parity, not KMIP conformance or release readiness. |
 | `request_message_authentication` | verified | Caller-owned Authentication is attached to one Request Message header and applies to that message's ordered Batch Items. |
 | `response_ttlv_navigation` | verified | Typed response access and owned generic TTLV navigation preserve nested, repeated, unknown, and vendor fields across the four languages. |
 | `request_validation` | verified | Schema-aware validation reports locally detectable issues before transmission; invalid requests remain `NotSent`. |

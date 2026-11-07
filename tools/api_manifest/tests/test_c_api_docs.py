@@ -9,9 +9,9 @@ AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
 AUDIT_REPORT = (
     ROOT
     / "specs"
-    / "043-public-api-bindings"
+    / "053-api-parity-facade"
     / "reports"
-    / "binding-export-report-2026-11-05.json"
+    / "binding-export-report-2026-11-07-final.json"
 )
 
 
@@ -22,7 +22,7 @@ class CApiDocumentationTests(unittest.TestCase):
         self.assertIn("../../specification/api/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
-            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-11-05.json",
+            "../../specs/053-api-parity-facade/reports/binding-export-report-2026-11-07-final.json",
             documentation,
         )
         self.assertIn("audit_binding_exports.py", documentation)

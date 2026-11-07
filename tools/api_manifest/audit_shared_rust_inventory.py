@@ -89,8 +89,8 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit::TransportError::new",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
-RUST_REPORT_PATH = Path("specs/043-public-api-bindings/reports/rust-export-report-2026-11-05.json")
-REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-05.json")
+RUST_REPORT_PATH = Path("specs/053-api-parity-facade/reports/rust-export-report-2026-11-07-final.json")
+REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-11-07.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
@@ -113,38 +113,64 @@ def _read_approved_owner(
 ) -> set[str]:
     root = root.resolve()
     spec_file: Path | None = None
-    if approval_path is not None:
-        candidate = (root / approval_path).resolve()
-        try:
-            candidate.relative_to(root)
-        except ValueError as error:
-            raise InventoryError("approved Rust declaration owner path escapes the repository") from error
-        if candidate.is_file():
-            spec_file = candidate
+    owner_spec_dir = next(
+        (
+            path
+            for path in (root / "specs").iterdir()
+            if path.is_dir() and path.name.startswith(owner_spec_id[9:])
+        ),
+        None,
+    )
+    if owner_spec_dir is not None:
+        spec_file = owner_spec_dir / "spec.md"
     else:
-        spec_dir = next(
-            (path for path in (root / "specs").iterdir() if path.name.startswith(owner_spec_id[9:])),
-            None,
+        owner_pattern = re.compile(
+            rf"(?:\*\*Feature Branch\*\*:\s*`feature/{re.escape(owner_spec_id)}(?:-|`)|"
+            rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b)"
         )
-        if spec_dir is not None:
-            spec_file = spec_dir / "spec.md"
-        else:
-            owner_pattern = re.compile(
-                rf"(?:\*\*Feature Branch\*\*:\s*`feature/{re.escape(owner_spec_id)}(?:-|`)|"
-                rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b)"
-            )
-            matching_specs = [
-                path
-                for path in (root / "specs").glob("*/spec.md")
-                if owner_pattern.search(path.read_text(encoding="utf-8"))
-            ]
-            if len(matching_specs) == 1:
-                spec_file = matching_specs[0]
+        matching_specs = [
+            path
+            for path in (root / "specs").glob("*/spec.md")
+            if owner_pattern.search(path.read_text(encoding="utf-8"))
+        ]
+        if len(matching_specs) == 1:
+            spec_file = matching_specs[0]
     if spec_file is None:
         raise InventoryError(f"approved Rust declaration owner has no spec document: {owner_spec_id}")
     text = spec_file.read_text(encoding="utf-8")
     status = re.search(r"^\*\*Status\*\*: *([^\r\n]+)", text, re.MULTILINE)
-    if status is None or re.match(r"(?:Approved|Accepted)\b", status.group(1)) is None:
+    formally_approved = status is not None and re.match(
+        r"(?:Approved|Accepted)\b", status.group(1)
+    ) is not None
+    directly_approved_for_implementation = False
+    if status is not None and re.match(r"Approved for implementation\b", status.group(1)):
+        approval_record = spec_file.with_name("approval-record.md")
+        if approval_path is not None:
+            candidate = (root / approval_path).resolve()
+            try:
+                candidate.relative_to(root)
+            except ValueError as error:
+                raise InventoryError(
+                    "approved Rust declaration owner path escapes the repository"
+                ) from error
+            if candidate.name == "approval-record.md":
+                approval_record = candidate
+            elif candidate.name == "spec.md" and candidate != spec_file:
+                raise InventoryError(
+                    "approved Rust declaration owner path does not match its specification"
+                )
+            elif candidate.name not in {"approval-record.md", "spec.md"}:
+                raise InventoryError("approved Rust declaration owner path has an unexpected file")
+        record_text = (
+            approval_record.read_text(encoding="utf-8")
+            if approval_record.is_file()
+            else ""
+        )
+        directly_approved_for_implementation = re.search(
+            r"(?im)^\s*-\s*(?:\*\*Approval source:\*\*|Approval source:)\s*Direct\s+(?:user|maintainer)\s+instruction\s+approving\b",
+            record_text,
+        ) is not None
+    if not formally_approved and not directly_approved_for_implementation:
         raise InventoryError(f"Rust declaration owner is not formally Approved/Accepted: {owner_spec_id}")
     owner_requirements = set(re.findall(rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b", text))
     if not owner_requirements:
@@ -364,9 +390,11 @@ def build_inventory(
     capabilities = {
         row.get("capabilityId"): row for row in manifest.get("capabilities", [])
     }
+    known_requirement_ids = set(manifest.get("requirementIds", []))
     operation_ids = {row.get("operationId") for row in manifest.get("operations", [])}
     mapped: list[dict[str, Any]] = []
     rust_only: list[dict[str, Any]] = []
+    approved_owner_cache: dict[tuple[str, str], set[str]] = {}
     for key in sorted(observed):
         if key in approved_exclusions:
             continue
@@ -381,24 +409,78 @@ def build_inventory(
         requirement_ids = declaration.get("requirementIds", [])
         if not requirement_ids:
             raise InventoryError(f"ready Rust declaration has no requirement traceability: {declaration['exportName']}")
+        unknown_requirement_ids = set(requirement_ids) - known_requirement_ids
+        if unknown_requirement_ids:
+            raise InventoryError(
+                f"Rust declaration references unknown requirements: {sorted(unknown_requirement_ids)}"
+            )
 
         owner_spec_id = capability.get("ownerSpecId")
         owner_adr_id = capability.get("ownerAdrId")
+        capability_owner_requirements: list[str] = []
+        declaration_owner_requirements: list[str] = []
         if owner_spec_id:
-            owner_requirements = sorted(
+            capability_owner_requirements = sorted(
+                requirement_id
+                for requirement_id in capability.get("requirementIds", [])
+                if requirement_id.startswith(f"{owner_spec_id}-FR-")
+            )
+            approved_path = capability.get("approvalEvidence", {}).get("path")
+            cache_key = owner_spec_id, approved_path or ""
+            declared_owner_requirements = approved_owner_cache.get(cache_key)
+            if declared_owner_requirements is None:
+                declared_owner_requirements = _read_approved_owner(
+                    owner_spec_id, root, approved_path
+                )
+                approved_owner_cache[cache_key] = declared_owner_requirements
+            if not capability_owner_requirements:
+                raise InventoryError(
+                    f"ready capability lacks owner requirements: {capability.get('capabilityId')}"
+                )
+            unknown = set(capability_owner_requirements) - declared_owner_requirements
+            if unknown:
+                raise InventoryError(
+                    f"capability references absent owner requirements: {sorted(unknown)}"
+                )
+            declaration_owner_requirements = sorted(
                 requirement_id
                 for requirement_id in requirement_ids
                 if requirement_id.startswith(f"{owner_spec_id}-FR-")
             )
-            approved_path = capability.get("approvalEvidence", {}).get("path")
-            declared_owner_requirements = _read_approved_owner(owner_spec_id, root, approved_path)
-            if not owner_requirements:
-                raise InventoryError(f"ready Rust declaration lacks owner requirements: {declaration['exportName']}")
-            unknown = set(owner_requirements) - declared_owner_requirements
-            if unknown:
-                raise InventoryError(f"Rust declaration references absent owner requirements: {sorted(unknown)}")
-            if declaration.get("approvalSource") != capability.get("approvalEvidence"):
-                raise InventoryError(f"Rust declaration approval evidence differs from its capability: {declaration['exportName']}")
+            approval_source = declaration.get("approvalSource")
+            if approval_source != capability.get("approvalEvidence"):
+                approval_path = approval_source.get("path", "") if isinstance(approval_source, dict) else ""
+                source_match = re.match(r"^specs/(\d+)-[^/]+/(?:spec|approval-record)\.md$", approval_path)
+                source_owner = (
+                    f"KMIPKIT-{source_match.group(1).zfill(4)}"
+                    if source_match is not None
+                    else None
+                )
+                requirement_owners = {
+                    match.group(1)
+                    for requirement_id in requirement_ids
+                    if (match := re.match(r"^(KMIPKIT-\d{4})-FR-\d{3}$", requirement_id))
+                }
+                if source_owner is None or source_owner not in requirement_owners:
+                    raise InventoryError(
+                        f"Rust declaration approval source is not backed by its requirements: {declaration['exportName']}"
+                    )
+                cache_key = source_owner, approval_path
+                declared_source_requirements = approved_owner_cache.get(cache_key)
+                if declared_source_requirements is None:
+                    declared_source_requirements = _read_approved_owner(
+                        source_owner, root, approval_path
+                    )
+                    approved_owner_cache[cache_key] = declared_source_requirements
+                route_owner_requirements = {
+                    requirement_id
+                    for requirement_id in requirement_ids
+                    if requirement_id.startswith(f"{source_owner}-FR-")
+                }
+                if not route_owner_requirements <= declared_source_requirements:
+                    raise InventoryError(
+                        f"Rust declaration references absent approval-source requirements: {sorted(route_owner_requirements - declared_source_requirements)}"
+                    )
         elif owner_adr_id == "ADR-0014":
             owner_requirements = []
             if not {"KMIPKIT-0043-FR-020", "KMIPKIT-0043-FR-021"} <= set(requirement_ids):
@@ -427,7 +509,8 @@ def build_inventory(
             "capabilityId": declaration["capabilityId"],
             "ownerSpecId": owner_spec_id,
             "ownerAdrId": owner_adr_id,
-            "ownerRequirementIds": owner_requirements,
+            "ownerRequirementIds": declaration_owner_requirements,
+            "capabilityOwnerRequirementIds": capability_owner_requirements,
             "requirementIds": sorted(requirement_ids),
             "parityScope": declaration["parityScope"],
         }

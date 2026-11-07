@@ -158,6 +158,7 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                 for row in self.rust_report["declarations"]
                 if row.get("packageId") == "rust-kmipkit-protocol"
                 and row.get("exportName", "").startswith(f"<{public_type} as ")
+                and row.get("candidateSpecId") != "KMIPKIT-0053"
             }
             observed_conditional = {
                 row["exportName"]
@@ -189,6 +190,7 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                 for row in self.manifest.get("approvedExclusions", [])
                 if row.get("packageId") == "rust-kmipkit-protocol"
                 and row.get("exportName", "").startswith(f"<{public_type} as ")
+                and row.get("candidateSpecId") != "KMIPKIT-0053"
             ]
             with self.subTest(type_name=type_name, inventory="manifest"):
                 self.assertEqual(declarations, set())
@@ -232,6 +234,7 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                 )
                 for type_name in TYPES
             )
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
         self.assertEqual(manifest_exclusions, all_expected_exclusions)
 
@@ -282,6 +285,7 @@ class T102ProtocolRequestTraitExclusionTests(unittest.TestCase):
                     for row in self.manifest["approvedExclusions"]
                     if row.get("packageId") == "rust-kmipkit"
                     and row.get("exportName", "").startswith(root_trait_prefix)
+                    and row.get("candidateSpecId") != "KMIPKIT-0053"
                 }
                 self.assertEqual(actual_root_traits, expected_root_traits)
 

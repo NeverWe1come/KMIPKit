@@ -95,6 +95,19 @@
 - [x] T065 [US5] Replace route-only checks with assertions of encoded operation identity for every synchronous factory and concrete typed response values for each operation family.
 - [x] T066 [US2] Correct transparent EC Key Format Type dispatch to the hexadecimal values in KMIP 2.1 §11.25 Table 461; add rejection tests for malformed 0x14/0x15 structures and preserve reserved 0x0E/0x0F as generic values in Rust, C, Java, and Python.
 
+## Converged validation export inventory
+- [x] T067 [US4] Add Red tests for the exact 934-candidate validation inventory, its current Rustdoc identities, and parity between Rust schema enum variants and foreign schema-string dispatch.
+- [x] T068 [US4] Map the 12 direct validation aliases and record exact exclusions for the other 922 routes with deterministic preparation, approved evidence, and generated-manifest reconciliation.
+- [x] T069 [US4] Exercise all request and nested schema identifiers through the Python binding; preserve `SetEndpointRole` as an accepted-but-unsupported descriptor identity and verify `Unsupported`.
+- [x] T070 [US6] Refresh T102 declaration, operation, and manifest fingerprints after the latest synchronized stack, update exact totals, and record final audit evidence in the specification artifacts.
+- [x] T071 [US4] Add Red tampering regressions for fabricated source commits and substituted Rust exports; pin candidate preparation to the exact audited Git commit and compare every candidate with its Git manifest source.
+- [x] T072 [US6] Refresh the binding-export audit documentation from the final C, Java, and Python compiled audit report and verify the documented counts against the checked-in report.
+- [x] T073 [US6] Update prior manifest regressions to reflect the synchronized verified state of the three Create operations while retaining their declared route state.
+- [x] T074 [US6] Add a bounded manifest-size regression for the 56 MiB limit and the full inventory's indented test serialization; raise the pinned cap only enough to admit this inventory.
+- [x] T075 [US6] Preserve per-record `evidencePaths` in isolated generator-test repositories and relocate generated-output evidence into fixture paths without creating checked output destinations.
+- [x] T076 [US6] Apply the normative standard-attribute catalog parity check to manifests that claim the ready `typed_object_attributes` capability, while permitting empty partial-development fixtures and rejecting tag rows without that capability.
+- [x] T077 [US6] Run the complete manifest suite with its pinned test dependency, final generator/reconciliation and four-language export audits, workspace quality checks, bindings, consumers, and independent review; record exact local and remote release-gate status. Local Windows checks pass; hosted CI is intentionally not run during the maintainer-reported billing issue. Linux/macOS execution and 1.0 interoperability/security release gates remain external.
+
 ## Dependencies
 T001–T005 precede the user stories. US1 and US2 stabilize typed value/secret patterns; US3 follows; US4 reuses the shared Rust validator; US5 consumes the prior request/response bindings; US6 closes packages, docs, manifest and PR evidence. Keep each lot sequential on this branch.
 

@@ -33,7 +33,46 @@ CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_EXPORT_REPORT_PATH = max(RUST_EXPORT_REPORT_DIR.glob("rust-export-report-*.json"))
+RUST_EXPORT_REPORT_PATH = (
+    ROOT
+    / "specs"
+    / "053-api-parity-facade"
+    / "reports"
+    / "rust-export-report-2026-11-07-final.json"
+)
+HEADERLESS_C_FUNCTION_EXCLUSIONS = {"kmipkit_ttlv_value_view_copy_bytes"}
+VERIFIED_OPERATION_DECLARED_EXPORTS = {
+    "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-CREATE",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+    "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+    "KMIPKIT-ELEM-OP-C2S-HASH",
+    "KMIPKIT-ELEM-OP-C2S-MAC",
+    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+    "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-SIGN",
+    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+}
+VERIFIED_OPERATION_DECLARED_VARIANTS = {
+    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+    "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+}
+VERIFIED_OPERATION_DECLARED_OPTIONS = {
+    "KMIPKIT-ELEM-OP-C2S-HASH",
+    "KMIPKIT-ELEM-OP-C2S-MAC",
+    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+    "KMIPKIT-ELEM-OP-C2S-SIGN",
+    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+    "KMIPKIT-ELEM-OP-C2S-CREATE",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+}
+VERIFIED_TTLV_DECLARATIONS = {"KMIPKIT-0053:export:53d898ff0d93bff2b5a4af54"}
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -208,6 +247,39 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (exclusion["packageId"], exclusion["exportName"]): exclusion
             for exclusion in self.checked_in_manifest["approvedExclusions"]
         }
+
+    def _c_header_surface(self) -> str:
+        include_dir = ROOT / "bindings" / "c" / "include"
+        header_paths = (
+            include_dir / "kmipkit.h",
+            include_dir / "kmipkit_standard_attributes_generated.h",
+            include_dir / "kmipkit_named_value_helpers_generated.h",
+        )
+        return "\n".join(path.read_text(encoding="utf-8") for path in header_paths)
+
+    def _assert_headerless_c_function_exclusions(
+        self, header_functions: set[str]
+    ) -> None:
+        exclusions = self._approved_exclusions_by_key()
+        for export_name in HEADERLESS_C_FUNCTION_EXCLUSIONS:
+            exclusion = exclusions[("c-kmipkit", export_name)]
+            self.assertIn(
+                "intentionally absent from the supported C header",
+                exclusion["reason"],
+            )
+            self.assertNotIn(export_name, header_functions)
+
+    def _assert_operation_declaration_state(
+        self,
+        operation: dict[str, object],
+        declaration: dict[str, object],
+    ) -> None:
+        operation_id = operation["operationId"]
+        if operation_id in VERIFIED_OPERATION_DECLARED_EXPORTS:
+            self.assertEqual("verified", operation["apiState"])
+            self.assertEqual("declared", declaration["declarationState"])
+        else:
+            self.assertEqual(operation["apiState"], declaration["declarationState"])
 
     def test_checked_in_manifest_is_the_complete_v2_contract(self) -> None:
         manifest = self.checked_in_manifest
@@ -1316,10 +1388,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"{exclusion['packageId']}\0{exclusion['exportName']}"
             for exclusion in owner_exclusions
         )
-        self.assertEqual(len(owner_keys), 426)
+        self.assertEqual(len(owner_keys), 639)
         self.assertEqual(
             hashlib.sha256(("\n".join(owner_keys) + "\n").encode()).hexdigest(),
-            "58150ca9fccbd2db84f26158fa3eb633a92334e0bf8b0b23feceace4dd00a530",
+            "8ab7dc812fba04268941b0070fae64fd533647b6a10a138c760a38ceadd7d4f1",
         )
         for exclusion in owner_exclusions:
             if exclusion["exportName"].endswith("::ProtocolErrorKind"):
@@ -1688,28 +1760,59 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "concrete Discover Versions declarations must be mapped or excluded: "
             f"{sorted(unresolved_concrete)}",
         )
-        self.assertEqual(65, len(exclusions))
-        self.assertEqual(65, len(exclusion_names))
+        self.assertEqual(67, len(exclusions))
+        self.assertEqual(67, len(exclusion_names))
         for exclusion in exclusions:
             with self.subTest(export=exclusion["exportName"]):
-                self.assertIn("standard-trait implementation", exclusion["reason"])
-                self.assertIn("separately inventoried", exclusion["reason"])
-                self.assertEqual(
-                    {
-                        "kind": "feature-specification",
-                        "path": "specs/007-client-execution/spec.md",
-                        "status": "Approved",
-                    },
-                    {
-                        key: exclusion["approvalSource"][key]
-                        for key in ("kind", "path", "status")
-                    },
-                )
-                self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
-                self.assertIn("KMIPKIT-0007-FR-002", exclusion["evidence"])
-                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
-                if "DiscoverVersionsError" in exclusion["exportName"]:
-                    self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+                if "ValidateKmipRequest" in exclusion["exportName"]:
+                    self.assertIn(
+                        "per-request ValidateKmipRequest implementation member",
+                        exclusion["reason"],
+                    )
+                    self.assertIn("exact Rust trait projection", exclusion["reason"])
+                    self.assertIn(
+                        "verified four-language request_validation routes",
+                        exclusion["reason"],
+                    )
+                else:
+                    self.assertIn("standard-trait implementation", exclusion["reason"])
+                    self.assertIn("separately inventoried", exclusion["reason"])
+                if "ValidateKmipRequest" in exclusion["exportName"]:
+                    self.assertEqual(
+                        {
+                            "kind": "feature-specification",
+                            "path": "specs/053-api-parity-facade/approval-record.md",
+                            "status": "Approved",
+                        },
+                        {
+                            key: exclusion["approvalSource"][key]
+                            for key in ("kind", "path", "status")
+                        },
+                    )
+                    self.assertEqual(
+                        "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation.",
+                        exclusion["approvalSource"]["evidence"],
+                    )
+                    self.assertEqual("KMIPKIT-0053", exclusion["candidateSpecId"])
+                    self.assertEqual("request_validation", exclusion["capabilityId"])
+                    self.assertIn("specs/053-api-parity-facade/gap-matrix.md", exclusion["evidence"])
+                else:
+                    self.assertEqual(
+                        {
+                            "kind": "feature-specification",
+                            "path": "specs/007-client-execution/spec.md",
+                            "status": "Approved",
+                        },
+                        {
+                            key: exclusion["approvalSource"][key]
+                            for key in ("kind", "path", "status")
+                        },
+                    )
+                    self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
+                    self.assertIn("KMIPKIT-0007-FR-002", exclusion["evidence"])
+                    self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                    if "DiscoverVersionsError" in exclusion["exportName"]:
+                        self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
 
     def test_t091_client_execution_standard_traits_have_exact_owner_exclusions(self) -> None:
         target_packages = {"rust-kmipkit", "rust-kmipkit-client"}
@@ -1721,11 +1824,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_client::Client",
             "kmipkit_client::PendingOutcome",
         )
-        rust_report = json.loads(
-            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-10-30.json").read_text(
-                encoding="utf-8"
-            )
-        )
+        rust_report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_traits = {
             (row["packageId"], row["exportName"])
             for row in (
@@ -1746,6 +1845,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if row["packageId"] in target_packages
             and row["approvalSource"]["path"] == "specs/007-client-execution/spec.md"
             and row["exportName"].startswith("<")
+            and row["exportName"].split(" as ", 1)[0][1:].startswith(
+                trait_type_prefixes
+            )
         }
         unresolved = sorted(
             (row["packageId"], row["exportName"])
@@ -2205,7 +2307,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         for variant, (operation_id, method) in cases.items():
             operation = operations[operation_id]
-            self.assertEqual("declared", operation["apiState"])
+            self.assertEqual("verified", operation["apiState"])
             self.assertEqual("KMIPKIT-0021", operation["featureSpecId"])
 
             constructor_declarations = {}
@@ -3536,6 +3638,31 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for row in self.checked_in_manifest["capabilities"]
             if row["capabilityId"] == "client_execution"
         )
+        excluded_owner_requirements = {
+            "mac_verify": {"KMIPKIT-0021-FR-007"},
+            "signature_verify": {"KMIPKIT-0021-FR-006"},
+            "create": {"KMIPKIT-0014-FR-014", "KMIPKIT-0043-FR-004"},
+            "create_key_pair": {"KMIPKIT-0043-FR-004"},
+            "create_split_key": {"KMIPKIT-0043-FR-004"},
+        }
+        lifecycle_approval = {
+            "kind": "feature-specification",
+            "path": "specs/018-managed-object-lifecycle/approval-record.md",
+            "status": "Approved",
+            "evidence": "- **Decision:** Approved for implementation and T098 manifest reconciliation only.",
+        }
+        crypto_approval = {
+            "kind": "feature-specification",
+            "path": "specs/021-hash-mac-signature-operations/spec.md",
+            "status": "Approved",
+            "evidence": "**Status**: Approved",
+        }
+        owner_source_overrides = {
+            "destroy": lifecycle_approval,
+            "hash": crypto_approval,
+            "mac_verify": crypto_approval,
+            "sign": crypto_approval,
+        }
 
         for method, operation_id in operations.items():
             operation = operations_by_id[operation_id]
@@ -3553,6 +3680,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for owner_declaration in owner_declarations
                 if "approvalSource" in owner_declaration
             )
+            owner_source = owner_source_overrides.get(method, owner_source)
             for package_id, rust_prefix in (
                 ("rust-kmipkit-client", "kmipkit_client::"),
                 ("rust-kmipkit", "kmipkit::"),
@@ -3560,12 +3688,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 export_name = f"{rust_prefix}Client::{method}_with_options"
                 with self.subTest(export=export_name):
                     declaration = declarations[export_name]
-                    self.assertEqual(operation["apiState"], declaration["declarationState"])
+                    if operation_id in VERIFIED_OPERATION_DECLARED_OPTIONS:
+                        self.assertEqual("verified", operation["apiState"])
+                        self.assertEqual("declared", declaration["declarationState"])
+                    else:
+                        self.assertEqual(
+                            operation["apiState"], declaration["declarationState"]
+                        )
                     self.assertEqual(operation_id, declaration["capabilityId"])
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
                     self.assertEqual(owner_source, declaration["approvalSource"])
-                    self.assertTrue(owner_requirements.issubset(declaration["requirementIds"]))
+                    self.assertEqual(
+                        excluded_owner_requirements.get(method, set()),
+                        owner_requirements - set(declaration["requirementIds"]),
+                    )
                     self.assertEqual(
                         {
                             "rust": {"packageId": package_id, "name": export_name},
@@ -3767,7 +3904,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     "name": export_name,
                 }
                 with self.subTest(export=export_name):
-                    self.assertEqual("declared", operation["apiState"])
+                    self.assertEqual("verified", operation["apiState"])
                     self.assertEqual("approved", operation["ownerDependency"]["state"])
                     self.assertEqual("Accepted", operation["approvalEvidence"]["status"])
                     self.assertEqual("declared", declaration["declarationState"])
@@ -3853,7 +3990,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "name": export_name,
             }
             with self.subTest(export=export_name):
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("Accepted", operation["approvalEvidence"]["status"])
                 self.assertEqual("declared", canonical["declarationState"])
@@ -5006,7 +5143,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         "rust": {"packageId": rust_package, "name": export_name},
                         **mappings,
                     }
-                    self.assertEqual(operation["apiState"], declaration["declarationState"])
+                    if operation["operationId"] in VERIFIED_OPERATION_DECLARED_VARIANTS:
+                        self.assertEqual("verified", operation["apiState"])
+                        self.assertEqual("declared", declaration["declarationState"])
+                    else:
+                        self.assertEqual(
+                            operation["apiState"], declaration["declarationState"]
+                        )
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertNotIn("blockedReason", declaration)
                     self.assertEqual(operation["operationId"], declaration["capabilityId"])
@@ -6063,7 +6206,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 33)
+        self.assertEqual(len(any_lifetime_rows), 34)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -6332,6 +6475,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/016-attribute-operations/spec.md",
                 "specs/017-managed-object-retrieval/spec.md",
                 "specs/043-public-api-bindings/spec.md",
+                "specs/048-typed-attributes/spec.md",
+                "specs/049-managed-objects/spec.md",
+                "specs/050-parameters-auth-client/spec.md",
+                "specs/053-api-parity-facade/approval-record.md",
                 "specs/025-policy-controls/spec.md",
                 "specs/008-credentials-attestation/spec.md",
                 "specs/019-cryptographic-operations/spec.md",
@@ -6386,7 +6533,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 5021)
+        self.assertEqual(len(rust_exclusions), 6918)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {
@@ -6424,7 +6571,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ttlv_declarations.append(declaration)
             with self.subTest(declaration=declaration["declarationId"]):
                 self.assertEqual(declaration["capabilityId"], expected_capability)
-                self.assertEqual(declaration["declarationState"], "declared")
+                expected_state = (
+                    "verified"
+                    if declaration["declarationId"] in VERIFIED_TTLV_DECLARATIONS
+                    else "declared"
+                )
+                self.assertEqual(declaration["declarationState"], expected_state)
                 owner_prefix = (
                     "KMIPKIT-0005-FR-"
                     if expected_capability == "ttlv_wire_codec"
@@ -6436,7 +6588,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         for requirement in declaration["requirementIds"]
                     )
                 )
-                if declaration.get("mappingSemantics") == "native-handle-release":
+                if declaration["declarationId"] in VERIFIED_TTLV_DECLARATIONS:
+                    self.assertEqual(
+                        [
+                            "KMIPKIT-0004-FR-005",
+                            "KMIPKIT-0043-FR-008",
+                            "KMIPKIT-0053-FR-008",
+                            "KMIPKIT-0053-FR-009",
+                            "KMIPKIT-0053-FR-012",
+                        ],
+                        declaration["requirementIds"],
+                    )
+                elif declaration.get("mappingSemantics") == "native-handle-release":
                     binding_requirement = {
                         "c-kmipkit": "KMIPKIT-0043-FR-007",
                         "java-kmipkit": "KMIPKIT-0043-FR-008",
@@ -6451,7 +6614,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     )
                 else:
                     self.assertIn("KMIPKIT-0043-FR-004", declaration["requirementIds"])
-                self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+                if declaration["declarationId"] not in VERIFIED_TTLV_DECLARATIONS:
+                    self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
                 self.assertEqual(
                     declaration["approvalSource"]["path"],
                     "specs/004-generic-ttlv-model/spec.md"
@@ -6459,13 +6623,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 380)
+        self.assertEqual(len(ttlv_declarations), 381)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            263,
+            264,
         )
         self.assertEqual(
             sum(
@@ -6621,9 +6785,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
-        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
-            encoding="utf-8"
-        )
+        header = self._c_header_surface()
         declarations = self.declarations_for_package("c-kmipkit")
         ready_by_kind = {
             kind: {
@@ -6656,6 +6818,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
+        self._assert_headerless_c_function_exclusions(header_functions)
+        excluded_c_functions -= HEADERLESS_C_FUNCTION_EXCLUSIONS
         self.assertIn("kmipkit_client_batch_item_response_release", header_functions)
         self.assertIn(
             "kmipkit_client_batch_item_response_release", excluded_c_functions
@@ -6706,14 +6870,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         self.assertEqual(header_fields, ready_by_kind["field"] | approved_c_fields)
 
-        header_ttlv_macros = set(
-            re.findall(
-                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|ATTRIBUTE_REFERENCE_KIND|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND|CREDENTIAL_TYPE|CREDENTIAL_VALIDATION_ERROR_KIND|PROFILE_(?:CATALOG|TRANSPORT))_\w+)",
-                header,
-                re.MULTILINE,
-            )
+        header_public_macros = set(
+            re.findall(r"^#define (KMIPKIT_[A-Za-z0-9_]+)", header, re.MULTILINE)
         )
-        self.assertEqual(header_ttlv_macros, ready_by_kind["macro"])
+        header_public_macros -= {
+            name
+            for name in header_public_macros
+            if name.startswith(("KMIPKIT_ERROR_", "KMIPKIT_TTLV_DECODE_ERROR_KIND_"))
+        }
+        header_public_macros -= {
+            "KMIPKIT_H",
+            "KMIPKIT_NAMED_VALUE_HELPERS_GENERATED_H",
+            "KMIPKIT_STANDARD_ATTRIBUTES_GENERATED_H",
+        }
+        self.assertEqual(header_public_macros, ready_by_kind["macro"])
         header_error_macros = set(
             re.findall(r"^#define (KMIPKIT_ERROR_\w+)", header, re.MULTILINE)
         )
@@ -6732,9 +6902,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(header_error_macros, manifest_error_macros)
 
     def test_c_header_only_declares_ready_manifest_entries(self) -> None:
-        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
-            encoding="utf-8"
-        )
+        header = self._c_header_surface()
         declarations = self.declarations_for_package("c-kmipkit")
         approved_exclusions = {
             exclusion["exportName"]
@@ -6748,7 +6916,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for declaration in declarations
             if declaration["kind"] == "c-symbol"
             and declaration["declarationState"] in {"declared", "verified"}
-        } | approved_exclusions
+        } | (approved_exclusions - HEADERLESS_C_FUNCTION_EXCLUSIONS)
         ready_types = {
             declaration["exportName"]
             for declaration in declarations
@@ -6768,6 +6936,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 re.MULTILINE,
             )
         )
+        self._assert_headerless_c_function_exclusions(header_functions)
         header_types = set(
             re.findall(r"^typedef struct \w+\s+(kmipkit_\w+);$", header, re.MULTILINE)
         )
@@ -7489,7 +7658,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if capability_id in operations:
                 owner = operations[capability_id]
                 self.assertEqual("approved", owner["ownerDependency"]["state"])
-                self.assertEqual(owner["apiState"], canonical["declarationState"])
+                self._assert_operation_declaration_state(owner, canonical)
                 self.assertEqual(
                     owner["approvalEvidence"]["path"], canonical["approvalSource"]["path"]
                 )

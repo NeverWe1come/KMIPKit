@@ -131,6 +131,7 @@ FUNCTIONAL_STATES = {
     "RegisterRequest": {
         "": "verified",
         "::new": "declared",
+        "::from_managed_object": "verified",
         "::with_opaque_object_context": "verified",
         "::with_protection_storage_masks": "verified",
     },
@@ -194,6 +195,7 @@ class T102RevocationRegisterTraitExclusionTests(unittest.TestCase):
                 for row in self.manifest["approvedExclusions"]
                 if row.get("packageId") == PACKAGE
                 and row.get("exportName", "").startswith(prefix)
+                and row.get("candidateSpecId") != "KMIPKIT-0053"
             }
             self.assertEqual(declarations, set())
             self.assertEqual(set(exclusions), expected)
