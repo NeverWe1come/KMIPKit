@@ -250,8 +250,9 @@ def _is_typed_attribute_route(package_id: str, export_name: str) -> bool:
     if prefix is None or not owner.startswith(prefix):
         return False
     relative_owner = owner.removeprefix(prefix).split("<", 1)[0]
-    if relative_owner == "attribute" or relative_owner.startswith("attribute::"):
+    if relative_owner == "attribute::typed" or relative_owner.startswith("attribute::typed::"):
         return True
+    relative_owner = relative_owner.removeprefix("attribute::")
     return relative_owner.split("::", 1)[0] in TYPED_ATTRIBUTE_ROOT_TYPES
 
 
