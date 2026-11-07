@@ -25,3 +25,10 @@ fingerprints, and separately pin the new validation members as blocked.
 The subsequent cross-language validation reconciliation remains assigned to
 KMIPKIT-0053. These Rust validation rows do not claim C, Java, or Python
 validation parity.
+
+The additional focused regression module
+`tools.api_manifest.tests.test_t102_validation_route_inventory` ran three
+tests and failed exactly once: its explicit 902-candidate assertion observed
+the stale zero constant. The exact 252 validation trait routes, existing
+owners, all 930 blocked additions, absence of parity promotions, and negative
+selector cases passed as characterization of the existing manifest.
