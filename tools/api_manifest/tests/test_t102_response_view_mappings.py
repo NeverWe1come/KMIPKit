@@ -175,8 +175,8 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
-# The non-target snapshot includes the approved KMIPKIT-0052 async reader routes.
-OTHER_MANIFEST_SHA256 = "38a251038fa5eace82edb0341d8ea1ba09ae52de3588bd454135804f2ee703a0"
+# The non-target snapshot includes the async reader routes and exact Python adapter exclusions.
+OTHER_MANIFEST_SHA256 = "41944b8d3ee99d66bc64c0d4c535cb5851ccfb0cd5aff72e88ca596f3a4634ee"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
