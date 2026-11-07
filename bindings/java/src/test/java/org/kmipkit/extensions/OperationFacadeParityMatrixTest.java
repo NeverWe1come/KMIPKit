@@ -145,11 +145,12 @@ final class OperationFacadeParityMatrixTest {
 
     private static List<AsyncResponseAccessor> asyncResponseAccessors() {
         return List.of(
-                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-CANCEL", AsyncOperationOutcome::metadataV1),
-                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-POLL", AsyncOperationOutcome::metadataV1),
-                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-PROCESS", AsyncOperationOutcome::metadataV1),
+                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-CANCEL", AsyncOperationOutcome::cancelResponse),
+                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-POLL", AsyncOperationOutcome::pollResponse),
+                new AsyncResponseAccessor("KMIPKIT-ELEM-OP-C2S-PROCESS", AsyncOperationOutcome::processResponse),
                 new AsyncResponseAccessor(
-                        "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", AsyncOperationOutcome::responsePayloadTtlv));
+                        "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                        AsyncOperationOutcome::queryAsyncRequestsResponse));
     }
 
     /** Compile-checks every synchronous typed result getter against one response item. */

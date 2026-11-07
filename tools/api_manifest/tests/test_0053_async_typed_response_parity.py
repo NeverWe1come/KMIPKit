@@ -22,41 +22,58 @@ class AsyncTypedResponseParityTests(unittest.TestCase):
         capability = next(
             row
             for row in self.manifest["capabilities"]
-            if row["capabilityId"] == "client_asynchronous_operations"
+            if row["capabilityId"] == "typed_async_response_readers"
         )
-        required = {
+        readers = {
             "rust": {
-                "kmipkit::ClientOperationOutcome::cancel_response",
-                "kmipkit::ClientOperationOutcome::poll_response",
-                "kmipkit::ClientOperationOutcome::process_response",
-                "kmipkit::ClientOperationOutcome::query_async_requests_response",
+                "kmipkit_client::ClientOperationOutcome::cancel_response",
+                "kmipkit_client::ClientOperationOutcome::poll_response",
+                "kmipkit_client::ClientOperationOutcome::process_response",
+                "kmipkit_client::ClientOperationOutcome::query_async_requests_response",
             },
             "c": {
                 "kmipkit_client_async_operation_outcome_cancel_response_v1",
                 "kmipkit_client_async_operation_outcome_poll_response_v1",
                 "kmipkit_client_async_operation_outcome_process_response_v1",
                 "kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
-                "kmipkit_client_async_operation_response_v1_t.operation",
-                "kmipkit_client_async_operation_response_v1_t.is_pending",
-                "kmipkit_client_async_operation_response_v1_t.response_payload_member_count",
             },
             "java": {
                 "org.kmipkit.extensions.AsyncOperationOutcome.cancelResponse",
                 "org.kmipkit.extensions.AsyncOperationOutcome.pollResponse",
                 "org.kmipkit.extensions.AsyncOperationOutcome.processResponse",
                 "org.kmipkit.extensions.AsyncOperationOutcome.queryAsyncRequestsResponse",
-                "org.kmipkit.extensions.AsyncOperationResponseV1.result",
-                "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult",
-                "org.kmipkit.extensions.AsyncPollResponse.isPending",
-                "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount",
-                "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending",
             },
             "python": {
                 "kmipkit.client.AsyncOperationOutcome.cancel_response",
                 "kmipkit.client.AsyncOperationOutcome.poll_response",
                 "kmipkit.client.AsyncOperationOutcome.process_response",
                 "kmipkit.client.AsyncOperationOutcome.query_async_requests_response",
+            },
+        }
+        response_capability = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "response_ttlv_navigation"
+        )
+        response_fields = {
+            "c": {
+                "kmipkit_client_async_operation_response_v1_t.operation",
+                "kmipkit_client_async_operation_response_v1_t.is_pending",
+                "kmipkit_client_async_operation_response_v1_t.cancellation_result",
+                "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value",
+                "kmipkit_client_async_operation_response_v1_t.response_payload_member_count",
+            },
+            "java": {
+                "org.kmipkit.extensions.AsyncOperationResponseV1.result",
+                "org.kmipkit.extensions.AsyncOperationResponseV1.raw",
+                "org.kmipkit.extensions.AsyncCancelResponse.cancellationResult",
+                "org.kmipkit.extensions.AsyncPollResponse.isPending",
+                "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount",
+                "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending",
+            },
+            "python": {
                 "kmipkit.client.AsyncOperationResponseV1.result",
+                "kmipkit.client.AsyncOperationResponseV1.raw",
                 "kmipkit.client.AsyncCancelResponse.cancellation_result",
                 "kmipkit.client.AsyncPollResponse.is_pending",
                 "kmipkit.client.AsyncProcessResponse.payload_member_count",
@@ -64,12 +81,20 @@ class AsyncTypedResponseParityTests(unittest.TestCase):
             },
         }
 
-        for language, names in required.items():
+        for language, names in readers.items():
             with self.subTest(language=language):
                 self.assertTrue(
                     names <= set(capability["mappings"][language]),
                     f"missing {language} async response mappings: "
                     f"{sorted(names - set(capability['mappings'][language]))}",
+                )
+
+        for language, names in response_fields.items():
+            with self.subTest(response_field_language=language):
+                self.assertTrue(
+                    names <= set(response_capability["mappings"][language]),
+                    f"missing {language} async response fields: "
+                    f"{sorted(names - set(response_capability['mappings'][language]))}",
                 )
 
 
