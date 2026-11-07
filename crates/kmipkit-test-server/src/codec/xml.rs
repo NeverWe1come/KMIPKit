@@ -89,7 +89,16 @@ fn decode_xml_node(node: Node<'_, '_>) -> Result<Item, String> {
                 Value::byte_string(octets)
             }
             "DateTime" => {
-                let secs = parse_datetime(val_str)?;
+                let secs = parse_datetime(val_str).or_else(|_| {
+                    let clean_hex = val_str.strip_prefix("0x").unwrap_or(val_str);
+                    if let Ok(v) = u64::from_str_radix(clean_hex, 16) {
+                        Ok(v as i64)
+                    } else {
+                        val_str
+                            .parse::<i64>()
+                            .map_err(|e| format!("invalid datetime int: {e}"))
+                    }
+                })?;
                 Value::date_time(secs)
             }
             "Interval" => {

@@ -42,6 +42,7 @@ use kmipkit_protocol::{
     SignatureVerifyResponse, UniqueIdentifier,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+use kmipkit_protocol::{SetEndpointRoleRequest, SetEndpointRoleResponse};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
@@ -209,6 +210,7 @@ const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
 const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
+const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032; // KMIP v2.1 §6.1.54, Table 331.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -329,9 +331,17 @@ pub enum ClientRequest {
     RngRetrieve(RngRetrieveRequest),
     /// An explicit client-to-server RNG Seed request.
     RngSeed(RngSeedRequest),
+    /// An explicit client-to-server Set Endpoint Role request (§6.1.54).
+    SetEndpointRole(SetEndpointRoleRequest),
 }
 
 impl ClientRequest {
+    /// Creates an explicit client-to-server Set Endpoint Role request variant.
+    #[must_use]
+    pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
+        Self::SetEndpointRole(request)
+    }
+
     /// Creates the KMIP 2.1 Discover Versions request variant.
     #[must_use]
     pub const fn discover_versions() -> Self {
@@ -680,6 +690,7 @@ impl ClientRequest {
             Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
             Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
             Self::RngSeed(_) => RNG_SEED_OPERATION,
+            Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
         }
     }
 
@@ -873,6 +884,7 @@ impl ClientRequest {
             Self::SignatureVerify(request) => request.to_ttlv_payload(),
             Self::RngRetrieve(request) => request.to_ttlv_payload(),
             Self::RngSeed(request) => request.to_ttlv_payload(),
+            Self::SetEndpointRole(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -964,6 +976,10 @@ impl fmt::Debug for ClientRequest {
                 formatter.debug_tuple("RngRetrieve").field(request).finish()
             }
             Self::RngSeed(_) => formatter.write_str("RngSeed([REDACTED])"),
+            Self::SetEndpointRole(request) => formatter
+                .debug_tuple("SetEndpointRole")
+                .field(request)
+                .finish(),
         }
     }
 }
@@ -1002,6 +1018,12 @@ impl ClientBatchItem {
     #[must_use]
     pub fn query(request: QueryRequest) -> Self {
         Self::new(ClientRequest::query(request))
+    }
+
+    /// Creates a batch item for one typed Set Endpoint Role request (§6.1.54).
+    #[must_use]
+    pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
+        Self::new(ClientRequest::set_endpoint_role(request))
     }
 
     /// Creates a Query batch item only when its payload fits the supplied codec limits.
@@ -1323,6 +1345,7 @@ enum PendingResponse {
     RngRetrieve(RngRetrieveResponse),
     RngSeed(RngSeedResponse),
     Query(QueryResponse),
+    SetEndpointRole(SetEndpointRoleResponse),
 }
 
 impl PendingResponse {
@@ -1380,6 +1403,7 @@ impl PendingResponse {
             Self::RngRetrieve(response) => ClientResponseRef::RngRetrieve(response),
             Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
+            Self::SetEndpointRole(response) => ClientResponseRef::SetEndpointRole(response),
         };
         ClientResponseView { response }
     }
@@ -1652,6 +1676,8 @@ pub enum ClientOperation {
     Process,
     /// Query outstanding asynchronous requests with a generic response.
     QueryAsyncRequests,
+    /// Set Endpoint Role (§6.1.54).
+    SetEndpointRole,
 }
 
 impl ClientOperation {
@@ -1715,6 +1741,7 @@ impl ClientOperation {
             Self::SignatureVerify => 0x22,
             Self::Validate => 0x17,
             Self::DelegatedLogin => 0x2f,
+            Self::SetEndpointRole => 0x32,
         }
     }
 }
@@ -1885,6 +1912,7 @@ enum ClientResponseRef<'a> {
     RngRetrieve(&'a RngRetrieveResponse),
     RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
+    SetEndpointRole(&'a SetEndpointRoleResponse),
 }
 
 /// A borrowed view of one typed response in a [`ClientBatchOutcome`].
@@ -1959,6 +1987,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::RngRetrieve(response) => response.result(),
             ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
+            ClientResponseRef::SetEndpointRole(response) => response.result(),
         }
     }
 
@@ -2442,6 +2471,15 @@ impl<'a> ClientResponseView<'a> {
             _ => None,
         }
     }
+
+    /// Returns the Set Endpoint Role response when this view represents it.
+    #[must_use]
+    pub const fn set_endpoint_role(&self) -> Option<&'a SetEndpointRoleResponse> {
+        match self.response {
+            ClientResponseRef::SetEndpointRole(response) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 fn debug_response<T>(formatter: &mut fmt::Formatter<'_>, name: &str, _response: &T) -> fmt::Result {
@@ -2572,6 +2610,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             }
             ClientResponseRef::RngSeed(response) => debug_response(formatter, "RngSeed", response),
             ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
+            ClientResponseRef::SetEndpointRole(response) => {
+                debug_response(formatter, "SetEndpointRole", response)
+            }
         }
     }
 }
@@ -2685,6 +2726,8 @@ pub enum ClientBatchOutcome {
     RngRetrieve(RngRetrieveResponse),
     /// The server returned an RNG Seed result.
     RngSeed(RngSeedResponse),
+    /// The server returned a Set Endpoint Role result (§6.1.54).
+    SetEndpointRole(SetEndpointRoleResponse),
 }
 
 impl ClientBatchOutcome {
@@ -2743,6 +2786,7 @@ impl ClientBatchOutcome {
             | Self::RngRetrieve(_)
             | Self::RngSeed(_)
             | Self::Query(_)
+            | Self::SetEndpointRole(_)
             | Self::Pkcs11(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -2804,6 +2848,7 @@ impl ClientBatchOutcome {
             Self::RngRetrieve(response) => response.result(),
             Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
+            Self::SetEndpointRole(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -2864,6 +2909,7 @@ impl ClientBatchOutcome {
             Self::RngRetrieve(_) => ClientOperation::RngRetrieve,
             Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
+            Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -3291,6 +3337,21 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Set Endpoint Role response when this is one.
+    #[must_use]
+    pub const fn set_endpoint_role_response(&self) -> Option<&SetEndpointRoleResponse> {
+        match self {
+            Self::SetEndpointRole(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::SetEndpointRole(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -3429,6 +3490,9 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::RngSeed(response))
             }
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
+            Self::SetEndpointRole(response) => {
+                ClientResponseView::new(ClientResponseRef::SetEndpointRole(response))
+            }
         }
     }
 }
@@ -3569,11 +3633,16 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::RngSeed(response) => formatter.debug_tuple("RngSeed").field(response).finish(),
+            Self::SetEndpointRole(response) => formatter
+                .debug_tuple("SetEndpointRole")
+                .field(response)
+                .finish(),
         }
     }
 }
 
 impl fmt::Display for ClientBatchOutcome {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
@@ -3673,6 +3742,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
             Self::RngRetrieve(response) => write!(formatter, "RngRetrieve({})", response.result()),
             Self::RngSeed(response) => write!(formatter, "RngSeed({})", response.result()),
+            Self::SetEndpointRole(response) => {
+                write!(formatter, "SetEndpointRole({})", response.result())
+            }
         }
     }
 }
@@ -3737,6 +3809,12 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub fn extensions(&self) -> &[ClientMessageExtension] {
         &self.extensions
+    }
+
+    /// Returns the typed Set Endpoint Role response when this item contains one.
+    #[must_use]
+    pub const fn set_endpoint_role(&self) -> Option<&SetEndpointRoleResponse> {
+        self.outcome.set_endpoint_role_response()
     }
 }
 
@@ -5284,6 +5362,40 @@ impl Client {
         take_single_response(response)
     }
 
+    /// Executes one Set Endpoint Role request (§6.1.54) with one exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_endpoint_role(
+        &mut self,
+        request: SetEndpointRoleRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.set_endpoint_role_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Set Endpoint Role request (§6.1.54) with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_endpoint_role_with_options(
+        &mut self,
+        request: SetEndpointRoleRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::set_endpoint_role(request)),
+            limits,
+            request_options,
+        )?;
+        take_single_response(response)
+    }
+
     /// Executes one Derive Key request with caller-selected derivation inputs.
     ///
     /// The request travels through one server exchange. `KMIPKit` does not
@@ -6389,6 +6501,7 @@ fn request_mutation_is_prohibited(
         | ClientRequest::SignatureVerify(_)
         | ClientRequest::RngRetrieve(_)
         | ClientRequest::RngSeed(_)
+        | ClientRequest::SetEndpointRole(_)
         | ClientRequest::Pkcs11(_) => false,
     }
 }
@@ -7010,6 +7123,7 @@ fn validate_response_inner(
     Ok(ClientBatchResponse { items: ordered })
 }
 
+#[allow(clippy::too_many_lines)]
 fn response_outcome(
     operation: u32,
     item: ResponseBatchItemView<'_>,
@@ -7067,6 +7181,14 @@ fn response_outcome(
             QueryResponse::result,
             PendingResponse::Query,
             ClientBatchOutcome::Query,
+        ),
+        SET_ENDPOINT_ROLE_OPERATION => read_operation_outcome(
+            ClientOperation::SetEndpointRole,
+            item,
+            SetEndpointRoleResponse::try_from_response_item,
+            SetEndpointRoleResponse::result,
+            PendingResponse::SetEndpointRole,
+            ClientBatchOutcome::SetEndpointRole,
         ),
         PKCS11_OPERATION => pkcs11_response_outcome(item),
         PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {

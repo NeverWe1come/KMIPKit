@@ -30,6 +30,7 @@ pub mod codec;
 pub mod config;
 pub mod ops;
 pub mod pki;
+pub mod s2c_client;
 pub mod server;
 pub mod store;
 pub mod transport;
@@ -37,5 +38,8 @@ pub mod v1_compat;
 
 pub use config::ServerConfig;
 pub use pki::AutoPki;
+pub use s2c_client::{
+    S2cClient, build_s2c_discover_versions, build_s2c_notify, build_s2c_put, build_s2c_query,
+};
 pub use server::{TestServer, TestServerHandle};
 pub use store::JsonStore;

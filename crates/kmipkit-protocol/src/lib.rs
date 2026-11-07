@@ -77,6 +77,7 @@ mod result;
 mod revoke;
 mod rng_retrieve;
 mod rng_seed;
+pub mod server_to_client;
 mod set_attribute;
 mod set_constraints;
 #[cfg(test)]
@@ -86,6 +87,7 @@ mod set_defaults;
 #[cfg(test)]
 #[path = "../tests/unit/set_defaults_tests.rs"]
 mod set_defaults_tests;
+mod set_endpoint_role;
 mod sign;
 mod signature_verify;
 mod ticket;
@@ -187,9 +189,19 @@ pub use result::{
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use rng_retrieve::{RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
 pub use rng_seed::{RngSeedError, RngSeedRequest, RngSeedResponse};
+pub use server_to_client::{
+    PutFunction, ServerCapabilities, ServerDiscoverVersionsError, ServerDiscoverVersionsRequest,
+    ServerDiscoverVersionsResponse, ServerNotifyError, ServerNotifyRequest, ServerNotifyResponse,
+    ServerPutError, ServerPutRequest, ServerPutResponse, ServerQueryError, ServerQueryRequest,
+    ServerQueryResponse, ServerResponseBuilder,
+};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
 pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse};
+pub use set_endpoint_role::{
+    ENDPOINT_ROLE_TAG, EndpointRole, SET_ENDPOINT_ROLE_OPERATION, SetEndpointRoleError,
+    SetEndpointRoleRequest, SetEndpointRoleResponse, VENDOR_IDENTIFICATION_TAG,
+};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
@@ -527,3 +539,27 @@ mod validate_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/pkcs11_operation_tests.rs"]
 mod pkcs11_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/set_endpoint_role_tests.rs"]
+mod set_endpoint_role_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_discover_versions_tests.rs"]
+mod s2c_discover_versions_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_notify_tests.rs"]
+mod s2c_notify_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_put_tests.rs"]
+mod s2c_put_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_query_tests.rs"]
+mod s2c_query_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_response_builder_tests.rs"]
+mod s2c_response_builder_tests;

@@ -42,6 +42,68 @@ impl TestServerHandle {
         &self.store
     }
 
+    /// Creates an `S2cClient` backed by this server's PKI to push requests to a client listener.
+    pub fn s2c_client(&self) -> Result<crate::s2c_client::S2cClient, String> {
+        crate::s2c_client::S2cClient::new(&self.pki)
+    }
+
+    /// Triggers an S2C Discover Versions request to `target_addr` over Raw TLS.
+    pub async fn trigger_s2c_discover_versions(
+        &self,
+        target_addr: SocketAddr,
+        versions: &[(u32, u32)],
+    ) -> Result<kmipkit_ttlv::Item, String> {
+        let client = self.s2c_client()?;
+        let req = crate::s2c_client::build_s2c_discover_versions(versions);
+        client.send_raw_ttlv(target_addr, &req).await
+    }
+
+    /// Triggers an S2C Notify request to `target_addr` over Raw TLS.
+    pub async fn trigger_s2c_notify(
+        &self,
+        target_addr: SocketAddr,
+        unique_identifier: &str,
+    ) -> Result<kmipkit_ttlv::Item, String> {
+        let client = self.s2c_client()?;
+        let req = crate::s2c_client::build_s2c_notify(unique_identifier);
+        client.send_raw_ttlv(target_addr, &req).await
+    }
+
+    /// Triggers an S2C Put request to `target_addr` over Raw TLS.
+    pub async fn trigger_s2c_put(
+        &self,
+        target_addr: SocketAddr,
+        unique_identifier: &str,
+        object_item: kmipkit_ttlv::Item,
+    ) -> Result<kmipkit_ttlv::Item, String> {
+        let client = self.s2c_client()?;
+        let req = crate::s2c_client::build_s2c_put(unique_identifier, object_item);
+        client.send_raw_ttlv(target_addr, &req).await
+    }
+
+    /// Triggers an S2C Query request to `target_addr` over Raw TLS.
+    pub async fn trigger_s2c_query(
+        &self,
+        target_addr: SocketAddr,
+        query_functions: &[u32],
+    ) -> Result<kmipkit_ttlv::Item, String> {
+        let client = self.s2c_client()?;
+        let req = crate::s2c_client::build_s2c_query(query_functions);
+        client.send_raw_ttlv(target_addr, &req).await
+    }
+
+    /// Triggers an S2C Notify request to `target_addr` over HTTPS using `format`.
+    pub async fn trigger_s2c_notify_https(
+        &self,
+        target_addr: SocketAddr,
+        unique_identifier: &str,
+        format: crate::codec::Format,
+    ) -> Result<kmipkit_ttlv::Item, String> {
+        let client = self.s2c_client()?;
+        let req = crate::s2c_client::build_s2c_notify(unique_identifier);
+        client.send_https(target_addr, &req, format).await
+    }
+
     /// Cleanly shuts down the test server.
     pub async fn shutdown(self) -> Result<(), String> {
         let _ = self.shutdown_tx.send(true);
