@@ -46,7 +46,9 @@ mod hash;
 mod import;
 mod interop;
 mod join_split_key;
+mod kem;
 mod lifecycle;
+pub mod link_normalizer;
 mod locate;
 mod log;
 mod login;
@@ -56,6 +58,7 @@ mod mac_verify;
 mod message;
 mod modify_attribute;
 mod multipart;
+mod object_class;
 mod obtain_lease;
 mod operation_data;
 mod ping;
@@ -153,6 +156,11 @@ pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };
+pub use kem::{
+    DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,
+    EncapsulateRequest, EncapsulateResponse,
+};
+pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
@@ -167,6 +175,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use object_class::ObjectClass;
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
@@ -577,3 +586,15 @@ mod s2c_response_builder_tests;
 #[cfg(test)]
 #[path = "../tests/unit/kmip20_tests.rs"]
 mod kmip20_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/link_normalizer_tests.rs"]
+mod link_normalizer_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kmip30_operations_tests.rs"]
+mod kmip30_operations_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kem_tests.rs"]
+mod kem_tests;

@@ -9,14 +9,15 @@ pub const V1_3: (u32, u32) = (1, 3);
 pub const V1_4: (u32, u32) = (1, 4);
 pub const V2_0: (u32, u32) = (2, 0);
 pub const V2_1: (u32, u32) = (2, 1);
+pub const V3_0: (u32, u32) = (3, 0);
 
-pub const ALL_VERSIONS: &[(u32, u32)] = &[V1_0, V1_1, V1_2, V1_3, V1_4, V2_0, V2_1];
+pub const ALL_VERSIONS: &[(u32, u32)] = &[V1_0, V1_1, V1_2, V1_3, V1_4, V2_0, V2_1, V3_0];
 
 /// Verifies whether the specified version is supported by the test server.
 pub fn is_version_supported(major: u32, minor: u32) -> bool {
     matches!(
         (major, minor),
-        V1_0 | V1_1 | V1_2 | V1_3 | V1_4 | V2_0 | V2_1
+        V1_0 | V1_1 | V1_2 | V1_3 | V1_4 | V2_0 | V2_1 | V3_0
     )
 }
 
