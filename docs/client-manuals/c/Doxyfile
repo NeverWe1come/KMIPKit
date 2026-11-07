@@ -1,0 +1,17 @@
+PROJECT_NAME           = "KMIPKit C11 Client Library"
+PROJECT_NUMBER         = "1.0.0"
+PROJECT_BRIEF          = "OASIS KMIP 2.1 Native C11 Client Library"
+OUTPUT_DIRECTORY       = "build/doxygen"
+INPUT                  = docs/client-manuals/c/mainpage.dox crates/kmipkit-ffi/include
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.dox
+OPTIMIZE_OUTPUT_FOR_C  = YES
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+WARN_AS_ERROR          = NO
+WARN_NO_PARAMDOC       = YES
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_PATH_NAMES        = NO
+EXTRACT_ALL            = YES

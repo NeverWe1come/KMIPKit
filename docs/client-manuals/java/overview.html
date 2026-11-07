@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KMIPKit Java 17+ Client API</title>
+</head>
+<body>
+<h1>KMIPKit Java Client Library</h1>
+<p>
+    Production-grade Java 17+ client library for <strong>OASIS KMIP 2.1</strong>, backed by an ultra-fast, memory-safe native Rust engine.
+</p>
+
+<h2>1. Maven and Gradle Coordinates</h2>
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;org.kmipkit&lt;/groupId&gt;
+    &lt;artifactId&gt;kmipkit-client&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+<h2>2. Quickstart Example</h2>
+<pre>
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.config.ClientConfig;
+import org.kmipkit.models.SymmetricAlgorithm;
+import org.kmipkit.models.CryptographicUsage;
+
+public class App {
+    public static void main(String[] args) {
+        var config = ClientConfig.builder()
+            .endpoint("kms.corp.internal:5696")
+            .caCertificatePath("/etc/kmip/ca.pem")
+            .clientCertificatePath("/etc/kmip/client.crt")
+            .clientKeyPath("/etc/kmip/client.key")
+            .build();
+
+        try (var client = KmipClient.connect(config)) {
+            // Create AES-256 Key
+            String keyId = client.createSymmetricKey()
+                .name("db-column-key")
+                .algorithm(SymmetricAlgorithm.AES)
+                .lengthBits(256)
+                .usage(CryptographicUsage.ENCRYPT, CryptographicUsage.DECRYPT)
+                .execute();
+
+            System.out.println("Key ID: " + keyId);
+
+            // Activate and Encrypt
+            client.activate(keyId).execute();
+            byte[] ciphertext = client.encrypt(keyId)
+                .plaintext("Secret payload".getBytes())
+                .execute();
+
+            // Destroy
+            client.destroy(keyId).execute();
+        }
+    }
+}
+</pre>
+
+<h2>3. Resource Management and Zeroization</h2>
+<p>
+    <code>KmipClient</code> and <code>SecretValue</code> implement <code>AutoCloseable</code>.
+    Always wrap client operations in <code>try-with-resources</code> to guarantee timely native memory deallocation and secret zeroization.
+</p>
+</body>
+</html>

@@ -1,0 +1,30 @@
+site_name: KMIPKit Python Client Documentation
+site_description: OASIS KMIP 2.1 Python 3.12+ Client Library
+site_url: https://kmipkit.readthedocs.io/
+theme:
+  name: material
+  palette:
+    scheme: default
+    primary: indigo
+    accent: deep purple
+  features:
+    - content.code.copy
+    - navigation.sections
+
+nav:
+  - Home: index.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
