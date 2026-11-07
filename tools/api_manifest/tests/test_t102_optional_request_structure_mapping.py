@@ -191,7 +191,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-OTHER_DECLARATIONS_SHA256 = "ea3e7e4f8ba36bb7ec2d11f45efdb3007ba2a2669d3cea221db73e7958c3d50e"
+OTHER_DECLARATIONS_SHA256 = "a78f1bfd832ada2cc75a67a9edd71d60b92e4ebfc46dfade9906fbc07b09ed44"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

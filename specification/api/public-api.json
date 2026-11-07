@@ -630599,9 +630599,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630648,9 +630650,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630697,9 +630701,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630746,9 +630752,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630794,9 +630802,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630842,9 +630852,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630890,9 +630902,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -630938,9 +630952,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -631913,9 +631929,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -631961,9 +631979,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632009,9 +632029,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632057,9 +632079,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632105,9 +632129,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632153,9 +632179,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632201,9 +632229,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632249,9 +632279,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632297,9 +632329,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632345,9 +632379,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632393,9 +632429,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632441,9 +632479,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632489,9 +632529,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632537,9 +632579,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632585,9 +632629,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632633,9 +632679,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632681,9 +632729,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632729,9 +632779,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632777,9 +632829,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632825,9 +632879,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632873,9 +632929,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632921,9 +632979,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -632969,9 +633029,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633017,9 +633079,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633065,9 +633129,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633113,9 +633179,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633161,9 +633229,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633209,9 +633279,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633257,9 +633329,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633305,9 +633379,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633353,9 +633429,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633401,9 +633479,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633449,9 +633529,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633497,9 +633579,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633545,9 +633629,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633593,9 +633679,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633641,9 +633729,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633689,9 +633779,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633737,9 +633829,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633785,9 +633879,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633833,9 +633929,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633881,9 +633979,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633929,9 +634029,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -633977,9 +634079,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -634025,9 +634129,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -634073,9 +634179,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -634121,9 +634229,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -634169,9 +634279,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -634217,9 +634329,11 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     },
     {
@@ -634265,9 +634379,211 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-ttlv/tests/public_api.rs",
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-query_pending-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncQueryAsyncRequestsResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-query_pending-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncQueryAsyncRequestsResponse.is_pending",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.is_pending"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncQueryAsyncRequestsResponse.is_pending"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-query_correlation-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.withAsynchronousCorrelationValue",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncQueryAsyncRequestsResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0052-async-wrapper-query_correlation-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.AsyncQueryAsyncRequestsResponse.with_asynchronous_correlation_value",
+      "capabilityId": "response_ttlv_navigation",
+      "requirementIds": [
+        "KMIPKIT-0052-FR-001",
+        "KMIPKIT-0052-FR-007"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/052-response-navigation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_response_v1_t.asynchronous_correlation_value"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.withAsynchronousCorrelationValue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncQueryAsyncRequestsResponse.with_asynchronous_correlation_value"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
+        "crates/kmipkit-ttlv/tests/public_api.rs",
+        "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ]
     }
   ],
@@ -864188,7 +864504,9 @@
         "crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "bindings/python/tests/test_response_raw_navigation.py"
+        "bindings/python/tests/test_response_raw_navigation.py",
+        "crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs",
+        "bindings/python/tests/test_async_operation_mapping.py"
       ],
       "mappings": {
         "rust": [
@@ -864269,6 +864587,8 @@
           "org.kmipkit.extensions.AsyncProcessResponse.payloadMemberCount",
           "org.kmipkit.extensions.AsyncProcessResponse.withAsynchronousCorrelationValue",
           "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse",
+          "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.isPending",
+          "org.kmipkit.extensions.AsyncQueryAsyncRequestsResponse.withAsynchronousCorrelationValue",
           "org.kmipkit.extensions.ClientBatchItemResult.raw",
           "org.kmipkit.extensions.ClientBatchItemResult.responseHeaderTtlv",
           "org.kmipkit.ttlv.TtlvValueView.structure"
@@ -864295,6 +864615,8 @@
           "kmipkit.client.AsyncProcessResponse.payload_member_count",
           "kmipkit.client.AsyncProcessResponse.with_asynchronous_correlation_value",
           "kmipkit.client.AsyncQueryAsyncRequestsResponse",
+          "kmipkit.client.AsyncQueryAsyncRequestsResponse.is_pending",
+          "kmipkit.client.AsyncQueryAsyncRequestsResponse.with_asynchronous_correlation_value",
           "kmipkit.client.BatchItemResult.raw",
           "kmipkit.client.BatchItemResult.response_header_ttlv",
           "kmipkit.ttlv.ttlv_value_view_structure"
