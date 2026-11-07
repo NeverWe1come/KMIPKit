@@ -99,6 +99,13 @@ def _c_string(value: str) -> str:
     return f'"{"".join(escaped_bytes)}"'
 
 
+def _render_c_name_case(kind: str, group: NamedGroup, value: NamedValue) -> str:
+    return (
+        f"    case KMIPKIT_{kind}_{group.identifier}_{value.identifier}: "
+        f"return {_c_string(value.name)};"
+    )
+
+
 def _source_provenance(source_refs: tuple[tuple[str, str], ...]) -> str:
     return ", ".join(f"{source_id} §{section}" for source_id, section in source_refs)
 
@@ -317,10 +324,7 @@ def _render_c(values: CatalogValues) -> str:
             if kind == "ENUMERATION":
                 lines.extend([f"static inline const char *{prefix}_name(uint32_t raw) {{", "    switch (raw) {"])
                 for value in group.values:
-                    lines.append(
-                        f"    case KMIPKIT_ENUMERATION_{group.identifier}_{value.identifier}: "
-                        f"return {_c_string(value.name)};"
-                    )
+                    lines.append(_render_c_name_case(kind, group, value))
                 lines.extend(["    default: return 0;", "    }", "}", ""])
             else:
                 lines.extend([
@@ -330,10 +334,7 @@ def _render_c(values: CatalogValues) -> str:
                     "    switch (bit) {",
                 ])
                 for value in group.values:
-                    lines.append(
-                        f"    case KMIPKIT_BITMASK_{group.identifier}_{value.identifier}: "
-                        f"return {_c_string(value.name)};"
-                    )
+                    lines.append(_render_c_name_case(kind, group, value))
                 lines.extend([
                     "    default: return 0;",
                     "    }",
