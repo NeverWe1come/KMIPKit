@@ -105,6 +105,21 @@ class CiImpactTests(unittest.TestCase):
                 {"docs-contracts"},
                 set(),
             ),
+            "proxy/kmipkit-proxy/src/main.rs": (
+                "proxy",
+                {"docs-contracts"},
+                set(),
+            ),
+            "deploy/helm/kmipkit-proxy/Chart.yaml": (
+                "proxy",
+                {"docs-contracts"},
+                set(),
+            ),
+            ".github/workflows/proxy-common.yml": (
+                "proxy",
+                {"docs-contracts"},
+                set(),
+            ),
         }
         for path, (path_class, expected_jobs, expected_scopes) in cases.items():
             with self.subTest(path=path):

@@ -37,7 +37,7 @@ PULL_REQUEST_JOB_IDS = (
     "dependency-policy",
 )
 ALL_COVERAGE_SCOPES = ("rust", "ffi-c", "java", "python", "jni")
-CLASS_ORDER = ("documentation", "interop", "java", "python", "c-consumer", "jni", "full")
+CLASS_ORDER = ("documentation", "interop", "proxy", "java", "python", "c-consumer", "jni", "full")
 KNOWN_CLASSES = set(CLASS_ORDER)
 KNOWN_STATUSES = {"A", "M", "D", "T", "U", "X", "B", "R", "C"}
 
@@ -87,6 +87,13 @@ def _path_class(path: str) -> tuple[str, str]:
     if normalized is None:
         return "full", "path is absolute, malformed, or escapes the repository"
     path = normalized
+
+    if path.startswith(".github/workflows/proxy-") and path.endswith(".yml"):
+        return "proxy", "proxy workflow configuration changed"
+    if path.startswith("proxy/"):
+        return "proxy", "KMIP proxy service file changed"
+    if path.startswith("deploy/"):
+        return "proxy", "KMIP proxy deployment configuration changed"
 
     if path in FULL_FILES or path.startswith(FULL_PREFIXES):
         return "full", "shared source, workflow, tooling, normative, or repository configuration changed"
@@ -222,7 +229,7 @@ def classify_changes(
 
     selected: set[str] = set()
     scopes: set[str] = set()
-    if "documentation" in class_reasons or "interop" in class_reasons:
+    if "documentation" in class_reasons or "interop" in class_reasons or "proxy" in class_reasons:
         selected.add("docs-contracts")
     if "java" in class_reasons:
         selected.update(("language-java", "coverage-java", "coverage-gate"))
