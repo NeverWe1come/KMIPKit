@@ -48,7 +48,7 @@ impl ProtocolVersion {
     /// return `false`.
     #[must_use]
     pub const fn is_catalogued(self) -> bool {
-        matches!((self.major, self.minor), (2, 0) | (2, 1) | (3, 0))
+        matches!((self.major, self.minor), (2 | 3, 0) | (2, 1))
     }
 }
 

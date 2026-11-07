@@ -45,7 +45,10 @@ impl fmt::Display for VersionGateError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnsupportedProtocolVersion(v) => {
-                write!(formatter, "KMIP protocol version {v} is not catalogued or supported")
+                write!(
+                    formatter,
+                    "KMIP protocol version {v} is not catalogued or supported"
+                )
             }
             Self::OperationNotSupportedInVersion {
                 operation,
@@ -91,24 +94,11 @@ impl VersionGate {
     #[must_use]
     pub fn operation_span(operation: u32) -> Option<VersionSpan> {
         match operation {
-            // Operations introduced in KMIP 2.1
-            0x0000_0036 // Set Defaults
-            | 0x0000_0037 // Set Constraints
-            | 0x0000_0038 // Get Constraints
-            | 0x0000_0039 // Query Asynchronous Requests
-            | 0x0000_003A // Process
-            | 0x0000_003B // Ping
-            => Some(VersionSpan::since(ProtocolVersion::V2_1)),
+            // Operations introduced in KMIP 2.1 (Set Defaults through Ping)
+            0x0000_0036..=0x0000_003B => Some(VersionSpan::since(ProtocolVersion::V2_1)),
 
-            // Operations introduced in KMIP 3.0
-            0x0000_003C // Create User
-            | 0x0000_003D // Create Group
-            | 0x0000_003E // Create Credential
-            | 0x0000_003F // Deactivate
-            | 0x0000_0040 // Encapsulate
-            | 0x0000_0041 // Decapsulate
-            | 0x0000_0042 // ReEncrypt
-            => Some(VersionSpan::since(ProtocolVersion::V3_0)),
+            // Operations introduced in KMIP 3.0 (Create User through ReEncrypt)
+            0x0000_003C..=0x0000_0042 => Some(VersionSpan::since(ProtocolVersion::V3_0)),
 
             // Base operations existing in KMIP 2.0 (and 2.1)
             0x0000_0001..=0x0000_0035 => Some(VersionSpan::since(ProtocolVersion::V2_0)),
@@ -123,7 +113,10 @@ impl VersionGate {
     ///
     /// Returns [`VersionGateError`] if `version` is not catalogued, or if `operation`
     /// was introduced in a newer version or removed in `version`.
-    pub fn validate_operation(version: ProtocolVersion, operation: u32) -> Result<(), VersionGateError> {
+    pub fn validate_operation(
+        version: ProtocolVersion,
+        operation: u32,
+    ) -> Result<(), VersionGateError> {
         if !version.is_catalogued() {
             return Err(VersionGateError::UnsupportedProtocolVersion(version));
         }
@@ -140,16 +133,15 @@ impl VersionGate {
                 });
             }
 
-            if let Some(removed) = span.removed {
-                if (version.major() > removed.major())
-                    || (version.major() == removed.major() && version.minor() >= removed.minor())
-                {
-                    return Err(VersionGateError::ElementRemovedInVersion {
-                        code: operation,
-                        negotiated: version,
-                        removed,
-                    });
-                }
+            if let Some(removed) = span.removed
+                && ((version.major() > removed.major())
+                    || (version.major() == removed.major() && version.minor() >= removed.minor()))
+            {
+                return Err(VersionGateError::ElementRemovedInVersion {
+                    code: operation,
+                    negotiated: version,
+                    removed,
+                });
             }
         }
 
@@ -200,16 +192,15 @@ impl VersionGate {
                 });
             }
 
-            if let Some(removed) = span.removed {
-                if (version.major() > removed.major())
-                    || (version.major() == removed.major() && version.minor() >= removed.minor())
-                {
-                    return Err(VersionGateError::ElementRemovedInVersion {
-                        code: tag,
-                        negotiated: version,
-                        removed,
-                    });
-                }
+            if let Some(removed) = span.removed
+                && ((version.major() > removed.major())
+                    || (version.major() == removed.major() && version.minor() >= removed.minor()))
+            {
+                return Err(VersionGateError::ElementRemovedInVersion {
+                    code: tag,
+                    negotiated: version,
+                    removed,
+                });
             }
         }
 

@@ -37,12 +37,11 @@ impl VersionSpan {
             return false;
         }
 
-        if let Some(removed) = self.removed {
-            if (version.major() > removed.major())
-                || (version.major() == removed.major() && version.minor() >= removed.minor())
-            {
-                return false;
-            }
+        if let Some(removed) = self.removed
+            && ((version.major() > removed.major())
+                || (version.major() == removed.major() && version.minor() >= removed.minor()))
+        {
+            return false;
         }
 
         true

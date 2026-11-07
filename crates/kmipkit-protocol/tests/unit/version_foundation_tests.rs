@@ -3,8 +3,8 @@
 use std::cmp::Ordering;
 
 use crate::{
-    DiscoverVersionsError, DiscoverVersionsRequest, ProtocolVersion, VersionGate,
-    VersionGateError, VersionSpan,
+    DiscoverVersionsError, DiscoverVersionsRequest, ProtocolVersion, VersionGate, VersionGateError,
+    VersionSpan,
 };
 
 #[test]
@@ -96,11 +96,9 @@ fn test_version_gate_validates_operations_and_spans() {
 
 #[test]
 fn test_multi_version_discover_versions_request_and_response() {
-    let req = DiscoverVersionsRequest::with_versions(vec![
-        ProtocolVersion::V2_1,
-        ProtocolVersion::V2_0,
-    ])
-    .expect("valid catalogued versions");
+    let req =
+        DiscoverVersionsRequest::with_versions(vec![ProtocolVersion::V2_1, ProtocolVersion::V2_0])
+            .expect("valid catalogued versions");
     assert_eq!(
         req.protocol_versions(),
         &[ProtocolVersion::V2_1, ProtocolVersion::V2_0]

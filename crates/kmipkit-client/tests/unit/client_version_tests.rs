@@ -1,4 +1,4 @@
-//! Unit tests for multi-version client configuration, override, and VersionGate enforcement (KMIPKIT-0069).
+//! Unit tests for multi-version client configuration, override, and `VersionGate` enforcement (KMIPKIT-0069).
 
 use kmipkit_protocol::ProtocolVersion;
 use kmipkit_test_support::ExchangeScript;
@@ -7,7 +7,7 @@ use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::decode_request_message_for_test;
-use crate::extension_registry::{client_extension_registry, ClientConfiguration};
+use crate::extension_registry::{ClientConfiguration, client_extension_registry};
 use crate::{ClientBatch, ClientBatchItem, ClientRequest};
 
 #[test]
@@ -58,22 +58,25 @@ fn test_request_header_dynamic_protocol_version() {
 
     // Default batch produces KMIP 2.1 in RequestHeader
     let batch_default = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
-    let req_default = decode_request_message_for_test(batch_default, &limits)
-        .expect("valid request message");
-    assert_eq!(req_default.header().protocol_version(), ProtocolVersion::V2_1);
+    let req_default =
+        decode_request_message_for_test(batch_default, &limits).expect("valid request message");
+    assert_eq!(
+        req_default.header().protocol_version(),
+        ProtocolVersion::V2_1
+    );
 
     // Batch configured with KMIP 2.0 produces KMIP 2.0 in RequestHeader
     let batch_2_0 = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
         .with_protocol_version(ProtocolVersion::V2_0);
-    let req_2_0 = decode_request_message_for_test(batch_2_0, &limits)
-        .expect("valid request message");
+    let req_2_0 =
+        decode_request_message_for_test(batch_2_0, &limits).expect("valid request message");
     assert_eq!(req_2_0.header().protocol_version(), ProtocolVersion::V2_0);
 
     // Batch configured with KMIP 3.0 produces KMIP 3.0 in RequestHeader
     let batch_3_0 = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
         .with_protocol_version(ProtocolVersion::V3_0);
-    let req_3_0 = decode_request_message_for_test(batch_3_0, &limits)
-        .expect("valid request message");
+    let req_3_0 =
+        decode_request_message_for_test(batch_3_0, &limits).expect("valid request message");
     assert_eq!(req_3_0.header().protocol_version(), ProtocolVersion::V3_0);
 }
 

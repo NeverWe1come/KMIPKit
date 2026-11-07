@@ -331,7 +331,10 @@ impl ClientConfiguration {
     /// Defaults to KMIP 2.1 preserving zero-breakage 1.0 behavior.
     /// A per-request or per-batch override takes precedence.
     #[must_use]
-    pub const fn with_protocol_version(mut self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+    pub const fn with_protocol_version(
+        mut self,
+        version: kmipkit_protocol::ProtocolVersion,
+    ) -> Self {
         self.protocol_version = version;
         self
     }

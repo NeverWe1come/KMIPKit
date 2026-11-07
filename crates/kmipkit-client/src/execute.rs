@@ -4133,7 +4133,7 @@ impl Client {
     // The approved API takes ownership of the caller's typed batch. It keeps
     // the execution lifetime local and avoids retaining request values after
     // the synchronous exchange completes.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute(
         &mut self,
         batch: ClientBatch,
@@ -4153,7 +4153,7 @@ impl Client {
     ///
     /// Returns a sanitized validation, protocol, or transport error with the
     /// strongest available request-delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_options(
         &mut self,
         batch: ClientBatch,
@@ -4188,7 +4188,7 @@ impl Client {
     /// Returns stable profile error IDs with `NotSent` for selection or
     /// outbound-rule failures, and preserves the exchange delivery state for
     /// response-rule failures.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles(
         &mut self,
         batch: ClientBatch,
@@ -4206,7 +4206,7 @@ impl Client {
     /// Returns the same profile, protocol, and transport failures as
     /// [`Self::execute_with_profiles`], preserving the strongest delivery
     /// evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_options(
         &mut self,
         batch: ClientBatch,
@@ -4234,7 +4234,7 @@ impl Client {
     ///
     /// Returns profile, protocol, or transport errors. Caller-state failures
     /// occur before transport I/O and redact object identifiers and values.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_context(
         &mut self,
         batch: ClientBatch,
@@ -4258,7 +4258,7 @@ impl Client {
     ///
     /// Returns the same failures as
     /// [`Self::execute_with_profiles_and_context`], preserving delivery state.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_context_and_options(
         &mut self,
         batch: ClientBatch,
@@ -4305,29 +4305,8 @@ impl Client {
                     ClientError::profile_validation(error, RequestDeliveryState::NotSent)
                 })?;
         }
-        let effective_version = request_options
-            .protocol_version()
-            .or_else(|| batch.protocol_version())
-            .unwrap_or_else(|| self.configuration.protocol_version());
-
-        if !effective_version.is_catalogued() {
-            return Err(ClientError::validation(
-                ClientCauseCategory::InvalidInput,
-                RequestDeliveryState::NotSent,
-                kmipkit_protocol::VersionGateError::UnsupportedProtocolVersion(effective_version),
-            ));
-        }
-
-        for item in &batch.items {
-            kmipkit_protocol::VersionGate::validate_operation(effective_version, item.request.operation())
-                .map_err(|error| {
-                    ClientError::validation(
-                        ClientCauseCategory::InvalidInput,
-                        RequestDeliveryState::NotSent,
-                        error,
-                    )
-                })?;
-        }
+        let effective_version =
+            resolve_and_gate_version(&self.configuration, request_options, &batch)?;
 
         let options = validate_batch(&batch, effective_version).map_err(|error| {
             ClientError::validation(
@@ -4446,7 +4425,7 @@ impl Client {
     /// operation, missing or mismatched identifier, invalid cost, or cost
     /// above the locally available allocation. Otherwise returns the standard
     /// execution error with the strongest available delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_guarded_protection(
         &mut self,
         context: &mut UsageAllocationContext,
@@ -4470,7 +4449,7 @@ impl Client {
     /// operation, missing or mismatched identifier, invalid cost, or cost
     /// above the locally available allocation. Otherwise returns the standard
     /// execution error with the strongest available delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_guarded_protection_with_asynchronous_indicator(
         &mut self,
         context: &mut UsageAllocationContext,
@@ -6181,18 +6160,23 @@ impl Client {
             ));
         }
 
-        kmipkit_protocol::VersionGate::validate_operation(effective_version, operation)
-            .map_err(|error| {
+        kmipkit_protocol::VersionGate::validate_operation(effective_version, operation).map_err(
+            |error| {
                 ClientError::validation(
                     ClientCauseCategory::InvalidInput,
                     RequestDeliveryState::NotSent,
                     error,
                 )
-            })?;
+            },
+        )?;
 
-        let request_message =
-            build_async_request_message(operation, payload, asynchronous_indicator, effective_version)
-                .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let request_message = build_async_request_message(
+            operation,
+            payload,
+            asynchronous_indicator,
+            effective_version,
+        )
+        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let (response, delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
         validate_async_response(
@@ -6395,6 +6379,41 @@ impl fmt::Display for BatchValidationError {
 }
 
 impl Error for BatchValidationError {}
+
+fn resolve_and_gate_version(
+    configuration: &ClientConfiguration,
+    request_options: &RequestOptions,
+    batch: &ClientBatch,
+) -> Result<ProtocolVersion, ClientError> {
+    let effective_version = request_options
+        .protocol_version()
+        .or_else(|| batch.protocol_version())
+        .unwrap_or_else(|| configuration.protocol_version());
+
+    if !effective_version.is_catalogued() {
+        return Err(ClientError::validation(
+            ClientCauseCategory::InvalidInput,
+            RequestDeliveryState::NotSent,
+            kmipkit_protocol::VersionGateError::UnsupportedProtocolVersion(effective_version),
+        ));
+    }
+
+    for item in &batch.items {
+        kmipkit_protocol::VersionGate::validate_operation(
+            effective_version,
+            item.request.operation(),
+        )
+        .map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+    }
+
+    Ok(effective_version)
+}
 
 pub(super) fn validate_batch(
     batch: &ClientBatch,
@@ -6893,8 +6912,14 @@ fn build_async_request_message(
     protocol_version: ProtocolVersion,
 ) -> Result<RequestMessage, ProtocolError> {
     let version_fields = structure([
-        (PROTOCOL_VERSION_MAJOR, Value::integer(protocol_version.major())),
-        (PROTOCOL_VERSION_MINOR, Value::integer(protocol_version.minor())),
+        (
+            PROTOCOL_VERSION_MAJOR,
+            Value::integer(protocol_version.major()),
+        ),
+        (
+            PROTOCOL_VERSION_MINOR,
+            Value::integer(protocol_version.minor()),
+        ),
     ])?;
     let mut header = Structure::new();
     push(
@@ -7110,7 +7135,7 @@ pub(super) fn validate_unknown_extension(critical: bool) -> Result<(), OutcomeVa
 
 // Consuming the validated response makes this the single lifetime boundary
 // for the owned, decoded response tree on both success and error paths.
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_response(
     request_identities: &[BatchIdentity],
     options: &ValidatedBatchOptions,
@@ -8013,7 +8038,7 @@ fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
         })
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_async_response(
     response: ResponseMessage,
     operation: u32,
