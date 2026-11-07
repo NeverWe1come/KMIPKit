@@ -434,6 +434,23 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+        # Stack additions remain inside the exact non-target fingerprint and
+        # cannot acquire four-language parity through snapshot normalization.
+        for capability, count in (
+            ("typed_object_attributes", 286),
+            ("typed_managed_objects_and_key_material", 356),
+        ):
+            with self.subTest(stack_capability=capability):
+                typed_rows = [
+                    row for row in other_declarations
+                    if row["capabilityId"] == capability
+                ]
+                self.assertEqual(count, len(typed_rows))
+                self.assertTrue(all(
+                    row["declarationState"] == "blocked"
+                    and row["candidateSpecId"] == "KMIPKIT-0053"
+                    for row in typed_rows
+                ))
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

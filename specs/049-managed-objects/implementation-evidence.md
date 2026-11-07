@@ -163,3 +163,37 @@ Untracked files and existing target directories were preserved; target sizes
 were not inspected. This synchronization adds no fresh coverage or platform
 aggregate. The feature remains in draft pending its existing external review,
 coverage, and cross-platform controls.
+
+
+## T102 non-target snapshot review correction (2026-11-07)
+
+Independent review reproduced two stale declaration fingerprints in the
+Certify request-builder and optional request-structure modules. The earlier
+92-test selection did not include these two modules. The extension-registry
+namespace module passed unchanged.
+
+Before updating either fingerprint, a semantic comparison against the reviewed
+0048 parent `ba01f43c45bfa851d3456713bcb840260bd332d8` confirmed that the merge
+adds exactly 356 managed-object declarations and removes or modifies no incoming
+declaration. Both affected target subsets and all incoming operation rows are
+unchanged. The fingerprint introduction history predates parts of the approved
+0047/release-stack and typed-attribute reconciliation, so the drift is historical
+snapshot coverage, not a new modification to the target mappings. Both operation
+fingerprints already match and require no change.
+
+### Red
+
+The two existing snapshot tests now also assert that their normalized non-target
+inventories retain all 286 typed-attribute and 356 typed-managed-object
+declarations and leave every such route blocked for KMIPKIT-0053. This prevents
+fixing the stale snapshots by dropping the stacked features or promoting parity.
+
+`python -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_client_extension_registry_namespace tools.api_manifest.tests.test_t102_optional_request_structure_mapping -q`
+ran 14 tests with exactly two expected assertion failures and no errors: Certify
+expected `06836a3a5acda28b85051dbfb9658beb6fb6c92ef7640b886bb8b7bcaa9455a9`
+versus `3477efd6002b5732681fb9601016ba82f83e069608ff4c26ca6f4d93ac21fa9d`,
+and optional structures expected
+`c5853de988901f59c51ba64d80accc51a4b873161da1a75ef1c3315b7e4ae541` versus
+`47183651eebdc81364d32a6155454357e30ecc65886d3acbfdd535831f2a516e`.
+The new inventory/parity assertions passed before each old fingerprint failed.
+No manifest, generated output, or production source changed in this Red step.
