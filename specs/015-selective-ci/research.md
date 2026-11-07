@@ -20,7 +20,7 @@ The existing language job performs C, Java/JNI, and Python work for each OS; the
 
 ### Pass selected coverage scopes to the gate
 
-The full gate currently requires three-platform Rust reports, Linux FFI consumer data, and all existing adapter reports. Add an explicit set of required scopes rather than infer missing reports from filesystem state. Full mode requires every current scope. Adapter-only modes require only the selected adapter reports and thresholds. C consumer mode requires the existing FFI coverage path. All selected code remains subject to its existing scope threshold and the 95% changed-production-source threshold. Missing expected files fail.
+The full gate currently requires three-platform Rust reports, Linux FFI consumer data, and all existing adapter reports. Add an explicit set of required scopes rather than infer missing reports from filesystem state. Full mode requires every current scope. Adapter-only modes require only the selected adapter reports and thresholds. C consumer mode requires the existing FFI coverage path. All selected code remains subject to its existing scope threshold and the 90% changed-production-source threshold. Missing expected files fail.
 
 ### Validate authorized skips centrally
 

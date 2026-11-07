@@ -145402,6 +145402,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145459,6 +145460,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145516,6 +145518,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145573,6 +145576,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145630,6 +145634,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145687,6 +145692,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145744,6 +145750,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145801,6 +145808,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145858,6 +145866,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145915,6 +145924,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -145972,6 +145982,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -146029,6 +146040,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -146086,6 +146098,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -146143,6 +146156,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -146200,6 +146214,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -319034,6 +319049,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -328108,6 +328124,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -328875,6 +328892,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -330193,6 +330211,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -333405,6 +333424,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -336449,6 +336469,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -337028,6 +337049,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -338596,6 +338618,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -339055,6 +339078,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -339229,6 +339253,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -342441,6 +342466,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -343653,6 +343679,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -343996,6 +344023,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -346132,6 +346160,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -347364,6 +347393,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -348904,6 +348934,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -348968,6 +348999,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
@@ -350069,6 +350101,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
@@ -350519,6 +350552,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -353773,6 +353807,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -356231,6 +356266,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -356867,6 +356903,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -358304,6 +358341,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -359006,6 +359044,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -360775,6 +360814,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -363366,6 +363406,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -366402,6 +366443,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -372206,6 +372248,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -376090,6 +376133,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -376630,6 +376674,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -378683,6 +378728,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -381417,6 +381463,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -399711,6 +399758,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -400659,6 +400707,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -403803,6 +403852,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -410137,6 +410187,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -410847,6 +410898,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -411124,6 +411176,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -416360,6 +416413,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
@@ -417599,6 +417653,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -420899,6 +420954,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -421629,6 +421685,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -422025,6 +422082,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -422553,6 +422611,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -422823,6 +422882,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -424149,6 +424209,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -427840,6 +427901,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -428360,6 +428422,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -428474,6 +428537,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -428766,6 +428830,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -433921,6 +433986,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -439107,6 +439173,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -439830,6 +439897,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -441223,6 +441291,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -441537,6 +441606,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
@@ -452429,6 +452499,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -455427,6 +455498,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -458205,6 +458277,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
@@ -459234,6 +459307,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -461292,6 +461366,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -462267,6 +462342,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -467001,6 +467077,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -473069,6 +473146,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -476305,6 +476383,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -480142,6 +480221,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -483536,6 +483616,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -489128,6 +489209,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_manifest_v2.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
@@ -492685,6 +492767,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -501694,6 +501777,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -504350,6 +504434,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -504867,6 +504952,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -506892,6 +506978,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -507783,6 +507870,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -512692,6 +512780,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -527427,6 +527516,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -527790,6 +527880,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -529170,6 +529261,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -532089,6 +532181,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -535727,6 +535820,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -545155,6 +545249,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -546363,6 +546458,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -546464,6 +546560,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -546663,6 +546760,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -547424,6 +547522,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]
@@ -549522,6 +549621,7 @@
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs",
+        "tests/fixtures/api/generated/public_api_parity.json",
         "tools/api_manifest/tests/test_hash_mac_signature_parity_manifest.py",
         "tools/api_manifest/tests/test_t101_hash_mac_signature_declaration_mapping.py"
       ]

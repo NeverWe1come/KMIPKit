@@ -14,7 +14,8 @@ FOCUSED_COMMAND = (
     "tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping "
     "tools.api_manifest.tests.test_log_parity_manifest "
     "tools.api_manifest.tests.test_t102_response_parser_mapping "
-    "tools.api_manifest.tests.test_t102_profile_transport_parity -v"
+    "tools.api_manifest.tests.test_t102_profile_transport_parity "
+    "tools.api_manifest.tests.test_t102_profile_model_reexport_mapping -v"
 )
 
 

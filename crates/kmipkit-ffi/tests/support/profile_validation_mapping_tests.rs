@@ -98,6 +98,257 @@ fn c_selection_rejects_offsets_outside_the_flat_buffer() {
 }
 
 #[test]
+fn profile_client_execution_variants_reject_malformed_context_and_missing_options() {
+    let profile_id = b"KMIPKIT-PROFILE-AES-XTS-CLIENT";
+    let offsets = [0_u64];
+    let lengths = [profile_id.len() as u64];
+    let selection = kmipkit_profile_validation_selection_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_validation_selection_v1_t>())
+            .expect("C ABI selection size fits u32"),
+        abi_version: 1,
+        profile_id_data: profile_id.as_ptr(),
+        profile_id_data_length: profile_id.len() as u64,
+        profile_id_offsets: offsets.as_ptr(),
+        profile_id_lengths: lengths.as_ptr(),
+        profile_id_count: 1,
+    };
+
+    let mut wrong_context = kmipkit_profile_validation_context_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_validation_context_v1_t>())
+            .expect("C ABI context size fits u32"),
+        abi_version: 1,
+        object_states: ptr::null(),
+        object_state_count: 0,
+    };
+    wrong_context.struct_size -= 1;
+
+    let mut out = ptr::dangling_mut();
+    // SAFETY: the records point to live local data; the null client, batch, and limits are
+    // rejected before dereference, and the output slot is writable.
+    let options_status = unsafe {
+        kmipkit_client_execute_with_profiles_and_options_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw const selection,
+            ptr::null(),
+            &raw mut out,
+        )
+    };
+    assert_eq!(options_status, ERROR_INVALID_INPUT);
+    assert!(out.is_null());
+
+    out = ptr::dangling_mut();
+    // SAFETY: the valid selection and absent context remain readable; the options pointer is
+    // rejected before any client or batch handle is accessed.
+    let context_options_status = unsafe {
+        kmipkit_client_execute_with_profiles_and_context_and_options_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw const selection,
+            ptr::null(),
+            ptr::null(),
+            &raw mut out,
+        )
+    };
+    assert_eq!(context_options_status, ERROR_INVALID_INPUT);
+    assert!(out.is_null());
+
+    out = ptr::dangling_mut();
+    let context_status = kmipkit_client_execute_with_profiles_and_context(
+        ptr::null_mut(),
+        ptr::null_mut(),
+        ptr::null_mut(),
+        &raw const selection,
+        &raw const wrong_context,
+        &raw mut out,
+    );
+    assert_eq!(context_status, ERROR_INVALID_INPUT);
+    assert!(out.is_null());
+}
+
+#[test]
+fn profile_selection_parser_rejects_invalid_abi_shapes_and_text() {
+    assert_eq!(
+        profile_selection_from_v1(ptr::null()),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let valid =
+        |data: &[u8], offsets: &[u64], lengths: &[u64]| kmipkit_profile_validation_selection_v1_t {
+            struct_size: u32::try_from(size_of::<kmipkit_profile_validation_selection_v1_t>())
+                .expect("selection record size fits C ABI"),
+            abi_version: 1,
+            profile_id_data: data.as_ptr(),
+            profile_id_data_length: data.len() as u64,
+            profile_id_offsets: offsets.as_ptr(),
+            profile_id_lengths: lengths.as_ptr(),
+            profile_id_count: offsets.len() as u64,
+        };
+
+    let offsets = [0_u64];
+    let lengths = [1_u64];
+    let mut wrong_size = valid(b"p", &offsets, &lengths);
+    wrong_size.struct_size -= 1;
+    assert_eq!(
+        profile_selection_from_v1(&raw const wrong_size),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let mut wrong_version = valid(b"p", &offsets, &lengths);
+    wrong_version.abi_version = 2;
+    assert_eq!(
+        profile_selection_from_v1(&raw const wrong_version),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let mut too_many = valid(b"", &[], &[]);
+    too_many.profile_id_count = PROFILE_SELECTION_MAX_IDS + 1;
+    assert_eq!(
+        profile_selection_from_v1(&raw const too_many),
+        Err(ERROR_RESOURCE_LIMIT)
+    );
+
+    let mut missing_arrays = valid(b"", &[], &[]);
+    missing_arrays.profile_id_count = 1;
+    missing_arrays.profile_id_offsets = ptr::null();
+    missing_arrays.profile_id_lengths = ptr::null();
+    assert_eq!(
+        profile_selection_from_v1(&raw const missing_arrays),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let oversized_lengths = [MAX_TEXT_BYTES + 1];
+    let oversized_length = valid(b"p", &offsets, &oversized_lengths);
+    assert_eq!(
+        profile_selection_from_v1(&raw const oversized_length),
+        Err(ERROR_RESOURCE_LIMIT)
+    );
+
+    let overflowing_offsets = [u64::MAX];
+    let overflowing_range = valid(b"p", &overflowing_offsets, &lengths);
+    assert_eq!(
+        profile_selection_from_v1(&raw const overflowing_range),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let invalid_utf8 = [0xff];
+    let invalid_text = valid(&invalid_utf8, &offsets, &lengths);
+    assert_eq!(
+        profile_selection_from_v1(&raw const invalid_text),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let null_nonempty = kmipkit_profile_validation_selection_v1_t {
+        profile_id_data: ptr::null(),
+        profile_id_data_length: 1,
+        ..valid(b"", &[], &[])
+    };
+    assert_eq!(
+        profile_selection_from_v1(&raw const null_nonempty),
+        Err(ERROR_INVALID_INPUT)
+    );
+}
+
+#[test]
+fn profile_context_parser_rejects_invalid_abi_records_and_state_values() {
+    assert!(profile_context_from_v1(ptr::null()).is_ok());
+
+    let valid_context = |states: *const kmipkit_profile_object_state_v1_t, count: u64| {
+        kmipkit_profile_validation_context_v1_t {
+            struct_size: u32::try_from(size_of::<kmipkit_profile_validation_context_v1_t>())
+                .expect("context record size fits C ABI"),
+            abi_version: 1,
+            object_states: states,
+            object_state_count: count,
+        }
+    };
+    let mut wrong_size = valid_context(ptr::null(), 0);
+    wrong_size.struct_size -= 1;
+    assert_eq!(
+        profile_context_from_v1(&raw const wrong_size),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let mut wrong_version = valid_context(ptr::null(), 0);
+    wrong_version.abi_version = 2;
+    assert_eq!(
+        profile_context_from_v1(&raw const wrong_version),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let too_many = valid_context(ptr::null(), PROFILE_CONTEXT_MAX_STATES + 1);
+    assert_eq!(
+        profile_context_from_v1(&raw const too_many),
+        Err(ERROR_RESOURCE_LIMIT)
+    );
+    let missing_states = valid_context(ptr::null(), 1);
+    assert_eq!(
+        profile_context_from_v1(&raw const missing_states),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let valid_state = || kmipkit_profile_object_state_v1_t {
+        struct_size: u32::try_from(size_of::<kmipkit_profile_object_state_v1_t>())
+            .expect("object state size fits C ABI"),
+        abi_version: 1,
+        batch_item_index: 0,
+        unique_identifier_data: b"id".as_ptr(),
+        unique_identifier_length: 2,
+        known_fields: 0,
+        boolean_values: 0,
+        usage_limits_total: 0,
+        usage_limits_count: 0,
+    };
+    for (index, mut state) in [
+        valid_state(),
+        valid_state(),
+        valid_state(),
+        valid_state(),
+        valid_state(),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        match index {
+            0 => state.struct_size -= 1,
+            1 => state.abi_version = 2,
+            2 => state.known_fields = !PROFILE_STATE_KNOWN_FIELDS,
+            3 => state.boolean_values = PROFILE_STATE_BOOLEAN_FIELDS + 1,
+            _ => {
+                state.known_fields = PROFILE_STATE_ORIGINAL_CREATION_DATE_PRESENT;
+                state.boolean_values = PROFILE_STATE_USAGE_LIMITS_PRESENT;
+            }
+        }
+        let context = valid_context(ptr::from_ref(&state), 1);
+        assert_eq!(
+            profile_context_from_v1(&raw const context),
+            Err(ERROR_INVALID_INPUT)
+        );
+    }
+
+    let mut null_identifier = valid_state();
+    null_identifier.unique_identifier_data = ptr::null();
+    null_identifier.unique_identifier_length = 1;
+    let context = valid_context(ptr::from_ref(&null_identifier), 1);
+    assert_eq!(
+        profile_context_from_v1(&raw const context),
+        Err(ERROR_INVALID_INPUT)
+    );
+
+    let invalid_utf8 = [0xff];
+    let mut invalid_identifier = valid_state();
+    invalid_identifier.unique_identifier_data = invalid_utf8.as_ptr();
+    invalid_identifier.unique_identifier_length = 1;
+    let context = valid_context(ptr::from_ref(&invalid_identifier), 1);
+    assert_eq!(
+        profile_context_from_v1(&raw const context),
+        Err(ERROR_INVALID_INPUT)
+    );
+}
+
+#[test]
 fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
     const BASELINE: &[u8] = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
     let offsets = [0_u64];

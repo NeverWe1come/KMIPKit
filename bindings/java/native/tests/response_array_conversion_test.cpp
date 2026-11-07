@@ -57,4 +57,36 @@ int main() {
     }
     assert(cleaned_count == 1);
     assert(cleaned_value);
+
+    std::array<Array*, 3> later_failure_output{};
+    std::array<Array, 3> later_failure_input{};
+    std::size_t later_cleaned_count = 0;
+    std::size_t later_conversion_count = 0;
+    bool later_pending_exception = false;
+    auto later_cleanup = [&](Array*, bool wipe) noexcept {
+        assert(wipe);
+        ++later_cleaned_count;
+    };
+    using LaterScope = kmipkit::jni::ResponseSecretArrayScope<
+            Array*, 3, decltype(later_cleanup)>;
+    {
+        LaterScope sensitive_arrays(later_cleanup);
+        const bool converted = kmipkit::jni::convert_response_arrays(
+                later_failure_output,
+                [&](std::size_t index) {
+                    ++later_conversion_count;
+                    if (index == 1) later_pending_exception = true;
+                    return &later_failure_input[index];
+                },
+                [&] { return later_pending_exception; },
+                sensitive_arrays);
+
+        assert(!converted);
+        assert(later_conversion_count == 2);
+        assert(later_failure_output[0] == &later_failure_input[0]);
+        assert(later_failure_output[1] == &later_failure_input[1]);
+        assert(later_failure_output[2] == nullptr);
+        assert(later_cleaned_count == 0);
+    }
+    assert(later_cleaned_count == 2);
 }

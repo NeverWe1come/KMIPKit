@@ -1,7 +1,7 @@
 use super::*;
 use crate::kmipkit_attribute_reference_v1_t;
 use kmipkit_client::ClientRequest;
-use kmipkit_protocol::{AttributeReference, GetAttributesRequest};
+use kmipkit_protocol::{AttributeReference, GetAttributeListRequest, GetAttributesRequest};
 
 fn abi_struct_size<T>() -> u32 {
     u32::try_from(std::mem::size_of::<T>()).expect("test ABI record size fits u32")
@@ -516,6 +516,50 @@ fn get_attributes_response_preserves_present_empty_attributes_for_c_consumers() 
     );
     kmipkit_ttlv_structure_release(attributes);
     kmipkit_client_batch_item_response_release(success);
+}
+
+#[test]
+fn get_attributes_accessor_hides_a_successful_different_operation() {
+    let request = ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+        RESPONSE_FIXTURE_UID.to_owned(),
+    )));
+    let response = successful_cryptographic_item(
+        request,
+        0x0c,
+        b"get-attributes-wrong-operation",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"object-7"),
+            ttlv_enumeration(0x0042_013b, 0x0042_002f),
+        ],
+    );
+    let mut present = u8::MAX;
+    let mut identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
+        abi_version: 1,
+        kind: u32::MAX,
+        reserved: 0,
+        text_data: std::ptr::dangling(),
+        text_length: u64::MAX,
+        enumeration_value: u32::MAX,
+        integer_value: i32::MAX,
+    };
+    let mut attributes = ptr::dangling_mut();
+
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attributes(
+            response,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut attributes,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    assert_eq!(identifier.text_length, 0);
+    assert!(attributes.is_null());
+    kmipkit_client_batch_item_response_release(response);
 }
 
 #[test]

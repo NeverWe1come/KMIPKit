@@ -21,6 +21,13 @@ unsafe extern "C" {
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validates_attribute_set() -> i32;
     fn kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_attribute_request_models() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_batch_header_fields() -> i32;
+    fn kmipkit_client_abi_c_consumer_rejects_attribute_output_headers() -> i32;
+    fn kmipkit_client_abi_c_consumer_query_span_copy_budget() -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_variable_ttlv_value_inputs() -> i32;
+    fn kmipkit_client_abi_c_consumer_exercises_import_request_validation() -> i32;
+    fn kmipkit_client_abi_c_consumer_maps_message_validation_error_kind() -> i32;
 }
 
 #[link(name = "kmipkit_credential_secret_abi_c_consumer", kind = "static")]
@@ -61,7 +68,7 @@ unsafe extern "C" {
     fn kmipkit_credential_value_c_consumer_contract() -> i32;
 }
 
-use kmipkit_ffi::kmipkit_codec_limits_t;
+use kmipkit_ffi::{kmipkit_codec_limits_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t};
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_ttlv::{Item, StructureView, ValueView};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -70,6 +77,15 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
 const MAX_TEST_TTLV_VALUE_BYTES: usize = 8_388_608;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+unsafe extern "C" {
+    fn kmipkit_ttlv_decode(
+        data: *const u8,
+        length: u64,
+        error: *mut kmipkit_ttlv_decode_error_v1_t,
+        out_item: *mut *mut kmipkit_ttlv_item_t,
+    ) -> i32;
+}
 
 #[test]
 fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
@@ -91,6 +107,55 @@ fn compiled_c_consumer_validates_and_consumes_ordered_attribute_sets() {
 fn compiled_c_consumer_validates_standalone_attribute_request_models() {
     // SAFETY: The C consumer owns and releases every temporary handle it creates.
     let status = unsafe { kmipkit_client_abi_c_consumer_validates_standalone_attribute_requests() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_owned_attribute_request_models() {
+    // SAFETY: The C consumer owns and releases all request, item, value, payload, and batch handles.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_attribute_request_models() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_client_batch_header_fields() {
+    // SAFETY: The C consumer owns the batch and uses live, writable scalar outputs.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_batch_header_fields() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_malformed_attribute_output_headers() {
+    // SAFETY: The C consumer owns each request, item, and initialized output record.
+    let status = unsafe { kmipkit_client_abi_c_consumer_rejects_attribute_output_headers() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_enforces_total_async_correlation_copy_budget() {
+    // SAFETY: The C consumer owns the query models and the two allocated input buffers.
+    let status = unsafe { kmipkit_client_abi_c_consumer_query_span_copy_budget() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_validates_variable_ttlv_value_inputs() {
+    // SAFETY: The C consumer releases each value view, value, and codec-limits handle it creates.
+    let status = unsafe { kmipkit_client_abi_c_consumer_validates_variable_ttlv_value_inputs() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_exercises_import_request_validation() {
+    // SAFETY: The C consumer retains borrowed input structures and releases every handle it owns.
+    let status = unsafe { kmipkit_client_abi_c_consumer_exercises_import_request_validation() };
+    assert_eq!(status, 1);
+}
+
+#[test]
+fn compiled_c_consumer_maps_message_validation_error_kind() {
+    // SAFETY: The C consumer owns the malformed request and its validation error handles.
+    let status = unsafe { kmipkit_client_abi_c_consumer_maps_message_validation_error_kind() };
     assert_eq!(status, 1);
 }
 
@@ -281,6 +346,7 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_batch_item_readback() -> i32;
     fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
     fn kmipkit_client_abi_c_consumer_async_request_models() -> i32;
+    fn kmipkit_client_abi_c_consumer_extra_ffi_paths() -> i32;
     fn kmipkit_client_abi_c_consumer_profile_readiness_contract() -> i32;
     fn kmipkit_client_abi_c_consumer_profile_validation_result_contract() -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
@@ -334,6 +400,13 @@ fn compiled_c_consumer_builds_typed_async_payloads_without_network_execution() {
     // SAFETY: The C helper owns its request and TTLV handles and only reads borrowed spans while
     // their source request handle is alive.
     let result = unsafe { kmipkit_client_abi_c_consumer_async_request_models() };
+    assert_eq!(result, 1);
+}
+
+#[test]
+fn compiled_c_consumer_covers_async_request_and_decoder_error_paths() {
+    // SAFETY: The C consumer owns its input arrays, output records, codec limits, and handles.
+    let result = unsafe { kmipkit_client_abi_c_consumer_extra_ffi_paths() };
     assert_eq!(result, 1);
 }
 
@@ -653,6 +726,53 @@ fn c_abi_consumer_decodes_ttlv_and_reports_safe_errors() {
         )
     };
     assert_eq!(result, 1, "the C ABI must decode and report safe errors");
+}
+
+#[test]
+fn ttlv_decoder_reports_stable_errors_for_malformed_scalar_and_root_items() {
+    assert_ttlv_decode_protocol_error(&[0x00, 0x42], 2, 0);
+
+    let invalid_boolean = ttlv_item(0x0042_0026, 0x06, &[0, 0, 0, 0, 0, 0, 0, 2]);
+    assert_ttlv_decode_protocol_error(&invalid_boolean, 7, 8);
+
+    let invalid_utf8 = ttlv_item(0x0042_0093, 0x07, &[0xff]);
+    assert_ttlv_decode_protocol_error(&invalid_utf8, 6, 8);
+
+    let unsupported_type = ttlv_item(0x0042_006a, 0xff, &[]);
+    assert_ttlv_decode_protocol_error(&unsupported_type, 8, 3);
+
+    let mut trailing_bytes = ttlv_item(0x0042_005c, 0x05, &0_u32.to_be_bytes());
+    trailing_bytes.extend_from_slice(&ttlv_item(0x0042_005c, 0x05, &1_u32.to_be_bytes()));
+    assert_ttlv_decode_protocol_error(&trailing_bytes, 9, 16);
+}
+
+fn assert_ttlv_decode_protocol_error(wire: &[u8], expected_kind: u32, expected_offset: u64) {
+    let mut error = kmipkit_ttlv_decode_error_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_ttlv_decode_error_v1_t>())
+            .expect("decoder error record size fits ABI"),
+        abi_version: 1,
+        kind: 0,
+        byte_offset: 0,
+    };
+    let mut item = std::ptr::dangling_mut::<kmipkit_ttlv_item_t>();
+    // SAFETY: `wire` remains readable and both output records are aligned and writable
+    // for the duration of this synchronous decoder call.
+    let status = unsafe {
+        kmipkit_ttlv_decode(
+            wire.as_ptr(),
+            u64::try_from(wire.len()).expect("wire length fits ABI"),
+            &raw mut error,
+            &raw mut item,
+        )
+    };
+
+    assert_eq!(
+        status, 8,
+        "malformed TTLV maps to the protocol error category"
+    );
+    assert!(item.is_null());
+    assert_eq!(error.kind, expected_kind);
+    assert_eq!(error.byte_offset, expected_offset);
 }
 
 #[test]
