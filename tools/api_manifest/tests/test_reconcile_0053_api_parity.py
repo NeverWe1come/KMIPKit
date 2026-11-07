@@ -1205,6 +1205,54 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
         self.assertEqual([corrected], result["approvedExclusions"])
 
+    def test_corrects_only_exact_managed_object_variant_counterparts(self) -> None:
+        cases = [
+            (
+                "rust-kmipkit",
+                "kmipkit::protocol::ManagedFieldValue::BigInteger",
+                "managed_value_field_item_read:rust",
+                "rust-observed-a95a34edc0285cd6ad3a",
+            ),
+            (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::ManagedValueKind::KeyBlock",
+                "managed_object_from_item:c",
+                "rust-observed-0d3351bf7b7739e95d55",
+            ),
+        ]
+        for package_id, export_name, previous_id, corrected_id in cases:
+            with self.subTest(export_name=export_name):
+                previous = {
+                    "packageId": package_id,
+                    "exportName": export_name,
+                    "counterpartDeclarationIds": [previous_id],
+                }
+                corrected = {
+                    **previous,
+                    "counterpartDeclarationIds": [corrected_id],
+                }
+                self.assertTrue(
+                    reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
+                        previous, corrected
+                    )
+                )
+
+                changed_reason = {**corrected, "reason": "unreviewed change"}
+                self.assertFalse(
+                    reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
+                        previous, changed_reason
+                    )
+                )
+                unrelated_variant = {
+                    **corrected,
+                    "exportName": export_name.rsplit("::", 1)[0] + "::Unreviewed",
+                }
+                self.assertFalse(
+                    reconcile_0053_api_parity._is_exact_0053_managed_object_counterpart_correction(
+                        previous, unrelated_variant
+                    )
+                )
+
     def test_validates_capability_and_counterpart_for_rust_shape_exclusion(self) -> None:
         exclusion = {
             "declarationId": "KMIPKIT-0053:exclude:enum-variant",
