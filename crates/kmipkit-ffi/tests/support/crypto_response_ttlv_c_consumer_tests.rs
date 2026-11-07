@@ -30,7 +30,7 @@ fn compiled_c_consumer_calls_each_crypto_success_ttlv_getter_and_releases_owned_
             b"c-mac-success",
             vec![
                 ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                ttlv_item(0x0042_00c4, 0x08, b"mac-data"),
+                ttlv_item(0x0042_00c6, 0x08, b"mac-data"),
                 unknown.clone(),
             ],
         ),

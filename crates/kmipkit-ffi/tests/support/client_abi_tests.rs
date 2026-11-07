@@ -1346,11 +1346,11 @@ fn successful_crypto_response_ttlv_cases() -> [SuccessfulCryptoResponseTtlvCase;
                 b"mac-ttlv-success",
                 vec![
                     ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                    ttlv_item(0x0042_00c4, 0x08, b"mac-data"),
+                    ttlv_item(0x0042_00c6, 0x08, b"mac-data"),
                     unknown.clone(),
                 ],
             ),
-            &[0x0042_0094, 0x0042_00c4, 0x0054_0001],
+            &[0x0042_0094, 0x0042_00c6, 0x0054_0001],
         ),
         (
             kmipkit_client_batch_item_response_mac_verify_ttlv,
@@ -1793,7 +1793,7 @@ fn ffi_successful_mac_response_getter_returns_typed_fields() {
         b"mac-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_item(0x0042_00c4, 0x08, b"mac-response-data"),
+            ttlv_item(0x0042_00c6, 0x08, b"mac-response-data"),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],
     );
