@@ -1,8 +1,9 @@
 //! Typed client-to-server Discover Versions payloads.
 //!
-//! The request advertises KMIP 2.1, the only protocol version supported by
-//! `KMIPKit` 1.0. Response conversion borrows the validated KMIPKIT-0006 message
-//! model, leaving its ordered generic TTLV tree available to the caller.
+//! The request advertises client-supported protocol versions. By default, it
+//! advertises KMIP 2.1 preserving 1.0 zero-breakage behavior. Response conversion
+//! borrows the validated KMIPKIT-0006 message model, leaving its ordered generic
+//! TTLV tree available to the caller.
 
 use std::error::Error;
 use std::fmt;
@@ -20,60 +21,83 @@ const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const SUCCESS: u32 = 0;
 
-/// A client-to-server Discover Versions request for `KMIPKit` 1.0.
+static DEFAULT_OFFER: [ProtocolVersion; 1] = [ProtocolVersion::from_raw(2, 1)];
+
+/// A client-to-server Discover Versions request.
 ///
-/// The request has no caller-supplied TTLV or version-list input. Its payload
-/// always advertises exactly Protocol Version `(2, 1)` as the sole preference,
-/// as assigned by ADR-0002 and OASIS KMIP Specification v2.1 §6.1.16, Table
-/// 211.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+/// By default, its payload advertises exactly Protocol Version `(2, 1)` as the sole
+/// preference, maintaining full backwards compatibility. Callers may configure multiple
+/// preferences via [`DiscoverVersionsRequest::with_versions`].
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct DiscoverVersionsRequest {
-    _private: (),
+    versions: Vec<ProtocolVersion>,
 }
 
 impl DiscoverVersionsRequest {
     /// Creates a request that offers KMIP 2.1 only.
     #[must_use]
     pub const fn new() -> Self {
-        Self { _private: () }
+        Self {
+            versions: Vec::new(),
+        }
     }
 
-    /// Returns the fixed client version preference list.
+    /// Creates a request that offers the specified ordered protocol versions.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DiscoverVersionsError::InvalidOfferedVersions`] if `versions` is empty
+    /// or contains uncatalogued protocol versions.
+    pub fn with_versions(versions: Vec<ProtocolVersion>) -> Result<Self, DiscoverVersionsError> {
+        if versions.is_empty() {
+            return Err(DiscoverVersionsError::InvalidOfferedVersions);
+        }
+        for v in &versions {
+            if !v.is_catalogued() {
+                return Err(DiscoverVersionsError::InvalidOfferedVersions);
+            }
+        }
+        Ok(Self { versions })
+    }
+
+    /// Returns the client version preference list.
     #[must_use]
-    pub const fn protocol_versions(&self) -> [ProtocolVersion; 1] {
-        [ProtocolVersion::from_raw(2, 1)]
+    pub fn protocol_versions(&self) -> &[ProtocolVersion] {
+        if self.versions.is_empty() {
+            &DEFAULT_OFFER
+        } else {
+            &self.versions
+        }
     }
 
     /// Builds the ordered generic Structure for the Discover Versions request
     /// payload.
-    ///
-    /// This produces the typed request's payload fields; the common KMIPKIT-0006
-    /// message model owns the enclosing Request Payload and Batch Item.
     ///
     /// # Errors
     ///
     /// Returns a sanitized protocol error if the pinned KMIP tags or generic
     /// Structure model reject this internally defined payload.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
-        let version = self.protocol_versions()[0];
-        let mut version_fields = Structure::new();
-        version_fields
-            .try_push(item(
-                PROTOCOL_VERSION_MAJOR,
-                Value::integer(version.major()),
-            )?)
-            .map_err(model_error)?;
-        version_fields
-            .try_push(item(
-                PROTOCOL_VERSION_MINOR,
-                Value::integer(version.minor()),
-            )?)
-            .map_err(model_error)?;
-
         let mut payload = Structure::new();
-        payload
-            .try_push(item(PROTOCOL_VERSION, Value::structure(version_fields))?)
-            .map_err(model_error)?;
+        for &version in self.protocol_versions() {
+            let mut version_fields = Structure::new();
+            version_fields
+                .try_push(item(
+                    PROTOCOL_VERSION_MAJOR,
+                    Value::integer(version.major()),
+                )?)
+                .map_err(model_error)?;
+            version_fields
+                .try_push(item(
+                    PROTOCOL_VERSION_MINOR,
+                    Value::integer(version.minor()),
+                )?)
+                .map_err(model_error)?;
+
+            payload
+                .try_push(item(PROTOCOL_VERSION, Value::structure(version_fields))?)
+                .map_err(model_error)?;
+        }
         Ok(payload)
     }
 }
@@ -82,9 +106,7 @@ impl DiscoverVersionsRequest {
 ///
 /// Successful responses expose the offered intersection as ordered
 /// [`ProtocolVersion`] values. Non-success KMIP results retain the existing
-/// [`KmipOperationResult`] and have no successful version list. The validated
-/// source [`ResponseMessage`](crate::ResponseMessage) remains the owner of the
-/// complete generic tree, including fields not modeled here.
+/// [`KmipOperationResult`] and have no successful version list.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DiscoverVersionsResponse {
     result: KmipOperationResult,
@@ -92,14 +114,7 @@ pub struct DiscoverVersionsResponse {
 }
 
 impl DiscoverVersionsResponse {
-    /// Converts one already validated KMIPKIT-0006 response batch item.
-    ///
-    /// The item is read through its borrowed view; this conversion does not
-    /// consume, normalize, or duplicate its generic TTLV tree. Successful
-    /// payloads may contain an empty version list. Every listed version must be
-    /// among the `(2, 1)` value offered by [`DiscoverVersionsRequest`], and
-    /// source order and repeated values are retained as allowed by §6.1.16,
-    /// Table 212.
+    /// Converts one already validated KMIPKIT-0006 response batch item against the default offer (KMIP 2.1).
     ///
     /// # Errors
     ///
@@ -108,6 +123,19 @@ impl DiscoverVersionsResponse {
     /// offer.
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
+    ) -> Result<Self, DiscoverVersionsError> {
+        Self::try_from_response_item_for_offer(item, &DEFAULT_OFFER)
+    }
+
+    /// Converts one response batch item validating returned versions against the caller-provided offered list.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DiscoverVersionsError`] for an invalid represented result,
+    /// malformed Protocol Version Structure, or a version not in `offered`.
+    pub fn try_from_response_item_for_offer(
+        item: ResponseBatchItemView<'_>,
+        offered: &[ProtocolVersion],
     ) -> Result<Self, DiscoverVersionsError> {
         if item.operation() != Some(DISCOVER_VERSIONS_OPERATION) {
             return Err(DiscoverVersionsError::UnexpectedOperation);
@@ -126,7 +154,7 @@ impl DiscoverVersionsResponse {
         }
 
         let versions = item
-            .with_response_payload(|payload| parse_response_versions(&payload))
+            .with_response_payload(|payload| parse_response_versions(&payload, offered))
             .ok_or(DiscoverVersionsError::MissingSuccessPayload)??;
         Ok(Self {
             result,
@@ -151,7 +179,7 @@ impl DiscoverVersionsResponse {
     }
 }
 
-/// A payload-free error converting a validated Discover Versions response.
+/// A payload-free error converting a validated Discover Versions response or building a request.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum DiscoverVersionsError {
@@ -160,8 +188,6 @@ pub enum DiscoverVersionsError {
     /// A validated response item did not expose a Result Status.
     MissingResultStatus,
     /// The response Result Status, Reason, or Message combination is invalid.
-    ///
-    /// The typed [`ResultValidationError`] is retained as the error source.
     InvalidOperationResult(ResultValidationError),
     /// A successful response omitted its required Response Payload Structure.
     MissingSuccessPayload,
@@ -169,6 +195,8 @@ pub enum DiscoverVersionsError {
     MalformedProtocolVersion,
     /// The server returned a version not included in the client's offer.
     UnofferedProtocolVersion,
+    /// The offered versions list is empty or contains uncatalogued protocol versions.
+    InvalidOfferedVersions,
 }
 
 impl fmt::Display for DiscoverVersionsError {
@@ -188,6 +216,9 @@ impl fmt::Display for DiscoverVersionsError {
             }
             Self::UnofferedProtocolVersion => {
                 "Discover Versions response includes a version the client did not offer"
+            }
+            Self::InvalidOfferedVersions => {
+                "Discover Versions request offered versions list is invalid"
             }
         };
         formatter.write_str(message)
@@ -214,14 +245,12 @@ fn operation_result(
 
 fn parse_response_versions(
     payload: &StructureView<'_>,
+    offered: &[ProtocolVersion],
 ) -> Result<Vec<ProtocolVersion>, DiscoverVersionsError> {
-    let offered = ProtocolVersion::from_raw(2, 1);
     let mut versions = Vec::new();
 
     for child in payload.children() {
         if child.tag().raw() != PROTOCOL_VERSION {
-            // KMIPKIT-0006 continues to own the complete generic tree. Unknown
-            // fields are left untouched there and are not a version entry.
             continue;
         }
 
@@ -231,7 +260,7 @@ fn parse_response_versions(
                 _ => None,
             })
             .ok_or(DiscoverVersionsError::MalformedProtocolVersion)??;
-        if version != offered {
+        if !offered.contains(&version) {
             return Err(DiscoverVersionsError::UnofferedProtocolVersion);
         }
         versions.push(version);
@@ -253,7 +282,7 @@ fn parse_protocol_version(
                     return Err(DiscoverVersionsError::MalformedProtocolVersion);
                 }
                 major = child.with_value(|value| match value {
-                    ValueView::Integer(value) => Some(*value),
+                    ValueView::Integer(major) => Some(*major),
                     _ => None,
                 });
                 if major.is_none() {
@@ -261,11 +290,11 @@ fn parse_protocol_version(
                 }
             }
             PROTOCOL_VERSION_MINOR => {
-                if minor.is_some() {
+                if minor.is_some() || major.is_none() {
                     return Err(DiscoverVersionsError::MalformedProtocolVersion);
                 }
                 minor = child.with_value(|value| match value {
-                    ValueView::Integer(value) => Some(*value),
+                    ValueView::Integer(minor) => Some(*minor),
                     _ => None,
                 });
                 if minor.is_none() {
@@ -282,14 +311,33 @@ fn parse_protocol_version(
     }
 }
 
-fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {
-    Item::new(tag(raw_tag)?, value).map_err(model_error)
+fn tag(raw: u32) -> Result<Tag, ProtocolError> {
+    RawTag::new(raw)
+        .map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })?
+        .try_checked()
+        .map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })
 }
 
-fn tag(raw_tag: u32) -> Result<Tag, ProtocolError> {
-    RawTag::new(raw_tag)
-        .and_then(|raw| raw.try_checked())
-        .map_err(model_error)
+fn item(raw: u32, value: Value) -> Result<Item, ProtocolError> {
+    Item::new(tag(raw)?, value).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
 }
 
 fn model_error(error: ModelError) -> ProtocolError {
@@ -299,7 +347,3 @@ fn model_error(error: ModelError) -> ProtocolError {
         error,
     )
 }
-
-#[cfg(test)]
-#[path = "../tests/unit/result_error_tests.rs"]
-mod result_error_tests;
