@@ -122,6 +122,12 @@ class NamedValueGeneratorTests(unittest.TestCase):
             generate_named_values._identifier("Polynomial Sharing GF (2⁸)"),
         )
 
+    def test_c_string_literals_escape_syntax_control_and_utf8_bytes(self) -> None:
+        self.assertEqual(
+            r'"Name\042\134\012\011\303\251"',
+            generate_named_values._c_string('Name"\\\n\té'),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
