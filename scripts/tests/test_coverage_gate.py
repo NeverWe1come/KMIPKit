@@ -699,6 +699,14 @@ trait Example { fn declaration(&self); }
         self.assertNotIn(java_source, sources["Java adapters"])
         self.assertNotIn(python_source, sources["Python adapters"])
 
+    def test_catalog_generated_typed_attribute_code_is_excluded_but_runtime_api_is_not(self) -> None:
+        self.require_gate()
+        generated = "crates/kmipkit-protocol/src/typed_attributes_generated.rs"
+        handwritten = "crates/kmipkit-protocol/src/typed_attributes.rs"
+
+        self.assertFalse(GATE.is_coverage_source_path(generated))
+        self.assertTrue(GATE.is_coverage_source_path(handwritten))
+
     def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:

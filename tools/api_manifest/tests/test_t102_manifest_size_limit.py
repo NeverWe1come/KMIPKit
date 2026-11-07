@@ -10,7 +10,7 @@ from tools.api_manifest import generate
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-EXPECTED_MANIFEST_LIMIT = 40 * 1024 * 1024
+EXPECTED_MANIFEST_LIMIT = 44 * 1024 * 1024
 
 
 class T102ManifestSizeLimitTests(unittest.TestCase):

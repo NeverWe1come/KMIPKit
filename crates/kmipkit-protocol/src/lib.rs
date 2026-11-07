@@ -91,6 +91,7 @@ mod set_defaults_tests;
 mod sign;
 mod signature_verify;
 mod ticket;
+mod typed_attributes;
 mod validate;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
@@ -100,7 +101,10 @@ pub use adjust_attribute::{
 };
 pub use archive::{ArchiveError, ArchiveRequest, ArchiveResponse};
 pub use asynchronous::AsynchronousOperationError;
-pub use attribute::{AttributeSet, AttributeSetError, CurrentAttribute, NewAttribute};
+pub use attribute::{
+    Attribute, AttributeDefinition, AttributeSet, AttributeSetError, AttributeValueError,
+    AttributeView, CurrentAttribute, NewAttribute, UniqueIdentifierValue, UniqueIdentifierView,
+};
 pub use attribute_reference::AttributeReference;
 pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use certify::{CertifyError, CertifyRequest, CertifyResponse};
@@ -501,6 +505,10 @@ mod attribute_limits_tests;
 #[cfg(test)]
 #[path = "../tests/unit/attribute_coverage_contract_tests.rs"]
 mod attribute_coverage_contract_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/typed_attribute_tests.rs"]
+mod typed_attribute_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/ticket_model_tests.rs"]

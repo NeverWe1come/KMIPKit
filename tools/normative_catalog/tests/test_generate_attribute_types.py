@@ -48,28 +48,28 @@ def small_catalog() -> dict[str, object]:
                 "allocation": "assigned",
             },
             {
-                "element_id": "attribute-activation-date",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE",
                 "kind": "attribute",
                 "name": "Activation Date",
                 "parent_element_ids": ["tag-420001"],
                 "source_encoding": "Date-Time",
             },
             {
-                "element_id": "attribute-algorithm",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
                 "kind": "attribute",
                 "name": "Cryptographic Algorithm",
                 "parent_element_ids": ["tag-420028"],
                 "source_encoding": "Enumeration",
             },
             {
-                "element_id": "attribute-id",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
                 "kind": "attribute",
                 "name": "Unique Identifier",
                 "parent_element_ids": ["tag-420094"],
                 "source_encoding": "Text String, Enumeration or Integer",
             },
             {
-                "element_id": "attribute-rng",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
                 "kind": "attribute",
                 "name": "Random Number Generator",
                 "parent_element_ids": ["tag-4200DE"],
@@ -81,6 +81,12 @@ def small_catalog() -> dict[str, object]:
                 "name": "Vendor Attribute",
                 "parent_element_ids": [],
                 "source_encoding": "Structure",
+            },
+            {
+                "element_id": "tag-420008",
+                "kind": "tag",
+                "wire_value": "420008",
+                "allocation": "assigned",
             },
         ]
     }
@@ -209,6 +215,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
     def test_main_write_check_stale_and_redacted_error_paths(self) -> None:
         catalog_bytes = b"catalog"
         expected = render_rust(small_catalog()).encode("utf-8")
+        expected_typed = generator.render_typed_rust(small_catalog()).encode("utf-8")
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -219,19 +226,33 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                 redirect_stdout(StringIO()),
             ):
                 self.assertEqual(generator.main(["--repo-root", str(root), "--write"]), 0)
-            write.assert_called_once_with(
-                root.resolve(strict=True), generator.OUTPUT_PATH, expected
+            self.assertEqual(
+                write.call_args_list,
+                [
+                    unittest.mock.call(root.resolve(strict=True), generator.OUTPUT_PATH, expected),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_OUTPUT_PATH, expected_typed
+                    ),
+                ],
             )
 
             with (
-                patch.object(generator, "safe_read_bytes", side_effect=[catalog_bytes, expected]),
+                patch.object(
+                    generator,
+                    "safe_read_bytes",
+                    side_effect=[catalog_bytes, expected, expected_typed],
+                ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
                 redirect_stdout(StringIO()),
             ):
                 self.assertEqual(generator.main(["--repo-root", str(root), "--check"]), 0)
 
             with (
-                patch.object(generator, "safe_read_bytes", side_effect=[catalog_bytes, b"stale"]),
+                patch.object(
+                    generator,
+                    "safe_read_bytes",
+                    side_effect=[catalog_bytes, expected, b"stale"],
+                ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
                 redirect_stderr(StringIO()),
             ):

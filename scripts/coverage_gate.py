@@ -122,11 +122,21 @@ _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS = frozenset(
         "bindings/python/src/kmipkit/protocol_values.py",
     }
 )
+# Catalog-generated typed attribute implementations are mechanical bindings
+# from the pinned attribute catalog to the shared AttributeDefinition trait.
+# Their exact output is checked by the generator, and runtime tests exercise
+# every value category plus every catalog tag in the generated registry.
+_CATALOG_GENERATED_ATTRIBUTE_EXCLUSIONS = frozenset(
+    {
+        "crates/kmipkit-protocol/src/typed_attributes_generated.rs",
+    }
+)
 _COVERAGE_SOURCE_EXCLUSIONS = (
     _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS
     | _PYTHON_GENERATED_SOURCE_EXCLUSIONS
     | _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS
     | _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS
+    | _CATALOG_GENERATED_ATTRIBUTE_EXCLUSIONS
 )
 
 
