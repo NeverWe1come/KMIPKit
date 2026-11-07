@@ -98,6 +98,9 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
             if row["operationId"] in OPERATIONS
         }
         self.functions = {row["id"]: row for row in self.manifest["functions"]}
+        self.declarations_by_id = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
+        }
 
     def test_both_operations_are_verified_against_the_approved_owner(self) -> None:
         self.assertEqual(set(OPERATIONS), set(self.operations))
@@ -141,11 +144,19 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     self.assertEqual(expected[endpoint], actual_mappings)
                     for language in LANGUAGES:
                         declaration_ids = operation["declarations"][language]
-                        self.assertEqual(2, len(declaration_ids), language)
-                        declaration = next(
-                            row for row in self.manifest["publicDeclarations"]
-                            if row["declarationId"] == declaration_ids[0 if endpoint == "request" else 1]
-                        )
+                        self.assertEqual(len(declaration_ids), len(set(declaration_ids)), language)
+                        self.assertTrue(set(declaration_ids) <= set(self.declarations_by_id))
+                        matching = [
+                            self.declarations_by_id[declaration_id]
+                            for declaration_id in declaration_ids
+                            if self.declarations_by_id[declaration_id]
+                            .get("languageMappings", {})
+                            .get(language, {})
+                            .get("name")
+                            == expected[endpoint][language]
+                        ]
+                        self.assertEqual(1, len(matching), f"{endpoint} declaration: {language}")
+                        declaration = matching[0]
                         self.assertEqual(operation_id, declaration["capabilityId"])
                         self.assertEqual("verified", declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])
@@ -168,6 +179,34 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                         any(req.startswith("KMIPKIT-0043-FR-") for req in function["requirementIds"])
                     )
                 self.assertTrue(expected["normative_requirements"] <= linked_requirements)
+
+    def test_decrypt_request_helpers_are_not_attributed_to_encrypt(self) -> None:
+        helper_names = {
+            "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+            "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_tag",
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
+        }
+        declarations = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("exportName") in helper_names
+        ]
+        self.assertEqual(helper_names, {row["exportName"] for row in declarations})
+        for declaration in declarations:
+            with self.subTest(export=declaration["exportName"]):
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-DECRYPT", declaration["capabilityId"]
+                )
+                self.assertNotIn(
+                    "KMIPKIT-REQ-SPEC-6.1.17-001-001", declaration["requirementIds"]
+                )
+                self.assertTrue(
+                    any(
+                        requirement.startswith("KMIPKIT-REQ-SPEC-6.1.11-")
+                        for requirement in declaration["requirementIds"]
+                    )
+                )
 
     def test_generated_parity_inventory_contains_both_verified_operations(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
