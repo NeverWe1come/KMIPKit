@@ -167,6 +167,13 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
         if key in declaration_keys or key in exclusion_keys:
             continue
 
+        if package_id == "rust-kmipkit-protocol" and export_name.startswith(NAMED_VALUES_PROTOCOL_PREFIX):
+            named_routes.append(observed)
+            continue
+
+        if not _is_typed_attribute_route(package_id, export_name):
+            raise ReconciliationError(f"unowned Rust export cannot be attributed to KMIPKIT-0048: {package_id}:{export_name}")
+
         if kind == "associated-item" and export_name.startswith("<"):
             exclusions.append({
                 "packageId": package_id,
@@ -179,12 +186,6 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
             exclusion_keys.add(key)
             continue
 
-        if package_id == "rust-kmipkit-protocol" and export_name.startswith(NAMED_VALUES_PROTOCOL_PREFIX):
-            named_routes.append(observed)
-            continue
-
-        if package_id not in {"rust-kmipkit", "rust-kmipkit-protocol"} or not _is_typed_attribute_route(export_name):
-            raise ReconciliationError(f"unowned Rust export cannot be attributed to KMIPKIT-0048: {package_id}:{export_name}")
         typed_routes.append(observed)
 
     for observed in named_routes:
@@ -232,16 +233,23 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
     return result
 
 
-def _is_typed_attribute_route(export_name: str) -> bool:
+def _is_typed_attribute_route(package_id: str, export_name: str) -> bool:
     """Accept only public paths whose visible owner is the 0048 attribute API."""
-    return any(token in export_name for token in (
-        "::attribute::",
-        "::Attribute",
-        "::CurrentAttribute",
-        "::NewAttribute",
-        "::UniqueIdentifierValue",
-        "::UniqueIdentifierView",
-    )) or export_name.endswith("::attribute")
+    prefix = {
+        "rust-kmipkit": "kmipkit::protocol::",
+        "rust-kmipkit-protocol": "kmipkit_protocol::",
+    }.get(package_id)
+    owner = export_name.removeprefix("<").split(" as ", 1)[0]
+    if prefix is None or not owner.startswith(prefix):
+        return False
+    relative_owner = owner.removeprefix(prefix).split("<", 1)[0]
+    if relative_owner == "attribute" or relative_owner.startswith("attribute::"):
+        return True
+    return relative_owner.split("::", 1)[0] in {
+        "Attribute", "AttributeDefinition", "AttributeSet", "AttributeValueError",
+        "AttributeView", "CurrentAttribute", "NewAttribute",
+        "UniqueIdentifierValue", "UniqueIdentifierView",
+    }
 
 
 def _typed_requirement_ids(export_name: str) -> list[str]:
