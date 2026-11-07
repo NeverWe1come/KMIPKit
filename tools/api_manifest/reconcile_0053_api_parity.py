@@ -3084,6 +3084,42 @@ def apply_declaration_corrections(
                 correction["toCapabilityId"],
             )
             continue
+        current_mappings = declaration.get("languageMappings")
+        source_mappings = source.get("languageMappings")
+        target_mappings = target.get("languageMappings")
+        partial_predecessor_correction = (
+            declaration.get("capabilityId") == target.get("capabilityId")
+            and declaration.get("requirementIds") == target.get("requirementIds")
+            and isinstance(current_mappings, dict)
+            and current_mappings.get("rust")
+            == {
+                "packageId": declaration["packageId"],
+                "name": declaration["exportName"],
+            }
+            and isinstance(source_mappings, dict)
+            and isinstance(target_mappings, dict)
+            and all(
+                current_mappings.get(language)
+                in (source_mappings.get(language), target_mappings.get(language))
+                for language in ("c", "java", "python")
+            )
+            and any(
+                current_mappings.get(language) != target_mappings.get(language)
+                for language in ("c", "java", "python")
+            )
+        )
+        if partial_predecessor_correction:
+            declaration["languageMappings"] = expected_language_mappings
+            declaration["parityEvidenceIds"] = sorted(
+                set(declaration.get("parityEvidenceIds", [])) | set(evidence)
+            )
+            _move_operation_declaration_reference(
+                operations,
+                declaration_id,
+                correction["fromCapabilityId"],
+                correction["toCapabilityId"],
+            )
+            continue
         for language in ("c", "java", "python"):
             if declaration["languageMappings"][language] != source["languageMappings"][language]:
                 raise ReconciliationError("declaration correction source mapping no longer matches")
