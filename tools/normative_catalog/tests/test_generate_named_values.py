@@ -128,6 +128,26 @@ class NamedValueGeneratorTests(unittest.TestCase):
             generate_named_values._c_string('Name"\\\n\té'),
         )
 
+    def test_c_renderer_uses_safe_literals_for_every_lookup_helper(self) -> None:
+        value = generate_named_values.NamedValue(
+            element_id="value-1",
+            name='Name"\\\n',
+            identifier="NAME",
+            value=1,
+            source_refs=(("KMIPKIT-SRC-spec", "11.1"),),
+        )
+        enumeration = generate_named_values.NamedGroup(
+            "enum-1", "Example Enum", "EXAMPLE_ENUM", (value,)
+        )
+        bitmask = generate_named_values.NamedGroup(
+            "mask-1", "Example Mask", "EXAMPLE_MASK", (value,)
+        )
+        outputs = generate_named_values._render_c(
+            generate_named_values.CatalogValues((enumeration,), (bitmask,))
+        )
+
+        self.assertEqual(3, outputs.count(r'"Name\042\134\012"'))
+
 
 if __name__ == "__main__":
     unittest.main()
