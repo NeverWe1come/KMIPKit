@@ -2005,6 +2005,98 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 manifest, [removal]
             )
 
+    def test_removes_only_exact_c_exclusions_superseded_by_ready_four_language_functions(self) -> None:
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/053-api-parity-facade/approval-record.md",
+            "status": "Approved",
+            "evidence": (
+                "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+            ),
+        }
+        rationale = (
+            "The manifest now classifies these exact symbols as ready four-language functions; "
+            "retaining their C-only exclusion duplicates the same C ABI export and fails "
+            "release-manifest validation."
+        )
+        evidence_paths = [
+            "specs/053-api-parity-facade/spec.md",
+            "specs/053-api-parity-facade/approval-record.md",
+            "specs/053-api-parity-facade/implementation-evidence.md",
+            "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+            "bindings/python/tests/test_client.py",
+        ]
+        routes = [
+            (
+                "client_batch_item_response_metadata_v1",
+                "kmipkit_client_batch_item_response_metadata_v1",
+                "This C-only metadata accessor fills the exact versioned batch-result carrier; the equivalent outcome, status, and reason values are exposed through the four-language batch result facade.",
+            ),
+            (
+                "transport_config_create_v1",
+                "kmipkit_transport_config_create_v1",
+                "This C-only constructor adapts the versioned transport ABI carrier into the transport configuration handle; the four-language facade exposes the equivalent builder and configuration values.",
+            ),
+        ]
+        old_approval = {
+            "kind": "feature-specification",
+            "path": "specs/057-multi-encoding-client-integration/spec.md",
+            "status": "Approved",
+            "evidence": (
+                "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; "
+                "requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+            ),
+        }
+        manifest = {"functions": [], "approvedExclusions": [], "publicDeclarations": []}
+        removals = []
+        for function_id, symbol, reason in routes:
+            manifest["functions"].append(
+                {
+                    "id": function_id,
+                    "requirementIds": ["KMIPKIT-0057-FR-005"],
+                    "rust": {"module": "kmipkit_client", "name": function_id},
+                    "c": {"symbol": symbol},
+                    "java": {"package": "org.kmipkit.extensions", "method": function_id},
+                    "python": {"module": "kmipkit.client", "function": function_id},
+                }
+            )
+            manifest["approvedExclusions"].append(
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": symbol,
+                    "reason": reason,
+                    "approvalSource": old_approval,
+                    "evidence": (
+                        "KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 inventory the exact C ABI. "
+                        "KMIPKIT-0057-FR-005 confirms the corresponding client and transport "
+                        "capabilities are represented by equivalent four-language facade values."
+                    ),
+                    "cFunction": {"symbol": symbol},
+                }
+            )
+            removals.append(
+                {
+                    "declarationId": function_id,
+                    "packageId": "c-kmipkit",
+                    "exportName": symbol,
+                    "supersedesSpecId": "KMIPKIT-0057",
+                    "approvalSource": approval,
+                    "supersessionRationale": rationale,
+                    "evidencePaths": evidence_paths,
+                }
+            )
+
+        result = reconcile_0053_api_parity.remove_approved_exclusions(manifest, removals)
+
+        self.assertEqual([], result["approvedExclusions"])
+        self.assertEqual(manifest["functions"], result["functions"])
+        self.assertEqual(
+            result,
+            reconcile_0053_api_parity.remove_approved_exclusions(result, removals),
+        )
+
     def test_removes_only_the_exact_0053_java_builder_cleanup_exclusion(self) -> None:
         export_name = "org.kmipkit.protocol.CryptographicParameters.Builder.close"
         reason = (
