@@ -96,7 +96,7 @@ Every PR review MUST check compliance with this constitution and record any
 approved exception. `AGENTS.md` provides operational guidance subordinate
 to this document.
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-11-07
+**Version**: 1.3.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-11-07
 
 ### Amendment 1.1.0 (2026-11-05)
 
@@ -114,3 +114,13 @@ Client-to-Server Set Endpoint Role (§6.1.54), and HTTPS server reception
 (Profiles §5.3.1) into the supported scope of KMIPKit under specification
 KMIPKIT-0066 and ADR-0021, providing full bidirectional KMIP 2.1 support and
 four-language client listener capabilities.
+
+### Amendment 1.3.0 (2026-11-07)
+
+The maintainer approved establishing a multi-version architecture in KMIPKit to
+support modern OASIS KMIP versions (KMIP 2.0, KMIP 2.1, and KMIP 3.0 Draft/Standard)
+under specification KMIPKIT-0069 and ADR-0022. The 1.0 default version remains
+KMIP 2.1 with strict zero-breakage guarantees. Legacy KMIP 1.x (1.0–1.4) is
+formally excluded from the client library while backwards test-server adapters
+are preserved. Pre-send version validation enforces strict catalog conformity
+without automated retries.

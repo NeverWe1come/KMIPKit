@@ -1953,7 +1953,8 @@ fn profile_maps_required_discover_versions_preference_order_for_single_supported
         .expect("the supported version list has a typed request evaluator");
     assert!(!evaluate(None, None));
 
-    let supported_versions = crate::DiscoverVersionsRequest::new().protocol_versions();
+    let request = crate::DiscoverVersionsRequest::new();
+    let supported_versions = request.protocol_versions();
     assert_eq!(supported_versions.len(), 1);
     assert_eq!(supported_versions[0].major(), 2);
     assert_eq!(supported_versions[0].minor(), 1);

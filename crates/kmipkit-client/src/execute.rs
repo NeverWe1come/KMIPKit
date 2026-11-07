@@ -1149,6 +1149,7 @@ pub struct ClientBatch {
     batch_error_continuation_values: Vec<u32>,
     asynchronous_indicator: Option<u32>,
     client_correlation_value: Option<String>,
+    protocol_version: Option<ProtocolVersion>,
 }
 
 impl ClientBatch {
@@ -1168,6 +1169,7 @@ impl ClientBatch {
             batch_error_continuation_values: Vec::new(),
             asynchronous_indicator: None,
             client_correlation_value: None,
+            protocol_version: None,
         }
     }
 
@@ -1181,7 +1183,27 @@ impl ClientBatch {
             batch_error_continuation_values: Vec::new(),
             asynchronous_indicator: None,
             client_correlation_value: None,
+            protocol_version: None,
         }
+    }
+
+    /// Sets the optional protocol version override for this batch.
+    #[must_use]
+    pub const fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.protocol_version = Some(version);
+        self
+    }
+
+    /// Forces the protocol version override for this batch (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub const fn force_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Returns this batch's protocol version override, or `None` to inherit the client default.
+    #[must_use]
+    pub const fn protocol_version(&self) -> Option<ProtocolVersion> {
+        self.protocol_version
     }
 
     /// Appends a typed request item in execution order.
@@ -1262,6 +1284,7 @@ impl fmt::Debug for ClientBatch {
                 "client_correlation_value",
                 &self.client_correlation_value.is_some(),
             )
+            .field("protocol_version", &self.protocol_version)
             .finish()
     }
 }
@@ -4110,7 +4133,7 @@ impl Client {
     // The approved API takes ownership of the caller's typed batch. It keeps
     // the execution lifetime local and avoids retaining request values after
     // the synchronous exchange completes.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute(
         &mut self,
         batch: ClientBatch,
@@ -4130,7 +4153,7 @@ impl Client {
     ///
     /// Returns a sanitized validation, protocol, or transport error with the
     /// strongest available request-delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_options(
         &mut self,
         batch: ClientBatch,
@@ -4165,7 +4188,7 @@ impl Client {
     /// Returns stable profile error IDs with `NotSent` for selection or
     /// outbound-rule failures, and preserves the exchange delivery state for
     /// response-rule failures.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles(
         &mut self,
         batch: ClientBatch,
@@ -4183,7 +4206,7 @@ impl Client {
     /// Returns the same profile, protocol, and transport failures as
     /// [`Self::execute_with_profiles`], preserving the strongest delivery
     /// evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_options(
         &mut self,
         batch: ClientBatch,
@@ -4211,7 +4234,7 @@ impl Client {
     ///
     /// Returns profile, protocol, or transport errors. Caller-state failures
     /// occur before transport I/O and redact object identifiers and values.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_context(
         &mut self,
         batch: ClientBatch,
@@ -4235,7 +4258,7 @@ impl Client {
     ///
     /// Returns the same failures as
     /// [`Self::execute_with_profiles_and_context`], preserving delivery state.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_context_and_options(
         &mut self,
         batch: ClientBatch,
@@ -4282,7 +4305,10 @@ impl Client {
                     ClientError::profile_validation(error, RequestDeliveryState::NotSent)
                 })?;
         }
-        let options = validate_batch(&batch).map_err(|error| {
+        let effective_version =
+            resolve_and_gate_version(&self.configuration, request_options, &batch)?;
+
+        let options = validate_batch(&batch, effective_version).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
                 RequestDeliveryState::NotSent,
@@ -4399,7 +4425,7 @@ impl Client {
     /// operation, missing or mismatched identifier, invalid cost, or cost
     /// above the locally available allocation. Otherwise returns the standard
     /// execution error with the strongest available delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_guarded_protection(
         &mut self,
         context: &mut UsageAllocationContext,
@@ -4423,7 +4449,7 @@ impl Client {
     /// operation, missing or mismatched identifier, invalid cost, or cost
     /// above the locally available allocation. Otherwise returns the standard
     /// execution error with the strongest available delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_guarded_protection_with_asynchronous_indicator(
         &mut self,
         context: &mut UsageAllocationContext,
@@ -6122,9 +6148,27 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientOperationOutcome, ClientError> {
-        let request_message =
-            build_async_request_message(operation, payload, asynchronous_indicator)
-                .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let effective_version = request_options
+            .protocol_version()
+            .unwrap_or_else(|| self.configuration.protocol_version());
+
+        kmipkit_protocol::VersionGate::validate_operation(effective_version, operation).map_err(
+            |error| {
+                ClientError::validation(
+                    ClientCauseCategory::InvalidInput,
+                    RequestDeliveryState::NotSent,
+                    error,
+                )
+            },
+        )?;
+
+        let request_message = build_async_request_message(
+            operation,
+            payload,
+            asynchronous_indicator,
+            effective_version,
+        )
+        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let (response, delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
         validate_async_response(
@@ -6135,6 +6179,7 @@ impl Client {
             expected_cancel_correlation,
             self.configuration.extension_registry(),
             limits,
+            effective_version,
         )
         .map_err(|error| protocol_failure_at(error, delivery_state))
     }
@@ -6327,13 +6372,49 @@ impl fmt::Display for BatchValidationError {
 
 impl Error for BatchValidationError {}
 
+fn resolve_and_gate_version(
+    configuration: &ClientConfiguration,
+    request_options: &RequestOptions,
+    batch: &ClientBatch,
+) -> Result<ProtocolVersion, ClientError> {
+    let effective_version = request_options
+        .protocol_version()
+        .or_else(|| batch.protocol_version())
+        .unwrap_or_else(|| configuration.protocol_version());
+
+    if !effective_version.is_catalogued() {
+        return Err(ClientError::validation(
+            ClientCauseCategory::InvalidInput,
+            RequestDeliveryState::NotSent,
+            kmipkit_protocol::VersionGateError::UnsupportedProtocolVersion(effective_version),
+        ));
+    }
+
+    for item in &batch.items {
+        kmipkit_protocol::VersionGate::validate_operation(
+            effective_version,
+            item.request.operation(),
+        )
+        .map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+    }
+
+    Ok(effective_version)
+}
+
 pub(super) fn validate_batch(
     batch: &ClientBatch,
+    effective_version: ProtocolVersion,
 ) -> Result<ValidatedBatchOptions, BatchValidationError> {
     if batch.items.is_empty() {
         return Err(BatchValidationError::EmptyBatch);
     }
-    let options = validate_batch_options(batch)?;
+    let options = validate_batch_options(batch, effective_version)?;
 
     let mut identifiers = HashSet::new();
     for item in &batch.items {
@@ -6561,10 +6642,12 @@ fn vendor_attribute_item_is_prohibited(item: &Item, mutation: ClientAttributeMut
 pub(super) struct ValidatedBatchOptions {
     asynchronous_indicator: Option<u32>,
     batch_error_continuation: BatchErrorContinuation,
+    protocol_version: ProtocolVersion,
 }
 
 fn validate_batch_options(
     batch: &ClientBatch,
+    effective_version: ProtocolVersion,
 ) -> Result<ValidatedBatchOptions, BatchValidationError> {
     let asynchronous_indicator = validate_asynchronous_indicator(batch.asynchronous_indicator)
         .map_err(|()| BatchValidationError::InvalidAsynchronousIndicator)?;
@@ -6575,6 +6658,7 @@ fn validate_batch_options(
     Ok(ValidatedBatchOptions {
         asynchronous_indicator,
         batch_error_continuation,
+        protocol_version: effective_version,
     })
 }
 
@@ -6689,12 +6773,12 @@ fn build_request_header(
     push(
         &mut version_fields,
         PROTOCOL_VERSION_MAJOR,
-        Value::integer(2),
+        Value::integer(options.protocol_version.major()),
     )?;
     push(
         &mut version_fields,
         PROTOCOL_VERSION_MINOR,
-        Value::integer(1),
+        Value::integer(options.protocol_version.minor()),
     )?;
 
     let mut header = Structure::new();
@@ -6817,10 +6901,17 @@ fn build_async_request_message(
     operation: u32,
     payload: Structure,
     asynchronous_indicator: Option<u32>,
+    protocol_version: ProtocolVersion,
 ) -> Result<RequestMessage, ProtocolError> {
     let version_fields = structure([
-        (PROTOCOL_VERSION_MAJOR, Value::integer(2)),
-        (PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        (
+            PROTOCOL_VERSION_MAJOR,
+            Value::integer(protocol_version.major()),
+        ),
+        (
+            PROTOCOL_VERSION_MINOR,
+            Value::integer(protocol_version.minor()),
+        ),
     ])?;
     let mut header = Structure::new();
     push(
@@ -6890,7 +6981,7 @@ fn model_protocol_error(error: ModelError) -> ProtocolError {
 }
 
 pub(super) fn protocol_version_is_supported(version: ProtocolVersion) -> bool {
-    version.major() == 2 && version.minor() == 1
+    version.is_catalogued()
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -7036,7 +7127,7 @@ pub(super) fn validate_unknown_extension(critical: bool) -> Result<(), OutcomeVa
 
 // Consuming the validated response makes this the single lifetime boundary
 // for the owned, decoded response tree on both success and error paths.
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_response(
     request_identities: &[BatchIdentity],
     options: &ValidatedBatchOptions,
@@ -7073,7 +7164,8 @@ fn validate_response_inner(
     limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<ClientBatchResponse, ProtocolError> {
-    if !protocol_version_is_supported(response.header().protocol_version()) {
+    let resp_ver = response.header().protocol_version();
+    if !protocol_version_is_supported(resp_ver) || resp_ver != options.protocol_version {
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
 
@@ -7938,7 +8030,7 @@ fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
         })
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_async_response(
     response: ResponseMessage,
     operation: u32,
@@ -7947,8 +8039,10 @@ fn validate_async_response(
     expected_cancel_correlation: Option<&[u8]>,
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
+    expected_version: ProtocolVersion,
 ) -> Result<ClientOperationOutcome, ProtocolError> {
-    if !protocol_version_is_supported(response.header().protocol_version()) {
+    let resp_ver = response.header().protocol_version();
+    if !protocol_version_is_supported(resp_ver) || resp_ver != expected_version {
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
 
@@ -8390,7 +8484,8 @@ pub(super) fn decode_request_message_for_test(
     request: ClientBatch,
     limits: &CodecLimits,
 ) -> Result<RequestMessage, ProtocolError> {
-    let options = validate_batch_options(&request).map_err(|error| {
+    let effective_version = request.protocol_version().unwrap_or(ProtocolVersion::V2_1);
+    let options = validate_batch_options(&request, effective_version).map_err(|error| {
         ProtocolError::new(
             ProtocolErrorKind::InvalidValue,
             ProtocolCauseCategory::InvalidValue,

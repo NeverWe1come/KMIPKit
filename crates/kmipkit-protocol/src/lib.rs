@@ -92,6 +92,9 @@ mod sign;
 mod signature_verify;
 mod ticket;
 mod validate;
+mod version_codec;
+mod version_gate;
+mod version_span;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -206,6 +209,13 @@ pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
+pub use version_codec::{CodecContext, VersionedCodec};
+pub use version_gate::{VersionGate, VersionGateError};
+pub use version_span::VersionSpan;
+
+#[cfg(test)]
+#[path = "../tests/unit/version_foundation_tests.rs"]
+mod version_foundation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]

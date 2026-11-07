@@ -731,9 +731,29 @@ pub struct RequestOptions {
     read: Option<TimeoutLimit>,
     total: Option<TimeoutLimit>,
     wire_encoding: Option<WireEncoding>,
+    protocol_version: Option<kmipkit_protocol::ProtocolVersion>,
 }
 
 impl RequestOptions {
+    /// Selects the protocol version override for this request.
+    #[must_use]
+    pub const fn with_protocol_version(mut self, value: kmipkit_protocol::ProtocolVersion) -> Self {
+        self.protocol_version = Some(value);
+        self
+    }
+
+    /// Forces the protocol version override for this request (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub const fn force_kmip_version(self, value: kmipkit_protocol::ProtocolVersion) -> Self {
+        self.with_protocol_version(value)
+    }
+
+    /// Returns this call's protocol version override, or `None` to inherit client defaults.
+    #[must_use]
+    pub const fn protocol_version(&self) -> Option<kmipkit_protocol::ProtocolVersion> {
+        self.protocol_version
+    }
+
     /// Selects the encoding for one request and its response.
     #[must_use]
     pub const fn with_wire_encoding(mut self, value: WireEncoding) -> Self {
