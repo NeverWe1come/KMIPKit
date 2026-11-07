@@ -362,7 +362,7 @@ fn revoke_rejects_prohibited_date_before_transport_exchange() {
             &CodecLimits::defaults(),
         )
         .expect_err("§6.1.44 prohibits compromise date for an unrelated reason");
-    assert_eq!(error.category(), ClientErrorCategory::Protocol);
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 0);
 }

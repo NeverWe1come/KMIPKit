@@ -8,7 +8,8 @@ use kmipkit_ttlv::{Structure, StructureView, Value};
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    RequestPayloadSchema, ResponseBatchItemView, ResultMessage, ResultValidationError,
+    UniqueIdentifier, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0013;
@@ -133,12 +134,7 @@ impl RevokeRequest {
     /// supplied for a reason other than Key Compromise or CA Compromise, or
     /// when the resulting TTLV model cannot be represented.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if self.compromise_occurrence_date.is_some()
-            && !matches!(
-                self.revocation_reason.raw(),
-                KEY_COMPROMISE_REASON | CA_COMPROMISE_REASON
-            )
-        {
+        if !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -168,6 +164,34 @@ impl RevokeRequest {
             )?;
         }
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if self.compromise_occurrence_date.is_some()
+            && !matches!(
+                self.revocation_reason.raw(),
+                KEY_COMPROMISE_REASON | CA_COMPROMISE_REASON
+            )
+        {
+            crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Compromise Occurrence Date",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.44, Table 295",
+                },
+            )
+        } else {
+            ValidationReport::default()
+        }
+    }
+}
+
+impl ValidateKmipRequest for RevokeRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Revoke;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

@@ -80,6 +80,11 @@ pub struct JoinSplitKeyRequest {
     protection_storage_masks: Option<Structure>,
 }
 
+pub(crate) enum JoinSplitKeyValidationFailure {
+    Attributes,
+    References,
+}
+
 impl JoinSplitKeyRequest {
     /// Creates a request with an explicit Object Type and ordered references.
     #[must_use]
@@ -144,6 +149,27 @@ impl JoinSplitKeyRequest {
         self.protection_storage_masks.as_ref()
     }
 
+    pub(crate) fn validate_request_shape(&self) -> Result<(), JoinSplitKeyValidationFailure> {
+        if self.attributes.as_ref().is_some_and(|attributes| {
+            crate::attribute::validate_single_instance_attribute_items(
+                attributes.as_items(),
+                Some(self.object_type.raw()),
+                true,
+            )
+            .is_err()
+        }) {
+            return Err(JoinSplitKeyValidationFailure::Attributes);
+        }
+
+        let maximum_threshold = validate_references(&self.references)
+            .map_err(|_| JoinSplitKeyValidationFailure::References)?;
+        let entry_count = self.references.len();
+        if usize::try_from(maximum_threshold).map_or(true, |required| entry_count < required) {
+            return Err(JoinSplitKeyValidationFailure::References);
+        }
+        Ok(())
+    }
+
     /// Encodes Table 244 fields, preserving identifier order and repetitions.
     ///
     /// The caller-known Split Key Threshold for each reference is used only
@@ -157,20 +183,8 @@ impl JoinSplitKeyRequest {
     /// threshold context, insufficient identifier count, or a TTLV model
     /// limit.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if let Some(attributes) = self.attributes.as_ref() {
-            crate::attribute::validate_single_instance_attribute_items(
-                attributes.as_items(),
-                Some(self.object_type.raw()),
-                true,
-            )
+        self.validate_request_shape()
             .map_err(|_| common::request_error())?;
-        }
-
-        let maximum_threshold = validate_references(&self.references)?;
-        let entry_count = self.references.len();
-        if usize::try_from(maximum_threshold).map_or(true, |required| entry_count < required) {
-            return Err(common::request_error());
-        }
 
         let mut payload = Structure::new();
         common::push(

@@ -592,7 +592,7 @@ fn import_accepts_non_key_objects_and_rejects_non_structure_and_invalid_wrap_sta
     let secret_data = item(secret_data_tag, Value::structure(structure([])));
     let request = ImportRequest::new(
         UniqueIdentifier::Integer(-5),
-        ObjectType::from_raw(8),
+        ObjectType::from_raw(7),
         attributes(),
         secret_data,
     )
@@ -603,7 +603,7 @@ fn import_accepts_non_key_objects_and_rejects_non_structure_and_invalid_wrap_sta
 
     let non_key_with_wrap_type = ImportRequest::new(
         UniqueIdentifier::TextString("secret".to_owned()),
-        ObjectType::from_raw(8),
+        ObjectType::from_raw(7),
         attributes(),
         item(secret_data_tag, Value::structure(structure([]))),
     )
@@ -612,7 +612,7 @@ fn import_accepts_non_key_objects_and_rejects_non_structure_and_invalid_wrap_sta
 
     let primitive_object = ImportRequest::new(
         UniqueIdentifier::TextString("bad-object".to_owned()),
-        ObjectType::from_raw(8),
+        ObjectType::from_raw(7),
         attributes(),
         item(secret_data_tag, Value::integer(9)),
     );

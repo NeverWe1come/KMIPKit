@@ -502,4 +502,3 @@ bool kmip_run_recipe_with_teardown(
 
     return target_ok && teardown_ok;
 }
-

@@ -26,6 +26,14 @@ pub struct Pkcs11Request {
     input: Option<Structure>,
     extensions: Vec<Item>,
 }
+
+pub(crate) enum Pkcs11RequestValidationFailure {
+    Interface,
+    Function,
+    InputParameters,
+    ExtensionCollision,
+}
+
 impl Pkcs11Request {
     /// Creates a request with a caller-selected required Function Structure.
     #[must_use]
@@ -62,11 +70,43 @@ impl Pkcs11Request {
         self.extensions.push(extension);
         self
     }
+
+    pub(crate) fn validate_request_shape(&self) -> Result<(), Pkcs11RequestValidationFailure> {
+        if !valid_required_value(&self.function.view(), FUNCTION, true) {
+            return Err(Pkcs11RequestValidationFailure::Function);
+        }
+        if self
+            .interface
+            .as_ref()
+            .is_some_and(|interface| !valid_optional_value(&interface.view(), INTERFACE, true))
+        {
+            return Err(Pkcs11RequestValidationFailure::Interface);
+        }
+        if self
+            .input
+            .as_ref()
+            .is_some_and(|input| !valid_optional_value(&input.view(), INPUT, false))
+        {
+            return Err(Pkcs11RequestValidationFailure::InputParameters);
+        }
+        if self.extensions.iter().any(|extension| {
+            matches!(
+                extension.tag().raw(),
+                INTERFACE | FUNCTION | CORRELATION | INPUT
+            )
+        }) {
+            return Err(Pkcs11RequestValidationFailure::ExtensionCollision);
+        }
+        Ok(())
+    }
+
     /// Consumes the request into Table 273 order and validates known fields.
     ///
     /// # Errors
     /// Returns a sanitized error for malformed fields or TTLV resource limits.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        self.validate_request_shape()
+            .map_err(|_| invalid_request())?;
         let mut payload = Structure::new();
         if let Some(interface) = self.interface {
             common::push(&mut payload, INTERFACE, Value::structure(interface))?;
@@ -81,7 +121,6 @@ impl Pkcs11Request {
         for extension in self.extensions {
             payload.try_push(extension).map_err(|_| invalid_request())?;
         }
-        validate_payload(&payload.view(), false).map_err(|_| invalid_request())?;
         Ok(payload)
     }
 }

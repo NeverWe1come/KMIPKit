@@ -6,8 +6,10 @@ use std::fmt;
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::{
-    AttributeSet, KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    AttributeSet, AttributeSetError, KmipOperationResult, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef,
 };
 
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
@@ -137,25 +139,14 @@ impl CreateKeyPairRequest {
     /// attributes, an inconsistent Table 191 value, or a generic TTLV model
     /// constraint failure.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        for attributes in [
-            self.common_attributes.as_ref(),
-            self.private_key_attributes.as_ref(),
-            self.public_key_attributes.as_ref(),
-        ]
-        .into_iter()
-        .flatten()
-        {
-            attributes
-                .validate_single_instance_cardinality()
-                .map_err(|error| {
-                    ProtocolError::new(
-                        ProtocolErrorKind::InvalidValue,
-                        ProtocolCauseCategory::InvalidValue,
-                        error,
-                    )
-                })?;
-        }
-
+        self.validate_single_instance_attributes()
+            .map_err(|error| {
+                ProtocolError::new(
+                    ProtocolErrorKind::InvalidValue,
+                    ProtocolCauseCategory::InvalidValue,
+                    error,
+                )
+            })?;
         validate_table_191(
             self.common_attributes.as_ref(),
             self.private_key_attributes.as_ref(),
@@ -197,6 +188,58 @@ impl CreateKeyPairRequest {
             self.public_protection_storage_masks,
         )?;
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if self.validate_single_instance_attributes().is_err() {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§4, Table 46",
+                },
+            );
+        }
+        if validate_table_191(
+            self.common_attributes.as_ref(),
+            self.private_key_attributes.as_ref(),
+            self.public_key_attributes.as_ref(),
+        )
+        .is_err()
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.9, Table 189 and Table 191",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+
+    fn validate_single_instance_attributes(&self) -> Result<(), AttributeSetError> {
+        for attributes in [
+            self.common_attributes.as_ref(),
+            self.private_key_attributes.as_ref(),
+            self.public_key_attributes.as_ref(),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            attributes.validate_single_instance_cardinality()?;
+        }
+        Ok(())
+    }
+}
+
+impl ValidateKmipRequest for CreateKeyPairRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::CreateKeyPair;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

@@ -8,8 +8,9 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     AttributeSet, KmipOperationResult, ManagedObject, ObjectType, ProtocolCauseCategory,
-    ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage, ResultValidationError,
-    UniqueIdentifier,
+    ProtocolError, ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0003;
@@ -133,6 +134,10 @@ impl RegisterRequest {
             .attributes
             .validate_single_instance_cardinality_for_object_type(self.object_type.raw())
             .is_err()
+            || !crate::managed_object::object_tag_matches_type(
+                self.object_type,
+                self.object.tag().raw(),
+            )
             || crate::attribute::validate_key_value_attribute_cardinality(
                 &self.object,
                 Some(self.object_type.raw()),
@@ -151,6 +156,34 @@ impl RegisterRequest {
         }
 
         Ok(())
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        if !crate::managed_object::object_tag_matches_type(
+            self.object_type,
+            self.object.tag().raw(),
+        ) || !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
+        {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-R140",
+                "Any Object",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.43, Table 291",
+                },
+            );
+        }
+        if self.validate_local_shape().is_err() {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Any Object",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.43, Tables 291 and 293",
+                },
+            );
+        }
+        ValidationReport::default()
     }
 
     /// Builds the ordered Request Payload from §6.1.43, Table 291.
@@ -184,6 +217,14 @@ impl RegisterRequest {
             )?;
         }
         Ok(payload)
+    }
+}
+
+impl ValidateKmipRequest for RegisterRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Register;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

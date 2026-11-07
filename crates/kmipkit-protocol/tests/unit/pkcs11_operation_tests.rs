@@ -2,7 +2,9 @@
 //! §§7.26–7.30 Tables 378–382; KMIPKIT-ELEM-OP-C2S-PKCS-11.
 //! No official PKCS#11 fixture or profile-conformance claim is implied.
 use crate::async_operation_fixtures::{item, response_message, structure};
-use crate::{Pkcs11Error, Pkcs11Request, Pkcs11Response, ResultReason, SecretBytes};
+use crate::{
+    Pkcs11Error, Pkcs11Request, Pkcs11Response, ResultReason, SecretBytes, ValidateKmipRequest,
+};
 use kmipkit_ttlv::{Structure, Value, ValueView};
 const OP: u32 = 0x33;
 const INTERFACE: u32 = 0x0042_0159;
@@ -110,6 +112,62 @@ fn table_273_rejects_missing_duplicate_or_wrong_function() {
         let error = Pkcs11Request::new(f).into_ttlv_payload().unwrap_err();
         assert!(!format!("{error:?} {error}").contains("pkcs11-secret-sentinel"));
     }
+}
+
+#[test]
+fn table_273_request_validation_reports_function_shape_without_payload_values() {
+    let request = Pkcs11Request::new(function(Value::text_string(
+        "pkcs11-secret-sentinel".into(),
+    )));
+
+    let report = request.validate();
+
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].path().to_string(),
+        "Request Payload.PKCS#11 Function"
+    );
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.37, Table 273; §7.26, Table 378"
+    );
+    assert!(!format!("{report:?}").contains("pkcs11-secret-sentinel"));
+}
+
+#[test]
+fn table_273_request_validation_reports_invalid_optional_structure_and_collision() {
+    let interface = Pkcs11Request::new(function(Value::enumeration(1))).with_interface(structure(
+        [item(INTERFACE, Value::byte_string(SENTINEL.to_vec()))],
+    ));
+    let report = interface.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.37, Table 273; §7.28, Table 380"
+    );
+
+    let input =
+        Pkcs11Request::new(function(Value::enumeration(1))).with_input_parameters(structure([
+            item(INPUT, Value::text_string("opaque input".into())),
+        ]));
+    let report = input.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.37, Table 273; §7.27, Table 379"
+    );
+
+    let collision = Pkcs11Request::new(function(Value::enumeration(1))).with_extension(item(
+        FUNCTION,
+        Value::structure(function(Value::enumeration(2))),
+    ));
+    let report = collision.validate();
+    assert!(!report.is_valid());
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "KMIP v2.1 §6.1.37, Table 273"
+    );
+    assert!(!format!("{report:?}").contains("pkcs11-secret-sentinel"));
 }
 #[test]
 fn table_274_success_retains_required_optional_and_unknown_fields() {

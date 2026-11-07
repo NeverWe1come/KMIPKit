@@ -10,7 +10,7 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
-RUST_REPORT_PATH = REPO_ROOT / "specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json"
+RUST_REPORT_PATH = REPO_ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",
@@ -82,7 +82,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json"
+            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -119,10 +119,10 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 22655)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 23585)
         self.assertEqual(inventory["mappedRustDeclarationCount"], 3697)
-        self.assertEqual(rust_counts["observed"], 22655)
-        self.assertEqual(rust_counts["matched"], 6825)
+        self.assertEqual(rust_counts["observed"], 23585)
+        self.assertEqual(rust_counts["matched"], 7755)
         self.assertEqual(rust_counts["excluded"], 15830)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(

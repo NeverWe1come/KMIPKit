@@ -56,11 +56,12 @@ fn object() -> Item {
     // KMIP Specification v2.1 §3.1/Table 12 represents wrapped Key Value as
     // opaque bytes; the separate Key Wrapping Data describes the wrapper.
     let key_block = test_structure([
+        test_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
         test_item(
-            0x0042_0045,
+            KEY_VALUE,
             Value::byte_string(b"synthetic-wrapped-import-object".to_vec()),
         ),
-        test_item(0x0042_0046, Value::structure(wrapping_data)),
+        test_item(KEY_WRAPPING_DATA, Value::structure(wrapping_data)),
     ]);
     test_item(
         0x0042_008F,

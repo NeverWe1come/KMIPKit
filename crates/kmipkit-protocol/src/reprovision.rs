@@ -7,8 +7,9 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
-    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    KmipOperationResult, NestedStructureSchema, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationPath, ValidationReport,
 };
 
 const OPERATION: u32 = 0x0000_0035;
@@ -73,6 +74,33 @@ impl ReProvisionRequest {
 impl Default for ReProvisionRequest {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl ValidateKmipRequest for ReProvisionRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::ReProvision;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if let Some(certificate_request) = &self.certificate_request {
+            report.append(crate::validation::validate_nested_structure_with_prefix(
+                &certificate_request.view(),
+                NestedStructureSchema::CertificateRequest,
+                &ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Certificate Request"),
+            ));
+        }
+        if let Some(certificate) = &self.certificate {
+            report.append(crate::validation::validate_nested_structure_with_prefix(
+                &certificate.view(),
+                NestedStructureSchema::Certificate,
+                &ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Certificate"),
+            ));
+        }
+        report
     }
 }
 
