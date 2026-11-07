@@ -72,7 +72,9 @@ mod oci_tests {
                 let path = parts[1];
 
                 let body = if path.contains("secretbundles") {
-                    format!(r#"{{"secretId":"test-secret","secretBundleContent":{{"contentType":"BASE64","content":"{wrapped_b64}"}}}}"#)
+                    format!(
+                        r#"{{"secretId":"test-secret","secretBundleContent":{{"contentType":"BASE64","content":"{wrapped_b64}"}}}}"#
+                    )
                 } else if path.contains("/actions/sign") {
                     r#"{"signature":"ZHVtbXlfc2lnbmF0dXJl"}"#.to_string()
                 } else if path.contains("/actions/decrypt") {

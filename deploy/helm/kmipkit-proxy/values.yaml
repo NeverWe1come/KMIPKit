@@ -1,0 +1,40 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/neverwe1come/kmipkit-proxy
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+service:
+  type: ClusterIP
+  port: 5696
+  targetPort: 5696
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+config:
+  provider: oci
+  listener:
+    bindAddr: "0.0.0.0:5696"
+    tlsCertPath: "/etc/kmipkit/certs/tls.crt"
+    tlsKeyPath: "/etc/kmipkit/certs/tls.key"
+    clientCaPath: "/etc/kmipkit/certs/ca.crt"
+  limits:
+    maxMessageBytes: 16777216
+    maxDepth: 64
+    maxItems: 100000
+  cache:
+    ttlSecs: 300
+    maxCapacity: 10000
