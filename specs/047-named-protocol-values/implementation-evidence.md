@@ -119,6 +119,15 @@ The following checks passed on the feature worktree:
   The C consumer compiled with WSL GCC using `-std=c11 -Wall -Wextra -Werror`
   and executed successfully against the regenerated header. The C export
   audit matched 1,701/1,701 declarations with no issues.
+- Linux verification in WSL `Ubuntu-26.04`: `cargo fmt --all --check`,
+  `cargo clippy --offline --workspace --all-targets --all-features -- -D warnings`,
+  and `cargo test --offline --workspace --all-features` all passed.
+  The full workspace test run included the trybuild compile-fail suites and
+  doc tests. `PYTHONPATH=scripts/tests PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest test_coverage_gate test_multilanguage_coverage test_workflow -q` passed all 191 tests without skips. The named-value
+  generator check also passed in WSL after setting `GIT_DIR`, `GIT_COMMON_DIR`,
+  and `GIT_WORK_TREE` explicitly to bridge the Windows-format linked-worktree
+  `.git` pointer.
+  The Linux C11 named-value consumer compiled and ran with GCC 15.2.
 - `python -B tools/normative_catalog/reconcile_named_value_manifest.py --check --repo-root .`.
 - `python -B tools/normative_catalog/generate_named_values.py --check --repo-root .`.
 - `python -B tools/api_manifest/audit_binding_exports.py --c-only --repo-root .`:
@@ -138,16 +147,19 @@ Java, and Python, with the rationale and consumer tests recorded in
 `docs/development/testing.md`; the C header contains inline lookup code and is
 therefore called out explicitly even though C headers are outside the raw
 aggregate coverage inputs. Coverage thresholds are not weakened. The local
-Windows LLVM run is evidence only and does not replace the aggregate
-platform and adapter coverage gate. The aggregate command was not run because
-Ubuntu and macOS reports are not available in this local Windows worktree;
-remote CI was not queried under the maintainer's instruction to ignore it
-during the GitHub billing issue. Cross-platform reports and full adapter
-aggregate coverage remain pending. The recorded Windows checks pass, but T007
-remains open until the required cross-platform aggregate coverage and hosted
-platform controls are available and their results are recorded.
+Windows LLVM run and the Linux workspace tests are evidence only and do not
+replace the aggregate platform and adapter coverage gate. No aggregate
+coverage artifact combining all required platform and language reports has
+been produced; macOS and the hosted platform controls are unavailable in this
+local Windows/WSL environment. Remote CI was not queried under the maintainer's
+instruction to ignore it during the GitHub billing issue. The Linux API
+manifest `--check` attempt was stopped after nearly five minutes resolving
+files on the mounted Windows worktree; the same check passed on Windows. The
+Linux named-value generator check, Rust tests/lint/format, and C consumer did
+pass. Full adapter aggregate coverage and macOS/hosted reports remain pending,
+so T007 stays open.
 
-The earlier security scan for the 0047 range ending at `fe24d0dc55542745f769128825fad6f7fa984018` reported one low-likelihood generated-C string-injection finding (scan `ca8666d0-2c52-40b2-8ca8-1bcfb600284a`). The follow-up commits above encode all generated C names as fixed-width octal UTF-8 bytes and route every lookup form through the shared encoder. A follow-up security review of the fixed head is still required. This scoped review is not the independent human security review required before release.
+The earlier security scan for the 0047 range ending at `fe24d0dc55542745f769128825fad6f7fa984018` reported one low-likelihood generated-C string-injection finding (scan `ca8666d0-2c52-40b2-8ca8-1bcfb600284a`). The follow-up commits above encode all generated C names as fixed-width octal UTF-8 bytes and route every lookup form through the shared encoder. Follow-up scan `5ad47d76-3e64-48ee-9ad5-818c4a346567` reviewed the exact fix and CI/coverage changes, completed with no findings, and verified the previous candidate is fixed in the current head. This scoped review is not the independent human security review required before release.
 
 ## Integration status
 
