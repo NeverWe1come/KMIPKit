@@ -34,6 +34,7 @@ pub const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 pub const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025;
 pub const HASH_OPERATION: u32 = 0x0000_0027;
 pub const PING_OPERATION: u32 = 0x0000_003B;
+pub const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032;
 
 // Tag constants
 pub const TAG_REQUEST_MESSAGE: u32 = 0x0042_0078;
@@ -55,6 +56,7 @@ pub const TAG_REQUEST_PAYLOAD: u32 = 0x0042_0079;
 pub const TAG_RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 pub const TAG_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 pub const TAG_OBJECT_TYPE: u32 = 0x0042_0057;
+pub const TAG_ENDPOINT_ROLE: u32 = 0x0042_0151;
 pub const TAG_DATA: u32 = 0x0042_00C2;
 pub const TAG_DATA_LENGTH: u32 = 0x0042_00CD;
 pub const TAG_KEY_BLOCK: u32 = 0x0042_0040;
@@ -681,6 +683,14 @@ impl Dispatcher {
                     .map_err(|_| (REASON_GENERAL_FAILURE, "rng failed"))?;
 
                 Ok(vec![ttlv_item(TAG_DATA, Value::byte_string(bytes))])
+            }
+
+            SET_ENDPOINT_ROLE_OPERATION => {
+                let role = payload
+                    .and_then(|p| find_child(p, TAG_ENDPOINT_ROLE))
+                    .and_then(|item| extract_enumeration(&item))
+                    .unwrap_or(2); // 2 = Server
+                Ok(vec![ttlv_item(TAG_ENDPOINT_ROLE, Value::enumeration(role))])
             }
 
             QUERY_OPERATION | PING_OPERATION => Ok(Vec::new()),

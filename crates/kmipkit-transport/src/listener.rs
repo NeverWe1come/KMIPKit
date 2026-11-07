@@ -392,8 +392,10 @@ impl RawTlsListener {
             crate::config::TimeoutLimit::Bounded(d) => Some(d),
             crate::config::TimeoutLimit::Unbounded => None,
         };
-        let _ = socket.set_read_timeout(read_timeout);
-        let _ = socket.set_write_timeout(write_timeout);
+        let effective_read_timeout = timeout.or(read_timeout);
+        let effective_write_timeout = timeout.or(write_timeout);
+        let _ = socket.set_read_timeout(effective_read_timeout);
+        let _ = socket.set_write_timeout(effective_write_timeout);
 
         let server_conn =
             ServerConnection::new(Arc::clone(self.config.server_config())).map_err(|err| {
@@ -404,7 +406,39 @@ impl RawTlsListener {
                 )
             })?;
 
-        let stream = StreamOwned::new(server_conn, socket);
+        let mut stream = StreamOwned::new(server_conn, socket);
+        while stream.conn.is_handshaking() {
+            let (r, w) = stream.conn.complete_io(&mut stream.sock).map_err(|err| {
+                TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    err,
+                )
+            })?;
+            if r == 0 && w == 0 {
+                return Err(TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    io::Error::new(
+                        io::ErrorKind::UnexpectedEof,
+                        "TLS handshake closed prematurely",
+                    ),
+                ));
+            }
+        }
+        while stream.conn.wants_write() {
+            let (_, w) = stream.conn.complete_io(&mut stream.sock).map_err(|err| {
+                TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    err,
+                )
+            })?;
+            if w == 0 {
+                break;
+            }
+        }
+
         Ok(RawTlsServerConnection {
             stream: Some(stream),
             peer_addr,
@@ -608,7 +642,7 @@ impl HttpsListener {
     /// Returns [`TransportError`] if accepting the connection or TLS handshake fails.
     pub fn accept(
         &mut self,
-        _timeout: Option<Duration>,
+        timeout: Option<Duration>,
     ) -> Result<HttpsServerConnection, TransportError> {
         let (socket, peer_addr) = self.listener.accept().map_err(|err| {
             TransportError::new(
@@ -626,8 +660,10 @@ impl HttpsListener {
             crate::config::TimeoutLimit::Bounded(d) => Some(d),
             crate::config::TimeoutLimit::Unbounded => None,
         };
-        let _ = socket.set_read_timeout(read_timeout);
-        let _ = socket.set_write_timeout(write_timeout);
+        let effective_read_timeout = timeout.or(read_timeout);
+        let effective_write_timeout = timeout.or(write_timeout);
+        let _ = socket.set_read_timeout(effective_read_timeout);
+        let _ = socket.set_write_timeout(effective_write_timeout);
 
         let server_conn =
             ServerConnection::new(Arc::clone(self.config.server_config())).map_err(|err| {
@@ -638,7 +674,39 @@ impl HttpsListener {
                 )
             })?;
 
-        let stream = StreamOwned::new(server_conn, socket);
+        let mut stream = StreamOwned::new(server_conn, socket);
+        while stream.conn.is_handshaking() {
+            let (r, w) = stream.conn.complete_io(&mut stream.sock).map_err(|err| {
+                TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    err,
+                )
+            })?;
+            if r == 0 && w == 0 {
+                return Err(TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    io::Error::new(
+                        io::ErrorKind::UnexpectedEof,
+                        "TLS handshake closed prematurely",
+                    ),
+                ));
+            }
+        }
+        while stream.conn.wants_write() {
+            let (_, w) = stream.conn.complete_io(&mut stream.sock).map_err(|err| {
+                TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    err,
+                )
+            })?;
+            if w == 0 {
+                break;
+            }
+        }
+
         Ok(HttpsServerConnection {
             stream: Some(stream),
             peer_addr,

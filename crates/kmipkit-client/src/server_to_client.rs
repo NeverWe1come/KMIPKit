@@ -157,22 +157,59 @@ pub struct IncomingServerBatch {
 }
 
 impl IncomingServerBatch {
-    /// Decodes an incoming request batch from TTLV bytes.
+    /// Decodes an incoming request batch from encoded bytes using the given wire encoding.
     ///
     /// # Errors
     ///
     /// Returns [`ClientError`] if decoding or validation fails.
-    pub(crate) fn from_ttlv_bytes(bytes: &[u8], limits: &CodecLimits) -> Result<Self, ClientError> {
-        let item = decode_with_limits(bytes, limits).map_err(|err| {
-            ClientError::protocol(
-                ProtocolError::new(
-                    ProtocolErrorKind::MalformedMessage,
-                    ProtocolCauseCategory::InvalidEncoding,
-                    std::io::Error::other(err.to_string()),
-                ),
-                RequestDeliveryState::PossiblySent,
-            )
-        })?;
+    #[allow(clippy::too_many_lines)]
+    pub(crate) fn from_encoded_bytes(
+        bytes: &[u8],
+        encoding: WireEncoding,
+        limits: &CodecLimits,
+    ) -> Result<Self, ClientError> {
+        let item = match encoding {
+            WireEncoding::Ttlv => decode_with_limits(bytes, limits).map_err(|err| {
+                ClientError::protocol(
+                    ProtocolError::new(
+                        ProtocolErrorKind::MalformedMessage,
+                        ProtocolCauseCategory::InvalidEncoding,
+                        std::io::Error::other(err.to_string()),
+                    ),
+                    RequestDeliveryState::PossiblySent,
+                )
+            })?,
+            WireEncoding::Json => crate::json_encoding::decode(bytes, limits).map_err(|err| {
+                ClientError::protocol(
+                    ProtocolError::new(
+                        ProtocolErrorKind::MalformedMessage,
+                        ProtocolCauseCategory::InvalidEncoding,
+                        err,
+                    ),
+                    RequestDeliveryState::PossiblySent,
+                )
+            })?,
+            WireEncoding::Xml => crate::xml_codec::decode(bytes, limits).map_err(|err| {
+                ClientError::protocol(
+                    ProtocolError::new(
+                        ProtocolErrorKind::MalformedMessage,
+                        ProtocolCauseCategory::InvalidEncoding,
+                        err,
+                    ),
+                    RequestDeliveryState::PossiblySent,
+                )
+            })?,
+            _ => {
+                return Err(ClientError::protocol(
+                    ProtocolError::new(
+                        ProtocolErrorKind::UnsupportedValue,
+                        ProtocolCauseCategory::InvalidEncoding,
+                        std::io::Error::other("unsupported wire encoding"),
+                    ),
+                    RequestDeliveryState::PossiblySent,
+                ));
+            }
+        };
 
         let structure = item
             .with_value(|value| match value {
@@ -254,6 +291,15 @@ impl IncomingServerBatch {
         }
 
         Ok(Self { message, items })
+    }
+
+    /// Decodes an incoming request batch from TTLV bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClientError`] if decoding or validation fails.
+    pub(crate) fn from_ttlv_bytes(bytes: &[u8], limits: &CodecLimits) -> Result<Self, ClientError> {
+        Self::from_encoded_bytes(bytes, WireEncoding::Ttlv, limits)
     }
 
     /// Returns the KMIP protocol version from the request header.
@@ -665,19 +711,14 @@ impl ClientListenerConnection {
                 let resp = conn
                     .recv_request(max_bytes, timeout)
                     .map_err(ClientError::transport)?;
-                IncomingServerBatch::from_ttlv_bytes(resp.as_bytes(), limits)
+                IncomingServerBatch::from_encoded_bytes(resp.as_bytes(), WireEncoding::Ttlv, limits)
             }
             ConnectionInner::Https(conn, encoding) => {
                 let (resp, enc) = conn
                     .recv_request(max_bytes, timeout)
                     .map_err(ClientError::transport)?;
                 *encoding = enc;
-                match enc {
-                    WireEncoding::Ttlv => {
-                        IncomingServerBatch::from_ttlv_bytes(resp.as_bytes(), limits)
-                    }
-                    _ => IncomingServerBatch::from_ttlv_bytes(resp.as_bytes(), limits),
-                }
+                IncomingServerBatch::from_encoded_bytes(resp.as_bytes(), enc, limits)
             }
         }
     }

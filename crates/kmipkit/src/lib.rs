@@ -164,11 +164,11 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
-    ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
-    ClientListener, ClientListenerConnection, ClientMessageExtension, ClientOperation,
-    ClientOperationOutcome, ClientRequest, IncomingServerBatch, PendingOutcome, RequestOptions,
-    RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload,
-    ServerRequestItemView, UsageAllocationContext, UsageAllocationContextError,
+    ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientListener,
+    ClientListenerConnection, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
+    ClientRequest, IncomingServerBatch, PendingOutcome, RequestOptions, RoleReversedSession,
+    ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload, ServerRequestItemView,
+    UsageAllocationContext, UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,
@@ -179,10 +179,10 @@ pub use kmipkit_protocol::{
     ProfileValidationContext, ProfileValidationError, ProfileValidationErrorCode,
     ProfileValidationResult, ProfileValidationSelection, ProtocolCauseCategory, ProtocolError,
     ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus,
-    ResultValidationError, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse,
-    RngSeedError, RngSeedRequest, RngSeedResponse, SecretBytes, SetConstraintsError,
-    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest,
-    SetDefaultsResponse, SetEndpointRoleError, SetEndpointRoleRequest, SetEndpointRoleResponse,
-    Ticket, TicketType, TicketValidationError, TicketValidationErrorKind,
+    ResultValidationError, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse, RngSeedError,
+    RngSeedRequest, RngSeedResponse, SecretBytes, SetConstraintsError, SetConstraintsRequest,
+    SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse,
+    SetEndpointRoleError, SetEndpointRoleRequest, SetEndpointRoleResponse, Ticket, TicketType,
+    TicketValidationError, TicketValidationErrorKind,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
