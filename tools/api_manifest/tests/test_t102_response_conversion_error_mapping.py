@@ -262,8 +262,26 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             and isinstance(type_record["c"].get("releaseFunction"), str)
         }
         generate._validate_ready_mapping_targets(
-            manifest["publicDeclarations"], package_languages, c_release_functions
+            manifest["publicDeclarations"], package_languages, c_release_functions,
+            exclusions=manifest["approvedExclusions"],
         )
+
+        metadata_exclusions = [
+            item for item in manifest["approvedExclusions"]
+            if item.get("packageId") == "c-kmipkit"
+            and item.get("cFunction", {}).get("symbol")
+            == "kmipkit_client_batch_item_response_metadata_v1"
+        ]
+        self.assertEqual(1, len(metadata_exclusions))
+        without_metadata_target = [
+            item for item in manifest["approvedExclusions"]
+            if item is not metadata_exclusions[0]
+        ]
+        with self.assertRaisesRegex(generate.ManifestError, "not an exact listed export"):
+            generate._validate_ready_mapping_targets(
+                manifest["publicDeclarations"], package_languages, c_release_functions,
+                exclusions=without_metadata_target,
+            )
 
         for language, mapping in EXPECTED_MAPPING.items():
             with self.subTest(language=language):
@@ -278,7 +296,8 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                     "normalized client protocol error mapping",
                 ):
                     generate._validate_ready_mapping_targets(
-                        mapped_manifest, package_languages, c_release_functions
+                        mapped_manifest, package_languages, c_release_functions,
+                        exclusions=manifest["approvedExclusions"],
                     )
 
 
