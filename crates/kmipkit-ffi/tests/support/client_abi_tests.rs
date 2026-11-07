@@ -1364,11 +1364,11 @@ fn successful_crypto_response_ttlv_cases() -> [SuccessfulCryptoResponseTtlvCase;
                 b"mac-verify-ttlv-success",
                 vec![
                     ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                    ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+                    ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
                     unknown.clone(),
                 ],
             ),
-            &[0x0042_0094, 0x0042_0128, 0x0054_0001],
+            &[0x0042_0094, 0x0042_009B, 0x0054_0001],
         ),
         (
             kmipkit_client_batch_item_response_sign_ttlv,
@@ -1402,12 +1402,12 @@ fn successful_crypto_response_ttlv_cases() -> [SuccessfulCryptoResponseTtlvCase;
                 b"signature-verify-ttlv-success",
                 vec![
                     ttlv_item(0x0042_0094, 0x07, b"response-id"),
-                    ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+                    ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
                     ttlv_item(0x0042_00c2, 0x08, b"recovered"),
                     unknown,
                 ],
             ),
-            &[0x0042_0094, 0x0042_0128, 0x0042_00c2, 0x0054_0001],
+            &[0x0042_0094, 0x0042_009B, 0x0042_00c2, 0x0054_0001],
         ),
     ]
 }
@@ -1842,7 +1842,7 @@ fn ffi_successful_mac_verify_response_getter_returns_typed_fields() {
         b"mac-verify-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+            ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],
     );
@@ -1944,7 +1944,7 @@ fn ffi_successful_signature_verify_response_getter_returns_typed_fields() {
         b"signature-verify-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_enumeration(0x0042_0128, 0xfedc_ba98),
+            ttlv_enumeration(0x0042_009B, 0xfedc_ba98),
             ttlv_item(0x0042_00c2, 0x08, b"recovered-response-data"),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],

@@ -41,7 +41,7 @@ const BATCH_ITEM: u32 = 0x0042_000F;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const HASH_DATA: u32 = 0x0042_00C2;
-const MAC_DATA: u32 = 0x0042_00C4;
+const MAC_DATA: u32 = 0x0042_00C6; // OASIS KMIP v2.1 §11.56, Table 487.
 const SIGNATURE_DATA: u32 = 0x0042_00C3;
 
 fn test_identifier() -> UniqueIdentifier {
@@ -178,7 +178,7 @@ impl OperationFixture {
                     UNIQUE_IDENTIFIER,
                     Value::text_string("mac-object".to_owned()),
                 ),
-                test_item(0x0042_0128, Value::enumeration(1)),
+                test_item(0x0042_009B, Value::enumeration(1)),
             ],
             SIGN => vec![test_item(
                 UNIQUE_IDENTIFIER,
@@ -189,7 +189,7 @@ impl OperationFixture {
                     UNIQUE_IDENTIFIER,
                     Value::text_string("sign-object".to_owned()),
                 ),
-                test_item(0x0042_0128, Value::enumeration(1)),
+                test_item(0x0042_009B, Value::enumeration(1)),
             ],
             _ => unreachable!("fixture only uses the five assigned operations"),
         };

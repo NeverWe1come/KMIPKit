@@ -5166,7 +5166,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                     0x0042_007C,
                     [
                         ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        ttlv_item(0x0042_00C4, 0x08, b"mac-response-data"),
+                        ttlv_item(0x0042_00C6, 0x08, b"mac-response-data"),
                         ttlv_item(0x0042_00D6, 0x08, &correlation),
                     ],
                 ),
@@ -5182,7 +5182,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                     0x0042_007C,
                     [
                         ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        enumeration(0x0042_0128, 1),
+                        enumeration(0x0042_009B, 1),
                         ttlv_item(0x0042_00D6, 0x08, &correlation),
                     ],
                 ),
@@ -5214,7 +5214,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                     0x0042_007C,
                     [
                         ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        enumeration(0x0042_0128, 1),
+                        enumeration(0x0042_009B, 1),
                         ttlv_item(0x0042_00C2, 0x08, b"recovered-response-data"),
                         ttlv_item(0x0042_00D6, 0x08, &correlation),
                     ],
@@ -5397,7 +5397,7 @@ fn mac_response_missing_unique_identifier() -> Vec<u8> {
     let payload = structure(
         0x0042_007C,
         [
-            ttlv_item(0x0042_00C4, 0x08, &[0x5a]),
+            ttlv_item(0x0042_00C6, 0x08, &[0x5a]),
             ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
         ],
     );
