@@ -4827,7 +4827,7 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42000d, 2, integer(1)));
         byte[] sentinel = "KMIPKit-response-sentinel".getBytes(StandardCharsets.US_ASCII);
         byte[] payload = structure(0x42007c,
-                item(0x4200c4, 8, new byte[] {0x5a}), item(0x540001, 8, sentinel));
+                item(0x4200c6, 8, new byte[] {0x5a}), item(0x540001, 8, sentinel));
         byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(35)),
                 item(0x420093, 8, uniqueBatchItemId(0)), item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);

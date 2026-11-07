@@ -25,7 +25,7 @@ use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequ
 
 const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 const SUCCESS: u32 = 0;
-const VALIDITY_INDICATOR: u32 = 0x0042_0128;
+const VALIDITY_INDICATOR: u32 = 0x0042_009B; // OASIS KMIP v2.1 §11.56, Table 487.
 const GENERIC_RESPONSE_TAG: u32 = 0x0042_00D6;
 const GENERIC_RESPONSE_BYTES: &[u8] = b"mac-verify-client-generic-ttlv";
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
