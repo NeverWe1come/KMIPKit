@@ -1,5 +1,6 @@
 //! Comprehensive unit tests for kmipkit-test-server modules.
 #![allow(
+    unknown_lints,
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
     clippy::must_use_candidate,
@@ -21,7 +22,6 @@
     clippy::unnecessary_wraps,
     clippy::vec_init_then_push,
     clippy::bool_to_int_with_if,
-    clippy::assert_is_empty,
     clippy::manual_let_else,
     clippy::single_match_else
 )]
@@ -543,8 +543,8 @@ fn dispatcher_all_operations_and_error_handling() {
         extract_text_field(&ckp_resp, TAG_PRIVATE_KEY_UNIQUE_IDENTIFIER).expect("private key id");
     let pub_id =
         extract_text_field(&ckp_resp, TAG_PUBLIC_KEY_UNIQUE_IDENTIFIER).expect("public key id");
-    assert!(!priv_id.is_empty());
-    assert!(!pub_id.is_empty());
+    assert_ne!(priv_id, "");
+    assert_ne!(pub_id, "");
 
     // 4. Register
     let mut reg_item = Structure::new();
@@ -697,7 +697,7 @@ fn dispatcher_all_operations_and_error_handling() {
             mac_tag_bytes = b.to_vec();
         }
     });
-    assert!(!mac_tag_bytes.is_empty());
+    assert_ne!(mac_tag_bytes.len(), 0);
 
     // MAC Verify
     let mut mac_verify_item = Structure::new();
@@ -1377,7 +1377,7 @@ fn test_json_store_locate_filters_and_edge_cases() {
         name: Some("NonExistent".into()),
         ..Default::default()
     };
-    assert!(store.locate(&f_none).is_empty());
+    assert_eq!(store.locate(&f_none).len(), 0);
 
     assert!(!store.delete("non-existent").unwrap());
     assert!(StoredObject::from_json_value(&serde_json::json!({"bad": 1})).is_none());
@@ -1422,7 +1422,7 @@ async fn test_server_handle_and_no_client_auth() {
         .await
         .expect("start server with no client auth");
     assert!(handle.port() > 0);
-    assert!(!handle.pki().server_cert_pem.is_empty());
+    assert_ne!(handle.pki().server_cert_pem, "");
     assert!(handle.store().get("non-existent").is_none());
 
     handle.shutdown().await.expect("shutdown cleanly");

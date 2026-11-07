@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 #![allow(
+    unknown_lints,
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
     clippy::must_use_candidate,
