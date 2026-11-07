@@ -39,3 +39,12 @@ Local verification on Windows x86_64-pc-windows-msvc:
 - `gradlew.bat test --rerun-tasks --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.pingQueryAndLogoutRoundTripThroughNativeJniOverDeterministicTls13Peer' --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.requestBuildersEncodeValuesAndOmissionsOverMtls'` (from `bindings/java`) — passed; both selected tests were rerun.
 
 Coverage thresholds and remote CI remain deferred under the maintainer's active instruction about GitHub billing. The local Windows run emitted non-fatal AWS-LC/MSVC feature-probe and missing-NASM warnings; test, lint, and Java builds completed successfully. This evidence does not claim cross-platform CI, formal conformance, certification, or interoperability with a KMIP server.
+
+## Stack synchronization — 2026-11-07
+
+The latest KMIPKIT-0051 head `929fc2c57` was merged into this branch by
+`9626dc3fb`. After synchronization, `cargo fmt --all --check`,
+`python -B tools/api_manifest/generate.py --check --repo-root .` (12 outputs),
+`python -B -m unittest tools.api_manifest.tests.test_reconcile_0052_response_navigation -v`
+(3 tests), and `git diff --check` passed. The inherited untracked
+`bindings/java/target/` and `bindings/python/uv.lock` artifacts were not staged.
