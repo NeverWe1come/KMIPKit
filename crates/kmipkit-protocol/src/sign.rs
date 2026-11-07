@@ -59,7 +59,7 @@ impl SignRequest {
         self
     }
 
-    /// Supplies request Data (§7.9).
+    /// Supplies request Data for a single-part or multipart operation (§7.9).
     #[must_use]
     pub fn with_data(mut self, value: OperationData) -> Self {
         self.data = Some(value);

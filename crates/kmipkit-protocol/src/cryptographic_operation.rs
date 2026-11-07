@@ -231,7 +231,13 @@ pub(crate) fn secret_value(bytes: SecretBytes) -> Value {
     bytes.into_ttlv_value()
 }
 
-/// Validates framing without deriving operation state or supplying later parts.
+/// Validates single-part input presence and multipart framing.
+///
+/// Multipart sequencing is defined in KMIP v2.1 §6.1 and Correlation Value reuse in §7.8. Hash
+/// §6.1.24, Table 235 marks Data as not required for multipart Hash, while §6.1 also states Data is
+/// required except when Init or Final Indicator is true. This helper preserves the existing
+/// request behavior; the project makes no conformance claim for an intermediate Hash request that
+/// omits Data while this source interpretation remains unresolved.
 pub(crate) fn validate_framing(
     has_input: bool,
     has_correlation: bool,
@@ -240,8 +246,10 @@ pub(crate) fn validate_framing(
 ) -> Result<(), ProtocolError> {
     let valid = match (init, final_part, has_correlation) {
         (None, None, false) => has_input,
-        (Some(true), _, false) => final_part == Some(true) || !has_input,
-        (Some(false), _, true) | (_, Some(true | false), true) | (None, None, true) => !has_input,
+        (Some(true), _, false)
+        | (Some(false), _, true)
+        | (_, Some(true | false), true)
+        | (None, None, true) => true,
         _ => false,
     };
     if valid { Ok(()) } else { Err(request_error()) }
@@ -429,14 +437,15 @@ pub(crate) fn validate_validity_indicator_shape(
     }
 }
 
-/// Validates whether an operation output is present for the request framing.
+/// Requires output for single-part operations while preserving optional
+/// operation output on multipart responses.
 pub(crate) fn validate_operation_output_shape(
     has_output: bool,
     context: CryptographicOperationResponseContext,
     operation: &'static str,
 ) -> Result<(), CryptographicOperationError> {
     let is_single_part = matches!(context, CryptographicOperationResponseContext::SinglePart);
-    if has_output == is_single_part {
+    if !is_single_part || has_output {
         Ok(())
     } else {
         Err(response_shape_error(operation))
