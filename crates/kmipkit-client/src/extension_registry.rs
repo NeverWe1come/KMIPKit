@@ -242,6 +242,7 @@ impl RegisteredExtensionValue {
 pub struct ClientConfiguration {
     extension_registry: Arc<ClientExtensionRegistry>,
     wire_encoding: crate::WireEncoding,
+    protocol_version: kmipkit_protocol::ProtocolVersion,
 }
 
 /// A registry-validated extension and its caller-selected request criticality.
@@ -310,6 +311,7 @@ impl ClientConfiguration {
         Self {
             extension_registry: Arc::new(extension_registry),
             wire_encoding: crate::WireEncoding::Ttlv,
+            protocol_version: kmipkit_protocol::ProtocolVersion::V2_1,
         }
     }
 
@@ -320,7 +322,30 @@ impl ClientConfiguration {
         Self {
             extension_registry,
             wire_encoding: crate::WireEncoding::Ttlv,
+            protocol_version: kmipkit_protocol::ProtocolVersion::V2_1,
         }
+    }
+
+    /// Sets the immutable default KMIP protocol version for this client.
+    ///
+    /// Defaults to KMIP 2.1 preserving zero-breakage 1.0 behavior.
+    /// A per-request or per-batch override takes precedence.
+    #[must_use]
+    pub const fn with_protocol_version(mut self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+        self.protocol_version = version;
+        self
+    }
+
+    /// Sets the immutable default KMIP protocol version for this client (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub const fn with_kmip_version(self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Returns the configured client protocol version.
+    #[must_use]
+    pub const fn protocol_version(&self) -> kmipkit_protocol::ProtocolVersion {
+        self.protocol_version
     }
 
     /// Sets the immutable default encoding for requests and their responses.
@@ -358,6 +383,7 @@ impl fmt::Debug for ClientConfiguration {
             .debug_struct("ClientConfiguration")
             .field("extension_registry", &self.extension_registry)
             .field("wire_encoding", &self.wire_encoding)
+            .field("protocol_version", &self.protocol_version)
             .finish()
     }
 }
