@@ -313,31 +313,12 @@ fn parse_protocol_version(
 
 fn tag(raw: u32) -> Result<Tag, ProtocolError> {
     RawTag::new(raw)
-        .map_err(|error| {
-            ProtocolError::new(
-                ProtocolErrorKind::InvalidValue,
-                ProtocolCauseCategory::InvalidValue,
-                error,
-            )
-        })?
-        .try_checked()
-        .map_err(|error| {
-            ProtocolError::new(
-                ProtocolErrorKind::InvalidValue,
-                ProtocolCauseCategory::InvalidValue,
-                error,
-            )
-        })
+        .and_then(|t| t.try_checked())
+        .map_err(model_error)
 }
 
 fn item(raw: u32, value: Value) -> Result<Item, ProtocolError> {
-    Item::new(tag(raw)?, value).map_err(|error| {
-        ProtocolError::new(
-            ProtocolErrorKind::InvalidValue,
-            ProtocolCauseCategory::InvalidValue,
-            error,
-        )
-    })
+    Item::new(tag(raw)?, value).map_err(model_error)
 }
 
 fn model_error(error: ModelError) -> ProtocolError {

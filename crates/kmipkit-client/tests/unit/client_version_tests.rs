@@ -95,6 +95,35 @@ fn test_version_gate_rejects_unsupported_operation_before_send() {
 }
 
 #[test]
+fn test_version_gate_rejects_async_uncatalogued_version() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let opt = RequestOptions::default().with_protocol_version(ProtocolVersion::from_raw(99, 99));
+    let err = client
+        .execute_poll_with_options(
+            kmipkit_protocol::PollRequest::new(b"corr"),
+            &CodecLimits::defaults(),
+            &opt,
+        )
+        .expect_err("Uncatalogued version rejected in async");
+
+    assert_eq!(err.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn test_version_gate_batch_rejection() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
+        .force_kmip_version(ProtocolVersion::from_raw(1, 4));
+    let err = client
+        .execute_with_options(batch, &CodecLimits::defaults(), &RequestOptions::default())
+        .expect_err("Uncatalogued version in batch rejected");
+
+    assert_eq!(err.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn test_version_gate_rejects_uncatalogued_version_before_send() {
     let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
 

@@ -6152,14 +6152,6 @@ impl Client {
             .protocol_version()
             .unwrap_or_else(|| self.configuration.protocol_version());
 
-        if !effective_version.is_catalogued() {
-            return Err(ClientError::validation(
-                ClientCauseCategory::InvalidInput,
-                RequestDeliveryState::NotSent,
-                kmipkit_protocol::VersionGateError::UnsupportedProtocolVersion(effective_version),
-            ));
-        }
-
         kmipkit_protocol::VersionGate::validate_operation(effective_version, operation).map_err(
             |error| {
                 ClientError::validation(
