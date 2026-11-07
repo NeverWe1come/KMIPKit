@@ -42,8 +42,8 @@ Coverage thresholds and remote CI remain deferred under the maintainer's active 
 
 ## Stack synchronization — 2026-11-07
 
-The latest KMIPKIT-0051 head `929fc2c57` was merged into this branch by
-`9626dc3fb`. After synchronization, `cargo fmt --all --check`,
+The latest KMIPKIT-0051 head `17b6d5708` was merged into this branch by
+`bba190446`. After synchronization, `cargo fmt --all --check`,
 `python -B tools/api_manifest/generate.py --check --repo-root .` (12 outputs),
 `python -B -m unittest tools.api_manifest.tests.test_reconcile_0052_response_navigation -v`
 (3 tests), and `git diff --check` passed. The inherited untracked
