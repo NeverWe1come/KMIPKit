@@ -482,6 +482,73 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             self.assertEqual(canonical_approval, declaration["approvalSource"])
             self.assertEqual("Approved", declaration["approvalSource"]["status"])
 
+    def test_synchronization_promotes_fully_resolved_0053_capabilities(self) -> None:
+        manifest = json.loads(
+            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        capability = next(
+            row
+            for row in manifest["capabilities"]
+            if row["capabilityId"] == "typed_object_attributes"
+        )
+        capability["capabilityState"] = "blocked"
+        capability["candidateSpecId"] = "KMIPKIT-0053"
+        capability["blockedReason"] = "Waiting for four-language parity."
+        for field in (
+            "ownerSpecId",
+            "approvalEvidence",
+            "acceptedEvidence",
+            "mappings",
+            "parityEvidenceIds",
+        ):
+            capability.pop(field, None)
+
+        result = reconcile_0053_api_parity._synchronize_capability_mappings(
+            manifest
+        )
+        completed = next(
+            row
+            for row in result["capabilities"]
+            if row["capabilityId"] == "typed_object_attributes"
+        )
+        self.assertEqual("verified", completed["capabilityState"])
+        self.assertEqual("KMIPKIT-0053", completed["ownerSpecId"])
+        self.assertEqual(
+            "specs/053-api-parity-facade/approval-record.md",
+            completed["approvalEvidence"]["path"],
+        )
+        self.assertNotIn("candidateSpecId", completed)
+        self.assertNotIn("blockedReason", completed)
+        self.assertTrue(completed["parityEvidenceIds"])
+        self.assertEqual(
+            {"c", "java", "python", "rust"}, set(completed["mappings"])
+        )
+
+        pending = copy.deepcopy(manifest)
+        pending["publicDeclarations"].append(
+            {
+                "declarationId": "pending-0053-route",
+                "packageId": "rust-kmipkit",
+                "kind": "associated-item",
+                "exportName": "kmipkit::protocol::AttributeSet::pending",
+                "capabilityId": "typed_object_attributes",
+                "requirementIds": ["KMIPKIT-0053-FR-002"],
+                "declarationState": "blocked",
+                "parityScope": "four-language",
+                "candidateSpecId": "KMIPKIT-0053",
+                "blockedReason": "Still pending.",
+            }
+        )
+        unresolved = reconcile_0053_api_parity._synchronize_capability_mappings(
+            pending
+        )
+        still_blocked = next(
+            row
+            for row in unresolved["capabilities"]
+            if row["capabilityId"] == "typed_object_attributes"
+        )
+        self.assertEqual("blocked", still_blocked["capabilityState"])
+
     def test_managed_object_java_routes_match_exported_camel_case_methods(self) -> None:
         route_data = json.loads(
             Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
