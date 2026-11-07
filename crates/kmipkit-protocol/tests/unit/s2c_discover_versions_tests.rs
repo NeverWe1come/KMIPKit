@@ -209,4 +209,73 @@ fn test_server_discover_versions_constructors_and_errors() {
     let view = msg.batch_items().next().expect("valid view");
     let err = ServerDiscoverVersionsRequest::try_from_request_item(view).unwrap_err();
     assert_eq!(err, ServerDiscoverVersionsError::UnexpectedOperation);
+
+    let model_err = kmipkit_ttlv::ModelError::StructureDepthExceeded;
+    let proto_err = crate::server_to_client::discover_versions::protocol_model_error(model_err);
+    assert_eq!(proto_err.kind(), crate::ProtocolErrorKind::InvalidValue);
+}
+
+#[test]
+fn test_server_discover_versions_wildcards_and_non_structure_fields() {
+    // Test payload where PROTOCOL_VERSION_TAG is an integer (not structure)
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0069).unwrap().try_checked().unwrap(),
+                Value::integer(42),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let msg = wrap_request_item(0x0000_001E, payload);
+    let view = msg.batch_items().next().expect("valid view");
+    let req = ServerDiscoverVersionsRequest::try_from_request_item(view);
+    assert!(req.is_err());
+
+    // Test structure with mismatched major/minor value types and unknown tag
+    let mut payload2 = Structure::new();
+    let mut bad_pv = Structure::new();
+    bad_pv
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_006A).unwrap().try_checked().unwrap(),
+                Value::enumeration(2),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    bad_pv
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_006B).unwrap().try_checked().unwrap(),
+                Value::enumeration(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    bad_pv
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0001).unwrap().try_checked().unwrap(),
+                Value::integer(99),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    payload2
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0069).unwrap().try_checked().unwrap(),
+                Value::structure(bad_pv),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let msg2 = wrap_request_item(0x0000_001E, payload2);
+    let view2 = msg2.batch_items().next().expect("valid view");
+    let req2 = ServerDiscoverVersionsRequest::try_from_request_item(view2);
+    assert!(req2.is_err());
 }

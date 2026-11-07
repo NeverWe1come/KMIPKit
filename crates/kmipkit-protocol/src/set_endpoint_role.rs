@@ -365,7 +365,7 @@ impl fmt::Display for SetEndpointRoleError {
 
 impl Error for SetEndpointRoleError {}
 
-fn protocol_model_error(error: ModelError) -> ProtocolError {
+pub(crate) fn protocol_model_error(error: ModelError) -> ProtocolError {
     ProtocolError::new(
         ProtocolErrorKind::InvalidValue,
         ProtocolCauseCategory::InvalidValue,
@@ -373,7 +373,7 @@ fn protocol_model_error(error: ModelError) -> ProtocolError {
     )
 }
 
-fn operation_result(
+pub(crate) fn operation_result(
     status: ResultStatus,
     reason: Option<ResultReason>,
     message: Option<ResultMessage>,

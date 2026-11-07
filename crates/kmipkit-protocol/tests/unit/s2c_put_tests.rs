@@ -342,3 +342,96 @@ fn test_put_function_and_server_put_constructors_and_errors() {
     let err = ServerPutRequest::try_from_request_item(view).unwrap_err();
     assert_eq!(err, ServerPutError::UnexpectedOperation);
 }
+
+#[test]
+fn test_server_put_attributes_and_wildcards() {
+    // Test with ATTRIBUTES structure
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0070).unwrap().try_checked().unwrap(),
+                Value::enumeration(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0094).unwrap().try_checked().unwrap(),
+                Value::text_string("uid-1".to_string()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let sym_key = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_008F).unwrap().try_checked().unwrap(),
+                Value::structure(sym_key),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let attrs = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0125).unwrap().try_checked().unwrap(),
+                Value::structure(attrs),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let msg = wrap_request_item(0x0000_001C, payload);
+    let view = msg.batch_items().next().expect("valid view");
+    let req = ServerPutRequest::try_from_request_item(view).expect("valid put request");
+    assert!(req.attributes().is_some());
+
+    // Test with mismatched value types for wildcards:
+    let mut bad_payload = Structure::new();
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0070).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not enum
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0094).unwrap().try_checked().unwrap(),
+                Value::integer(42),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not string
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0073).unwrap().try_checked().unwrap(),
+                Value::integer(43),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not string
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0008).unwrap().try_checked().unwrap(),
+                Value::integer(44),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not structure
+
+    let msg2 = wrap_request_item(0x0000_001C, bad_payload);
+    let view2 = msg2.batch_items().next().expect("valid view");
+    let res = ServerPutRequest::try_from_request_item(view2);
+    assert!(res.is_err());
+}

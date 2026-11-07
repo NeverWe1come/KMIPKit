@@ -198,4 +198,47 @@ fn test_server_query_constructors_and_capabilities_coverage() {
     let view = msg.batch_items().next().expect("valid view");
     let err = ServerQueryRequest::try_from_request_item(view).unwrap_err();
     assert_eq!(err, ServerQueryError::UnexpectedOperation);
+
+    let model_err = kmipkit_ttlv::ModelError::StructureDepthExceeded;
+    let proto_err = crate::server_to_client::query::protocol_model_error(model_err);
+    assert_eq!(proto_err.kind(), crate::ProtocolErrorKind::InvalidValue);
+}
+
+#[test]
+fn test_server_query_extension_map_and_unknown_payload_fields() {
+    use crate::QueryFunction;
+
+    let mut caps = ServerCapabilities::new();
+    caps.set_extension_tags(vec![0x0001, 0x0002]);
+
+    let req = ServerQueryRequest::new(vec![QueryFunction::EXTENSION_MAP]);
+    let resp = ServerQueryResponse::respond(&req, &caps);
+    let ttlv = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
+    assert_eq!(ttlv.view().children().len(), 2);
+
+    // Mismatched value type in QUERY_FUNCTION_TAG (Integer instead of Enumeration) and unknown tag
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0074).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0001).unwrap().try_checked().unwrap(),
+                Value::integer(42),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let msg = wrap_request_item(0x0000_0018, payload);
+    let view = msg.batch_items().next().expect("valid view");
+    let parsed = ServerQueryRequest::try_from_request_item(view).expect("valid query request");
+    assert_eq!(parsed.query_functions(), []);
 }

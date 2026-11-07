@@ -256,7 +256,7 @@ impl fmt::Display for ServerQueryError {
 
 impl Error for ServerQueryError {}
 
-fn protocol_model_error(error: ModelError) -> ProtocolError {
+pub(crate) fn protocol_model_error(error: ModelError) -> ProtocolError {
     ProtocolError::new(
         ProtocolErrorKind::InvalidValue,
         ProtocolCauseCategory::InvalidValue,

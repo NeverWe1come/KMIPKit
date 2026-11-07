@@ -1012,3 +1012,157 @@ fn test_raw_tls_server_connection_into_role_reversed_stream() {
 
     client_h.join().unwrap();
 }
+
+#[test]
+fn test_listener_trust_source_platform_and_revocation() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let server = pki.server_identity();
+    let cfg_platform = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::Platform)
+        .build();
+    assert!(cfg_platform.is_ok());
+
+    let cfg_crl = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .revocation_lists(vec![kmipkit_transport::RevocationListInput::from_der(
+            vec![vec![1, 2, 3]],
+        )])
+        .build();
+    let bind_res = match cfg_crl {
+        Ok(c) => RawTlsListener::bind(c)
+            .map(|_| ())
+            .map_err(|e| e.to_string()),
+        Err(e) => Err(e.to_string()),
+    };
+    assert!(bind_res.is_err());
+}
+
+#[test]
+fn test_role_reversed_stream_max_bytes_rejection() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki).build().expect("config succeeds");
+    let mut listener = RawTlsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+
+    let client_h = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let server_name = ServerName::try_from("server.kmipkit.test").unwrap();
+        let client_conn = ClientConnection::new(client_config, server_name).unwrap();
+        let mut tls = StreamOwned::new(client_conn, sock);
+        let frame = [0x42, 0x00, 0x7B, 0x01, 0x00, 0x00, 0x00, 0x00];
+        tls.write_all(&frame).unwrap();
+        tls.flush().unwrap();
+        let mut buf = [0u8; 16];
+        let _ = tls.read(&mut buf);
+    });
+
+    let conn = listener.accept(Some(Duration::from_secs(5))).unwrap();
+    let mut rr_stream = conn.into_role_reversed();
+
+    // max_bytes = 4 is smaller than the 8-byte frame
+    let res = rr_stream.recv_server_request(4, Some(Duration::from_secs(5)));
+    assert!(res.is_err());
+    let _ = rr_stream.close();
+    client_h.join().unwrap();
+}
+
+#[test]
+fn test_listener_accept_without_timeout() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki).build().expect("config succeeds");
+    let mut listener = RawTlsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+
+    let client_h = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let server_name = ServerName::try_from("server.kmipkit.test").unwrap();
+        let client_conn = ClientConnection::new(client_config, server_name).unwrap();
+        let mut tls = StreamOwned::new(client_conn, sock);
+        let _ = tls.write_all(&[0x42, 0, 0x7B, 1, 0, 0, 0, 0]);
+        let _ = tls.flush();
+        let mut buf = [0u8; 8];
+        let _ = tls.read(&mut buf);
+    });
+
+    let mut conn = listener
+        .accept(None)
+        .expect("accept without timeout succeeds");
+    let req = conn.recv_request(1024, None).expect("recv succeeds");
+    assert_eq!(req.as_bytes().len(), 8);
+    conn.send_response(&[0x42, 0, 0x7B, 1, 0, 0, 0, 0], None)
+        .expect("send succeeds");
+    let _ = conn.close();
+    client_h.join().unwrap();
+}
+
+#[test]
+fn test_listener_handshake_premature_close() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki).build().expect("config succeeds");
+    let mut listener = RawTlsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+
+    let client_h = thread::spawn(move || {
+        let _sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    });
+
+    let res = listener.accept(Some(Duration::from_secs(5)));
+    assert!(res.is_err());
+    client_h.join().unwrap();
+}
+
+#[test]
+fn test_https_listener_handshake_premature_close() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki).build().expect("config succeeds");
+    let mut listener = HttpsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+
+    let client_h = thread::spawn(move || {
+        let _sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    });
+
+    let res = listener.accept(Some(Duration::from_secs(5)));
+    assert!(res.is_err());
+    client_h.join().unwrap();
+}
+
+#[test]
+fn test_server_connection_send_response_client_disconnected() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki).build().expect("config succeeds");
+    let mut listener = RawTlsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port");
+    let client_config = client_tls_config(&pki);
+
+    let client_h = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let server_name = ServerName::try_from("server.kmipkit.test").unwrap();
+        let client_conn = ClientConnection::new(client_config, server_name).unwrap();
+        let mut tls = StreamOwned::new(client_conn, sock);
+        let _ = tls.write_all(&[0x42, 0, 0x7B, 1, 0, 0, 0, 0]);
+        let _ = tls.flush();
+    });
+
+    let mut conn = listener
+        .accept(Some(Duration::from_secs(5)))
+        .expect("accept");
+    let _ = conn.recv_request(1024, Some(Duration::from_secs(5)));
+    client_h.join().unwrap();
+
+    let large_resp = vec![0x42; 65536];
+    let _ = conn.send_response(&large_resp, None);
+    let _ = conn.close();
+}

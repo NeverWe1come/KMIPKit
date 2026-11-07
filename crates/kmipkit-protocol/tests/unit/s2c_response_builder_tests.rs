@@ -153,4 +153,15 @@ fn test_server_response_builder_batch_with_unique_ids() {
         items[1].with_unique_batch_item_id(<[u8]>::to_vec),
         Some(vec![4, 5, 6])
     );
+
+    // Test malformed response message build failure
+    let mut bad_builder = ServerResponseBuilder::new();
+    bad_builder.add_item(Structure::new());
+    let err = bad_builder.build();
+    assert!(err.is_err());
+
+    // Test protocol_model_error helper
+    let model_err = kmipkit_ttlv::ModelError::StructureDepthExceeded;
+    let proto_err = crate::server_to_client::response_builder::protocol_model_error(model_err);
+    assert_eq!(proto_err.kind(), crate::ProtocolErrorKind::InvalidValue);
 }

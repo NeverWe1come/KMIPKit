@@ -192,3 +192,50 @@ fn test_server_notify_constructors_and_errors() {
     let err = ServerNotifyRequest::try_from_request_item(view).unwrap_err();
     assert_eq!(err, ServerNotifyError::UnexpectedOperation);
 }
+
+#[test]
+fn test_server_notify_wildcards() {
+    // Mismatched types for UID, ATTRIBUTES, DELETED_ATTRIBUTE_REFERENCE, plus unknown tag
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0094).unwrap().try_checked().unwrap(),
+                Value::integer(42),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not string
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0125).unwrap().try_checked().unwrap(),
+                Value::integer(43),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not structure
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_014D).unwrap().try_checked().unwrap(),
+                Value::integer(44),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // not structure
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0001).unwrap().try_checked().unwrap(),
+                Value::integer(45),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // known tag, unexpected field
+
+    let msg = wrap_request_item(0x0000_001B, payload);
+    let view = msg.batch_items().next().expect("valid view");
+    let res = ServerNotifyRequest::try_from_request_item(view);
+    assert!(res.is_err());
+}

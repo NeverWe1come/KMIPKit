@@ -385,4 +385,199 @@ fn test_set_endpoint_role_error_displays_and_coverage() {
     .unwrap();
     let err6 = SetEndpointRoleError::ServerRejected(op_res);
     assert!(format!("{err6}").contains("server rejected Set Endpoint Role"));
+
+    let inv_err = crate::set_endpoint_role::operation_result(
+        ResultStatus::from_raw(0),
+        Some(ResultReason::from_raw(1)),
+        None,
+    )
+    .unwrap_err();
+    assert!(format!("{inv_err}").contains("invalid result status/reason"));
+
+    let model_err = kmipkit_ttlv::ModelError::StructureDepthExceeded;
+    let proto_err = crate::set_endpoint_role::protocol_model_error(model_err);
+    assert_eq!(proto_err.kind(), crate::ProtocolErrorKind::InvalidValue);
+}
+
+fn make_test_header() -> Structure {
+    let mut header = Structure::new();
+    let mut pv = Structure::new();
+    pv.try_push(
+        Item::new(
+            RawTag::new(0x0042_006A).unwrap().try_checked().unwrap(),
+            Value::integer(2),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    pv.try_push(
+        Item::new(
+            RawTag::new(0x0042_006B).unwrap().try_checked().unwrap(),
+            Value::integer(1),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    header
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0069).unwrap().try_checked().unwrap(),
+                Value::structure(pv),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    header
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_000D).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    header
+}
+
+#[test]
+fn test_set_endpoint_role_unexpected_operation() {
+    use crate::RequestMessage;
+    use crate::set_endpoint_role::SetEndpointRoleError;
+
+    let mut item_wrong_op = Structure::new();
+    item_wrong_op
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_005C).unwrap().try_checked().unwrap(),
+                Value::enumeration(0x01),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    item_wrong_op
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0079).unwrap().try_checked().unwrap(),
+                Value::structure(Structure::new()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut root_req = Structure::new();
+    root_req
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0077).unwrap().try_checked().unwrap(),
+                Value::structure(make_test_header()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    root_req
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_000F).unwrap().try_checked().unwrap(),
+                Value::structure(item_wrong_op),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let req_msg = RequestMessage::try_from_ttlv(root_req).expect("valid request message");
+    let item_view = req_msg.batch_items().next().expect("batch item exists");
+    let res = SetEndpointRoleRequest::try_from_request_item(item_view);
+    assert!(matches!(
+        res,
+        Err(SetEndpointRoleError::UnexpectedOperation)
+    ));
+
+    let resp_msg = wrap_response_item(0x01, 1, Some(1), None);
+    let resp_item_view = resp_msg.batch_items().next().expect("batch item exists");
+    let res = SetEndpointRoleResponse::try_from_response_item(resp_item_view);
+    assert!(matches!(
+        res,
+        Err(SetEndpointRoleError::UnexpectedOperation)
+    ));
+}
+
+#[test]
+fn test_set_endpoint_role_unknown_fields_in_payload() {
+    use crate::RequestMessage;
+    use crate::set_endpoint_role::SetEndpointRoleError;
+
+    let mut bad_payload = Structure::new();
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0151).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_009D).unwrap().try_checked().unwrap(),
+                Value::integer(42),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0001).unwrap().try_checked().unwrap(),
+                Value::integer(99),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut item_bad_payload = Structure::new();
+    item_bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_005C).unwrap().try_checked().unwrap(),
+                Value::enumeration(0x32),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    item_bad_payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0079).unwrap().try_checked().unwrap(),
+                Value::structure(bad_payload),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let mut root_req2 = Structure::new();
+    root_req2
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0077).unwrap().try_checked().unwrap(),
+                Value::structure(make_test_header()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    root_req2
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_000F).unwrap().try_checked().unwrap(),
+                Value::structure(item_bad_payload),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let req_msg2 = RequestMessage::try_from_ttlv(root_req2).expect("valid request message");
+    let item_view2 = req_msg2.batch_items().next().expect("batch item exists");
+    let res = SetEndpointRoleRequest::try_from_request_item(item_view2);
+    assert!(matches!(
+        res,
+        Err(SetEndpointRoleError::MissingRequiredField)
+    ));
 }

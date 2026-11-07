@@ -351,3 +351,7 @@ mod pkcs11_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/server_to_client_tests.rs"]
 mod server_to_client_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/set_endpoint_role_execution_tests.rs"]
+mod set_endpoint_role_execution_tests;

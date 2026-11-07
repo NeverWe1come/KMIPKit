@@ -967,6 +967,34 @@ fn client_listener_connection_close_paths() {
         .expect("accept succeeds");
     conn.close().expect("close succeeds");
     client_handle.join().expect("client finishes");
+
+    let cfg_http = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(vec![server.certificate_der().to_vec()]),
+            PrivateKeyInput::from_der(server.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .build()
+        .expect("config builds");
+    let mut http_listener = ClientListener::bind_https(cfg_http).expect("bind succeeds");
+    let http_port = http_listener.port().expect("port");
+    let client_config2 = client_tls_config(&pki);
+    let client_handle2 = thread::spawn(move || {
+        let sock = TcpStream::connect(("127.0.0.1", http_port)).expect("connect succeeds");
+        let server_name =
+            rustls::pki_types::ServerName::try_from("server.kmipkit.test").expect("valid dns name");
+        let client_conn = rustls::ClientConnection::new(client_config2, server_name)
+            .expect("client conn succeeds");
+        let mut tls = rustls::StreamOwned::new(client_conn, sock);
+        let _ = tls.write_all(b"GET / HTTP/1.1\r\n\r\n");
+    });
+    let mut http_conn = http_listener
+        .accept(Some(Duration::from_secs(5)))
+        .expect("accept");
+    http_conn.close().expect("https close succeeds");
+    client_handle2.join().expect("client finishes");
 }
 
 #[test]
@@ -1011,4 +1039,151 @@ fn encode_structure_view_scalar_types() {
         crate::server_to_client::encode_structure_view(0x0042_007B, &view, &mut bytes);
     });
     assert_ne!(bytes, [] as [u8; 0]);
+
+    // Test DateTimeExtended triggers wildcard _ => {} in encode_structure_view
+    let mut payload2 = Structure::new();
+    payload2
+        .try_push(Item::new(tag(0x0042_0007), Value::date_time_extended(999_999)).unwrap())
+        .unwrap();
+    let mut builder2 = ServerResponseBuilder::new();
+    builder2
+        .add_success_item(0x1E, None, payload2)
+        .expect("add");
+    let resp2 = builder2.build().expect("build");
+    let mut bytes2 = Vec::new();
+    resp2.with_ttlv(|view| {
+        crate::server_to_client::encode_structure_view(0x0042_007B, &view, &mut bytes2);
+    });
+    assert_ne!(bytes2, [] as [u8; 0]);
+}
+
+fn make_custom_batch_with_item(build_item: fn(&mut Structure)) -> Vec<u8> {
+    let mut header = Structure::new();
+    let mut pv = Structure::new();
+    pv.try_push(Item::new(tag(PROTOCOL_VERSION_MAJOR_TAG), Value::integer(2)).unwrap())
+        .unwrap();
+    pv.try_push(Item::new(tag(PROTOCOL_VERSION_MINOR_TAG), Value::integer(1)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(PROTOCOL_VERSION_TAG), Value::structure(pv)).unwrap())
+        .unwrap();
+    header
+        .try_push(Item::new(tag(BATCH_COUNT_TAG), Value::integer(1)).unwrap())
+        .unwrap();
+
+    let mut root = Structure::new();
+    root.try_push(Item::new(tag(REQUEST_HEADER_TAG), Value::structure(header)).unwrap())
+        .unwrap();
+
+    let mut item = Structure::new();
+    build_item(&mut item);
+    root.try_push(Item::new(tag(BATCH_ITEM_TAG), Value::structure(item)).unwrap())
+        .unwrap();
+
+    let root_item = Item::new(tag(REQUEST_MESSAGE_TAG), Value::structure(root)).unwrap();
+    let mut bytes = Vec::new();
+    encode_item(&root_item, &mut bytes);
+    bytes
+}
+
+#[test]
+fn incoming_server_batch_item_decoding_error_branches_part1() {
+    let limits = CodecLimits::defaults();
+
+    // 1. DiscoverVersions with empty protocol versions list
+    let bytes = make_custom_batch_with_item(|item| {
+        item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x1E)).unwrap())
+            .unwrap();
+        let payload = Structure::new();
+        item.try_push(Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(payload)).unwrap())
+            .unwrap();
+    });
+    let batch = IncomingServerBatch::from_ttlv_bytes(&bytes, &limits).unwrap();
+    assert_eq!(batch.batch_count(), 1);
+
+    // 1. DiscoverVersions with invalid payload structure
+    let bytes_dv = make_custom_batch_with_item(|item| {
+        item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x1E)).unwrap())
+            .unwrap();
+        let mut payload = Structure::new();
+        let mut pv = Structure::new();
+        pv.try_push(
+            Item::new(
+                tag(PROTOCOL_VERSION_MAJOR_TAG),
+                Value::text_string("bad".to_string()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        payload
+            .try_push(Item::new(tag(PROTOCOL_VERSION_TAG), Value::structure(pv)).unwrap())
+            .unwrap();
+        item.try_push(Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(payload)).unwrap())
+            .unwrap();
+    });
+    assert!(IncomingServerBatch::from_ttlv_bytes(&bytes_dv, &limits).is_err());
+
+    // 2. Notify with empty payload (missing required Unique Identifier)
+    let bytes_notify = make_custom_batch_with_item(|item| {
+        item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x1B)).unwrap())
+            .unwrap();
+        item.try_push(
+            Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(Structure::new())).unwrap(),
+        )
+        .unwrap();
+    });
+    assert!(IncomingServerBatch::from_ttlv_bytes(&bytes_notify, &limits).is_err());
+}
+
+#[test]
+fn incoming_server_batch_item_decoding_error_branches_part2() {
+    let limits = CodecLimits::defaults();
+
+    // 3. Put with empty payload (missing required Unique Identifier)
+    let bytes_put = make_custom_batch_with_item(|item| {
+        item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x1C)).unwrap())
+            .unwrap();
+        item.try_push(
+            Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(Structure::new())).unwrap(),
+        )
+        .unwrap();
+    });
+    assert!(IncomingServerBatch::from_ttlv_bytes(&bytes_put, &limits).is_err());
+
+    // 4. Query with empty payload (missing query functions)
+    let bytes_query = make_custom_batch_with_item(|item| {
+        item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x18)).unwrap())
+            .unwrap();
+        item.try_push(
+            Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(Structure::new())).unwrap(),
+        )
+        .unwrap();
+    });
+    let _ = IncomingServerBatch::from_ttlv_bytes(&bytes_query, &limits);
+
+    // 5. SetEndpointRole with empty payload (missing required Endpoint Role)
+    let bytes_role = make_custom_batch_with_item(|item| {
+        item.try_push(Item::new(tag(OPERATION_TAG), Value::enumeration(0x32)).unwrap())
+            .unwrap();
+        item.try_push(
+            Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(Structure::new())).unwrap(),
+        )
+        .unwrap();
+    });
+    assert!(IncomingServerBatch::from_ttlv_bytes(&bytes_role, &limits).is_err());
+
+    // 6. Missing operation tag completely
+    let bytes = make_custom_batch_with_item(|item| {
+        item.try_push(
+            Item::new(tag(UNIQUE_BATCH_ITEM_ID_TAG), Value::byte_string(vec![1])).unwrap(),
+        )
+        .unwrap();
+    });
+    assert!(IncomingServerBatch::from_ttlv_bytes(&bytes, &limits).is_err());
+
+    // 7. Non-structure root TTLV (Integer instead of Structure)
+    let non_struct = Item::new(tag(0x0042_0077), Value::integer(1234)).unwrap();
+    let mut non_struct_bytes = Vec::new();
+    encode_item(&non_struct, &mut non_struct_bytes);
+    assert!(IncomingServerBatch::from_ttlv_bytes(&non_struct_bytes, &limits).is_err());
 }

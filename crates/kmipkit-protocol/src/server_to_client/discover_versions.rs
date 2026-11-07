@@ -197,7 +197,7 @@ impl fmt::Display for ServerDiscoverVersionsError {
 
 impl Error for ServerDiscoverVersionsError {}
 
-fn protocol_model_error(error: ModelError) -> ProtocolError {
+pub(crate) fn protocol_model_error(error: ModelError) -> ProtocolError {
     ProtocolError::new(
         ProtocolErrorKind::InvalidValue,
         ProtocolCauseCategory::InvalidValue,
