@@ -169,6 +169,35 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     )
                 self.assertTrue(expected["normative_requirements"] <= linked_requirements)
 
+    def test_decrypt_request_helpers_are_attributed_to_decrypt(self) -> None:
+        helper_names = {
+            "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+            "kmipkit::protocol::DecryptRequest::with_authenticated_encryption_tag",
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
+        }
+        declarations = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("exportName") in helper_names
+        ]
+        self.assertEqual(helper_names, {row["exportName"] for row in declarations})
+        for declaration in declarations:
+            with self.subTest(export=declaration["exportName"]):
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-DECRYPT", declaration["capabilityId"]
+                )
+                self.assertNotIn(
+                    "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+                    declaration["requirementIds"],
+                )
+                self.assertTrue(
+                    any(
+                        requirement.startswith("KMIPKIT-REQ-SPEC-6.1.11-")
+                        for requirement in declaration["requirementIds"]
+                    )
+                )
+
     def test_generated_parity_inventory_contains_both_verified_operations(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
         operations = {
