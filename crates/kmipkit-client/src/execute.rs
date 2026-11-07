@@ -1162,6 +1162,12 @@ impl ClientBatchItem {
         &self.request
     }
 
+    /// Returns the KMIP 2.1 Operation Enumeration for this request.
+    #[must_use]
+    pub const fn operation(&self) -> u32 {
+        self.request.operation()
+    }
+
     /// Lends the optional Unique Batch Item ID.
     #[must_use]
     pub fn unique_batch_item_id(&self) -> Option<&[u8]> {
@@ -7378,11 +7384,7 @@ fn build_request_batch_item(item: ClientBatchItem) -> Result<Structure, Protocol
         message_extensions,
     } = item;
     let mut batch_item = Structure::new();
-    push(
-        &mut batch_item,
-        OPERATION,
-        Value::enumeration(request.operation()),
-    )?;
+    push_batch_item_operation(&mut batch_item, request.operation())?;
     if let Some(id) = unique_batch_item_id {
         push(
             &mut batch_item,
@@ -7403,6 +7405,64 @@ fn build_request_batch_item(item: ClientBatchItem) -> Result<Structure, Protocol
         )?;
     }
     Ok(batch_item)
+}
+
+fn push_batch_item_operation(
+    batch_item: &mut Structure,
+    operation: u32,
+) -> Result<(), ProtocolError> {
+    push(batch_item, OPERATION, Value::enumeration(operation))
+}
+
+#[cfg(feature = "test-support")]
+pub(crate) fn encoded_batch_item_operation_for_test(
+    item: ClientBatchItem,
+) -> Result<u32, ProtocolError> {
+    const OPERATION_HEADER: [u8; 8] = [0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04];
+    // This probe deliberately omits operation-specific payload fields. It
+    // verifies the emitted Operation Enumeration for every public factory
+    // without copying any request secret into test output or diagnostics.
+    let mut structure = Structure::new();
+    push_batch_item_operation(&mut structure, item.operation())?;
+    push(
+        &mut structure,
+        REQUEST_PAYLOAD,
+        Value::structure(Structure::new()),
+    )?;
+    drop(item);
+    let root = Item::new(checked_tag(BATCH_ITEM)?, Value::structure(structure))
+        .map_err(model_protocol_error)?;
+    let encoded = private_wire_writer::encode_item_for_test(&root, &CodecLimits::defaults())
+        .map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidEncoding,
+                error,
+            )
+        })?;
+    let bytes = encoded.as_bytes();
+    if bytes.get(8..8 + OPERATION_HEADER.len()) != Some(OPERATION_HEADER.as_slice()) {
+        return Err(ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidEncoding,
+            std::io::Error::other("encoded Batch Item does not start with Operation Enumeration"),
+        ));
+    }
+    let raw = bytes.get(16..20).ok_or_else(|| {
+        ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidEncoding,
+            std::io::Error::other("encoded Operation Enumeration is truncated"),
+        )
+    })?;
+    let raw: [u8; 4] = raw.try_into().map_err(|_| {
+        ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidEncoding,
+            std::io::Error::other("encoded Operation Enumeration has invalid width"),
+        )
+    })?;
+    Ok(u32::from_be_bytes(raw))
 }
 
 fn message_extension_structure(

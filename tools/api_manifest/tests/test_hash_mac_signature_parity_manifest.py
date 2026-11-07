@@ -162,7 +162,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                 self.assertEqual(name, operation["name"])
                 self.assertEqual(section, operation["section"])
                 self.assertEqual("client_1_0", operation["scope"])
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("KMIPKIT-0021", operation["featureSpecId"])
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("KMIPKIT-0021", operation["ownerDependency"]["specId"])
@@ -217,7 +217,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
         self.assertEqual(set(OPERATIONS), set(generated_operations))
         for operation_id in OPERATIONS:
             with self.subTest(operation=operation_id):
-                self.assertEqual("declared", generated_operations[operation_id]["apiState"])
+                self.assertEqual("verified", generated_operations[operation_id]["apiState"])
                 self.assertEqual(LANGUAGES, set(generated_operations[operation_id]["declarations"]))
 
     def test_generated_parity_inventory_contains_t033_and_t101_functions(self) -> None:

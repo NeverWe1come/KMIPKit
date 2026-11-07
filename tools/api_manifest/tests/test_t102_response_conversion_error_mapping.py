@@ -261,6 +261,13 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             and isinstance(type_record.get("c"), dict)
             and isinstance(type_record["c"].get("releaseFunction"), str)
         }
+        c_release_functions.update(
+            ("c-kmipkit", function["c"]["symbol"])
+            for function in manifest.get("functions", [])
+            if isinstance(function, dict)
+            and isinstance(function.get("c"), dict)
+            and isinstance(function["c"].get("symbol"), str)
+        )
         generate._validate_ready_mapping_targets(
             manifest["publicDeclarations"], package_languages, c_release_functions,
             exclusions=manifest["approvedExclusions"],

@@ -51,7 +51,7 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                 elif owner_state == "candidate":
                     self.assertIn("Candidate owner", rows[name])
 
-    def test_dependency_matrix_reports_declared_hash_mac_and_signature_operations(self) -> None:
+    def test_dependency_matrix_reports_verified_hash_mac_and_signature_operations(self) -> None:
         matrix_path = (
             ROOT
             / "specs"
@@ -73,10 +73,10 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                     for line in matrix.splitlines()
                     if f"| {name} |" in line and line.startswith("| §6.1.")
                 )
-                self.assertEqual("declared", operation["apiState"])
-                self.assertIn("manifest API state: `declared`", row)
+                self.assertEqual("verified", operation["apiState"])
+                self.assertIn("manifest API state: `verified`", row)
                 self.assertIn(
-                    "four-language request and response mappings are recorded, and parity verification remains incomplete",
+                    "T101 maps all four languages and records parity evidence",
                     row,
                 )
                 self.assertNotIn("binding remains blocked", row)
@@ -90,12 +90,12 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             "en": (
                 "t108/t109 and t011 confirm every observed declaration has a manifest record or an exact approved exclusion",
                 "the inventory is reconciled",
-                "does not claim kmip conformance or release readiness",
+                "the verified inventory does not claim kmip conformance, interoperability, or release readiness",
             ),
             "es": (
                 "t108/t109 y t011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta",
                 "el inventario está reconciliado",
-                "no afirma conformidad kmip ni preparación para publicar la versión",
+                "el inventario verificado no afirma conformidad kmip, interoperabilidad ni preparación para publicar la versión",
             ),
         }
         capability = next(
@@ -167,14 +167,14 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             normalized_typed.lower(),
         )
         self.assertIn(
-            "which are declared in the manifest under the approved kmipkit-0009 scope",
+            "these operations have verified four-language api mappings under the approved kmipkit-0009 scope",
             normalized_typed.lower(),
         )
         for operation in async_followups:
             with self.subTest(excluded_async_operation=operation):
                 self.assertIn(operation.lower(), normalized_typed.lower())
-                self.assertEqual("declared", operations_by_name[operation]["apiState"])
-                self.assertEqual("declared", documented_states.get(operation))
+                self.assertEqual("verified", operations_by_name[operation]["apiState"])
+                self.assertEqual("verified", documented_states.get(operation))
         self.assertIn("generic ttlv response", normalized_typed.lower())
         self.assertIn("kmipkit-dec-015", normalized_typed.lower())
         self.assertIn(

@@ -71,13 +71,19 @@ class T091BatchItemReadbackManifestTests(unittest.TestCase):
                 self.assertEqual("client_batch_model", declaration["capabilityId"])
                 self.assertEqual(REQUIREMENTS, declaration["requirementIds"])
 
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+        }
         for package_id, export_name in (
             ("rust-kmipkit-client", "kmipkit_client::ClientBatchItem::request"),
             ("rust-kmipkit", "kmipkit::ClientBatchItem::request"),
         ):
-            with self.subTest(blocked_request_export=export_name):
-                declaration = declarations[(package_id, export_name)]
-                self.assertEqual("blocked", declaration["declarationState"])
+            with self.subTest(excluded_request_export=export_name):
+                exclusion = exclusions[(package_id, export_name)]
+                self.assertEqual("KMIPKIT-0043", exclusion["candidateSpecId"])
+                self.assertIn("0006-public-api-and-bindings", exclusion["approvalSource"]["path"])
+                self.assertIn("opaque-handle boundary", exclusion["reason"])
 
         functions = {row["id"]: row for row in manifest["functions"]}
         readback_docs = " ".join(

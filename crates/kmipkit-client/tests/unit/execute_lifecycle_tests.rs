@@ -1227,3 +1227,31 @@ fn pending_correlation_owner_zeroizes_before_release() {
 
     assert_eq!(pending_observer.result(), Some(true));
 }
+
+#[test]
+fn calling_typed_validation_report_does_not_change_valid_request_wire_bytes() {
+    fn execute_and_capture(validate_first: bool) -> Vec<u8> {
+        let item = ClientBatchItem::new(ClientRequest::discover_versions());
+        if validate_first {
+            let report = item.request().validation_report();
+            assert!(report.is_valid());
+            assert_eq!(report.issues().len(), 0);
+        }
+        let batch = ClientBatch::new(item);
+        let (mut client, _, captured) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+                response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+                request_write_chunks: Vec::new(),
+            });
+        client
+            .execute(batch, &CodecLimits::defaults())
+            .expect("Discover Versions remains a valid request after local inspection");
+        captured
+            .borrow()
+            .as_deref()
+            .expect("fake transport captured the request bytes")
+            .clone()
+    }
+
+    assert_eq!(execute_and_capture(true), execute_and_capture(false));
+}

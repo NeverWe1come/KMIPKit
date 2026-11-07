@@ -383,5 +383,5 @@ fn push_field_issue(
 }
 
 #[cfg(test)]
-#[path = "schema_contract_tests.rs"]
+#[path = "../../tests/support/schema_contract_tests.rs"]
 mod schema_contract_tests;

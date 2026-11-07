@@ -1558,10 +1558,22 @@ final class ClientFacadeTlsIntegrationTest {
                         .withUniqueBatchItemId("large-query".getBytes(StandardCharsets.US_ASCII)));
                 try (ClientBatchResponse response = client.execute(batch, queryLimits);
                         ClientBatchItemResult result = response.itemAt(0);
-                        TtlvStructure queryPayload = result.queryResponse().orElseThrow()) {
+                        TtlvStructure queryPayload = result.queryResponse().orElseThrow();
+                        var typedQuery = result.typedQueryResponse().orElseThrow()) {
                     NativeBridgeCoverageTest.assertResponseMappers(result, "queryResponse");
                     assertEquals(0x18, result.operation());
                     assertNotNull(queryPayload);
+                    assertEquals(7, typedQuery.fieldCount());
+                    assertEquals(List.of(0x3bL, 0x3bL), typedQuery.operations());
+                    assertEquals(List.of("namespace-a", "namespace-b"),
+                            typedQuery.applicationNamespaces());
+                    assertEquals(0x0054_1234, typedQuery.fieldAt(2).tag());
+                    assertEquals(org.kmipkit.extensions.QueryResponseFieldKind.UNKNOWN,
+                            typedQuery.fieldAt(2).kind());
+                    try (TtlvItemView unknown = typedQuery.fieldAt(2).item().orElseThrow();
+                            Tag unknownTag = unknown.tag()) {
+                        assertEquals(0x0054_1234, unknownTag.raw());
+                    }
                 }
             }
 
@@ -1714,7 +1726,7 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure derivationParameters = TtlvStructure.create();
                 TtlvStructure derivedAttributes = deriveKeyAttributes();
                 TtlvStructure importAttributes = TtlvStructure.create();
-                TtlvStructure importAnyObject = importAnyObjectStructure()) {
+                TtlvStructure importAnyObject = wrappedImportAnyObjectStructure(CodecLimits.defaults())) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, (WireEncoding) null));
             assertNativeRequestOptionsRejected(client, new long[11]);
@@ -1784,10 +1796,10 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.locate(null, null, null, null, createAttributes)
                             .withUniqueBatchItemId(uniqueBatchItemId(21)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    7, Boolean.FALSE, null, importAttributes, importAnyObject)
+                                    2, Boolean.FALSE, 2L, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(22)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    7, Boolean.FALSE, null, importAttributes, importAnyObject)
+                                    2, Boolean.FALSE, 2L, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(23)))
                     .add(ClientBatchItem.interop(0xf1234567L,
                                     "interop-integration-test".getBytes(StandardCharsets.UTF_8))
@@ -2166,10 +2178,14 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals("get-response-secret-id",
                             getResponse.uniqueIdentifier().orElseThrow().text());
                     assertTagOrder(getObject, 0x42008f);
-                    assertTrue(containsByteString(getObject, 0x420045,
+                    assertTrue(containsByteString(getObject, 0x420043,
                             "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
                     assertFalse(getResponse.toString().contains("KMIPKit-get-response-sentinel"));
-                    try (TtlvItemView keyBlockItem = getObject.itemAt(0);
+                    try (TtlvItemView objectItem = getObject.itemAt(0);
+                            Tag objectTag = objectItem.tag();
+                            TtlvValueView objectValue = objectItem.value();
+                            TtlvStructureView objectFields = objectValue.structure();
+                            TtlvItemView keyBlockItem = objectFields.itemAt(0);
                             Tag keyBlockTag = keyBlockItem.tag();
                             TtlvValueView keyBlockValue = keyBlockItem.value();
                             TtlvStructureView keyBlock = keyBlockValue.structure();
@@ -2180,6 +2196,7 @@ final class ClientFacadeTlsIntegrationTest {
                             TtlvItemView nestedVendorItem = vendorExtension.itemAt(0);
                             Tag nestedVendorTag = nestedVendorItem.tag();
                             TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                        assertEquals(0x42008f, objectTag.raw());
                         assertEquals(0x420040, keyBlockTag.raw());
                         assertEquals(0x540001, vendorExtensionTag.raw());
                         assertEquals(0x540002, nestedVendorTag.raw());
@@ -4356,7 +4373,7 @@ final class ClientFacadeTlsIntegrationTest {
         }
 
         assertContains(request, enumeration(0x42005c, 0x25));
-        assertContains(request, item(0x4200d5, 2, integer(-17)));
+        assertContains(request, item(0x4200c4, 2, integer(-17)));
         assertContains(request, enumeration(0x42005c, 0x26));
         assertTrue(containsTtlvItem(request, item(0x4200c2, 8, seed)),
                 "RNG Seed must preserve caller-supplied bytes");
@@ -5233,20 +5250,6 @@ final class ClientFacadeTlsIntegrationTest {
         } catch (RuntimeException failure) {
             attributes.close();
             throw failure;
-        }
-    }
-
-    private static TtlvStructure importAnyObjectStructure() {
-        CodecLimits limits = CodecLimits.defaults();
-        TtlvStructure body = TtlvStructure.create();
-        TtlvStructure object = TtlvStructure.create();
-        try (Tag tag = RawTag.fromRaw(0x42008f).checked();
-                TtlvValue value = TtlvValue.structure(body, limits);
-                TtlvItem item = TtlvItem.create(tag, value, limits)) {
-            return TtlvStructure.withItem(object, item, limits);
-        } finally {
-            object.close();
-            body.close();
         }
     }
 
@@ -6183,7 +6186,16 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
-        byte[] payload = structure(0x42007c, structure(0x42015f));
+        byte[] serverInformation = structure(0x420088,
+                item(0x0054_0001, 7, "server-extension".getBytes(StandardCharsets.UTF_8)));
+        byte[] payload = structure(0x42007c,
+                enumeration(0x42005c, 0x3b),
+                item(0x420003, 7, "namespace-a".getBytes(StandardCharsets.UTF_8)),
+                item(0x0054_1234, 7, "vendor-extension".getBytes(StandardCharsets.UTF_8)),
+                enumeration(0x42005c, 0x3b),
+                item(0x420003, 7, "namespace-b".getBytes(StandardCharsets.UTF_8)),
+                serverInformation,
+                structure(0x42015f));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x18),
                 item(0x420093, 8, "large-query".getBytes(StandardCharsets.US_ASCII)),
@@ -6742,7 +6754,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] retrieve = structure(0x42000f, enumeration(0x42005c, 0x25),
                 item(0x420093, 8, uniqueBatchItemId(0)), enumeration(0x42007f, 0),
                 retrievePayload);
-        byte[] seedPayload = structure(0x42007c, item(0x4200d5, 2, integer(0)));
+        byte[] seedPayload = structure(0x42007c, item(0x4200c4, 2, integer(0)));
         byte[] seed = structure(0x42000f, enumeration(0x42005c, 0x26),
                 item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 0), seedPayload);
         return structure(0x42007b, header, retrieve, seed);

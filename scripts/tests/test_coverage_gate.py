@@ -172,7 +172,7 @@ class CoverageGateTests(unittest.TestCase):
 
         self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
 
-    def test_segment_union_can_exceed_grouped_llvm_covered_summary(self) -> None:
+    def test_segment_union_overcoverage_is_demoted_to_match_grouped_summary(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -199,14 +199,14 @@ class CoverageGateTests(unittest.TestCase):
             second_function["name"] = "_ZN7kmipkit6second"
             second_function["regions"] = [[2, 1, 2, 18, 1, 0, 0, 0]]
             data["functions"].append(second_function)
-            # LLVM's grouped summary can report the largest instantiation's
-            # covered-line count even when file segments union distinct lines.
+            # LLVM's grouped summary can report fewer covered lines than the
+            # file-segment union. Ambiguous segment hits must remain uncovered.
             data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 1}
 
             report = GATE.parse_llvm_export(json.dumps(document), root)
 
-        self.assertEqual({1: 1, 2: 1}, report[filename])
-        self.assertEqual(1, report.summary_uncovered_excess[filename])
+        self.assertEqual({1: 0, 2: 1}, report[filename])
+        self.assertEqual(0, report.summary_uncovered_excess[filename])
 
     def test_repeated_source_across_export_mappings_fails_closed(self) -> None:
         self.require_gate()
@@ -508,6 +508,26 @@ class CoverageGateTests(unittest.TestCase):
             )
             with self.assertRaisesRegex(GATE.CoverageDataError, "outside the source file"):
                 GATE.parse_llvm_export(document, root)
+
+    def test_overlapping_segment_mapping_never_exceeds_summary_covered_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {\n    work();\n}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 3, 2, 1, 0, 0, 0]]))
+            document["data"][0]["files"][0]["summary"]["lines"] = {
+                "count": 2,
+                "covered": 1,
+                "percent": 50.0,
+            }
+
+            report = GATE.parse_llvm_export(document, root)
+
+        lines = report["crates/kmipkit-ttlv/src/lib.rs"]
+        self.assertEqual(3, len(lines))
+        self.assertEqual(1, sum(count > 0 for count in lines.values()))
 
     def test_llvm_report_rejects_missing_schema_and_invalid_counts(self) -> None:
         self.require_gate()

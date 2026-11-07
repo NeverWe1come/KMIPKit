@@ -205,6 +205,20 @@ impl fmt::Debug for QueryRequest {
     }
 }
 
+/// Stable categories produced by the Table 283 Query response classifier.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum QueryResponseFieldKind {
+    /// A KMIP Enumeration represented by its raw `u32` value.
+    Enumeration = 1,
+    /// A KMIP Text String represented by its decoded text.
+    TextString = 2,
+    /// A recognized Structure-valued Query response member.
+    Structure = 3,
+    /// An unrecognized field retained as a generic TTLV Item.
+    Unknown = 4,
+}
+
 /// A typed Table 283 Query response member.
 ///
 /// Enumeration and text fields are exposed as values. Complex and unknown
@@ -266,6 +280,51 @@ impl fmt::Debug for QueryResponseField {
 }
 
 impl QueryResponseField {
+    /// Returns the stable value category of this classified field.
+    #[must_use]
+    pub const fn kind(&self) -> QueryResponseFieldKind {
+        match self {
+            Self::Operation(_)
+            | Self::ObjectType(_)
+            | Self::AttestationType(_)
+            | Self::ClientRegistrationMethod(_) => QueryResponseFieldKind::Enumeration,
+            Self::VendorIdentification(_) | Self::ApplicationNamespace(_) => {
+                QueryResponseFieldKind::TextString
+            }
+            Self::ServerInformation(_)
+            | Self::ExtensionInformation(_)
+            | Self::RngParameters(_)
+            | Self::ProfileInformation(_)
+            | Self::ValidationInformation(_)
+            | Self::CapabilityInformation(_)
+            | Self::DefaultsInformation(_)
+            | Self::ProtectionStorageMasks(_) => QueryResponseFieldKind::Structure,
+            Self::Unknown(_) => QueryResponseFieldKind::Unknown,
+        }
+    }
+
+    /// Returns the raw Enumeration value, when this field is Enumeration-valued.
+    #[must_use]
+    pub const fn raw_enumeration(&self) -> Option<u32> {
+        match self {
+            Self::Operation(value)
+            | Self::ObjectType(value)
+            | Self::AttestationType(value)
+            | Self::ClientRegistrationMethod(value) => Some(*value),
+            Self::VendorIdentification(_)
+            | Self::ServerInformation(_)
+            | Self::ApplicationNamespace(_)
+            | Self::ExtensionInformation(_)
+            | Self::RngParameters(_)
+            | Self::ProfileInformation(_)
+            | Self::ValidationInformation(_)
+            | Self::CapabilityInformation(_)
+            | Self::DefaultsInformation(_)
+            | Self::ProtectionStorageMasks(_)
+            | Self::Unknown(_) => None,
+        }
+    }
+
     /// Returns the KMIP tag identifying this response member.
     #[must_use]
     pub const fn tag(&self) -> u32 {
@@ -397,6 +456,18 @@ impl QueryResponse {
     #[must_use]
     pub fn response_fields(&self) -> &[QueryResponseField] {
         &self.fields
+    }
+
+    /// Returns the number of classified response fields in original wire order.
+    #[must_use]
+    pub fn response_field_count(&self) -> usize {
+        self.fields.len()
+    }
+
+    /// Returns one classified response field by its original wire-order index.
+    #[must_use]
+    pub fn response_field(&self, index: usize) -> Option<&QueryResponseField> {
+        self.fields.get(index)
     }
 
     /// Rebuilds the complete operation response payload in its original field order.

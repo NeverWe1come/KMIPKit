@@ -43,6 +43,13 @@ V2_GENERATED_OUTPUTS = (
     "tests/fixtures/api/generated/public_api_parity.json",
     "tests/fixtures/api/generated/kmipkit_internal.h",
 )
+GENERATED_EVIDENCE_PATHS = (
+    *V2_GENERATED_OUTPUTS,
+    "bindings/c/include/kmipkit_standard_attributes_generated.h",
+    "bindings/python/src/kmipkit/_generated/standard_attribute.py",
+    "crates/kmipkit-protocol/src/typed_attributes_generated.rs",
+    "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+)
 GENERATED_OUTPUT_MAP = {
     "rustFfi": GENERATED_OUTPUTS[0],
     "cHeader": GENERATED_OUTPUTS[1],
@@ -129,6 +136,18 @@ def _create_repo(parent: Path) -> Path:
         "approvedExclusions",
     ):
         for record in manifest.get(collection_name, []):
+            evidence_paths = record.get("evidencePaths", [])
+            if isinstance(evidence_paths, list):
+                for index, evidence_path in enumerate(evidence_paths):
+                    if evidence_path in GENERATED_EVIDENCE_PATHS:
+                        relocated_path = (
+                            "tests/fixtures/api/manifest-input-evidence/"
+                            + evidence_path
+                        )
+                        relocated_generated_evidence[relocated_path] = evidence_path
+                        evidence_paths[index] = relocated_path
+                    elif isinstance(evidence_path, str):
+                        referenced_paths.add(evidence_path)
             for source_name in ("approvalSource", "approvalEvidence", "acceptedEvidence"):
                 source = record.get(source_name)
                 if not isinstance(source, dict):
@@ -141,7 +160,7 @@ def _create_repo(parent: Path) -> Path:
                         referenced_paths.add(str(Path(*parts[:2]) / "spec.md"))
             evidence_ids = record.get("parityEvidenceIds", [])
             for index, evidence_id in enumerate(evidence_ids):
-                if evidence_id in V2_GENERATED_OUTPUTS:
+                if evidence_id in GENERATED_EVIDENCE_PATHS:
                     relocated_path = (
                         "tests/fixtures/api/manifest-input-evidence/" + evidence_id
                     )
@@ -241,6 +260,20 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_java_parity_json_chunks_remain_stable_after_an_array_insertion(self) -> None:
+        baseline = [
+            {"id": f"candidate-{index}", "payload": "x" * 32}
+            for index in range(160)
+        ]
+        revised = [*baseline[:73], {"id": "inserted-route", "payload": "new"}, *baseline[73:]]
+
+        before = generate._stable_json_array_chunks(baseline)
+        after = generate._stable_json_array_chunks(revised)
+
+        self.assertLessEqual(len(set(before) - set(after)), 2)
+        self.assertLessEqual(len(set(after) - set(before)), 3)
+        self.assertTrue(all(len(chunk) <= 8_000 for chunk in after))
+
     def test_generation_fixture_starts_without_generated_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
@@ -252,7 +285,52 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(preexisting_outputs, [])
 
     def test_manifest_input_limit_reserves_bounded_room_for_the_full_inventory(self) -> None:
-        self.assertEqual(generate.MAX_MANIFEST_BYTES, 44 * 1024 * 1024)
+        self.assertEqual(generate.MAX_MANIFEST_BYTES, 56 * 1024 * 1024)
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        serialized = json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8")
+        self.assertLessEqual(len(serialized), generate.MAX_MANIFEST_BYTES)
+
+    def test_manifest_schema_accepts_exact_test_support_exclusions(self) -> None:
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        exclusion_categories = schema["$defs"]["approvedExclusion"]["properties"][
+            "exclusionCategory"
+        ]["enum"]
+
+        self.assertIn("test-support", exclusion_categories)
+
+    def test_verified_routes_can_cite_the_specification_that_expands_a_capability(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        capabilities = {row["capabilityId"]: row for row in manifest["capabilities"]}
+        declaration = copy.deepcopy(
+            next(
+                row
+                for row in manifest["publicDeclarations"]
+                if row.get("approvalSource", {}).get("path")
+                == "specs/053-api-parity-facade/approval-record.md"
+                and capabilities[row["capabilityId"]].get("ownerSpecId")
+                != "KMIPKIT-0053"
+            )
+        )
+        declaration["candidateSpecId"] = "KMIPKIT-0053"
+
+        schema_errors: list[str] = []
+        schema_valid = generate._schema_matches(
+            declaration,
+            schema["$defs"]["publicDeclaration"],
+            schema,
+            "declaration",
+            schema_errors,
+        )
+
+        self.assertTrue(schema_valid, schema_errors)
+        generate._validate_public_declaration_approval(
+            declaration,
+            capabilities[declaration["capabilityId"]],
+            None,
+            declaration["parityScope"],
+            ROOT,
+        )
 
     def test_manifest_input_limit_rejects_oversized_files_before_json_decode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -588,6 +666,44 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
         self.assertIn(helper_include, public_header)
         self.assertNotIn(helper_include, internal_header)
+
+    def test_standard_attribute_catalog_is_included_in_public_header(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+        public_header = generate.render_c_header(manifest)
+        internal_header = generate.render_internal_c_header(manifest)
+
+        include = '#include "kmipkit_standard_attributes_generated.h"'
+        self.assertIn(include, public_header)
+        self.assertNotIn(include, internal_header)
+        self.assertNotIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE ((uint32_t)4325377)",
+            public_header,
+        )
+
+    def test_standard_attribute_values_must_match_the_normative_catalog(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / generate.CATALOG_PATH).read_text(encoding="utf-8"))
+        declaration = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") == "KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE"
+        )
+        declaration["cValue"] += 1
+
+        with self.assertRaisesRegex(
+            generate.ManifestError,
+            "standard attribute value does not match the normative catalog",
+        ):
+            generate._validate_v2_manifest(manifest, schema, catalog, ROOT)
+
+    def test_partial_manifest_without_attribute_capability_needs_no_tag_rows(self) -> None:
+        catalog = json.loads((ROOT / generate.CATALOG_PATH).read_text(encoding="utf-8"))
+
+        generate._validate_standard_attribute_catalog_values(
+            {"capabilities": [], "publicDeclarations": []}, catalog
+        )
 
     def test_declared_c_symbol_signature_is_emitted_from_its_declaration(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

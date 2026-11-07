@@ -378,7 +378,14 @@ def test_batch_result_dispatches_delegated_login_to_typed_response(monkeypatch) 
         **no_response_extension_test_symbols(client.ffi),
     )
     monkeypatch.setattr(client, "lib", fake)
-    monkeypatch.setattr(client, "_wrap_owned_handle", lambda _kind, handle, *_owners: OwnedHandle(handle))
+    wrap_owned_handle = client._wrap_owned_handle
+
+    def wrap_handle(kind, handle, *owners):
+        if kind is client.BatchResult:
+            return wrap_owned_handle(kind, handle, *owners)
+        return OwnedHandle(handle)
+
+    monkeypatch.setattr(client, "_wrap_owned_handle", wrap_handle)
     monkeypatch.setattr(
         ttlv,
         "_structure_from_native_address",

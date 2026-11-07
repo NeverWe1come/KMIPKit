@@ -58,6 +58,10 @@
               <goal>check</goal>
             </goals>
             <configuration>
+              <!-- Match the exact generated named-value source excluded by the repository coverage gate. -->
+              <excludes>
+                <exclude>org/kmipkit/protocol/KmipValues*</exclude>
+              </excludes>
               <rules>
                 <rule>
                   <element>BUNDLE</element>

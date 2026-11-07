@@ -489,13 +489,20 @@ pub(super) fn encode_for_execute(
     })
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "test-support"))]
 pub(super) fn encode_item_for_test(
     item: &Item,
     limits: &CodecLimits,
 ) -> Result<EncodedOwner, EncodeError> {
-    let observer = tests::EncodingObserver::default();
-    encode_item_with_limits(item, limits, &observer)
+    #[cfg(test)]
+    {
+        let observer = tests::EncodingObserver::default();
+        encode_item_with_limits(item, limits, &observer)
+    }
+    #[cfg(not(test))]
+    {
+        encode_item_inner(item, limits)
+    }
 }
 
 #[cfg(test)]

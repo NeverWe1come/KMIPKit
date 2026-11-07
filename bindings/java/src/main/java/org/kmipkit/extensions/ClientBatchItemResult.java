@@ -13,6 +13,7 @@ import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
 
@@ -264,6 +265,76 @@ public final class ClientBatchItemResult implements AutoCloseable {
         Object[] values = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseQueryTtlv);
         return parseQueryResponse(values);
+    }
+
+    /**
+     * Returns typed readers for the standard Query response fields. Unknown fields and the exact
+     * decoded field order remain available through {@link QueryResponse#rawView()}.
+     */
+    public Optional<QueryResponse> typedQueryResponse() {
+        Optional<TtlvStructure> payload = queryResponse();
+        if (payload.isEmpty()) return Optional.empty();
+        TtlvStructure ownedPayload = payload.orElseThrow();
+        try {
+            long[] count = handle.withValue(
+                    NativeExtensionRegistry::clientBatchItemResponseQueryFieldCount);
+            if (count == null || count.length != 2 || count[0] != 1
+                    || count[1] < 0 || count[1] > MAX_NATIVE_ARRAY_ELEMENTS) {
+                throw new InvalidInputException("native Query field count is invalid");
+            }
+            List<QueryResponse.FieldData> fields = new ArrayList<>(Math.toIntExact(count[1]));
+            for (long index = 0; index < count[1]; index++) {
+                long fieldIndex = index;
+                long[] value = handle.withValue(item ->
+                        NativeExtensionRegistry.clientBatchItemResponseQueryFieldAt(
+                                item, fieldIndex));
+                if (value == null || value.length != 5 || value[0] != 1
+                        || value[1] < 0 || value[1] > 0x00ff_ffffL) {
+                    releaseQueryFieldView(value);
+                    throw new InvalidInputException("native Query field is invalid");
+                }
+                QueryResponseFieldKind kind = queryFieldKind(value[2]);
+                long itemHandle = value[4];
+                if (kind == QueryResponseFieldKind.ENUMERATION) {
+                    if (itemHandle != 0 || value[3] < 0 || value[3] > 0xffff_ffffL) {
+                        releaseQueryFieldView(value);
+                        throw new InvalidInputException("native Query Enumeration is invalid");
+                    }
+                } else {
+                    if (itemHandle <= 0) {
+                        throw new InvalidInputException("native Query field Item is absent");
+                    }
+                    try (TtlvItemView item = TtlvItemView.fromNative(itemHandle, null);
+                            var tag = item.tag()) {
+                        if (tag.raw() != (int) value[1]) {
+                            throw new InvalidInputException("native Query field tag is inconsistent");
+                        }
+                    }
+                }
+                fields.add(new QueryResponse.FieldData(
+                        (int) value[1], kind, value[3]));
+            }
+            return Optional.of(QueryResponse.fromClassifiedPayload(ownedPayload, fields));
+        } catch (RuntimeException | Error failure) {
+            ownedPayload.close();
+            throw failure;
+        }
+    }
+
+    private static QueryResponseFieldKind queryFieldKind(long rawKind) {
+        return switch (Math.toIntExact(rawKind)) {
+            case 1 -> QueryResponseFieldKind.ENUMERATION;
+            case 2 -> QueryResponseFieldKind.TEXT_STRING;
+            case 3 -> QueryResponseFieldKind.STRUCTURE;
+            case 4 -> QueryResponseFieldKind.UNKNOWN;
+            default -> throw new InvalidInputException("native Query field kind is invalid");
+        };
+    }
+
+    private static void releaseQueryFieldView(long[] value) {
+        if (value != null && value.length == 5 && value[4] > 0) {
+            TtlvItemView.fromNative(value[4], null).close();
+        }
     }
 
     /**

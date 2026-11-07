@@ -2,6 +2,9 @@
 
 For typed Rust managed objects and key material, see
 [Managed objects and key material](managed-objects-and-key-material.md).
+For the corresponding foreign binding names, ownership rules, request
+validation, Authentication, and generic response access, see
+[Typed bindings, validation, and response data](typed-bindings-and-response-data.md).
 
 ## Rust facade
 
@@ -171,7 +174,7 @@ changes to this table.
 | `ttlv_wire_codec` | declared | A four-language mapping is recorded; complete parity verification is still pending. |
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
 | `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
-| `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled; operation mappings outside this verified inventory remain incomplete and blocked APIs stay unavailable. The verified inventory does not claim KMIP conformance or release readiness. |
+| `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled, and all 56 client operation API mappings are verified. The verified inventory does not claim KMIP conformance, interoperability, or release readiness. |
 | `vendor_extension_registry` | declared | Exact shared mappings include Rust drop, C release, Java close, and Python close for native handles; parity verification remains pending. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
@@ -196,17 +199,18 @@ changes to this table.
 | `named_protocol_values` | declared | Assigned KMIP 2.1 Enumeration and Bit Mask values have catalog-backed names in Rust, C, Java, and Python. This maps names and lookups; it does not claim server support or cryptographic suitability. |
 | `hashed_password_timestamp_sequence` | declared | A locally owned timestamp sequence for Hashed Password credentials is mapped across the four languages; server validation remains authoritative. |
 | `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
+| `named_protocol_mask_single_bit_lookup` | declared | Catalog-backed names are available for assigned single-bit mask flags; unknown bits remain preserved. |
+| `typed_object_attributes` | verified | The 62 applicable typed attributes have four-language construction and read routes while generic TTLV preserves repeated and unknown values. |
+| `typed_managed_objects_and_key_material` | verified | Typed managed-object and key-material routes are reconciled across Rust, C, Java, and Python. This verifies API mapping and lifecycle parity, not KMIP conformance or release readiness. |
+| `typed_cryptographic_parameters` | verified | Typed cryptographic parameters are reconciled across Rust, C, Java, and Python with explicit secret ownership and cleanup. This verifies API mapping and lifecycle parity, not KMIP conformance or release readiness. |
+| `request_message_authentication` | verified | Caller-owned Authentication is attached to one Request Message header and applies to that message's ordered Batch Items. |
+| `response_ttlv_navigation` | verified | Typed response access and owned generic TTLV navigation preserve nested, repeated, unknown, and vendor fields across the four languages. |
+| `request_validation` | verified | Schema-aware validation reports locally detectable issues before transmission; invalid requests remain `NotSent`. |
+| `request_validation_c_abi` | verified | C exposes the shared request-validation report and preserves the Rust validator's issue metadata and delivery behavior. |
+| `client_operation_identity` | verified | Synchronous client operation routes retain the KMIP operation value through their public binding and response-item interfaces. |
 
-Of the **56** KMIP `client_1_0` operation rows, **0 / 56** remain `blocked`.
-**12** rows are `declared`: Cancel, Create, Create Key Pair, Create Split Key,
-Hash, MAC, MAC Verify, Poll, Process, Query Asynchronous Requests, Sign, and
-Signature Verify. The asynchronous APIs follow the approved KMIPKIT-0009 scope;
-Process Table 278's catalog requirement gap and reviewer-owned checklists remain
-open. Query returns a generic TTLV response under KMIPKIT-DEC-015. `declared`
-records a mapping and does not establish complete operation conformance. Do not
-infer operation availability from types or implementation code elsewhere in
-the repository.
-**44** operation mappings are `verified`:
+Of the **56** KMIP `client_1_0` operation rows, **0 / 56** are `blocked`.
+**0** rows are `declared`: none. **56** operation mappings are `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
 Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
@@ -214,7 +218,13 @@ Get Usage Allocation, Import, Interop, Join Split Key, Locate, Log, Login,
 Logout, Modify Attribute, Obtain Lease, PKCS#11, Ping, Query, Recover,
 Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults, and
-Validate. These are API mappings, not full operation-conformance or server-interoperability claims. Logout sends the caller-supplied
+Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
+MAC Verify, Poll, Process, Query Asynchronous Requests, Sign, and Signature
+Verify. These verified states describe four-language API mappings only; they do
+not establish full operation parity, KMIP conformance, or server interoperability. The asynchronous APIs follow
+the approved KMIPKIT-0009 scope; Process Table 278 catalog and review-checklist
+work remains tracked separately. Do not infer operation availability from
+types or implementation code elsewhere in the repository. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
 see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
@@ -230,8 +240,10 @@ Python. The Get mapping preserves the optional Unique Identifier and Table 220
 selectors and exposes its successful Any Object as an owned response in all
 four languages. Ping maps the empty request and successful response payloads and
 does not imply general server health. Query preserves caller-supplied function
-and Object Group order and unknown response items; it tolerates both response
-shapes described in §6.1.40 while `KMIPKIT-DISC-047` remains unresolved. These
+and Object Group order, exposes typed readers for standard response fields in
+all four languages, retains unknown and vendor fields through generic TTLV,
+and tolerates both response shapes described in §6.1.40 while
+`KMIPKIT-DISC-047` remains unresolved. These
 are API mappings, not server-conformance claims. Locate preserves optional request filters, server order,
 repeated Unique Identifiers, and the distinction between omitted and empty
 Located Items. The Get Usage Allocation mapping includes its optional identifier

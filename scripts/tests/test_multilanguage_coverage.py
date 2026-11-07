@@ -196,6 +196,35 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             parsed,
         )
 
+    def test_jacoco_parser_ignores_catalog_generated_named_value_sources(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / "bindings/java/src/main/java/org/kmipkit/protocol"
+            source_root.mkdir(parents=True)
+            source_root.joinpath("CryptographicParameters.java").write_text(
+                "class CryptographicParameters {}\n", encoding="utf-8"
+            )
+            source_root.joinpath("KmipValues.java").write_text(
+                "class KmipValues {}\n", encoding="utf-8"
+            )
+            report = """<?xml version="1.0"?>
+            <report name="KMIPKit"><package name="org/kmipkit/protocol">
+              <sourcefile name="CryptographicParameters.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+              <sourcefile name="KmipValues.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+            </package></report>"""
+
+            parsed = GATE.parse_jacoco_report(report, root)
+
+        self.assertEqual(
+            {
+                "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java": {
+                    1: 1
+                }
+            },
+            parsed,
+        )
+
     def test_jacoco_parser_ignores_all_null_marked_package_info_sources(self) -> None:
         self.require_gate()
         metadata_packages = (
@@ -817,6 +846,26 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertRegex(jacoco_version or "", r"^\d+\.\d+\.\d+$", "JaCoCo version must be pinned")
         java_configuration = ET.tostring(jacoco, encoding="unicode")
         self.assertIn("0.85", java_configuration, "Java line coverage must enforce the 85% package gate")
+        coverage_check = jacoco.find(
+            ".//m:execution[m:id='coverage-check']/m:configuration",
+            namespace,
+        )
+        self.assertIsNotNone(coverage_check, "the Maven coverage check must have an explicit JaCoCo configuration")
+        jacoco_exclusions = {
+            element.text
+            for element in coverage_check.findall("m:excludes/m:exclude", namespace)
+        }
+        self.assertIn(
+            "org/kmipkit/protocol/KmipValues*",
+            jacoco_exclusions,
+            "Maven must match the repository coverage gate's exact generated named-value exclusion",
+        )
+        self.assertFalse(
+            GATE.is_coverage_source_path(
+                "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java"
+            ),
+            "the generated Java named-value table must remain excluded only by its exact source path",
+        )
 
         pyproject_path = REPOSITORY_ROOT / "bindings/python/pyproject.toml"
         import re

@@ -113,7 +113,7 @@ impl KeyMaterial {
 fn format_accepts_type(format: u32, item_type: ItemType) -> bool {
     if (1..=6).contains(&format) {
         item_type == ItemType::ByteString
-    } else if (7..=15).contains(&format) {
+    } else if (7..=13).contains(&format) || matches!(format, 0x14 | 0x15) {
         item_type == ItemType::Structure
     } else {
         matches!(item_type, ItemType::ByteString | ItemType::Structure)
@@ -135,8 +135,9 @@ pub(crate) fn validate_key_material_item(
         11 => TransparentRsaPublicKey::validate_item(item),
         12 => TransparentDhPrivateKey::validate_item(item),
         13 => TransparentDhPublicKey::validate_item(item),
-        14 => TransparentEcPrivateKey::validate_item(item),
-        15 => TransparentEcPublicKey::validate_item(item),
+        // KMIP 2.1 §11.25, Table 461 encodes these Enumeration values in hex.
+        0x14 => TransparentEcPrivateKey::validate_item(item),
+        0x15 => TransparentEcPublicKey::validate_item(item),
         _ => Ok(()),
     }
 }

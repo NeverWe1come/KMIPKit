@@ -115,7 +115,8 @@ public final class Authentication implements AutoCloseable {
         });
     }
 
-    NativeHandle nativeHandleOwner() {
+    /** Internal lifecycle bridge used when attaching this value to one Request Message. */
+    public NativeHandle nativeHandleOwner() {
         return handle;
     }
 

@@ -1572,9 +1572,10 @@
           "enum": [
             "not-applicable",
             "preserves-caller-batch-and-extension-order",
-            "preserves-response-extension-order"
+            "preserves-response-extension-order",
+            "preserves-response-field-wire-order"
           ],
-          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order."
+          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order. Typed response field indexing preserves decoded TTLV field order."
         },
         "criticalityIndicator": {
           "$ref": "#/$defs/criticalityIndicator"
@@ -2599,9 +2600,10 @@
             "native-handle-release-managed-java-value",
             "secret-buffer-wipe",
             "normalized-client-protocol-error",
-            "normalized-client-protocol-error-outcome"
+            "normalized-client-protocol-error-outcome",
+            "standard-attribute-tag-value"
           ],
-          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception."
+          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception. standard-attribute-tag-value maps a C named uint32_t TTLV tag macro to the Rust typed marker and Java/Python StandardAttribute entry whose tag value is identical."
         },
         "lifecycleSemanticsByLanguage": {
           "type": "object",
@@ -2633,7 +2635,8 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$"
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Exact approved feature specification authorizing this declaration when it extends a capability owned by another specification."
         },
         "blockedReason": {
           "type": "string",
@@ -2895,12 +2898,7 @@
             "required": [
               "approvalSource",
               "languageMappings"
-            ],
-            "not": {
-              "required": [
-                "candidateSpecId"
-              ]
-            }
+            ]
           }
         },
         {
@@ -2997,6 +2995,16 @@
         "evidence"
       ],
       "properties": {
+        "declarationId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?]+$",
+          "description": "Exact stable identifier of a Rust public declaration excluded by a reviewed type-system mapping."
+        },
+        "capabilityId": {
+          "type": "string",
+          "minLength": 1
+        },
         "packageId": {
           "enum": [
             "rust-kmipkit-ttlv",
@@ -3023,6 +3031,53 @@
           },
           "description": "Exact javap signatures excluded from an overloaded Java export path when sibling overloads remain mapped."
         },
+        "declarationKind": {
+          "enum": [
+            "module",
+            "type",
+            "variant",
+            "field",
+            "trait",
+            "function",
+            "associated-item",
+            "constant",
+            "macro",
+            "c-symbol",
+            "java-member",
+            "python-export"
+          ]
+        },
+        "artifactKind": {
+          "enum": [
+            "rust-trait",
+            "rust-associated-type",
+            "rust-generic-type",
+            "rust-enum-variant",
+            "rust-enum-field",
+            "rust-module"
+          ],
+          "description": "Narrow Rust type-system artifact excluded only when its runtime value is represented by an exact verified four-language counterpart."
+        },
+        "counterpartDeclarationIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^*?]+$"
+          }
+        },
+        "evidencePaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*\\\\).+$"
+          }
+        },
         "reason": {
           "type": "string",
           "minLength": 1
@@ -3039,6 +3094,67 @@
           "pattern": "^KMIPKIT-[0-9]{4}$",
           "description": "Exact owner specification for an approved declaration exclusion."
         },
+    "rustArtifactKind": {
+      "enum": [
+        "rust-trait-implementation-member",
+        "rust-conditional-trait-implementation-member",
+        "exact-route",
+        "ownership-transfer-helper"
+      ],
+      "description": "Exact Rust export-audit category for a route excluded without a separate cross-language capability."
+    },
+    "identity": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact serialized Rustdoc identity for a trait implementation member."
+    },
+    "condition": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact conditional bound attached to a Rust trait implementation member."
+    },
+    "ownerExportName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^*?]+$"
+    },
+    "ownerDeclarationId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^*?]+$"
+    },
+    "exclusionScope": {
+      "const": "exact-route"
+    },
+    "exclusionCategory": {
+      "enum": [
+        "ownership-transfer-helper",
+        "test-support"
+      ]
+    },
+    "precedent": {
+      "type": "object",
+      "required": [
+        "packageId",
+        "exportName"
+      ],
+      "properties": {
+        "packageId": {
+          "enum": [
+            "rust-kmipkit-ttlv",
+            "rust-kmipkit-protocol",
+            "rust-kmipkit-client",
+            "rust-kmipkit"
+          ]
+        },
+        "exportName": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?]+$"
+        }
+      },
+      "additionalProperties": false
+    },
         "cType": {
           "$ref": "#/$defs/cTypeLayout",
           "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
@@ -3093,6 +3209,26 @@
             "properties": {
               "packageId": {
                 "const": "c-kmipkit"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["artifactKind"]
+          },
+          "then": {
+            "required": [
+              "declarationId",
+              "capabilityId",
+              "declarationKind",
+              "counterpartDeclarationIds",
+              "evidencePaths",
+              "candidateSpecId"
+            ],
+            "properties": {
+              "candidateSpecId": {
+                "const": "KMIPKIT-0053"
               }
             }
           }

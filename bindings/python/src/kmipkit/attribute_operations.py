@@ -132,6 +132,72 @@ class AttributeSet(NativeHandle):
         errors.raise_for_status(status)
 
     @synchronized_native_call
+    def try_push_typed(self, attribute: Any, typed: Any) -> None:
+        """Append a validated typed occurrence, preserving repeats and order."""
+        from .typed_attributes import StandardAttribute, TypedAttribute
+
+        if not isinstance(attribute, StandardAttribute) or not isinstance(typed, TypedAttribute):
+            errors.raise_for_status(4)
+        with typed.as_item() as item:
+            status = int(
+                _client_lib.kmipkit_attribute_set_try_push_typed(
+                    self._native_attribute_set(),
+                    attribute.tag,
+                    extensions._client_native_item(item),
+                )
+            )
+        errors.raise_for_status(status)
+
+    @synchronized_native_call
+    def typed_count(self, attribute: Any) -> int:
+        """Return the occurrence count for one catalogued direct attribute."""
+        from .typed_attributes import StandardAttribute
+
+        if not isinstance(attribute, StandardAttribute):
+            errors.raise_for_status(4)
+        output = _client_ffi.new("uint64_t *")
+        status = int(
+            _client_lib.kmipkit_attribute_set_typed_count(
+                self._native_attribute_set(), attribute.tag, output
+            )
+        )
+        errors.raise_for_status(status)
+        return int(output[0])
+
+    @synchronized_native_call
+    def typed_at(self, attribute: Any, occurrence: int) -> Any:
+        """Return one independently owned occurrence by its zero-based position."""
+        from .typed_attributes import StandardAttribute, TypedAttribute
+
+        if not isinstance(attribute, StandardAttribute):
+            errors.raise_for_status(4)
+        index = extensions._integer_range(occurrence, 0, 0xFFFF_FFFF_FFFF_FFFF)
+        output = _client_ffi.new("kmipkit_ttlv_item_t **")
+        status = int(
+            _client_lib.kmipkit_attribute_set_typed_at(
+                self._native_attribute_set(), attribute.tag, index, output
+            )
+        )
+        errors.raise_for_status(status)
+        address = int(_client_ffi.cast("uintptr_t", output[0]))
+        handle = ttlv.ffi.cast("kmipkit_ttlv_item_t *", address)
+        return _wrap_owned_handle(TypedAttribute, handle, attribute=attribute)
+
+    @synchronized_native_call
+    def typed(self, attribute: Any) -> tuple[Any, ...]:
+        """Return all matching typed occurrences as caller-owned copies in wire order."""
+        count = self.typed_count(attribute)
+        items = []
+        try:
+            for occurrence in range(count):
+                items.append(self.typed_at(attribute, occurrence))
+        except BaseException:
+            for item in items:
+                item.close()
+            raise
+        return tuple(items)
+
+    @synchronized_native_call
     def as_items(self) -> ttlv.Structure:
         """Return an independently owned generic Structure copy in source order."""
         output = _client_ffi.new("kmipkit_ttlv_structure_t **")

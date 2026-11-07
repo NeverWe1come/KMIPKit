@@ -27,6 +27,34 @@ fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiR
     }
 }
 
+fn clone_query_response_field_item(
+    field: &kmipkit_protocol::QueryResponseField,
+) -> FfiResult<Option<Item>> {
+    // Callers enumerate fields individually; rebuilding the full payload here would be quadratic.
+    use kmipkit_protocol::QueryResponseField;
+
+    match field.kind() {
+        QueryResponseFieldKind::Enumeration => Ok(None),
+        QueryResponseFieldKind::TextString => {
+            let (QueryResponseField::VendorIdentification(value)
+            | QueryResponseField::ApplicationNamespace(value)) = field
+            else {
+                return Err(ERROR_INTERNAL);
+            };
+            let tag = RawTag::new(field.tag())
+                .and_then(|raw| raw.try_checked())
+                .map_err(model_status)?;
+            Item::new(tag, Value::text_string(value.clone()))
+                .map(Some)
+                .map_err(model_status)
+        }
+        QueryResponseFieldKind::Structure | QueryResponseFieldKind::Unknown => field
+            .with_ttlv(super::clone_item)
+            .ok_or(ERROR_INTERNAL)?
+            .map(Some),
+    }
+}
+
 fn outcome_has_success_or_pending_response(outcome: &kmipkit_client::ClientBatchOutcome) -> bool {
     outcome.result().status().raw() == 0 || outcome.asynchronous_correlation_value().is_some()
 }
@@ -888,6 +916,48 @@ pub extern "C" fn kmipkit_client_batch_create(out_batch: *mut *mut kmipkit_clien
     })
 }
 
+/// Attaches Authentication to this Request Message and takes ownership on success.
+///
+/// Authentication is encoded once in the Request Header and applies to every Batch Item. It is
+/// not stored in Client configuration. If validation fails, the Authentication handle remains
+/// owned by the caller.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_set_authentication(
+    batch: *mut kmipkit_client_batch_t,
+    authentication: *mut kmipkit_authentication_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if authentication.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let batch_handle = read_handle!(batch, ClientBatch);
+        let HandleValue::ClientBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut batch) = batch.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let authentication_handle = match reference_handle(authentication, Kind::Authentication) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        if !matches!(&authentication_handle.value, HandleValue::Authentication(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(authentication_handle);
+        let authentication = match owned_payload(authentication, Kind::Authentication) {
+            Ok(HandleValue::Authentication(authentication)) => authentication,
+            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        batch.authentication = Some(authentication);
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_add_item(
     batch: *mut kmipkit_client_batch_t,
@@ -959,6 +1029,66 @@ pub extern "C" fn kmipkit_client_batch_item_count(
     })
 }
 
+/// Returns the KMIP 2.1 Operation Enumeration for a typed request batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_operation(
+    item: *mut kmipkit_client_batch_item_t,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let operation = scalar_out!(out_operation);
+        *operation = 0;
+        let handle = read_handle!(item, BatchItem);
+        *operation = match &handle.value {
+            HandleValue::BatchItem(item) => item.operation(),
+            HandleValue::BatchItemReadback(item) if item.owner_index_is_valid() => {
+                item.metadata.operation
+            }
+            HandleValue::BatchItemReadback(_) => return record_ffi_error(ERROR_INTERNAL),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        SUCCESS
+    })
+}
+
+#[cfg(feature = "coverage-c-consumer")]
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_test_client_batch_item_encoded_operation(
+    inout_item: *mut *mut kmipkit_client_batch_item_t,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if inout_item.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller supplies a writable in/out slot, as required by this test-only
+        // consuming helper. The item is cleared as soon as ownership transfers.
+        let item_slot = unsafe { &mut *inout_item };
+        if item_slot.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let out = scalar_out!(out_operation);
+        *out = 0;
+        let item_handle = *item_slot;
+        let handle = read_handle!(item_handle, BatchItem);
+        if !matches!(&handle.value, HandleValue::BatchItem(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(handle);
+        let item = match owned_payload(item_handle, Kind::BatchItem) {
+            Ok(HandleValue::BatchItem(item)) => *item,
+            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        *item_slot = ptr::null_mut();
+        *out = try_ffi!(
+            kmipkit_client::test_support::encoded_batch_item_operation(item)
+                .map_err(|error| protocol_status(&error))
+        );
+        SUCCESS
+    })
+}
+
 /// Creates an owned, read-only metadata view retaining the batch owner's lifetime.
 ///
 /// The view does not copy request payload bytes or expose request payload access.
@@ -1020,6 +1150,7 @@ pub extern "C" fn kmipkit_client_batch_item_at(
                 owner: Arc::clone(owner),
                 index,
                 metadata: ClientBatchItemMetadataSnapshot {
+                    operation: item.operation(),
                     unique_batch_item_id,
                     extensions,
                 },
@@ -5196,6 +5327,125 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_ttlv(
     })
 }
 
+/// Returns whether this result is a typed Query response and its field count.
+///
+/// `out_present` is zero when the result belongs to another operation. A
+/// failed Query response is still present but can have zero payload fields.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_query_field_count(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_count.is_null()
+            || ffi_output_ranges_overlap(out_present, out_count)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let count = scalar_out!(out_count);
+        *present = 0;
+        *count = 0;
+
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = item.outcome();
+        let response = outcome.response();
+        let Some(query) = response.query() else {
+            return SUCCESS;
+        };
+        *count =
+            try_ffi!(u64::try_from(query.response_field_count()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Returns one Query field in wire order using the Rust protocol classifier.
+///
+/// Enumeration values are written to `out_enumeration` and have no Item
+/// handle. Text, structure, and unknown members return a caller-owned `Item`
+/// handle, released with `kmipkit_ttlv_item_release`. `out_present` is zero
+/// when the result is not a Query response; an out-of-range index is invalid.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_query_field_at(
+    item: *mut kmipkit_client_batch_item_response_t,
+    index: u64,
+    out_present: *mut u8,
+    out_tag: *mut u32,
+    out_kind: *mut u8,
+    out_enumeration: *mut u32,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let outputs = [
+            out_present.cast::<u8>(),
+            out_tag.cast::<u8>(),
+            out_kind.cast::<u8>(),
+            out_enumeration.cast::<u8>(),
+            out_item.cast::<u8>(),
+        ];
+        if outputs.iter().any(|output| output.is_null())
+            || ffi_output_ranges_overlap(out_present, out_tag)
+            || ffi_output_ranges_overlap(out_present, out_kind)
+            || ffi_output_ranges_overlap(out_present, out_enumeration)
+            || ffi_output_ranges_overlap(out_present, out_item)
+            || ffi_output_ranges_overlap(out_tag, out_kind)
+            || ffi_output_ranges_overlap(out_tag, out_enumeration)
+            || ffi_output_ranges_overlap(out_tag, out_item)
+            || ffi_output_ranges_overlap(out_kind, out_enumeration)
+            || ffi_output_ranges_overlap(out_kind, out_item)
+            || ffi_output_ranges_overlap(out_enumeration, out_item)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let tag = scalar_out!(out_tag);
+        let kind = scalar_out!(out_kind);
+        let enumeration = scalar_out!(out_enumeration);
+        let output_item = out_slot!(out_item);
+        *present = 0;
+        *tag = 0;
+        *kind = 0;
+        *enumeration = 0;
+
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let response_item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let outcome = response_item.outcome();
+        let response = outcome.response();
+        let Some(query) = response.query() else {
+            return SUCCESS;
+        };
+        let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+        let Some(field) = query.response_field(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *tag = field.tag();
+        let field_kind = field.kind();
+        *kind = field_kind as u8;
+        match field_kind {
+            QueryResponseFieldKind::Enumeration => {
+                *enumeration = try_ffi!(field.raw_enumeration().ok_or(ERROR_INTERNAL));
+            }
+            QueryResponseFieldKind::TextString
+            | QueryResponseFieldKind::Structure
+            | QueryResponseFieldKind::Unknown => {}
+        }
+        if field_kind != QueryResponseFieldKind::Enumeration {
+            let owned_item = try_ffi!(
+                clone_query_response_field_item(field).and_then(|item| item.ok_or(ERROR_INTERNAL))
+            );
+            *output_item = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(owned_item)));
+        }
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Copies the ordered Response Payload for any valid batch result, when present.
 ///
 /// The returned structure is caller-owned and remains valid after the result
@@ -8083,6 +8333,104 @@ pub extern "C" fn kmipkit_attribute_set_try_push(
         if let Err(_error) = set.try_push(item) {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
+        SUCCESS
+    })
+}
+
+/// Validates a catalogued typed Item before appending it in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_try_push_typed(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(copy_required_item_handle(item));
+        let item = try_ffi!(typed_attributes::validate_typed_item(expected_tag, item));
+        try_ffi!(validate_attribute_set_append_item(&item));
+        let Ok(mut set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        try_ffi!(validate_attribute_set_item_limits(
+            set.as_items().iter().chain(std::iter::once(&item)),
+        ));
+        if let Err(_error) = set.try_push(item) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the number of occurrences of one catalogued typed attribute.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_typed_count(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        if !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = try_ffi!(
+            u64::try_from(
+                set.as_items()
+                    .iter()
+                    .filter(|item| item.tag().raw() == expected_tag)
+                    .count(),
+            )
+            .map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Returns a caller-owned typed Item copy by occurrence index in insertion order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attribute_set_typed_at(
+    attributes: *mut kmipkit_attribute_set_t,
+    expected_tag: u32,
+    occurrence: u64,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        if !typed_attributes_catalog_generated::is_catalogued_attribute_tag(expected_tag) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = try_ffi!(reference_handle(attributes, Kind::AttributeSet));
+        let HandleValue::AttributeSet(source) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(set) = source.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Ok(index) = usize::try_from(occurrence) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = set
+            .as_items()
+            .iter()
+            .filter(|item| item.tag().raw() == expected_tag)
+            .nth(index)
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let item = try_ffi!(item.try_clone().map_err(model_status));
+        let item = try_ffi!(typed_attributes::validate_typed_item(expected_tag, item));
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
         SUCCESS
     })
 }

@@ -13,8 +13,8 @@ from tools.api_manifest import generate
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 RUST_REPORT_PATH = (
-    ROOT / "specs" / "043-public-api-bindings" / "reports"
-    / "rust-export-report-2026-10-30.json"
+    ROOT / "specs" / "053-api-parity-facade" / "reports"
+    / "rust-export-report-2026-11-07-final.json"
 )
 CASES_PATH = Path(__file__).parent / "fixtures" / "t091_root_reexport_alias_cases.json"
 
@@ -68,6 +68,14 @@ class T091RootReexportAliasTests(unittest.TestCase):
                 "packageId": "rust-kmipkit",
                 "name": root_name,
             }
+            # Facade aliases can carry route-specific audit evidence. Declared
+            # mappings may have no behavior evidence yet.
+            if facade.get("declarationState") == "verified":
+                self.assertTrue(facade.get("parityEvidenceIds"))
+            if "parityEvidenceIds" in facade:
+                expected["parityEvidenceIds"] = facade["parityEvidenceIds"]
+            else:
+                expected.pop("parityEvidenceIds", None)
             if facade != expected:
                 problems.append(f"{root_name} does not match {canonical_name}")
 

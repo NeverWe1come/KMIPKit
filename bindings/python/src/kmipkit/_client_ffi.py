@@ -23,7 +23,6 @@ ffi.cdef(
     typedef unsigned long long uintptr_t;
 
     int32_t kmipkit_credential_type_from_raw(uint32_t raw, uint32_t *out_raw);
-
     typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;
@@ -49,10 +48,136 @@ ffi.cdef(
     typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+    typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
+    typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
+    int32_t kmipkit_ttlv_value_view_copy_bytes(
+        kmipkit_ttlv_value_view_t *view, uint8_t *buffer, uint64_t capacity);
+    typedef struct kmipkit_authentication_t kmipkit_authentication_t;
+    typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
+    typedef struct kmipkit_cryptographic_parameters_fields_v1_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint8_t block_cipher_mode_present;
+        uint32_t block_cipher_mode;
+        uint8_t padding_method_present;
+        uint32_t padding_method;
+        uint8_t hashing_algorithm_present;
+        uint32_t hashing_algorithm;
+        uint8_t key_role_type_present;
+        uint32_t key_role_type;
+        uint8_t digital_signature_algorithm_present;
+        uint32_t digital_signature_algorithm;
+        uint8_t cryptographic_algorithm_present;
+        uint32_t cryptographic_algorithm;
+        uint8_t random_iv_present;
+        uint8_t random_iv;
+        uint8_t iv_length_present;
+        int32_t iv_length;
+        uint8_t tag_length_present;
+        int32_t tag_length;
+        uint8_t fixed_field_length_present;
+        int32_t fixed_field_length;
+        uint8_t invocation_field_length_present;
+        int32_t invocation_field_length;
+        uint8_t counter_length_present;
+        int32_t counter_length;
+        uint8_t initial_counter_value_present;
+        int32_t initial_counter_value;
+        uint8_t salt_length_present;
+        int32_t salt_length;
+        uint8_t mask_generator_present;
+        uint32_t mask_generator;
+        uint8_t mask_generator_hashing_algorithm_present;
+        uint32_t mask_generator_hashing_algorithm;
+        uint8_t p_source_present;
+        const uint8_t *p_source;
+        uint64_t p_source_length;
+        uint8_t trailer_field_present;
+        int32_t trailer_field;
+    } kmipkit_cryptographic_parameters_fields_v1_t;
+    int32_t kmipkit_cryptographic_parameters_from_fields_v1(
+        const kmipkit_cryptographic_parameters_fields_v1_t *fields,
+        kmipkit_cryptographic_parameters_t **out_parameters);
+    int32_t kmipkit_cryptographic_parameters_from_ttlv(
+        kmipkit_ttlv_structure_t *structure,
+        kmipkit_cryptographic_parameters_t **out_parameters);
+    int32_t kmipkit_cryptographic_parameters_into_ttlv(
+        kmipkit_cryptographic_parameters_t *parameters,
+        kmipkit_ttlv_structure_t **out_structure);
+    int32_t kmipkit_cryptographic_parameters_read_fields_v1(
+        kmipkit_cryptographic_parameters_t *parameters,
+        kmipkit_cryptographic_parameters_fields_v1_t *out_fields);
+    void kmipkit_cryptographic_parameters_release(
+        kmipkit_cryptographic_parameters_t *parameters);
+    int32_t kmipkit_client_batch_set_authentication(
+        kmipkit_client_batch_t *batch, kmipkit_authentication_t *authentication);
     int32_t kmipkit_attribute_set_create(
         kmipkit_ttlv_structure_t *items, kmipkit_attribute_set_t **out_attribute_set);
+    int32_t kmipkit_typed_attribute_from_item(
+        uint32_t expected_tag, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_typed_attribute_from_value(
+        uint32_t expected_tag, kmipkit_ttlv_value_t *value, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_typed_attribute_value(
+        uint32_t expected_tag, kmipkit_ttlv_item_t *item, kmipkit_ttlv_value_t **out_value);
+    int32_t kmipkit_managed_object_from_item(
+        uint32_t object_type, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_managed_object_from_fields(
+        uint32_t object_type, kmipkit_ttlv_item_t **fields, uint64_t field_count,
+        kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_block_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_value_from_fields(
+        uint32_t format_raw, kmipkit_ttlv_item_t **fields, uint64_t field_count,
+        kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_material_from_fields(
+        uint32_t format_raw, kmipkit_ttlv_item_t **fields, uint64_t field_count,
+        kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_wrapping_data_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_certificate_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_symmetric_key_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_public_key_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_private_key_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_split_key_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_secret_data_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_opaque_object_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_pgp_key_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_certificate_request_from_fields(
+        kmipkit_ttlv_item_t **fields, uint64_t field_count, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_block_from_item(
+        kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_value_from_item(
+        uint32_t format_raw, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_material_from_item(
+        uint32_t format_raw, kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_managed_value_field_read(
+        uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t *item,
+        uint32_t field_tag, uint32_t read_kind, uint8_t *out_present,
+        uint8_t *out_item_type, uint32_t *out_enumeration, int32_t *out_integer,
+        uint8_t *out_bytes, uint64_t byte_capacity, uint64_t *out_byte_length);
+    int32_t kmipkit_managed_value_field_item_read(
+        uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t *item,
+        uint32_t field_tag, uint8_t *out_present, kmipkit_ttlv_item_t **out_item);
+    int32_t kmipkit_key_wrapping_data_from_item(
+        kmipkit_ttlv_item_t *item, kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_attribute_set_try_push(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_item_t *item);
+    int32_t kmipkit_attribute_set_try_push_typed(
+        kmipkit_attribute_set_t *attributes, uint32_t expected_tag,
+        kmipkit_ttlv_item_t *item);
+    int32_t kmipkit_attribute_set_typed_count(
+        kmipkit_attribute_set_t *attributes, uint32_t expected_tag, uint64_t *out_count);
+    int32_t kmipkit_attribute_set_typed_at(
+        kmipkit_attribute_set_t *attributes, uint32_t expected_tag, uint64_t occurrence,
+        kmipkit_ttlv_item_t **out_item);
     int32_t kmipkit_attribute_set_as_items(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_structure_t **out_items);
     int32_t kmipkit_attribute_set_len(kmipkit_attribute_set_t *attributes, uint64_t *out_count);
@@ -60,7 +185,6 @@ ffi.cdef(
         kmipkit_attribute_set_t *attributes, uint8_t *out_is_empty);
     int32_t kmipkit_attribute_set_into_items(
         kmipkit_attribute_set_t *attributes, kmipkit_ttlv_structure_t **out_items);
-    typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
     typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
     typedef struct kmipkit_request_message_t kmipkit_request_message_t;
     typedef struct kmipkit_request_header_view_t kmipkit_request_header_view_t;
@@ -309,6 +433,9 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_count(
         kmipkit_client_batch_t *batch,
         uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_operation(
+        kmipkit_client_batch_item_t *item,
+        uint32_t *out_operation);
     int32_t kmipkit_client_batch_item_at(
         kmipkit_client_batch_t *batch,
         uint64_t index,
@@ -1271,6 +1398,14 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_query_field_count(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present, uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_response_query_field_at(
+        kmipkit_client_batch_item_response_t *item, uint64_t index,
+        uint8_t *out_present, uint32_t *out_tag, uint8_t *out_kind,
+        uint32_t *out_enumeration, kmipkit_ttlv_item_t **out_item);
+    void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
     int32_t kmipkit_client_batch_item_response_raw_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,

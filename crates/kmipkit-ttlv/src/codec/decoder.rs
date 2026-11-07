@@ -333,7 +333,9 @@ fn checked_tag(tag_value: u32, offset: usize) -> Result<Tag, DecodeError> {
             ModelError::TagNotAllocated | ModelError::RawTagOutOfRange => {
                 DecodeErrorKind::UnallocatedTag
             }
-            ModelError::StructureDepthExceeded => DecodeErrorKind::ModelConstraint,
+            ModelError::StructureDepthExceeded | ModelError::UnsupportedValue => {
+                DecodeErrorKind::ModelConstraint
+            }
         };
         DecodeError::new(kind, offset)
     })

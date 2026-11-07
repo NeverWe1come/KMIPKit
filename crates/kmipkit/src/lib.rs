@@ -150,6 +150,8 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "named_protocol_values"
             | "nonce_ttlv_parity"
             | "production_transport"
+            | "request_message_authentication"
+            | "request_validation"
             | "ttlv_wire_codec"
             | "usage_allocation_guard"
             | "vendor_extension_registry"
@@ -159,14 +161,18 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "typed_message_model"
             | "public_binding_surface"
             | "response_ttlv_navigation"
+            | "typed_cryptographic_parameters"
+            | "typed_managed_objects_and_key_material"
+            | "typed_object_attributes"
     ))
 }
 
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory,
-    ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest, PendingOutcome,
-    RequestOptions, UsageAllocationContext, UsageAllocationContextError,
+    ClientMessageExtension, ClientOperation, ClientOperationOutcome, ClientRequest,
+    ClientResponseView, PendingOutcome, RequestOptions, UsageAllocationContext,
+    UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse,

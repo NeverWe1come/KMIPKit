@@ -178,7 +178,7 @@ tabla.
 | `ttlv_wire_codec` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ffi_runtime_metadata` | declared | Los metadatos de versión y consulta de capacidades están mapeados en Rust, C, Java y Python. |
 | `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
-| `public_binding_surface` | verified | T108/T109 y T011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. El inventario está reconciliado; los mapeos de operaciones que quedan fuera de este inventario verificado siguen incompletos y las API `blocked` no están disponibles. El inventario verificado no afirma conformidad KMIP ni preparación para publicar la versión. |
+| `public_binding_surface` | verified | T108/T109 y T011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. El inventario está reconciliado y los 56 mapeos de API de operaciones cliente están verificados. El inventario verificado no afirma conformidad KMIP, interoperabilidad ni preparación para publicar la versión. |
 | `vendor_extension_registry` | declared | Los mapeos exactos incluyen Rust drop, C release, Java close y Python close para los handles nativos; falta verificar la paridad. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
@@ -203,18 +203,18 @@ tabla.
 | `named_protocol_values` | declared | Los valores Enumeration y Bit Mask asignados de KMIP 2.1 tienen nombres basados en el catálogo en Rust, C, Java y Python. Esto acredita nombres y consultas; no afirma que el servidor los admita ni que sean criptográficamente apropiados. |
 | `hashed_password_timestamp_sequence` | declared | Una secuencia local de marcas de tiempo para credenciales Hashed Password está mapeada en cuatro lenguajes; la validación del servidor sigue siendo la autoridad. |
 | `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
+| `named_protocol_mask_single_bit_lookup` | declared | Los indicadores de un solo bit asignados tienen nombres basados en el catálogo; los bits desconocidos se conservan. |
+| `typed_object_attributes` | verified | Los 62 atributos tipados aplicables tienen rutas de construcción y lectura en los cuatro lenguajes; el TTLV genérico conserva valores repetidos y desconocidos. |
+| `typed_managed_objects_and_key_material` | verified | Las rutas tipadas de objetos gestionados y material de clave están reconciliadas en Rust, C, Java y Python. Esto verifica el mapeo de API y la paridad del ciclo de vida, no la conformidad KMIP ni la preparación de la release. |
+| `typed_cryptographic_parameters` | verified | Los parámetros criptográficos tipados están reconciliados en Rust, C, Java y Python, con propiedad y limpieza explícitas de secretos. Esto verifica el mapeo de API y la paridad del ciclo de vida, no la conformidad KMIP ni la preparación de la release. |
+| `request_message_authentication` | verified | La autenticación propiedad del llamador se adjunta a la cabecera de un único Request Message y se aplica a sus Batch Items ordenados. |
+| `response_ttlv_navigation` | verified | El acceso tipado a respuestas y la navegación TTLV genérica propia conservan campos anidados, repetidos, desconocidos y de fabricante en los cuatro lenguajes. |
+| `request_validation` | verified | La validación con esquema informa de los problemas comprobables localmente antes del envío; las peticiones no válidas permanecen en `NotSent`. |
+| `request_validation_c_abi` | verified | C expone el informe compartido de validación y conserva los metadatos de incidencia y entrega del validador Rust. |
+| `client_operation_identity` | verified | Las rutas de operaciones cliente síncronas conservan el valor Operation KMIP en la API pública y en los elementos de respuesta. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** siguen en
-estado `blocked`. **12** filas están en estado `declared`: Cancel, Create,
-Create Key Pair, Create Split Key, Hash, MAC, MAC Verify, Poll, Process, Query
-Asynchronous Requests, Sign y Signature Verify. Las API asíncronas siguen el
-alcance aprobado de KMIPKIT-0009; continúa abierta la falta de un requisito de
-catálogo para Process Table 278 y siguen pendientes las listas de revisión del
-propietario. Query devuelve una respuesta TTLV genérica según KMIPKIT-DEC-015.
-`declared` registra el mapeo, pero no demuestra la conformidad completa de las
-operaciones. No se debe inferir que una operación está disponible solo porque
-haya tipos o código en otra parte del repositorio.
-**44** mapeos de operación están en estado `verified`:
+De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** están
+`blocked`. **0** filas están en estado `declared`: ninguna. **56** mapeos de operación están en estado `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
 Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
@@ -222,17 +222,27 @@ Get Usage Allocation, Import, Interop, Join Split Key, Locate, Log, Login,
 Logout, Modify Attribute, Obtain Lease, PKCS#11, Ping, Query, Recover,
 Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults y
-Validate. Son mapeos de API; no afirman conformidad completa de las
-operaciones ni interoperabilidad con servidores. Logout envía
+Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
+MAC Verify, Poll, Process, Query Asynchronous Requests, Sign y Signature
+Verify. Estos estados verificados describen solo los mapeos de API de los
+cuatro lenguajes; no acreditan la paridad completa de operaciones, la
+conformidad KMIP ni la interoperabilidad con servidores.
+Las API asíncronas siguen el alcance aprobado de KMIPKIT-0009; el trabajo
+separado sobre el catálogo y la revisión de Process Table 278 continúa
+registrado independientemente. No se debe inferir que una operación está
+disponible solo porque haya tipos o código en otra parte del repositorio.
+Logout envía
 el Ticket proporcionado por el llamador; no añade credenciales a peticiones
 posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta
 con payload vacío, y no implica que el servidor esté sano en general. Query
-conserva el orden de las funciones, los Object Groups y los Items desconocidos;
-acepta ambas formas descritas en §6.1.40 mientras `KMIPKIT-DISC-047` siga sin
-resolver. Son mapeos de API, no afirmaciones de conformidad del servidor. El
+conserva el orden de las funciones y los Object Groups, ofrece lectores tipados
+de los campos estándar en los cuatro lenguajes y mantiene los campos
+desconocidos o de fabricante accesibles mediante TTLV genérico; acepta ambas
+formas descritas en §6.1.40 mientras `KMIPKIT-DISC-047` siga sin resolver.
+Son mapeos de API, no afirmaciones de conformidad del servidor. El
 mapeo de Get Constraints envía la petición
 vacía de §6.1.22 y expone la estructura Constraints obligatoria y ordenada,
 además del TTLV completo de la respuesta correcta en Rust, C, Java y Python. C

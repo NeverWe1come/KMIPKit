@@ -12,6 +12,7 @@ from . import (
     attribute_operations,
     client,
     credentials,
+    cryptographic_parameters,
     errors,
     extensions,
     messages,
@@ -19,16 +20,20 @@ from . import (
     profile_catalog,
     protocol_values,
     ttlv,
+    typed_attributes,
+    validation,
 )
 from .extensions import with_extension
 from .credentials import CredentialType, CredentialValue
 from .errors import ProfileValidationDetails, ProfileValidationError
+from .typed_attributes import StandardAttribute, TypedAttribute
 
 __all__ = [
     "client",
     "async_operations",
     "attribute_operations",
     "credentials",
+    "cryptographic_parameters",
     "CredentialType",
     "CredentialValue",
     "ProfileValidationDetails",
@@ -40,5 +45,9 @@ __all__ = [
     "profile_catalog",
     "protocol_values",
     "ttlv",
+    "typed_attributes",
+    "validation",
+    "StandardAttribute",
+    "TypedAttribute",
     "with_extension",
 ]

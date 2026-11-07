@@ -84,6 +84,33 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
         self.assertIn("KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", rendered)
         self.assertIn('source_multiplicity: Some("No")', rendered)
 
+    def test_ffi_catalog_generation_exposes_tags_and_source_ttlv_types(self) -> None:
+        rendered = generate_attribute_types.render_typed_ffi_rust(self.catalog)
+
+        self.assertIn("ATTRIBUTE_DEFINITIONS: &[(u32, &str)]", rendered)
+        self.assertIn('(0x42_00_01, "DateTime")', rendered)
+        self.assertIn('(0x42_00_08, "Structure")', rendered)
+        self.assertEqual(62, rendered.count('(0x'))
+
+    def test_foreign_attribute_enums_are_generated_from_the_same_normative_catalog(self) -> None:
+        java = generate_attribute_types.render_typed_java(self.catalog)
+        python = generate_attribute_types.render_typed_python(self.catalog)
+
+        self.assertEqual(62, java.count("(0x"))
+        self.assertEqual(62, python.count(" = (0x"))
+        self.assertIn("ACTIVATION_DATE(0x420001, \"DateTime\", \"No\")", java)
+        self.assertIn(
+            "APPLICATION_SPECIFIC_INFORMATION(0x420004, \"Structure\", \"Yes\")",
+            java,
+        )
+        self.assertIn(
+            "DIGITAL_SIGNATURE_ALGORITHM(0x4200AE, \"Enumeration\", "
+            "\"Yes for PGP keys. No for X.509 certificates.\")",
+            java,
+        )
+        self.assertIn("ACTIVATION_DATE = (0x420001, \"DateTime\", \"No\")", python)
+        self.assertIn("def source_multiplicity(self) -> str | None:", python)
+
     def test_marker_and_multiplicity_validation_reject_invalid_catalog_values(self) -> None:
         with self.assertRaisesRegex(ValueError, "invalid element identity"):
             generate_attribute_types._marker_identifier("not-an-attribute")

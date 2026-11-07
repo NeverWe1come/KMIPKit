@@ -2,6 +2,7 @@
 #ifndef KMIPKIT_H
 #define KMIPKIT_H
 #include <stdint.h>
+#include "kmipkit_standard_attributes_generated.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,6 +72,12 @@ typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_WIRE_ENCODING_TTLV ((kmipkit_wire_encoding_t)0)
 #define KMIPKIT_WIRE_ENCODING_JSON ((kmipkit_wire_encoding_t)1)
 #define KMIPKIT_WIRE_ENCODING_XML ((kmipkit_wire_encoding_t)2)
+
+typedef uint8_t kmipkit_query_response_field_kind_t;
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION ((kmipkit_query_response_field_kind_t)1)
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING ((kmipkit_query_response_field_kind_t)2)
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE ((kmipkit_query_response_field_kind_t)3)
+#define KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN ((kmipkit_query_response_field_kind_t)4)
 
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
@@ -890,6 +897,10 @@ typedef struct kmipkit_profile_catalog_row_view_v1_t kmipkit_profile_catalog_row
 typedef struct kmipkit_profile_validation_result_t kmipkit_profile_validation_result_t;
 typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_client_async_operation_response_v1_t kmipkit_client_async_operation_response_v1_t;
+typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_parameters_t;
+typedef struct kmipkit_cryptographic_parameters_fields_v1_t kmipkit_cryptographic_parameters_fields_v1_t;
+typedef struct kmipkit_validation_report_t kmipkit_validation_report_t;
+typedef struct kmipkit_validation_issue_view_v1_t kmipkit_validation_issue_view_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1152,6 +1163,59 @@ struct kmipkit_client_async_operation_response_v1_t {
     uint64_t response_payload_member_count;
 };
 
+struct kmipkit_cryptographic_parameters_fields_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint8_t block_cipher_mode_present;
+    uint32_t block_cipher_mode;
+    uint8_t padding_method_present;
+    uint32_t padding_method;
+    uint8_t hashing_algorithm_present;
+    uint32_t hashing_algorithm;
+    uint8_t key_role_type_present;
+    uint32_t key_role_type;
+    uint8_t digital_signature_algorithm_present;
+    uint32_t digital_signature_algorithm;
+    uint8_t cryptographic_algorithm_present;
+    uint32_t cryptographic_algorithm;
+    uint8_t random_iv_present;
+    uint8_t random_iv;
+    uint8_t iv_length_present;
+    int32_t iv_length;
+    uint8_t tag_length_present;
+    int32_t tag_length;
+    uint8_t fixed_field_length_present;
+    int32_t fixed_field_length;
+    uint8_t invocation_field_length_present;
+    int32_t invocation_field_length;
+    uint8_t counter_length_present;
+    int32_t counter_length;
+    uint8_t initial_counter_value_present;
+    int32_t initial_counter_value;
+    uint8_t salt_length_present;
+    int32_t salt_length;
+    uint8_t mask_generator_present;
+    uint32_t mask_generator;
+    uint8_t mask_generator_hashing_algorithm_present;
+    uint32_t mask_generator_hashing_algorithm;
+    uint8_t p_source_present;
+    const uint8_t * p_source;
+    uint64_t p_source_length;
+    uint8_t trailer_field_present;
+    int32_t trailer_field;
+};
+
+struct kmipkit_validation_issue_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t severity;
+    uint32_t source_kind;
+    kmipkit_byte_span_v1_t code;
+    kmipkit_byte_span_v1_t path;
+    kmipkit_byte_span_v1_t source_identifier;
+    kmipkit_byte_span_v1_t source_reference;
+};
+
 struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
@@ -1193,148 +1257,79 @@ struct kmipkit_transport_config_v1_t {
     uint64_t max_request_bytes;
 };
 
-/* Releases the library-owned kmipkit_extension_identity_t handle. */
 void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
-/* Releases the library-owned kmipkit_extension_compatibility_t handle. */
 void kmipkit_extension_compatibility_release(kmipkit_extension_compatibility_t *handle);
-/* Releases the library-owned kmipkit_ttlv_path_t handle. */
 void kmipkit_ttlv_path_release(kmipkit_ttlv_path_t *handle);
-/* Releases the library-owned kmipkit_extension_discriminator_t handle. */
 void kmipkit_extension_discriminator_release(kmipkit_extension_discriminator_t *handle);
-/* Releases the library-owned kmipkit_extension_schema_t handle. */
 void kmipkit_extension_schema_release(kmipkit_extension_schema_t *handle);
-/* Releases the library-owned kmipkit_extension_information_t handle. */
 void kmipkit_extension_information_release(kmipkit_extension_information_t *handle);
-/* Releases the library-owned kmipkit_extension_definition_t handle. */
 void kmipkit_extension_definition_release(kmipkit_extension_definition_t *handle);
-/* Releases the library-owned kmipkit_client_extension_registry_t handle. */
 void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry_t *handle);
-/* Releases the library-owned kmipkit_client_configuration_t handle. */
 void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
-/* Releases the library-owned kmipkit_validated_extension_value_t handle. */
 void kmipkit_validated_extension_value_release(kmipkit_validated_extension_value_t *handle);
-/* Releases the library-owned kmipkit_registered_extension_value_t handle. */
 void kmipkit_registered_extension_value_release(kmipkit_registered_extension_value_t *handle);
-/* Releases the library-owned kmipkit_client_request_message_extension_t handle. */
 void kmipkit_client_request_message_extension_release(kmipkit_client_request_message_extension_t *handle);
-/* Releases the library-owned kmipkit_ttlv_structure_t handle. */
 void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
-/* Releases the library-owned kmipkit_client_batch_item_t handle. */
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
-/* Releases the library-owned kmipkit_extension_child_rule_t handle. */
 void kmipkit_extension_child_rule_release(kmipkit_extension_child_rule_t *handle);
-/* Releases the library-owned kmipkit_extension_order_constraint_t handle. */
 void kmipkit_extension_order_constraint_release(kmipkit_extension_order_constraint_t *handle);
-/* Releases the library-owned kmipkit_ttlv_value_t handle. */
 void kmipkit_ttlv_value_release(kmipkit_ttlv_value_t *handle);
-/* Releases the library-owned kmipkit_extension_recognition_t handle. */
 void kmipkit_extension_recognition_release(kmipkit_extension_recognition_t *handle);
-/* Releases the library-owned kmipkit_raw_tag_t handle. */
 void kmipkit_raw_tag_release(kmipkit_raw_tag_t *handle);
-/* Releases the library-owned kmipkit_tag_t handle. */
 void kmipkit_tag_release(kmipkit_tag_t *handle);
-/* Releases the library-owned kmipkit_ttlv_item_t handle. */
 void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
-/* Releases the library-owned kmipkit_codec_limits_t handle. */
 void kmipkit_codec_limits_release(kmipkit_codec_limits_t *handle);
-/* Releases the library-owned kmipkit_ttlv_structure_view_t handle. */
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
-/* Releases the library-owned kmipkit_ttlv_item_view_t handle. */
 void kmipkit_ttlv_item_view_release(kmipkit_ttlv_item_view_t *handle);
-/* Releases the library-owned kmipkit_ttlv_value_view_t handle. */
 void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
-/* Releases the library-owned kmipkit_transport_config_t handle. */
 void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
-/* Releases the library-owned kmipkit_client_t handle. */
 void kmipkit_client_release(kmipkit_client_t *handle);
-/* Releases the library-owned kmipkit_client_batch_t handle. */
 void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
-/* Releases the library-owned kmipkit_client_batch_response_t handle. */
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
-/* Releases the library-owned kmipkit_client_batch_item_response_t handle. */
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
-/* Releases the library-owned kmipkit_register_request_t handle. */
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
-/* Releases the library-owned kmipkit_split_key_reference_t handle. */
 void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
-/* Releases the library-owned kmipkit_usage_allocation_context_t handle. */
 void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t *handle);
-/* Releases the library-owned kmipkit_revocation_reason_t handle. */
 void kmipkit_revocation_reason_release(kmipkit_revocation_reason_t *handle);
-/* Releases the library-owned kmipkit_revoke_request_t handle. */
 void kmipkit_revoke_request_release(kmipkit_revoke_request_t *handle);
-/* Releases the library-owned kmipkit_client_async_operation_outcome_t handle. */
 void kmipkit_client_async_operation_outcome_release(kmipkit_client_async_operation_outcome_t *handle);
-/* Releases the library-owned kmipkit_request_message_t handle. */
 void kmipkit_request_message_release(kmipkit_request_message_t *handle);
-/* Releases the library-owned kmipkit_request_header_view_t handle. */
 void kmipkit_request_header_view_release(kmipkit_request_header_view_t *handle);
-/* Releases the library-owned kmipkit_request_batch_item_view_t handle. */
 void kmipkit_request_batch_item_release(kmipkit_request_batch_item_view_t *handle);
-/* Releases the library-owned kmipkit_response_message_t handle. */
 void kmipkit_response_message_release(kmipkit_response_message_t *handle);
-/* Releases the library-owned kmipkit_response_header_view_t handle. */
 void kmipkit_response_header_view_release(kmipkit_response_header_view_t *handle);
-/* Releases the library-owned kmipkit_response_batch_item_view_t handle. */
 void kmipkit_response_batch_item_release(kmipkit_response_batch_item_view_t *handle);
-/* Releases the library-owned kmipkit_message_extension_view_t handle. */
 void kmipkit_message_extension_view_release(kmipkit_message_extension_view_t *handle);
-/* Releases the library-owned kmipkit_message_validation_error_t handle. */
 void kmipkit_message_validation_error_release(kmipkit_message_validation_error_t *handle);
-/* Releases the library-owned kmipkit_profile_validation_error_t handle. */
 void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *handle);
-/* Releases the library-owned kmipkit_credential_t handle. */
 void kmipkit_credential_release(kmipkit_credential_t *handle);
-/* Releases the library-owned kmipkit_nonce_t handle. */
 void kmipkit_nonce_release(kmipkit_nonce_t *handle);
-/* Releases the library-owned kmipkit_attestation_credential_t handle. */
 void kmipkit_attestation_credential_release(kmipkit_attestation_credential_t *handle);
-/* Releases the library-owned kmipkit_device_credential_t handle. */
 void kmipkit_device_credential_release(kmipkit_device_credential_t *handle);
-/* Releases the library-owned kmipkit_authentication_t handle. */
 void kmipkit_authentication_release(kmipkit_authentication_t *handle);
-/* Releases the library-owned kmipkit_credential_view_t handle. */
 void kmipkit_credential_view_release(kmipkit_credential_view_t *handle);
-/* Releases the library-owned kmipkit_username_and_password_credential_t handle. */
 void kmipkit_username_and_password_credential_release(kmipkit_username_and_password_credential_t *handle);
-/* Releases the library-owned kmipkit_secret_bytes_t handle. */
 void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *handle);
-/* Releases the library-owned kmipkit_secret_text_t handle. */
 void kmipkit_secret_text_release(kmipkit_secret_text_t *handle);
-/* Releases the library-owned kmipkit_hashed_password_timestamp_sequence_t handle. */
 void kmipkit_hashed_password_timestamp_sequence_release(kmipkit_hashed_password_timestamp_sequence_t *handle);
-/* Releases the library-owned kmipkit_hashed_password_credential_t handle. */
 void kmipkit_hashed_password_credential_release(kmipkit_hashed_password_credential_t *handle);
-/* Releases the library-owned kmipkit_credential_value_t handle. */
 void kmipkit_credential_value_release(kmipkit_credential_value_t *handle);
-/* Releases the library-owned kmipkit_cancel_request_t handle. */
 void kmipkit_cancel_request_release(kmipkit_cancel_request_t *handle);
-/* Releases the library-owned kmipkit_poll_request_t handle. */
 void kmipkit_poll_request_release(kmipkit_poll_request_t *handle);
-/* Releases the library-owned kmipkit_process_request_t handle. */
 void kmipkit_process_request_release(kmipkit_process_request_t *handle);
-/* Releases the library-owned kmipkit_query_async_requests_request_t handle. */
 void kmipkit_query_async_requests_request_release(kmipkit_query_async_requests_request_t *handle);
-/* Releases the library-owned kmipkit_add_attribute_request_t handle. */
 void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
-/* Releases the library-owned kmipkit_adjust_attribute_request_t handle. */
 void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t *handle);
-/* Releases the library-owned kmipkit_delete_attribute_request_t handle. */
 void kmipkit_delete_attribute_request_release(kmipkit_delete_attribute_request_t *handle);
-/* Releases the library-owned kmipkit_modify_attribute_request_t handle. */
 void kmipkit_modify_attribute_request_release(kmipkit_modify_attribute_request_t *handle);
-/* Releases the library-owned kmipkit_set_attribute_request_t handle. */
 void kmipkit_set_attribute_request_release(kmipkit_set_attribute_request_t *handle);
-/* Releases the library-owned kmipkit_get_attributes_request_t handle. */
 void kmipkit_get_attributes_request_release(kmipkit_get_attributes_request_t *handle);
-/* Releases the library-owned kmipkit_get_attribute_list_request_t handle. */
 void kmipkit_get_attribute_list_request_release(kmipkit_get_attribute_list_request_t *handle);
-/* Releases the library-owned kmipkit_attribute_set_t handle. */
 void kmipkit_attribute_set_release(kmipkit_attribute_set_t *handle);
-/* Releases the library-owned kmipkit_profile_readiness_t handle. */
 void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
-/* Releases the library-owned kmipkit_profile_validation_result_t handle. */
 void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result_t *handle);
+void kmipkit_cryptographic_parameters_release(kmipkit_cryptographic_parameters_t *handle);
+void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1346,6 +1341,8 @@ void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result
 #define KMIPKIT_ERROR_TRANSPORT ((int32_t)9)
 #define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
 #define KMIPKIT_ERROR_SHARED_OWNER ((int32_t)11)
+#define KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH ((int32_t)12)
+#define KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ((int32_t)13)
 
 /* Creates a typed KMIP 2.1 Derive Key request from §6.1.14, Table 205. Source Unique Identifiers are required, ordered, and may repeat; unknown Object Type and Derivation Method values are preserved. Derivation Parameters and Attributes are borrowed and copied by the call. The source array is bounded to 100,000 identifiers and 16 MiB of aggregate Text String bytes.
  */
@@ -2871,6 +2868,213 @@ int32_t kmipkit_client_async_operation_outcome_process_response_v1(kmipkit_clien
  */
 /* KMIPKIT-0052-FR-001, KMIPKIT-0052-FR-007 */
 int32_t kmipkit_client_async_operation_outcome_query_async_requests_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
+/* Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned.
+ */
+/* KMIPKIT-0048-FR-001, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_typed_attribute_from_item(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP ManagedObject value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_managed_object_from_item(uint32_t object_type, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyBlock value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_block_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyValue value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_value_from_item(uint32_t format_raw, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyMaterial value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_material_from_item(uint32_t format_raw, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Copies a TTLV Item after validating it as a KMIP KeyWrappingData value. The input remains caller-owned.
+ */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_wrapping_data_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
+/* Builds Cryptographic Parameters from a versioned field record; raw enumerations are preserved and P Source is copied.
+ */
+/* KMIPKIT-0053-FR-004, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_cryptographic_parameters_from_fields_v1(const kmipkit_cryptographic_parameters_fields_v1_t * fields, kmipkit_cryptographic_parameters_t ** out_parameters);
+/* Copies and validates a generic TTLV Structure without consuming the caller handle.
+ */
+/* KMIPKIT-0053-FR-004, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_cryptographic_parameters_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_cryptographic_parameters_t ** out_parameters);
+/* Consumes a typed Cryptographic Parameters value into generic TTLV.
+ */
+/* KMIPKIT-0053-FR-004, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_cryptographic_parameters_into_ttlv(kmipkit_cryptographic_parameters_t * parameters, kmipkit_ttlv_structure_t ** out_structure);
+/* Attaches Authentication once to the Request Header for this batch message. The handle is consumed only on success.
+ */
+/* KMIPKIT-0053-FR-005, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_set_authentication(kmipkit_client_batch_t * batch, kmipkit_authentication_t * authentication);
+/* Validates a generic TTLV Structure with the shared Rust validator. Empty schema means no inferred schema; known names are RequestPayload/<Operation> or Nested/<Structure>.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_ttlv_structure_validation_report_v1(kmipkit_ttlv_structure_t * structure, const uint8_t * schema, uint64_t schema_length, kmipkit_validation_report_t ** out_report);
+/* Validates a typed request using the same Rust request checks that run before client execution.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_item_validation_report(kmipkit_client_batch_item_t * item, kmipkit_validation_report_t ** out_report);
+/* Returns whether an owned validation report has no error-severity finding.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_validation_report_is_valid(kmipkit_validation_report_t * report, uint8_t * out_is_valid);
+/* Returns the ordered safe issue count for an owned validation report.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_validation_report_issue_count(kmipkit_validation_report_t * report, uint64_t * out_count);
+/* Copies safe code, schema path, severity and source metadata into a caller-versioned view; spans remain borrowed from the report.
+ */
+/* KMIPKIT-0053-FR-006, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_validation_report_issue_at_v1(kmipkit_validation_report_t * report, uint64_t index, kmipkit_validation_issue_view_v1_t * out_issue);
+/* Copies present Table 59 fields into a versioned record. P Source is a borrowed read-only span valid while the Cryptographic Parameters handle remains live.
+ */
+/* KMIPKIT-0053-FR-004, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_cryptographic_parameters_read_fields_v1(kmipkit_cryptographic_parameters_t * parameters, kmipkit_cryptographic_parameters_fields_v1_t * out_fields);
+/* Returns the KMIP 2.1 Operation Enumeration for a typed request batch item.
+ */
+/* KMIPKIT-0053-FR-007 */
+int32_t kmipkit_client_batch_item_operation(kmipkit_client_batch_item_t * item, uint32_t * out_operation);
+/* Constructs and validates an owned typed Item from a catalogued tag and copied TTLV Value; caller retains the Value.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_typed_attribute_from_value(uint32_t expected_tag, kmipkit_ttlv_value_t * value, kmipkit_ttlv_item_t ** out_item);
+/* Returns an independently owned TTLV Value after validating the typed Item.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_typed_attribute_value(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_value_t ** out_value);
+/* Validates and appends one typed Item while preserving insertion order and caller ownership.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_attribute_set_try_push_typed(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, kmipkit_ttlv_item_t * item);
+/* Returns the number of occurrences for one catalogued attribute.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_attribute_set_typed_count(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, uint64_t * out_count);
+/* Returns the requested catalogued attribute occurrence as an independently owned Item copy in source order.
+ */
+/* KMIPKIT-0048-FR-002, KMIPKIT-0048-FR-003, KMIPKIT-0053-FR-002, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_attribute_set_typed_at(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, uint64_t occurrence, kmipkit_ttlv_item_t ** out_item);
+/* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_managed_object_from_fields(uint32_t object_type, kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_block_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_value_from_fields(uint32_t format_raw, kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_material_from_fields(uint32_t format_raw, kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-002, KMIPKIT-0049-FR-003, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_key_wrapping_data_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a Certificate from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_certificate_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Validates the selected managed value with its Rust typed model, then reads one raw-tag field. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. read_kind is 1 presence, 2 TTLV Item Type, 3 Enumeration, 4 Integer, or 5 Byte String/Big Integer bytes. Byte reads accept a null buffer with zero capacity to query length; short buffers fail without partial copies.
+ */
+/* KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009 */
+int32_t kmipkit_managed_value_field_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint32_t read_kind, uint8_t * out_present, uint8_t * out_item_type, uint32_t * out_enumeration, int32_t * out_integer, uint8_t * out_bytes, uint64_t byte_capacity, uint64_t * out_byte_length);
+/* Builds and validates a SymmetricKey from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_symmetric_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a PublicKey from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_public_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a PrivateKey from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_private_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a SplitKey from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_split_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a SecretData from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_secret_data_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a OpaqueObject from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_opaque_object_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a PgpKey from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_pgp_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Builds and validates a CertificateRequest from caller-owned field Items in KMIP table order.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0049-FR-001, KMIPKIT-0049-FR-005, KMIPKIT-0049-FR-007, KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-010, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_certificate_request_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
+/* Validates the selected managed value with its Rust typed model, then returns an independently owned copy of the first direct child matching field_tag. The copy retains the complete unknown/vendor subtree and child order; callers release a present output Item. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. Absence returns success with out_present set to zero and out_item set to null.
+ */
+/* KMIPKIT-0053-FR-003, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_managed_value_field_item_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint8_t * out_present, kmipkit_ttlv_item_t ** out_item);
+/* Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.
+ * Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release.
+ */
+/* KMIPKIT-0053-FR-008, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_item_response_query_field_count(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint64_t * out_count);
+/* Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.
+ * Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release.
+ */
+/* KMIPKIT-0053-FR-008, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
+int32_t kmipkit_client_batch_item_response_query_field_at(kmipkit_client_batch_item_response_t * item, uint64_t index, uint8_t * out_present, uint32_t * out_tag, uint8_t * out_kind, uint32_t * out_enumeration, kmipkit_ttlv_item_t ** out_item);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
@@ -3035,14 +3239,6 @@ int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(kmip
  */
 /* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
 int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
-/* This C-only metadata accessor fills the exact versioned batch-result carrier; the equivalent outcome, status, and reason values are exposed through the four-language batch result facade.
- */
-/* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
-int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
-/* This C-only constructor adapts the versioned transport ABI carrier into the transport configuration handle; the four-language facade exposes the equivalent builder and configuration values.
- */
-/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
-int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 #include "kmipkit_named_value_helpers_generated.h"
 
 #ifdef __cplusplus

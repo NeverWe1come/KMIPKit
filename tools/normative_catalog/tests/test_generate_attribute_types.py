@@ -111,6 +111,38 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
         self.assertLess(rendered.index("0x42_00_01"), rendered.index("0x42_00_28"))
         self.assertLess(rendered.index("0x42_00_28"), rendered.index("0x42_00_94"))
 
+    def test_renders_named_c_constants_for_catalogued_attribute_tags(self) -> None:
+        rendered = generator.render_typed_c_header(small_catalog())
+
+        attribute_macros = [
+            line
+            for line in rendered.splitlines()
+            if line.startswith("#define KMIPKIT_STANDARD_ATTRIBUTE_")
+            and not line.startswith("#define KMIPKIT_STANDARD_ATTRIBUTES_")
+        ]
+        self.assertEqual(6, len(attribute_macros))
+        self.assertIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_TAG(attribute) ((uint32_t)(attribute))",
+            rendered,
+        )
+        self.assertIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE ((uint32_t)0x00420001)",
+            rendered,
+        )
+        self.assertIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_VENDOR_ATTRIBUTE ((uint32_t)0x00420008)",
+            rendered,
+        )
+        self.assertIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_UNIQUE_IDENTIFIER ((uint32_t)0x00420094)",
+            rendered,
+        )
+        self.assertIn(
+            "#define KMIPKIT_STANDARD_ATTRIBUTE_RANDOM_NUMBER_GENERATOR "
+            "((uint32_t)0x004200DE)",
+            rendered,
+        )
+
     def test_rejects_unrecognized_source_encoding(self) -> None:
         catalog = small_catalog()
         elements = catalog["elements"]
@@ -216,6 +248,10 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
         catalog_bytes = b"catalog"
         expected = render_rust(small_catalog()).encode("utf-8")
         expected_typed = generator.render_typed_rust(small_catalog()).encode("utf-8")
+        expected_typed_ffi = generator.render_typed_ffi_rust(small_catalog()).encode("utf-8")
+        expected_typed_c_header = generator.render_typed_c_header(small_catalog()).encode("utf-8")
+        expected_typed_java = generator.render_typed_java(small_catalog()).encode("utf-8")
+        expected_typed_python = generator.render_typed_python(small_catalog()).encode("utf-8")
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -233,6 +269,20 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                     unittest.mock.call(
                         root.resolve(strict=True), generator.TYPED_OUTPUT_PATH, expected_typed
                     ),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_FFI_OUTPUT_PATH, expected_typed_ffi
+                    ),
+                    unittest.mock.call(
+                        root.resolve(strict=True),
+                        generator.TYPED_C_HEADER_OUTPUT_PATH,
+                        expected_typed_c_header,
+                    ),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_JAVA_OUTPUT_PATH, expected_typed_java
+                    ),
+                    unittest.mock.call(
+                        root.resolve(strict=True), generator.TYPED_PYTHON_OUTPUT_PATH, expected_typed_python
+                    ),
                 ],
             )
 
@@ -240,7 +290,15 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                 patch.object(
                     generator,
                     "safe_read_bytes",
-                    side_effect=[catalog_bytes, expected, expected_typed],
+                    side_effect=[
+                        catalog_bytes,
+                        expected,
+                        expected_typed,
+                        expected_typed_ffi,
+                        expected_typed_c_header,
+                        expected_typed_java,
+                        expected_typed_python,
+                    ],
                 ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
                 redirect_stdout(StringIO()),
@@ -251,7 +309,15 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                 patch.object(
                     generator,
                     "safe_read_bytes",
-                    side_effect=[catalog_bytes, expected, b"stale"],
+                    side_effect=[
+                        catalog_bytes,
+                        expected,
+                        b"stale",
+                        expected_typed_ffi,
+                        expected_typed_c_header,
+                        expected_typed_java,
+                        expected_typed_python,
+                    ],
                 ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
                 redirect_stderr(StringIO()),

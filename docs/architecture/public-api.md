@@ -3,9 +3,9 @@
 This reference describes the current API design and Rust declarations where
 identified. A Rust declaration does not establish 1.0 availability in all
 four languages. The reviewed [package status](../user-guide/en/language-packages.md)
-is the source for operation-level 1.0 readiness; `declared` and `verified`
-have distinct meanings, and `blocked` means the complete four-language
-mapping is unavailable.
+is the source for operation-level 1.0 API mapping status; `verified` records
+four-language API routes and does not establish protocol conformance or server
+interoperability. `declared` and `blocked` retain their distinct meanings.
 
 ## Three supported levels
 
@@ -15,9 +15,9 @@ The local API taxonomy is available through Rust `kmipkit::api_levels`, C
 `kmipkit_api_levels_get_v1`, Java `RuntimeMetadata.apiLevels()`, and Python
 `kmipkit.metadata.get_api_levels()`. Each query returns the fixed-order
 `high-level`, `typed-protocol`, and `generic-ttlv` levels without a network
-call. It describes the KMIPKit facade surface, is distinct from the KMIP
-Discover Versions operation, and does not assert that every KMIP operation is
-mapped or complete.
+call. It describes the KMIPKit facade surface and is distinct from the KMIP
+Discover Versions operation; it does not assert protocol conformance or peer
+support.
 
 ### High level
 
@@ -26,26 +26,25 @@ not implement the general builder surface. This high-level section describes
 the initial Rust operation subset of the complete 52-variant typed request set,
 shown for batch execution and lifecycle conveniences. The complete set appears
 in the Typed protocol section below, and this subset does not establish
-four-language 1.0 availability. The current typed client exposes
+four-language 1.0 availability by itself. The current typed client exposes
 Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke for batch execution, with single-operation convenience methods for
 lifecycle calls. The maintainer approved KMIPKIT-0009 for implementation on
-2026-10-29. Its four asynchronous follow-up APIs are mapped across Rust, C,
-Java, and Python and remain `declared` in the manifest. Each method performs
-one explicit exchange. `declared` is not a conformance claim: the Process
-Table 278 catalog requirement gap and reviewer-owned checklists remain open.
-Query Asynchronous Requests retains its generic TTLV response under
-KMIPKIT-DEC-015.
+2026-10-29. Its four asynchronous follow-up APIs have verified four-language
+API mappings and each method performs one explicit exchange. These mappings do
+not claim conformance: the Process Table 278 catalog requirement gap and
+reviewer-owned checklists remain open. Query Asynchronous Requests retains its
+generic TTLV response under KMIPKIT-DEC-015.
 
 | KMIP operation | Four-language 1.0 mapping |
 |---|---|
-| Cancel | declared |
-| Poll | declared |
-| Process | declared |
-| Query Asynchronous Requests | declared |
+| Cancel | verified |
+| Poll | verified |
+| Process | verified |
+| Query Asynchronous Requests | verified |
 
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
@@ -76,10 +75,10 @@ KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
 set currently contains 52 variants, covering 52 of the 56 `client_1_0`
 operation types. It excludes the four explicit asynchronous follow-up
 operations Cancel, Poll, Process, and Query Asynchronous Requests from batch
-items; these operations, which are declared in the manifest under the approved
-KMIPKIT-0009 scope, use dedicated one-shot methods. The Query Asynchronous
-Requests response remains available as a generic TTLV response under
-KMIPKIT-DEC-015.
+items; these operations have verified four-language API mappings under the
+approved KMIPKIT-0009 scope and use dedicated one-shot methods. This API status
+does not establish conformance. The Query Asynchronous Requests response
+remains available as a generic TTLV response under KMIPKIT-DEC-015.
 Variants: Discover Versions,
 Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
 Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,

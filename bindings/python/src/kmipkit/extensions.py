@@ -36,6 +36,7 @@ from ._handles import (
     _wrap_owned_handle,
     synchronize_public_functions,
 )
+from .validation import ValidationReport
 
 
 @dataclass(frozen=True, slots=True)
@@ -364,6 +365,21 @@ class ClientBatchItem(NativeHandle):
     def _require_mutable(self) -> None:
         if self._read_only:
             errors.raise_for_status(4)
+
+    @property
+    def operation(self) -> int:
+        """Return the KMIP 2.1 Operation Enumeration selected by this request."""
+        return _scalar(
+            "uint32_t",
+            lib.kmipkit_client_batch_item_operation,
+            self._pointer(),
+        )
+
+    def validation_report(self) -> ValidationReport:
+        """Return the shared Rust validation report for this typed request."""
+        from .validation import validate_request
+
+        return validate_request(self)
 
 
 class RevocationReason(NativeHandle):
@@ -1567,10 +1583,7 @@ def is_recognized(recognition: ExtensionRecognition) -> bool:
 
 
 def _view_bytes(view: ttlv.TtlvValueView) -> bytes:
-    return bytes(
-        ttlv.ttlv_value_view_byte_at(view, index)
-        for index in range(ttlv.ttlv_value_view_byte_length(view))
-    )
+    return ttlv.ttlv_value_view_bytes(view)
 
 
 def _view_scalar(view: ttlv.TtlvValueView, item_type: ttlv.ItemType) -> object:

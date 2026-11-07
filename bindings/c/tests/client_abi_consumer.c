@@ -4,6 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern int kmipkit_test_client_batch_item_encoded_operation(
+    kmipkit_client_batch_item_t **inout_item,
+    uint32_t *out_operation);
+
+static int test_encoded_operation_and_consume(
+        kmipkit_client_batch_item_t **item,
+        uint32_t expected_operation) {
+    uint32_t encoded_operation = UINT32_MAX;
+    return item != NULL && *item != NULL &&
+        kmipkit_test_client_batch_item_encoded_operation(item, &encoded_operation) == 0 &&
+        *item == NULL && encoded_operation == expected_operation;
+}
+
 static int response_ttlv_path_integer_matches(
         kmipkit_ttlv_structure_view_t *view,
         const uint32_t *path,
@@ -48,6 +61,184 @@ item_cleanup:
         if (matched) return 1;
     }
     return 0;
+}
+
+static int query_ttlv_text_matches(
+        kmipkit_ttlv_item_view_t *item,
+        uint32_t expected_tag,
+        const char *expected_text) {
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint32_t actual_tag = 0;
+    uint8_t item_type = 0;
+    uint64_t byte_length = 0;
+    size_t expected_length = strlen(expected_text);
+    int matches = 0;
+    if (item == NULL || expected_text == NULL ||
+            kmipkit_ttlv_item_view_tag(item, &tag) != 0 || tag == NULL ||
+            kmipkit_ttlv_tag_value(tag, &actual_tag) != 0 || actual_tag != expected_tag ||
+            kmipkit_ttlv_item_view_type(item, &item_type) != 0 ||
+            item_type != KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING ||
+            kmipkit_ttlv_item_view_value(item, &value) != 0 || value == NULL ||
+            kmipkit_ttlv_value_view_byte_length(value, &byte_length) != 0 ||
+            byte_length != (uint64_t)expected_length) {
+        goto cleanup;
+    }
+    matches = 1;
+    for (size_t index = 0; index < expected_length; ++index) {
+        uint8_t byte = 0;
+        if (kmipkit_ttlv_value_view_byte_at(value, (uint64_t)index, &byte) != 0 ||
+                byte != (uint8_t)expected_text[index]) {
+            matches = 0;
+            break;
+        }
+    }
+cleanup:
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_tag_release(tag);
+    return matches;
+}
+
+int32_t kmipkit_client_abi_consumer_query_typed_fields(
+        kmipkit_client_batch_item_response_t *item) {
+    static const uint32_t expected_tags[] = {
+        UINT32_C(0x0042005c), UINT32_C(0x00420003), UINT32_C(0x00541234),
+        UINT32_C(0x0042005c), UINT32_C(0x00420057), UINT32_C(0x00420088),
+        UINT32_C(0x00420003), UINT32_C(0x0042009d), UINT32_C(0x0042015f)
+    };
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    uint64_t count = 0;
+    int32_t result = 1;
+    uint8_t typed_present = 0;
+    uint64_t typed_count = 0;
+    if (kmipkit_client_batch_item_response_query_field_count(
+                item, &typed_present, &typed_count) != 0 ||
+            typed_present != 1 || typed_count != sizeof(expected_tags) / sizeof(expected_tags[0])) {
+        goto cleanup;
+    }
+    for (uint64_t index = 0; index < typed_count; ++index) {
+        uint8_t field_present = 0;
+        uint32_t field_tag = 0;
+        kmipkit_query_response_field_kind_t field_kind = 0;
+        uint32_t enumeration = 0;
+        kmipkit_ttlv_item_t *field = NULL;
+        kmipkit_query_response_field_kind_t expected_kind =
+                (index == 0 || index == 3 || index == 4) ?
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION :
+                ((index == 1 || index == 6 || index == 7) ?
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING :
+                ((index == 5 || index == 8) ?
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE :
+                KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN));
+        if (kmipkit_client_batch_item_response_query_field_at(
+                    item, index, &field_present, &field_tag, &field_kind,
+                    &enumeration, &field) != 0 || field_present != 1 ||
+                field_tag != expected_tags[index] || field_kind != expected_kind ||
+                (expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION && field != NULL) ||
+                (expected_kind != KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION && field == NULL)) {
+            kmipkit_ttlv_item_release(field);
+            goto cleanup;
+        }
+        if (expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_ENUMERATION) {
+            const uint32_t expected_value = index == 0 ? UINT32_C(0x3b) :
+                    (index == 3 ? UINT32_C(0xf1234567) : UINT32_C(7));
+            if (enumeration != expected_value) goto cleanup;
+        } else {
+            kmipkit_ttlv_item_view_t *field_view = NULL;
+            uint8_t item_type = 0;
+            int field_ok = kmipkit_ttlv_item_view_from_item(field, &field_view) == 0 &&
+                    field_view != NULL;
+            if (field_ok && (expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_TEXT_STRING)) {
+                const char *expected_text = index == 1 ? "namespace-a" :
+                        (index == 2 ? "vendor-extension" :
+                        (index == 6 ? "namespace-b" : "vendor-a"));
+                field_ok = query_ttlv_text_matches(field_view, field_tag, expected_text);
+            } else if (field_ok && expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_STRUCTURE) {
+                field_ok = kmipkit_ttlv_item_view_type(field_view, &item_type) == 0 &&
+                        item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE;
+            } else if (field_ok && expected_kind == KMIPKIT_QUERY_RESPONSE_FIELD_KIND_UNKNOWN) {
+                field_ok = query_ttlv_text_matches(
+                        field_view, UINT32_C(0x00541234), "vendor-extension");
+            }
+            kmipkit_ttlv_item_view_release(field_view);
+            kmipkit_ttlv_item_release(field);
+            if (!field_ok) goto cleanup;
+            continue;
+        }
+    }
+    if (item == NULL || kmipkit_client_batch_item_response_query_ttlv(
+                item, &present, &payload) != 0 || present != 1 || payload == NULL ||
+            kmipkit_ttlv_structure_view(payload, &view) != 0 || view == NULL ||
+            kmipkit_ttlv_structure_view_item_count(view, &count) != 0 ||
+            count != sizeof(expected_tags) / sizeof(expected_tags[0])) {
+        goto cleanup;
+    }
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_tag_t *tag = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint32_t actual_tag = 0;
+        uint8_t item_type = 0;
+        uint32_t enumeration = 0;
+        int field_ok = 0;
+        if (kmipkit_ttlv_structure_view_item_at(view, index, &field) != 0 || field == NULL ||
+                kmipkit_ttlv_item_view_tag(field, &tag) != 0 || tag == NULL ||
+                kmipkit_ttlv_tag_value(tag, &actual_tag) != 0 ||
+                actual_tag != expected_tags[index] ||
+                kmipkit_ttlv_item_view_type(field, &item_type) != 0 ||
+                kmipkit_ttlv_item_view_value(field, &value) != 0 || value == NULL) {
+            goto field_cleanup;
+        }
+        if (index == 0 || index == 3 || index == 4) {
+            const uint32_t expected = index == 0 ? UINT32_C(0x3b) :
+                    (index == 3 ? UINT32_C(0xf1234567) : UINT32_C(7));
+            field_ok = item_type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION &&
+                    kmipkit_ttlv_value_view_enumeration(value, &enumeration) == 0 &&
+                    enumeration == expected;
+        } else if (index == 1) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "namespace-a");
+        } else if (index == 2) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "vendor-extension");
+        } else if (index == 5) {
+            kmipkit_ttlv_structure_view_t *nested = NULL;
+            kmipkit_ttlv_item_view_t *nested_field = NULL;
+            uint64_t nested_count = 0;
+            if (item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE &&
+                    kmipkit_ttlv_value_view_structure(value, &nested) == 0 && nested != NULL &&
+                    kmipkit_ttlv_structure_view_item_count(nested, &nested_count) == 0 &&
+                    nested_count == 1 && kmipkit_ttlv_structure_view_item_at(
+                            nested, UINT64_C(0), &nested_field) == 0 && nested_field != NULL) {
+                field_ok = query_ttlv_text_matches(
+                        nested_field, UINT32_C(0x00540001), "server-extension");
+            }
+            kmipkit_ttlv_item_view_release(nested_field);
+            kmipkit_ttlv_structure_view_release(nested);
+        } else if (index == 6) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "namespace-b");
+        } else if (index == 7) {
+            field_ok = query_ttlv_text_matches(field, expected_tags[index], "vendor-a");
+        } else if (index == 8) {
+            uint64_t nested_count = UINT64_MAX;
+            kmipkit_ttlv_structure_view_t *nested = NULL;
+            field_ok = item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE &&
+                    kmipkit_ttlv_value_view_structure(value, &nested) == 0 && nested != NULL &&
+                    kmipkit_ttlv_structure_view_item_count(nested, &nested_count) == 0 &&
+                    nested_count == 0;
+            kmipkit_ttlv_structure_view_release(nested);
+        }
+field_cleanup:
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(field);
+        if (!field_ok) goto cleanup;
+    }
+    result = 0;
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(payload);
+    return result;
 }
 
 int32_t kmipkit_client_abi_consumer_response_ttlv_handles(
@@ -1324,7 +1515,8 @@ static int logout_constructor_is_callable_from_c(void) {
         goto cleanup;
     }
     if (kmipkit_client_batch_item_logout(0, &item) != T076_ERROR_INVALID_INPUT || item != 0 ||
-        kmipkit_client_batch_item_logout(ticket, &item) != 0 || item == 0) {
+        kmipkit_client_batch_item_logout(ticket, &item) != 0 || item == 0 ||
+        !test_encoded_operation_and_consume(&item, UINT32_C(0x2e))) {
         goto cleanup;
     }
     result = 1;
@@ -2076,7 +2268,7 @@ static int interop_constructor_is_callable_from_c(void) {
             UINT32_C(0xf1234567), identifier, sizeof(identifier) - 1, &item) != 0) {
         return 0;
     }
-    const int result = item != 0;
+    const int result = test_encoded_operation_and_consume(&item, UINT32_C(0x34));
     kmipkit_client_batch_item_release(item);
     return result;
 }
@@ -2335,7 +2527,7 @@ static int pkcs11_constructor_is_callable_from_c(void) {
         kmipkit_client_batch_item_pkcs11(function, 0, 0, 0, &item) != 0 || item == 0) {
         goto cleanup;
     }
-    result = 1;
+    result = test_encoded_operation_and_consume(&item, UINT32_C(0x33));
 cleanup:
     kmipkit_client_batch_item_release(item);
     kmipkit_ttlv_structure_release(function);
@@ -2658,7 +2850,8 @@ static int join_split_key_constructor_pairs_each_identifier_with_its_threshold(v
         kmipkit_ttlv_structure_create(&masks) != 0 ||
         kmipkit_client_batch_item_join_split_key(
             UINT32_C(0xf1234567), references, 2, 1, UINT32_C(0xfedcba98),
-            attributes, masks, &item) != 0 || item == 0) {
+            attributes, masks, &item) != 0 || item == 0 ||
+        !test_encoded_operation_and_consume(&item, UINT32_C(0x29))) {
         goto cleanup;
     }
     kmipkit_client_batch_item_release(item);
@@ -3881,6 +4074,30 @@ cleanup:
 }
 
 static int async_response_extension_matches(kmipkit_ttlv_structure_t *extension);
+
+int kmipkit_client_abi_c_consumer_validate_present_empty_async_payload(
+    kmipkit_client_async_operation_outcome_t *outcome) {
+    kmipkit_ttlv_structure_t *payload = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    uint8_t present = UINT8_C(9);
+    uint64_t count = UINT64_MAX;
+    int result = 0;
+
+    if (outcome == 0 ||
+        kmipkit_client_async_operation_outcome_response_payload_ttlv(
+            outcome, &present, &payload) != 0 ||
+        present != UINT8_C(1) || payload == 0 ||
+        kmipkit_ttlv_structure_view(payload, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0) {
+        goto cleanup;
+    }
+    result = count == UINT64_C(0);
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(payload);
+    return result;
+}
 
 static int execute_cancel_payload_request_from_c(
     kmipkit_client_t *client,
@@ -7580,7 +7797,6 @@ int main(int argc, char **argv) {
         !check_constructor_is_callable_from_c() ||
         !delegated_login_constructor_is_callable_from_c() ||
         !login_constructor_is_callable_from_c() ||
-        !logout_constructor_is_callable_from_c() ||
         !derive_key_constructor_is_callable_from_c() ||
         !export_constructor_is_callable_from_c() ||
         !export_constructor_rejects_invalid_presence_from_c() ||
@@ -7589,7 +7805,6 @@ int main(int argc, char **argv) {
         !logout_response_accessor_clears_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
-        !interop_constructor_is_callable_from_c() ||
         !validate_constructor_is_callable_from_c() ||
         !validate_constructor_copies_nonempty_certificate_array_from_c() ||
         !validate_constructor_copies_payload_extensions() ||
@@ -7605,7 +7820,6 @@ int main(int argc, char **argv) {
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
-        !join_split_key_constructor_pairs_each_identifier_with_its_threshold() ||
         !join_split_key_constructor_enforces_aggregate_identifier_budget_from_c() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
@@ -7616,10 +7830,19 @@ int main(int argc, char **argv) {
         !encrypt_decrypt_abi_is_callable_from_compiled_c()) {
         return 7;
     }
+    if (!logout_constructor_is_callable_from_c()) {
+        return 71;
+    }
+    if (!interop_constructor_is_callable_from_c()) {
+        return 72;
+    }
+    if (!join_split_key_constructor_pairs_each_identifier_with_its_threshold()) {
+        return 73;
+    }
     if (!pkcs11_constructor_is_callable_from_c() ||
         !pkcs11_constructor_preserves_opaque_payload_extensions_from_c() ||
         !pkcs11_response_accessor_clears_invalid_outputs_from_c()) {
-        return 7;
+        return 74;
     }
 
     kmipkit_transport_config_v1_t transport_input = {0};

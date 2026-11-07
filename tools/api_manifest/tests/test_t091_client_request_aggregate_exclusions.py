@@ -61,7 +61,7 @@ class T091ClientRequestAggregateExclusionTests(unittest.TestCase):
                     },
                 )
 
-    def test_typed_request_readback_stays_blocked_until_four_language_parity_exists(self) -> None:
+    def test_typed_request_readback_has_exact_opaque_handle_exclusions(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         declarations = {
             (row["packageId"], row["exportName"]): row
@@ -75,16 +75,13 @@ class T091ClientRequestAggregateExclusionTests(unittest.TestCase):
         for key in sorted(REQUEST_READBACK_EXPORTS):
             with self.subTest(export=key):
                 declaration = declarations.get(key)
-                self.assertIsNotNone(
-                    declaration,
-                    f"typed request readback must remain visible as a blocked export: {key}",
-                )
-                self.assertNotIn(key, exclusions)
-                self.assertEqual("blocked", declaration["declarationState"])
-                self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
-                self.assertIn("four-language", declaration["blockedReason"])
-                self.assertNotIn("languageMappings", declaration)
-                self.assertNotIn("approvalSource", declaration)
+                self.assertIsNone(declaration)
+                exclusion = exclusions.get(key)
+                self.assertIsNotNone(exclusion, f"missing exact request accessor exclusion: {key}")
+                self.assertEqual("KMIPKIT-0043", exclusion["candidateSpecId"])
+                self.assertEqual("accepted-adr", exclusion["approvalSource"]["kind"])
+                self.assertEqual("docs/adr/0006-public-api-and-bindings.md", exclusion["approvalSource"]["path"])
+                self.assertIn("opaque-handle boundary", exclusion["reason"])
 
         remaining = [
             row["exportName"]
