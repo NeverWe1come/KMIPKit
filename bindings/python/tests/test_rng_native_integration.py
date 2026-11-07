@@ -61,7 +61,7 @@ def _rng_response_message() -> bytes:
         _enumeration(0x42005C, 0x26),
         _ttlv_item(0x420093, 8, _BATCH_IDS[1]),
         _enumeration(0x42007F, 0),
-        _ttlv_structure(0x42007C, _ttlv_item(0x4200D5, 2, struct.pack(">i", 0))),
+        _ttlv_structure(0x42007C, _ttlv_item(0x4200C4, 2, struct.pack(">i", 0))),
     )
     return _ttlv_structure(0x42007B, header, retrieve, seed)
 
@@ -208,7 +208,7 @@ def test_rng_operations_cross_native_cffi_over_mutual_tls() -> None:
         assert len(received_requests) == 1
         request = received_requests[0]
         assert _contains_bytes(request, _enumeration(0x42005C, 0x25))
-        assert _contains_bytes(request, _ttlv_item(0x4200D5, 2, struct.pack(">i", -17)))
+        assert _contains_bytes(request, _ttlv_item(0x4200C4, 2, struct.pack(">i", -17)))
         assert _contains_bytes(request, _enumeration(0x42005C, 0x26))
         assert _contains_bytes(request, _ttlv_item(0x4200C2, 8, _SEED)), (
             "RNG Seed must preserve caller-supplied bytes"
