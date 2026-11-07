@@ -687983,6 +687983,97 @@
       "candidateSpecId": "KMIPKIT-0053"
     },
     {
+      "declarationId": "T080:client-batch-item-response-metadata-v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_metadata_v1",
+      "capabilityId": "client_batch_model",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-007",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItemResponse::outcome"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_metadata_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.metadata"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.metadata"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0053"
+    },
+    {
+      "declarationId": "T080:transport-config-create-v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_transport_config_create_v1",
+      "capabilityId": "production_transport",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::transport_config::TransportConfig::builder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_transport_config_create_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.TransportConfiguration.Builder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.TransportConfig"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-transport/src/config.rs",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0053"
+    },
+    {
       "declarationId": "KMIPKIT-0053:c-standard-attribute:activation-date",
       "packageId": "c-kmipkit",
       "kind": "macro",
@@ -956787,7 +956878,10 @@
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0053-FR-007",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
       ],
       "capabilityState": "declared",
       "parityScope": "four-language",
@@ -956813,7 +956907,8 @@
           "org.kmipkit.extensions.ClientBatch.ordered",
           "org.kmipkit.extensions.ClientBatch.requestTimestamp",
           "org.kmipkit.extensions.ClientBatchItem.uniqueBatchItemId",
-          "org.kmipkit.extensions.ClientBatchItem.withUniqueBatchItemId"
+          "org.kmipkit.extensions.ClientBatchItem.withUniqueBatchItemId",
+          "org.kmipkit.extensions.ClientBatchItemResult.metadata"
         ],
         "c": [
           "kmipkit_client_batch_add_error_continuation_value",
@@ -956821,6 +956916,7 @@
           "kmipkit_client_batch_create",
           "kmipkit_client_batch_item_at",
           "kmipkit_client_batch_item_count",
+          "kmipkit_client_batch_item_response_metadata_v1",
           "kmipkit_client_batch_item_unique_batch_item_id",
           "kmipkit_client_batch_item_with_unique_batch_item_id",
           "kmipkit_client_batch_release",
@@ -956846,6 +956942,7 @@
           "kmipkit::ClientBatch::with_request_time_stamp",
           "kmipkit::ClientBatchItem::unique_batch_item_id",
           "kmipkit::ClientBatchItem::with_unique_batch_item_id",
+          "kmipkit::ClientBatchItemResponse::outcome",
           "kmipkit_client::ClientBatch",
           "kmipkit_client::ClientBatch::empty",
           "kmipkit_client::ClientBatch::from_items",
@@ -956874,10 +956971,17 @@
           "kmipkit.client.Batch.set_client_correlation_value",
           "kmipkit.client.Batch.set_ordered",
           "kmipkit.client.Batch.set_request_timestamp",
+          "kmipkit.client.BatchItemResult.metadata",
           "kmipkit.extensions.client_batch_item_unique_batch_item_id",
           "kmipkit.extensions.with_unique_batch_item_id"
         ]
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs"
+      ]
     },
     {
       "capabilityId": "client_execution",
@@ -963683,7 +963787,9 @@
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
       ],
       "capabilityState": "declared",
       "parityScope": "four-language",
@@ -963753,6 +963859,7 @@
           "kmipkit_timeout_limit_v1_t.kind",
           "kmipkit_timeout_limit_v1_t.nanoseconds",
           "kmipkit_timeout_limit_v1_t.seconds",
+          "kmipkit_transport_config_create_v1",
           "kmipkit_transport_config_t",
           "kmipkit_transport_config_v1_t.client_certificates",
           "kmipkit_transport_config_v1_t.client_private_key",
@@ -963967,7 +964074,15 @@
           "kmipkit.client.TrustSource.platform",
           "kmipkit.errors.InvalidInputError"
         ]
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-transport/src/config.rs",
+        "specs/053-api-parity-facade/spec.md"
+      ]
     },
     {
       "capabilityId": "public_binding_surface",

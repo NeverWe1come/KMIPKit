@@ -2836,6 +2836,8 @@ int32_t kmipkit_attribute_set_is_empty(kmipkit_attribute_set_t * attributes, uin
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-006, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_attribute_set_into_items(kmipkit_attribute_set_t * attributes, kmipkit_ttlv_structure_t ** out_items);
+/* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_configuration_wire_encoding(kmipkit_client_configuration_t * configuration, uint32_t * out_encoding);
 /* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-005 */
@@ -2844,6 +2846,8 @@ int32_t kmipkit_client_configuration_with_wire_encoding(kmipkit_client_configura
  */
 /* KMIPKIT-0057-FR-001, KMIPKIT-0057-FR-002, KMIPKIT-0057-FR-004, KMIPKIT-0057-FR-005 */
 int32_t kmipkit_client_execute_with_options(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, int32_t encoding_override, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0057-FR-005 */
+int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 /* Copies the optional raw Response Payload as an independently owned TTLV structure.
  */
 /* KMIPKIT-0052-FR-002, KMIPKIT-0052-FR-003, KMIPKIT-0052-FR-007 */
