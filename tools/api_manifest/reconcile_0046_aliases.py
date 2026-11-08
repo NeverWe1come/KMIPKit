@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import argparse
 import copy
 import hashlib
 import json
 import re
-import sys
-from pathlib import Path
 from typing import Any
+
+from tools.api_manifest.reconciliation_cli import run_reconciliation_cli
 
 MODULE_EXCLUSIONS = {
     "kmipkit::protocol",
@@ -229,28 +228,14 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--report", type=Path, required=True)
-    parser.add_argument("--write", action="store_true", help="update the reviewed manifest input")
-    args = parser.parse_args()
-    manifest_path = args.repo_root / "specification/api/public-api.json"
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        report = json.loads(args.report.read_text(encoding="utf-8"))
-        reconciled = reconcile(manifest, report)
-    except (OSError, json.JSONDecodeError, ReconciliationError) as error:
-        print(f"KMIPKIT-0046 manifest reconciliation failed: {error}", file=sys.stderr)
-        return 2
-
-    added = len(reconciled["publicDeclarations"]) - len(manifest["publicDeclarations"])
-    exclusions_added = len(reconciled["approvedExclusions"]) - len(manifest.get("approvedExclusions", []))
-    print(f"Prepared {added} exact declarations and {exclusions_added} exact exclusions.")
-    if args.write:
-        manifest_path.write_text(
-            json.dumps(reconciled, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
-    return 0
+    return run_reconciliation_cli(
+        reconcile,
+        spec_id="KMIPKIT-0046",
+        description=__doc__,
+        summarize=lambda added, exclusions, _write: (
+            f"Prepared {added} exact declarations and {exclusions} exact exclusions."
+        ),
+    )
 
 
 if __name__ == "__main__":

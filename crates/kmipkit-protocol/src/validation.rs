@@ -282,6 +282,48 @@ pub(crate) fn request_issue_report(
     )
 }
 
+pub(crate) fn certificate_request_preflight_report(
+    attributes: Option<&kmipkit_ttlv::Structure>,
+    has_request_value: bool,
+    has_request_type: bool,
+    operation_reference: &'static str,
+) -> Option<ValidationReport> {
+    if let Some(attributes) = attributes {
+        let view = attributes.view();
+        if crate::attribute::validate_single_instance_attribute_items(
+            view.children(),
+            Some(CERTIFICATE_OBJECT_TYPE),
+            true,
+        )
+        .is_err()
+        {
+            return Some(request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Attributes",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§4, Table 46",
+                },
+            ));
+        }
+    }
+
+    if has_request_value && !has_request_type {
+        return Some(request_issue_report(
+            "KMIPKIT-0051-P005",
+            "Certificate Request Type",
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: operation_reference,
+            },
+        ));
+    }
+
+    None
+}
+
+const CERTIFICATE_OBJECT_TYPE: u32 = 1;
+
 pub(crate) fn issue_report(
     code: &'static str,
     path: ValidationPath,

@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import argparse
 import copy
 import hashlib
-import json
-import sys
-from pathlib import Path
 from typing import Any
+
+from tools.api_manifest.reconciliation_cli import run_reconciliation_cli
 
 SPEC_ID = "KMIPKIT-0048"
 PARITY_SPEC_ID = "KMIPKIT-0053"
@@ -317,32 +315,16 @@ def _add_raw_named_values_alias(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--report", type=Path, required=True)
-    parser.add_argument("--write", action="store_true", help="update the reviewed manifest input")
-    args = parser.parse_args()
-    manifest_path = args.repo_root / "specification/api/public-api.json"
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        report = json.loads(args.report.read_text(encoding="utf-8"))
-        reconciled = reconcile(manifest, report)
-    except (OSError, json.JSONDecodeError, ReconciliationError) as error:
-        print(f"KMIPKIT-0048 manifest reconciliation failed: {error}", file=sys.stderr)
-        return 2
-
-    declarations_added = len(reconciled["publicDeclarations"]) - len(manifest["publicDeclarations"])
-    exclusions_added = len(reconciled["approvedExclusions"]) - len(manifest.get("approvedExclusions", []))
-    declaration_action = "write" if args.write else "would write"
-    print(
-        f"Prepared manifest reconciliation: {declarations_added:+} declarations, "
-        f"{exclusions_added:+} exclusions; {declaration_action} reviewed input."
+    return run_reconciliation_cli(
+        reconcile,
+        spec_id="KMIPKIT-0048",
+        description=__doc__,
+        summarize=lambda declarations, exclusions, write: (
+            "Prepared manifest reconciliation: "
+            f"{declarations:+} declarations, {exclusions:+} exclusions; "
+            f"{'write' if write else 'would write'} reviewed input."
+        ),
     )
-    if args.write:
-        manifest_path.write_text(
-            json.dumps(reconciled, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
-    return 0
 
 
 if __name__ == "__main__":
