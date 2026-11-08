@@ -13,6 +13,7 @@ use crate::config::BackendConfig;
 pub mod aws;
 pub mod azure;
 pub mod gcp;
+pub mod ibm;
 pub mod infisical;
 pub mod oci;
 pub mod vault;
@@ -507,6 +508,7 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
         "infisical" => Ok(Arc::new(infisical::InfisicalKmsProvider::new(
             &config.infisical,
         )?)),
+        "ibm" => Ok(Arc::new(ibm::IbmKmsProvider::new(&config.ibm)?)),
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
