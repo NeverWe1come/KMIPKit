@@ -180,7 +180,7 @@ fn key_block_and_key_value_accessors_cover_builder_and_reader_forms() {
         builder
             .with_raw(|view| view.children().len())
             .expect("builder exposes its current incomplete structure"),
-        4
+        5
     );
     assert!(builder.has_cryptographic_properties());
     assert!(!format!("{builder:?}").contains("D1"));
@@ -223,24 +223,40 @@ fn key_block_setters_update_decoded_tree_and_preserve_extensions() {
     children.push(tagged(0x0054_0101, Value::integer(77)));
     let source = structure_item(0x0042_0040, children);
 
-    let item = KeyBlock::try_from_item(source)
+    let parsed = KeyBlock::try_from_item(source)
         .expect("read valid key block")
-        .with_cryptographic_properties(Some(4), Some(256))
+        .with_cryptographic_properties(Some(4), Some(256));
+    assert_eq!(
+        parsed
+            .with_raw(|view| view.children()[1].with_value(|value| match value {
+                ValueView::Enumeration(raw) => *raw,
+                _ => 0,
+            }))
+            .expect("raw view reflects decoded-model mutation"),
+        4
+    );
+    let item = parsed
         .try_into_item()
         .expect("mutated key block remains valid");
 
     item.with_value(|value| match value {
         ValueView::Structure(structure) => {
             let fields = structure.children();
-            assert_eq!(fields[2].with_value(|v| match v {
-                ValueView::Enumeration(raw) => *raw,
-                _ => 0,
-            }), 4);
-            assert_eq!(fields[3].with_value(|v| match v {
-                ValueView::Integer(raw) => *raw,
-                _ => 0,
-            }), 256);
-            assert_eq!(fields[4].tag().raw(), 0x0054_0101);
+            assert_eq!(
+                fields[1].with_value(|v| match v {
+                    ValueView::Enumeration(raw) => *raw,
+                    _ => 0,
+                }),
+                4
+            );
+            assert_eq!(
+                fields[2].with_value(|v| match v {
+                    ValueView::Integer(raw) => *raw,
+                    _ => 0,
+                }),
+                256
+            );
+            assert_eq!(fields[3].tag().raw(), 0x0054_0101);
         }
         _ => panic!("Key Block remains a Structure"),
     });

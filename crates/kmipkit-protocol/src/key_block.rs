@@ -11,7 +11,7 @@ use crate::key_material::{
     KeyMaterial, expected_key_material_item_type, validate_key_material_item,
 };
 use crate::key_wrapping::KeyWrappingData;
-use crate::managed_object::{checked_tag, make_item};
+use crate::managed_object::{checked_tag, make_item, rebuild_ordered_structure};
 
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
@@ -119,6 +119,12 @@ impl KeyBlock {
     /// Returns the Key Value TTLV type, when one is present.
     #[must_use]
     pub fn key_value_type(&self) -> Option<ItemType> {
+        if let Some(value) = &self.key_value {
+            return Some(match value {
+                StoredKeyBlockValue::Plaintext(_) => ItemType::Structure,
+                StoredKeyBlockValue::Wrapped(_) => ItemType::ByteString,
+            });
+        }
         if let Some(item) = &self.raw_item {
             return item.with_value(|value| match value {
                 ValueView::Structure(structure) => structure
@@ -129,10 +135,7 @@ impl KeyBlock {
                 _ => None, // COVERAGE-EXCLUDE: raw_item is stored only after parse_key_block validates its Structure type.
             });
         }
-        self.key_value.as_ref().map(|value| match value {
-            StoredKeyBlockValue::Plaintext(_) => ItemType::Structure,
-            StoredKeyBlockValue::Wrapped(_) => ItemType::ByteString,
-        })
+        None
     }
 
     /// Lends a parsed Key Block's Structure for callback-scoped inspection.
@@ -140,10 +143,7 @@ impl KeyBlock {
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Result<R, ManagedObjectError> {
-        let item = self
-            .raw_item
-            .as_ref()
-            .ok_or(ManagedObjectError::InvalidStructure)?;
+        let item = self.snapshot_item()?;
         item.with_value(|value| match value {
             ValueView::Structure(structure) => Ok(callback(structure)),
             _ => Err(ManagedObjectError::InvalidStructure), // COVERAGE-EXCLUDE: raw_item can only be stored after Structure validation.
@@ -197,8 +197,13 @@ impl KeyBlock {
     /// # Errors
     /// Returns a sanitized error when paired fields or wrapping conditions fail.
     pub fn try_into_item(self) -> Result<Item, ManagedObjectError> {
-        if let Some(item) = self.raw_item {
-            return Ok(item);
+        if self.raw_item.is_some() {
+            if self.cryptographic_algorithm.is_some() != self.cryptographic_length.is_some() {
+                return Err(ManagedObjectError::InvalidFieldCombination);
+            }
+            let rebuilt = self.snapshot_item()?;
+            parse_key_block(&rebuilt)?;
+            return Ok(rebuilt);
         }
         if self.cryptographic_algorithm.is_some() != self.cryptographic_length.is_some() {
             return Err(ManagedObjectError::InvalidFieldCombination);
@@ -258,6 +263,94 @@ impl KeyBlock {
         }
         Item::new(checked_tag(KEY_BLOCK)?, Value::structure(structure))
             .map_err(ManagedObjectError::from)
+    }
+
+    fn snapshot_item(&self) -> Result<Item, ManagedObjectError> {
+        if let Some(item) = &self.raw_item {
+            return self.snapshot_item_from(item);
+        }
+        let mut fields = vec![make_item(
+            KEY_FORMAT_TYPE,
+            Value::enumeration(self.key_format_type.raw()),
+        )?];
+        if let Some(compression) = self.key_compression_type {
+            fields.push(make_item(
+                KEY_COMPRESSION_TYPE,
+                Value::enumeration(compression.raw()),
+            )?);
+        }
+        if let Some(value) = &self.key_value {
+            fields.push(clone_key_value(value)?);
+        }
+        if let Some(algorithm) = self.cryptographic_algorithm {
+            fields.push(make_item(
+                CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(algorithm),
+            )?);
+        }
+        if let Some(length) = self.cryptographic_length {
+            fields.push(make_item(CRYPTOGRAPHIC_LENGTH, Value::integer(length))?);
+        }
+        if let Some(wrapping) = &self.key_wrapping_data {
+            fields.push(wrapping.snapshot_item()?);
+        }
+        let mut structure = kmipkit_ttlv::Structure::new();
+        for field in fields {
+            structure
+                .try_push(field)
+                .map_err(ManagedObjectError::from)?;
+        }
+        Item::new(checked_tag(KEY_BLOCK)?, Value::structure(structure))
+            .map_err(ManagedObjectError::from)
+    }
+
+    fn snapshot_item_from(&self, item: &Item) -> Result<Item, ManagedObjectError> {
+        let mut replacements = Vec::new();
+        if let Some(compression) = self.key_compression_type {
+            replacements.push(make_item(
+                KEY_COMPRESSION_TYPE,
+                Value::enumeration(compression.raw()),
+            )?);
+        }
+        if let Some(value) = &self.key_value {
+            replacements.push(clone_key_value(value)?);
+        }
+        if let Some(algorithm) = self.cryptographic_algorithm {
+            replacements.push(make_item(
+                CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(algorithm),
+            )?);
+        }
+        if let Some(length) = self.cryptographic_length {
+            replacements.push(make_item(CRYPTOGRAPHIC_LENGTH, Value::integer(length))?);
+        }
+        if let Some(wrapping) = &self.key_wrapping_data {
+            replacements.push(wrapping.snapshot_item()?);
+        }
+        rebuild_ordered_structure(
+            item,
+            &[
+                KEY_FORMAT_TYPE,
+                KEY_COMPRESSION_TYPE,
+                KEY_VALUE,
+                CRYPTOGRAPHIC_ALGORITHM,
+                CRYPTOGRAPHIC_LENGTH,
+                KEY_WRAPPING_DATA,
+            ],
+            replacements,
+        )
+    }
+}
+
+fn clone_key_value(value: &StoredKeyBlockValue) -> Result<Item, ManagedObjectError> {
+    match value {
+        StoredKeyBlockValue::Plaintext(value) => {
+            value.item.try_clone().map_err(ManagedObjectError::from)
+        }
+        StoredKeyBlockValue::Wrapped(value) => make_item(
+            KEY_VALUE,
+            value.with_bytes(|bytes| Value::byte_string(bytes.to_vec())),
+        ),
     }
 }
 

@@ -5,7 +5,7 @@ use kmipkit_ttlv::{Item, ItemType, Structure, StructureView, Value, ValueView};
 
 use crate::ManagedObjectError;
 use crate::UniqueIdentifier;
-use crate::managed_object::{make_item, make_structure_item};
+use crate::managed_object::{make_item, make_structure_item, rebuild_ordered_structure};
 
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
@@ -232,10 +232,8 @@ impl KeyWrappingData {
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
     ) -> Result<R, ManagedObjectError> {
-        if let Some(item) = &self.raw_item {
-            return with_structure(item, callback);
-        }
-        Err(ManagedObjectError::InvalidStructure)
+        let item = self.snapshot_item()?;
+        with_structure(&item, callback)
     }
 
     /// Sets Encryption Key Information.
@@ -279,7 +277,9 @@ impl KeyWrappingData {
 
     /// Consumes the builder into a source-ordered Key Wrapping Data Item.
     pub(crate) fn try_into_item(self) -> Result<Item, ManagedObjectError> {
-        if let Some(item) = self.raw_item {
+        if self.raw_item.is_some() {
+            let item = self.snapshot_item()?;
+            Self::validate_item(&item)?;
             return Ok(item);
         }
         if self.encryption_key_information.is_none() && self.mac_signature_key_information.is_none()
@@ -301,6 +301,66 @@ impl KeyWrappingData {
         }
         if let Some(value) = self.iv_counter_nonce {
             fields.push(make_item(IV_COUNTER_NONCE, Value::byte_string(value))?);
+        }
+        if let Some(value) = self.encoding_option {
+            fields.push(make_item(ENCODING_OPTION, Value::enumeration(value))?);
+        }
+        structure_item(KEY_WRAPPING_DATA, fields)
+    }
+
+    pub(crate) fn snapshot_item(&self) -> Result<Item, ManagedObjectError> {
+        if let Some(source) = &self.raw_item {
+            let mut replacements = Vec::new();
+            if let Some(value) = &self.encryption_key_information {
+                replacements.push(value.item.try_clone().map_err(ManagedObjectError::from)?);
+            }
+            if let Some(value) = &self.mac_signature_key_information {
+                replacements.push(value.item.try_clone().map_err(ManagedObjectError::from)?);
+            }
+            if let Some(value) = &self.mac_signature {
+                replacements.push(make_item(MAC_SIGNATURE, Value::byte_string(value.clone()))?);
+            }
+            if let Some(value) = &self.iv_counter_nonce {
+                replacements.push(make_item(
+                    IV_COUNTER_NONCE,
+                    Value::byte_string(value.clone()),
+                )?);
+            }
+            if let Some(value) = self.encoding_option {
+                replacements.push(make_item(ENCODING_OPTION, Value::enumeration(value))?);
+            }
+            return rebuild_ordered_structure(
+                source,
+                &[
+                    WRAPPING_METHOD,
+                    ENCRYPTION_KEY_INFORMATION,
+                    MAC_SIGNATURE_KEY_INFORMATION,
+                    MAC_SIGNATURE,
+                    IV_COUNTER_NONCE,
+                    ENCODING_OPTION,
+                ],
+                replacements,
+            );
+        }
+
+        let mut fields = vec![make_item(
+            WRAPPING_METHOD,
+            Value::enumeration(self.wrapping_method),
+        )?];
+        if let Some(value) = &self.encryption_key_information {
+            fields.push(value.item.try_clone().map_err(ManagedObjectError::from)?);
+        }
+        if let Some(value) = &self.mac_signature_key_information {
+            fields.push(value.item.try_clone().map_err(ManagedObjectError::from)?);
+        }
+        if let Some(value) = &self.mac_signature {
+            fields.push(make_item(MAC_SIGNATURE, Value::byte_string(value.clone()))?);
+        }
+        if let Some(value) = &self.iv_counter_nonce {
+            fields.push(make_item(
+                IV_COUNTER_NONCE,
+                Value::byte_string(value.clone()),
+            )?);
         }
         if let Some(value) = self.encoding_option {
             fields.push(make_item(ENCODING_OPTION, Value::enumeration(value))?);

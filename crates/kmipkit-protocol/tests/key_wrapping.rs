@@ -65,9 +65,9 @@ fn key_wrapping_setters_update_decoded_tree_and_preserve_extensions() {
     let source = KeyWrappingData::try_new(1)
         .expect("known method")
         .with_encryption_key_information(
-            EncryptionKeyInformation::try_new("wrap-key".to_owned())
-                .expect("required identifier"),
+            EncryptionKeyInformation::try_new("wrap-key".to_owned()).expect("required identifier"),
         )
+        .with_encoding_option(2)
         .into_item()
         .expect("valid wrapper");
     let mut children = source.with_value(|value| match value {
@@ -82,23 +82,36 @@ fn key_wrapping_setters_update_decoded_tree_and_preserve_extensions() {
     children.push(tagged(0x0054_0101, Value::integer(77)));
     let source = structure_item(0x0042_0046, children);
 
-    let item = KeyWrappingData::try_from_item(source)
-        .expect("read valid wrapper")
+    let parsed = KeyWrappingData::try_from_item(source).expect("read valid wrapper");
+    let parsed = parsed
         .with_encoding_option(7)
-        .into_item()
-        .expect("mutated wrapper remains valid");
+        .with_iv_counter_nonce(vec![0xA5]);
+    assert_eq!(
+        parsed
+            .with_raw(|view| view.children()[3].with_value(|value| match value {
+                ValueView::Enumeration(raw) => *raw,
+                _ => 0,
+            }))
+            .expect("raw view reflects decoded-model mutation"),
+        7
+    );
+    let item = parsed.into_item().expect("mutated wrapper remains valid");
 
     item.with_value(|value| match value {
         ValueView::Structure(structure) => {
             let fields = structure.children();
             assert_eq!(fields[0].tag().raw(), 0x0042_009E);
             assert_eq!(fields[1].tag().raw(), 0x0042_0036);
-            assert_eq!(fields[2].tag().raw(), 0x0054_0101);
+            assert_eq!(fields[2].tag().raw(), 0x0042_003D);
             assert_eq!(fields[3].tag().raw(), 0x0042_00A3);
-            assert_eq!(fields[3].with_value(|v| match v {
-                ValueView::Enumeration(raw) => *raw,
-                _ => 0,
-            }), 7);
+            assert_eq!(
+                fields[3].with_value(|v| match v {
+                    ValueView::Enumeration(raw) => *raw,
+                    _ => 0,
+                }),
+                7
+            );
+            assert_eq!(fields[4].tag().raw(), 0x0054_0101);
         }
         _ => panic!("Key Wrapping Data remains a Structure"),
     });
@@ -169,18 +182,14 @@ fn wrapping_reader_checks_required_identifiers_and_keeps_unknown_fields() {
 
 #[test]
 fn wrapping_reader_covers_optional_fields_and_key_information_variants() {
-    let encryption = EncryptionKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::Enumeration(1),
-    )
-    .expect("enumerated identifiers are open")
-    .with_cryptographic_parameters(Structure::new())
-    .expect("optional parameters follow the identifier");
-    let mac = MacSignatureKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::Integer(7),
-    )
-    .expect("integer identifiers are open")
-    .with_cryptographic_parameters(Structure::new())
-    .expect("optional parameters follow the identifier");
+    let encryption = EncryptionKeyInformation::try_new("encryption-key".to_owned())
+        .expect("text Unique Identifier is required")
+        .with_cryptographic_parameters(Structure::new())
+        .expect("optional parameters follow the identifier");
+    let mac = MacSignatureKeyInformation::try_new("mac-key".to_owned())
+        .expect("text Unique Identifier is required")
+        .with_cryptographic_parameters(Structure::new())
+        .expect("optional parameters follow the identifier");
     let item = KeyWrappingData::try_new(1)
         .expect("Wrapping Method")
         .with_encryption_key_information(encryption)
@@ -201,11 +210,19 @@ fn wrapping_reader_covers_optional_fields_and_key_information_variants() {
     });
     fields.push(tagged(0x0054_0101, Value::integer(1)));
     let item = structure_item(0x0042_0046, fields);
-    let encryption_source = key_information(0x0042_0036, 0x0042_0094, Value::enumeration(1));
+    let encryption_source = key_information(
+        0x0042_0036,
+        0x0042_0094,
+        Value::text_string("encryption-key".to_owned()),
+    );
     let encryption = EncryptionKeyInformation::try_from_item(encryption_source)
         .expect("read encryption key information");
     assert!(encryption.with_raw(|view| view.children().len()).is_ok());
-    let mac_source = key_information(0x0042_004E, 0x0042_0094, Value::integer(7));
+    let mac_source = key_information(
+        0x0042_004E,
+        0x0042_0094,
+        Value::text_string("mac-key".to_owned()),
+    );
     let mac = MacSignatureKeyInformation::try_from_item(mac_source)
         .expect("read MAC/Signature key information");
     assert!(mac.with_raw(|view| view.children().len()).is_ok());
