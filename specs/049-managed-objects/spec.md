@@ -56,7 +56,10 @@ round-trip, and payload-free errors.
    Attributes as defined by §§3.1–3.2, Tables 12–13.
 2. Given a wrapped Key Block, when it is encoded, then Key Value is represented
    as a Byte String and the supplied Key Wrapping Data is preserved; KMIPKit
-   does not perform encryption, decryption, signing, or MAC operations.
+   does not perform encryption, decryption, signing, or MAC operations. The
+   typed wrapped value owns its bytes through `SecretBytes` immediately, so
+   dropping it before transfer to a Key Block still zeroizes KMIPKit-owned
+   storage.
 3. Given a transparent key format, when its material is constructed or read,
    then the typed fields match the definitions in §§3.4–3.12, Tables 18–26.
    Raw, Opaque, PKCS1, PKCS8, ECPrivateKey, and extension formats remain
@@ -213,7 +216,8 @@ The OASIS Usage Guide is informative and does not add requirements.
 - **KMIPKIT-0049-SC-003**: Unknown Object Type, Key Format Type, unknown child
   Items, and vendor extension values survive generic or typed-fallback
   conversion without loss.
-- **KMIPKIT-0049-SC-004**: Secret-bearing owned data is absent from Debug and
+- **KMIPKIT-0049-SC-004**: Secret-bearing owned data, including a standalone
+  wrapped `KeyBlockValue` before builder transfer, is absent from Debug and
   errors and KMIPKit-owned copies are zeroized on drop; lifetime documentation
   states what is outside that guarantee.
 - **KMIPKIT-0049-SC-005**: Register/Import consumers can use typed objects

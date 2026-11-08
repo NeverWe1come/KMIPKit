@@ -38,7 +38,7 @@ encrypt, sign, or compute a MAC.
 ```rust
 use kmipkit_protocol::{
     EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyFormatType,
-    KeyWrappingData, SymmetricKey,
+    KeyWrappingData, SecretBytes, SymmetricKey,
 };
 
 let wrapping = KeyWrappingData::try_new(1)?
@@ -46,7 +46,7 @@ let wrapping = KeyWrappingData::try_new(1)?
         EncryptionKeyInformation::try_new("wrapping-key".to_owned())?,
     );
 let block = KeyBlock::try_new(KeyFormatType::from_raw(1))?
-    .with_key_value(KeyBlockValue::Wrapped(vec![0xB1, 0xB2]))
+    .with_key_value(KeyBlockValue::Wrapped(SecretBytes::new(vec![0xB1, 0xB2])))
     .with_key_wrapping_data(wrapping);
 let symmetric_key = SymmetricKey::try_new(block)?;
 # Ok::<(), Box<dyn std::error::Error>>(())

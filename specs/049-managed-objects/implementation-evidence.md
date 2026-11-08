@@ -22,6 +22,12 @@ The following tests were added before production code. Their compile failures ar
 
 The Red tests cover all nine object tags and fields, the §3.1–§3.3 key structures, the nine transparent material structures, conversion preservation, validation negatives, redaction, and fake-transport Register/Import requests. The exact test output is retained in the task command history; implementation acceptance will be based on Green results, not on these expected compile failures.
 
+## Wrapped-key ownership security follow-up
+
+- **Red:** commit `d99d2e099` changes the wrapped-Key-Value contract test to construct `KeyBlockValue::Wrapped` from the existing `SecretBytes` owner. It fails to compile against the prior public `Wrapped(Vec<u8>)` variant (`expected Vec<u8>, found SecretBytes`), proving the public value could be dropped before builder transfer without zeroization.
+- **Green:** commit `4c4605764` makes `KeyBlockValue::Wrapped` own `SecretBytes` immediately and preserves that owner in the builder until conversion to the TTLV `Value`, which already zeroizes byte-string storage on drop. The wrapped TTLV bytes and required wrapping metadata are unchanged.
+- **Refactor:** the KMIPKIT-0049 acceptance text and task T010 now state the pre-transfer zeroization guarantee; runnable English/Spanish examples and Register/Import tests use the redacted owner. Checks passed: `cargo fmt --all --check`; `cargo test -p kmipkit-protocol --test key_structures` (10 passed); `cargo test -p kmipkit-protocol --test managed_object_examples` (3 passed); and `cargo test -p kmipkit-client typed_wrapped_symmetric_key_import_uses_direct_object_tag_on_fake_transport` (1 passed). The independent security review's low-severity finding is addressed; hosted CI will rerun after propagation through the stack.
+
 ## Development commits
 
 - Specification/design: `686394817a34467bf4757fc9c7af7069df422575`.

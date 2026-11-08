@@ -4,9 +4,8 @@
 use std::fmt;
 
 use kmipkit_ttlv::{Item, ItemType, StructureView, Value, ValueView};
-use zeroize::Zeroizing;
 
-use crate::{AttributeSet, KeyCompressionType, KeyFormatType, ManagedObjectError};
+use crate::{AttributeSet, KeyCompressionType, KeyFormatType, ManagedObjectError, SecretBytes};
 
 use crate::key_material::{KeyMaterial, validate_key_material_item};
 use crate::key_wrapping::KeyWrappingData;
@@ -25,13 +24,15 @@ const ATTRIBUTES: u32 = 0x0042_0125;
 pub enum KeyBlockValue {
     /// Plaintext Key Value containing Key Material and optional Attributes.
     Plaintext(KeyValue),
-    /// Wrapped key bytes, as required by KMIP §3.1.2.
-    Wrapped(Vec<u8>),
+    /// Wrapped key bytes, redacted and zeroized when dropped.
+    ///
+    /// Construct the value with [`SecretBytes::new`].
+    Wrapped(SecretBytes),
 }
 
 enum StoredKeyBlockValue {
     Plaintext(KeyValue),
-    Wrapped(Zeroizing<Vec<u8>>),
+    Wrapped(SecretBytes),
 }
 
 struct ParsedKeyBlock {
@@ -159,7 +160,7 @@ impl KeyBlock {
     pub fn with_key_value(mut self, value: KeyBlockValue) -> Self {
         self.key_value = Some(match value {
             KeyBlockValue::Plaintext(value) => StoredKeyBlockValue::Plaintext(value),
-            KeyBlockValue::Wrapped(bytes) => StoredKeyBlockValue::Wrapped(Zeroizing::new(bytes)),
+            KeyBlockValue::Wrapped(bytes) => StoredKeyBlockValue::Wrapped(bytes),
         });
         self
     }
@@ -230,8 +231,8 @@ impl KeyBlock {
                     }
                     value.into_item()
                 }
-                StoredKeyBlockValue::Wrapped(mut bytes) => {
-                    make_item(KEY_VALUE, Value::byte_string(std::mem::take(&mut *bytes)))?
+                StoredKeyBlockValue::Wrapped(bytes) => {
+                    make_item(KEY_VALUE, bytes.into_ttlv_value())?
                 }
             });
         }
