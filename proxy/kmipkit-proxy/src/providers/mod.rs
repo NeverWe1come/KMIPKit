@@ -17,6 +17,7 @@ pub mod gcp;
 pub mod ibm;
 pub mod infisical;
 pub mod oci;
+pub mod otc;
 pub mod scaleway;
 pub mod vault;
 
@@ -515,6 +516,7 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
         "scaleway" => Ok(Arc::new(scaleway::ScalewayKmsProvider::new(
             &config.scaleway,
         )?)),
+        "otc" => Ok(Arc::new(otc::OtcKmsProvider::new(&config.otc)?)),
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
