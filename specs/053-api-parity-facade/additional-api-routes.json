@@ -121464,6 +121464,19 @@
       "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit_client\",\"execute\",\"ClientResponseView\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_client::execute::ClientResponseView<'_>\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
       "ownerExportName": "kmipkit::ClientResponseView<'a>",
       "ownerDeclarationId": "rust-observed-3ed1f69d2152100b8023"
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_test_client_batch_item_encoded_operation",
+      "reason": "This exact CI-only C symbol is compiled under the coverage-c-consumer feature to exercise batch item encoding in C consumers; it is intentionally absent from the supported C header and adds no independent C product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "evidence": "Defined with #[cfg(feature = \"coverage-c-consumer\")] in crates/kmipkit-ffi/src/extension_registry/client_abi.rs and called by bindings/c/tests/operation_parity_consumer.c and bindings/c/tests/client_abi_consumer.c; the feature is used by the CI C-consumer build.",
+      "candidateSpecId": "KMIPKIT-0053"
     }
   ],
   "removePublicDeclarations": [

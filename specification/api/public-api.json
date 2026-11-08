@@ -113916,7 +113916,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -113943,6 +113943,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -113976,7 +113982,7 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.32-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114003,6 +114009,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -114038,7 +114050,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114065,6 +114077,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -114098,7 +114116,7 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.55-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114125,6 +114143,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -114160,7 +114184,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114187,6 +114211,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -114269,7 +114299,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114296,6 +114326,13 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -114381,7 +114418,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114408,6 +114445,13 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -114494,7 +114538,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -114521,6 +114565,13 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -115934,7 +115985,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -115959,7 +116010,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.mac_verify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-7fa82e65d2c353659cdf",
@@ -116046,7 +116105,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -116071,7 +116130,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.signature_verify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-5d1091dcc216a2503a8d",
@@ -118377,7 +118444,7 @@
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -118406,8 +118473,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
         "bindings/python/tests/test_client.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -118423,7 +118494,7 @@
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -118452,8 +118523,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
         "bindings/python/tests/test_client.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -118469,7 +118544,7 @@
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -118498,8 +118573,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
         "bindings/python/tests/test_client.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -119233,7 +119312,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
@@ -119262,8 +119341,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
         "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -119358,7 +119442,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
@@ -119387,8 +119471,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
         "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -119586,7 +119675,7 @@
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
@@ -125697,7 +125786,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -125724,6 +125813,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -125757,7 +125852,7 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.32-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -125784,6 +125879,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -125819,7 +125920,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -125846,6 +125947,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -125879,7 +125986,7 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.55-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -125906,6 +126013,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -125941,7 +126054,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -125968,6 +126081,12 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -126050,7 +126169,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -126077,6 +126196,13 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -126162,7 +126288,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -126189,6 +126315,13 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -126275,7 +126408,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -126302,6 +126435,13 @@
         }
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -127916,7 +128056,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -127941,7 +128081,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.mac_verify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-cd6201bfbd02c4b6b2ca",
@@ -128028,7 +128176,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -128053,7 +128201,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.signature_verify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-f19c67bba55740a4bf1b",
@@ -131229,7 +131385,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -131258,8 +131414,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
         "bindings/python/tests/test_client.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -131275,7 +131435,7 @@
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -131304,8 +131464,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
         "bindings/python/tests/test_client.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -131321,7 +131485,7 @@
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -131350,8 +131514,12 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
         "bindings/python/tests/test_client.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -132085,7 +132253,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
@@ -132114,8 +132282,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
         "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -132210,7 +132383,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
@@ -132239,8 +132412,13 @@
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
         "bindings/python/tests/test_client.py",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
         "crates/kmipkit-client/tests/creation_parity_tests.rs",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py",
         "tools/api_manifest/tests/test_manifest_v2.py"
       ]
     },
@@ -132438,7 +132616,7 @@
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "languageMappings": {
         "rust": {
@@ -143909,7 +144087,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -143934,7 +144112,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.MacVerifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-60d91bde3b2468a127b8",
@@ -145857,7 +146043,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -145882,7 +146068,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.SignatureVerifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-961d8841b95400c39c21",
@@ -172026,7 +172220,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -172051,7 +172245,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.MacVerifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-b270baa9642c504565ca",
@@ -173914,7 +174116,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -173939,7 +174141,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.SignatureVerifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "rust-observed-9c5cd15f4659b21402eb",
@@ -248814,7 +249024,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -248840,7 +249050,15 @@
           "name": "kmipkit.client.BatchItemResult.mac_verify_response"
         }
       },
-      "declarationId": "T033:mac_verify:response:client_batch_item_response_mac_verify:java"
+      "declarationId": "T033:mac_verify:response:client_batch_item_response_mac_verify:java",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "packageId": "python-kmipkit",
@@ -248919,7 +249137,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -248944,7 +249162,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.MacVerifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "T033:mac_verify:result:type:python",
@@ -250270,7 +250496,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -250296,7 +250522,15 @@
           "name": "kmipkit.client.BatchItemResult.signature_verify_response"
         }
       },
-      "declarationId": "T033:signature_verify:response:client_batch_item_response_signature_verify:java"
+      "declarationId": "T033:signature_verify:response:client_batch_item_response_signature_verify:java",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "packageId": "python-kmipkit",
@@ -250375,7 +250609,7 @@
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -250400,7 +250634,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.SignatureVerifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_hash_mac_signature_operations.py",
+        "crates/kmipkit-ffi/tests/support/crypto_response_ttlv_c_consumer_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "tools/api_manifest/tests/test_0053_operation_binding_matrix.py"
+      ]
     },
     {
       "declarationId": "T033:signature_verify:result:type:python",
@@ -688074,6 +688316,670 @@
       "candidateSpecId": "KMIPKIT-0053"
     },
     {
+      "declarationId": "rust-observed-80707d76c3b61c86089f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientRequest::validation_report",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::validation_report"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_validation_report"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.validationReport"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientBatchItem.validation_report"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-149e6966892a5ca90025",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "trait",
+      "exportName": "kmipkit_protocol::ValidateKmipRequest",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_validation_report"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationReport.validateRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.validate_request"
+        },
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidateKmipRequest"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-b50a08d0ad890d23ded8",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidateKmipRequest::validate",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidateKmipRequest::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_validation_report"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationReport.validateRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.validate_request"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-37767a3a2f5de1cb8a2c",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "type",
+      "exportName": "kmipkit_protocol::ValidationIssue",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationIssue"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_issue_view_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationIssue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationIssue"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-9fe786909ed2d72adaf3",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidationIssue::code",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationIssue::code"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_report_issue_at_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationIssue.code"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationIssue.code"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-8a91b98eef6a203948a5",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidationIssue::path",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationIssue::path"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_report_issue_at_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationIssue.path"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationIssue.path"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-d66fdfb400a1e4890a22",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidationIssue::severity",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationIssue::severity"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_report_issue_at_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationIssue.severity"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationIssue.severity"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-ebe17e83c126a398c92a",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidationIssue::source",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_issue_view_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationIssue"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationIssue"
+        },
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationIssue::source"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ValidationIssue.java",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/src/kmipkit/validation.py",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-protocol/src/validation.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-fca6a9089f8fadd6a3df",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "type",
+      "exportName": "kmipkit_protocol::ValidationReport",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationReport"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_report_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationReport.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationReport.close"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-c84072d37946dadf6a1b",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidationReport::is_valid",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationReport::is_valid"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_report_is_valid"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationReport.isValid"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationReport.is_valid"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-4ba9f3ab83db5c57a552",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "associated-item",
+      "exportName": "kmipkit_protocol::ValidationReport::issues",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ValidationReport::issues"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_validation_report_issue_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationReport.issues"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.ValidationReport.issues"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
+      "declarationId": "rust-observed-da66a966650f80290347",
+      "packageId": "rust-kmipkit-protocol",
+      "kind": "function",
+      "exportName": "kmipkit_protocol::validate_structure",
+      "capabilityId": "request_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-006",
+        "KMIPKIT-0053-FR-011",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::validate_structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_validation_report_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ValidationReport.validateStructure"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.validation.validate_structure"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/request_validation_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
+        "bindings/python/tests/test_validation_parity.py",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
+        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
+        "crates/kmipkit-protocol/src/validation/schema.rs",
+        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
+        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
+        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
+        "specification/api/public-api.json",
+        "specs/051-pre-send-validation/spec.md",
+        "specs/053-api-parity-facade/gap-matrix.md",
+        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      }
+    },
+    {
       "declarationId": "KMIPKIT-0053:c-standard-attribute:activation-date",
       "packageId": "c-kmipkit",
       "kind": "macro",
@@ -691715,670 +692621,6 @@
         "c": "release-shared-reference-wipe-on-final-owner-drop",
         "java": "wipe-owned-copy-on-close",
         "python": "wipe-owned-copy-on-close"
-      }
-    },
-    {
-      "declarationId": "rust-observed-80707d76c3b61c86089f",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientRequest::validation_report",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientRequest::validation_report"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_validation_report"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItem.validationReport"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.ClientBatchItem.validation_report"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-149e6966892a5ca90025",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "trait",
-      "exportName": "kmipkit_protocol::ValidateKmipRequest",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_validation_report"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationReport.validateRequest"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.validate_request"
-        },
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidateKmipRequest"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-b50a08d0ad890d23ded8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidateKmipRequest::validate",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidateKmipRequest::validate"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_validation_report"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationReport.validateRequest"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.validate_request"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-37767a3a2f5de1cb8a2c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::ValidationIssue",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationIssue"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_issue_view_v1_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationIssue"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationIssue"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-9fe786909ed2d72adaf3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidationIssue::code",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationIssue::code"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_issue_at_v1"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationIssue.code"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationIssue.code"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-8a91b98eef6a203948a5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidationIssue::path",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationIssue::path"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_issue_at_v1"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationIssue.path"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationIssue.path"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-d66fdfb400a1e4890a22",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidationIssue::severity",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationIssue::severity"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_issue_at_v1"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationIssue.severity"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationIssue.severity"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-ebe17e83c126a398c92a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidationIssue::source",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_issue_view_v1_t"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationIssue"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationIssue"
-        },
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationIssue::source"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/main/java/org/kmipkit/extensions/ValidationIssue.java",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/src/kmipkit/validation.py",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-protocol/src/validation.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-fca6a9089f8fadd6a3df",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::ValidationReport",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationReport"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_release"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationReport.close"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationReport.close"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-c84072d37946dadf6a1b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidationReport::is_valid",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationReport::is_valid"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_is_valid"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationReport.isValid"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationReport.is_valid"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-4ba9f3ab83db5c57a552",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::ValidationReport::issues",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::ValidationReport::issues"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_validation_report_issue_count"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationReport.issues"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.ValidationReport.issues"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      }
-    },
-    {
-      "declarationId": "rust-observed-da66a966650f80290347",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "function",
-      "exportName": "kmipkit_protocol::validate_structure",
-      "capabilityId": "request_validation",
-      "requirementIds": [
-        "KMIPKIT-0053-FR-006",
-        "KMIPKIT-0053-FR-011",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::validate_structure"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_ttlv_structure_validation_report_v1"
-        },
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ValidationReport.validateStructure"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.validation.validate_structure"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "crates/kmipkit-ffi/tests/support/request_validation_0053_tests.rs",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs",
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "specs/053-api-parity-facade/spec.md"
-      ],
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       }
     }
   ],
@@ -951241,6 +951483,19 @@
       "identity": "[\"rust-trait-implementation\",\"rust-kmipkit\",[\"kmipkit_client\",\"execute\",\"ClientResponseView\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_client::execute::ClientResponseView<'_>\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
       "ownerExportName": "kmipkit::ClientResponseView<'a>",
       "ownerDeclarationId": "rust-observed-3ed1f69d2152100b8023"
+    },
+    {
+      "packageId": "c-kmipkit",
+      "exportName": "kmipkit_test_client_batch_item_encoded_operation",
+      "reason": "This exact CI-only C symbol is compiled under the coverage-c-consumer feature to exercise batch item encoding in C consumers; it is intentionally absent from the supported C header and adds no independent C product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "evidence": "Defined with #[cfg(feature = \"coverage-c-consumer\")] in crates/kmipkit-ffi/src/extension_registry/client_abi.rs and called by bindings/c/tests/operation_parity_consumer.c and bindings/c/tests/client_abi_consumer.c; the feature is used by the CI C-consumer build.",
+      "candidateSpecId": "KMIPKIT-0053"
     }
   ],
   "apiLevels": [
