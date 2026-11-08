@@ -610,7 +610,8 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
     allow_copy = Event()
     close_finished = Event()
     callback_values: list[bytes] = []
-    failures: list[Exception] = []
+    read_results: list[bool] = []
+    read_errors: list[Exception] = []
     response = SimpleNamespace(
         has_asynchronous_correlation_value=1,
         asynchronous_correlation_value=SimpleNamespace(
@@ -637,12 +638,14 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
 
     def read_correlation() -> None:
         try:
-            assert outcome._with_typed_correlation_value(
+            read_succeeded = outcome._with_typed_correlation_value(
                 "kmipkit_client_async_operation_outcome_cancel_response_v1",
                 lambda view: callback_values.append(bytes(view)),
             )
         except Exception as error:
-            failures.append(error)
+            read_errors.append(error)
+        else:
+            read_results.append(read_succeeded)
 
     def close_outcome() -> None:
         outcome.close()
@@ -662,8 +665,9 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
 
     assert not reader.is_alive()
     assert not closer.is_alive()
-    assert failures == []
+    assert read_errors == []
     assert close_finished.is_set()
+    assert read_results == [True]
     assert callback_values == [expected]
 
 
