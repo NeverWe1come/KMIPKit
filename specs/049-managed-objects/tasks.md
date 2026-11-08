@@ -128,6 +128,12 @@
 4. Repeat Red/Green/Refactor for managed objects and operation integration, updating the traceability matrix with each requirement.
 5. Finish manifest generation, tested examples, bilingual docs, audits, coverage, and review before opening the stacked draft PR against PR #115.
 
+## Approved KMIP 3.0 system credential object addendum
+
+- [x] T047 [Red] Add failing managed-object dispatch and negative schema tests for Object Types 0x0D–0x10, exact tags, required fields, salted-password restrictions, and rejection by the generic unknown fallback; record the expected failure (Red commit to be recorded in implementation evidence).
+- [ ] T048 [Green] Implement typed, lossless Rust models and semantic constructors/readers for Password, Device, One Time Password, and Hashed Password Credential system objects; redact and zeroize owned values and preserve unknown children.
+- [ ] T049 [Refactor] Add OASIS traceability, examples and guide notes; verify version-gating boundaries and local generation, tests, format, lint, coverage, and hosted CI before review.
+
 ## Independent test criteria
 
 - **US1**: Nine known managed-object schemas and unknown fallback round-trip with exact field order and preserved extensions.

@@ -60,3 +60,18 @@
   typed response readers and `.raw()` navigation.
 - Existing `Value` ownership already recursively zeroizes payloads. Typed
   models must reuse it and document caller/external copies as out of scope.
+
+## Approved KMIP 3.0 system credential object addendum
+
+| System object | Object Type / Structure tag | Source fields | Gap at the start of this addendum |
+|---|---|---|---|
+| Password Credential | `0x0D` / `0x004201A1` | §2.1.3.1, Table 5; attributes Table 6 | No typed object reader or constructor; the Password Link alternative is carried in Attributes and cannot be decided from the object tree alone. |
+| Device Credential | `0x0E` / `0x004201A6` | §2.1.3.2, Tables 7–8 | No typed model or at-least-one-field validation. |
+| One Time Password Credential | `0x0F` / `0x004201A7` | §2.1.3.3, Tables 9–10 | No typed model or required OTP Algorithm validation. |
+| Hashed Password Credential | `0x10` / `0x004201AF` | §2.1.3.4, Tables 11–12 | No typed model or required pair of hash-field validation. |
+
+The assigned tags and Object Type values are taken from the pinned KMIP 3.0
+§11.35, Table 582, and §11.58, Table 605; numeric ranges do not imply an
+assignment. The approved contract is limited to lossless typed structure,
+source-defined local checks, redaction, and zeroization. Version legality and
+cross-structure Attribute Set checks remain with KMIPKIT-0051.

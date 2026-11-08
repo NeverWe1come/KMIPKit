@@ -1,16 +1,16 @@
 # Feature Specification: Typed Managed Objects and Key Material
 
-**Feature Branch**: `feature/KMIPKIT-0049-managed-objects`
+**Feature Branch**: `feature/KMIPKIT-0049-managed-objects-release`
 **Created**: 2026-11-05
 **Status**: Approved by maintainer plan authorization
-**Input**: Approved KMIPKit Phase 5 plan, item 0049: typed construction and reading for all nine KMIP 2.1 managed-object types, key structures, wrapping structures, and explicit secret ownership and cleanup.
+**Input**: Approved KMIPKit Phase 5 plan, item 0049: typed construction and reading for all nine KMIP 2.1 managed-object types, key structures, wrapping structures, explicit secret ownership and cleanup, and the four KMIP 3.0 system credential objects authorized on 2026-11-08.
 
 ## Purpose
 
-Let Rust client authors construct and inspect KMIP 2.1 managed objects and key
-material through named, lossless types. Preserve generic TTLV access for future
-and vendor extensions, and make the lifetime of KMIPKit-owned secret material
-explicit.
+Let Rust client authors construct and inspect KMIP 2.1 managed objects, KMIP
+3.0 system credential objects, and key material through named, lossless types.
+Preserve generic TTLV access for future and vendor extensions, and make the
+lifetime of KMIPKit-owned secret material explicit.
 
 ## User Scenarios & Testing
 
@@ -176,6 +176,23 @@ redaction and owned-payload cleanup behavior.
   incomplete builders; this inspection view MUST NOT bypass validation during
   final conversion. This requirement defines local API behavior and does not
   claim that KMIP specifies a builder mutation model.
+- **KMIPKIT-0049-FR-012**: The Rust protocol API MUST provide typed construction
+  and borrowed reading for the Password Credential, Device Credential, One
+  Time Password Credential, and Hashed Password Credential system objects
+  defined by KMIP 3.0 §2.1.3, Tables 5–12, Object Type §11.35, Table 582, and
+  tag assignments §11.58, Table 605. Models MUST preserve unknown children and
+  extensions, enforce known field types, requiredness, order, and the local
+  conditional rules stated in the source, and remain compatible with generic
+  `Item`/`Structure` access. Credential attributes, including Password Link,
+  are outside the object Structure; checks that require both the object and its
+  Attribute Set are assigned to KMIPKIT-0051.
+- **KMIPKIT-0049-FR-013**: KMIP-owned copies of system credential values MUST be
+  redacted from formatting and errors and zeroized on release. Constructors
+  MUST accept secret-bearing values through the existing secret owner types;
+  borrowed readers MUST be callback-scoped. These models MUST NOT calculate,
+  verify, or transform passwords, salts, OTPs, or hashes. Edition-specific
+  acceptance is enforced by the request/version validation assigned to
+  KMIPKIT-0051; this model layer preserves and validates structure only.
 
 ### Normative Traceability
 
@@ -188,7 +205,10 @@ The authoritative source is
 Information), §10.1.2, and relevant Object Type, Key Format Type, Key
 Compression Type, and Cryptographic Algorithm enumerations in §11. The
 operation integration tests cite §6.1.25 (Import) and §6.1.43 (Register).
-The OASIS Usage Guide is informative and does not add requirements.
+The approved KMIP 3.0 addendum also uses the pinned
+`specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html`: §§2.1.3.1–2.1.3.4,
+Tables 5–12; §11.35, Table 582; and §11.58, Table 605. The OASIS Usage Guide is
+informative and does not add requirements.
 
 | Requirement | Normative source | Verification |
 |---|---|---|
@@ -197,12 +217,14 @@ The OASIS Usage Guide is informative and does not add requirements.
 | FR-005–006 | §§6.1.25, 6.1.43 and generic TTLV §§5.1–5.4; API compatibility policy | Register/Import fake-transport tests; generic conversion property tests |
 | FR-007–008 | AGENTS.md security boundary; TTLV ownership contract; §§3.1–3.3 wrapping schema | Redaction, zeroization, borrowed-lifetime, and no-crypto-operation tests |
 | FR-009–010 | Constitution §§I–IV; pinned catalog and API manifest rules | Requirement-to-test audit, Rust consumer examples, manifest and binding-parity audit |
+| FR-012–013 | KMIP 3.0 §§2.1.3.1–2.1.3.4, Tables 5–12; §11.35, Table 582; §11.58, Table 605 | Four typed system credential object schemas, required/conditional field tests, order, unknown-child preservation, redaction, and zeroizing owned values |
 
 ## Scope and Exclusions
 
 - In scope: Rust models for all nine KMIP 2.1 object structures, Key Block,
   Key Value, Key Material, wrapping structures, additive Register/Import
-  integration, and owned-secret handling.
+  integration, and owned-secret handling. The directly approved 2026-11-08
+  addendum also includes the four KMIP 3.0 system credential object Structures.
 - Existing generic TTLV and operation APIs remain available and lossless.
 - This feature does not add operations, response-specific object accessors,
   response `.raw()` APIs, or four-language typed parity; those are assigned
@@ -210,6 +232,10 @@ The OASIS Usage Guide is informative and does not add requirements.
 - This feature does not perform cryptographic operations, parse or validate
   certificate cryptography, decompose PGP keys, unwrap keys, infer cryptographic
   choices, or determine server policy/capabilities.
+- The credential object layer does not inspect sibling Attributes. In
+  particular, Password Link resolution and the rule selecting between the
+  Password Link attribute and in-structure password mechanisms require the
+  object plus its Attribute Set and belong to KMIPKIT-0051 validation.
 - Full `validate()` reporting and universal pre-send rejection are assigned
   to KMIPKIT-0051. Constructors still enforce their own type-safe and
   source-defined structural contract.
@@ -258,7 +284,7 @@ The OASIS Usage Guide is informative and does not add requirements.
 
 - The user's directly approved Phase 5 plan authorizes this specification and
   its sequence. This feature branch starts from the pushed HEAD of
-  `feature/KMIPKIT-0048-typed-attributes` (PR #115) and stacks toward
+  `feature/KMIPKIT-0048-typed-attributes-release` (PR #140) and stacks toward
   `release/1.0.0`, as an explicit exception to the constitution's release-base
   default.
 - The source's nine Object Type structures are Certificate, Certificate
