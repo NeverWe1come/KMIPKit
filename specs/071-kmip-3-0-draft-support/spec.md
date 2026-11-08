@@ -20,6 +20,7 @@ The specification introduces:
   - §5 Attributes (§5.2 Object Class, §5.45–§5.64 Discrete Typed Links)
   - §6 Operations (§6.1.9 Create Credential, §6.1.10 Create Group, §6.1.13 Create User, §6.1.14 Deactivate, §6.1.15 Decapsulate, §6.1.22 Encapsulate, §6.1.41 Obliterate)
   - §11.34 Table 581 Object Class Enumeration; §11.35 Table 582 Object Type Enumeration; §11.37 Table 583 Operation Enumeration
+  - §11.58 Table 605 Tag Enumeration
   - §8 Messages
   - §9 Protocol Details
 - **OASIS KMIP 3.0 Working Draft Profiles** (13 July 2026)
@@ -110,3 +111,9 @@ The pre-1.0 API corrections to `ObjectType::CREDENTIAL` and the former
   `EncapsulateRequest`, `EncapsulateResponse`, `DecapsulateRequest`, and `DecapsulateResponse` are implemented and validated.
 - **`REQ-071-006` (Test Server KMIP 3.0 Mode)**:
   `kmipkit-test-server` supports KMIP 3.0 mode, returns protocol version 3.0, and executes 3.0 operations.
+- **`REQ-071-007` (Exact Tag Enumeration)**:
+  The versioned tag catalog records all 60 explicitly assigned values in
+  §11.58, Table 605, including credential, system-object, certificate,
+  deactivation, and KEM tags. It does not turn reserved or unassigned values
+  into assignments by numeric range. The allocation union is not a substitute
+  for effective-version validation.

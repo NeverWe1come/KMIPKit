@@ -33,6 +33,10 @@
 - [x] T017 [Red] Add failing tests for the exact 14 KMIP 2.1 Link Type to KMIP 3.0 tag mappings, all 20 versioned Link tag allocations, identifier round trips, and rejection of unmapped fields/tags (FR-011; Red commits `a20fe669a`, `8ce6503b9`, `2a8dc8b7b`, and `587d9086a`).
 - [x] T018 [Green] Add the checksum-pinned KMIP 3.0 Link tag catalog, regenerate the supported-version TTLV allocation union, and implement explicit lossless LinkNormalizer mappings (FR-011; Green commit `3296bc6bd`).
 - [ ] T019 [Refactor] Correct KMIPKIT-0071 references and migration documentation, update this spec's traceability and evidence, then run focused, generator, formatting, lint, API, coverage, and hosted CI checks (FR-011).
+- [x] T020 [Red] Require the exact 60 assigned KMIP 3.0 tags from §11.58, Table 605, including credential and KEM tags, and fail when the reviewed catalog contains only the 20 link tags (FR-012; Red commit `36abc5940`).
+- [x] T021 [Green] Extend the versioned tag catalog and deterministic allocator to all exact Table 605 assignments without deriving assignments from ranges; regenerate the allocation union (FR-012; Green commit `0fd8ea58e`).
+- [x] T022 [Refactor] Update KMIPKIT-0071 traceability, catalog documentation, and implementation evidence; run tag/API generation checks, focused tests, format, and lint (FR-012; Refactor commit recorded in this task file).
+- [ ] T023 [Verification] Pass the applicable coverage gates and all hosted CI checks on the final PR head (FR-012).
 
 ## Dependencies and independent criteria
 
@@ -59,3 +63,4 @@ contract.
 | KMIPKIT-0048-FR-009 | T013, T014, T015 |
 | KMIPKIT-0048-FR-010 | T013, T014, T015 |
 | KMIPKIT-0048-FR-011 | T017, T018, T019 |
+| KMIPKIT-0048-FR-012 | T020, T021, T022, T023 |
