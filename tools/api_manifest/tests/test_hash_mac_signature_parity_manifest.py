@@ -37,6 +37,7 @@ VERIFIED_RESPONSE_VALUE_EXPORTS = {
     "kmipkit::protocol::SignatureVerifyResponse::validity_indicator",
     "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
 }
+T053_VERIFIED_IDENTITIES: set[tuple[str, str]] = set()
 NORMATIVE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.32-001",
     "KMIPKIT-REQ-SPEC-6.1.33-001-001",
@@ -151,6 +152,27 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
             row["declarationId"]: row
             for row in self.manifest["publicDeclarations"]
         }
+
+    def test_t053_verified_crypto_routes_are_explicitly_enumerated(self) -> None:
+        operation_declaration_ids = {
+            declaration_id
+            for operation in self.operations.values()
+            for declaration_ids in operation["declarations"].values()
+            for declaration_id in declaration_ids
+        }
+        actual_t053_identities = {
+            (declaration["packageId"], declaration["exportName"])
+            for declaration_id in operation_declaration_ids
+            if (declaration := self.declarations[declaration_id])["declarationState"] == "verified"
+            and not (
+                declaration_id.startswith("T101:")
+                or (declaration["packageId"], declaration["exportName"])
+                in T101_VERIFIED_IDENTITIES
+                or declaration["exportName"].endswith("Response::with_ttlv")
+                or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
+            )
+        }
+        self.assertEqual(T053_VERIFIED_IDENTITIES, actual_t053_identities)
 
     def test_five_operations_have_approved_four_language_mappings(self) -> None:
         self.assertEqual(set(OPERATIONS), set(self.operations))
