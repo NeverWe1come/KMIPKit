@@ -4611,9 +4611,11 @@ impl Client {
     ///
     /// Every request advertises `Attestation Capable Indicator = True` because
     /// the public protocol API can construct an Attestation Credential. This
-    /// reports construction capability only: it does not submit
-    /// Authentication or Credential data, generate or verify evidence, or
-    /// guarantee server acceptance. There is no per-request override.
+    /// client does not generate or verify attestation evidence. A Request
+    /// Message contains Authentication data only when the caller explicitly
+    /// attaches it to the `ClientBatch`; when present, it is encoded once in
+    /// the Request Header and is never retained in client configuration. The
+    /// server remains responsible for accepting or rejecting that data.
     ///
     /// # Errors
     ///

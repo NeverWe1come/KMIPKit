@@ -297,3 +297,9 @@ candidate-test gates remain outstanding; the branch remains draft.
 - **Red:** `cargo +1.94 fmt --all --check` failed on this branch and hosted Core jobs for #142. Rustfmt required `mod kem` and `pub use kem` to precede the `key_*` declarations/exports in `crates/kmipkit-protocol/src/lib.rs`.
 - **Green:** commit `8e3a27fb9` applies only rustfmt's ordering in that file; it does not change protocol behavior or public symbols.
 - **Verification:** `cargo +1.94 fmt --all --check` passed after formatting. The same correction is included in the #143 branch so stacked descendants inherit it. Full hosted CI is still pending and is not claimed green by this local formatting check.
+
+## Authentication documentation correction (2026-11-08)
+
+- **Red:** the independent security review found that `Client::execute` rustdoc claimed the exchange never submits Authentication or Credential data, while the approved `ClientBatch::with_authentication` API explicitly adds caller-supplied Authentication to the Request Header.
+- **Green:** the rustdoc now states that Authentication is included only when explicitly attached to the batch, is encoded once in the Request Header, and is not retained in client configuration. It also clarifies that KMIPKit does not generate or verify attestation evidence and that the server decides acceptance.
+- **Refactor:** documentation-only correction; no wire behavior or API signature changed. `cargo +1.94 fmt --all --check`, the focused test `cargo +1.94 test -p kmipkit-client authentication_is_emitted_once_in_request_header_order_for_one_item` (1 passed), and `cargo +1.94 doc -p kmipkit-client --no-deps` all passed.
