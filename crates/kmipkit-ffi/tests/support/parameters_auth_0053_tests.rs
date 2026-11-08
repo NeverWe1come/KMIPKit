@@ -1,6 +1,11 @@
 use super::client_abi::kmipkit_client_batch_create;
 use super::*;
 
+fn empty_cryptographic_parameters_fields() -> kmipkit_cryptographic_parameters_fields_v1_t {
+    // SAFETY: The versioned record contains only integer fields and raw pointers, for which zero is valid.
+    unsafe { std::mem::zeroed() }
+}
+
 unsafe extern "C" {
     fn kmipkit_parameters_authentication_c_consumer_parameters() -> i32;
     fn kmipkit_parameters_authentication_c_consumer_reads() -> i32;
@@ -81,6 +86,183 @@ fn cryptographic_parameters_reader_returns_versioned_fields_and_borrowed_p_sourc
     assert_eq!(p_source, [0x00, 0xff, 0x81]);
 
     release(handle, Kind::CryptographicParameters);
+}
+
+#[test]
+#[allow(clippy::too_many_lines)] // Keep the complete versioned-field round-trip in one auditable fixture.
+fn cryptographic_parameters_abi_roundtrips_every_versioned_field() {
+    let p_source = [0x00, 0x7f, 0xff];
+    let mut input = empty_cryptographic_parameters_fields();
+    input.struct_size = u32::try_from(std::mem::size_of::<
+        kmipkit_cryptographic_parameters_fields_v1_t,
+    >())
+    .expect("versioned record size fits u32");
+    input.abi_version = 1;
+    input.block_cipher_mode_present = 1;
+    input.block_cipher_mode = 0x8000_0001;
+    input.padding_method_present = 1;
+    input.padding_method = 0x8000_0002;
+    input.hashing_algorithm_present = 1;
+    input.hashing_algorithm = 0x8000_0003;
+    input.key_role_type_present = 1;
+    input.key_role_type = 0x8000_0004;
+    input.digital_signature_algorithm_present = 1;
+    input.digital_signature_algorithm = 0x8000_0005;
+    input.cryptographic_algorithm_present = 1;
+    input.cryptographic_algorithm = 0x8000_0006;
+    input.random_iv_present = 1;
+    input.random_iv = 1;
+    input.iv_length_present = 1;
+    input.iv_length = 12;
+    input.tag_length_present = 1;
+    input.tag_length = 16;
+    input.fixed_field_length_present = 1;
+    input.fixed_field_length = 2;
+    input.invocation_field_length_present = 1;
+    input.invocation_field_length = 4;
+    input.counter_length_present = 1;
+    input.counter_length = 32;
+    input.initial_counter_value_present = 1;
+    input.initial_counter_value = 1;
+    input.salt_length_present = 1;
+    input.salt_length = 8;
+    input.mask_generator_present = 1;
+    input.mask_generator = 0x8000_0007;
+    input.mask_generator_hashing_algorithm_present = 1;
+    input.mask_generator_hashing_algorithm = 0x8000_0008;
+    input.p_source_present = 1;
+    input.p_source = p_source.as_ptr();
+    input.p_source_length = p_source.len() as u64;
+    input.trailer_field_present = 1;
+    input.trailer_field = i32::MIN + 9;
+
+    let mut parameters = std::ptr::null_mut();
+    // SAFETY: Input and its P Source span are readable and the output handle slot is writable.
+    assert_eq!(
+        unsafe {
+            super::cryptographic_parameters::kmipkit_cryptographic_parameters_from_fields_v1(
+                &raw const input,
+                &raw mut parameters,
+            )
+        },
+        SUCCESS
+    );
+    let mut output = empty_cryptographic_parameters_fields();
+    output.struct_size = input.struct_size;
+    output.abi_version = 1;
+    // SAFETY: The handle is live and `output` is an initialized writable v1 record.
+    assert_eq!(
+        unsafe {
+            super::cryptographic_parameters::kmipkit_cryptographic_parameters_read_fields_v1(
+                parameters,
+                &raw mut output,
+            )
+        },
+        SUCCESS
+    );
+    assert_eq!(output.block_cipher_mode, input.block_cipher_mode);
+    assert_eq!(output.padding_method, input.padding_method);
+    assert_eq!(output.hashing_algorithm, input.hashing_algorithm);
+    assert_eq!(output.key_role_type, input.key_role_type);
+    assert_eq!(
+        output.digital_signature_algorithm,
+        input.digital_signature_algorithm
+    );
+    assert_eq!(
+        output.cryptographic_algorithm,
+        input.cryptographic_algorithm
+    );
+    assert_eq!(output.random_iv, input.random_iv);
+    assert_eq!(output.iv_length, input.iv_length);
+    assert_eq!(output.tag_length, input.tag_length);
+    assert_eq!(output.fixed_field_length, input.fixed_field_length);
+    assert_eq!(
+        output.invocation_field_length,
+        input.invocation_field_length
+    );
+    assert_eq!(output.counter_length, input.counter_length);
+    assert_eq!(output.initial_counter_value, input.initial_counter_value);
+    assert_eq!(output.salt_length, input.salt_length);
+    assert_eq!(output.mask_generator, input.mask_generator);
+    assert_eq!(
+        output.mask_generator_hashing_algorithm,
+        input.mask_generator_hashing_algorithm
+    );
+    assert_eq!(output.p_source_present, 1);
+    assert_eq!(output.p_source_length, p_source.len() as u64);
+    // SAFETY: The returned P Source is borrowed from the live typed parameters handle.
+    assert_eq!(
+        unsafe { std::slice::from_raw_parts(output.p_source, p_source.len()) },
+        p_source
+    );
+    assert_eq!(output.trailer_field, input.trailer_field);
+    release(parameters, Kind::CryptographicParameters);
+}
+
+#[test]
+fn cryptographic_parameters_abi_rejects_invalid_flags_inconsistent_spans_and_size() {
+    let expected_size = u32::try_from(std::mem::size_of::<
+        kmipkit_cryptographic_parameters_fields_v1_t,
+    >())
+    .expect("versioned record size fits u32");
+    let mut input = empty_cryptographic_parameters_fields();
+    input.struct_size = expected_size;
+    input.abi_version = 1;
+    let mut output = std::ptr::null_mut();
+
+    for invalid in [
+        {
+            let mut value = input;
+            value.struct_size = expected_size - 1;
+            value
+        },
+        {
+            let mut value = input;
+            value.abi_version = 2;
+            value
+        },
+        {
+            let mut value = input;
+            value.block_cipher_mode_present = 2;
+            value
+        },
+        {
+            let mut value = input;
+            value.random_iv = 2;
+            value
+        },
+        {
+            let mut value = input;
+            value.p_source_length = 1;
+            value
+        },
+    ] {
+        // SAFETY: Each malformed but readable record is rejected before dereferencing optional spans.
+        assert_eq!(
+            unsafe {
+                super::cryptographic_parameters::kmipkit_cryptographic_parameters_from_fields_v1(
+                    &raw const invalid,
+                    &raw mut output,
+                )
+            },
+            ERROR_INVALID_INPUT
+        );
+        assert!(output.is_null());
+    }
+
+    input.p_source_present = 1;
+    input.p_source_length = MAX_TRANSPORT_MATERIAL_BYTES + 1;
+    // SAFETY: The maximum-size check rejects this length before reading the null pointer.
+    assert_eq!(
+        unsafe {
+            super::cryptographic_parameters::kmipkit_cryptographic_parameters_from_fields_v1(
+                &raw const input,
+                &raw mut output,
+            )
+        },
+        ERROR_RESOURCE_LIMIT
+    );
+    assert!(output.is_null());
 }
 
 #[test]

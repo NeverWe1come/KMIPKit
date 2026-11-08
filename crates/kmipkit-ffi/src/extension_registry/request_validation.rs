@@ -311,3 +311,7 @@ pub extern "C" fn kmipkit_validation_report_release(report: *mut kmipkit_validat
         release(report, Kind::ValidationReport);
     });
 }
+
+#[cfg(test)]
+#[path = "../../tests/support/request_validation_unit_tests.rs"]
+mod tests;

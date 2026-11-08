@@ -1,5 +1,7 @@
 """Four-language typed managed-object and key-value behavior for KMIPKIT-0053."""
 
+from types import SimpleNamespace
+
 import pytest
 
 from kmipkit import errors, ttlv
@@ -862,3 +864,132 @@ def test_oasis_hexadecimal_transparent_ec_formats_and_reserved_values():
         assert reserved_private.format_raw == 14
     with KeyMaterial.from_fields(15, []) as reserved_public:
         assert reserved_public.format_raw == 15
+
+
+def test_managed_field_read_dispatch_validation_and_malformed_native_handles(monkeypatch):
+    with ttlv.codec_limits_defaults() as limits:
+        certificate_type = _item(
+            0x0042_001D, ttlv.ttlv_value_enumeration(0x8000_0042), limits
+        )
+        certificate_value = _item(
+            0x0042_001E,
+            ttlv.ttlv_value_byte_string(b"certificate", limits),
+            limits,
+        )
+        compression_type = _item(
+            0x0042_0041, ttlv.ttlv_value_enumeration(0x8000_0003), limits
+        )
+        key_format = _item(0x0042_0042, ttlv.ttlv_value_enumeration(1), limits)
+    try:
+        with ManagedObject.certificate([certificate_type, certificate_value]) as managed:
+            assert managed.has_field(0x0042_001D)
+            assert managed.field_type(0x0042_001D) is ttlv.ItemType.Enumeration
+            assert managed.field_enumeration(0x0042_001D) == 0x8000_0042
+            assert managed.field_bytes(0x0042_001E) == b"certificate"
+            with pytest.raises(errors.InvalidInputError):
+                managed.field_read(0x0042_001D, 99)
+            with pytest.raises(errors.InvalidInputError):
+                ManagedObject.from_item(1, object())  # type: ignore[arg-type]
+            with pytest.raises(errors.InvalidInputError):
+                ManagedObject.from_fields(1, [object()])  # type: ignore[list-item]
+
+            def success_without_item(_owner, _context, _item, _tag, present, _output):
+                present[0] = 1
+                return 0
+
+            with monkeypatch.context() as patcher:
+                patcher.setattr(
+                    managed_objects,
+                    "_client_lib",
+                    SimpleNamespace(
+                        kmipkit_managed_value_field_item_read=success_without_item
+                    ),
+                )
+                with pytest.raises(errors.InvalidInputError):
+                    managed.field_item(0x0042_001D)
+
+        with KeyBlock.from_fields([key_format, compression_type]) as block:
+            assert block.key_format_type == 1
+            assert block.key_compression_type == 0x8000_0003
+        with pytest.raises(errors.InvalidInputError):
+            KeyValue.from_fields(True, [])  # type: ignore[arg-type]
+        with pytest.raises(errors.InvalidInputError):
+            KeyMaterial.from_fields(False, [])  # type: ignore[arg-type]
+
+        with ManagedObject.certificate([certificate_type, certificate_value]) as managed:
+            def native_read(_self, _tag, _kind, _output=None, _capacity=0):
+                return (True, ttlv.ItemType.Integer, 7, 8, 2)
+
+            monkeypatch.setattr(ManagedObject, "_native_field_read", native_read)
+            assert managed.field_read(1, 1) is True
+            assert managed.field_read(1, 2) is ttlv.ItemType.Integer
+            assert managed.field_read(1, 3) == 7
+            assert managed.field_read(1, 4) == 8
+            assert managed.field_read(1, 5) == b"\0\0"
+            managed._metadata = None
+            with pytest.raises(errors.InvalidInputError):
+                _ = managed.object_type
+
+        with ManagedObject.certificate([certificate_type, certificate_value]) as managed:
+            def oversized_read(_self, _tag, _kind, _output=None, _capacity=0):
+                return (True, ttlv.ItemType.ByteString, 0, 0, 0x8000_0000)
+
+            monkeypatch.setattr(ManagedObject, "_native_field_read", oversized_read)
+            with pytest.raises(errors.ResourceLimitError):
+                managed.field_bytes(0x0042_001E)
+    finally:
+        certificate_type.close()
+        certificate_value.close()
+        compression_type.close()
+        key_format.close()
+
+
+def test_managed_key_material_named_getters_cover_private_and_dh_fields():
+    with ttlv.codec_limits_defaults() as limits:
+        def big_integer(raw_tag: int, value: bytes) -> ttlv.TtlvItem:
+            return _item(raw_tag, ttlv.ttlv_value_big_integer(value, limits), limits)
+
+        rsa_fields = [
+            big_integer(0x0042_0052, b"n"),
+            big_integer(0x0042_006C, b"e"),
+            big_integer(0x0042_0063, b"d"),
+            big_integer(0x0042_005E, b"p"),
+            big_integer(0x0042_0071, b"q"),
+            big_integer(0x0042_0060, b"P"),
+            big_integer(0x0042_0061, b"Q"),
+            big_integer(0x0042_0027, b"c"),
+        ]
+        dh_fields = [
+            big_integer(0x0042_005E, b"p"),
+            big_integer(0x0042_0071, b"q"),
+            big_integer(0x0042_0037, b"g"),
+            big_integer(0x0042_003E, b"j"),
+            big_integer(0x0042_009F, b"x"),
+        ]
+        ec_private = [
+            _item(
+                0x0042_0075,
+                ttlv.ttlv_value_enumeration(0x8000_0014),
+                limits,
+            ),
+            big_integer(0x0042_002E, b"private"),
+        ]
+    try:
+        with KeyMaterial.from_fields(10, rsa_fields) as material:
+            assert material.modulus == b"n"
+            assert material.public_exponent == b"e"
+            assert material.private_exponent == b"d"
+            assert material.prime_exponent_p == b"P"
+            assert material.prime_exponent_q == b"Q"
+            assert material.crt_coefficient == b"c"
+        with KeyMaterial.from_fields(12, dh_fields) as material:
+            assert material.p == b"p"
+            assert material.q == b"q"
+            assert material.g == b"g"
+            assert material.j == b"j"
+            assert material.x == b"x"
+        with KeyMaterial.from_fields(0x14, ec_private) as material:
+            assert material.d == b"private"
+    finally:
+        for field in (*rsa_fields, *dh_fields, *ec_private):
+            field.close()

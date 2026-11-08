@@ -1,6 +1,9 @@
 use kmipkit_ttlv::{ItemType, RawTag, Structure, Value, ValueView};
 
-use crate::{Certificate, KeyFormatType, ManagedValueKind, ManagedValueReader, ObjectType};
+use crate::{
+    Certificate, EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyFormatType, KeyMaterial,
+    KeyValue, KeyWrappingData, ManagedValueKind, ManagedValueReader, ObjectType,
+};
 
 fn tag(raw: u32) -> kmipkit_ttlv::Tag {
     RawTag::new(raw)
@@ -160,4 +163,140 @@ fn typed_reader_rejects_known_object_mismatch_and_preserves_future_format() {
     );
     assert_eq!(reader.field_type(0x0042_0043), None);
     assert_eq!(reader.into_item().item_type(), ItemType::ByteString);
+}
+
+#[test]
+fn typed_reader_copies_each_current_ttlv_field_value_variant() {
+    let values = [
+        Value::structure(Structure::new()),
+        Value::integer(-17),
+        Value::long_integer(-0x0102_0304_0506_0708),
+        Value::big_integer(vec![0x00, 0x80, 0xff]),
+        Value::enumeration(u32::MAX),
+        Value::boolean(true),
+        Value::text_string("secret-text".to_owned()),
+        Value::byte_string(vec![0x00, 0x81, 0xff]),
+        Value::date_time(-1234),
+        Value::interval(u32::MAX),
+        Value::date_time_extended(-5678),
+    ];
+    let mut object = Structure::new();
+    for (index, value) in values.into_iter().enumerate() {
+        object
+            .try_push(
+                kmipkit_ttlv::Item::new(
+                    tag(0x0054_0100 + u32::try_from(index).expect("test index fits in u32")),
+                    value,
+                )
+                .expect("vendor field"),
+            )
+            .expect("vendor field fits");
+    }
+    let item = kmipkit_ttlv::Item::new(tag(0x0054_0002), Value::structure(object))
+        .expect("future vendor object");
+    let reader = ManagedValueReader::try_from_item(
+        ManagedValueKind::ManagedObject(ObjectType::from_raw(0x8000_0001)),
+        item,
+    )
+    .expect("future managed object preserves generic fields");
+
+    let expected_types = [
+        ItemType::Structure,
+        ItemType::Integer,
+        ItemType::LongInteger,
+        ItemType::BigInteger,
+        ItemType::Enumeration,
+        ItemType::Boolean,
+        ItemType::TextString,
+        ItemType::ByteString,
+        ItemType::DateTime,
+        ItemType::Interval,
+        ItemType::DateTimeExtended,
+    ];
+    for (index, expected_type) in expected_types.into_iter().enumerate() {
+        let raw_tag = 0x0054_0100 + u32::try_from(index).expect("test index fits in u32");
+        let value = reader.read_field(raw_tag).expect("field exists");
+        assert_eq!(value.item_type(), expected_type);
+        assert_eq!(reader.field_type(raw_tag), Some(expected_type));
+        assert!(
+            reader
+                .read_field_item(raw_tag)
+                .expect("clone succeeds")
+                .is_some()
+        );
+    }
+    assert_eq!(reader.field_integer(0x0054_0101), Some(-17));
+    assert_eq!(reader.field_enumeration(0x0054_0104), Some(u32::MAX));
+    assert_eq!(
+        reader.with_field_bytes(0x0054_0107, <[u8]>::to_vec),
+        Some(vec![0x00, 0x81, 0xff])
+    );
+    assert!(
+        reader
+            .read_field_item(0x0054_7fff)
+            .expect("missing lookup succeeds")
+            .is_none()
+    );
+}
+
+#[test]
+fn typed_reader_validates_key_block_and_wrapping_contexts() {
+    let key_value = KeyValue::try_new(
+        KeyMaterial::byte_string(1, vec![0x01, 0x02]).expect("Raw Key Material"),
+        None,
+    )
+    .expect("Key Value");
+    let block = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Key Format Type")
+        .with_key_value(KeyBlockValue::Plaintext(key_value))
+        .try_into_item()
+        .expect("valid Key Block");
+    let reader = ManagedValueReader::try_from_item(ManagedValueKind::KeyBlock, block)
+        .expect("Key Block is validated");
+    assert_eq!(reader.kind(), ManagedValueKind::KeyBlock);
+
+    let wrapping = KeyWrappingData::try_new(0x8000_0001)
+        .expect("future wrapping method")
+        .with_encryption_key_information(
+            EncryptionKeyInformation::try_new("wrapping-key".to_owned())
+                .expect("Unique Identifier"),
+        )
+        .into_item()
+        .expect("valid Key Wrapping Data");
+    let reader = ManagedValueReader::try_from_item(ManagedValueKind::KeyWrappingData, wrapping)
+        .expect("Key Wrapping Data is validated");
+    assert_eq!(reader.kind(), ManagedValueKind::KeyWrappingData);
+}
+
+#[test]
+fn typed_reader_rejects_items_that_do_not_match_each_selected_context() {
+    let invalid = || {
+        kmipkit_ttlv::Item::new(tag(0x0054_0001), Value::integer(1))
+            .expect("generic invalid context item")
+    };
+    assert!(
+        ManagedValueReader::try_from_item(
+            ManagedValueKind::ManagedObject(ObjectType::from_raw(1)),
+            invalid(),
+        )
+        .is_err()
+    );
+    assert!(ManagedValueReader::try_from_item(ManagedValueKind::KeyBlock, invalid()).is_err());
+    assert!(
+        ManagedValueReader::try_from_item(
+            ManagedValueKind::KeyValue(KeyFormatType::from_raw(1)),
+            invalid(),
+        )
+        .is_err()
+    );
+    assert!(
+        ManagedValueReader::try_from_item(
+            ManagedValueKind::KeyMaterial(KeyFormatType::from_raw(1)),
+            invalid(),
+        )
+        .is_err()
+    );
+    assert!(
+        ManagedValueReader::try_from_item(ManagedValueKind::KeyWrappingData, invalid()).is_err()
+    );
 }

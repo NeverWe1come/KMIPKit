@@ -590,3 +590,7 @@ pub extern "C" fn kmipkit_key_wrapping_data_from_item(
         KeyWrappingData::try_from_item(item).and_then(KeyWrappingData::into_item)
     })
 }
+
+#[cfg(test)]
+#[path = "../../tests/support/managed_objects_coverage_tests.rs"]
+mod coverage_tests;
