@@ -71,29 +71,23 @@ fn order_known_fields(
     fields: Vec<Item>,
     schema_order: &[u32],
 ) -> Result<Vec<Item>, ManagedObjectError> {
-    let mut slots: Vec<Option<Item>> = fields.into_iter().map(Some).collect();
+    let mut slots = Vec::new();
     let mut known_positions = Vec::new();
     let mut known_fields = Vec::new();
-    for (index, slot) in slots.iter_mut().enumerate() {
-        let Some(item) = slot.as_ref() else {
-            return Err(ManagedObjectError::InvalidStructure);
-        };
+    for (index, item) in fields.into_iter().enumerate() {
         if let Some(position) = schema_order.iter().position(|tag| *tag == item.tag().raw()) {
             known_positions.push(index);
-            let Some(item) = slot.take() else {
-                return Err(ManagedObjectError::InvalidStructure);
-            };
             known_fields.push((position, item));
+            slots.push(None);
+        } else {
+            slots.push(Some(item));
         }
     }
     known_fields.sort_by_key(|(position, _)| *position);
     for (index, (_, item)) in known_positions.into_iter().zip(known_fields) {
         slots[index] = Some(item);
     }
-    slots
-        .into_iter()
-        .map(|slot| slot.ok_or(ManagedObjectError::InvalidStructure))
-        .collect()
+    Ok(slots.into_iter().flatten().collect())
 }
 
 fn structure_item(
