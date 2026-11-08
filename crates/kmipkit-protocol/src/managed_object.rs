@@ -108,6 +108,64 @@ pub(crate) fn make_structure_item(
     make_item(raw_tag, Value::structure(structure))
 }
 
+/// Replaces known children in-place and inserts new known children by schema order.
+///
+/// Existing unknown children retain their value, relative order, and location
+/// among existing siblings. Clones use the TTLV model's zeroizing copy path.
+pub(crate) fn rebuild_ordered_structure(
+    source: &Item,
+    ordered_tags: &[u32],
+    replacements: Vec<Item>,
+) -> Result<Item, ManagedObjectError> {
+    let mut pending = replacements;
+    let mut children = source.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            return Err(ManagedObjectError::InvalidStructure);
+        };
+        let mut children = Vec::with_capacity(structure.children().len());
+        for child in structure.children() {
+            if let Some(position) = pending
+                .iter()
+                .position(|replacement| replacement.tag() == child.tag())
+            {
+                children.push(pending.remove(position));
+            } else {
+                children.push(child.try_clone().map_err(ManagedObjectError::from)?);
+            }
+        }
+        Ok(children)
+    })?;
+
+    pending.sort_by_key(|item| {
+        ordered_tags
+            .iter()
+            .position(|tag| *tag == item.tag().raw())
+            .unwrap_or(usize::MAX)
+    });
+    for replacement in pending {
+        let replacement_position = ordered_tags
+            .iter()
+            .position(|tag| *tag == replacement.tag().raw())
+            .unwrap_or(usize::MAX);
+        let insertion = children
+            .iter()
+            .position(|child| {
+                ordered_tags
+                    .iter()
+                    .position(|tag| *tag == child.tag().raw())
+                    .is_some_and(|position| position > replacement_position)
+            })
+            .unwrap_or(children.len());
+        children.insert(insertion, replacement);
+    }
+
+    let mut fields = Structure::new();
+    for child in children {
+        fields.try_push(child)?;
+    }
+    make_item(source.tag().raw(), Value::structure(fields))
+}
+
 pub(crate) fn validate_structure(
     item: &Item,
     expected_tag: u32,

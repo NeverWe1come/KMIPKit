@@ -100,6 +100,59 @@ merge above; the remote #116 head had not yet advanced to that commit.
 
 Hosted cross-platform coverage aggregation and CI remain outstanding; the PR is not merge-ready and the phase has not been declared complete.
 
+## Independent-review correction: parsed key-model mutation
+
+The maintainer-approved corrections plan adds local API contract
+`KMIPKIT-0049-FR-011`. This contract is explicitly a KMIPKit typed-API behavior,
+not a new protocol requirement attributed to OASIS. It applies to Key Block
+and Key Wrapping Data wire structures defined in KMIP 2.1 §3.1/Table 12 and
+§3.3/Tables 14–17.
+
+### Red
+
+- Red commit: `493188bc8`.
+- `cargo test -p kmipkit-protocol --test key_structures key_block_setters_update_decoded_tree_and_preserve_extensions -- --exact`
+  failed as expected: converting a mutated parsed Key Block returned the old
+  Cryptographic Algorithm (`0`) instead of the requested value (`4`).
+- `cargo test -p kmipkit-protocol --test key_wrapping key_wrapping_setters_update_decoded_tree_and_preserve_extensions -- --exact`
+  failed as expected because a newly-set field was absent from the unchanged
+  source tree (the test attempted to inspect the missing child).
+
+### Green
+
+- Green commit: `23d8246d8`.
+- Parsed models now overlay typed setters on the retained TTLV tree. Existing
+  known fields are replaced in place; newly supplied fields are inserted by
+  their source-table order. Untouched unknown children retain their values and
+  relative order. The merge clones only source children that are retained,
+  using the TTLV zeroizing copy path for secret payloads.
+- `with_raw()` now exposes snapshots for parsed models and newly-built models,
+  including incomplete builders. `try_into_item()` still validates
+  conditional Key Block fields and required wrapping key-information fields.
+
+### Refactor and local verification
+
+- Refactor commit: `94b9a8a58`.
+- Added the local FR-011 contract to `spec.md`, `gap-matrix.md`,
+  `data-model.md`, `traceability.md`, and `tasks.md`; no OASIS requirement was
+  invented or marked as a KMIP mandate.
+- `cargo fmt --all --check`: passed.
+- `cargo test -p kmipkit-protocol --all-features --quiet`: passed, including
+  1,327 unit tests and all integration and documentation-test targets.
+- Focused final tests: `key_structures` passed 12 tests; `key_wrapping` passed
+  9 tests.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`:
+  passed.
+- `git diff --check`: passed.
+- A raw diagnostic run of `cargo llvm-cov -p kmipkit-protocol --all-features
+  --summary-only` reported 89.88% across its unfiltered package file set. This
+  is not the CI selected-production-scope calculation and is not coverage-gate
+  evidence. The local run did not collect Linux/macOS reports or the adapter
+  scopes; the hosted selected-scope coverage gate remains authoritative and
+  must pass before review readiness.
+- No public route or generated manifest changed; generator output was not
+  edited.
+
 
 ## Reviewed predecessor synchronization (2026-11-07)
 

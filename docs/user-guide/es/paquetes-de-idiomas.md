@@ -200,7 +200,7 @@ tabla.
 | `ffi_shared_owner_status` | declared | C expone el estado `KMIPKIT_ERROR_SHARED_OWNER`; esta capacidad es exclusiva de C. |
 | `credential_validation_error_parity` | declared | Los tipos de error de validación de credenciales están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 | `credential_validation_error_abi_layout` | declared | C mapea los campos del diseño ABI versionado de error de validación de credenciales; esta capacidad es exclusiva de C. |
-| `named_protocol_values` | declared | Los valores Enumeration y Bit Mask asignados de KMIP 2.1 tienen nombres basados en el catálogo en Rust, C, Java y Python. Esto acredita nombres y consultas; no afirma que el servidor los admita ni que sean criptográficamente apropiados. |
+| `named_protocol_values` | declared | Los valores Enumeration y Bit Mask asignados de KMIP 2.1, además de las diferencias versionadas revisadas de KMIP 2.1 y 3.0, tienen nombres basados en catálogos en Rust, C, Java y Python. Esto acredita nombres y consultas; no afirma que el servidor los admita, que exista soporte completo del protocolo 3.0 ni que sean criptográficamente apropiados. |
 | `hashed_password_timestamp_sequence` | declared | Una secuencia local de marcas de tiempo para credenciales Hashed Password está mapeada en cuatro lenguajes; la validación del servidor sigue siendo la autoridad. |
 | `credential_secret_parity` | declared | Los wrappers de bytes y texto secretos están mapeados en cuatro lenguajes; la verificación completa de paridad sigue pendiente. |
 | `named_protocol_mask_single_bit_lookup` | declared | Los indicadores de un solo bit asignados tienen nombres basados en el catálogo; los bits desconocidos se conservan. |

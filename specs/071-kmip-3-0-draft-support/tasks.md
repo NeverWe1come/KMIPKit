@@ -7,3 +7,4 @@
 - [ ] **TASK-071-005**: Implement Green KMIP 3.0 mode in `kmipkit-test-server`.
 - [ ] **TASK-071-006**: Add end-to-end client tests for KMIP 3.0 version selection and operations.
 - [ ] **TASK-071-007**: Refactor, run formatting, clippy, test suite, and catalog verification.
+- [ ] **TASK-071-008**: Correct LinkNormalizer to use the exact 14 shared KMIP 2.1/3.0 semantic mappings and the 20 pinned KMIP 3.0 link tag assignments; reject lossy conversions. Implemented and verified in the KMIPKIT-0048 correction PR.
