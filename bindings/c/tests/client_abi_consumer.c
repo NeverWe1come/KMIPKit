@@ -7776,6 +7776,31 @@ int kmipkit_client_abi_c_consumer_async_output_errors_clear(void) {
         return 0;
     }
 
+    typedef int32_t (*typed_response_reader_fn)(
+            kmipkit_client_async_operation_outcome_t *, uint8_t *,
+            kmipkit_client_async_operation_response_v1_t *);
+    const typed_response_reader_fn typed_readers[] = {
+        kmipkit_client_async_operation_outcome_cancel_response_v1,
+        kmipkit_client_async_operation_outcome_poll_response_v1,
+        kmipkit_client_async_operation_outcome_process_response_v1,
+        kmipkit_client_async_operation_outcome_query_async_requests_response_v1};
+    for (size_t index = 0; index < sizeof(typed_readers) / sizeof(typed_readers[0]); ++index) {
+        kmipkit_client_async_operation_response_v1_t response = {0};
+        present = UINT8_C(9);
+        response.struct_size = UINT32_C(9);
+        if (typed_readers[index](0, &present, &response) != T076_ERROR_INVALID_INPUT ||
+                present != 0 || response.struct_size != 0 || response.abi_version != 0) {
+            return 0;
+        }
+    }
+
+    kmipkit_client_async_operation_response_v1_t overlapping_response = {0};
+    if (kmipkit_client_async_operation_outcome_cancel_response_v1(
+            0, (uint8_t *)&overlapping_response, &overlapping_response) !=
+            T076_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+
     kmipkit_client_async_operation_outcome_release(0);
     return 1;
 }

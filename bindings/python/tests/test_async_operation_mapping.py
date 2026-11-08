@@ -509,7 +509,7 @@ def test_async_typed_response_reader_returns_an_owner_backed_typed_view(
             assert observed == [b"typed-correlation"]
         if operation in (0x1A, 0x3A, 0x39):
             assert typed.is_pending
-        if operation == 0x39:
+        if operation in (0x3A, 0x39):
             observed_correlation: list[bytes] = []
 
             def inspect_query_correlation(value: memoryview) -> None:
@@ -607,6 +607,22 @@ def test_typed_correlation_reader_returns_false_when_response_has_no_correlation
         response = outcome.poll_response()
         assert response is not None
         assert not response.with_asynchronous_correlation_value(lambda _value: None)
+    finally:
+        outcome.close()
+
+
+def test_typed_cancel_echo_returns_false_when_success_has_no_correlation(
+    monkeypatch,
+) -> None:
+    stubs = _typed_outcome_stubs(0x19, correlation=None)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        response = outcome.cancel_response()
+        assert response is not None
+        assert not response.with_echoed_correlation_value(
+            lambda _value: pytest.fail("unexpected echoed correlation value")
+        )
     finally:
         outcome.close()
 
