@@ -7,6 +7,33 @@ fn cancel_echo_is_exposed_only_for_success_with_a_validated_result() {
     assert!(!cancel_response_echo_is_exposed(0, false));
 }
 
+fn poison_outcome_and_check_poll_reader(outcome: *mut kmipkit_client_async_operation_outcome_t) {
+    let outcome_owner = reference_handle(outcome, Kind::ClientAsyncOperationOutcome)
+        .expect("Poll outcome handle remains registered");
+    let HandleValue::ClientAsyncOperationOutcome(outcome_mutex) = &outcome_owner.value else {
+        panic!("Poll outcome handle has the expected value kind");
+    };
+    let poison = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = outcome_mutex.lock().expect("outcome starts unpoisoned");
+        panic!("poison the test outcome mutex");
+    }));
+    assert!(poison.is_err());
+    let mut present = u8::MAX;
+    let mut response = kmipkit_client_async_operation_response_v1_t::default();
+    // SAFETY: the outcome handle and both writable, non-overlapping output records remain valid.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_async_operation_outcome_poll_response_v1(
+                outcome,
+                &raw mut present,
+                &raw mut response,
+            )
+        },
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+}
+
 #[test]
 fn standalone_poll_request_exposes_its_owned_correlation_bytes() {
     let expected_correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
@@ -155,10 +182,46 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     assert_pending_metadata(outcome);
     assert_exact_correlation(outcome, &expected_correlation);
     assert_response_payload_is_absent(outcome);
+    poison_outcome_and_check_poll_reader(outcome);
 
     kmipkit_client_async_operation_outcome_release(outcome);
     kmipkit_codec_limits_release(limits_handle);
     kmipkit_client_release(client_handle);
+}
+
+#[test]
+fn typed_async_response_readers_reject_wrong_value_kinds_and_clear_outputs() {
+    let item_tag = RawTag::new(0x0042_0001)
+        .expect("fixture tag is representable")
+        .try_checked()
+        .expect("fixture tag is allocated");
+    let item = Item::new(item_tag, Value::integer(1)).expect("fixture Item is valid");
+    let wrong_kind: *mut kmipkit_client_async_operation_outcome_t =
+        make_handle(Kind::ClientAsyncOperationOutcome, HandleValue::Item(item));
+    let readers: [unsafe extern "C" fn(
+        *mut kmipkit_client_async_operation_outcome_t,
+        *mut u8,
+        *mut kmipkit_client_async_operation_response_v1_t,
+    ) -> i32; 4] = [
+        kmipkit_client_async_operation_outcome_cancel_response_v1,
+        kmipkit_client_async_operation_outcome_poll_response_v1,
+        kmipkit_client_async_operation_outcome_process_response_v1,
+        kmipkit_client_async_operation_outcome_query_async_requests_response_v1,
+    ];
+
+    for reader in readers {
+        let mut present = u8::MAX;
+        let mut response = kmipkit_client_async_operation_response_v1_t::default();
+        // SAFETY: A registered handle with the expected outer kind has a deliberately wrong value;
+        // the readers reject it before dereferencing response state or output pointers.
+        assert_eq!(
+            unsafe { reader(wrong_kind, &raw mut present, &raw mut response) },
+            ERROR_INVALID_INPUT
+        );
+        assert_eq!(present, 0);
+        assert_eq!(response.abi_version, 0);
+    }
+    release(wrong_kind, Kind::ClientAsyncOperationOutcome);
 }
 
 #[test]
