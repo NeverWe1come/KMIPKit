@@ -19,6 +19,36 @@ pub mod oci;
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CloudTagMap(pub BTreeMap<String, String>);
 
+impl CloudTagMap {
+    #[must_use]
+    pub fn new() -> Self {
+        Self(BTreeMap::new())
+    }
+
+    pub fn insert(&mut self, key: impl Into<String>, value: impl Into<String>) {
+        self.0.insert(key.into(), value.into());
+    }
+
+    #[must_use]
+    pub fn get(&self, key: &str) -> Option<&String> {
+        self.0.get(key)
+    }
+
+    pub fn remove(&mut self, k: &str) -> Option<String> {
+        self.0.remove(k)
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
 /// Key creation specification.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreateKeySpec {
