@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import unittest
 
 from tools.api_manifest.reconcile_0048_typed_attributes import (
@@ -119,15 +120,26 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         self.assertEqual(exclusion["approvalSource"]["path"], "specs/048-typed-attributes/spec.md")
 
     def test_reconciliation_is_deterministic_and_does_not_mutate_inputs(self) -> None:
-        manifest = copy.deepcopy(self.manifest)
-        report = copy.deepcopy(self.report)
+        first_manifest = copy.deepcopy(self.manifest)
+        first_report = copy.deepcopy(self.report)
+        second_manifest = copy.deepcopy(self.manifest)
+        second_report = copy.deepcopy(self.report)
+        first_manifest_before = copy.deepcopy(first_manifest)
+        first_report_before = copy.deepcopy(first_report)
+        second_manifest_before = copy.deepcopy(second_manifest)
+        second_report_before = copy.deepcopy(second_report)
 
-        first_result = reconcile(copy.deepcopy(manifest), copy.deepcopy(report))
-        second_result = reconcile(copy.deepcopy(manifest), copy.deepcopy(report))
+        first_result = reconcile(first_manifest, first_report)
+        second_result = reconcile(second_manifest, second_report)
 
-        self.assertEqual(first_result, second_result)
-        self.assertEqual(manifest, self.manifest)
-        self.assertEqual(report, self.report)
+        self.assertEqual(
+            json.dumps(first_result, sort_keys=True),
+            json.dumps(second_result, sort_keys=True),
+        )
+        self.assertEqual(first_manifest, first_manifest_before)
+        self.assertEqual(first_report, first_report_before)
+        self.assertEqual(second_manifest, second_manifest_before)
+        self.assertEqual(second_report, second_report_before)
 
     def test_preserves_reviewed_manifest_order_for_existing_rows(self) -> None:
         manifest = copy.deepcopy(self.manifest)
