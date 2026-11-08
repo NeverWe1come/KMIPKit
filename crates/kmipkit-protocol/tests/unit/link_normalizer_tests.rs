@@ -10,7 +10,7 @@ fn ttlv_item(raw_tag: u32, value: Value) -> Item {
 
 #[test]
 fn test_generic_link_converts_to_discrete_v3_typed_link() {
-    let target_id = "target-cert-id-12345";
+    let target_id = 0xCAFE_BABE;
 
     // Build a KMIP 2.x generic Link Structure (0x0042_0047)
     let mut link_struct = Structure::new();
@@ -18,10 +18,7 @@ fn test_generic_link_converts_to_discrete_v3_typed_link() {
         .try_push(ttlv_item(0x0042_0048, Value::enumeration(0x0000_0101))) // Certificate link type
         .unwrap();
     link_struct
-        .try_push(ttlv_item(
-            0x0042_0049,
-            Value::text_string(target_id.to_string()),
-        )) // Linked Object Identifier
+        .try_push(ttlv_item(0x0042_0049, Value::enumeration(target_id))) // Linked Object Identifier
         .unwrap();
 
     let generic_link = ttlv_item(0x0042_0047, Value::structure(link_struct));
@@ -59,10 +56,12 @@ fn test_all_fourteen_kmip_21_link_values_map_to_semantic_v3_attributes() {
     ];
 
     for (v2_enum, v3_tag) in link_cases {
-        assert!(RawTag::new(v3_tag)
-            .expect("KMIP tag is 24-bit")
-            .try_checked()
-            .is_ok());
+        assert!(
+            RawTag::new(v3_tag)
+                .expect("KMIP tag is 24-bit")
+                .try_checked()
+                .is_ok()
+        );
         let link_type = LinkType::from_v2_enumeration(v2_enum)
             .unwrap_or_else(|| panic!("assigned KMIP 2.1 Link Type {v2_enum:#010X}"));
         assert_eq!(link_type.v2_enumeration(), v2_enum);
@@ -74,10 +73,7 @@ fn test_all_fourteen_kmip_21_link_values_map_to_semantic_v3_attributes() {
             .try_push(ttlv_item(0x0042_0048, Value::enumeration(v2_enum)))
             .unwrap();
         link_struct
-            .try_push(ttlv_item(
-                0x0042_0049,
-                Value::text_string("linked-obj-uuid".to_string()),
-            ))
+            .try_push(ttlv_item(0x0042_0049, Value::enumeration(0xCAFE_BABE)))
             .unwrap();
 
         let generic_link = ttlv_item(0x0042_0047, Value::structure(link_struct));
@@ -92,13 +88,12 @@ fn test_all_fourteen_kmip_21_link_values_map_to_semantic_v3_attributes() {
                 .children()
                 .iter()
                 .find(|child| child.tag().raw() == 0x0042_0048)
-                .map(|child| {
+                .map_or(0, |child| {
                     child.with_value(|value| match value {
                         kmipkit_ttlv::ValueView::Enumeration(raw) => *raw,
                         _ => 0,
                     })
-                })
-                .unwrap_or(0),
+                }),
             _ => 0,
         });
         assert_eq!(restored_type, v2_enum);
@@ -147,10 +142,12 @@ fn test_link_normalizer_error_and_edge_cases() {
         0x0042_01B5, // Joined Split Key Parts Link
         0x0042_01BC, // Certificate Request Link
     ] {
-        assert!(RawTag::new(v3_only_tag)
-            .expect("KMIP tag is 24-bit")
-            .try_checked()
-            .is_ok());
+        assert!(
+            RawTag::new(v3_only_tag)
+                .expect("KMIP tag is 24-bit")
+                .try_checked()
+                .is_ok()
+        );
         assert!(LinkType::from_v3_tag(v3_only_tag).is_none());
         let item = ttlv_item(v3_only_tag, Value::text_string("target".into()));
         assert!(LinkNormalizer::normalize_to_v2(&item).is_err());
@@ -159,16 +156,25 @@ fn test_link_normalizer_error_and_edge_cases() {
     // KMIP 3.0 Object Defaults is not a link tag even though it was previously
     // misclassified by the invalid contiguous-range implementation.
     assert!(LinkType::from_v3_tag(0x0042_0153).is_none());
-    assert!(LinkNormalizer::normalize_to_v2(&ttlv_item(
-        0x0042_0153,
-        Value::text_string("target".into()),
-    ))
-    .is_err());
+    assert!(
+        LinkNormalizer::normalize_to_v2(&ttlv_item(
+            0x0042_0153,
+            Value::text_string("target".into()),
+        ))
+        .is_err()
+    );
 }
 
 #[test]
 fn test_link_identifier_enumeration_and_integer_forms_roundtrip_without_coercion() {
-    for identifier in [Value::enumeration(0xCAFE_BABE), Value::integer(-7)] {
+    for (identifier, is_enumeration, expected_raw) in [
+        (
+            Value::enumeration(0xCAFE_BABE),
+            true,
+            i64::from(0xCAFE_BABEu32),
+        ),
+        (Value::integer(-7), false, -7),
+    ] {
         let mut link_struct = Structure::new();
         link_struct
             .try_push(ttlv_item(0x0042_0048, Value::enumeration(0x0000_0101)))
@@ -180,22 +186,30 @@ fn test_link_identifier_enumeration_and_integer_forms_roundtrip_without_coercion
 
         let discrete = LinkNormalizer::normalize_to_v3(&generic)
             .expect("the identifier encoding has a v3 equivalent");
-        assert!(matches!(
-            (discrete.item_type(), discrete.tag().raw()),
-            (kmipkit_ttlv::ItemType::Enumeration, 0x0042_0190)
-                | (kmipkit_ttlv::ItemType::Integer, 0x0042_0190)
-        ));
+        assert_eq!(discrete.tag().raw(), 0x0042_0190);
+        let discrete_raw = discrete.with_value(|value| match (is_enumeration, value) {
+            (true, kmipkit_ttlv::ValueView::Enumeration(raw)) => i64::from(*raw),
+            (false, kmipkit_ttlv::ValueView::Integer(raw)) => i64::from(*raw),
+            _ => 0,
+        });
+        assert_eq!(discrete_raw, expected_raw);
         let restored = LinkNormalizer::normalize_to_v2(&discrete)
             .expect("the identifier encoding has a v2 equivalent");
-        let restored_type = restored.with_value(|view| match view {
+        let restored_raw = restored.with_value(|view| match view {
             kmipkit_ttlv::ValueView::Structure(structure) => structure
                 .children()
                 .iter()
                 .find(|child| child.tag().raw() == 0x0042_0049)
-                .map(kmipkit_ttlv::Item::item_type),
-            _ => None,
+                .map_or(0, |child| {
+                    child.with_value(|value| match (is_enumeration, value) {
+                        (true, kmipkit_ttlv::ValueView::Enumeration(raw)) => i64::from(*raw),
+                        (false, kmipkit_ttlv::ValueView::Integer(raw)) => i64::from(*raw),
+                        _ => 0,
+                    })
+                }),
+            _ => 0,
         });
-        assert_eq!(restored_type, Some(discrete.item_type()));
+        assert_eq!(restored_raw, expected_raw);
     }
 }
 
@@ -218,4 +232,28 @@ fn test_generic_link_with_unmapped_children_is_rejected_without_dropping_them() 
 
     assert!(LinkNormalizer::normalize_to_v3(&generic).is_err());
     assert_eq!(generic.item_type(), kmipkit_ttlv::ItemType::Structure);
+}
+
+#[test]
+fn test_text_string_identifiers_without_v3_encoding_are_rejected() {
+    let mut link_struct = Structure::new();
+    link_struct
+        .try_push(ttlv_item(0x0042_0048, Value::enumeration(0x0000_0101)))
+        .unwrap();
+    link_struct
+        .try_push(ttlv_item(
+            0x0042_0049,
+            Value::text_string("linked-obj-uuid".to_string()),
+        ))
+        .unwrap();
+    let generic = ttlv_item(0x0042_0047, Value::structure(link_struct));
+
+    assert!(LinkNormalizer::normalize_to_v3(&generic).is_err());
+    assert!(
+        LinkNormalizer::normalize_to_v2(&ttlv_item(
+            0x0042_0190,
+            Value::text_string("linked-obj-uuid".to_string()),
+        ))
+        .is_err()
+    );
 }
