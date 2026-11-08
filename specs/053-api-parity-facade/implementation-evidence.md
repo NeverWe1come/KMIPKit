@@ -193,3 +193,10 @@ Verification passed: `cargo test -p kmipkit-protocol --test key_material --test 
 - `python -B -m unittest discover -s tools/api_manifest/tests -p 'test_manifest_v2.py' -v` completed with 154 tests passing (`OK`) in 1,056.942 seconds.
 - `python -B tools/api_manifest/generate.py --check` verified all 12 generated outputs after integrating the latest 0052 response-navigation head. `git diff --check` reported no whitespace errors.
 - The hosted CI matrix must still run against the pushed 0053 head; this local evidence does not replace the remote platform checks.
+
+## Hash/MAC/Sign declaration-state contract correction (2026-11-08)
+
+- **Red:** hosted CI for the original #150 head failed `test_five_operations_have_approved_four_language_mappings`. T053 had promoted 26 Rust and Java routes for Hash, MAC, MAC Verify, Sign, and Signature Verify to `verified`, but the test's expected-state inventory still covered only T101 identities and response-value helpers. The focused test and a new exact-route regression reproduced the mismatch locally.
+- **Green:** the test now records the exact 26 T053-verified package/export identities and requires each to remain present and verified; operation declarations retain their four-language and normative traceability assertions. No production API or manifest output changed.
+- **Refactor:** named the T053 identity set to distinguish this promotion from the earlier T101 evidence, and kept the full operation readiness test scoped to the verified set.
+- **Verification:** `python -B -m unittest tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v` passed (7 tests); `git diff --check` passed. Hosted CI must rerun on the new head.

@@ -37,7 +37,9 @@ VERIFIED_RESPONSE_VALUE_EXPORTS = {
     "kmipkit::protocol::SignatureVerifyResponse::validity_indicator",
     "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
 }
-T053_VERIFIED_IDENTITIES = {
+# T053 promotes these Rust and Java declaration routes when reconciling the
+# complete five-operation surface after its four-language evidence review.
+T053_VERIFIED_OPERATION_IDENTITIES: set[tuple[str, str]] = {
     ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse"),
     ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse"),
     ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.macVerifyResponse"),
@@ -199,7 +201,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                 or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
             )
         }
-        self.assertEqual(T053_VERIFIED_IDENTITIES, actual_t053_identities)
+        self.assertEqual(T053_VERIFIED_OPERATION_IDENTITIES, actual_t053_identities)
 
     def test_five_operations_have_approved_four_language_mappings(self) -> None:
         self.assertEqual(set(OPERATIONS), set(self.operations))
@@ -239,7 +241,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                                 declaration["packageId"],
                                 declaration["exportName"],
                             )
-                            in T053_VERIFIED_IDENTITIES
+                            in T053_VERIFIED_OPERATION_IDENTITIES
                             or declaration["exportName"].endswith("Response::with_ttlv")
                             or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
                             else "declared"
