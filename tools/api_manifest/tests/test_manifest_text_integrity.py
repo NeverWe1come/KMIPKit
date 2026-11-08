@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -20,35 +21,29 @@ MOJIBAKE_MARKERS = (
 )
 
 
-def _text_values(value: Any, path: str = "$") -> list[tuple[str, str]]:
+def _text_values(value: Any, path: str = "$") -> Iterator[tuple[str, str]]:
     if isinstance(value, dict):
-        return [
-            item
-            for key, nested in value.items()
-            for item in _text_values(nested, f"{path}.{key}")
-        ]
-    if isinstance(value, list):
-        return [
-            item
-            for index, nested in enumerate(value)
-            for item in _text_values(nested, f"{path}[{index}]")
-        ]
+        for key, nested in value.items():
+            yield from _text_values(nested, f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            yield from _text_values(nested, f"{path}[{index}]")
     if isinstance(value, str):
-        return [(path, value)]
-    return []
+        yield path, value
 
 
 class ManifestTextIntegrityTests(unittest.TestCase):
     def test_manifest_strings_do_not_contain_utf8_mojibake_markers(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-        damaged = [
-            (path, text)
-            for path, text in _text_values(manifest)
-            if any(marker in text for marker in MOJIBAKE_MARKERS)
-        ]
+        damaged_count = 0
+        examples = []
+        for path, text in _text_values(manifest):
+            if any(marker in text for marker in MOJIBAKE_MARKERS):
+                damaged_count += 1
+                if len(examples) < 5:
+                    examples.append(f"{path}: {text[:100]!r}")
 
-        preview = [f"{path}: {text[:100]!r}" for path, text in damaged[:5]]
-        self.assertEqual(0, len(damaged), f"damaged text examples: {preview}")
+        self.assertEqual(0, damaged_count, f"damaged text examples: {examples}")
 
 
 if __name__ == "__main__":
