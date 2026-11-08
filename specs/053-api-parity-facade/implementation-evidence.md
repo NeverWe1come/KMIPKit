@@ -187,3 +187,9 @@ Verification passed: `cargo test -p kmipkit-protocol --test key_material --test 
 - Red commit `d08ab9057` adds a workflow contract test requiring the C consumer build to enable `coverage-c-consumer`. The previous Windows CI linked the consumer against a build without the test helper `kmipkit_test_client_batch_item_encoded_operation`, producing LNK2019; the job now builds with the feature enabled.
 - Green commit `1bb80e7de` promotes the 12 fully evidenced operation mappings, adds the existing compiled C Derive Key route as explicit evidence, regenerates the manifest-derived parity outputs, refreshes the T102 snapshot, and enables the C consumer feature in CI.
 - Fresh verification passed: the focused T076/T102 suite ran 90 tests; the 0053 operation readiness, validation-route and operation-readiness suite ran 44 tests; the workflow contract passed; `cargo +1.94 build --locked -p kmipkit-ffi --features coverage-c-consumer` succeeded; the compiled C parity test invoked all 56 client routes; and `generate.py --check` verified all 12 outputs. The build emitted non-fatal AWS-LC `stdalign_check.c` and missing NASM notices on this Windows host. Hosted CI for the updated #150 head must still rerun before the phase can close.
+
+## Full manifest-v2 verification (2026-11-08)
+
+- `python -B -m unittest discover -s tools/api_manifest/tests -p 'test_manifest_v2.py' -v` completed with 154 tests passing (`OK`) in 1,056.942 seconds.
+- `python -B tools/api_manifest/generate.py --check` verified all 12 generated outputs after integrating the latest 0052 response-navigation head. `git diff --check` reported no whitespace errors.
+- The hosted CI matrix must still run against the pushed 0053 head; this local evidence does not replace the remote platform checks.
