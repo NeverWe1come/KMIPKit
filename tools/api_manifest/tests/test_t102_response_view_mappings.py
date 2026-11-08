@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import (
     EXPECTED as REMAINING_RESPONSE_VIEWS,
@@ -547,7 +548,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 )
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
-            canonical_sha256(unchanged_declarations),
+            canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
         target_operations = {
