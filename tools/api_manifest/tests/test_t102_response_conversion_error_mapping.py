@@ -269,7 +269,10 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             and isinstance(function["c"].get("symbol"), str)
         )
         generate._validate_ready_mapping_targets(
-            manifest["publicDeclarations"], package_languages, c_release_functions,
+            manifest["publicDeclarations"],
+            package_languages,
+            c_release_functions,
+            exclusions=manifest["approvedExclusions"],
         )
 
         metadata_target = (
@@ -289,7 +292,10 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
         without_metadata_function = c_release_functions - {metadata_target}
         with self.assertRaisesRegex(generate.ManifestError, "not an exact listed export"):
             generate._validate_ready_mapping_targets(
-                without_metadata_target, package_languages, without_metadata_function,
+                without_metadata_target,
+                package_languages,
+                without_metadata_function,
+                exclusions=manifest["approvedExclusions"],
             )
 
         for language, mapping in EXPECTED_MAPPING.items():
@@ -305,7 +311,10 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                     "normalized client protocol error mapping",
                 ):
                     generate._validate_ready_mapping_targets(
-                        mapped_manifest, package_languages, c_release_functions,
+                        mapped_manifest,
+                        package_languages,
+                        c_release_functions,
+                        exclusions=manifest["approvedExclusions"],
                     )
 
 

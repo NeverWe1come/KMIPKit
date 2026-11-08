@@ -208,10 +208,14 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             source_root.joinpath("KmipValues.java").write_text(
                 "class KmipValues {}\n", encoding="utf-8"
             )
+            source_root.joinpath("ProtocolValues.java").write_text(
+                "class ProtocolValues {}\n", encoding="utf-8"
+            )
             report = """<?xml version="1.0"?>
             <report name="KMIPKit"><package name="org/kmipkit/protocol">
               <sourcefile name="CryptographicParameters.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
               <sourcefile name="KmipValues.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
+              <sourcefile name="ProtocolValues.java"><line nr="1" mi="1" ci="0" mb="0" cb="0"/></sourcefile>
             </package></report>"""
 
             parsed = GATE.parse_jacoco_report(report, root)
@@ -220,7 +224,10 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             {
                 "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java": {
                     1: 1
-                }
+                },
+                "bindings/java/src/main/java/org/kmipkit/protocol/ProtocolValues.java": {
+                    1: 0
+                },
             },
             parsed,
         )

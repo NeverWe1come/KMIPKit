@@ -1491,11 +1491,25 @@ def _validate_ready_mapping_targets(
     declarations: list[dict[str, Any]],
     package_languages: dict[Any, Any],
     c_public_functions: set[tuple[str, str]],
+    *,
+    exclusions: list[dict[str, Any]] | None = None,
 ) -> None:
     """Require every ready cross-language mapping to resolve to a ready export."""
     declarations_by_path = {
         (row["packageId"], row["exportName"]): row for row in declarations
     }
+    for exclusion in exclusions or []:
+        if exclusion.get("packageId") == "c-kmipkit" and isinstance(
+            exclusion.get("cFunction"), dict
+        ):
+            symbol = exclusion["cFunction"].get("symbol")
+            if isinstance(symbol, str):
+                declarations_by_path[("c-kmipkit", symbol)] = {
+                    "packageId": "c-kmipkit",
+                    "exportName": symbol,
+                    "kind": "c-symbol",
+                    "declarationState": "verified",
+                }
     for declaration in declarations:
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
