@@ -493,7 +493,7 @@ fn v1_compat_full_roundtrip() {
 #[test]
 fn dispatcher_all_operations_and_error_handling() {
     let store = Arc::new(JsonStore::ephemeral());
-    let dispatcher = Dispatcher::new(store);
+    let dispatcher = Dispatcher::new(store.clone());
 
     // 1. Ping
     let mut ping_item = Structure::new();
@@ -1029,12 +1029,13 @@ fn dispatcher_all_operations_and_error_handling() {
         Value::structure(encap_payload),
     ));
     let encap_resp = dispatcher.dispatch(&make_req(3, 0, encap_item)).unwrap();
-    assert_eq!(
-        extract_text_field(&encap_resp, TAG_UNIQUE_IDENTIFIER).unwrap(),
-        sym_id
-    );
+    let encap_secret_id = extract_text_field(&encap_resp, TAG_UNIQUE_IDENTIFIER).unwrap();
+    assert_ne!(encap_secret_id, sym_id);
+    let encap_secret = store.get(&encap_secret_id).expect("encapsulated Secret Data is stored");
+    assert_eq!(encap_secret.object_type, "SecretData");
+    assert!(encap_secret.key_material_base64.is_some());
     assert!(extract_payload_child(&encap_resp, TAG_DATA).is_some());
-    assert!(extract_payload_child(&encap_resp, TAG_KEY_MATERIAL).is_some());
+    assert!(extract_payload_child(&encap_resp, TAG_KEY_MATERIAL).is_none());
 
     // Decapsulate
     let mut decap_item = Structure::new();
@@ -1047,16 +1048,18 @@ fn dispatcher_all_operations_and_error_handling() {
         TAG_UNIQUE_IDENTIFIER,
         Value::text_string(sym_id.clone()),
     ));
+    let _ = decap_payload.try_push(ttlv_item(TAG_DATA, Value::byte_string(vec![0xCA, 0xFE])));
     let _ = decap_item.try_push(ttlv_item(
         TAG_REQUEST_PAYLOAD,
         Value::structure(decap_payload),
     ));
     let decap_resp = dispatcher.dispatch(&make_req(3, 0, decap_item)).unwrap();
-    assert_eq!(
-        extract_text_field(&decap_resp, TAG_UNIQUE_IDENTIFIER).unwrap(),
-        sym_id
-    );
-    assert!(extract_payload_child(&decap_resp, TAG_KEY_MATERIAL).is_some());
+    let decap_secret_id = extract_text_field(&decap_resp, TAG_UNIQUE_IDENTIFIER).unwrap();
+    assert_ne!(decap_secret_id, sym_id);
+    let decap_secret = store.get(&decap_secret_id).expect("decapsulated Secret Data is stored");
+    assert_eq!(decap_secret.object_type, "SecretData");
+    assert!(decap_secret.key_material_base64.is_some());
+    assert!(extract_payload_child(&decap_resp, TAG_KEY_MATERIAL).is_none());
 
     // 9. Error paths: ItemNotFound
     let mut not_found_item = Structure::new();
