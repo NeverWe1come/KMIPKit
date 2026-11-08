@@ -69,7 +69,12 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
         self.assertIn("pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[", rendered)
         self.assertIn("typed::ActivationDate::TAG", rendered)
         self.assertNotIn("CertificateAttributes", rendered)
-        self.assertEqual(rendered.count("impl super::AttributeDefinition for "), 62)
+        self.assertIn("macro_rules! define_typed_attribute", rendered)
+        self.assertEqual(
+            rendered.count("impl super::AttributeDefinition for $marker"),
+            1,
+        )
+        self.assertEqual(rendered.count("define_typed_attribute!("), 62)
         self.assertEqual(rendered.count("::TAG,"), 62)
 
     def test_generated_registry_retains_source_multiplicity_and_trace_ids(self) -> None:
