@@ -176,7 +176,12 @@ fn key_block_and_key_value_accessors_cover_builder_and_reader_forms() {
         .with_cryptographic_properties(Some(3), Some(128));
     assert_eq!(builder.key_format_type().raw(), 1);
     assert_eq!(builder.key_value_type(), Some(ItemType::Structure));
-    assert!(builder.with_raw(|view| view.children().len()).is_err());
+    assert_eq!(
+        builder
+            .with_raw(|view| view.children().len())
+            .expect("builder exposes its current incomplete structure"),
+        5
+    );
     assert!(builder.has_cryptographic_properties());
     assert!(!format!("{builder:?}").contains("D1"));
     let item = builder.try_into_item().expect("valid Key Block");
@@ -197,6 +202,78 @@ fn key_block_and_key_value_accessors_cover_builder_and_reader_forms() {
     let parsed =
         KeyValue::try_from_item(item, KeyFormatType::from_raw(1)).expect("read typed Key Value");
     assert_eq!(parsed.into_item().tag().raw(), 0x0042_0045);
+}
+
+#[test]
+fn incomplete_key_block_is_inspectable_but_conversion_still_validates() {
+    let builder = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Raw format")
+        .with_cryptographic_properties(Some(3), None);
+    assert_eq!(
+        builder
+            .with_raw(|view| view.children().len())
+            .expect("incomplete builder can be inspected"),
+        2
+    );
+    assert!(builder.try_into_item().is_err());
+}
+
+#[test]
+fn key_block_setters_update_decoded_tree_and_preserve_extensions() {
+    let source = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Raw format")
+        .with_cryptographic_properties(Some(3), Some(128))
+        .try_into_item()
+        .expect("paired cryptographic fields");
+    let mut children = source.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(Item::try_clone)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("explicit zeroizing copy"),
+        _ => Vec::new(),
+    });
+    children.push(tagged(0x0054_0101, Value::integer(77)));
+    let source = structure_item(0x0042_0040, children);
+
+    let parsed = KeyBlock::try_from_item(source)
+        .expect("read valid key block")
+        .with_cryptographic_properties(Some(4), Some(256));
+    assert_eq!(
+        parsed
+            .with_raw(|view| view.children()[1].with_value(|value| match value {
+                ValueView::Enumeration(raw) => *raw,
+                _ => 0,
+            }))
+            .expect("raw view reflects decoded-model mutation"),
+        4
+    );
+    let item = parsed
+        .try_into_item()
+        .expect("mutated key block remains valid");
+
+    item.with_value(|value| match value {
+        ValueView::Structure(structure) => {
+            let fields = structure.children();
+            assert_eq!(
+                fields[1].with_value(|v| match v {
+                    ValueView::Enumeration(raw) => *raw,
+                    _ => 0,
+                }),
+                4
+            );
+            assert_eq!(
+                fields[2].with_value(|v| match v {
+                    ValueView::Integer(raw) => *raw,
+                    _ => 0,
+                }),
+                256
+            );
+            assert_eq!(fields[3].tag().raw(), 0x0054_0101);
+        }
+        _ => panic!("Key Block remains a Structure"),
+    });
 }
 
 #[test]

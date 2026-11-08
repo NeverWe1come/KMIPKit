@@ -4,16 +4,17 @@
 
 - In `kmipkit-protocol`:
   - `LinkNormalizer`:
-    - Define 20 discrete link tags (`0x0042_0153..=0x0042_0166`).
-    - Bidirectional normalization functions `to_typed_link(generic_link) -> Item` and `to_generic_link(typed_link) -> Item`.
+    - Catalog all 20 exact KMIP 3.0 link tags from §11.58 and §§4.35.1–4.35.20; do not assign the `0x0042_0153..=0x0042_0166` range to links (`0x0042_0153` is Object Defaults).
+    - Normalize bidirectionally only the 14 explicit semantic equivalents of KMIP 2.1 §11.28, Table 465. Preserve Enumeration and Integer identifiers; reject Text String conversion to KMIP 3.0 because §§4.35.1–4.35.20 do not define it. Reject the six 3.0-only link attributes, Reference/Name Reference conversion to KMIP 2.1, duplicate required fields, and unknown children rather than losing information.
   - System Objects and `ObjectClass`:
-    - `ObjectClass` enum: `CryptographicObject`, `SystemObject`, `MetadataObject`.
-    - `ObjectType`: extend with `User`, `Group`, `Credential`.
+    - Raw-preserving `ObjectClass`; KMIP 3.0 Table 581 assigns only `User=1` and `System=2`.
+    - `ObjectType`: `User`, `Group`, `Password Credential`, `Device Credential`, `One Time Password Credential`, and `Hashed Password Credential` (Table 582).
+    - Use checksum-verified, exact edition tables for generated enumeration names; do not treat reserved values as assigned.
   - Operations & KEM:
     - `DeactivateRequest` and `DeactivateResponse`.
     - `EncapsulateRequest`, `EncapsulateResponse`, `DecapsulateRequest`, `DecapsulateResponse`.
   - VersionGate:
-    - Update `operation_span` to confirm `0x3C..=0x41` are supported in `V3_0`.
+    - Update `operation_span` from exact Operation Enumeration assignments in Table 583: `0x3C`–`0x42` have the names Create Group, Obliterate, Create User, Create Credential, Deactivate, Encapsulate, and Decapsulate respectively; unknown codes have no inferred span.
 - In `kmipkit-test-server`:
   - Support `(3, 0)` protocol version in `v1_compat.rs` `ALL_VERSIONS` and `is_version_supported`.
   - Dispatcher support for `Deactivate`, `Encapsulate`, `Decapsulate`.

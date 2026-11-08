@@ -50,17 +50,83 @@ fn wrapping_data_retains_raw_metadata_and_never_performs_crypto() {
         )
         .with_iv_counter_nonce(vec![0xA1, 0xA2])
         .with_mac_signature(vec![0xB1, 0xB2]);
-    assert!(builder.with_raw(|_| ()).is_err());
+    assert_eq!(
+        builder
+            .with_raw(|view| view.children().len())
+            .expect("builder exposes its current incomplete structure"),
+        4
+    );
     let item = builder.into_item().expect("valid wrapping data");
     assert_eq!(item.tag().raw(), 0x0042_0046);
 }
 
 #[test]
+fn key_wrapping_setters_update_decoded_tree_and_preserve_extensions() {
+    let source = KeyWrappingData::try_new(1)
+        .expect("known method")
+        .with_encryption_key_information(
+            EncryptionKeyInformation::try_new("wrap-key".to_owned()).expect("required identifier"),
+        )
+        .with_encoding_option(2)
+        .into_item()
+        .expect("valid wrapper");
+    let mut children = source.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(Item::try_clone)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("explicit zeroizing copy"),
+        _ => Vec::new(),
+    });
+    children.push(tagged(0x0054_0101, Value::integer(77)));
+    let source = structure_item(0x0042_0046, children);
+
+    let parsed = KeyWrappingData::try_from_item(source).expect("read valid wrapper");
+    let parsed = parsed
+        .with_encoding_option(7)
+        .with_iv_counter_nonce(vec![0xA5]);
+    assert_eq!(
+        parsed
+            .with_raw(|view| view.children()[3].with_value(|value| match value {
+                ValueView::Enumeration(raw) => *raw,
+                _ => 0,
+            }))
+            .expect("raw view reflects decoded-model mutation"),
+        7
+    );
+    let item = parsed.into_item().expect("mutated wrapper remains valid");
+
+    item.with_value(|value| match value {
+        ValueView::Structure(structure) => {
+            let fields = structure.children();
+            assert_eq!(fields[0].tag().raw(), 0x0042_009E);
+            assert_eq!(fields[1].tag().raw(), 0x0042_0036);
+            assert_eq!(fields[2].tag().raw(), 0x0042_003D);
+            assert_eq!(fields[3].tag().raw(), 0x0042_00A3);
+            assert_eq!(
+                fields[3].with_value(|v| match v {
+                    ValueView::Enumeration(raw) => *raw,
+                    _ => 0,
+                }),
+                7
+            );
+            assert_eq!(fields[4].tag().raw(), 0x0054_0101);
+        }
+        _ => panic!("Key Wrapping Data remains a Structure"),
+    });
+}
+
+#[test]
 fn wrapping_data_requires_encryption_or_mac_signature_key_information() {
-    let constructed = KeyWrappingData::try_new(1)
-        .expect("known Wrapping Method")
-        .into_item();
-    assert!(constructed.is_err());
+    let constructed = KeyWrappingData::try_new(1).expect("known Wrapping Method");
+    assert_eq!(
+        constructed
+            .with_raw(|view| view.children().len())
+            .expect("incomplete builder can be inspected"),
+        1
+    );
+    assert!(constructed.into_item().is_err());
 
     let mut children = Structure::new();
     children
@@ -120,18 +186,14 @@ fn wrapping_reader_checks_required_identifiers_and_keeps_unknown_fields() {
 
 #[test]
 fn wrapping_reader_covers_optional_fields_and_key_information_variants() {
-    let encryption = EncryptionKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::TextString("encryption-key".to_owned()),
-    )
-    .expect("Key Information uses a Text String identifier")
-    .with_cryptographic_parameters(Structure::new())
-    .expect("optional parameters follow the identifier");
-    let mac = MacSignatureKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::TextString("mac-key".to_owned()),
-    )
-    .expect("Key Information uses a Text String identifier")
-    .with_cryptographic_parameters(Structure::new())
-    .expect("optional parameters follow the identifier");
+    let encryption = EncryptionKeyInformation::try_new("encryption-key".to_owned())
+        .expect("text Unique Identifier is required")
+        .with_cryptographic_parameters(Structure::new())
+        .expect("optional parameters follow the identifier");
+    let mac = MacSignatureKeyInformation::try_new("mac-key".to_owned())
+        .expect("text Unique Identifier is required")
+        .with_cryptographic_parameters(Structure::new())
+        .expect("optional parameters follow the identifier");
     let item = KeyWrappingData::try_new(1)
         .expect("Wrapping Method")
         .with_encryption_key_information(encryption)

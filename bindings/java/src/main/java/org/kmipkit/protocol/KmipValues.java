@@ -2848,4 +2848,96 @@ public final class KmipValues {
         }
     }
 
+    // Exact assigned values added by later KMIP editions.
+    /** Set Defaults; kmip-2.1 §11.36, Table 470. */
+    public static final long V2_1_OPERATION_SET_DEFAULTS = 0x00000036L;
+    /** Set Constraints; kmip-2.1 §11.36, Table 470. */
+    public static final long V2_1_OPERATION_SET_CONSTRAINTS = 0x00000037L;
+    /** Get Constraints; kmip-2.1 §11.36, Table 470. */
+    public static final long V2_1_OPERATION_GET_CONSTRAINTS = 0x00000038L;
+    /** Query Asynchronous Requests; kmip-2.1 §11.36, Table 470. */
+    public static final long V2_1_OPERATION_QUERY_ASYNCHRONOUS_REQUESTS = 0x00000039L;
+    /** Process; kmip-2.1 §11.36, Table 470. */
+    public static final long V2_1_OPERATION_PROCESS = 0x0000003AL;
+    /** Ping; kmip-2.1 §11.36, Table 470. */
+    public static final long V2_1_OPERATION_PING = 0x0000003BL;
+    /** Returns the KMIP v2.1 Operation name, or null for an unassigned value. */
+    public static String v2_1OperationName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000036 -> "Set Defaults";
+            case 0x00000037 -> "Set Constraints";
+            case 0x00000038 -> "Get Constraints";
+            case 0x00000039 -> "Query Asynchronous Requests";
+            case 0x0000003A -> "Process";
+            case 0x0000003B -> "Ping";
+            default -> null;
+        };
+    }
+    /** Create Group; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_CREATE_GROUP = 0x0000003CL;
+    /** Obliterate; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_OBLITERATE = 0x0000003DL;
+    /** Create User; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_CREATE_USER = 0x0000003EL;
+    /** Create Credential; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_CREATE_CREDENTIAL = 0x0000003FL;
+    /** Deactivate; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_DEACTIVATE = 0x00000040L;
+    /** Encapsulate; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_ENCAPSULATE = 0x00000041L;
+    /** Decapsulate; kmip-3.0 §11.37, Table 583. */
+    public static final long V3_0_OPERATION_DECAPSULATE = 0x00000042L;
+    /** Returns the KMIP v3.0 Operation name, or null for an unassigned value. */
+    public static String v3_0OperationName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000003C -> "Create Group";
+            case 0x0000003D -> "Obliterate";
+            case 0x0000003E -> "Create User";
+            case 0x0000003F -> "Create Credential";
+            case 0x00000040 -> "Deactivate";
+            case 0x00000041 -> "Encapsulate";
+            case 0x00000042 -> "Decapsulate";
+            default -> null;
+        };
+    }
+    /** User; kmip-3.0 §11.34, Table 581. */
+    public static final long V3_0_OBJECT_CLASS_USER = 0x00000001L;
+    /** System; kmip-3.0 §11.34, Table 581. */
+    public static final long V3_0_OBJECT_CLASS_SYSTEM = 0x00000002L;
+    /** Returns the KMIP v3.0 Object Class name, or null for an unassigned value. */
+    public static String v3_0ObjectClassName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "User";
+            case 0x00000002 -> "System";
+            default -> null;
+        };
+    }
+    /** User; kmip-3.0 §11.35, Table 582. */
+    public static final long V3_0_OBJECT_TYPE_USER = 0x0000000BL;
+    /** Group; kmip-3.0 §11.35, Table 582. */
+    public static final long V3_0_OBJECT_TYPE_GROUP = 0x0000000CL;
+    /** Password Credential; kmip-3.0 §11.35, Table 582. */
+    public static final long V3_0_OBJECT_TYPE_PASSWORD_CREDENTIAL = 0x0000000DL;
+    /** Device Credential; kmip-3.0 §11.35, Table 582. */
+    public static final long V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL = 0x0000000EL;
+    /** One Time Password Credential; kmip-3.0 §11.35, Table 582. */
+    public static final long V3_0_OBJECT_TYPE_ONE_TIME_PASSWORD_CREDENTIAL = 0x0000000FL;
+    /** Hashed Password Credential; kmip-3.0 §11.35, Table 582. */
+    public static final long V3_0_OBJECT_TYPE_HASHED_PASSWORD_CREDENTIAL = 0x00000010L;
+    /** Returns the KMIP v3.0 Object Type name, or null for an unassigned value. */
+    public static String v3_0ObjectTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000000B -> "User";
+            case 0x0000000C -> "Group";
+            case 0x0000000D -> "Password Credential";
+            case 0x0000000E -> "Device Credential";
+            case 0x0000000F -> "One Time Password Credential";
+            case 0x00000010 -> "Hashed Password Credential";
+            default -> null;
+        };
+    }
 }

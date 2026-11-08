@@ -67,6 +67,11 @@ round-trip, and payload-free errors.
 4. Given optional or conditionally required material fields, when the caller
    builds the structure, then KMIPKit preserves valid caller choices and
    reports structural errors without embedding key bytes in diagnostics.
+5. Given a parsed Key Block or Key Wrapping Data value, when a caller changes
+   a typed field and converts it back to `Item`, then the emitted tree reflects
+   that change while retaining untouched unknown fields, their values, and
+   their relative order. `with_raw()` on a builder exposes its current
+   (possibly incomplete) structure; final conversion continues to validate it.
 
 ### User Story 3 - Transfer and release managed material safely (Priority: P1)
 
@@ -164,6 +169,13 @@ redaction and owned-payload cleanup behavior.
   plaintext, wrapped, transparent, generic-fallback, and secret-lifetime use.
   C, Java, and Python parity remains assigned to KMIPKIT-0053 and MUST NOT be
   claimed complete by this feature.
+- **KMIPKIT-0049-FR-011**: Typed Key Block and Key Wrapping Data setters MUST
+  affect conversion back to generic TTLV after parsing. Untouched unknown
+  fields MUST retain their values and relative order. `with_raw()` MUST expose
+  the current structure of both parsed models and builders, including
+  incomplete builders; this inspection view MUST NOT bypass validation during
+  final conversion. This requirement defines local API behavior and does not
+  claim that KMIP specifies a builder mutation model.
 
 ### Normative Traceability
 
@@ -181,7 +193,7 @@ The OASIS Usage Guide is informative and does not add requirements.
 | Requirement | Normative source | Verification |
 |---|---|---|
 | FR-001 | §§2.1–2.9, Tables 2–10; Object Type §11.34; pinned tag allocations | Every object record, tag association, required/optional field, and direct Register/Import Item shape tested against catalog and pinned source |
-| FR-002–004 | §§3.1–3.12, Tables 12–26; field ordering §10.1.2 | Typed structure vectors, malformed-field negatives, exact-order and round-trip tests |
+| FR-002–004, FR-011 | §§3.1–3.3, Tables 12–17; field ordering §10.1.2; FR-011 is a local typed-API contract | Typed structure vectors, malformed-field negatives, exact-order and round-trip tests; parse-mutate-convert cases preserve extensions and builder views remain inspectable |
 | FR-005–006 | §§6.1.25, 6.1.43 and generic TTLV §§5.1–5.4; API compatibility policy | Register/Import fake-transport tests; generic conversion property tests |
 | FR-007–008 | AGENTS.md security boundary; TTLV ownership contract; §§3.1–3.3 wrapping schema | Redaction, zeroization, borrowed-lifetime, and no-crypto-operation tests |
 | FR-009–010 | Constitution §§I–IV; pinned catalog and API manifest rules | Requirement-to-test audit, Rust consumer examples, manifest and binding-parity audit |
