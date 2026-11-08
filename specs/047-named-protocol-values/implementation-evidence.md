@@ -275,3 +275,44 @@ Verification passed: `python -B -m unittest
 `generate_named_values.py --check`, `reconcile_named_value_manifest.py --check`,
 `api_manifest/generate.py --check` (12 outputs), and `git diff --check`. The
 manifest required no regeneration; its contents were already reconciled.
+
+## Stacked T102 baseline synchronization (2026-11-08)
+
+Red evidence came from CI run `42429785620` on the stacked #139 head and a local
+reproduction. The T102 suite contained stale whole-manifest snapshots from
+before the approved KMIPKIT-0046 facade was present: it expected 10,773 public
+declarations and 14,741 approved exclusions, while the current reconciled
+manifest contains 11,588 declarations and 14,746 exclusions. Locate and profile
+diagnostic checks also omitted the newly mapped `kmipkit::protocol` aliases,
+and a ready-mapping test did not supply its approved exclusions to the shared
+validator.
+
+Green evidence: the shared T102 totals now pin the current manifest. The Locate
+and profile-validation snapshots explicitly include the facade aliases, and
+the validator fixture supplies its approved exclusions. The full T102 suite
+passed (399 tests), and API-manifest generation `--check` verified all 12
+outputs. No generated manifest output changed.
+
+Refactor evidence: the profile diagnostic suffix inventory is defined once and
+reused for both expected Rust surfaces. Its focused test passed after the
+refactor.
+
+## JaCoCo generated-source exclusion alignment (2026-11-08)
+
+The first full CI run for PR #139, run `42436222557`, failed in
+`Coverage gate / selected scopes` because JaCoCo reported the generated
+`bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java` file. The
+source inventory already excludes that exact catalog-generated lookup table,
+but the JaCoCo parser only skipped the older Java metadata exclusions.
+
+Red: `test_jacoco_parser_ignores_catalog_generated_named_value_table` failed
+with `CoverageDataError` for that non-production path. Green: the JaCoCo parser
+now uses the same exact exclusion inventory as source eligibility. The new
+test confirms that only the catalog-generated table is skipped and a
+handwritten source in the same package remains in the report.
+
+Verification: all 30 tests in `test_multilanguage_coverage` pass. The parser
+also loaded the actual Linux and Windows JaCoCo reports from run `42436222557`
+and retained 115 production sources from each while excluding the generated
+table. The remote CI rerun on the updated PR is still required to confirm the
+coverage gate and full matrix.
