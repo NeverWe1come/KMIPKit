@@ -283,6 +283,10 @@ public final class ClientBatchItemResult implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         long structure = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseHeaderTtlv);
+        return requireResponseHeaderTtlv(structure);
+    }
+
+    static TtlvStructure requireResponseHeaderTtlv(long structure) {
         if (structure <= 0) {
             throw new InvalidInputException("native Response Header TTLV is invalid");
         }
