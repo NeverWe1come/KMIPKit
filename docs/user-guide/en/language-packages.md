@@ -190,7 +190,7 @@ changes to this table.
 | `ffi_shared_owner_status` | declared | C exposes the `KMIPKIT_ERROR_SHARED_OWNER` status; this capability is C-only. |
 | `credential_validation_error_parity` | declared | Typed credential-validation error kinds map across four languages; complete parity verification remains pending. |
 | `credential_validation_error_abi_layout` | declared | C maps the versioned credential-validation error ABI layout fields; this capability is C-only. |
-| `named_protocol_values` | declared | Assigned KMIP 2.1 Enumeration and Bit Mask values have catalog-backed names in Rust, C, Java, and Python. This maps names and lookups; it does not claim server support or cryptographic suitability. |
+| `named_protocol_values` | declared | Assigned KMIP 2.1 Enumeration and Bit Mask values, plus the reviewed KMIP 2.1 and 3.0 versioned deltas, have catalog-backed names in Rust, C, Java, and Python. This maps names and lookups; it does not claim server support, full 3.0 protocol support, or cryptographic suitability. |
 | `hashed_password_timestamp_sequence` | declared | A locally owned timestamp sequence for Hashed Password credentials is mapped across the four languages; server validation remains authoritative. |
 | `credential_secret_parity` | declared | Secret byte and text wrappers map across four languages; complete parity verification remains pending. |
 

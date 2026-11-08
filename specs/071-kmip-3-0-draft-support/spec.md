@@ -7,18 +7,19 @@ In accordance with maintainer directives, this implementation is developed in a 
 
 The specification introduces:
 1. Bidirectional Link Normalization (`LinkNormalizer`) bridging KMIP 2.x generic links and KMIP 3.0 discrete typed links.
-2. System Objects (`User`, `Group`, `Credential`).
-3. `Object Class` metadata model (`CryptographicObject`, `SystemObject`, `MetadataObject`).
-4. Protocol operations introduced in KMIP 3.0: `CreateUser`, `CreateGroup`, `Deactivate`, `Encapsulate`, `Decapsulate`, `ReEncrypt`.
+2. System Objects (`User`, `Group`, `Password Credential`, `Device Credential`, `One Time Password Credential`, and `Hashed Password Credential`).
+3. `Object Class` values `User` (`1`) and `System` (`2`), preserving unrecognized raw values.
+4. The KMIP 3.0 Operation Enumeration assignments in §11.37, Table 583: `Create Group` (`0x3C`), `Obliterate` (`0x3D`), `Create User` (`0x3E`), `Create Credential` (`0x3F`), `Deactivate` (`0x40`), `Encapsulate` (`0x41`), and `Decapsulate` (`0x42`).
 5. Post-Quantum Cryptography (PQC) algorithm enumerations and Key Encapsulation Mechanism (KEM) data structures.
 6. Test Server (`kmipkit-test-server`) KMIP 3.0 execution mode.
 
 ## 2. Normative References
 
 - **OASIS KMIP 3.0 Working Draft Specification** (13 July 2026):
-  - §4 Cryptographic & System Objects (§4.8 User, §4.9 Group, §4.10 Credential)
+  - §4 Cryptographic and System Objects (§4.8 User, §4.9 Group, §4.10 Credential)
   - §5 Attributes (§5.2 Object Class, §5.45–§5.64 Discrete Typed Links)
-  - §6 Operations (§6.1.60 Create User, §6.1.61 Create Group, §6.1.62 Deactivate, §6.1.63 Encapsulate, §6.1.64 Decapsulate, §6.1.65 ReEncrypt)
+  - §6 Operations (§6.1.9 Create Credential, §6.1.10 Create Group, §6.1.13 Create User, §6.1.14 Deactivate, §6.1.15 Decapsulate, §6.1.22 Encapsulate, §6.1.41 Obliterate)
+  - §11.34 Table 581 Object Class Enumeration; §11.35 Table 582 Object Type Enumeration; §11.37 Table 583 Operation Enumeration
   - §8 Messages
   - §9 Protocol Details
 - **OASIS KMIP 3.0 Working Draft Profiles** (13 July 2026)
@@ -47,11 +48,12 @@ The specification introduces:
 - `ObjectType` includes:
   - `User` (`0x0000000B`)
   - `Group` (`0x0000000C`)
-  - `Credential` (`0x0000000D`)
-- `ObjectClass`:
-  - `CryptographicObject = 1`
-  - `SystemObject = 2`
-  - `MetadataObject = 3`
+  - `Password Credential` (`0x0000000D`)
+  - `Device Credential` (`0x0000000E`)
+  - `One Time Password Credential` (`0x0000000F`)
+  - `Hashed Password Credential` (`0x00000010`)
+- `ObjectClass` is a raw-preserving wrapper. The assigned KMIP 3.0 values are
+  `User = 1` and `System = 2`; `3` is not an assigned value in Table 581.
 
 ### 3.3 Post-Quantum Cryptography & KEM Operations
 - `CryptographicAlgorithm` adds PQC variants:
@@ -67,12 +69,17 @@ The specification introduces:
 
 ## 4. Acceptance Criteria
 
+The pre-1.0 API corrections to `ObjectType::CREDENTIAL` and the former
+`ObjectClass` enum are recorded in the [KMIP 3.0 API migration note](../../docs/development/kmip-3.0-api-migration.md).
+
 - **`REQ-071-001` (Normative Ingestion)**:
   OASIS KMIP 3.0 draft specification files are pinned and tracked with SHA-256 digests.
 - **`REQ-071-002` (Link Normalizer)**:
   `LinkNormalizer` accurately roundtrips between KMIP 2.x generic links and KMIP 3.0 discrete typed links.
 - **`REQ-071-003` (KMIP 3.0 Operations in VersionGate)**:
-  `VersionGate` permits operations `0x0000003C..=0x00000042` under `ProtocolVersion::V3_0` and rejects them under `V2_0` and `V2_1`.
+  `VersionGate` permits only the seven assigned operation codes in Table 583
+  under `ProtocolVersion::V3_0`, and rejects those assignments under `V2_0`
+  and `V2_1`. Unassigned values, including `0x43`, receive no inferred span.
 - **`REQ-071-004` (System Objects and Object Class)**:
   `ObjectType` and `ObjectClass` types encode and decode without data loss.
 - **`REQ-071-005` (PQC & KEM Models)**:
