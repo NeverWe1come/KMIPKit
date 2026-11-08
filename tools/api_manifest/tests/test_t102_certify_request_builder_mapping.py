@@ -154,7 +154,7 @@ BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
-DECLARATIONS_SHA256 = "3477efd6002b5732681fb9601016ba82f83e069608ff4c26ca6f4d93ac21fa9d"
+DECLARATIONS_SHA256 = "6056071a3cf487d80fb34cf25357a4cfbd410b0191466ce991fddbfce468d0cc"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
@@ -439,7 +439,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         # cannot acquire four-language parity through snapshot normalization.
         for capability, count in (
             ("typed_object_attributes", 286),
-            ("typed_managed_objects_and_key_material", 356),
+            ("typed_managed_objects_and_key_material", 500),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [

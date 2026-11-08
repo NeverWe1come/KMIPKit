@@ -168,13 +168,13 @@ EXPECTED = (
 # Baseline fingerprints exclude response views and exact request-builder batches.
 # The non-target snapshots include subsequent approved T102 manifest slices.
 # They also include the 0047 release stack and reconciled 0048/0049 inventories.
-UNCHANGED_DECLARATIONS_SHA256 = "b82fb6f17807248013083e4cc3f1a73e2d5e272e359336e965311f4bff2df478"
+UNCHANGED_DECLARATIONS_SHA256 = "411f5f908abe41b375c1871927329165fdb232e178ccf97bba35752998c3204c"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
-OTHER_MANIFEST_SHA256 = "a070baabdf7ef324bea4b0d29302103b4cb82c3d67335231c044cf6f7d0ac8c0"
+OTHER_MANIFEST_SHA256 = "21dcdb18921489f7dd120b6003f689733b0503185dd5befb3cf7341039f73a97"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
