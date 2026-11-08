@@ -882,7 +882,8 @@ def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> di
             if not isinstance(source_name, str) or Path(source_name).name != source_name:
                 raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
             source_path = source_root.joinpath(*package_path.parts, source_name)
-            if source_path.relative_to(root).as_posix() in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+            relative_source = source_path.relative_to(root).as_posix()
+            if relative_source in _COVERAGE_SOURCE_EXCLUSIONS:
                 continue
             source = _coverage_report_source(source_path, root, "JaCoCo")
             if source in report:

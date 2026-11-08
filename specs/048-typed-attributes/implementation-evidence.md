@@ -314,3 +314,46 @@ Verification after the refactor:
 - The workspace-wide Clippy attempt could not complete on this Windows host:
   `aws-lc-sys` reported that NASM was unavailable. The affected protocol crate's
   all-target, all-feature Clippy check passed.
+
+## Linux literal-generator coverage remediation (2026-11-08)
+
+The stacked hosted run found that
+`tools/normative_catalog/generate_attribute_types.py` had 262 statements and
+28 uncovered statements (89%), below the unchanged 90% normative-generator
+gate.
+
+- RED `7c96c4a61`: the focused Rust-string test covered only quotes and
+  backslashes. Its Linux coverage result remained below the 90% gate.
+- GREEN `338cd7c86`: the same test now exercises newline, carriage return,
+  tab, control byte, DEL, and Unicode handling. On the current 0048 head, the
+  Linux coverage report is 262 statements, 27 missed, 90%; the eight tests
+  other than the mount-sensitive direct-CLI test pass under WSL.
+- REFACTOR `51734bea1`: the test name now describes its complete escape
+  coverage. The complete nine-test module passes on Windows.
+
+The WSL checkout is mounted under `/mnt/c`; in that environment,
+`test_direct_cli_check_exercises_script_import_path` returns exit code 2. This
+mount-specific result does not reproduce on Windows, where all nine tests pass,
+or in the earlier native hosted run, whose only reported failure was the
+89-percent coverage threshold. The current 0048 HEAD still needs a fresh hosted
+CI result; prior queued runs were for superseded SHAs and were cancelled.
+
+## Stacked-base refresh and T102 snapshot reconciliation (2026-11-08)
+
+PR #140 became unmergeable after its 0047 base advanced. The 0048 worktree now
+merges the current 0047 head with a regular merge commit; no force push was
+used. That merge exposed two stale non-target declaration fingerprints in the
+Certify and optional-request T102 tests.
+
+- RED: after merge commit `965223f5f`, the six affected T102 modules ran 28
+  tests and failed only the two stale snapshot assertions. The observed
+  fingerprints were `6c73940a...` for Certify and `b77c675a...` for optional
+  request structures; the previous values represented the pre-0047 stack.
+- GREEN `1e310bd24`: the two snapshots now pin the merged 0047+0048 manifest.
+  All 28 tests across the six affected modules pass.
+- Verification: `tools/api_manifest/generate.py --check` verified all 12
+  generated outputs, and `git diff --check` passed. The manifest outputs did
+  not need regeneration.
+
+The updated 0048 head must receive hosted CI after this merge-conflict repair;
+the previously queued workflows covered earlier SHAs.
