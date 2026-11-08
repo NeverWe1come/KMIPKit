@@ -79,9 +79,7 @@ mod tests {
 
                 let body = req_str.split("\r\n\r\n").nth(1).unwrap_or("");
 
-                let (status, resp_body) = handle_mock_ibm_request(
-                    method, path, body, &state,
-                );
+                let (status, resp_body) = handle_mock_ibm_request(method, path, body, &state);
 
                 let response = format!(
                     "HTTP/1.1 {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -182,7 +180,10 @@ mod tests {
         {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let pt = parsed.get("plaintext").and_then(|v| v.as_str()).unwrap_or("");
+            let pt = parsed
+                .get("plaintext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let ct = format!("ibm:wrapped:{}", b64.encode(format!("encrypted:{}", pt)));
             let resp = serde_json::json!({
                 "ciphertext": ct
@@ -191,11 +192,16 @@ mod tests {
         }
 
         // 5. Unwrap Key Action: POST /api/v2/keys/{id}/actions/unwrap
-        if method == "POST" && path.starts_with("/api/v2/keys/") && path.ends_with("/actions/unwrap")
+        if method == "POST"
+            && path.starts_with("/api/v2/keys/")
+            && path.ends_with("/actions/unwrap")
         {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let ct = parsed.get("ciphertext").and_then(|v| v.as_str()).unwrap_or("");
+            let ct = parsed
+                .get("ciphertext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let stripped = ct.trim_start_matches("ibm:wrapped:");
             let decoded = b64.decode(stripped).unwrap_or_default();
             let dec_str = String::from_utf8_lossy(&decoded);
@@ -225,10 +231,7 @@ mod tests {
         if method == "DELETE" && path.starts_with("/api/v2/keys/") {
             let key_id = path.trim_start_matches("/api/v2/keys/");
             state.keys.lock().unwrap().remove(key_id);
-            return (
-                "204 No Content",
-                String::new(),
-            );
+            return ("204 No Content", String::new());
         }
 
         (
