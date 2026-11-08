@@ -49,9 +49,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let provider: Arc<dyn CloudKmsProvider> = match config.backend.provider.as_str() {
         "mock" => Arc::new(InMemoryMockProvider::default()),
         #[cfg(feature = "aws")]
-        "aws" => Arc::new(kmipkit_proxy::providers::aws::AwsKmsProvider::new(
-            &config.backend.aws,
-        )?),
+        "aws" => {
+            let master_kek = config.backend.master_kek_hex.as_deref().and_then(|hex| {
+                kmipkit_proxy::codec::datetime::hex_to_octets(hex)
+                    .ok()
+                    .and_then(|b| b.try_into().ok())
+            });
+            Arc::new(
+                kmipkit_proxy::providers::aws::AwsKmsProvider::from_config(
+                    &config.backend.aws,
+                    master_kek,
+                )
+                .await?,
+            )
+        }
         #[cfg(feature = "azure")]
         "azure" => Arc::new(kmipkit_proxy::providers::azure::AzureKeyVaultProvider::new(
             &config.backend.azure,
