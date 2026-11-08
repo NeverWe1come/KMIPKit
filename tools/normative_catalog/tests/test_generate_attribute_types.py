@@ -98,7 +98,14 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
             render_rust(catalog)
 
     def test_rust_string_escapes_quotes_and_backslashes(self) -> None:
-        self.assertEqual(r'"slash\\ quote\""', generator._rust_string('slash\\ quote"'))
+        value = 'slash\\ quote" line\nreturn\r tab\t control\x01 delete\x7f unicode é'
+        expected = (
+            '"'
+            + r'slash\\ quote\" line\nreturn\r tab\t control\u{1} delete\u{7F} unicode é'
+            + '"'
+        )
+
+        self.assertEqual(expected, generator._rust_string(value))
 
     def test_renders_sorted_catalog_types_and_all_permitted_wire_forms(self) -> None:
         rendered = render_rust(small_catalog())
