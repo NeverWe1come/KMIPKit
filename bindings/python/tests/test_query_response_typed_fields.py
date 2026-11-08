@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from types import SimpleNamespace
 
 from kmipkit import client, errors, ttlv
 
@@ -160,6 +161,9 @@ def test_typed_query_fields_retain_repeats_unknowns_and_raw_order() -> None:
         assert response.attestation_types == (0xF1234567,)
         assert response.client_registration_methods == (0x80000001,)
         assert response.unknown_field_tags == (UNKNOWN_VENDOR_TAG,)
+        unknown_items = response.unknown_items
+        assert len(unknown_items) == 1
+        unknown_items[0].close()
         assert response.raw_field_tags == (
             OPERATION,
             APPLICATION_NAMESPACE,
@@ -259,6 +263,33 @@ def test_query_response_rejects_inconsistent_metadata_and_closes_idempotently() 
     with pytest.raises(errors.InvalidInputError):
         _ = response.raw_field_tags
 
+    with ttlv.codec_limits_defaults() as limits:
+        payload = _append(
+            ttlv.ttlv_structure_create(),
+            DEFAULTS_INFORMATION,
+            ttlv.ttlv_value_structure(ttlv.ttlv_structure_create(), limits),
+            limits,
+        )
+        payload = _append(
+            payload,
+            DEFAULTS_INFORMATION,
+            ttlv.ttlv_value_structure(ttlv.ttlv_structure_create(), limits),
+            limits,
+        )
+    repeated = client.QueryResponse(
+        payload,
+        (
+            client._QueryFieldData(DEFAULTS_INFORMATION, client.QueryFieldKind.STRUCTURE, 0),
+            client._QueryFieldData(DEFAULTS_INFORMATION, client.QueryFieldKind.STRUCTURE, 0),
+        ),
+    )
+    try:
+        selected = repeated.defaults_information
+        assert selected is not None
+        selected.close()
+    finally:
+        repeated.close()
+
 
 def test_query_response_text_reader_rejects_a_misclassified_ttlv_item() -> None:
     with ttlv.codec_limits_defaults() as limits:
@@ -303,3 +334,50 @@ def test_typed_query_response_handles_absence_and_releases_partial_results(monke
     with pytest.raises(ValueError, match="synthetic classifier failure"):
         result.typed_query_response()
     assert payload.closed
+
+
+@pytest.mark.parametrize(
+    ("present", "count", "field_present", "kind", "with_item"),
+    [
+        (2, 0, 0, 0, False),
+        (0, 1, 0, 0, False),
+        (1, 100_001, 0, 0, False),
+        (1, 1, 0, 2, False),
+        (1, 1, 1, 255, False),
+        (1, 1, 1, 1, True),
+        (1, 1, 1, 2, False),
+    ],
+)
+def test_query_field_classifier_rejects_malformed_native_metadata(
+    monkeypatch, present, count, field_present, kind, with_item
+):
+    def read_count(_item, actual_present, actual_count):
+        actual_present[0] = present
+        actual_count[0] = count
+        return 0
+
+    def read_field(_item, _index, actual_present, tag, actual_kind, enumeration, output_item):
+        actual_present[0] = field_present
+        tag[0] = APPLICATION_NAMESPACE
+        actual_kind[0] = kind
+        enumeration[0] = 0
+        if with_item:
+            output_item[0] = client.ffi.cast("kmipkit_ttlv_item_t *", 1)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_query_field_count=read_count,
+            kmipkit_client_batch_item_response_query_field_at=read_field,
+            kmipkit_ttlv_item_release=lambda _item: None,
+        ),
+    )
+
+    class NativeResponse:
+        def _pointer(self):
+            return client.ffi.cast("kmipkit_client_batch_item_response_t *", 1)
+
+    with pytest.raises(errors.KmipKitError):
+        client._query_response_fields(NativeResponse())  # type: ignore[arg-type]

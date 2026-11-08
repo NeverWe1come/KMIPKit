@@ -220,6 +220,12 @@ def test_authentication_is_attached_to_the_request_batch_and_owned_on_success():
         authentication.close()
 
 
+def test_batch_authentication_rejects_non_authentication_values():
+    with client.Batch.create() as batch:
+        with pytest.raises(errors.InvalidInputError):
+            batch.set_authentication(object())  # type: ignore[arg-type]
+
+
 def test_failed_authentication_attachment_keeps_the_caller_owner_live():
     credential = credentials.Credential.from_ttlv(_credential_structure())
     authentication = credentials.Authentication.create([credential])
