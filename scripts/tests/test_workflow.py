@@ -1070,9 +1070,12 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("KMIPKit.profdata", collector)
         self.assertIn("libkmipkit_ffi.so", collector)
         self.assertIn("--sources", collector)
-        self.assertIn("crates/kmipkit-ffi/src/extension_registry.rs", collector)
-        self.assertIn("crates/kmipkit-ffi/src/extension_registry/client_abi.rs", collector)
-        self.assertIn("crates/kmipkit-ffi/src/extension_registry/credential_secrets.rs", collector)
+        self.assertIn("mapfile -d '' -t source_files < <(", collector)
+        self.assertIn(
+            'find "${repository_root}/crates/kmipkit-ffi/src" -type f -name "*.rs" -print0 | sort -z',
+            collector,
+        )
+        self.assertIn('for source_file in "${source_files[@]}"', collector)
         self.assertIn('--output "${report_dir}/coverage.json"', collector)
         self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
         self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)
