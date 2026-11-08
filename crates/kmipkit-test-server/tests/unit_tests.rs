@@ -1029,6 +1029,8 @@ fn dispatcher_all_operations_and_error_handling() {
         Value::structure(encap_payload),
     ));
     let encap_resp = dispatcher.dispatch(&make_req(3, 0, encap_item)).unwrap();
+    // OASIS KMIP 3.0 §6.1.22 Table 318 returns the secret object's ID and Data,
+    // while the resulting Secret Data remains stored on the server.
     let encap_secret_id = extract_text_field(&encap_resp, TAG_UNIQUE_IDENTIFIER).unwrap();
     assert_ne!(encap_secret_id, sym_id);
     let encap_secret = store.get(&encap_secret_id).expect("encapsulated Secret Data is stored");
@@ -1054,6 +1056,7 @@ fn dispatcher_all_operations_and_error_handling() {
         Value::structure(decap_payload),
     ));
     let decap_resp = dispatcher.dispatch(&make_req(3, 0, decap_item)).unwrap();
+    // OASIS KMIP 3.0 §6.1.15 Table 297 returns only the resulting object's ID.
     let decap_secret_id = extract_text_field(&decap_resp, TAG_UNIQUE_IDENTIFIER).unwrap();
     assert_ne!(decap_secret_id, sym_id);
     let decap_secret = store.get(&decap_secret_id).expect("decapsulated Secret Data is stored");

@@ -35,9 +35,9 @@ pub const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025;
 pub const HASH_OPERATION: u32 = 0x0000_0027;
 pub const PING_OPERATION: u32 = 0x0000_003B;
 pub const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032;
-pub const DEACTIVATE_OPERATION: u32 = 0x0000_003E;
-pub const ENCAPSULATE_OPERATION: u32 = 0x0000_003F;
-pub const DECAPSULATE_OPERATION: u32 = 0x0000_0040;
+pub const DEACTIVATE_OPERATION: u32 = 0x0000_0040;
+pub const ENCAPSULATE_OPERATION: u32 = 0x0000_0041;
+pub const DECAPSULATE_OPERATION: u32 = 0x0000_0042;
 
 // Tag constants
 pub const TAG_REQUEST_MESSAGE: u32 = 0x0042_0078;
@@ -757,11 +757,23 @@ impl Dispatcher {
                     .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
                 let shared_secret = crypto::generate_random_bytes(32)
                     .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+                let secret_id = generate_uuid();
+                let mut secret_object = StoredObject::new(
+                    secret_id.clone(),
+                    "SecretData",
+                    "PreActive",
+                    now_secs,
+                );
+                secret_object.key_material_base64 =
+                    Some(crate::codec::datetime::octets_to_hex(&shared_secret));
+                self.store
+                    .save(&secret_object)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "storage write failure"))?;
+                *id_placeholder = Some(secret_id.clone());
 
                 Ok(vec![
-                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id)),
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(secret_id)),
                     ttlv_item(TAG_DATA, Value::byte_string(ciphertext)),
-                    ttlv_item(TAG_KEY_MATERIAL, Value::byte_string(shared_secret)),
                 ])
             }
 
@@ -779,11 +791,24 @@ impl Dispatcher {
 
                 let shared_secret = crypto::generate_random_bytes(32)
                     .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+                let secret_id = generate_uuid();
+                let mut secret_object = StoredObject::new(
+                    secret_id.clone(),
+                    "SecretData",
+                    "PreActive",
+                    now_secs,
+                );
+                secret_object.key_material_base64 =
+                    Some(crate::codec::datetime::octets_to_hex(&shared_secret));
+                self.store
+                    .save(&secret_object)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "storage write failure"))?;
+                *id_placeholder = Some(secret_id.clone());
 
-                Ok(vec![
-                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id)),
-                    ttlv_item(TAG_KEY_MATERIAL, Value::byte_string(shared_secret)),
-                ])
+                Ok(vec![ttlv_item(
+                    TAG_UNIQUE_IDENTIFIER,
+                    Value::text_string(secret_id),
+                )])
             }
 
             QUERY_OPERATION | PING_OPERATION => Ok(Vec::new()),
