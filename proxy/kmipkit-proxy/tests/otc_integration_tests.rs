@@ -153,7 +153,10 @@ mod tests {
         if method == "POST" && path.ends_with("/kms/encrypt-data") {
             let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or_default();
             let kid = parsed.get("key_id").and_then(|v| v.as_str()).unwrap_or("");
-            let pt = parsed.get("plain_text").and_then(|v| v.as_str()).unwrap_or("");
+            let pt = parsed
+                .get("plain_text")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let cipher = format!("ENC_{pt}");
             let resp = serde_json::json!({
                 "key_id": kid,
@@ -166,7 +169,10 @@ mod tests {
         if method == "POST" && path.ends_with("/kms/decrypt-data") {
             let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or_default();
             let kid = parsed.get("key_id").and_then(|v| v.as_str()).unwrap_or("");
-            let ct = parsed.get("cipher_text").and_then(|v| v.as_str()).unwrap_or("");
+            let ct = parsed
+                .get("cipher_text")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let decoded = BASE64.decode(ct).unwrap_or_default();
             let decoded_str = String::from_utf8_lossy(&decoded);
             let pt = decoded_str.strip_prefix("ENC_").unwrap_or(&decoded_str);
@@ -293,7 +299,10 @@ mod tests {
             let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or_default();
             let sec_id = format!("otc-sec-{}", fastrand_id());
             let name = parsed.get("name").and_then(|v| v.as_str()).unwrap_or("sec");
-            let sec_bin = parsed.get("secret_binary").and_then(|v| v.as_str()).unwrap_or("");
+            let sec_bin = parsed
+                .get("secret_binary")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
 
             let val = serde_json::json!({
                 "id": sec_id,
@@ -337,7 +346,10 @@ mod tests {
             let parts: Vec<&str> = path.split('/').collect();
             let sid = parts[parts.len() - 3];
             if let Some(entry) = keys_guard.get(sid) {
-                let bin = entry.get("secret_binary").and_then(|v| v.as_str()).unwrap_or("");
+                let bin = entry
+                    .get("secret_binary")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 let resp = serde_json::json!({
                     "version": {
                         "version_id": "1",
