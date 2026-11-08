@@ -962,6 +962,19 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, smoke)
 
+    def test_gradle_wrapper_retries_transient_distribution_download_failures(self) -> None:
+        wrapper_properties = REPOSITORY_ROOT / "bindings/java/gradle/wrapper/gradle-wrapper.properties"
+        properties = {
+            key: value
+            for line in wrapper_properties.read_text(encoding="utf-8").splitlines()
+            if "=" in line
+            for key, value in [line.split("=", maxsplit=1)]
+        }
+
+        self.assertGreaterEqual(int(properties.get("networkTimeout", "0")), 60_000)
+        self.assertGreaterEqual(int(properties.get("retries", "0")), 3)
+        self.assertGreaterEqual(int(properties.get("retryBackOffMs", "0")), 1_000)
+
     def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
         contents = self.require_workflow()
         python_job = self.require_job(contents, "language-python")
