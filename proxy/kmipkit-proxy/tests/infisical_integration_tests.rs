@@ -35,9 +35,7 @@ mod tests {
     use kmipkit_proxy::AutoPki;
     use kmipkit_proxy::config::{InfisicalConfig, ProxyConfig};
     use kmipkit_proxy::providers::infisical::InfisicalKmsProvider;
-    use kmipkit_proxy::providers::{
-        CloudKmsProvider, CloudTagMap, CreateKeySpec, CryptoParams,
-    };
+    use kmipkit_proxy::providers::{CloudKmsProvider, CloudTagMap, CreateKeySpec, CryptoParams};
     use kmipkit_proxy::server::ProxyServer;
     use kmipkit_transport::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TimeoutLimit, TimeoutPolicy,
@@ -126,7 +124,11 @@ mod tests {
             parsed["createdAt"] = serde_json::json!("2026-11-08T10:00:00Z");
             parsed["version"] = serde_json::json!(1);
 
-            state.keys.lock().unwrap().insert(key_id.clone(), parsed.clone());
+            state
+                .keys
+                .lock()
+                .unwrap()
+                .insert(key_id.clone(), parsed.clone());
             let resp = serde_json::json!({
                 "key": parsed
             });
@@ -134,7 +136,10 @@ mod tests {
         }
 
         // 3. Export private/symmetric key: GET /api/v1/kms/keys/{keyId}/private-key
-        if method == "GET" && path.starts_with("/api/v1/kms/keys/") && path.ends_with("/private-key") {
+        if method == "GET"
+            && path.starts_with("/api/v1/kms/keys/")
+            && path.ends_with("/private-key")
+        {
             let key_id = path
                 .trim_start_matches("/api/v1/kms/keys/")
                 .trim_end_matches("/private-key");
@@ -154,7 +159,8 @@ mod tests {
         }
 
         // 4. Export public key: GET /api/v1/kms/keys/{keyId}/public-key
-        if method == "GET" && path.starts_with("/api/v1/kms/keys/") && path.ends_with("/public-key") {
+        if method == "GET" && path.starts_with("/api/v1/kms/keys/") && path.ends_with("/public-key")
+        {
             let key_id = path
                 .trim_start_matches("/api/v1/kms/keys/")
                 .trim_end_matches("/public-key");
@@ -176,8 +182,14 @@ mod tests {
         if method == "POST" && path.starts_with("/api/v1/kms/keys/") && path.ends_with("/encrypt") {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let pt_b64 = parsed.get("plaintext").and_then(|v| v.as_str()).unwrap_or("");
-            let ct_val = format!("infisical:v1:{}", b64.encode(format!("encrypted:{}", pt_b64)));
+            let pt_b64 = parsed
+                .get("plaintext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+            let ct_val = format!(
+                "infisical:v1:{}",
+                b64.encode(format!("encrypted:{}", pt_b64))
+            );
             let resp = serde_json::json!({
                 "ciphertext": ct_val
             });
@@ -188,7 +200,10 @@ mod tests {
         if method == "POST" && path.starts_with("/api/v1/kms/keys/") && path.ends_with("/decrypt") {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let ct_val = parsed.get("ciphertext").and_then(|v| v.as_str()).unwrap_or("");
+            let ct_val = parsed
+                .get("ciphertext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let stripped = ct_val.trim_start_matches("infisical:v1:");
             let decoded = b64.decode(stripped).unwrap_or_default();
             let dec_str = String::from_utf8_lossy(&decoded);
