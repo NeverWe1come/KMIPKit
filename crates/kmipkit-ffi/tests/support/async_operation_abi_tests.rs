@@ -114,11 +114,14 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     let mut typed_present = u8::MAX;
     let mut typed_poll = kmipkit_client_async_operation_response_v1_t::default();
     assert_eq!(
-        kmipkit_client_async_operation_outcome_poll_response_v1(
-            outcome,
-            &raw mut typed_present,
-            &raw mut typed_poll,
-        ),
+        // SAFETY: `outcome` is live and the output values are separate writable locals.
+        unsafe {
+            kmipkit_client_async_operation_outcome_poll_response_v1(
+                outcome,
+                &raw mut typed_present,
+                &raw mut typed_poll,
+            )
+        },
         SUCCESS
     );
     assert_eq!(typed_present, 1);
@@ -144,11 +147,14 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     assert_c_consumer_typed_response(outcome, 0x1a, 2, 1, 0, 0, &expected_correlation, 0, 0);
     let mut typed_cancel = kmipkit_client_async_operation_response_v1_t::default();
     assert_eq!(
-        kmipkit_client_async_operation_outcome_cancel_response_v1(
-            outcome,
-            &raw mut typed_present,
-            &raw mut typed_cancel,
-        ),
+        // SAFETY: `outcome` is live and the output values are separate writable locals.
+        unsafe {
+            kmipkit_client_async_operation_outcome_cancel_response_v1(
+                outcome,
+                &raw mut typed_present,
+                &raw mut typed_cancel,
+            )
+        },
         SUCCESS
     );
     assert_eq!(typed_present, 0);

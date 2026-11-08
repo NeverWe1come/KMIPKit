@@ -44,6 +44,22 @@ _TYPE_NAMES = {
     "Structure": "Structure",
     "Text String": "TextString",
 }
+_ENCODING_NAMES = {
+    value_kind: f"{value_kind}Encoding"
+    for value_kind in (
+        "BigInteger",
+        "Boolean",
+        "ByteString",
+        "DateTime",
+        "DateTimeExtended",
+        "Enumeration",
+        "Integer",
+        "Interval",
+        "Structure",
+        "TextString",
+        "UniqueIdentifier",
+    )
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -316,90 +332,6 @@ def _rust_string(value: str) -> str:
     return '"' + "".join(escaped) + '"'
 
 
-def _render_typed_impl(definition: TypedAttributeDefinition) -> list[str]:
-    marker = definition.marker_name
-    tag = _rust_number(definition.tag)
-    lines = [
-        f"    /// Typed marker for the KMIP 2.1 {definition.source_name} attribute.",
-        f"    pub struct {marker};",
-        f"    impl super::super::sealed::Sealed for {marker} {{}}",
-        f"    impl super::AttributeDefinition for {marker} {{",
-        f"        type Value = {_owned_type(definition.value_kind)};",
-        f"        type ValueView<'a> = {_view_type(definition.value_kind)} where Self: 'a;",
-        f"        const TAG: u32 = {tag};",
-        "",
-        "        fn into_ttlv(value: Self::Value) -> Value {",
-    ]
-    if definition.value_kind == "UniqueIdentifier":
-        lines.extend(
-            [
-                "            match value {",
-                "                UniqueIdentifierValue::TextString(value) => Value::text_string(value),",
-                "                UniqueIdentifierValue::Enumeration(value) => Value::enumeration(value),",
-                "                UniqueIdentifierValue::Integer(value) => Value::integer(value),",
-                "            }",
-            ]
-        )
-    else:
-        constructor = {
-            "BigInteger": "big_integer",
-            "Boolean": "boolean",
-            "ByteString": "byte_string",
-            "DateTime": "date_time",
-            "DateTimeExtended": "date_time_extended",
-            "Enumeration": "enumeration",
-            "Integer": "integer",
-            "Interval": "interval",
-            "Structure": "structure",
-            "TextString": "text_string",
-        }[definition.value_kind]
-        lines.append(f"            Value::{constructor}(value)")
-    lines.extend(
-        [
-            "        }",
-            "",
-            "        fn value_view<'a>(",
-            "            value: ValueView<'a>,",
-            "        ) -> Result<Self::ValueView<'a>, AttributeValueError>\n        where\n            Self: 'a,\n        {",
-        ]
-    )
-    if definition.value_kind == "UniqueIdentifier":
-        lines.extend(
-            [
-                "            match value {",
-                "                ValueView::TextString(value) => Ok(UniqueIdentifierView::TextString(value)),",
-                "                ValueView::Enumeration(value) => Ok(UniqueIdentifierView::Enumeration(*value)),",
-                "                ValueView::Integer(value) => Ok(UniqueIdentifierView::Integer(*value)),",
-                "                _ => Err(AttributeValueError::ValueTypeMismatch),",
-                "            }",
-            ]
-        )
-    else:
-        view_variant = {
-            "BigInteger": ("BigInteger", "value"),
-            "Boolean": ("Boolean", "*value"),
-            "ByteString": ("ByteString", "value"),
-            "DateTime": ("DateTime", "*value"),
-            "DateTimeExtended": ("DateTimeExtended", "*value"),
-            "Enumeration": ("Enumeration", "*value"),
-            "Integer": ("Integer", "*value"),
-            "Interval": ("Interval", "*value"),
-            "Structure": ("Structure", "value"),
-            "TextString": ("TextString", "value"),
-        }[definition.value_kind]
-        variant, expression = view_variant
-        lines.extend(
-            [
-                "            match value {",
-                f"                ValueView::{variant}(value) => Ok({expression}),",
-                "                _ => Err(AttributeValueError::ValueTypeMismatch),",
-                "            }",
-            ]
-        )
-    lines.extend(["        }", "    }", ""])
-    return lines
-
-
 def _owned_type(value_kind: str) -> str:
     return {
         "BigInteger": "Vec<u8>",
@@ -410,9 +342,9 @@ def _owned_type(value_kind: str) -> str:
         "Enumeration": "u32",
         "Integer": "i32",
         "Interval": "u32",
-        "Structure": "Structure",
+        "Structure": "kmipkit_ttlv::Structure",
         "TextString": "String",
-        "UniqueIdentifier": "UniqueIdentifierValue",
+        "UniqueIdentifier": "super::super::UniqueIdentifierValue",
     }[value_kind]
 
 
@@ -426,9 +358,9 @@ def _view_type(value_kind: str) -> str:
         "Enumeration": "u32",
         "Integer": "i32",
         "Interval": "u32",
-        "Structure": "StructureView<'a>",
+        "Structure": "kmipkit_ttlv::StructureView<'a>",
         "TextString": "&'a str",
-        "UniqueIdentifier": "UniqueIdentifierView<'a>",
+        "UniqueIdentifier": "super::super::UniqueIdentifierView<'a>",
     }[value_kind]
 
 
@@ -437,11 +369,7 @@ def render_typed_rust(catalog: dict[str, Any]) -> str:
     definitions = collect_typed_attributes(catalog)
     lines = [
         "// @generated by tools/normative_catalog/generate_attribute_types.py; do not edit.",
-        "use super::{",
-        "    AttributeDefinition, AttributeValueError, UniqueIdentifierValue,",
-        "    UniqueIdentifierView,",
-        "};",
-        "use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};",
+        "use super::AttributeDefinition;",
         "",
         "#[cfg(test)]",
         "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
@@ -479,15 +407,43 @@ def render_typed_rust(catalog: dict[str, Any]) -> str:
             "];",
             "",
             "pub mod typed {",
-            "    use super::{",
-            "        AttributeValueError, Structure, StructureView, UniqueIdentifierValue,",
-            "        UniqueIdentifierView, Value, ValueView,",
-            "    };",
+            "    use super::super::AttributeValueError;",
+            "    use kmipkit_ttlv::{Value, ValueView};",
+            "",
+            "    macro_rules! define_typed_attribute {",
+            "        ($marker:ident, $source_name:literal, $tag:literal, $encoding:ty, $owned:ty, $view:ty) => {",
+            "            #[doc = concat!(\"Typed marker for the KMIP 2.1 \", $source_name, \" attribute.\")]",
+            "            pub struct $marker;",
+            "            impl super::super::sealed::Sealed for $marker {}",
+            "            impl super::AttributeDefinition for $marker {",
+            "                type Value = $owned;",
+            "                type ValueView<'a> = $view where Self: 'a;",
+            "                const TAG: u32 = $tag;",
+            "",
+            "                fn into_ttlv(value: Self::Value) -> Value {",
+            "                    <$encoding as super::super::AttributeValueEncoding>::into_ttlv(value)",
+            "                }",
+            "",
+            "                fn value_view<'a>(value: ValueView<'a>) -> Result<Self::ValueView<'a>, AttributeValueError>",
+            "                where",
+            "                    Self: 'a,",
+            "                {",
+            "                    <$encoding as super::super::AttributeValueEncoding>::value_view(value)",
+            "                }",
+            "            }",
+            "        };",
+            "    }",
             "",
         ]
     )
     for definition in definitions:
-        lines.extend(_render_typed_impl(definition))
+        encoding = _ENCODING_NAMES[definition.value_kind]
+        lines.append(
+            f"    define_typed_attribute!({definition.marker_name}, "
+            f"{_rust_string(definition.source_name)}, {_rust_number(definition.tag)}, "
+            f"super::super::{encoding}, {_owned_type(definition.value_kind)}, "
+            f"{_view_type(definition.value_kind)});"
+        )
     lines.extend(
         [
             "}",

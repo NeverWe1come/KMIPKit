@@ -177,47 +177,6 @@ pub struct CurrentAttribute {
     item: Item,
 }
 
-impl CurrentAttribute {
-    /// Wraps one direct generic TTLV Item as a Current Attribute.
-    #[must_use]
-    pub fn new(item: Item) -> Self {
-        Self { item }
-    }
-
-    /// Wraps one typed attribute as a Current Attribute.
-    #[must_use]
-    pub fn from_typed<D: AttributeDefinition>(attribute: Attribute<D>) -> Self {
-        Self::new(attribute.into_item())
-    }
-
-    /// Reads this Current Attribute through a catalogued typed view.
-    ///
-    /// # Errors
-    ///
-    /// Returns a redacted [`AttributeValueError`] when the generic Item does
-    /// not match the selected attribute marker.
-    pub fn typed<D: AttributeDefinition>(
-        &self,
-    ) -> Result<AttributeView<'_, D>, AttributeValueError> {
-        AttributeView::try_from_item(&self.item)
-    }
-
-    /// Borrows the exact direct attribute Item supplied to [`Self::new`].
-    #[must_use]
-    pub const fn item(&self) -> &Item {
-        &self.item
-    }
-}
-
-impl Debug for CurrentAttribute {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("CurrentAttribute")
-            .field("item", &"[REDACTED]")
-            .finish()
-    }
-}
-
 /// One direct object-attribute Item supplied as a new attribute value.
 ///
 /// OASIS KMIP v2.1 §5.7, Table 163 defines New Attribute as a Structure
@@ -227,46 +186,53 @@ pub struct NewAttribute {
     item: Item,
 }
 
-impl NewAttribute {
-    /// Wraps one direct generic TTLV Item as a New Attribute.
-    #[must_use]
-    pub fn new(item: Item) -> Self {
-        Self { item }
-    }
+macro_rules! impl_attribute_wrapper {
+    ($wrapper:ident) => {
+        impl $wrapper {
+            /// Wraps one direct generic TTLV Item.
+            #[must_use]
+            pub fn new(item: Item) -> Self {
+                Self { item }
+            }
 
-    /// Wraps one typed attribute as a New Attribute.
-    #[must_use]
-    pub fn from_typed<D: AttributeDefinition>(attribute: Attribute<D>) -> Self {
-        Self::new(attribute.into_item())
-    }
+            /// Wraps one typed attribute in this operation-specific wrapper.
+            #[must_use]
+            pub fn from_typed<D: AttributeDefinition>(attribute: Attribute<D>) -> Self {
+                Self::new(attribute.into_item())
+            }
 
-    /// Reads this New Attribute through a catalogued typed view.
-    ///
-    /// # Errors
-    ///
-    /// Returns a redacted [`AttributeValueError`] when the generic Item does
-    /// not match the selected attribute marker.
-    pub fn typed<D: AttributeDefinition>(
-        &self,
-    ) -> Result<AttributeView<'_, D>, AttributeValueError> {
-        AttributeView::try_from_item(&self.item)
-    }
+            /// Reads the wrapped Item through a catalogued typed view.
+            ///
+            /// # Errors
+            ///
+            /// Returns a redacted [`AttributeValueError`] when the generic Item does
+            /// not match the selected attribute marker.
+            pub fn typed<D: AttributeDefinition>(
+                &self,
+            ) -> Result<AttributeView<'_, D>, AttributeValueError> {
+                AttributeView::try_from_item(&self.item)
+            }
 
-    /// Borrows the exact direct attribute Item supplied to [`Self::new`].
-    #[must_use]
-    pub const fn item(&self) -> &Item {
-        &self.item
-    }
+            /// Borrows the exact direct attribute Item stored by this wrapper.
+            #[must_use]
+            pub const fn item(&self) -> &Item {
+                &self.item
+            }
+        }
+
+        impl Debug for $wrapper {
+            fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter
+                    .debug_struct(stringify!($wrapper))
+                    .field("item", &"[REDACTED]")
+                    .finish()
+            }
+        }
+    };
 }
 
-impl Debug for NewAttribute {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("NewAttribute")
-            .field("item", &"[REDACTED]")
-            .finish()
-    }
-}
+impl_attribute_wrapper!(CurrentAttribute);
+impl_attribute_wrapper!(NewAttribute);
 
 /// Copies one generic TTLV Item without changing its tag or value.
 ///

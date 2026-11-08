@@ -61,15 +61,21 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
     def test_generated_markers_keep_open_and_structure_value_categories(self) -> None:
         rendered = generate_attribute_types.render_typed_rust(self.catalog)
 
-        self.assertIn("pub struct ActivationDate;", rendered)
-        self.assertIn("pub struct VendorAttribute;", rendered)
-        self.assertIn("UniqueIdentifierValue", rendered)
-        self.assertIn("StructureView", rendered)
+        self.assertIn("pub struct $marker;", rendered)
+        self.assertIn("marker_name: \"ActivationDate\"", rendered)
+        self.assertIn("marker_name: \"VendorAttribute\"", rendered)
+        self.assertIn("super::super::UniqueIdentifierEncoding", rendered)
+        self.assertIn("super::super::StructureEncoding", rendered)
         self.assertIn("0x42_00_01", rendered)
         self.assertIn("pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[", rendered)
         self.assertIn("typed::ActivationDate::TAG", rendered)
         self.assertNotIn("CertificateAttributes", rendered)
-        self.assertEqual(rendered.count("impl super::AttributeDefinition for "), 62)
+        self.assertIn("macro_rules! define_typed_attribute", rendered)
+        self.assertEqual(
+            rendered.count("impl super::AttributeDefinition for $marker"),
+            1,
+        )
+        self.assertEqual(rendered.count("define_typed_attribute!("), 62)
         self.assertEqual(rendered.count("::TAG,"), 62)
 
     def test_generated_registry_retains_source_multiplicity_and_trace_ids(self) -> None:
