@@ -22,12 +22,18 @@ const SUCCESS: u32 = 0;
 pub struct ObjectType(u32);
 
 impl ObjectType {
-    /// KMIP 3.0 User system object (§5.1).
+    /// KMIP 3.0 User system object (§11.35, Table 582).
     pub const USER: Self = Self(0x0000_000B);
-    /// KMIP 3.0 Group system object (§5.1).
+    /// KMIP 3.0 Group system object (§11.35, Table 582).
     pub const GROUP: Self = Self(0x0000_000C);
-    /// KMIP 3.0 Credential system object (§5.1).
-    pub const CREDENTIAL: Self = Self(0x0000_000D);
+    /// KMIP 3.0 Password Credential system object (§11.35, Table 582).
+    pub const PASSWORD_CREDENTIAL: Self = Self(0x0000_000D);
+    /// KMIP 3.0 Device Credential system object (§11.35, Table 582).
+    pub const DEVICE_CREDENTIAL: Self = Self(0x0000_000E);
+    /// KMIP 3.0 One Time Password Credential system object (§11.35, Table 582).
+    pub const ONE_TIME_PASSWORD_CREDENTIAL: Self = Self(0x0000_000F);
+    /// KMIP 3.0 Hashed Password Credential system object (§11.35, Table 582).
+    pub const HASHED_PASSWORD_CREDENTIAL: Self = Self(0x0000_0010);
 
     /// KMIP 3.0 User system object alias.
     #[allow(non_upper_case_globals)]
@@ -35,9 +41,9 @@ impl ObjectType {
     /// KMIP 3.0 Group system object alias.
     #[allow(non_upper_case_globals)]
     pub const Group: Self = Self::GROUP;
-    /// KMIP 3.0 Credential system object alias.
+    /// KMIP 3.0 Password Credential system object alias.
     #[allow(non_upper_case_globals)]
-    pub const Credential: Self = Self::CREDENTIAL;
+    pub const PasswordCredential: Self = Self::PASSWORD_CREDENTIAL;
 
     /// Creates an Object Type from its raw unsigned Enumeration value.
     #[must_use]

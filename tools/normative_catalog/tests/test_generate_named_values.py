@@ -58,8 +58,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertIn("OBLITERATE", rendered["rust"])
         self.assertIn("CREATE_CREDENTIAL", rendered["rust"])
         self.assertIn("PASSWORD_CREDENTIAL", rendered["rust"])
-        self.assertIn("KMIPKIT_V3_0_OPERATION_CREATE_GROUP", rendered["c"])
-        self.assertIn("KMIPKIT_V3_0_OPERATION_CREATE_CREDENTIAL", rendered["c"])
+        self.assertIn("KMIPKIT_V3_0_OPERATION_name", rendered["c"])
         self.assertIn("V3_0_OPERATION_CREATE_GROUP", rendered["java"])
         self.assertIn("V3_0_OBJECT_TYPE_PASSWORD_CREDENTIAL", rendered["python"])
         self.assertNotIn("RE_ENCRYPT", rendered["rust"])
@@ -82,7 +81,8 @@ class NamedValueGeneratorTests(unittest.TestCase):
 
         self.assertIn("pub mod versions", rendered["rust"])
         self.assertIn("pub const OBLITERATE: u32 = 0x0000_003D", rendered["rust"])
-        self.assertIn("#define KMIPKIT_V3_0_OPERATION_OBLITERATE UINT32_C(0x0000003D)", rendered["c"])
+        self.assertIn("KMIPKIT_V3_0_OPERATION_name(uint32_t raw)", rendered["c"])
+        self.assertIn('case UINT32_C(0x0000003D): return "Obliterate";', rendered["c"])
         self.assertIn("V3_0_OPERATION_OBLITERATE = 0x0000003DL", rendered["java"])
         self.assertIn("V3_0_OPERATION_OBLITERATE = 0x0000003D", rendered["python"])
 
@@ -117,6 +117,15 @@ class NamedValueGeneratorTests(unittest.TestCase):
                 language: mapping["name"]
                 for language, mapping in declaration["languageMappings"].items()
             },
+        )
+
+        lookup = next(
+            row for row in declarations
+            if row["exportName"] == rust_name.rsplit("::", 1)[0] + "::name"
+        )
+        self.assertEqual(
+            "org.kmipkit.protocol.KmipValues.v3_0OperationName",
+            lookup["languageMappings"]["java"]["name"],
         )
 
     def test_public_manifest_bound_covers_current_input_with_bounded_headroom(self) -> None:

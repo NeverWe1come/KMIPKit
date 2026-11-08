@@ -69,6 +69,7 @@ fn kmip20_and_kmip21_prohibit_all_seven_kmip30_operations() {
     }
 }
 
+// OASIS KMIP 2.1 §11.36 Table 470; KMIP 3.0 §§11.34–11.37 Tables 581–583.
 #[test]
 fn versioned_named_values_match_the_pinned_2_1_and_3_0_tables() {
     use crate::named_values_generated::values::versions::{v2_1, v3_0};
@@ -83,7 +84,10 @@ fn versioned_named_values_match_the_pinned_2_1_and_3_0_tables() {
     ];
     for (raw, expected) in operations_2_1 {
         assert_eq!(v2_1::enumeration::operation::name(raw), Some(expected));
-        assert_eq!(VersionGate::operation_span(raw).unwrap().introduced, ProtocolVersion::V2_1);
+        assert_eq!(
+            VersionGate::operation_span(raw).unwrap().introduced,
+            ProtocolVersion::V2_1
+        );
     }
 
     let operations_3_0 = [
@@ -97,7 +101,10 @@ fn versioned_named_values_match_the_pinned_2_1_and_3_0_tables() {
     ];
     for (raw, expected) in operations_3_0 {
         assert_eq!(v3_0::enumeration::operation::name(raw), Some(expected));
-        assert_eq!(VersionGate::operation_span(raw).unwrap().introduced, ProtocolVersion::V3_0);
+        assert_eq!(
+            VersionGate::operation_span(raw).unwrap().introduced,
+            ProtocolVersion::V3_0
+        );
     }
     assert_eq!(v3_0::enumeration::operation::name(0x43), None);
     assert_eq!(VersionGate::operation_span(0x43), None);
@@ -107,8 +114,11 @@ fn versioned_named_values_match_the_pinned_2_1_and_3_0_tables() {
 fn kmip30_object_class_and_system_object_types() {
     use crate::named_values_generated::values::versions::v3_0;
 
+    assert_eq!(ObjectClass::USER.to_raw(), 1);
+    assert_eq!(ObjectClass::SYSTEM.to_raw(), 2);
     assert_eq!(ObjectClass::from_raw(1).to_raw(), 1);
     assert_eq!(ObjectClass::from_raw(2).to_raw(), 2);
+    assert_eq!(ObjectClass::from_raw(3).to_raw(), 3);
     assert_eq!(ObjectClass::from_raw(0x8000_0001).to_raw(), 0x8000_0001);
     assert_eq!(v3_0::enumeration::object_class::name(1), Some("User"));
     assert_eq!(v3_0::enumeration::object_class::name(2), Some("System"));
@@ -123,14 +133,29 @@ fn kmip30_object_class_and_system_object_types() {
     assert_eq!(ObjectType::from_raw(0x0000_0010).to_raw(), 0x0000_0010);
     assert_eq!(ObjectType::PASSWORD_CREDENTIAL.to_raw(), 0x0000_000D);
     assert_eq!(ObjectType::DEVICE_CREDENTIAL.to_raw(), 0x0000_000E);
-    assert_eq!(ObjectType::ONE_TIME_PASSWORD_CREDENTIAL.to_raw(), 0x0000_000F);
+    assert_eq!(
+        ObjectType::ONE_TIME_PASSWORD_CREDENTIAL.to_raw(),
+        0x0000_000F
+    );
     assert_eq!(ObjectType::HASHED_PASSWORD_CREDENTIAL.to_raw(), 0x0000_0010);
 
     assert_eq!(ObjectType::from_raw(0x0000_000B), ObjectType::User);
     assert_eq!(ObjectType::from_raw(0x0000_000C), ObjectType::Group);
-    assert_eq!(v3_0::enumeration::object_type::name(0x0D), Some("Password Credential"));
-    assert_eq!(v3_0::enumeration::object_type::name(0x0E), Some("Device Credential"));
-    assert_eq!(v3_0::enumeration::object_type::name(0x0F), Some("One Time Password Credential"));
-    assert_eq!(v3_0::enumeration::object_type::name(0x10), Some("Hashed Password Credential"));
+    assert_eq!(
+        v3_0::enumeration::object_type::name(0x0D),
+        Some("Password Credential")
+    );
+    assert_eq!(
+        v3_0::enumeration::object_type::name(0x0E),
+        Some("Device Credential")
+    );
+    assert_eq!(
+        v3_0::enumeration::object_type::name(0x0F),
+        Some("One Time Password Credential")
+    );
+    assert_eq!(
+        v3_0::enumeration::object_type::name(0x10),
+        Some("Hashed Password Credential")
+    );
     assert_eq!(v3_0::enumeration::object_type::name(0x06), None);
 }
