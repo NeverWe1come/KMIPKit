@@ -30,16 +30,14 @@ mod tests {
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
-    use base64::engine::general_purpose::STANDARD as BASE64;
     use base64::Engine;
+    use base64::engine::general_purpose::STANDARD as BASE64;
     use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
     use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientRequest, WireEncoding};
     use kmipkit_proxy::AutoPki;
     use kmipkit_proxy::config::{ProxyConfig, ScalewayConfig};
     use kmipkit_proxy::providers::scaleway::ScalewayKmsProvider;
-    use kmipkit_proxy::providers::{
-        CloudKmsProvider, CloudTagMap, CreateKeySpec, CryptoParams,
-    };
+    use kmipkit_proxy::providers::{CloudKmsProvider, CloudTagMap, CreateKeySpec, CryptoParams};
     use kmipkit_proxy::server::ProxyServer;
     use kmipkit_transport::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TimeoutLimit, TimeoutPolicy,
@@ -106,7 +104,10 @@ mod tests {
         if method == "POST" && path.ends_with("/keys") {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let name = parsed.get("name").and_then(|v| v.as_str()).unwrap_or("scw-key");
+            let name = parsed
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("scw-key");
             let key_id = format!("key-{}", name);
             let tags = parsed.get("tags").cloned().unwrap_or(serde_json::json!([]));
             let record = serde_json::json!({
@@ -116,7 +117,11 @@ mod tests {
                 "tags": tags,
                 "created_at": "2026-11-08T12:00:00Z"
             });
-            state.keys.lock().unwrap().insert(key_id.clone(), record.clone());
+            state
+                .keys
+                .lock()
+                .unwrap()
+                .insert(key_id.clone(), record.clone());
             return ("200 OK", record.to_string());
         }
 
@@ -124,7 +129,10 @@ mod tests {
         if method == "POST" && path.ends_with("/encrypt") {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let pt = parsed.get("plaintext").and_then(|v| v.as_str()).unwrap_or("");
+            let pt = parsed
+                .get("plaintext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let ct = format!("ct_{}", pt);
             return (
                 "200 OK",
@@ -139,7 +147,10 @@ mod tests {
         if method == "POST" && path.ends_with("/decrypt") {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let ct_b64 = parsed.get("ciphertext").and_then(|v| v.as_str()).unwrap_or("");
+            let ct_b64 = parsed
+                .get("ciphertext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let ct_bytes = BASE64.decode(ct_b64).unwrap_or_default();
             let ct_str = String::from_utf8_lossy(&ct_bytes);
             let pt = ct_str.strip_prefix("ct_").unwrap_or(&ct_str);
@@ -154,7 +165,7 @@ mod tests {
 
         // 4. Get Key Metadata
         if method == "GET" && path.contains("/keys/") {
-            let key_id = path.split('/').last().unwrap_or("");
+            let key_id = path.split('/').next_back().unwrap_or("");
             if let Some(record) = state.keys.lock().unwrap().get(key_id) {
                 return ("200 OK", record.to_string());
             }
@@ -166,7 +177,7 @@ mod tests {
 
         // 5. Update Key Tags
         if method == "PATCH" && path.contains("/keys/") {
-            let key_id = path.split('/').last().unwrap_or("");
+            let key_id = path.split('/').next_back().unwrap_or("");
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             if let Some(record) = state.keys.lock().unwrap().get_mut(key_id) {
@@ -209,20 +220,15 @@ mod tests {
 
         // 7. Delete Key / Delete Secret
         if method == "DELETE" {
-            let id = path.split('/').last().unwrap_or("");
+            let id = path.split('/').next_back().unwrap_or("");
             state.keys.lock().unwrap().remove(id);
             return ("204 No Content", String::new());
         }
 
         // 8. List Keys
         if method == "GET" && path.contains("/keys") {
-            let keys: Vec<serde_json::Value> = state
-                .keys
-                .lock()
-                .unwrap()
-                .values()
-                .cloned()
-                .collect();
+            let keys: Vec<serde_json::Value> =
+                state.keys.lock().unwrap().values().cloned().collect();
             return (
                 "200 OK",
                 serde_json::json!({
@@ -237,7 +243,10 @@ mod tests {
         if method == "POST" && path.ends_with("/secrets") {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let name = parsed.get("name").and_then(|v| v.as_str()).unwrap_or("scw-sec");
+            let name = parsed
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("scw-sec");
             let sec_id = format!("secret-{}", name);
             let tags = parsed.get("tags").cloned().unwrap_or(serde_json::json!([]));
             let record = serde_json::json!({
@@ -246,7 +255,11 @@ mod tests {
                 "tags": tags,
                 "versions": []
             });
-            state.keys.lock().unwrap().insert(sec_id.clone(), record.clone());
+            state
+                .keys
+                .lock()
+                .unwrap()
+                .insert(sec_id.clone(), record.clone());
             return ("200 OK", record.to_string());
         }
 

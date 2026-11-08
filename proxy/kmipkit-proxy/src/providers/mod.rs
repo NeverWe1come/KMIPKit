@@ -512,7 +512,9 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
         )?)),
         "ibm" => Ok(Arc::new(ibm::IbmKmsProvider::new(&config.ibm)?)),
         "alibaba" => Ok(Arc::new(alibaba::AlibabaKmsProvider::new(&config.alibaba)?)),
-        "scaleway" => Ok(Arc::new(scaleway::ScalewayKmsProvider::new(&config.scaleway)?)),
+        "scaleway" => Ok(Arc::new(scaleway::ScalewayKmsProvider::new(
+            &config.scaleway,
+        )?)),
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
