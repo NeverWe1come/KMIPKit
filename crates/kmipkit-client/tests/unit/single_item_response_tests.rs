@@ -15,3 +15,10 @@ fn empty_single_item_response_preserves_response_started_delivery() {
     assert!(!error.to_string().contains("response items"));
     assert!(!format!("{error:?}").contains("response items"));
 }
+
+#[test]
+fn empty_batch_response_has_no_response_header_view() {
+    let response = super::ClientBatchResponse { items: Vec::new() };
+
+    assert!(response.response_header_raw().is_none());
+}
