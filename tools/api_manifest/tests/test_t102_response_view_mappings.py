@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import (
     EXPECTED as REMAINING_RESPONSE_VIEWS,
@@ -173,7 +174,8 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
-OTHER_MANIFEST_SHA256 = "26e82667b24d11a882122169c1de6538d8f4ef08ce63deeb10a2d7ca42883943"
+# Includes the approved 0047 versioned-value capability update.
+OTHER_MANIFEST_SHA256 = "0fb923bc81e38ffcf916855d1de2da8803485a87318a1d691d96851fbc7feda9"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -546,7 +548,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 )
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
-            canonical_sha256(unchanged_declarations),
+            canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
         target_operations = {

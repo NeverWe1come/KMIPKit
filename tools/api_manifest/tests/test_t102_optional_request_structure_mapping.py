@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -373,6 +374,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
+        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
