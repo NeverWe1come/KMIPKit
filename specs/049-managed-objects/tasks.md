@@ -108,13 +108,16 @@
 - [x] T041 Review the final diff against the spec, contracts, pinned OASIS tables, and every traceability row; resolve all findings and record the Red/Green/Refactor commit hashes in `specs/049-managed-objects/implementation-evidence.md`.
 - [x] T042 Run a security-focused diff review and an acceptance-criteria QA review; record scope, findings, and remediation evidence in `specs/049-managed-objects/implementation-evidence.md`.
 - [x] T043 Open the stacked draft PR from `feature/KMIPKIT-0049-managed-objects` to `feature/KMIPKIT-0048-typed-attributes` using `gh`; verify its state, base, head, and URL in the evidence file. At the 2026-11-07 pre-refresh snapshot, PR #116 was open/draft with base OID `a4fffdbac60563b0aeac5795902230df8e00039a` and head OID `28d209fd0a159376a8b7ca2b58c71704b37cc9a2`; the following evidence refresh is documentation-only. Keep it draft while hosted cross-platform controls remain outstanding.
+- [x] T044 [Red] Add failing parse-mutate-convert tests for Key Block and Key Wrapping Data, including unknown extension retention and builder `with_raw()` snapshots; record expected failure in the development evidence.
+- [x] T045 [Green] Rebuild typed Key Block and Key Wrapping Data trees with updated known values, preserving untouched source children, and expose current builder structures through `with_raw()` while retaining validation at conversion.
+- [x] T046 [Refactor] Audit source-order insertion, zeroizing clone behavior, incomplete-builder inspection, focused tests, and local API documentation for the new FR-011 contract.
 
 ## Dependencies and execution order
 
 - T001–T005 establish source evidence and common typed-structure rules before model work.
 - User Story 2 (T006–T016) precedes User Story 1 (T017–T025) because managed key objects depend on Key Block and Key Material types.
 - User Story 3 (T026–T032) follows both model stories because Register/Import integration consumes their public types.
-- Polish tasks T033–T043 require the complete public API and tests; the security and QA review must precede PR creation.
+- Polish tasks T033–T046 require the complete public API and tests; the security and QA review must precede PR creation.
 - Work remains sequential on this branch to preserve the explicit Red, Green, Refactor commit evidence and avoid shared-file conflicts.
 
 ## Implementation strategy

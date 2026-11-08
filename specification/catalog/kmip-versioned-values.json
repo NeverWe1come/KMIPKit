@@ -1,0 +1,80 @@
+{
+  "formatVersion": 1,
+  "sources": {
+    "kmip-2.0": {
+      "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+      "sha256": "41346355fc966e555dbcbae68b4d73421b0da0f32fb1a86fc8e3cb5fd35bb4a2"
+    },
+    "kmip-2.1": {
+      "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+      "sha256": "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf"
+    },
+    "kmip-3.0": {
+      "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+      "sha256": "a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b"
+    }
+  },
+  "versions": {
+    "v2_1": [
+      {
+        "kind": "enumeration",
+        "name": "Operation",
+        "sourceId": "kmip-2.1",
+        "section": "11.36",
+        "table": "470",
+        "values": [
+          {"name": "Set Defaults", "wire_value": "0x00000036"},
+          {"name": "Set Constraints", "wire_value": "0x00000037"},
+          {"name": "Get Constraints", "wire_value": "0x00000038"},
+          {"name": "Query Asynchronous Requests", "wire_value": "0x00000039"},
+          {"name": "Process", "wire_value": "0x0000003A"},
+          {"name": "Ping", "wire_value": "0x0000003B"}
+        ]
+      }
+    ],
+    "v3_0": [
+      {
+        "kind": "enumeration",
+        "name": "Operation",
+        "sourceId": "kmip-3.0",
+        "section": "11.37",
+        "table": "583",
+        "values": [
+          {"name": "Create Group", "wire_value": "0x0000003C"},
+          {"name": "Obliterate", "wire_value": "0x0000003D"},
+          {"name": "Create User", "wire_value": "0x0000003E"},
+          {"name": "Create Credential", "wire_value": "0x0000003F"},
+          {"name": "Deactivate", "wire_value": "0x00000040"},
+          {"name": "Encapsulate", "wire_value": "0x00000041"},
+          {"name": "Decapsulate", "wire_value": "0x00000042"}
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Object Class",
+        "sourceId": "kmip-3.0",
+        "section": "11.34",
+        "table": "581",
+        "values": [
+          {"name": "User", "wire_value": "0x00000001"},
+          {"name": "System", "wire_value": "0x00000002"}
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Object Type",
+        "sourceId": "kmip-3.0",
+        "section": "11.35",
+        "table": "582",
+        "values": [
+          {"name": "User", "wire_value": "0x0000000B"},
+          {"name": "Group", "wire_value": "0x0000000C"},
+          {"name": "Password Credential", "wire_value": "0x0000000D"},
+          {"name": "Device Credential", "wire_value": "0x0000000E"},
+          {"name": "One Time Password Credential", "wire_value": "0x0000000F"},
+          {"name": "Hashed Password Credential", "wire_value": "0x00000010"}
+        ]
+      }
+    ]
+  }
+}

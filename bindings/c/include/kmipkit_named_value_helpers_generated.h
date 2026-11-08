@@ -1306,4 +1306,46 @@ static inline uint32_t KMIPKIT_BITMASK_STORAGE_STATUS_MASK_names(uint32_t raw, c
     return count;
 }
 
+/* Exact assigned values added by later KMIP editions. */
+static inline const char *KMIPKIT_V2_1_OPERATION_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000036): return "Set Defaults";
+    case UINT32_C(0x00000037): return "Set Constraints";
+    case UINT32_C(0x00000038): return "Get Constraints";
+    case UINT32_C(0x00000039): return "Query Asynchronous Requests";
+    case UINT32_C(0x0000003A): return "Process";
+    case UINT32_C(0x0000003B): return "Ping";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_OPERATION_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x0000003C): return "Create Group";
+    case UINT32_C(0x0000003D): return "Obliterate";
+    case UINT32_C(0x0000003E): return "Create User";
+    case UINT32_C(0x0000003F): return "Create Credential";
+    case UINT32_C(0x00000040): return "Deactivate";
+    case UINT32_C(0x00000041): return "Encapsulate";
+    case UINT32_C(0x00000042): return "Decapsulate";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_OBJECT_CLASS_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "User";
+    case UINT32_C(0x00000002): return "System";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_OBJECT_TYPE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x0000000B): return "User";
+    case UINT32_C(0x0000000C): return "Group";
+    case UINT32_C(0x0000000D): return "Password Credential";
+    case UINT32_C(0x0000000E): return "Device Credential";
+    case UINT32_C(0x0000000F): return "One Time Password Credential";
+    case UINT32_C(0x00000010): return "Hashed Password Credential";
+    default: return 0;
+    }
+}
 #endif

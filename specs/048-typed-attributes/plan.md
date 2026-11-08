@@ -28,6 +28,7 @@ Provide typed Rust definitions, construction, and reading for each direct KMIP 2
 6. Typed Current/New wrappers contain exactly one direct Item. Existing constructors stay source-compatible.
 7. Structure payloads remain generic and lossless in this feature; specialized object/key builders belong to 0049.
 8. Manifest reconciliation is explicit and deterministic. No generated Rust or documentation output is hand-edited.
+9. The Phase 5 audit correction uses an explicit KMIP 2.1 Link Type to KMIP 3.0 link-tag table. The generator merges the 20 exact KMIP 3.0 Link assignments from a checksum-pinned reviewed catalog into the TTLV allocation union; it does not infer ranges or assign semantic equivalents to the six 3.0-only link attributes.
 
 ## Constitution Check
 
@@ -53,3 +54,9 @@ docs/user-guide/en/ and docs/user-guide/es/     # Rust typed attribute examples
 ## Verification Strategy
 
 Run red/green focused protocol and generator checks; test every one of the 62 mappings against tag/category, test all value kinds and open values, exercise repeated attributes in source order and generic fallback, then run formatting, Clippy, relevant workspace tests, manifest generation/auditing and coverage checks. Binding consumers are intentionally verified in 0053, not asserted by this PR.
+
+For the Phase 5 correction, also test the 14 exact Link mappings in both
+directions, round-trip Enumeration/Integer identifiers, reject Text String
+conversion to KMIP 3.0 because §4.35 does not define that encoding, reject
+unmapped tags and unrecognized children without loss, and regenerate the
+supported-version TTLV tag allocation union from the pinned catalog.

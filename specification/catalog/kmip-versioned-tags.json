@@ -1,0 +1,33 @@
+{
+  "formatVersion": 1,
+  "source": {
+    "sourceId": "kmip-3.0",
+    "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+    "sha256": "a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b"
+  },
+  "tagEnumeration": {
+    "section": "11.58",
+    "assignments": [
+      {"name": "Certificate Link", "wire_value": "0x420190", "attribute_section": "4.35.1"},
+      {"name": "Child Link", "wire_value": "0x420191", "attribute_section": "4.35.3"},
+      {"name": "Derivation Base Object Link", "wire_value": "0x420192", "attribute_section": "4.35.5"},
+      {"name": "Derived Object Link", "wire_value": "0x420193", "attribute_section": "4.35.6"},
+      {"name": "Next Link", "wire_value": "0x420194", "attribute_section": "4.35.9"},
+      {"name": "Parent Link", "wire_value": "0x420195", "attribute_section": "4.35.10"},
+      {"name": "PKCS#12 Certificate Link", "wire_value": "0x420196", "attribute_section": "4.35.12"},
+      {"name": "PKCS#12 Password Link", "wire_value": "0x420197", "attribute_section": "4.35.13"},
+      {"name": "Previous Link", "wire_value": "0x420198", "attribute_section": "4.35.14"},
+      {"name": "Private Key Link", "wire_value": "0x420199", "attribute_section": "4.35.15"},
+      {"name": "Public Key Link", "wire_value": "0x42019A", "attribute_section": "4.35.16"},
+      {"name": "Replaced Object Link", "wire_value": "0x42019B", "attribute_section": "4.35.17"},
+      {"name": "Replacement Object Link", "wire_value": "0x42019C", "attribute_section": "4.35.18"},
+      {"name": "Wrapping Key Link", "wire_value": "0x42019D", "attribute_section": "4.35.20"},
+      {"name": "Credential Link", "wire_value": "0x4201A0", "attribute_section": "4.35.4"},
+      {"name": "Password Link", "wire_value": "0x4201A5", "attribute_section": "4.35.11"},
+      {"name": "Group Link", "wire_value": "0x4201B3", "attribute_section": "4.35.7"},
+      {"name": "Split Key Base Link", "wire_value": "0x4201B4", "attribute_section": "4.35.19"},
+      {"name": "Joined Split Key Parts Link", "wire_value": "0x4201B5", "attribute_section": "4.35.8"},
+      {"name": "Certificate Request Link", "wire_value": "0x4201BC", "attribute_section": "4.35.2"}
+    ]
+  }
+}
