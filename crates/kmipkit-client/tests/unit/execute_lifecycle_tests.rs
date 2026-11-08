@@ -18,8 +18,8 @@ use std::fmt::Write as _;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, HashRequest, InteropRequest, ObjectType, OperationData,
-    EndpointRole, Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
+    AttributeSet, CreateRequest, EndpointRole, HashRequest, InteropRequest, ObjectType,
+    OperationData, Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
     SetEndpointRoleRequest,
 };
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
