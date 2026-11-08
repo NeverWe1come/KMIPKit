@@ -349,10 +349,7 @@ fn validate_key_information(item: &Item, expected_tag: u32) -> Result<(), Manage
                 return Err(ManagedObjectError::IncorrectFieldOrder);
             }
             if position == 0 {
-                if !matches!(
-                    child.item_type(),
-                    ItemType::TextString | ItemType::Enumeration | ItemType::Integer
-                ) {
+                if child.item_type() != ItemType::TextString {
                     return Err(ManagedObjectError::IncorrectFieldType);
                 }
                 identifier = true;
@@ -395,12 +392,10 @@ fn append_cryptographic_parameters(
 }
 
 fn unique_identifier_item(value: UniqueIdentifier) -> Result<Item, ManagedObjectError> {
-    let value = match value {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
+    let UniqueIdentifier::TextString(value) = value else {
+        return Err(ManagedObjectError::IncorrectFieldType);
     };
-    make_item(UNIQUE_IDENTIFIER, value)
+    make_item(UNIQUE_IDENTIFIER, Value::text_string(value))
 }
 
 fn with_structure<R>(
