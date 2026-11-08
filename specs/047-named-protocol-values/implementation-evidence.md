@@ -316,3 +316,19 @@ also loaded the actual Linux and Windows JaCoCo reports from run `42436222557`
 and retained 115 production sources from each while excluding the generated
 table. The remote CI rerun on the updated PR is still required to confirm the
 coverage gate and full matrix.
+
+## Hosted cross-platform closeout (2026-11-08)
+
+The complete CI run for PR #139, run `42441188505` on head
+`dbb9eba7368d19d5d1a59ba529404f8f6e4e3052`, completed successfully. It had 35
+successful jobs, three conditionally skipped jobs, and no failures. The Rust
+1.94 and stable core matrix passed on Ubuntu, Windows, and macOS; C consumers
+passed on all three platforms; Java/JNI and Python integration passed on all
+three platforms; Ubuntu, Windows, and macOS Rust coverage passed; and
+`Coverage gate / selected scopes`, normative inventory, and all three
+script-contract jobs passed. CodeQL run `42441188508`, zizmor run
+`42441188586`, and SonarCloud also passed for the same PR head.
+
+This hosted result supplies T007's previously missing cross-platform coverage
+and platform-control evidence. The historical note above describes the status
+before this rerun; T007 is now complete.
