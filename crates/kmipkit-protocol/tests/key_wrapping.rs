@@ -50,9 +50,58 @@ fn wrapping_data_retains_raw_metadata_and_never_performs_crypto() {
         )
         .with_iv_counter_nonce(vec![0xA1, 0xA2])
         .with_mac_signature(vec![0xB1, 0xB2]);
-    assert!(builder.with_raw(|_| ()).is_err());
+    assert_eq!(
+        builder
+            .with_raw(|view| view.children().len())
+            .expect("builder exposes its current incomplete structure"),
+        4
+    );
     let item = builder.into_item().expect("valid wrapping data");
     assert_eq!(item.tag().raw(), 0x0042_0046);
+}
+
+#[test]
+fn key_wrapping_setters_update_decoded_tree_and_preserve_extensions() {
+    let source = KeyWrappingData::try_new(1)
+        .expect("known method")
+        .with_encryption_key_information(
+            EncryptionKeyInformation::try_new("wrap-key".to_owned())
+                .expect("required identifier"),
+        )
+        .into_item()
+        .expect("valid wrapper");
+    let mut children = source.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(Item::try_clone)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("explicit zeroizing copy"),
+        _ => Vec::new(),
+    });
+    children.push(tagged(0x0054_0101, Value::integer(77)));
+    let source = structure_item(0x0042_0046, children);
+
+    let item = KeyWrappingData::try_from_item(source)
+        .expect("read valid wrapper")
+        .with_encoding_option(7)
+        .into_item()
+        .expect("mutated wrapper remains valid");
+
+    item.with_value(|value| match value {
+        ValueView::Structure(structure) => {
+            let fields = structure.children();
+            assert_eq!(fields[0].tag().raw(), 0x0042_009E);
+            assert_eq!(fields[1].tag().raw(), 0x0042_0036);
+            assert_eq!(fields[2].tag().raw(), 0x0054_0101);
+            assert_eq!(fields[3].tag().raw(), 0x0042_00A3);
+            assert_eq!(fields[3].with_value(|v| match v {
+                ValueView::Enumeration(raw) => *raw,
+                _ => 0,
+            }), 7);
+        }
+        _ => panic!("Key Wrapping Data remains a Structure"),
+    });
 }
 
 #[test]
@@ -202,14 +251,18 @@ fn key_information_readers_reject_wrong_tags_types_and_missing_identifiers() {
 
 #[test]
 fn key_information_requires_the_text_string_identifier_from_tables_16_and_17() {
-    assert!(kmipkit_protocol::EncryptionKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::Enumeration(1)
-    )
-    .is_err());
-    assert!(kmipkit_protocol::MacSignatureKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::Integer(0)
-    )
-    .is_err());
+    assert!(
+        kmipkit_protocol::EncryptionKeyInformation::try_from_unique_identifier(
+            kmipkit_protocol::UniqueIdentifier::Enumeration(1)
+        )
+        .is_err()
+    );
+    assert!(
+        kmipkit_protocol::MacSignatureKeyInformation::try_from_unique_identifier(
+            kmipkit_protocol::UniqueIdentifier::Integer(0)
+        )
+        .is_err()
+    );
     for value in [Value::enumeration(1), Value::integer(0)] {
         let source = key_information(0x0042_0036, 0x0042_0094, value);
         assert!(kmipkit_protocol::EncryptionKeyInformation::try_from_item(source).is_err());
