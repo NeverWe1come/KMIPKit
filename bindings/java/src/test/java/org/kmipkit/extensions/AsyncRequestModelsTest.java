@@ -1,11 +1,13 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
@@ -64,6 +66,19 @@ final class AsyncRequestModelsTest {
             assertNestedTagCount(view, 1, OPERATION_TAG, 2);
             assertEquals(0xf1234567L, nestedEnumerationAt(view, 1, 1));
         }
+    }
+
+    @Test
+    void typedResponseCorrelationReadersRejectNullCallbacksBeforeAccessingTheOwner() {
+        assertThrows(InvalidInputException.class,
+                () -> new AsyncCancelResponse(null, new long[8]).withEchoedCorrelationValue(null));
+        assertThrows(InvalidInputException.class,
+                () -> new AsyncPollResponse(null, new long[8]).withAsynchronousCorrelationValue(null));
+        assertThrows(InvalidInputException.class,
+                () -> new AsyncProcessResponse(null, new long[8]).withAsynchronousCorrelationValue(null));
+        assertThrows(InvalidInputException.class,
+                () -> new AsyncQueryAsyncRequestsResponse(null, new long[8])
+                        .withAsynchronousCorrelationValue(null));
     }
 
     private static void assertCorrelation(

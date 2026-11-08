@@ -591,6 +591,96 @@ def test_async_typed_response_readers_return_none_for_other_operations(
         outcome.close()
 
 
+@pytest.mark.parametrize(
+    "corruption",
+    ("absent_with_metadata", "invalid_presence", "invalid_header", "inconsistent_optional"),
+)
+def test_async_typed_response_reader_rejects_malformed_native_output(
+    monkeypatch, corruption: str
+) -> None:
+    operation = 0x19 if corruption == "absent_with_metadata" else 0x1A
+    stubs = _typed_outcome_stubs(operation, is_pending=operation == 0x1A)
+    symbol = "kmipkit_client_async_operation_outcome_poll_response_v1"
+    reader = stubs.__dict__[symbol]
+
+    def malformed(outcome, present, output):
+        status = reader(outcome, present, output)
+        if corruption == "absent_with_metadata":
+            output.abi_version = 1
+            output.struct_size = ffi.sizeof("kmipkit_client_async_operation_response_v1_t")
+        elif corruption == "invalid_presence":
+            present[0] = 2
+        elif corruption == "invalid_header":
+            output.reserved = 1
+        else:
+            output.cancellation_result = 1
+        return status
+
+    monkeypatch.setattr(stubs, symbol, malformed)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            outcome.poll_response()
+    finally:
+        outcome.close()
+
+
+def test_typed_correlation_reader_rejects_non_callable_callback_before_native_call(
+    monkeypatch,
+) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            outcome._with_typed_correlation_value(
+                "kmipkit_client_async_operation_outcome_poll_response_v1", None
+            )
+    finally:
+        outcome.close()
+
+
+def test_typed_correlation_reader_returns_false_when_response_has_no_correlation(
+    monkeypatch,
+) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        response = outcome.poll_response()
+        assert response is not None
+        assert not response.with_asynchronous_correlation_value(lambda _value: None)
+    finally:
+        outcome.close()
+
+
+def test_typed_correlation_cleanup_tolerates_callback_releasing_its_view(monkeypatch) -> None:
+    stubs = _typed_outcome_stubs(0x1A, is_pending=True, correlation=b"wipe-me")
+    wiped_snapshots: list[bytearray] = []
+    fake_ffi = SimpleNamespace(
+        NULL=ffi.NULL,
+        new=ffi.new,
+        sizeof=ffi.sizeof,
+        buffer=lambda _data, _length: b"wipe-me",
+    )
+    monkeypatch.setattr(client, "ffi", fake_ffi)
+    monkeypatch.setattr(client, "lib", stubs)
+    outcome = _wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        response = outcome.poll_response()
+        assert response is not None
+
+        def release_view(view: memoryview) -> None:
+            wiped_snapshots.append(view.obj)
+            view.release()
+
+        assert response.with_asynchronous_correlation_value(release_view)
+        assert wiped_snapshots == [bytearray(7)]
+    finally:
+        outcome.close()
+
+
 def test_async_response_view_uses_the_outcome_lifetime(monkeypatch) -> None:
     stubs = _typed_outcome_stubs(0x1A, is_pending=True)
     monkeypatch.setattr(client, "lib", stubs)

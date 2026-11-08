@@ -33,4 +33,17 @@ final class AsyncOperationMetadataV1Test {
         assertThrows(InvalidInputException.class,
                 () -> new AsyncOperationMetadataV1(values, new byte[0]));
     }
+
+    @Test
+    void rejectsNativeTypedResponseForTheWrongOperation() {
+        long[] values = {1, 0x19, 0, 0, 0, 0, 0, 0};
+        assertThrows(InvalidInputException.class,
+                () -> AsyncOperationOutcome.validateTypedResponseValues(values, 0x1a));
+    }
+
+    @Test
+    void rejectsMissingCancelCorrelationCallback() {
+        assertThrows(InvalidInputException.class,
+                () -> AsyncOperationOutcome.requireCorrelationCallback(null));
+    }
 }

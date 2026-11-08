@@ -204,6 +204,15 @@ final class ClientBatchItemPingQueryMappingTest {
     }
 
     @Test
+    void rejectsMissingNativeResponseHeaderAndRawPayloadStructures() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.requireResponseHeaderTtlv(0));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseOptionalRawTtlv(
+                        new Object[] {new long[] {1}, new long[] {0}}));
+    }
+
+    @Test
     void queryResponseRejectsPresentPayloadWithoutTtlvHandle() {
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseQueryResponse(
                 new Object[] {new long[] {1}, new long[] {0}}));
