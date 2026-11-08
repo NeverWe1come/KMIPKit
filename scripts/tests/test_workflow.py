@@ -789,7 +789,7 @@ class WorkflowContractTests(unittest.TestCase):
         }
         required_by_job = {
             "language-c": (
-                "cargo build --locked -p kmipkit-ffi",
+                "cargo build --locked -p kmipkit-ffi --features coverage-c-consumer",
                 "cmake -G Ninja -S bindings/c -B build/c-consumer",
                 "cmake --build build/c-consumer --config Release",
                 "ctest --test-dir build/c-consumer -C Release --output-on-failure",
