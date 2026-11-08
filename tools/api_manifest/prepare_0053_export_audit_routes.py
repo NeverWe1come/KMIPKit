@@ -557,7 +557,6 @@ def add_standard_attribute_c_declarations(
                 declarations[declarations.index(existing)] = declaration
             continue
         declarations.append(declaration)
-    declarations.sort(key=lambda row: (row.get("packageId", ""), row.get("exportName", "")))
     result["publicDeclarations"] = declarations
     return result
 
@@ -872,19 +871,30 @@ def merge_declarations(
     if not isinstance(current, list):
         raise ResolutionError("additional route input lacks publicDeclarations")
     prefix = "KMIPKIT-0053:export:"
+    imported_ids = {row["declarationId"] for row in declarations}
     current = [
         row for row in current
         if not str(row.get("declarationId", "")).startswith(prefix)
+        or row.get("declarationId") in imported_ids
     ]
     by_id = {row.get("declarationId"): row for row in current}
     by_export = {(row.get("packageId"), row.get("exportName")): row for row in current}
-    for declaration in declarations:
+    for declaration in sorted(
+        declarations, key=lambda row: (row["packageId"], row["exportName"])
+    ):
         key = (declaration["packageId"], declaration["exportName"])
         existing_id = by_id.get(declaration["declarationId"])
         existing_export = by_export.get(key)
         if existing_export is not None:
             if existing_id is not None and existing_id is not existing_export:
                 raise ResolutionError("imported declaration ID conflicts with another reviewed route")
+            if str(existing_export.get("declarationId", "")).startswith(prefix):
+                previous_id = existing_export.get("declarationId")
+                current[current.index(existing_export)] = declaration
+                by_id.pop(previous_id, None)
+                by_id[declaration["declarationId"]] = declaration
+                by_export[key] = declaration
+                continue
             exact_route_match = all(
                 existing_export.get(field) == declaration.get(field)
                 for field in (
@@ -918,7 +928,6 @@ def merge_declarations(
             current.append(declaration)
             by_id[declaration["declarationId"]] = declaration
             by_export[key] = declaration
-    current.sort(key=lambda row: (row.get("packageId", ""), row.get("exportName", "")))
     result["publicDeclarations"] = current
     current_exclusions = result.get("approvedExclusions", [])
     if not isinstance(current_exclusions, list):
@@ -926,7 +935,9 @@ def merge_declarations(
     exclusions_by_export = {
         (row.get("packageId"), row.get("exportName")): row for row in current_exclusions
     }
-    for exclusion in exclusions or []:
+    for exclusion in sorted(
+        exclusions or [], key=lambda row: (row["packageId"], row["exportName"])
+    ):
         key = exclusion["packageId"], exclusion["exportName"]
         previous = exclusions_by_export.get(key)
         if previous is not None and previous != exclusion:
@@ -937,9 +948,6 @@ def merge_declarations(
         if previous is None:
             current_exclusions.append(exclusion)
             exclusions_by_export[key] = exclusion
-    current_exclusions.sort(
-        key=lambda row: (row.get("packageId", ""), row.get("exportName", ""))
-    )
     result["approvedExclusions"] = current_exclusions
     return result
 
@@ -1060,7 +1068,6 @@ def expand_java_stale_mappings(
             if existing is None:
                 declarations.append(clone)
     result.pop("javaStaleMappings", None)
-    declarations.sort(key=lambda row: (row.get("packageId", ""), row.get("exportName", "")))
     return result
 
 

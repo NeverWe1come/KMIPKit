@@ -18051,67 +18051,6 @@
       }
     },
     {
-      "declarationId": "KMIPKIT-0053:export:946cd939aa398dd68a5ca060",
-      "packageId": "java-kmipkit",
-      "kind": "java-member",
-      "exportName": "org.kmipkit.protocol.CryptographicParameters.Builder.close",
-      "capabilityId": "typed_cryptographic_parameters",
-      "requirementIds": [
-        "KMIPKIT-0050-FR-001",
-        "KMIPKIT-0053-FR-004",
-        "KMIPKIT-0053-FR-009",
-        "KMIPKIT-0053-FR-010",
-        "KMIPKIT-0053-FR-012"
-      ],
-      "declarationState": "verified",
-      "parityScope": "four-language",
-      "languageMappings": {
-        "java": {
-          "packageId": "java-kmipkit",
-          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.close"
-        },
-        "c": {
-          "packageId": "c-kmipkit",
-          "name": "kmipkit_cryptographic_parameters_release"
-        },
-        "rust": {
-          "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::CryptographicParametersBuilder"
-        },
-        "python": {
-          "packageId": "python-kmipkit",
-          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close"
-        }
-      },
-      "parityEvidenceIds": [
-        "bindings/c/include/kmipkit.h",
-        "bindings/c/tests/authentication_consumer.c",
-        "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java",
-        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
-        "bindings/python/src/kmipkit/cryptographic_parameters.py",
-        "bindings/python/tests/test_parameters_authentication_parity.py",
-        "crates/kmipkit-ffi/src/extension_registry/cryptographic_parameters.rs",
-        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
-        "crates/kmipkit-protocol/src/credential/secret.rs",
-        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
-        "crates/kmipkit-protocol/tests/credential_secret.rs"
-      ],
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "mappingSemantics": "secret-buffer-wipe",
-      "lifecycleSemanticsByLanguage": {
-        "rust": "wipe-on-final-owner-drop",
-        "c": "release-shared-reference-wipe-on-final-owner-drop",
-        "java": "wipe-owned-copy-on-close",
-        "python": "wipe-owned-copy-on-close"
-      }
-    },
-    {
       "declarationId": "cryptographic-parameters-field-builder-java:counter_length",
       "packageId": "java-kmipkit",
       "kind": "java-member",
@@ -48696,6 +48635,67 @@
         "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
       },
       "candidateSpecId": "KMIPKIT-0053"
+    },
+    {
+      "declarationId": "KMIPKIT-0053:export:946cd939aa398dd68a5ca060",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.Builder.close",
+      "capabilityId": "typed_cryptographic_parameters",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-001",
+        "KMIPKIT-0053-FR-004",
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-010",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "languageMappings": {
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.protocol.CryptographicParameters.Builder.close"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_cryptographic_parameters_release"
+        },
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::CryptographicParametersBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.cryptographic_parameters.CryptographicParametersBuilder.close"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/include/kmipkit.h",
+        "bindings/c/tests/authentication_consumer.c",
+        "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java",
+        "bindings/java/src/test/java/org/kmipkit/typed/ParametersAuthenticationParityTest.java",
+        "bindings/python/src/kmipkit/cryptographic_parameters.py",
+        "bindings/python/tests/test_parameters_authentication_parity.py",
+        "crates/kmipkit-ffi/src/extension_registry/cryptographic_parameters.rs",
+        "crates/kmipkit-ffi/tests/support/parameters_auth_0053_tests.rs",
+        "crates/kmipkit-protocol/src/credential/secret.rs",
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+        "crates/kmipkit-protocol/tests/credential_secret.rs"
+      ],
+      "candidateSpecId": "KMIPKIT-0053",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "status": "Approved",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "mappingSemantics": "secret-buffer-wipe",
+      "lifecycleSemanticsByLanguage": {
+        "rust": "wipe-on-final-owner-drop",
+        "c": "release-shared-reference-wipe-on-final-owner-drop",
+        "java": "wipe-owned-copy-on-close",
+        "python": "wipe-owned-copy-on-close"
+      }
     }
   ],
   "types": [
@@ -136672,35 +136672,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-80707d76c3b61c86089f",
-      "packageId": "rust-kmipkit-client",
-      "exportName": "kmipkit_client::ClientRequest::validation_report",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
       "declarationId": "rust-observed-dcf5dfa5a8146d422821",
       "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::ActivateRequest as kmipkit_protocol::validation::typed_requests::ValidateKmipRequest>::SCHEMA",
@@ -148475,67 +148446,9 @@
       ]
     },
     {
-      "declarationId": "rust-observed-149e6966892a5ca90025",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidateKmipRequest",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
       "declarationId": "rust-observed-b62dfa4129d3dc083904",
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ValidateKmipRequest::SCHEMA",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-b50a08d0ad890d23ded8",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidateKmipRequest::validate",
       "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
       "candidateSpecId": "KMIPKIT-0053",
       "approvalSource": {
@@ -148594,151 +148507,6 @@
       "declarationId": "rust-observed-eeb0993dbae1aec160f4",
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ValidationCode::as_str",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-37767a3a2f5de1cb8a2c",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationIssue",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-9fe786909ed2d72adaf3",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationIssue::code",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-8a91b98eef6a203948a5",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationIssue::path",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-d66fdfb400a1e4890a22",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationIssue::severity",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-ebe17e83c126a398c92a",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationIssue::source",
       "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
       "candidateSpecId": "KMIPKIT-0053",
       "approvalSource": {
@@ -149116,93 +148884,6 @@
       "declarationId": "rust-observed-01b526b3e7fe266abacf",
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ValidationPathSegment::Tag::0",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-fca6a9089f8fadd6a3df",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationReport",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-c84072d37946dadf6a1b",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationReport::is_valid",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-4ba9f3ab83db5c57a552",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::ValidationReport::issues",
       "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
       "candidateSpecId": "KMIPKIT-0053",
       "approvalSource": {
@@ -149696,35 +149377,6 @@
       "declarationId": "rust-observed-ad97e757aa1d1e73fc35",
       "packageId": "rust-kmipkit-protocol",
       "exportName": "kmipkit_protocol::ValidationSourceRef::identifier",
-      "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
-      "candidateSpecId": "KMIPKIT-0053",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/053-api-parity-facade/approval-record.md",
-        "status": "Approved",
-        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
-      },
-      "evidencePaths": [
-        "specification/api/public-api.json",
-        "specs/051-pre-send-validation/spec.md",
-        "specs/053-api-parity-facade/spec.md",
-        "specs/053-api-parity-facade/gap-matrix.md",
-        "specs/053-api-parity-facade/reports/rust-export-report-2026-11-07.json",
-        "crates/kmipkit-protocol/src/validation/schema.rs",
-        "crates/kmipkit-protocol/src/validation/schemas_generated.rs",
-        "crates/kmipkit-protocol/src/validation/typed_requests.rs",
-        "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-ffi/src/extension_registry/request_validation.rs",
-        "bindings/c/tests/request_validation_consumer.c",
-        "bindings/java/src/test/java/org/kmipkit/ValidationParityTest.java",
-        "bindings/python/tests/test_validation_parity.py",
-        "crates/kmipkit-protocol/tests/unit/typed_request_validation_tests.rs"
-      ]
-    },
-    {
-      "declarationId": "rust-observed-da66a966650f80290347",
-      "packageId": "rust-kmipkit-protocol",
-      "exportName": "kmipkit_protocol::validate_structure",
       "reason": "Superseded by the exact KMIPKIT-0053 validation mapping or exclusion recorded for this Rust export.",
       "candidateSpecId": "KMIPKIT-0053",
       "approvalSource": {
