@@ -182,7 +182,10 @@ class TagAllocationRenderingTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),
             ROOT,
         )
-        from tools.normative_catalog.generate_ttlv_tags import load_versioned_tag_allocations
+        from tools.normative_catalog.generate_ttlv_tags import (
+            _tag_allocation_ranges,
+            load_versioned_tag_allocations,
+        )
 
         versioned_tags = load_versioned_tag_allocations(ROOT)
         rendered = self._render(catalog, versioned_tags=versioned_tags)
@@ -268,6 +271,13 @@ class TagAllocationRenderingTests(unittest.TestCase):
         )
         for _, value in expected_tags:
             self._assert_allocation_near(rendered, value, "assigned")
+        self.assertNotIn((0x4201CC, "assigned"), versioned_tags)
+        self.assertTrue(
+            any(
+                lower <= 0x4201CC <= upper and allocation == "reserved"
+                for lower, upper, allocation in _tag_allocation_ranges(catalog)
+            )
+        )
 
     def test_keeps_exact_assignments_visible_alongside_overlapping_reserved_range(self) -> None:
         rendered = self._render(small_catalog())
