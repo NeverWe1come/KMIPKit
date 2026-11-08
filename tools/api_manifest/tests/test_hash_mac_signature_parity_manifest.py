@@ -37,7 +37,34 @@ VERIFIED_RESPONSE_VALUE_EXPORTS = {
     "kmipkit::protocol::SignatureVerifyResponse::validity_indicator",
     "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
 }
-T053_VERIFIED_IDENTITIES: set[tuple[str, str]] = set()
+T053_VERIFIED_IDENTITIES = {
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse"),
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse"),
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.macVerifyResponse"),
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.signatureVerifyResponse"),
+    ("rust-kmipkit", "kmipkit::Client::hash_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::mac_verify_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::mac_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::sign_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::signature_verify_with_options"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::MacVerify"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::MacVerify::0"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::SignatureVerify"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::SignatureVerify::0"),
+    ("rust-kmipkit", "kmipkit::ClientOperation::MacVerify"),
+    ("rust-kmipkit", "kmipkit::ClientOperation::SignatureVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::hash_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::mac_verify_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::mac_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::sign_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::signature_verify_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::MacVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::MacVerify::0"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::SignatureVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::SignatureVerify::0"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientOperation::MacVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientOperation::SignatureVerify"),
+}
 NORMATIVE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.32-001",
     "KMIPKIT-REQ-SPEC-6.1.33-001-001",
@@ -208,6 +235,11 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                                 declaration["exportName"],
                             )
                             in T101_VERIFIED_IDENTITIES
+                            or (
+                                declaration["packageId"],
+                                declaration["exportName"],
+                            )
+                            in T053_VERIFIED_IDENTITIES
                             or declaration["exportName"].endswith("Response::with_ttlv")
                             or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
                             else "declared"
