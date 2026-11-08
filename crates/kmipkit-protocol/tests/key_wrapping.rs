@@ -119,10 +119,14 @@ fn key_wrapping_setters_update_decoded_tree_and_preserve_extensions() {
 
 #[test]
 fn wrapping_data_requires_encryption_or_mac_signature_key_information() {
-    let constructed = KeyWrappingData::try_new(1)
-        .expect("known Wrapping Method")
-        .into_item();
-    assert!(constructed.is_err());
+    let constructed = KeyWrappingData::try_new(1).expect("known Wrapping Method");
+    assert_eq!(
+        constructed
+            .with_raw(|view| view.children().len())
+            .expect("incomplete builder can be inspected"),
+        1
+    );
+    assert!(constructed.into_item().is_err());
 
     let mut children = Structure::new();
     children

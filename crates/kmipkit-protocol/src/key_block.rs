@@ -138,7 +138,10 @@ impl KeyBlock {
         None
     }
 
-    /// Lends a parsed Key Block's Structure for callback-scoped inspection.
+    /// Lends the current Key Block Structure for callback-scoped inspection.
+    ///
+    /// Builders are inspectable before completion; final conversion still
+    /// validates all required and conditional fields.
     pub fn with_raw<R>(
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,

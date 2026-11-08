@@ -205,6 +205,20 @@ fn key_block_and_key_value_accessors_cover_builder_and_reader_forms() {
 }
 
 #[test]
+fn incomplete_key_block_is_inspectable_but_conversion_still_validates() {
+    let builder = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Raw format")
+        .with_cryptographic_properties(Some(3), None);
+    assert_eq!(
+        builder
+            .with_raw(|view| view.children().len())
+            .expect("incomplete builder can be inspected"),
+        2
+    );
+    assert!(builder.try_into_item().is_err());
+}
+
+#[test]
 fn key_block_setters_update_decoded_tree_and_preserve_extensions() {
     let source = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("Raw format")

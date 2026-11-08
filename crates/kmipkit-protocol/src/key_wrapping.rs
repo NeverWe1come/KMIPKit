@@ -227,7 +227,10 @@ impl KeyWrappingData {
         wrapping_method.ok_or(ManagedObjectError::IncorrectFieldType)
     }
 
-    /// Lends the full structure for callback-scoped inspection.
+    /// Lends the current structure for callback-scoped inspection.
+    ///
+    /// Builders are inspectable before completion; final conversion still
+    /// validates the required key-information fields.
     pub fn with_raw<R>(
         &self,
         callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
