@@ -79,9 +79,7 @@ mod tests {
 
                 let body = req_str.split("\r\n\r\n").nth(1).unwrap_or("");
 
-                let (status, resp_body) = handle_mock_alibaba(
-                    method, path, body, &state,
-                );
+                let (status, resp_body) = handle_mock_alibaba(method, path, body, &state);
 
                 let response = format!(
                     "HTTP/1.1 {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -103,7 +101,9 @@ mod tests {
         let b64 = &base64::engine::general_purpose::STANDARD;
 
         // 1. CreateKey / CreateSecret
-        if method == "POST" && (path.starts_with("/?Action=CreateKey") || path.contains("Action=CreateKey")) {
+        if method == "POST"
+            && (path.starts_with("/?Action=CreateKey") || path.contains("Action=CreateKey"))
+        {
             let mut parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             let key_id = parsed
@@ -116,14 +116,20 @@ mod tests {
             parsed["KeyState"] = serde_json::json!("Enabled");
             parsed["KeySpec"] = serde_json::json!("Aliyun_AES_256");
 
-            state.keys.lock().unwrap().insert(key_id.clone(), parsed.clone());
+            state
+                .keys
+                .lock()
+                .unwrap()
+                .insert(key_id.clone(), parsed.clone());
             let resp = serde_json::json!({
                 "KeyMetadata": parsed
             });
             return ("200 OK", resp.to_string());
         }
 
-        if method == "POST" && (path.starts_with("/?Action=CreateSecret") || path.contains("Action=CreateSecret")) {
+        if method == "POST"
+            && (path.starts_with("/?Action=CreateSecret") || path.contains("Action=CreateSecret"))
+        {
             let mut parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             let sec_name = parsed
@@ -133,7 +139,11 @@ mod tests {
                 .to_string();
             parsed["SecretName"] = serde_json::json!(sec_name.clone());
 
-            state.keys.lock().unwrap().insert(sec_name.clone(), parsed.clone());
+            state
+                .keys
+                .lock()
+                .unwrap()
+                .insert(sec_name.clone(), parsed.clone());
             let resp = serde_json::json!({
                 "SecretName": sec_name,
                 "Arn": format!("acs:kms:cn-hangzhou:123456:secret/{sec_name}")
@@ -161,7 +171,10 @@ mod tests {
         if method == "POST" && (path.contains("Action=GetSecretValue")) {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let sec_name = parsed.get("SecretName").and_then(|v| v.as_str()).unwrap_or("");
+            let sec_name = parsed
+                .get("SecretName")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             if let Some(s) = state.keys.lock().unwrap().get(sec_name) {
                 let resp = serde_json::json!({
                     "SecretName": sec_name,
@@ -179,7 +192,10 @@ mod tests {
         if method == "POST" && (path.contains("Action=Encrypt")) {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let pt_b64 = parsed.get("Plaintext").and_then(|v| v.as_str()).unwrap_or("");
+            let pt_b64 = parsed
+                .get("Plaintext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let ct = format!("ali:v1:{}", b64.encode(format!("encrypted:{}", pt_b64)));
             let resp = serde_json::json!({
                 "CiphertextBlob": ct,
@@ -191,7 +207,10 @@ mod tests {
         if method == "POST" && (path.contains("Action=Decrypt")) {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let ct = parsed.get("CiphertextBlob").and_then(|v| v.as_str()).unwrap_or("");
+            let ct = parsed
+                .get("CiphertextBlob")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let stripped = ct.trim_start_matches("ali:v1:");
             let decoded = b64.decode(stripped).unwrap_or_default();
             let dec_str = String::from_utf8_lossy(&decoded);
@@ -227,7 +246,10 @@ mod tests {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             let key_id = parsed.get("KeyId").and_then(|v| v.as_str()).unwrap_or("");
-            let desc = parsed.get("Description").and_then(|v| v.as_str()).unwrap_or("");
+            let desc = parsed
+                .get("Description")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             if let Some(k) = state.keys.lock().unwrap().get_mut(key_id) {
                 k["Description"] = serde_json::json!(desc);
             }
@@ -246,7 +268,9 @@ mod tests {
         }
 
         // 7. ScheduleKeyDeletion / DeleteSecret
-        if method == "POST" && (path.contains("Action=ScheduleKeyDeletion") || path.contains("Action=DeleteSecret")) {
+        if method == "POST"
+            && (path.contains("Action=ScheduleKeyDeletion") || path.contains("Action=DeleteSecret"))
+        {
             let parsed: serde_json::Value =
                 serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             let key_id = parsed
@@ -264,8 +288,8 @@ mod tests {
                 .keys
                 .lock()
                 .unwrap()
-                .iter()
-                .map(|(k, _)| serde_json::json!({"KeyId": k, "KeyArn": format!("acs:kms:cn-hangzhou:123456:key/{k}")}))
+                .keys()
+                .map(|k| serde_json::json!({"KeyId": k, "KeyArn": format!("acs:kms:cn-hangzhou:123456:key/{k}")}))
                 .collect();
             let resp = serde_json::json!({
                 "Keys": { "Key": keys },
