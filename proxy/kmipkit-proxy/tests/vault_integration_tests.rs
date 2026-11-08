@@ -35,9 +35,7 @@ mod tests {
     use kmipkit_proxy::AutoPki;
     use kmipkit_proxy::config::{ProxyConfig, VaultConfig};
     use kmipkit_proxy::providers::vault::VaultKmsProvider;
-    use kmipkit_proxy::providers::{
-        CloudKmsProvider, CloudTagMap, CreateKeySpec, CryptoParams,
-    };
+    use kmipkit_proxy::providers::{CloudKmsProvider, CloudTagMap, CreateKeySpec, CryptoParams};
     use kmipkit_proxy::server::ProxyServer;
     use kmipkit_transport::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TimeoutLimit, TimeoutPolicy,
@@ -104,9 +102,14 @@ mod tests {
         let b64 = &base64::engine::general_purpose::STANDARD;
 
         // 1. Transit create key: POST /v1/transit/keys/{name}
-        if method == "POST" && path.starts_with("/v1/transit/keys/") && !path.ends_with("/config") && !path.ends_with("/rotate") {
+        if method == "POST"
+            && path.starts_with("/v1/transit/keys/")
+            && !path.ends_with("/config")
+            && !path.ends_with("/rotate")
+        {
             let key_name = path.trim_start_matches("/v1/transit/keys/").to_string();
-            let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or(serde_json::json!({}));
+            let parsed: serde_json::Value =
+                serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             state.transit_keys.lock().unwrap().insert(key_name, parsed);
             return ("200 OK", serde_json::json!({"data": {}}).to_string());
         }
@@ -131,7 +134,10 @@ mod tests {
                 });
                 return ("200 OK", resp.to_string());
             }
-            return ("404 Not Found", serde_json::json!({"errors": ["key not found"]}).to_string());
+            return (
+                "404 Not Found",
+                serde_json::json!({"errors": ["key not found"]}).to_string(),
+            );
         }
 
         // 3. Transit export key: GET /v1/transit/export/{type}/{name}
@@ -165,8 +171,12 @@ mod tests {
 
         // 6. Transit encrypt: POST /v1/transit/encrypt/{name}
         if method == "POST" && path.starts_with("/v1/transit/encrypt/") {
-            let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let pt_b64 = parsed.get("plaintext").and_then(|v| v.as_str()).unwrap_or("");
+            let parsed: serde_json::Value =
+                serde_json::from_str(body).unwrap_or(serde_json::json!({}));
+            let pt_b64 = parsed
+                .get("plaintext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let ct_val = format!("vault:v1:{}", b64.encode(format!("encrypted:{}", pt_b64)));
             let resp = serde_json::json!({
                 "data": {
@@ -178,8 +188,12 @@ mod tests {
 
         // 7. Transit decrypt: POST /v1/transit/decrypt/{name}
         if method == "POST" && path.starts_with("/v1/transit/decrypt/") {
-            let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or(serde_json::json!({}));
-            let ct_val = parsed.get("ciphertext").and_then(|v| v.as_str()).unwrap_or("");
+            let parsed: serde_json::Value =
+                serde_json::from_str(body).unwrap_or(serde_json::json!({}));
+            let ct_val = parsed
+                .get("ciphertext")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let stripped = ct_val.trim_start_matches("vault:v1:");
             let decoded = b64.decode(stripped).unwrap_or_default();
             let dec_str = String::from_utf8_lossy(&decoded);
@@ -228,7 +242,8 @@ mod tests {
         // 11. KV v2 metadata: POST/PATCH /v1/secret/metadata/*
         if (method == "POST" || method == "PATCH") && path.starts_with("/v1/secret/metadata/") {
             let key = path.trim_start_matches("/v1/secret/metadata/").to_string();
-            let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or(serde_json::json!({}));
+            let parsed: serde_json::Value =
+                serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             state.kv_metadata.lock().unwrap().insert(key, parsed);
             return ("200 OK", serde_json::json!({"data": {}}).to_string());
         }
@@ -237,7 +252,10 @@ mod tests {
         if method == "GET" && path.starts_with("/v1/secret/metadata/") {
             let key = path.trim_start_matches("/v1/secret/metadata/");
             if let Some(meta) = state.kv_metadata.lock().unwrap().get(key) {
-                let custom_metadata = meta.get("custom_metadata").cloned().unwrap_or(serde_json::json!({}));
+                let custom_metadata = meta
+                    .get("custom_metadata")
+                    .cloned()
+                    .unwrap_or(serde_json::json!({}));
                 let resp = serde_json::json!({
                     "data": {
                         "created_time": "2026-11-08T10:00:00Z",
@@ -246,7 +264,10 @@ mod tests {
                 });
                 return ("200 OK", resp.to_string());
             }
-            return ("404 Not Found", serde_json::json!({"errors": ["metadata not found"]}).to_string());
+            return (
+                "404 Not Found",
+                serde_json::json!({"errors": ["metadata not found"]}).to_string(),
+            );
         }
 
         // 13. KV v2 metadata list: LIST or GET with ?list=true
@@ -270,7 +291,8 @@ mod tests {
         // 15. KV v2 data: POST /v1/secret/data/*
         if method == "POST" && path.starts_with("/v1/secret/data/") {
             let key = path.trim_start_matches("/v1/secret/data/").to_string();
-            let parsed: serde_json::Value = serde_json::from_str(body).unwrap_or(serde_json::json!({}));
+            let parsed: serde_json::Value =
+                serde_json::from_str(body).unwrap_or(serde_json::json!({}));
             state.kv_data.lock().unwrap().insert(key, parsed);
             return ("200 OK", serde_json::json!({"data": {}}).to_string());
         }
@@ -284,7 +306,10 @@ mod tests {
                 });
                 return ("200 OK", resp.to_string());
             }
-            return ("404 Not Found", serde_json::json!({"errors": ["data not found"]}).to_string());
+            return (
+                "404 Not Found",
+                serde_json::json!({"errors": ["data not found"]}).to_string(),
+            );
         }
 
         // 17. KV v2 data delete: DELETE /v1/secret/data/*
@@ -294,7 +319,10 @@ mod tests {
             return ("204 No Content", String::new());
         }
 
-        ("404 Not Found", serde_json::json!({"errors": ["unhandled mock path"]}).to_string())
+        (
+            "404 Not Found",
+            serde_json::json!({"errors": ["unhandled mock path"]}).to_string(),
+        )
     }
 
     fn build_client(endpoint: Endpoint, pki: &AutoPki, encoding: WireEncoding) -> Client {
