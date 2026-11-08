@@ -1,9 +1,11 @@
 //! Google Cloud KMS and Secret Manager provider connector.
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "gcp")]
 use std::collections::BTreeMap;
 
 use async_trait::async_trait;
+#[cfg(feature = "gcp")]
 use base64::Engine;
 use zeroize::Zeroizing;
 
@@ -13,6 +15,7 @@ use super::{
 };
 use crate::ProxyError;
 use crate::config::GcpConfig;
+#[cfg(feature = "gcp")]
 use crate::envelope::{AutoEnvelope, WrappedEnvelopeKey};
 
 #[cfg(feature = "gcp")]
