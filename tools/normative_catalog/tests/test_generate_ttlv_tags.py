@@ -177,6 +177,24 @@ class TagAllocationRenderingTests(unittest.TestCase):
             self._assert_allocation_near(rendered, lower, allocation)
             self._assert_allocation_near(rendered, upper, allocation)
 
+    def test_renders_all_twenty_kmip30_link_tags_as_assigned(self) -> None:
+        catalog = load_validated_catalog(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),
+            ROOT,
+        )
+        rendered = self._render(catalog)
+
+        # KMIP 3.0 §4.35.1–4.35.20 and §11.58. These tags are part of the
+        # supported-version union even where KMIP 2.1 leaves them unallocated.
+        link_tags = (
+            "420190", "420191", "420192", "420193", "420194", "420195",
+            "420196", "420197", "420198", "420199", "42019A", "42019B",
+            "42019C", "42019D", "4201A0", "4201A5", "4201B3", "4201B4",
+            "4201B5", "4201BC",
+        )
+        for tag in link_tags:
+            self._assert_allocation_near(rendered, tag, "assigned")
+
     def test_keeps_exact_assignments_visible_alongside_overlapping_reserved_range(self) -> None:
         rendered = self._render(small_catalog())
 
