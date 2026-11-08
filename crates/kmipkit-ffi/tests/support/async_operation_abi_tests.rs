@@ -597,6 +597,60 @@ fn cancel_and_process_typed_readers_are_called_from_the_compiled_c_consumer() {
 }
 
 #[test]
+fn failed_cancel_response_does_not_expose_success_only_echo_fields() {
+    let correlation = [0x00, 0xff, 0x80, 0x23];
+    let response = failed_cancel_response();
+    let (client, peer, exchange_count) = client_with_responses(vec![response]);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut outcome = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_execute_cancel(
+            client_handle,
+            correlation.as_ptr(),
+            u64::try_from(correlation.len()).expect("correlation length fits ABI"),
+            limits_handle,
+            &raw mut outcome,
+        ),
+        SUCCESS
+    );
+    peer.join().expect("the one-exchange test peer completes");
+
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+    assert!(!outcome.is_null());
+    let mut present = u8::MAX;
+    let mut response = kmipkit_client_async_operation_response_v1_t::default();
+    assert_eq!(
+        // SAFETY: `outcome` is live and the output values are separate writable locals.
+        unsafe {
+            kmipkit_client_async_operation_outcome_cancel_response_v1(
+                outcome,
+                &raw mut present,
+                &raw mut response,
+            )
+        },
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(response.result_status, 1);
+    assert_eq!(response.has_cancellation_result, 0);
+    assert_eq!(response.has_asynchronous_correlation_value, 0);
+    assert!(response.asynchronous_correlation_value.data.is_null());
+    assert_eq!(response.asynchronous_correlation_value.length, 0);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+#[test]
 fn query_async_requests_with_options_executes_and_returns_one_outcome() {
     let expected_correlation = [0x00, 0xff, 0x80];
     let response = query_async_requests_response(&expected_correlation, 2);
@@ -763,6 +817,33 @@ fn cancel_response(correlation: &[u8]) -> Vec<u8> {
                 ttlv_enumeration(0x0042_0012, 1),
             ],
         )),
+    )
+}
+
+fn failed_cancel_response() -> Vec<u8> {
+    ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x19),
+                    ttlv_enumeration(0x0042_007f, 1),
+                    ttlv_enumeration(0x0042_007e, 5),
+                ],
+            ),
+        ],
     )
 }
 
