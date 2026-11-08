@@ -1,4 +1,4 @@
-//! Typed KMIP 2.1 managed-object structures from §§2.1–2.9, Tables 2–10.
+//! Typed KMIP 2.1 user objects and KMIP 3.0 system credential objects.
 #![allow(clippy::missing_errors_doc)] // Fallible constructors share the sanitized schema error documented below.
 
 use std::{error::Error, fmt};
@@ -10,6 +10,10 @@ use kmipkit_ttlv::{
 use crate::{ObjectType, SplitKeyMethod};
 
 use crate::key_block::KeyBlock;
+use crate::system_credential_objects::{
+    DeviceCredentialObject, HashedPasswordCredentialObject, OneTimePasswordCredentialObject,
+    PasswordCredentialObject,
+};
 
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
@@ -609,6 +613,14 @@ pub enum ManagedObject {
     Certificate(Certificate),
     /// Certificate Request object (Object Type 10).
     CertificateRequest(CertificateRequest),
+    /// Password Credential system object (KMIP 3.0 Object Type 13).
+    PasswordCredential(PasswordCredentialObject),
+    /// Device Credential system object (KMIP 3.0 Object Type 14).
+    DeviceCredential(DeviceCredentialObject),
+    /// One Time Password Credential system object (KMIP 3.0 Object Type 15).
+    OneTimePasswordCredential(OneTimePasswordCredentialObject),
+    /// Hashed Password Credential system object (KMIP 3.0 Object Type 16).
+    HashedPasswordCredential(HashedPasswordCredentialObject),
     /// Opaque Object (Object Type 8).
     OpaqueObject(OpaqueObject),
     /// PGP Key object (Object Type 9).
@@ -645,6 +657,12 @@ impl ManagedObject {
             8 => OpaqueObject::try_from_item(item).map(Self::OpaqueObject),
             9 => PgpKey::try_from_item(item).map(Self::PgpKey),
             10 => CertificateRequest::try_from_item(item).map(Self::CertificateRequest),
+            13 => PasswordCredentialObject::try_from_item(item).map(Self::PasswordCredential),
+            14 => DeviceCredentialObject::try_from_item(item).map(Self::DeviceCredential),
+            15 => OneTimePasswordCredentialObject::try_from_item(item)
+                .map(Self::OneTimePasswordCredential),
+            16 => HashedPasswordCredentialObject::try_from_item(item)
+                .map(Self::HashedPasswordCredential),
             _ => {
                 validate_any_structure(&item)?;
                 if known_object_tag(item.tag().raw()) {
@@ -660,8 +678,10 @@ impl ManagedObject {
     /// # Errors
     /// Returns an error if the Object Type or Item tag belongs to a known object.
     pub fn unknown(object_type: ObjectType, item: Item) -> Result<Self, ManagedObjectError> {
-        if matches!(object_type.raw(), 1 | 2 | 3 | 4 | 5 | 7 | 8 | 9 | 10)
-            || known_object_tag(item.tag().raw())
+        if matches!(
+            object_type.raw(),
+            1 | 2 | 3 | 4 | 5 | 7 | 8 | 9 | 10 | 13 | 14 | 15 | 16
+        ) || known_object_tag(item.tag().raw())
         {
             return Err(ManagedObjectError::MismatchedObjectType);
         }
@@ -682,6 +702,10 @@ impl ManagedObject {
             Self::OpaqueObject(_) => ObjectType::from_raw(8),
             Self::PgpKey(_) => ObjectType::from_raw(9),
             Self::CertificateRequest(_) => ObjectType::from_raw(10),
+            Self::PasswordCredential(_) => ObjectType::PASSWORD_CREDENTIAL,
+            Self::DeviceCredential(_) => ObjectType::DEVICE_CREDENTIAL,
+            Self::OneTimePasswordCredential(_) => ObjectType::ONE_TIME_PASSWORD_CREDENTIAL,
+            Self::HashedPasswordCredential(_) => ObjectType::HASHED_PASSWORD_CREDENTIAL,
             Self::Unknown { object_type, .. } => *object_type,
         }
     }
@@ -692,6 +716,10 @@ impl ManagedObject {
         match self {
             Self::Certificate(value) => value.into_item(),
             Self::CertificateRequest(value) => value.into_item(),
+            Self::PasswordCredential(value) => value.into_item(),
+            Self::DeviceCredential(value) => value.into_item(),
+            Self::OneTimePasswordCredential(value) => value.into_item(),
+            Self::HashedPasswordCredential(value) => value.into_item(),
             Self::OpaqueObject(value) => value.into_item(),
             Self::PgpKey(value) => value.into_item(),
             Self::PrivateKey(value) => value.into_item(),
@@ -719,6 +747,10 @@ impl ManagedObject {
         match self {
             Self::Certificate(value) => value.item.tag().raw(),
             Self::CertificateRequest(value) => value.item.tag().raw(),
+            Self::PasswordCredential(value) => value.with_item(|item| item.tag().raw()),
+            Self::DeviceCredential(value) => value.with_item(|item| item.tag().raw()),
+            Self::OneTimePasswordCredential(value) => value.with_item(|item| item.tag().raw()),
+            Self::HashedPasswordCredential(value) => value.with_item(|item| item.tag().raw()),
             Self::OpaqueObject(value) => value.item.tag().raw(),
             Self::PgpKey(value) => value.item.tag().raw(),
             Self::PrivateKey(value) => value.item.tag().raw(),
@@ -736,6 +768,10 @@ fn known_object_tag(tag: u32) -> bool {
         tag,
         CERTIFICATE
             | CERTIFICATE_REQUEST
+            | 0x0042_01A1
+            | 0x0042_01A6
+            | 0x0042_01A7
+            | 0x0042_01AF
             | OPAQUE_OBJECT
             | PGP_KEY
             | PRIVATE_KEY

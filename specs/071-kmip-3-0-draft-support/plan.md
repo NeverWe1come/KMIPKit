@@ -3,6 +3,10 @@
 ## 1. Architectural Strategy
 
 - In `kmipkit-protocol`:
+  - Tag Enumeration: record all 60 exact assignments from §11.58, Table 605
+    in the checksum-pinned versioned catalog. Do not infer assignments from
+    numeric ranges; the generated supported-version union is allocation data,
+    not a version-specific legality decision.
   - `LinkNormalizer`:
     - Catalog all 20 exact KMIP 3.0 link tags from §11.58 and §§4.35.1–4.35.20; do not assign the `0x0042_0153..=0x0042_0166` range to links (`0x0042_0153` is Object Defaults).
     - Normalize bidirectionally only the 14 explicit semantic equivalents of KMIP 2.1 §11.28, Table 465. Preserve Enumeration and Integer identifiers; reject Text String conversion to KMIP 3.0 because §§4.35.1–4.35.20 do not define it. Reject the six 3.0-only link attributes, Reference/Name Reference conversion to KMIP 2.1, duplicate required fields, and unknown children rather than losing information.

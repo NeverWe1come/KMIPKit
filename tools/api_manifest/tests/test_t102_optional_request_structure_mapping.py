@@ -190,7 +190,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-OTHER_DECLARATIONS_SHA256 = "e42a0846513f16ebba1889a6413f9fa6514974023c5e0e7c5e62a6f498cba884"
+OTHER_DECLARATIONS_SHA256 = "d7cd18f9df6aff2b5d34ba314ad5f1a32e04ec8392930876cd1293d6120f4756"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -379,7 +379,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
         # cannot acquire four-language parity through snapshot normalization.
         for capability, count in (
             ("typed_object_attributes", 286),
-            ("typed_managed_objects_and_key_material", 356),
+            ("typed_managed_objects_and_key_material", 500),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [

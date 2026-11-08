@@ -412,3 +412,39 @@ segments required by the coverage parser.
 
 Hosted PR checks are still pending on the updated head; T019 and TASK-071-008
 remain open until those controls finish.
+
+## KMIP 3.0 Table 605 catalog correction (2026-11-08)
+
+The pinned KMIP 3.0 source assigns 60 exact tags in §11.58, Table 605. The
+earlier versioned catalog listed only its 20 link tags, leaving credential,
+object-class, split-key, and KEM tags unclassified by the generated TTLV
+allocation union. No assignments are inferred from numeric ranges.
+
+- **Red:** commit `36abc5940` adds a test requiring all 60 exact names and wire
+  values, the Table 605 source reference, and preservation of a reserved value.
+  It failed before implementation because the catalog had no Table 605 source
+  metadata and did not contain the complete assignment list.
+- **Green:** commit `0fd8ea58e` adds the remaining exact assignments, validates
+  the pinned Table 605 metadata and exact count, and regenerates the allocation
+  union. The Rust allocation test also checks that the reserved range remains
+  reserved beyond the final Table 605 assignment.
+- **Refactor:** commit `c68aa922b` updates the requirement wording to cover all
+  60 exact assignments, records task and traceability status, and documents
+  the Table 605 catalog scope in KMIPKIT-0071 and the catalog README.
+
+Local verification on the Green code:
+
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_ttlv_tags
+  -q`: 17 passed.
+- `python -B tools/normative_catalog/generate_ttlv_tags.py --write` regenerated
+  the allocation union; `--check` passed.
+- `cargo test -p kmipkit-ttlv --test tag_allocation`: 8 passed.
+- `cargo test -p kmipkit-protocol --all-features`: 1,331 unit tests, integration
+  tests, and 3 doctests passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
+  warnings`, `cargo fmt --all --check`, and `git diff --check` passed.
+- Named-value reconciliation passed; `python -B tools/api_manifest/generate.py
+  --check --repo-root .` verified all 12 generated API outputs.
+
+Coverage and hosted checks have not been rerun for this correction. The PR
+remains draft until the applicable coverage and hosted CI controls pass.
