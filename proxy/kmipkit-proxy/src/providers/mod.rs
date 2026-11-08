@@ -10,6 +10,7 @@ use zeroize::Zeroizing;
 use crate::ProxyError;
 use crate::config::BackendConfig;
 
+pub mod alibaba;
 pub mod aws;
 pub mod azure;
 pub mod gcp;
@@ -509,6 +510,7 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
             &config.infisical,
         )?)),
         "ibm" => Ok(Arc::new(ibm::IbmKmsProvider::new(&config.ibm)?)),
+        "alibaba" => Ok(Arc::new(alibaba::AlibabaKmsProvider::new(&config.alibaba)?)),
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
