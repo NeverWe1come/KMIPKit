@@ -286,6 +286,9 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         self.assertIn("vendor-defined functions", research)
 
     def test_t102_manifest_and_rust_audit_totals_reflect_only_this_ten_path_slice(self) -> None:
+        # KMIPKIT-0047 adds 143 exact versioned value declarations to the
+        # checked-in API inventory; keep the aggregate snapshot current.
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, 11_731)
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"
