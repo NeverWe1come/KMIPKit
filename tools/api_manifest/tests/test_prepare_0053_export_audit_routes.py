@@ -18,6 +18,98 @@ APPROVAL = {
 
 
 class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
+    def test_standard_attribute_preparation_preserves_reviewed_declaration_order(self) -> None:
+        route_data = {
+            "publicDeclarations": [
+                {"declarationId": "z-reviewed", "packageId": "z-package", "exportName": "z"},
+                {"declarationId": "a-reviewed", "packageId": "a-package", "exportName": "a"},
+            ],
+            "removePublicDeclarations": [],
+        }
+
+        prepared = prepare_0053_export_audit_routes.add_standard_attribute_c_declarations(
+            route_data, {"elements": []}
+        )
+
+        self.assertEqual(
+            ["z-reviewed", "a-reviewed"],
+            [row["declarationId"] for row in prepared["publicDeclarations"]],
+        )
+
+    def test_merge_preserves_reviewed_declaration_and_exclusion_order(self) -> None:
+        route_data = {
+            "publicDeclarations": [
+                {"declarationId": "z-reviewed", "packageId": "z-package", "exportName": "z"},
+                {"declarationId": "a-reviewed", "packageId": "a-package", "exportName": "a"},
+            ],
+            "approvedExclusions": [
+                {"packageId": "z-package", "exportName": "z"},
+                {"packageId": "a-package", "exportName": "a"},
+            ],
+        }
+
+        merged = prepare_0053_export_audit_routes.merge_declarations(
+            route_data, [], []
+        )
+
+        self.assertEqual(
+            ["z-reviewed", "a-reviewed"],
+            [row["declarationId"] for row in merged["publicDeclarations"]],
+        )
+        self.assertEqual(
+            ["z-package", "a-package"],
+            [row["packageId"] for row in merged["approvedExclusions"]],
+        )
+
+    def test_merge_refreshes_generated_routes_in_place(self) -> None:
+        route_data = {
+            "publicDeclarations": [
+                {"declarationId": "before", "packageId": "before", "exportName": "before"},
+                {
+                    "declarationId": "KMIPKIT-0053:export:route",
+                    "packageId": "generated",
+                    "exportName": "route",
+                    "kind": "old-kind",
+                },
+                {"declarationId": "after", "packageId": "after", "exportName": "after"},
+            ],
+            "approvedExclusions": [],
+        }
+        refreshed = {
+            "declarationId": "KMIPKIT-0053:export:route",
+            "packageId": "generated",
+            "exportName": "route",
+            "kind": "new-kind",
+        }
+
+        merged = prepare_0053_export_audit_routes.merge_declarations(
+            route_data, [refreshed], []
+        )
+
+        declarations = merged["publicDeclarations"]
+        self.assertEqual(
+            ["before", "KMIPKIT-0053:export:route", "after"],
+            [row["declarationId"] for row in declarations],
+        )
+        self.assertEqual("new-kind", declarations[1]["kind"])
+
+    def test_java_mapping_expansion_preserves_reviewed_declaration_order(self) -> None:
+        route_data = {
+            "publicDeclarations": [
+                {"declarationId": "z-reviewed", "packageId": "z-package", "exportName": "z"},
+                {"declarationId": "a-reviewed", "packageId": "a-package", "exportName": "a"},
+            ]
+        }
+
+        expanded = prepare_0053_export_audit_routes.expand_java_stale_mappings(
+            route_data, []
+        )
+
+        self.assertEqual(
+            ["z-reviewed", "a-reviewed"],
+            [row["declarationId"] for row in expanded["publicDeclarations"]],
+        )
+
     def test_materializes_exact_c_attribute_macro_route_from_catalog(self) -> None:
         export_name = "KMIPKIT_STANDARD_ATTRIBUTE_ACTIVATION_DATE"
         evidence_paths = [
@@ -242,6 +334,12 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         route_path = root / prepare_0053_export_audit_routes.ROUTE_PATH
         manifest_path = root / prepare_0053_export_audit_routes.MANIFEST_PATH
         route_data = json.loads(route_path.read_text(encoding="utf-8"))
+        validation_route_ids = {
+            row["declarationId"]
+            for row in route_data["publicDeclarations"]
+            if row.get("capabilityId") == "request_validation"
+            and row.get("candidateSpecId") == "KMIPKIT-0053"
+        }
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         documents = prepare_0053_export_audit_routes._read_documents(root)
         declarations, exclusions = prepare_0053_export_audit_routes.compile_documents(
@@ -280,6 +378,8 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         merged = prepare_0053_export_audit_routes.merge_declarations(
             route_data, declarations, exclusions
         )
+        merged_ids = {row["declarationId"] for row in merged["publicDeclarations"]}
+        self.assertTrue(validation_route_ids <= merged_ids)
 
         keys = [
             (row["packageId"], row["exportName"])
@@ -817,7 +917,7 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(reviewed["functions"], first["functions"])
         self.assertEqual(
-            ["KMIPKIT-0053:export:exact-test-route", "human-reviewed"],
+            ["human-reviewed", "KMIPKIT-0053:export:exact-test-route"],
             [row["declarationId"] for row in first["publicDeclarations"]],
         )
 

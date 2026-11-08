@@ -949,17 +949,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         expected_exports = {(row["packageId"], row["exportName"]) for row in candidates}
         removals = route_data.get("removePublicDeclarations", [])
         removal_ids = {row["declarationId"] for row in removals}
-        self.assertEqual(expected_ids, expected_ids & removal_ids)
         relevant_removals = [row for row in removals if row["declarationId"] in expected_ids]
-        self.assertEqual(934, len(relevant_removals))
-        self.assertTrue(
-            all(
-                row.get("candidateSpecId") == "KMIPKIT-0053"
-                and row.get("approvalSource", {}).get("path")
-                == "specs/053-api-parity-facade/approval-record.md"
-                for row in relevant_removals
-            )
-        )
         target_declarations = [
             row
             for row in route_data.get("publicDeclarations", [])
@@ -972,6 +962,19 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         ]
         self.assertEqual(12, len(target_declarations))
         self.assertEqual(922, len(target_exclusions))
+        retained_declaration_ids = {row["declarationId"] for row in target_declarations}
+        relevant_removal_ids = {row["declarationId"] for row in relevant_removals}
+        self.assertEqual(expected_ids, relevant_removal_ids | retained_declaration_ids)
+        self.assertFalse(relevant_removal_ids & retained_declaration_ids)
+        self.assertEqual(922, len(relevant_removals))
+        self.assertTrue(
+            all(
+                row.get("candidateSpecId") == "KMIPKIT-0053"
+                and row.get("approvalSource", {}).get("path")
+                == "specs/053-api-parity-facade/approval-record.md"
+                for row in relevant_removals
+            )
+        )
         routed_exports = {
             (row["packageId"], row["exportName"])
             for row in target_declarations
