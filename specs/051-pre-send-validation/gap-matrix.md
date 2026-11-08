@@ -6,7 +6,7 @@ OASIS sources refer to the pinned KMIP v2.1 document. The payload table is the
 normative schema source; the module column identifies the typed model and
 serializer. The operation checklist below records the baseline gaps at the
 start of KMIPKIT-0051; final implementation and rule-level evidence follow in
-the T002 field inventory and the R001–R284 traceability rows.
+the T002 field inventory and the R001–R293 traceability rows.
 
 The current client exposes a borrowed, structured validator for every
 supported operation and applies it before request encoding and transport.
@@ -499,7 +499,7 @@ construction.
 | `certify.rs`, `create_split_key.rs`, `derive_key.rs`, `revoke.rs`, `validate.rs` | Certificate Request relationships; split-key cardinality/method conditions; derivation method/required attributes; compromise date/reason; and non-empty Validate chain/certificate shape were serializer-only checks. | Borrowed reports now share those local checks with serializers; expand field-specific test and source links through T014–T025. |
 | Raw nested input paths | The model survey found raw `Structure`, `Item`, or `Value` data in request contexts including credentials/rights/usage limits, Attributes and masks, cryptographic parameters, key wrapping, certificate structures, Import/Register objects, PKCS#11 parameters/extensions, constraints/defaults, and generic attribute adjustment values. | T002 maps each occurrence to its defining OASIS schema; implement borrowed nested checks only when a normative rule is locally decidable. |
 
-Scalar/list audit candidates include Check usage count/mask/lease fields; split-key part/threshold/prime-field values; Locate maximum/offset; attribute selectors; Usage Allocation counts; Query function lists; RNG length; Join Split Key references/type; request-count/lease fields for Login/Delegated Login; Asynchronous correlation/operation filter relationships; and multipart crypto conditions. These remain candidates until T002 links each to an exact source and confirms local decidability; server acceptance, capability, state, and policy are excluded.
+Remaining scalar/list audit candidates include Check usage count/mask/lease fields; Locate maximum/offset; attribute selectors; Usage Allocation counts; Query function lists; RNG length; Join Split Key references/type; request-count/lease fields for Login/Delegated Login; Asynchronous correlation/operation filter relationships; and multipart crypto conditions. Split Key required fields, `Prime Field Size`, and `Key Part Identifier` bounds are now covered by R285–R293. Other candidates remain out of scope until T002 links them to an exact source and confirms local decidability; server acceptance, capability, state, and policy are excluded.
 
 
 ## T003 serializer/source mismatches and resolution
@@ -508,3 +508,19 @@ Scalar/list audit candidates include Check usage count/mask/lease fields; split-
 |---|---|---|---|
 | R119 MAC Verify / MAC Data | Before `8f8c824df`, shared `cryptographic_operation::MAC_DATA` was `0x4200C4`; it is now `0x4200C6` for request encoding and response reading. | §11.56 Table 487 assigns `0x4200C6`; §7.20 Table 372 defines Byte String. | Resolved; independent literals in `mac_verify_operation_tests` and `mac_operation_tests`. |
 | R166 RNG Retrieve / Data Length | Before `8f8c824df`, request and RNG Seed response parsing used `0x4200D5`; both now use `0x4200C4`. | §11.56 Table 487 assigns `0x4200C4`; §7.10 Table 362 defines Integer; §6.1.50 Table 320 contains the RNG Seed response field. | Resolved; independent literals in `rng_retrieve_operation_tests` and `rng_seed_operation_tests`. |
+
+## Additional managed-object rules
+
+The implementation review of Import found that the shared Key Block wrapper
+was not sufficient for every managed-object schema. The following rules now
+cover the required PGP Key, Secret Data, and Split Key fields and the two
+locally decidable Split Key conditions. The references are to the pinned KMIP
+v2.1 document; unknown enum values and extension fields remain preserved.
+
+| Rule ID | OASIS source | Rule and local decision | Evidence |
+|---|---|---|---|
+| `KMIPKIT-0051-R285` | §2.4, Table 5 | PGP Key requires PGP Key Version as Integer before its required Key Block. | `typed_request_validation_tests::import_validation_checks_required_fields_for_pgp_secret_and_split_keys` |
+| `KMIPKIT-0051-R286` | §2.7, Table 8 | Secret Data requires Secret Data Type as Enumeration before its required Key Block. | `typed_request_validation_tests::import_validation_checks_required_fields_for_pgp_secret_and_split_keys` |
+| `KMIPKIT-0051-R287`–`R291` | §2.8, Table 9 | Split Key requires Split Key Parts, Key Part Identifier, Split Key Threshold, Split Key Method, and Key Block in table order; Prime Field Size is optional and, when present, is Big Integer. | `typed_request_validation_tests::import_validation_checks_required_fields_for_pgp_secret_and_split_keys`; descriptor-driven `schema_contract_tests::every_supported_payload_field_enforces_its_descriptor_contract` |
+| `KMIPKIT-0051-R292` | §2.8, Table 9 | Polynomial Sharing Prime Field requires Prime Field Size. | `typed_request_validation_tests::split_key_requires_prime_field_size_for_polynomial_prime_sharing` |
+| `KMIPKIT-0051-R293` | §2.8 | Key Part Identifier SHALL be at least one and no greater than Split Key Parts. Invalid Import requests fail preflight. | `typed_request_validation_tests::split_key_part_identifier_must_be_within_the_declared_parts`; `execute_lifecycle_tests::split_key_with_out_of_range_part_identifier_is_not_sent` |

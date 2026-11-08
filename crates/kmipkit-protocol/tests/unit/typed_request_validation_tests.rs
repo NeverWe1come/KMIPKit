@@ -46,6 +46,44 @@ fn schema_structure(items: impl IntoIterator<Item = Item>) -> Structure {
     structure
 }
 
+fn split_key_import_request(
+    part_identifier: i32,
+    split_key_method: u32,
+    prime_field_size: Option<Vec<u8>>,
+) -> ImportRequest {
+    let item = |tag, value| schema_item(tag, value);
+    let mut split_key_fields = vec![
+        item(0x0042_008B, Value::integer(2)),
+        item(0x0042_0044, Value::integer(part_identifier)),
+        item(0x0042_008C, Value::integer(2)),
+        item(0x0042_008A, Value::enumeration(split_key_method)),
+    ];
+    if let Some(prime_field_size) = prime_field_size {
+        split_key_fields.push(item(0x0042_0062, Value::big_integer(prime_field_size)));
+    }
+    let key_block = schema_structure([
+        item(0x0042_0042, Value::enumeration(1)),
+        item(
+            0x0042_0045,
+            Value::structure(schema_structure([item(
+                0x0042_0043,
+                Value::byte_string(vec![0xA5]),
+            )])),
+        ),
+    ]);
+    split_key_fields.push(item(0x0042_0040, Value::structure(key_block)));
+
+    ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(5),
+        AttributeSet::new(),
+        item(
+            0x0042_0089,
+            Value::structure(schema_structure(split_key_fields)),
+        ),
+    )
+}
+
 fn gcm_parameters_without_required_lengths() -> Structure {
     schema_structure([schema_item(0x0042_0011, Value::enumeration(9))])
 }
@@ -1122,6 +1160,79 @@ fn import_validation_recurses_into_the_selected_managed_object() {
             && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
     }));
     assert!(!format!("{report:?}").contains("secret-canary"));
+}
+
+#[test]
+fn import_validation_checks_required_fields_for_pgp_secret_and_split_keys() {
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    for (object_tag, object_type, expected_rule) in [
+        (0x0042_00BD, 9, "KMIPKIT-0051-R285"),
+        (0x0042_0085, 7, "KMIPKIT-0051-R286"),
+        (0x0042_0089, 5, "KMIPKIT-0051-R287"),
+    ] {
+        let object = schema_item(
+            object_tag,
+            Value::structure(schema_structure([schema_item(
+                KEY_BLOCK,
+                Value::structure(schema_structure([])),
+            )])),
+        );
+        let report = ImportRequest::new(
+            UniqueIdentifier::TextString("object-id".to_owned()),
+            ObjectType::from_raw(object_type),
+            AttributeSet::new(),
+            object,
+        )
+        .validate();
+        assert!(!report.is_valid(), "object tag 0x{object_tag:08x}");
+        assert!(
+            report
+                .issues()
+                .iter()
+                .any(|issue| { issue.source().to_string().contains("KMIP v2.1 §2.") })
+        );
+        assert!(report_has_code(&report, expected_rule));
+        if object_tag == 0x0042_0089 {
+            for rule in [
+                "KMIPKIT-0051-R288",
+                "KMIPKIT-0051-R289",
+                "KMIPKIT-0051-R290",
+            ] {
+                assert!(report_has_code(&report, rule), "missing {rule}");
+            }
+        }
+    }
+}
+
+#[test]
+fn split_key_requires_prime_field_size_for_polynomial_prime_sharing() {
+    let report = split_key_import_request(1, 3, None).validate();
+
+    assert!(report_has_code(&report, "KMIPKIT-0051-R292"));
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R292"
+            && issue.source().to_string() == "KMIP v2.1 §2.8, Table 9"
+    }));
+
+    let report = split_key_import_request(1, 3, Some(vec![0x01, 0x01])).validate();
+    assert!(!report_has_code(&report, "KMIPKIT-0051-R292"));
+}
+
+#[test]
+fn split_key_part_identifier_must_be_within_the_declared_parts() {
+    for part_identifier in [0, 3] {
+        let report = split_key_import_request(part_identifier, 1, None).validate();
+        assert!(report_has_code(&report, "KMIPKIT-0051-R293"));
+        assert!(report.issues().iter().any(|issue| {
+            issue.code().as_str() == "KMIPKIT-0051-R293"
+                && issue.source().to_string() == "KMIP v2.1 §2.8"
+        }));
+    }
+
+    for part_identifier in [1, 2] {
+        let report = split_key_import_request(part_identifier, 1, None).validate();
+        assert!(!report_has_code(&report, "KMIPKIT-0051-R293"));
+    }
 }
 
 #[test]
