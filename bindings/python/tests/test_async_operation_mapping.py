@@ -566,6 +566,7 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
     allow_copy = Event()
     close_finished = Event()
     callback_values: list[bytes] = []
+    outcome_reads: list[bool] = []
     failures: list[Exception] = []
     response = SimpleNamespace(
         has_asynchronous_correlation_value=1,
@@ -620,6 +621,7 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
     assert not closer.is_alive()
     assert failures == []
     assert close_finished.is_set()
+    assert outcome_reads == [True]
     assert callback_values == [expected]
 
 
