@@ -52,10 +52,10 @@ mod hash;
 mod import;
 mod interop;
 mod join_split_key;
+mod kem;
 mod key_block;
 mod key_material;
 mod key_wrapping;
-mod kem;
 mod lifecycle;
 pub mod link_normalizer;
 mod locate;
@@ -190,6 +190,10 @@ pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };
+pub use kem::{
+    DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,
+    EncapsulateRequest, EncapsulateResponse,
+};
 pub use key_block::{KeyBlock, KeyBlockValue, KeyValue};
 pub use key_material::{
     KeyMaterial, TransparentDhPrivateKey, TransparentDhPublicKey, TransparentDsaPrivateKey,
@@ -197,10 +201,6 @@ pub use key_material::{
     TransparentRsaPrivateKey, TransparentRsaPublicKey, TransparentSymmetricKey,
 };
 pub use key_wrapping::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
-pub use kem::{
-    DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,
-    EncapsulateRequest, EncapsulateResponse,
-};
 pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
