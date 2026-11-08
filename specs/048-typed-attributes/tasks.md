@@ -35,7 +35,7 @@
 - [ ] T019 [Refactor] Correct KMIPKIT-0071 references and migration documentation, update this spec's traceability and evidence, then run focused, generator, formatting, lint, API, coverage, and hosted CI checks (FR-011).
 - [x] T020 [Red] Require the exact 60 assigned KMIP 3.0 tags from §11.58, Table 605, including credential and KEM tags, and fail when the reviewed catalog contains only the 20 link tags (FR-012; Red commit `36abc5940`).
 - [x] T021 [Green] Extend the versioned tag catalog and deterministic allocator to all exact Table 605 assignments without deriving assignments from ranges; regenerate the allocation union (FR-012; Green commit `0fd8ea58e`).
-- [x] T022 [Refactor] Update KMIPKIT-0071 traceability, catalog documentation, and implementation evidence; run tag/API generation checks, focused tests, format, and lint (FR-012; Refactor commit recorded in this task file).
+- [x] T022 [Refactor] Update KMIPKIT-0071 traceability, catalog documentation, and implementation evidence; run tag/API generation checks, focused tests, format, and lint (FR-012; Refactor commit `c68aa922b`).
 - [ ] T023 [Verification] Pass the applicable coverage gates and all hosted CI checks on the final PR head (FR-012).
 
 ## Dependencies and independent criteria

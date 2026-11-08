@@ -428,7 +428,9 @@ allocation union. No assignments are inferred from numeric ranges.
   the pinned Table 605 metadata and exact count, and regenerates the allocation
   union. The Rust allocation test also checks that the reserved range remains
   reserved beyond the final Table 605 assignment.
-- **Refactor:** pending documentation/evidence commit.
+- **Refactor:** commit `c68aa922b` updates the requirement wording to cover all
+  60 exact assignments, records task and traceability status, and documents
+  the Table 605 catalog scope in KMIPKIT-0071 and the catalog README.
 
 Local verification on the Green code:
 
