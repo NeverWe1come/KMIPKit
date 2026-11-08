@@ -82,7 +82,9 @@ pub struct AwsConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AzureConfig {
     pub vault_url: Option<String>,
+    pub endpoint_url: Option<String>,
     pub envelope_master_kek_name: Option<String>,
+    pub secret_name_prefix: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

@@ -16,7 +16,7 @@ path = "src/main.rs"
 default = []
 all-clouds = ["aws", "azure", "gcp", "oci"]
 aws = ["dep:aws-config", "dep:aws-sdk-kms", "dep:aws-sdk-secretsmanager"]
-azure = []
+azure = ["dep:azure_security_keyvault_keys", "dep:azure_security_keyvault_secrets", "dep:azure_identity", "dep:azure_core"]
 gcp = []
 oci = ["dep:reqwest"]
 
@@ -25,6 +25,10 @@ async-trait = "0.1"
 aws-config = { version = "1.5", optional = true, default-features = false, features = ["rustls", "default-https-client", "rt-tokio"] }
 aws-sdk-kms = { version = "1.52", optional = true, default-features = false, features = ["rustls", "default-https-client", "rt-tokio"] }
 aws-sdk-secretsmanager = { version = "1.52", optional = true, default-features = false, features = ["rustls", "default-https-client", "rt-tokio"] }
+azure_security_keyvault_keys = { version = "1.1.0-beta.1", optional = true }
+azure_security_keyvault_secrets = { version = "1.1.0-beta.1", optional = true }
+azure_identity = { version = "1.1.0-beta.2", optional = true }
+azure_core = { version = "1.2.0-beta.2", optional = true, features = ["test"] }
 aws-lc-rs = { version = "=1.18.1", default-features = false, features = ["prebuilt-nasm"] }
 base64 = "0.22"
 bytes = { version = "=1.12.1", default-features = false, features = ["std"] }
