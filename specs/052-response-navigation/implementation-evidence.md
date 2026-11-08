@@ -15,3 +15,9 @@ These are local checks. The updated hosted CI and SonarCloud quality gate must s
 - **Green:** commit `89670b835` stores the return value outside the `try` and appends it only in the `else` branch; the test thread then asserts success. All 29 tests in `test_async_operation_mapping.py` passed.
 - **Refactor:** the follow-up renames the captured collections to `read_results` and `read_errors` and records this evidence. The focused file suite passed again (29 tests).
 - **Sonar finding:** `bindings/python/tests/test_async_operation_mapping.py:596-599` no longer contains an assertion inside a `try` whose `except Exception` also catches `AssertionError`.
+
+## Python response test follow-ups
+
+- **Red:** commit `9ecca3fc2` corrected the response-extension test to attach its fake item through `_native_response_item` and made the delegated-login test use the real `BatchResult` owner wrapper. The three focused checks then had one expected failure: the four asynchronous response constructors still lacked parameter annotations.
+- **Green:** commit `183b7773f` annotates the three typed response parameters and the Query Asynchronous Requests parameter as `Any`. This makes their public signatures resolvable without asserting an inaccurate concrete CFFI type. The focused checks passed (3 tests).
+- **Refactor:** corrected ownership test doubles now exercise the real batch-result cleanup path, while item handles remain controlled test doubles. The full Python suite passed (1,110 passed, 1 skipped).
