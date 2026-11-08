@@ -22,6 +22,7 @@ pub struct GcpKmsProvider {
     pub location: String,
     pub key_ring: String,
     pub endpoint_url: Option<String>,
+    pub name_prefix: String,
     pub secret_name_prefix: String,
     pub envelope_master_kek_name: Option<String>,
     pub master_kek: Option<[u8; 32]>,
@@ -49,6 +50,11 @@ impl GcpKmsProvider {
             .clone()
             .or_else(|| std::env::var("GOOGLE_OAUTH_ACCESS_TOKEN").ok());
 
+        let pfx = config
+            .secret_name_prefix
+            .clone()
+            .unwrap_or_else(|| "kmipkit/".to_string());
+
         Ok(Self {
             client,
             project_id: config
@@ -64,10 +70,8 @@ impl GcpKmsProvider {
                 .clone()
                 .unwrap_or_else(|| "kmip-keyring".to_string()),
             endpoint_url: config.endpoint_url.clone(),
-            secret_name_prefix: config
-                .secret_name_prefix
-                .clone()
-                .unwrap_or_else(|| "kmipkit/".to_string()),
+            name_prefix: pfx.clone(),
+            secret_name_prefix: pfx,
             envelope_master_kek_name: config.envelope_master_kek_name.clone(),
             master_kek,
             access_token,
@@ -99,8 +103,8 @@ impl GcpKmsProvider {
     }
 
     fn is_secret_resource(&self, unique_id: &str) -> bool {
-        let normalized_prefix = self.secret_name_prefix.replace('/', "-");
-        unique_id.starts_with(&self.secret_name_prefix)
+        let normalized_prefix = self.name_prefix.replace('/', "-");
+        unique_id.starts_with(&self.name_prefix)
             || unique_id.starts_with(&normalized_prefix)
             || unique_id.contains("/secrets/")
             || (!unique_id.contains("/cryptoKeys/")
@@ -293,7 +297,7 @@ impl CloudKmsProvider for GcpKmsProvider {
         let wrapped = AutoEnvelope::wrap_key(kek, &raw)?;
         let wrapped_b64 = base64::engine::general_purpose::STANDARD.encode(wrapped.to_bytes());
 
-        let prefix = self.secret_name_prefix.replace('/', "-");
+        let prefix = self.name_prefix.replace('/', "-");
         let resource_name = spec
             .name
             .as_deref()
@@ -962,6 +966,7 @@ pub struct GcpKmsProvider {
     pub location: String,
     pub key_ring: String,
     pub endpoint_url: Option<String>,
+    pub name_prefix: String,
     pub secret_name_prefix: String,
     pub envelope_master_kek_name: Option<String>,
 }
@@ -969,6 +974,10 @@ pub struct GcpKmsProvider {
 #[cfg(not(feature = "gcp"))]
 impl GcpKmsProvider {
     pub fn new(config: &GcpConfig) -> Result<Self, ProxyError> {
+        let pfx = config
+            .secret_name_prefix
+            .clone()
+            .unwrap_or_else(|| "kmipkit/".to_string());
         Ok(Self {
             project_id: config
                 .project_id
@@ -983,10 +992,8 @@ impl GcpKmsProvider {
                 .clone()
                 .unwrap_or_else(|| "kmip-keyring".to_string()),
             endpoint_url: config.endpoint_url.clone(),
-            secret_name_prefix: config
-                .secret_name_prefix
-                .clone()
-                .unwrap_or_else(|| "kmipkit/".to_string()),
+            name_prefix: pfx.clone(),
+            secret_name_prefix: pfx,
             envelope_master_kek_name: config.envelope_master_kek_name.clone(),
         })
     }
