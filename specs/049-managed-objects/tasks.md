@@ -130,9 +130,10 @@
 
 ## Approved KMIP 3.0 system credential object addendum
 
-- [x] T047 [Red] Add failing managed-object dispatch and negative schema tests for Object Types 0x0D–0x10, exact tags, required fields, salted-password restrictions, and rejection by the generic unknown fallback; record the expected failure (Red commit to be recorded in implementation evidence).
-- [ ] T048 [Green] Implement typed, lossless Rust models and semantic constructors/readers for Password, Device, One Time Password, and Hashed Password Credential system objects; redact and zeroize owned values and preserve unknown children.
-- [ ] T049 [Refactor] Add OASIS traceability, examples and guide notes; verify version-gating boundaries and local generation, tests, format, lint, coverage, and hosted CI before review.
+- [x] T047 [Red] Add failing managed-object dispatch, invalid-schema, and exact public-manifest route tests for Object Types 0x0D–0x10; verify rejection of malformed schemas, wrong tags, and the generic unknown fallback. Red commits: `bf65a9a4f` and `61d19037c`.
+- [x] T048 [Green] Implement typed, lossless Rust models and semantic constructors/readers for Password, Device, One Time Password, and Hashed Password Credential system objects; redact and zeroize owned values, preserve unknown children, reconcile exact public routes, and regenerate outputs. Green commit: `1384419bd`.
+- [x] T049 [Refactor] Add exact OASIS traceability, executable Rust examples, bilingual guide notes, coverage for typed readers and defensive helpers, and local generation/test/format/lint evidence. Refactor evidence is recorded in `implementation-evidence.md`.
+- [ ] T050 Run the hosted CI and cross-platform coverage controls for PR #141, update this evidence with the results, and keep the PR in draft until every required check is green.
 
 ## Independent test criteria
 

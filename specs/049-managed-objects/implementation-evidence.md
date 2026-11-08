@@ -346,3 +346,68 @@ The nine affected modules were rerun after this readability-only change:
 passing 399-test T102 run was not repeated. `git diff --check` passed; the
 manifest, production validator, runtime, audit reports, and all 12 verified
 generated outputs remain unchanged from `5f8536a93`.
+
+## 2026-11-08 KMIP 3.0 system credential object addendum
+
+The maintainer-approved correction adds Password Credential, Device
+Credential, One Time Password Credential, and Hashed Password Credential
+system objects from the pinned KMIP 3.0 document. The implementation follows
+§2.1.3.1–§2.1.3.4 Tables 5–12, §11.35 Table 582, and §11.58 Table 605. It
+does not compute password hashes, OTPs, salts, or credentials. KMIP 2.1 remains
+the default; active-version rejection is assigned to KMIPKIT-0051. The
+Password Link Attribute cross-check likewise remains with KMIPKIT-0051.
+
+### Red
+
+- `bf65a9a4f` adds failing managed-object dispatch and negative schema tests.
+  Before the implementation, the three focused cases failed because Object
+  Types 0x0D–0x10 were accepted by the unknown fallback, invalid credential
+  fields were not rejected, and a credential Object Type accepted another
+  credential Structure tag.
+- `61d19037c` adds the exact manifest-route regression test for
+  `HashedPasswordCredentialObject::effective_hashing_algorithm_raw`. Before
+  reconciliation, that test failed because both package paths were absent
+  from the reviewed manifest.
+
+### Green
+
+- `1384419bd` implements the four typed, lossless Rust models, typed readers,
+  schema checks, `ManagedObject` dispatch, redacted formatting, and reuse of
+  secret-owning TTLV values. The official KMIPKIT-0049 reconciler added the two
+  previously missing effective-algorithm reader declarations; the official
+  manifest generator regenerated its 12 outputs.
+- The focused `system_credential_objects` integration suite passes 10 tests
+  covering exact tags and field order, required/optional fields, wrong types,
+  duplicates, salted-password combinations, unknown extensions, and
+  debug-redaction behavior. A protocol unit test covers defensive access to
+  malformed non-Structure values.
+
+### Refactor and local verification
+
+- Updated KMIP 3.0 traceability rows to point to the exact test names, added
+  executable Rust examples to the feature quickstart and both language guides,
+  and separated the still-pending hosted CI task as T050.
+- `cargo fmt --all --check`: passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`:
+  passed.
+- `cargo llvm-cov --package kmipkit-protocol --all-features --summary-only`:
+  passed; 1,332 unit tests and the package integration/doc tests ran. Overall
+  protocol line coverage was 91.13%; the new `system_credential_objects.rs`
+  module measured 95.36% line coverage.
+- `python -B -m unittest tools.api_manifest.tests.test_reconcile_0049_managed_objects -q`:
+  4 passed.
+- `python -B tools/api_manifest/generate.py --check --repo-root .`: all 12
+  generated outputs verified.
+- `python -B tools/normative_catalog/generate_ttlv_tags.py --check` and
+  `python -B tools/normative_catalog/generate_named_values.py --repo-root . --check`:
+  passed.
+- A fresh `audit_rust_exports.py` inventory observed 27,012 declarations,
+  matched 6,851, reported no audit issues, and still showed 4,205 unmatched
+  routes outside this specification's scope. Filtering by KMIPKIT-0049's
+  reviewed public type allowlist yielded two missing routes; the official
+  reconciler declared both, regenerated outputs, and a second scoped pass
+  reported `+0 declarations, +0 exclusions`. This is evidence for the
+  KMIPKIT-0049 route scope, not a claim that the workspace-wide audit is
+  complete.
+- Hosted CI and cross-platform coverage have not yet completed. T050 remains
+  open and PR #141 remains a draft until those controls are green.

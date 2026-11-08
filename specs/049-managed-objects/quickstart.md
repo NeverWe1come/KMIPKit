@@ -75,6 +75,29 @@ caller, application, foreign runtime, TLS stack, or platform libraries remain
 outside KMIPKit's ownership boundary. The models transport key material and do
 not perform wrapping, unwrapping, or cryptographic operations.
 
+## KMIP 3.0 system credential objects
+
+The four system credential object structures use their KMIP 3.0 Object Type
+and tag assignments. Secret-bearing fields require `SecretText` or
+`SecretBytes`; their callback readers do not return borrowed data beyond the
+callback. The active-version validator is responsible for rejecting these
+types when the request selects KMIP 2.1.
+
+```rust
+use kmipkit_protocol::{
+    HashedPasswordCredentialObject, HashedPasswordCredentialObjectFields, SecretBytes,
+};
+
+let object = HashedPasswordCredentialObject::try_new(HashedPasswordCredentialObjectFields {
+    hashed_username_password: Some(SecretBytes::new(vec![0xA1, 0xA2])),
+    hashed_password_username: Some(SecretBytes::new(vec![0xB1, 0xB2])),
+    ..HashedPasswordCredentialObjectFields::default()
+})?;
+assert_eq!(object.hashing_algorithm_raw(), None);
+assert_eq!(object.effective_hashing_algorithm_raw(), 6); // SHA-256 default
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 ## Local verification
 
 Run the focused Rust tests, API manifest generator check, Rust and binding

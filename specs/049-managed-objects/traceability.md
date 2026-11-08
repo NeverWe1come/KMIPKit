@@ -12,7 +12,7 @@ addendum adds stable source-derived requirement IDs for §§2.1.3.1–2.1.3.4,
 §11.35, and §11.58. The resolved mapping below names the exact source tables,
 implementation modules, and executable test functions.
 
-| OASIS requirement ID | Section | KMIPKIT requirement | Planned implementation and verification |
+| Requirement ID | Section | KMIPKIT requirement | Implementation and verification |
 |---|---:|---|---|
 | KMIPKIT-REQ-SPEC-2.3-001 | 2.3 | FR-001, FR-005 | `managed_object.rs`; opaque context compatibility tests |
 | KMIPKIT-REQ-SPEC-2.3-002 | 2.3 | FR-001, FR-008 | Opaque Object tests; preserve local context separation |
@@ -114,14 +114,16 @@ the complete set covered by its implementation and executable evidence.
 | `KMIPKIT-REQ-SPEC-3.11-002`, `-003` | §3.11, Table 25 | `key_material.rs::TransparentEcPrivateKey` | `transparent_key_material.rs::transparent_ec_private_and_public_preserve_curve_and_material` |
 | `KMIPKIT-REQ-SPEC-3.12-002`, `-003` | §3.12, Table 26 | `key_material.rs::TransparentEcPublicKey` | `transparent_key_material.rs::transparent_ec_private_and_public_preserve_curve_and_material` |
 | `KMIPKIT-REQ-SPEC-6.1.43-005` | §§3.2–3.3, Tables 13–17; §6.1.43, Tables 291–293; §11.18 | `register.rs`, `import.rs`, `key_block.rs`, `key_wrapping.rs` | `register_execution_tests.rs::typed_certificate_register_uses_direct_object_tag_on_fake_transport`; `import_execution_tests.rs::typed_wrapped_symmetric_key_import_uses_direct_object_tag_on_fake_transport`; `profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding` |
-| `KMIPKIT-REQ-SPEC-3.0-2.1.3.1-001` | KMIP 3.0 §2.1.3.1, Tables 5–6 | `system_credential_objects.rs::password_credential_preserves_table_fields_and_rejects_invalid_salted_form` | Password Credential structure rules: field types/order and salted form MUST NOT include Password; Password Link is an attribute and is checked with attributes in 0051 |
-| `KMIPKIT-REQ-SPEC-3.0-2.1.3.2-001` | KMIP 3.0 §2.1.3.2, Tables 7–8 | `system_credential_objects.rs::device_credential_requires_at_least_one_source_field` | Device Credential requires at least one defined identifier field; uniqueness remains server policy |
-| `KMIPKIT-REQ-SPEC-3.0-2.1.3.3-001` | KMIP 3.0 §2.1.3.3, Tables 9–10 | `system_credential_objects.rs::one_time_password_requires_algorithm` | OTP Algorithm is required; other source fields retain their optionality and order |
-| `KMIPKIT-REQ-SPEC-3.0-2.1.3.4-001` | KMIP 3.0 §2.1.3.4, Tables 11–12 | `system_credential_objects.rs::hashed_password_requires_both_ordered_hash_fields` | Both byte-string hash fields are required; optional Hashing Algorithm and unknown raw values are preserved |
-| `KMIPKIT-REQ-SPEC-3.0-11.35-001` | KMIP 3.0 §11.35, Table 582; §11.58, Table 605 | `managed_object.rs`; `system_credential_objects.rs::managed_object_dispatches_system_credential_types_and_redacts_values` | Object Types 0x0D–0x10 dispatch to exact structure tags; generic TTLV and unknown descendants remain lossless |
+| `KMIPKIT-REQ-SPEC-3.0-2.1.3.1-001` | KMIP 3.0 §2.1.3.1, Tables 5–6 | `system_credential_objects.rs::password_credential_builders_and_readers_follow_source_rules`; `system_credential_objects.rs::system_credential_objects_reject_invalid_source_schemas` | Password Credential structure rules: field types/order and salted form MUST NOT include Password; Password Link is an attribute and is checked with attributes in 0051 |
+| `KMIPKIT-REQ-SPEC-3.0-2.1.3.2-001` | KMIP 3.0 §2.1.3.2, Tables 7–8 | `system_credential_objects.rs::device_credential_builders_and_readers_follow_table_order`; `system_credential_objects.rs::system_credential_objects_reject_invalid_source_schemas` | Device Credential requires at least one defined identifier field; uniqueness remains server policy |
+| `KMIPKIT-REQ-SPEC-3.0-2.1.3.3-001` | KMIP 3.0 §2.1.3.3, Tables 9–10 | `system_credential_objects.rs::one_time_password_builders_and_readers_follow_table_order`; `system_credential_objects.rs::system_credential_objects_reject_invalid_source_schemas` | OTP Algorithm is required; other source fields retain their optionality and order |
+| `KMIPKIT-REQ-SPEC-3.0-2.1.3.4-001` | KMIP 3.0 §2.1.3.4, Tables 11–12 | `system_credential_objects.rs::hashed_password_builders_and_readers_preserve_defaults_and_order`; `system_credential_objects.rs::system_credential_objects_reject_invalid_source_schemas` | Both byte-string hash fields are required; optional Hashing Algorithm reports the SHA-256 default without inserting a field, and unknown raw values are preserved |
+| `KMIPKIT-REQ-SPEC-3.0-11.35-001` | KMIP 3.0 §11.35, Table 582; §11.58, Table 605 | `managed_object.rs`; `system_credential_objects.rs::managed_object_dispatches_each_system_credential_structure`; `system_credential_objects.rs::system_credential_object_type_requires_its_exact_structure_tag` | Object Types 0x0D–0x10 dispatch to exact structure tags; generic TTLV and unknown descendants remain lossless |
+| `KMIPKIT-0049-FR-013` | KMIPKit security policy, AGENTS.md §8; TTLV zeroization contract | `system_credential_objects.rs`; `system_credential_objects.rs::system_credential_objects_retain_extensions_and_redact_owned_secrets`; existing TTLV owned-payload zeroization tests | Constructors consume `SecretText`/`SecretBytes`, Debug/errors reveal no values, and model-owned TTLV storage uses the existing recursive zeroization path |
 
 The original KMIP 2.1 feature scope has 53 operative catalog requirement IDs.
-The approved KMIP 3.0 addendum adds the five stable source-derived IDs listed
-above. Catalog records that are table-heading metadata are not counted as
-independent requirements. Caller-attested obligations are traceable but are
-not presented as automatically verified by local structural parsing.
+The approved KMIP 3.0 addendum adds five stable source-derived IDs and the
+local security requirement FR-013. Catalog records that are table-heading
+metadata are not counted as independent requirements. Caller-attested
+obligations are traceable but are not presented as automatically verified by
+local structural parsing.

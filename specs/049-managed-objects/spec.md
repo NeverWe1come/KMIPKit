@@ -95,6 +95,39 @@ redaction and owned-payload cleanup behavior.
    is formatted, then it contains structural metadata only and no secret
    bytes or raw KMIP body.
 
+### User Story 4 - Construct and inspect KMIP 3.0 credential system objects
+(Priority: P1)
+
+As a Rust client author, I can construct and read the four credential system
+objects from named fields while keeping passwords, identifiers, OTP seeds, and
+hash material redacted and zeroizing.
+
+**Independent Test**: Build or parse each of the four object structures,
+exercise its required and conditional fields, and verify exact Object Type and
+Structure tag mapping, field order, unknown-child preservation, and redacted
+formatting.
+
+**Acceptance Scenarios**:
+
+1. Given a Password Credential, when it is built or read, then KMIPKit enforces
+   Table 5 field types and order and rejects a structure that includes both
+   Password and Salted Password or a Salted Password without its algorithm.
+   Password Link remains an Attribute and is checked with the Attribute Set.
+2. Given a Device Credential, when it is built or read, then at least one
+   Table 7 identifier is present; uniqueness remains the server's decision.
+3. Given an OTP Credential, when it is built or read, then OTP Algorithm is
+   required and all optional fields use Table 9 types and order.
+4. Given a Hashed Password Credential, when it is built or read, then both
+   Table 11 hash fields are required and the optional algorithm and unknown
+   values remain lossless; an absent algorithm reports the source-defined
+   SHA-256 default without inserting a field. KMIPKit does not compute either
+   hash.
+5. Given any of the four structures, when it contains an unknown extension or
+   vendor child, then conversion retains its tag, value, and relative order.
+6. Given a credential object with secret text or bytes, when it is formatted or
+   dropped, then formatting omits the secret and KMIPKit-owned payload storage
+   is zeroized.
+
 ### Edge Cases
 
 - The `Object Type` and `Key Format Type` are open numeric values. Unknown and
@@ -264,6 +297,14 @@ informative and does not add requirements.
 - **KMIPKIT-0049-SC-006**: Red, Green, and Refactor commits are distinct;
   local required checks, Rust export audit, deterministic generation checks,
   and requirement traceability pass before review.
+- **KMIPKIT-0049-SC-007**: All four KMIP 3.0 system credential types map to
+  Object Types 0x0D–0x10 and the exact §11.58 Table 605 Structure tags; tests
+  cover source-defined member types, requiredness, order, Password's
+  object/Attribute Set boundary, unknown values, and redaction.
+- **KMIPKIT-0049-SC-008**: Credential object values are built only from
+  `SecretText`/`SecretBytes` owners, borrowed through callback-scoped readers,
+  and preserved in generic TTLV without algorithm computation or version
+  claims; the client validator enforces the active KMIP edition.
 
 ## Key Entities
 
