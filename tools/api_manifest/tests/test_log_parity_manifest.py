@@ -18,6 +18,8 @@ LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
     *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 7, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
+    "KMIPKIT-0050-FR-010",
+    "KMIPKIT-0050-FR-011",
 }
 TRACEABILITY_IDS = {
     "KMIPKIT-028-T250-MESSAGE",
