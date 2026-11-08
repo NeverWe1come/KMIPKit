@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 
 import pytest
+from types import SimpleNamespace
 
 from kmipkit import errors, ttlv
 import kmipkit.managed_objects as managed_objects
@@ -169,6 +170,36 @@ def test_managed_object_rejects_mismatched_known_type_without_echoing_material()
         assert "sensitive" not in str(failure.value).lower()
     finally:
         source.close()
+
+
+def test_managed_object_helpers_reject_invalid_context_and_inputs():
+    assert managed_objects._has_field(SimpleNamespace(has_field=lambda _tag: True), 7)
+    assert managed_objects._read_type(
+        SimpleNamespace(field_type=lambda tag: ttlv.ItemType.Enumeration), 7
+    ) is ttlv.ItemType.Enumeration
+
+    with ttlv.codec_limits_defaults() as limits:
+        source = _structure_with_children(
+            0x0042_005B,
+            limits,
+            [
+                _item(0x0042_0059, ttlv.ttlv_value_enumeration(1), limits),
+                _item(0x0042_005A, ttlv.ttlv_value_byte_string(b"opaque", limits), limits),
+            ],
+        )
+        with source:
+            with pytest.raises(errors.InvalidInputError):
+                ManagedObject.from_item(True, source)  # type: ignore[arg-type]
+            with pytest.raises(errors.InvalidInputError):
+                ManagedObject.from_fields(True, [])  # type: ignore[arg-type]
+            with pytest.raises(errors.InvalidInputError):
+                KeyValue.from_item(True, source)  # type: ignore[arg-type]
+            with pytest.raises(errors.InvalidInputError):
+                KeyMaterial.from_item(True, source)  # type: ignore[arg-type]
+
+            with ManagedObject.from_item(8, source) as managed:
+                with pytest.raises(errors.InvalidInputError):
+                    managed.field_type(0x0054_0001)
 
 
 def test_key_wrappers_validate_and_retain_owned_generic_items():

@@ -250,6 +250,54 @@ def test_typed_attribute_copies_and_reads_the_item_without_consuming_source():
         assert not source.closed
 
 
+def test_typed_attribute_rejects_wrong_python_inputs_and_exposes_owned_views():
+    with pytest.raises(errors.InvalidInputError):
+        TypedAttribute.from_item(None, object())  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        TypedAttribute.create(None, object())  # type: ignore[arg-type]
+
+    value = ttlv.ttlv_value_text_string(b"unique-id", ttlv.codec_limits_defaults())
+    with value, TypedAttribute.create(StandardAttribute.UNIQUE_IDENTIFIER, value) as typed:
+        assert typed.attribute is StandardAttribute.UNIQUE_IDENTIFIER
+        with typed.view() as view:
+            assert ttlv.ttlv_item_view_type(view) is ttlv.ItemType.TextString
+    assert StandardAttribute.APPLICATION_SPECIFIC_INFORMATION.source_multiplicity == "Yes"
+
+
+def test_attribute_set_rejects_wrong_inputs_and_closes_partial_typed_results(monkeypatch):
+    with pytest.raises(errors.InvalidInputError):
+        AttributeSet.try_new(object())  # type: ignore[arg-type]
+
+    class OwnedProbe:
+        closed = False
+
+        def close(self):
+            self.closed = True
+
+    probe = OwnedProbe()
+    with ttlv.ttlv_structure_create() as source, AttributeSet.try_new(source) as attributes:
+        with pytest.raises(errors.InvalidInputError):
+            attributes.try_push(object())  # type: ignore[arg-type]
+        with pytest.raises(errors.InvalidInputError):
+            attributes.try_push_typed(None, None)
+        with pytest.raises(errors.InvalidInputError):
+            attributes.typed_count(None)
+        with pytest.raises(errors.InvalidInputError):
+            attributes.typed_at(None, 0)
+
+        monkeypatch.setattr(AttributeSet, "typed_count", lambda _self, _attribute: 2)
+
+        def typed_at(_self, _attribute, occurrence):
+            if occurrence == 0:
+                return probe
+            raise ValueError("synthetic typed lookup failure")
+
+        monkeypatch.setattr(AttributeSet, "typed_at", typed_at)
+        with pytest.raises(ValueError, match="synthetic typed lookup failure"):
+            attributes.typed(None)
+        assert probe.closed
+
+
 def test_typed_attribute_rejects_wrong_tag_and_value_type_without_exposing_values():
     wrong_tag = _item(
         StandardAttribute.ACTIVATION_DATE,
