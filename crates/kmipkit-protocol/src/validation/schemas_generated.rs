@@ -481,337 +481,337 @@ fn descriptor_group_4(schema: RequestPayloadSchema) -> Option<RequestSchemaDescr
 }
 
 static ACTIVATE_FIELDS: &[FieldDescriptor] =
-    &[field!(R001 "Unique Identifier" 0x420094 0x052 0 1 none)];
+    &[field!(R001 "Unique Identifier" 0x0042_0094 0x052 0 1 none)];
 
 static ADDATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    field!(R002 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R003 "New Attribute" 0x42013d 0x001 1 1 NewAttribute),
+    field!(R002 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R003 "New Attribute" 0x0042_013d 0x001 1 1 NewAttribute),
 ];
 
 static ADJUSTATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    field!(R004 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R005 "Attribute Reference" 0x42013b 0x010 1 1 none),
-    field!(R006 "Adjustment Type" 0x420158 0x010 1 1 none),
-    field!(R007 "Adjustment Value" 0x420162 0x7ff 0 1 none),
+    field!(R004 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R005 "Attribute Reference" 0x0042_013b 0x010 1 1 none),
+    field!(R006 "Adjustment Type" 0x0042_0158 0x010 1 1 none),
+    field!(R007 "Adjustment Value" 0x0042_0162 0x7ff 0 1 none),
 ];
 
 static ARCHIVE_FIELDS: &[FieldDescriptor] =
-    &[field!(R008 "Unique Identifier" 0x420094 0x052 0 1 none)];
+    &[field!(R008 "Unique Identifier" 0x0042_0094 0x052 0 1 none)];
 
 static CANCEL_FIELDS: &[FieldDescriptor] =
-    &[field!(R009 "Asynchronous Correlation Value" 0x420006 0x080 1 1 none)];
+    &[field!(R009 "Asynchronous Correlation Value" 0x0042_0006 0x080 1 1 none)];
 
 static CERTIFY_FIELDS: &[FieldDescriptor] = &[
-    field!(R010 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R011 "Certificate Request Type" 0x420019 0x010 0 1 none),
-    field!(R012 "Certificate Request Value" 0x420140 0x080 0 1 none),
-    field!(R013 "Attributes" 0x420125 0x001 0 1 Attributes),
-    field!(R014 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R010 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R011 "Certificate Request Type" 0x0042_0019 0x010 0 1 none),
+    field!(R012 "Certificate Request Value" 0x0042_0140 0x080 0 1 none),
+    field!(R013 "Attributes" 0x0042_0125 0x001 0 1 Attributes),
+    field!(R014 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static CHECK_FIELDS: &[FieldDescriptor] = &[
-    field!(R015 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R016 "Usage Limits Count" 0x420096 0x006 0 1 none),
-    field!(R017 "Cryptographic Usage Mask" 0x42002c 0x002 0 1 none),
-    field!(R018 "Lease Time" 0x420049 0x300 0 1 none),
+    field!(R015 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R016 "Usage Limits Count" 0x0042_0096 0x006 0 1 none),
+    field!(R017 "Cryptographic Usage Mask" 0x0042_002c 0x002 0 1 none),
+    field!(R018 "Lease Time" 0x0042_0049 0x300 0 1 none),
 ];
 
 static CREATE_FIELDS: &[FieldDescriptor] = &[
-    field!(R019 "Object Type" 0x420057 0x010 1 1 none),
-    field!(R020 "Attributes" 0x420125 0x001 1 1 Attributes),
-    field!(R021 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R019 "Object Type" 0x0042_0057 0x010 1 1 none),
+    field!(R020 "Attributes" 0x0042_0125 0x001 1 1 Attributes),
+    field!(R021 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
-    field!(R022 "Common Attributes" 0x420126 0x001 0 1 Attributes),
-    field!(R023 "Private Key Attributes" 0x420127 0x001 0 1 Attributes),
-    field!(R024 "Public Key Attributes" 0x420128 0x001 0 1 Attributes),
-    field!(R025 "Common Protection Storage Masks" 0x420163 0x001 0 1 none),
-    field!(R026 "Private Protection Storage Masks" 0x420164 0x001 0 1 none),
-    field!(R027 "Public Protection Storage Masks" 0x420165 0x001 0 1 none),
+    field!(R022 "Common Attributes" 0x0042_0126 0x001 0 1 Attributes),
+    field!(R023 "Private Key Attributes" 0x0042_0127 0x001 0 1 Attributes),
+    field!(R024 "Public Key Attributes" 0x0042_0128 0x001 0 1 Attributes),
+    field!(R025 "Common Protection Storage Masks" 0x0042_0163 0x001 0 1 none),
+    field!(R026 "Private Protection Storage Masks" 0x0042_0164 0x001 0 1 none),
+    field!(R027 "Public Protection Storage Masks" 0x0042_0165 0x001 0 1 none),
 ];
 
 static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
-    field!(R028 "Object Type" 0x420057 0x010 1 1 none),
-    field!(R029 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R030 "Split Key Parts" 0x42008b 0x002 1 1 none),
-    field!(R031 "Split Key Threshold" 0x42008c 0x002 1 1 none),
-    field!(R032 "Split Key Method" 0x42008a 0x010 1 1 none),
-    field!(R033 "Prime Field Size" 0x420062 0x00a 0 1 none),
-    field!(R034 "Attributes" 0x420125 0x001 1 1 Attributes),
-    field!(R035 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R028 "Object Type" 0x0042_0057 0x010 1 1 none),
+    field!(R029 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R030 "Split Key Parts" 0x0042_008b 0x002 1 1 none),
+    field!(R031 "Split Key Threshold" 0x0042_008c 0x002 1 1 none),
+    field!(R032 "Split Key Method" 0x0042_008a 0x010 1 1 none),
+    field!(R033 "Prime Field Size" 0x0042_0062 0x00a 0 1 none),
+    field!(R034 "Attributes" 0x0042_0125 0x001 1 1 Attributes),
+    field!(R035 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static DECRYPT_FIELDS: &[FieldDescriptor] = &[
-    field!(R036 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R037 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
-    field!(R038 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R039 "IV" 0x42003d 0x080 0 1 none),
-    field!(R040 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R041 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R042 "Final Indicator" 0x4200d8 0x020 0 1 none),
-    field!(R043 "Authenticated Encryption Additional Data" 0x4200fe 0x080 0 1 none),
-    field!(R044 "Authenticated Encryption Tag" 0x4200ff 0x080 0 1 none),
+    field!(R036 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R037 "Cryptographic Parameters" 0x0042_002b 0x001 0 1 CryptographicParameters),
+    field!(R038 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R039 "IV" 0x0042_003d 0x080 0 1 none),
+    field!(R040 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R041 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R042 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
+    field!(R043 "Authenticated Encryption Additional Data" 0x0042_00fe 0x080 0 1 none),
+    field!(R044 "Authenticated Encryption Tag" 0x0042_00ff 0x080 0 1 none),
 ];
 
 static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
-    field!(R045 "Lease Time" 0x420049 0x300 0 1 none),
-    field!(R046 "Request Count" 0x42014c 0x002 0 1 none),
-    field!(R047 "Usage Limits" 0x420095 0x001 0 1 UsageLimits),
-    field!(R048 "Rights" 0x42014d 0x001 1 1 Rights),
+    field!(R045 "Lease Time" 0x0042_0049 0x300 0 1 none),
+    field!(R046 "Request Count" 0x0042_014c 0x002 0 1 none),
+    field!(R047 "Usage Limits" 0x0042_0095 0x001 0 1 UsageLimits),
+    field!(R048 "Rights" 0x0042_014d 0x001 1 1 Rights),
 ];
 
 static DELETEATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    field!(R049 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R050 "Current Attribute" 0x42013c 0x001 0 1 CurrentAttribute),
-    field!(R051 "Attribute Reference" 0x42013b 0x010 0 1 none),
+    field!(R049 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R050 "Current Attribute" 0x0042_013c 0x001 0 1 CurrentAttribute),
+    field!(R051 "Attribute Reference" 0x0042_013b 0x010 0 1 none),
 ];
 
 static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
-    field!(R052 "Object Type" 0x420057 0x010 1 1 none),
-    field!(R053 "Unique Identifier" 0x420094 0x052 1 many none),
-    field!(R054 "Derivation Method" 0x420031 0x010 1 1 none),
-    field!(R055 "Derivation Parameters" 0x420032 0x001 1 1 DerivationParameters),
-    field!(R056 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R052 "Object Type" 0x0042_0057 0x010 1 1 none),
+    field!(R053 "Unique Identifier" 0x0042_0094 0x052 1 many none),
+    field!(R054 "Derivation Method" 0x0042_0031 0x010 1 1 none),
+    field!(R055 "Derivation Parameters" 0x0042_0032 0x001 1 1 DerivationParameters),
+    field!(R056 "Attributes" 0x0042_0125 0x001 1 1 Attributes),
 ];
 
 static DESTROY_FIELDS: &[FieldDescriptor] =
-    &[field!(R057 "Unique Identifier" 0x420094 0x052 0 1 none)];
+    &[field!(R057 "Unique Identifier" 0x0042_0094 0x052 0 1 none)];
 
 static DISCOVERVERSIONS_FIELDS: &[FieldDescriptor] =
-    &[field!(R058 "Protocol Version" 0x420069 0x001 0 many ProtocolVersion)];
+    &[field!(R058 "Protocol Version" 0x0042_0069 0x001 0 many ProtocolVersion)];
 
 static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
-    field!(R059 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R060 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
-    field!(R061 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R062 "IV" 0x42003d 0x080 0 1 none),
-    field!(R063 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R064 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R065 "Final Indicator" 0x4200d8 0x020 0 1 none),
-    field!(R066 "Authenticated Encryption Additional Data" 0x4200fe 0x080 0 1 none),
+    field!(R059 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R060 "Cryptographic Parameters" 0x0042_002b 0x001 0 1 CryptographicParameters),
+    field!(R061 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R062 "IV" 0x0042_003d 0x080 0 1 none),
+    field!(R063 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R064 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R065 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
+    field!(R066 "Authenticated Encryption Additional Data" 0x0042_00fe 0x080 0 1 none),
 ];
 
 static EXPORT_FIELDS: &[FieldDescriptor] = &[
-    field!(R067 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R068 "Key Format Type" 0x420042 0x010 0 1 none),
-    field!(R069 "Key Wrap Type" 0x4200f8 0x010 0 1 none),
-    field!(R070 "Key Compression Type" 0x420041 0x010 0 1 none),
-    field!(R071 "Key Wrapping Specification" 0x420047 0x001 0 1 KeyWrappingSpecification),
+    field!(R067 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R068 "Key Format Type" 0x0042_0042 0x010 0 1 none),
+    field!(R069 "Key Wrap Type" 0x0042_00f8 0x010 0 1 none),
+    field!(R070 "Key Compression Type" 0x0042_0041 0x010 0 1 none),
+    field!(R071 "Key Wrapping Specification" 0x0042_0047 0x001 0 1 KeyWrappingSpecification),
 ];
 
 static GET_FIELDS: &[FieldDescriptor] = &[
-    field!(R072 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R073 "Key Format Type" 0x420042 0x010 0 1 none),
-    field!(R074 "Key Wrap Type" 0x4200f8 0x010 0 1 none),
-    field!(R075 "Key Compression Type" 0x420041 0x010 0 1 none),
-    field!(R076 "Key Wrapping Specification" 0x420047 0x001 0 1 KeyWrappingSpecification),
+    field!(R072 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R073 "Key Format Type" 0x0042_0042 0x010 0 1 none),
+    field!(R074 "Key Wrap Type" 0x0042_00f8 0x010 0 1 none),
+    field!(R075 "Key Compression Type" 0x0042_0041 0x010 0 1 none),
+    field!(R076 "Key Wrapping Specification" 0x0042_0047 0x001 0 1 KeyWrappingSpecification),
 ];
 
 static GETATTRIBUTELIST_FIELDS: &[FieldDescriptor] =
-    &[field!(R079 "Unique Identifier" 0x420094 0x052 0 1 none)];
+    &[field!(R079 "Unique Identifier" 0x0042_0094 0x052 0 1 none)];
 
 static GETATTRIBUTES_FIELDS: &[FieldDescriptor] = &[
-    field!(R077 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R078 "Attribute Reference" 0x42013b 0x010 0 many none),
+    field!(R077 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R078 "Attribute Reference" 0x0042_013b 0x010 0 many none),
 ];
 
 static GETCONSTRAINTS_FIELDS: &[FieldDescriptor] = &[];
 
 static GETUSAGEALLOCATION_FIELDS: &[FieldDescriptor] = &[
-    field!(R080 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R081 "Usage Limits Count" 0x420096 0x006 1 1 none),
+    field!(R080 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R081 "Usage Limits Count" 0x0042_0096 0x006 1 1 none),
 ];
 
 static HASH_FIELDS: &[FieldDescriptor] = &[
-    field!(R082 "Cryptographic Parameters" 0x42002b 0x001 1 1 CryptographicParameters),
-    field!(R083 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R084 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R085 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R086 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R082 "Cryptographic Parameters" 0x0042_002b 0x001 1 1 CryptographicParameters),
+    field!(R083 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R084 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R085 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R086 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
 ];
 
 static IMPORT_FIELDS: &[FieldDescriptor] = &[
-    field!(R087 "Unique Identifier" 0x420094 0x052 1 1 none),
-    field!(R088 "Object Type" 0x420057 0x010 1 1 none),
-    field!(R089 "Replace Existing" 0x420124 0x020 0 1 none),
-    field!(R090 "Key Wrap Type" 0x4200f8 0x010 0 1 none),
-    field!(R091 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R087 "Unique Identifier" 0x0042_0094 0x052 1 1 none),
+    field!(R088 "Object Type" 0x0042_0057 0x010 1 1 none),
+    field!(R089 "Replace Existing" 0x0042_0124 0x020 0 1 none),
+    field!(R090 "Key Wrap Type" 0x0042_00f8 0x010 0 1 none),
+    field!(R091 "Attributes" 0x0042_0125 0x001 1 1 Attributes),
     field!(R092 "Any Object (Section 2)" managed 0x001 1 1 none),
 ];
 
 static INTEROP_FIELDS: &[FieldDescriptor] = &[
-    field!(R093 "Interop Function" 0x420160 0x010 1 1 none),
-    field!(R094 "Interop Identifier" 0x420161 0x040 1 1 none),
+    field!(R093 "Interop Function" 0x0042_0160 0x010 1 1 none),
+    field!(R094 "Interop Identifier" 0x0042_0161 0x040 1 1 none),
 ];
 
 static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
-    field!(R095 "Object Type" 0x420057 0x010 1 1 none),
-    field!(R096 "Unique Identifier" 0x420094 0x052 1 many none),
-    field!(R097 "Secret Data Type" 0x420086 0x010 0 1 none),
-    field!(R098 "Attributes" 0x420125 0x001 0 1 Attributes),
-    field!(R099 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R095 "Object Type" 0x0042_0057 0x010 1 1 none),
+    field!(R096 "Unique Identifier" 0x0042_0094 0x052 1 many none),
+    field!(R097 "Secret Data Type" 0x0042_0086 0x010 0 1 none),
+    field!(R098 "Attributes" 0x0042_0125 0x001 0 1 Attributes),
+    field!(R099 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static LOCATE_FIELDS: &[FieldDescriptor] = &[
-    field!(R100 "Maximum Items" 0x42004f 0x002 0 1 none),
-    field!(R101 "Offset Items" 0x4200d4 0x002 0 1 none),
-    field!(R102 "Storage Status Mask" 0x42008e 0x002 0 1 none),
-    field!(R103 "Object Group Member" 0x4200ac 0x010 0 1 none),
-    field!(R104 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R100 "Maximum Items" 0x0042_004f 0x002 0 1 none),
+    field!(R101 "Offset Items" 0x0042_00d4 0x002 0 1 none),
+    field!(R102 "Storage Status Mask" 0x0042_008e 0x002 0 1 none),
+    field!(R103 "Object Group Member" 0x0042_00ac 0x010 0 1 none),
+    field!(R104 "Attributes" 0x0042_0125 0x001 1 1 Attributes),
 ];
 
-static LOG_FIELDS: &[FieldDescriptor] = &[field!(R105 "Log Message" 0x420141 0x040 1 1 none)];
+static LOG_FIELDS: &[FieldDescriptor] = &[field!(R105 "Log Message" 0x0042_0141 0x040 1 1 none)];
 
 static LOGIN_FIELDS: &[FieldDescriptor] = &[
-    field!(R106 "Lease Time" 0x420049 0x300 0 1 none),
-    field!(R107 "Request Count" 0x42014c 0x002 0 1 none),
-    field!(R108 "Usage Limits" 0x420095 0x001 0 1 UsageLimits),
+    field!(R106 "Lease Time" 0x0042_0049 0x300 0 1 none),
+    field!(R107 "Request Count" 0x0042_014c 0x002 0 1 none),
+    field!(R108 "Usage Limits" 0x0042_0095 0x001 0 1 UsageLimits),
 ];
 
-static LOGOUT_FIELDS: &[FieldDescriptor] = &[field!(R109 "Ticket" 0x420149 0x091 1 1 Ticket)];
+static LOGOUT_FIELDS: &[FieldDescriptor] = &[field!(R109 "Ticket" 0x0042_0149 0x091 1 1 Ticket)];
 
 static MAC_FIELDS: &[FieldDescriptor] = &[
-    field!(R110 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R111 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
-    field!(R112 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R113 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R114 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R115 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R110 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R111 "Cryptographic Parameters" 0x0042_002b 0x001 0 1 CryptographicParameters),
+    field!(R112 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R113 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R114 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R115 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
 ];
 
 static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
-    field!(R116 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R117 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
-    field!(R118 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R119 "MAC Data" 0x4200c6 0x080 0 1 none),
-    field!(R120 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R121 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R122 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R116 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R117 "Cryptographic Parameters" 0x0042_002b 0x001 0 1 CryptographicParameters),
+    field!(R118 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R119 "MAC Data" 0x0042_00c6 0x080 0 1 none),
+    field!(R120 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R121 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R122 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
 ];
 
 static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    field!(R123 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R124 "Current Attribute" 0x42013c 0x001 0 1 CurrentAttribute),
-    field!(R125 "New Attribute" 0x42013d 0x001 1 1 NewAttribute),
+    field!(R123 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R124 "Current Attribute" 0x0042_013c 0x001 0 1 CurrentAttribute),
+    field!(R125 "New Attribute" 0x0042_013d 0x001 1 1 NewAttribute),
 ];
 
 static OBTAINLEASE_FIELDS: &[FieldDescriptor] =
-    &[field!(R126 "Unique Identifier" 0x420094 0x052 0 1 none)];
+    &[field!(R126 "Unique Identifier" 0x0042_0094 0x052 0 1 none)];
 
 static PING_FIELDS: &[FieldDescriptor] = &[];
 
 static PKCS11_FIELDS: &[FieldDescriptor] = &[
-    field!(R127 "PKCS#11 Interface" 0x420159 0x001 0 1 Pkcs11Interface),
-    field!(R128 "PKCS#11 Function" 0x42015a 0x012 1 1 none),
-    field!(R129 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R130 "PKCS#11 Input Parameters" 0x42015b 0x001 0 1 Pkcs11InputParameters),
+    field!(R127 "PKCS#11 Interface" 0x0042_0159 0x001 0 1 Pkcs11Interface),
+    field!(R128 "PKCS#11 Function" 0x0042_015a 0x012 1 1 none),
+    field!(R129 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R130 "PKCS#11 Input Parameters" 0x0042_015b 0x001 0 1 Pkcs11InputParameters),
 ];
 
 static POLL_FIELDS: &[FieldDescriptor] =
-    &[field!(R131 "Asynchronous Correlation Value" 0x420006 0x080 1 1 none)];
+    &[field!(R131 "Asynchronous Correlation Value" 0x0042_0006 0x080 1 1 none)];
 
 static PROCESS_FIELDS: &[FieldDescriptor] =
-    &[field!(R132 "Asynchronous Correlation Value" 0x420006 0x080 1 1 none)];
+    &[field!(R132 "Asynchronous Correlation Value" 0x0042_0006 0x080 1 1 none)];
 
 static QUERY_FIELDS: &[FieldDescriptor] = &[
-    field!(R133 "Query Function" 0x420074 0x010 1 many none),
-    field!(R134 "Object Groups" 0x420166 0x041 0 1 ObjectGroups),
+    field!(R133 "Query Function" 0x0042_0074 0x010 1 many none),
+    field!(R134 "Object Groups" 0x0042_0166 0x041 0 1 ObjectGroups),
 ];
 
 static QUERYASYNCREQUESTS_FIELDS: &[FieldDescriptor] = &[
-    field!(R135 "Asynchronous Correlation Values" 0x420176 0x001 0 1 AsynchronousCorrelationValues),
-    field!(R136 "Operations" 0x42014f 0x011 0 1 Operations),
+    field!(R135 "Asynchronous Correlation Values" 0x0042_0176 0x001 0 1 AsynchronousCorrelationValues),
+    field!(R136 "Operations" 0x0042_014f 0x011 0 1 Operations),
 ];
 
 static REPROVISION_FIELDS: &[FieldDescriptor] = &[
-    field!(R164 "Certificate Request" 0x420018 0x001 0 1 CertificateRequest),
-    field!(R165 "Certificate" 0x420013 0x001 0 1 Certificate),
+    field!(R164 "Certificate Request" 0x0042_0018 0x001 0 1 CertificateRequest),
+    field!(R165 "Certificate" 0x0042_0013 0x001 0 1 Certificate),
 ];
 
 static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
-    field!(R145 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R146 "Certificate Request Unique Identifier" 0x420139 0x052 0 1 none),
-    field!(R147 "Certificate Request Type" 0x420019 0x010 0 1 none),
-    field!(R148 "Certificate Request Value" 0x420140 0x080 0 1 none),
-    field!(R149 "Offset" 0x420058 0x200 0 1 none),
-    field!(R150 "Attributes" 0x420125 0x001 0 1 Attributes),
-    field!(R151 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R145 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R146 "Certificate Request Unique Identifier" 0x0042_0139 0x052 0 1 none),
+    field!(R147 "Certificate Request Type" 0x0042_0019 0x010 0 1 none),
+    field!(R148 "Certificate Request Value" 0x0042_0140 0x080 0 1 none),
+    field!(R149 "Offset" 0x0042_0058 0x200 0 1 none),
+    field!(R150 "Attributes" 0x0042_0125 0x001 0 1 Attributes),
+    field!(R151 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static RECOVER_FIELDS: &[FieldDescriptor] =
-    &[field!(R137 "Unique Identifier" 0x420094 0x052 0 1 none)];
+    &[field!(R137 "Unique Identifier" 0x0042_0094 0x052 0 1 none)];
 
 static REGISTER_FIELDS: &[FieldDescriptor] = &[
-    field!(R138 "Object Type" 0x420057 0x010 1 1 none),
-    field!(R139 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R138 "Object Type" 0x0042_0057 0x010 1 1 none),
+    field!(R139 "Attributes" 0x0042_0125 0x001 1 1 Attributes),
     field!(R140 "Any Object (Section 2)" managed 0x001 1 1 none),
-    field!(R141 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R141 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static REKEY_FIELDS: &[FieldDescriptor] = &[
-    field!(R152 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R153 "Offset" 0x420058 0x200 0 1 none),
-    field!(R154 "Attributes" 0x420125 0x001 0 1 Attributes),
-    field!(R155 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
+    field!(R152 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R153 "Offset" 0x0042_0058 0x200 0 1 none),
+    field!(R154 "Attributes" 0x0042_0125 0x001 0 1 Attributes),
+    field!(R155 "Protection Storage Masks" 0x0042_015f 0x001 0 1 none),
 ];
 
 static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
-    field!(R156 "Private Key Unique Identifier" 0x420066 0x052 0 1 none),
-    field!(R157 "Offset" 0x420058 0x200 0 1 none),
-    field!(R158 "Common Attributes" 0x420126 0x001 0 1 Attributes),
-    field!(R159 "Private Key Attributes" 0x420127 0x001 0 1 Attributes),
-    field!(R160 "Public Key Attributes" 0x420128 0x001 0 1 Attributes),
-    field!(R161 "Common Protection Storage Masks" 0x420163 0x001 0 1 none),
-    field!(R162 "Private Protection Storage Masks" 0x420164 0x001 0 1 none),
-    field!(R163 "Public Protection Storage Masks" 0x420165 0x001 0 1 none),
+    field!(R156 "Private Key Unique Identifier" 0x0042_0066 0x052 0 1 none),
+    field!(R157 "Offset" 0x0042_0058 0x200 0 1 none),
+    field!(R158 "Common Attributes" 0x0042_0126 0x001 0 1 Attributes),
+    field!(R159 "Private Key Attributes" 0x0042_0127 0x001 0 1 Attributes),
+    field!(R160 "Public Key Attributes" 0x0042_0128 0x001 0 1 Attributes),
+    field!(R161 "Common Protection Storage Masks" 0x0042_0163 0x001 0 1 none),
+    field!(R162 "Private Protection Storage Masks" 0x0042_0164 0x001 0 1 none),
+    field!(R163 "Public Protection Storage Masks" 0x0042_0165 0x001 0 1 none),
 ];
 
 static REVOKE_FIELDS: &[FieldDescriptor] = &[
-    field!(R142 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R143 "Revocation Reason" 0x420081 0x011 1 1 RevocationReason),
-    field!(R144 "Compromise Occurrence Date" 0x420021 0x100 0 1 none),
+    field!(R142 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R143 "Revocation Reason" 0x0042_0081 0x011 1 1 RevocationReason),
+    field!(R144 "Compromise Occurrence Date" 0x0042_0021 0x100 0 1 none),
 ];
 
 static RNGRETRIEVE_FIELDS: &[FieldDescriptor] =
-    &[field!(R166 "Data Length" 0x4200c4 0x002 1 1 none)];
+    &[field!(R166 "Data Length" 0x0042_00c4 0x002 1 1 none)];
 
-static RNGSEED_FIELDS: &[FieldDescriptor] = &[field!(R167 "Data" 0x4200c2 0x092 1 1 none)];
+static RNGSEED_FIELDS: &[FieldDescriptor] = &[field!(R167 "Data" 0x0042_00c2 0x092 1 1 none)];
 
 static SETATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    field!(R168 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R169 "New Attribute" 0x42013d 0x001 1 1 NewAttribute),
+    field!(R168 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R169 "New Attribute" 0x0042_013d 0x001 1 1 NewAttribute),
 ];
 
 static SETCONSTRAINTS_FIELDS: &[FieldDescriptor] =
-    &[field!(R170 "Constraints" 0x420168 0x001 1 1 Constraints)];
+    &[field!(R170 "Constraints" 0x0042_0168 0x001 1 1 Constraints)];
 
 static SETDEFAULTS_FIELDS: &[FieldDescriptor] =
-    &[field!(R171 "Defaults Information" 0x420152 0x001 0 1 DefaultsInformation)];
+    &[field!(R171 "Defaults Information" 0x0042_0152 0x001 0 1 DefaultsInformation)];
 
 static SIGN_FIELDS: &[FieldDescriptor] = &[
-    field!(R172 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R173 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
-    field!(R174 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R175 "Digested Data" 0x420107 0x080 0 1 none),
-    field!(R176 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R177 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R178 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R172 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R173 "Cryptographic Parameters" 0x0042_002b 0x001 0 1 CryptographicParameters),
+    field!(R174 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R175 "Digested Data" 0x0042_0107 0x080 0 1 none),
+    field!(R176 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R177 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R178 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
 ];
 
 static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
-    field!(R179 "Unique Identifier" 0x420094 0x052 0 1 none),
-    field!(R180 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
-    field!(R181 "Data" 0x4200c2 0x092 0 1 none),
-    field!(R182 "Digested Data" 0x420107 0x080 0 1 none),
-    field!(R183 "Signature Data" 0x4200c3 0x080 0 1 none),
-    field!(R184 "Correlation Value" 0x4200d6 0x080 0 1 none),
-    field!(R185 "Init Indicator" 0x4200d7 0x020 0 1 none),
-    field!(R186 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R179 "Unique Identifier" 0x0042_0094 0x052 0 1 none),
+    field!(R180 "Cryptographic Parameters" 0x0042_002b 0x001 0 1 CryptographicParameters),
+    field!(R181 "Data" 0x0042_00c2 0x092 0 1 none),
+    field!(R182 "Digested Data" 0x0042_0107 0x080 0 1 none),
+    field!(R183 "Signature Data" 0x0042_00c3 0x080 0 1 none),
+    field!(R184 "Correlation Value" 0x0042_00d6 0x080 0 1 none),
+    field!(R185 "Init Indicator" 0x0042_00d7 0x020 0 1 none),
+    field!(R186 "Final Indicator" 0x0042_00d8 0x020 0 1 none),
 ];
 
 static VALIDATE_FIELDS: &[FieldDescriptor] = &[
-    field!(R187 "Certificate" 0x420013 0x001 0 many Certificate),
-    field!(R188 "Unique Identifier" 0x420094 0x052 0 many none),
-    field!(R189 "Validity Date" 0x42009a 0x100 0 1 none),
+    field!(R187 "Certificate" 0x0042_0013 0x001 0 many Certificate),
+    field!(R188 "Unique Identifier" 0x0042_0094 0x052 0 many none),
+    field!(R189 "Validity Date" 0x0042_009a 0x100 0 1 none),
 ];

@@ -135,7 +135,8 @@ def field_descriptor(cells: list[str]) -> str:
         raw_tag = re.search(r"0x([0-9A-Fa-f]{6})", field_text)
         if raw_tag is None:
             raise ValueError(f"missing exact tag for {field_text}")
-        tag = f"0x{int(raw_tag.group(1), 16):06x}"
+        digits = f"{int(raw_tag.group(1), 16):08x}"
+        tag = f"0x{digits[:4]}_{digits[4:]}"
     minimum, maximum = cardinality(cells[5])
     maximum_expression = "many" if maximum is None else str(maximum)
     nested_match = re.search(r"nested schema: ([A-Za-z][A-Za-z0-9]*)", cells[7])
