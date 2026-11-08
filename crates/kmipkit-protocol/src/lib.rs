@@ -176,6 +176,7 @@ pub use key_material::{
     KeyMaterial, TransparentDhPrivateKey, TransparentDhPublicKey, TransparentDsaPrivateKey,
     TransparentDsaPublicKey, TransparentEcPrivateKey, TransparentEcPublicKey,
     TransparentRsaPrivateKey, TransparentRsaPublicKey, TransparentSymmetricKey,
+    expected_key_material_item_type,
 };
 pub use key_wrapping::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
 pub use link_normalizer::{LinkNormalizer, LinkType};
