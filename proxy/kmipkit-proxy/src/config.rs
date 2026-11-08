@@ -74,6 +74,7 @@ impl Default for ProxyBehaviorConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AwsConfig {
     pub region: Option<String>,
+    pub endpoint_url: Option<String>,
     pub envelope_master_kek_id: Option<String>,
     pub secret_name_prefix: Option<String>,
 }

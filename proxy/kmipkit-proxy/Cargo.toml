@@ -13,15 +13,18 @@ name = "kmipkit-proxy"
 path = "src/main.rs"
 
 [features]
-default = ["all-clouds"]
+default = []
 all-clouds = ["aws", "azure", "gcp", "oci"]
-aws = []
+aws = ["dep:aws-config", "dep:aws-sdk-kms", "dep:aws-sdk-secretsmanager"]
 azure = []
 gcp = []
 oci = ["dep:reqwest"]
 
 [dependencies]
 async-trait = "0.1"
+aws-config = { version = "1.5", optional = true, default-features = false, features = ["rustls", "default-https-client", "rt-tokio"] }
+aws-sdk-kms = { version = "1.52", optional = true, default-features = false, features = ["rustls", "default-https-client", "rt-tokio"] }
+aws-sdk-secretsmanager = { version = "1.52", optional = true, default-features = false, features = ["rustls", "default-https-client", "rt-tokio"] }
 aws-lc-rs = { version = "=1.18.1", default-features = false, features = ["prebuilt-nasm"] }
 base64 = "0.22"
 bytes = { version = "=1.12.1", default-features = false, features = ["std"] }
