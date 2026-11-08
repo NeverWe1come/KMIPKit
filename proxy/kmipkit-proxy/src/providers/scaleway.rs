@@ -257,18 +257,18 @@ impl CloudKmsProvider for ScalewayKmsProvider {
             ))
         })?;
 
-        let secret_id = resp_json
+        let item_id = resp_json
             .get("id")
             .and_then(|v| v.as_str())
             .ok_or_else(|| {
-                ProxyError::ProviderError("Scaleway Secret Manager missing secret id".to_string())
+                ProxyError::ProviderError("Scaleway Secret Manager missing item id".to_string())
             })?
             .to_string();
 
         // 2. Create Secret Version
         let ver_url = format!(
             "{}/secret-manager/v1beta1/regions/{}/secrets/{}/versions",
-            self.endpoint_url, self.region, secret_id
+            self.endpoint_url, self.region, item_id
         );
         let ver_body = serde_json::json!({
             "data": wrapped_b64
@@ -290,7 +290,7 @@ impl CloudKmsProvider for ScalewayKmsProvider {
             )));
         }
 
-        Ok(secret_id)
+        Ok(item_id)
     }
 
     async fn get_key_material(
