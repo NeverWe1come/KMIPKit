@@ -337,3 +337,23 @@ mount-specific result does not reproduce on Windows, where all nine tests pass,
 or in the earlier native hosted run, whose only reported failure was the
 89-percent coverage threshold. The current 0048 HEAD still needs a fresh hosted
 CI result; prior queued runs were for superseded SHAs and were cancelled.
+
+## Stacked-base refresh and T102 snapshot reconciliation (2026-11-08)
+
+PR #140 became unmergeable after its 0047 base advanced. The 0048 worktree now
+merges the current 0047 head with a regular merge commit; no force push was
+used. That merge exposed two stale non-target declaration fingerprints in the
+Certify and optional-request T102 tests.
+
+- RED: after merge commit `965223f5f`, the six affected T102 modules ran 28
+  tests and failed only the two stale snapshot assertions. The observed
+  fingerprints were `6c73940a...` for Certify and `b77c675a...` for optional
+  request structures; the previous values represented the pre-0047 stack.
+- GREEN `1e310bd24`: the two snapshots now pin the merged 0047+0048 manifest.
+  All 28 tests across the six affected modules pass.
+- Verification: `tools/api_manifest/generate.py --check` verified all 12
+  generated outputs, and `git diff --check` passed. The manifest outputs did
+  not need regeneration.
+
+The updated 0048 head must receive hosted CI after this merge-conflict repair;
+the previously queued workflows covered earlier SHAs.
