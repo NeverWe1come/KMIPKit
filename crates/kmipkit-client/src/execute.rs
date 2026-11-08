@@ -7617,11 +7617,40 @@ fn push_batch_item_operation(
     push(batch_item, OPERATION, Value::enumeration(operation))
 }
 
+fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
+    const OPERATION_HEADER: [u8; 8] = [0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04];
+    if bytes.get(8..8 + OPERATION_HEADER.len()) != Some(OPERATION_HEADER.as_slice()) {
+        return Err(ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidEncoding,
+            std::io::Error::other("encoded Batch Item does not start with Operation Enumeration"),
+        ));
+    }
+    let raw = bytes.get(16..20).ok_or_else(|| {
+        ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidEncoding,
+            std::io::Error::other("encoded Operation Enumeration is truncated"),
+        )
+    })?;
+    let raw = decode_operation_enumeration(raw)?;
+    Ok(u32::from_be_bytes(raw))
+}
+
+fn decode_operation_enumeration(bytes: &[u8]) -> Result<[u8; 4], ProtocolError> {
+    bytes.try_into().map_err(|_| {
+        ProtocolError::new(
+            ProtocolErrorKind::InvalidValue,
+            ProtocolCauseCategory::InvalidEncoding,
+            std::io::Error::other("encoded Operation Enumeration has invalid width"),
+        )
+    })
+}
+
 #[cfg(feature = "test-support")]
 pub(crate) fn encoded_batch_item_operation_for_test(
     item: ClientBatchItem,
 ) -> Result<u32, ProtocolError> {
-    const OPERATION_HEADER: [u8; 8] = [0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04];
     // This probe deliberately omits operation-specific payload fields. It
     // verifies the emitted Operation Enumeration for every public factory
     // without copying any request secret into test output or diagnostics.
@@ -7643,29 +7672,7 @@ pub(crate) fn encoded_batch_item_operation_for_test(
                 error,
             )
         })?;
-    let bytes = encoded.as_bytes();
-    if bytes.get(8..8 + OPERATION_HEADER.len()) != Some(OPERATION_HEADER.as_slice()) {
-        return Err(ProtocolError::new(
-            ProtocolErrorKind::InvalidValue,
-            ProtocolCauseCategory::InvalidEncoding,
-            std::io::Error::other("encoded Batch Item does not start with Operation Enumeration"),
-        ));
-    }
-    let raw = bytes.get(16..20).ok_or_else(|| {
-        ProtocolError::new(
-            ProtocolErrorKind::InvalidValue,
-            ProtocolCauseCategory::InvalidEncoding,
-            std::io::Error::other("encoded Operation Enumeration is truncated"),
-        )
-    })?;
-    let raw: [u8; 4] = raw.try_into().map_err(|_| {
-        ProtocolError::new(
-            ProtocolErrorKind::InvalidValue,
-            ProtocolCauseCategory::InvalidEncoding,
-            std::io::Error::other("encoded Operation Enumeration has invalid width"),
-        )
-    })?;
-    Ok(u32::from_be_bytes(raw))
+    decode_batch_item_operation(encoded.as_bytes())
 }
 
 fn message_extension_structure(
