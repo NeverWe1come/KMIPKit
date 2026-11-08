@@ -7,7 +7,9 @@ use kmipkit_ttlv::{Item, ItemType, StructureView, Value, ValueView};
 
 use crate::{AttributeSet, KeyCompressionType, KeyFormatType, ManagedObjectError, SecretBytes};
 
-use crate::key_material::{KeyMaterial, validate_key_material_item};
+use crate::key_material::{
+    KeyMaterial, expected_key_material_item_type, validate_key_material_item,
+};
 use crate::key_wrapping::KeyWrappingData;
 use crate::managed_object::{checked_tag, make_item};
 
@@ -509,14 +511,8 @@ impl KeyValue {
 }
 
 fn key_format_accepts_material(format: u32, material_format: u32, item_type: ItemType) -> bool {
-    if (1..=15).contains(&format) && format != material_format {
+    if expected_key_material_item_type(format).is_some() && format != material_format {
         return false;
     }
-    if (1..=6).contains(&format) {
-        item_type == ItemType::ByteString
-    } else if (7..=15).contains(&format) {
-        item_type == ItemType::Structure
-    } else {
-        true
-    }
+    expected_key_material_item_type(format).is_none_or(|expected| expected == item_type)
 }
