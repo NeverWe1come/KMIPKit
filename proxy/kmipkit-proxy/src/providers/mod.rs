@@ -14,6 +14,7 @@ pub mod aws;
 pub mod azure;
 pub mod gcp;
 pub mod oci;
+pub mod vault;
 
 /// Normalized map of cloud tags/labels.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -501,6 +502,7 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
         "azure" => Ok(Arc::new(azure::AzureKeyVaultProvider::new(&config.azure)?)),
         "gcp" => Ok(Arc::new(gcp::GcpKmsProvider::new(&config.gcp)?)),
         "oci" => Ok(Arc::new(oci::OciVaultProvider::new(&config.oci)?)),
+        "vault" | "openbao" => Ok(Arc::new(vault::VaultKmsProvider::new(&config.vault)?)),
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
