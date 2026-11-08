@@ -227,6 +227,7 @@
 mod config;
 mod error;
 mod https;
+pub mod listener;
 mod raw_tls;
 mod response;
 mod secret;
@@ -237,6 +238,9 @@ mod tls;
 #[cfg(test)]
 #[path = "../tests/unit/https_transport_tests.rs"]
 mod https_transport_tests;
+#[cfg(test)]
+#[path = "../tests/unit/listener_tests.rs"]
+mod listener_tests;
 #[cfg(test)]
 #[path = "../tests/unit/raw_tls_tests.rs"]
 mod raw_tls_tests;
@@ -276,6 +280,10 @@ pub use config::{
 };
 pub use error::{RequestDeliveryState, TransportCauseCategory, TransportError};
 pub use https::HttpsTransport;
+pub use listener::{
+    HttpsListener, HttpsServerConnection, ListenerTransportConfig, ListenerTransportConfigBuilder,
+    RawTlsListener, RawTlsRoleReversedStream, RawTlsServerConnection,
+};
 pub use raw_tls::RawTlsTransport;
 pub use response::TransportResponse;
 

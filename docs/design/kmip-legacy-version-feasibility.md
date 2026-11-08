@@ -1,19 +1,16 @@
 # KMIP legacy-version compatibility feasibility
 
-Status: Exploratory research; no implementation is authorized by this document.
-Date: 2026-10-09
+Status: Superseded by ADR-0022 and KMIPKIT-0069.
+Date: 2026-10-09 (Updated 2026-11-07)
 
 ## Purpose and release boundary
 
-This document records the feasibility and a proposed direction for supporting
-KMIP versions older than 2.1. It does not change the approved KMIPKit 1.0.0
-scope. Version 1.0.0 remains a KMIP 2.1-only client, as recorded in the
-[project definition](project-definition.md) and [ADR-0002](../adr/0002-kmip-21-release-scope.md).
-Legacy-version implementation starts only after KMIPKit 1.0.0 is complete and
-published, and requires its own reviewed ADR and approved Spec Kit specification.
-
-This is exploratory research, not a conformance claim, feature specification,
-or approval to change the release boundary.
+This document originally recorded research for supporting KMIP versions older than 2.1.
+On 2026-11-07, the maintainer ratified **ADR-0022** and **KMIPKIT-0069**, adopting the **Modern KMIP Only (2.0, 2.1, 3.0+)** architecture:
+- **KMIP 2.0**: Supported in full (100%) alongside KMIP 2.1.
+- **KMIP 2.1**: Retained as canonical default with zero breakage.
+- **KMIP 3.0**: Supported via versioned codecs, typed links, and KEM extensions.
+- **KMIP 1.0–1.4**: Formally excluded from the client library. Test-server backward translation (`v1_compat.rs`) remains preserved for testing purposes.
 
 ## Findings
 
