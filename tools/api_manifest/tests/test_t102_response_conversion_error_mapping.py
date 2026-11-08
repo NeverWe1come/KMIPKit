@@ -262,7 +262,10 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             and isinstance(type_record["c"].get("releaseFunction"), str)
         }
         generate._validate_ready_mapping_targets(
-            manifest["publicDeclarations"], package_languages, c_release_functions
+            manifest["publicDeclarations"],
+            package_languages,
+            c_release_functions,
+            exclusions=manifest["approvedExclusions"],
         )
 
         for language, mapping in EXPECTED_MAPPING.items():

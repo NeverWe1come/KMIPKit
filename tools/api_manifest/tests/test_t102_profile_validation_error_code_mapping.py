@@ -41,6 +41,11 @@ VARIANT_CODES = {
     "ProfileStateContextRequired": "profile_state_context_required",
     "ProfileStateBindingMismatch": "profile_state_binding_mismatch",
 }
+PROFILE_ERROR_CODE_SUFFIXES = (
+    "",
+    "::as_str",
+    *(f"::{variant}" for variant in VARIANT_CODES),
+)
 LANGUAGE_TARGETS = {
     "c": (
         "c-kmipkit",
@@ -71,20 +76,22 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
         expected = {
             (package, f"{crate}::ProfileValidationErrorCode{suffix}")
             for package, crate in PACKAGES.items()
-            for suffix in (
-                "",
-                "::as_str",
-                *(f"::{variant}" for variant in VARIANT_CODES),
-            )
+            for suffix in PROFILE_ERROR_CODE_SUFFIXES
         }
+        expected.update(
+            (
+                "rust-kmipkit",
+                f"kmipkit::protocol::ProfileValidationErrorCode{suffix}",
+            )
+            for suffix in PROFILE_ERROR_CODE_SUFFIXES
+        )
         self.assertEqual(expected, set(rows))
-        self.assertEqual(60, len(rows))
+        self.assertEqual(80, len(rows))
         self.assertEqual(18, len(VARIANT_CODES))
 
         declarations = self.manifest["publicDeclarations"]
         for (package, export_name), row in rows.items():
-            crate = PACKAGES[package]
-            suffix = export_name.removeprefix(f"{crate}::ProfileValidationErrorCode")
+            suffix = export_name.split("ProfileValidationErrorCode", maxsplit=1)[1]
             expected_kind = "type" if not suffix else (
                 "associated-item" if suffix == "::as_str" else "variant"
             )
