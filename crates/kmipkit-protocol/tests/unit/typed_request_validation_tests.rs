@@ -1125,6 +1125,31 @@ fn import_validation_recurses_into_the_selected_managed_object() {
 }
 
 #[test]
+fn import_validation_checks_required_fields_for_pgp_secret_and_split_keys() {
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    for (object_tag, object_type) in [(0x0042_00BD, 9), (0x0042_0085, 7), (0x0042_0089, 5)] {
+        let object = schema_item(
+            object_tag,
+            Value::structure(schema_structure([schema_item(
+                KEY_BLOCK,
+                Value::structure(schema_structure([])),
+            )])),
+        );
+        let report = ImportRequest::new(
+            UniqueIdentifier::TextString("object-id".to_owned()),
+            ObjectType::from_raw(object_type),
+            AttributeSet::new(),
+            object,
+        )
+        .validate();
+        assert!(!report.is_valid(), "object tag 0x{object_tag:08x}");
+        assert!(report.issues().iter().any(|issue| {
+            issue.source().to_string().contains("KMIP v2.1 §2.")
+        }));
+    }
+}
+
+#[test]
 fn import_and_register_validation_reject_known_object_type_mismatches() {
     const OPAQUE_OBJECT: u32 = 0x0042_005B;
     const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
