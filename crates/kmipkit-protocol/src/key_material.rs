@@ -111,12 +111,20 @@ impl KeyMaterial {
 }
 
 fn format_accepts_type(format: u32, item_type: ItemType) -> bool {
-    if (1..=6).contains(&format) {
-        item_type == ItemType::ByteString
-    } else if (7..=15).contains(&format) {
-        item_type == ItemType::Structure
-    } else {
-        matches!(item_type, ItemType::ByteString | ItemType::Structure)
+    expected_key_material_item_type(format).map_or(
+        matches!(item_type, ItemType::ByteString | ItemType::Structure),
+        |expected| expected == item_type,
+    )
+}
+
+/// Returns the TTLV type required by an assigned KMIP 2.1 Key Format Type.
+/// Reserved and vendor-defined values remain open and return `None`.
+#[must_use]
+pub const fn expected_key_material_item_type(format: u32) -> Option<ItemType> {
+    match format {
+        0x0000_0001..=0x0000_0006 | 0x0000_0016..=0x0000_0017 => Some(ItemType::ByteString),
+        0x0000_0007..=0x0000_000D | 0x0000_0014..=0x0000_0015 => Some(ItemType::Structure),
+        _ => None,
     }
 }
 
