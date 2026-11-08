@@ -291,3 +291,9 @@ Existing untracked files and target directories were preserved; target sizes
 were never inspected. There is no fresh coverage measurement or cross-platform
 aggregate. Existing hosted CI, coverage, human review, and ADR-0012 hosted
 candidate-test gates remain outstanding; the branch remains draft.
+
+## Stacked CI formatting correction (2026-11-08)
+
+- **Red:** `cargo +1.94 fmt --all --check` failed on this branch and hosted Core jobs for #142. Rustfmt required `mod kem` and `pub use kem` to precede the `key_*` declarations/exports in `crates/kmipkit-protocol/src/lib.rs`.
+- **Green:** commit `8e3a27fb9` applies only rustfmt's ordering in that file; it does not change protocol behavior or public symbols.
+- **Verification:** `cargo +1.94 fmt --all --check` passed after formatting. The same correction is included in the #143 branch so stacked descendants inherit it. Full hosted CI is still pending and is not claimed green by this local formatting check.
