@@ -281,7 +281,7 @@ fn copy_field_value(item_type: ItemType, value: &ValueView<'_>) -> ManagedFieldV
         ValueView::DateTime(value) => ManagedFieldValue::DateTime(**value),
         ValueView::Interval(value) => ManagedFieldValue::Interval(**value),
         ValueView::DateTimeExtended(value) => ManagedFieldValue::DateTimeExtended(**value),
-        _ => ManagedFieldValue::Unknown(item_type),
+        _ => ManagedFieldValue::Unknown(item_type), // COVERAGE-EXCLUDE: ValueView currently has no unknown variant; retain this arm for future TTLV types.
     }
 }
 
