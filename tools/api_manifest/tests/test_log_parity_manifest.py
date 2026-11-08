@@ -19,10 +19,11 @@ OPERATION_REQUIREMENTS = {
     *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 7, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
 }
-REQUIREMENTS = OPERATION_REQUIREMENTS | {
+DIRECT_API_REQUIREMENTS = {
     "KMIPKIT-0050-FR-010",
     "KMIPKIT-0050-FR-011",
 }
+VERIFIED_DECLARATION_REQUIREMENTS = OPERATION_REQUIREMENTS | DIRECT_API_REQUIREMENTS
 TRACEABILITY_IDS = {
     "KMIPKIT-028-T250-MESSAGE",
     "KMIPKIT-028-T251-EMPTY",
@@ -178,7 +179,7 @@ class LogParityManifestTests(unittest.TestCase):
         )
         t053_row = next(line for line in mapping_traceability.splitlines() if line.startswith("| T053 |"))
         linked_api_requirements = {
-            value for value in REQUIREMENTS if value.startswith("KMIPKIT-0043-")
+            value for value in OPERATION_REQUIREMENTS if value.startswith("KMIPKIT-0043-")
         }
         self.assertTrue(
             linked_api_requirements <= set(re.findall(r"KMIPKIT-0043-FR-\d{3}", t053_row))
@@ -266,7 +267,7 @@ class LogParityManifestTests(unittest.TestCase):
         ]
         self.assertTrue(verified_log_declarations)
         self.assertEqual(
-            REQUIREMENTS,
+            VERIFIED_DECLARATION_REQUIREMENTS,
             {
                 requirement
                 for row in verified_log_declarations
