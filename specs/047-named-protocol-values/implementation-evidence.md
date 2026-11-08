@@ -286,3 +286,9 @@ manifest contains 11,588 declarations and 14,746 exclusions. Locate and profile
 diagnostic checks also omitted the newly mapped `kmipkit::protocol` aliases,
 and a ready-mapping test did not supply its approved exclusions to the shared
 validator.
+
+Green evidence: the shared T102 totals now pin the current manifest. The Locate
+and profile-validation snapshots explicitly include the facade aliases, and
+the validator fixture supplies its approved exclusions. The full T102 suite
+passed (399 tests), and API-manifest generation `--check` verified all 12
+outputs. No generated manifest output changed.

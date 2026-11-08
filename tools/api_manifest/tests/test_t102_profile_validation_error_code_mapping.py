@@ -77,14 +77,24 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
                 *(f"::{variant}" for variant in VARIANT_CODES),
             )
         }
+        expected.update(
+            (
+                "rust-kmipkit",
+                f"kmipkit::protocol::ProfileValidationErrorCode{suffix}",
+            )
+            for suffix in (
+                "",
+                "::as_str",
+                *(f"::{variant}" for variant in VARIANT_CODES),
+            )
+        )
         self.assertEqual(expected, set(rows))
-        self.assertEqual(60, len(rows))
+        self.assertEqual(80, len(rows))
         self.assertEqual(18, len(VARIANT_CODES))
 
         declarations = self.manifest["publicDeclarations"]
         for (package, export_name), row in rows.items():
-            crate = PACKAGES[package]
-            suffix = export_name.removeprefix(f"{crate}::ProfileValidationErrorCode")
+            suffix = export_name.split("ProfileValidationErrorCode", maxsplit=1)[1]
             expected_kind = "type" if not suffix else (
                 "associated-item" if suffix == "::as_str" else "variant"
             )

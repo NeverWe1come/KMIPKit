@@ -188,7 +188,7 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-573ae1d0de80ffa2884b",
 }
 # The non-target snapshot includes subsequent approved T102 manifest slices.
-OTHER_DECLARATIONS_SHA256 = "c5853de988901f59c51ba64d80accc51a4b873161da1a75ef1c3315b7e4ae541"
+OTHER_DECLARATIONS_SHA256 = "5d20a6938287ba7fa3ec9ae649363a4c2a04c0b292d3bcf4d4326a94b8669f18"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
