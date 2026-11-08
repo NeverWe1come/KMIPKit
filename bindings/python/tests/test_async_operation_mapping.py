@@ -566,7 +566,7 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
     allow_copy = Event()
     close_finished = Event()
     callback_values: list[bytes] = []
-    failures: list[BaseException] = []
+    failures: list[Exception] = []
     response = SimpleNamespace(
         has_asynchronous_correlation_value=1,
         asynchronous_correlation_value=SimpleNamespace(
@@ -597,7 +597,7 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
                 "kmipkit_client_async_operation_outcome_cancel_response_v1",
                 lambda view: callback_values.append(bytes(view)),
             )
-        except BaseException as error:
+        except Exception as error:
             failures.append(error)
 
     def close_outcome() -> None:

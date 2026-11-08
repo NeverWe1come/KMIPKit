@@ -3013,7 +3013,13 @@ fn cancel_response_echo_is_exposed(result_status: u32, has_cancellation_result: 
     result_status == 0 && has_cancellation_result
 }
 
-fn async_response_v1_output(
+/// Initializes the two output slots used by the typed asynchronous response exports.
+///
+/// # Safety
+///
+/// Both output pointers must be aligned and writable for their declared types. They must not
+/// overlap each other or the asynchronous outcome handle storage.
+unsafe fn async_response_v1_output(
     out_present: *mut u8,
     out_response: *mut kmipkit_client_async_operation_response_v1_t,
 ) -> FfiResult<()> {
@@ -3023,7 +3029,8 @@ fn async_response_v1_output(
     {
         return Err(ERROR_INVALID_INPUT);
     }
-    // SAFETY: both pointers are checked non-null and the caller provides writable output storage.
+    // SAFETY: the caller guarantees aligned writable storage; the checks above reject null and
+    // overlapping output pointers before either pointer is dereferenced.
     unsafe {
         *out_present = 0;
         *out_response = kmipkit_client_async_operation_response_v1_t::default();
@@ -3032,14 +3039,23 @@ fn async_response_v1_output(
 }
 
 /// Reads a typed Cancel response view with a correlation span borrowed from the outcome.
+///
+/// # Safety
+///
+/// `outcome_pointer` must be null or a live asynchronous-outcome handle. `out_present` and
+/// `out_response` must point to aligned, writable storage of their respective types and must not
+/// overlap each other or the outcome handle storage. Any returned correlation span borrows from
+/// the outcome and must be copied or discarded before the handle is released.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_async_operation_outcome_cancel_response_v1(
+pub unsafe extern "C" fn kmipkit_client_async_operation_outcome_cancel_response_v1(
     outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
     out_present: *mut u8,
     out_response: *mut kmipkit_client_async_operation_response_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        try_ffi!(async_response_v1_output(out_present, out_response));
+        // SAFETY: the export's caller must satisfy the documented pointer preconditions.
+        let output_initialization = unsafe { async_response_v1_output(out_present, out_response) };
+        try_ffi!(output_initialization);
         let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
         let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -3077,7 +3093,7 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_cancel_response_v1(
             reserved: 0,
             response_payload_member_count: 0,
         };
-        // SAFETY: the output pointers were checked and initialized above.
+        // SAFETY: the caller guarantees valid output storage; the helper checked null and overlap.
         unsafe {
             *out_response = output;
             *out_present = 1;
@@ -3087,14 +3103,23 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_cancel_response_v1(
 }
 
 /// Reads a typed Poll response view with a correlation span borrowed from the outcome.
+///
+/// # Safety
+///
+/// `outcome_pointer` must be null or a live asynchronous-outcome handle. `out_present` and
+/// `out_response` must point to aligned, writable storage of their respective types and must not
+/// overlap each other or the outcome handle storage. Any returned correlation span borrows from
+/// the outcome and must be copied or discarded before the handle is released.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_async_operation_outcome_poll_response_v1(
+pub unsafe extern "C" fn kmipkit_client_async_operation_outcome_poll_response_v1(
     outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
     out_present: *mut u8,
     out_response: *mut kmipkit_client_async_operation_response_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        try_ffi!(async_response_v1_output(out_present, out_response));
+        // SAFETY: the export's caller must satisfy the documented pointer preconditions.
+        let output_initialization = unsafe { async_response_v1_output(out_present, out_response) };
+        try_ffi!(output_initialization);
         let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
         let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -3122,7 +3147,7 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_poll_response_v1(
             reserved: 0,
             response_payload_member_count: 0,
         };
-        // SAFETY: the output pointers were checked and initialized above.
+        // SAFETY: the caller guarantees valid output storage; the helper checked null and overlap.
         unsafe {
             *out_response = output;
             *out_present = 1;
@@ -3132,14 +3157,23 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_poll_response_v1(
 }
 
 /// Reads a typed Process response view with borrowed correlation and payload-shape metadata.
+///
+/// # Safety
+///
+/// `outcome_pointer` must be null or a live asynchronous-outcome handle. `out_present` and
+/// `out_response` must point to aligned, writable storage of their respective types and must not
+/// overlap each other or the outcome handle storage. Any returned correlation span borrows from
+/// the outcome and must be copied or discarded before the handle is released.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_async_operation_outcome_process_response_v1(
+pub unsafe extern "C" fn kmipkit_client_async_operation_outcome_process_response_v1(
     outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
     out_present: *mut u8,
     out_response: *mut kmipkit_client_async_operation_response_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        try_ffi!(async_response_v1_output(out_present, out_response));
+        // SAFETY: the export's caller must satisfy the documented pointer preconditions.
+        let output_initialization = unsafe { async_response_v1_output(out_present, out_response) };
+        try_ffi!(output_initialization);
         let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
         let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -3172,7 +3206,7 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_process_response_v1(
             reserved: 0,
             response_payload_member_count,
         };
-        // SAFETY: the output pointers were checked and initialized above.
+        // SAFETY: the caller guarantees valid output storage; the helper checked null and overlap.
         unsafe {
             *out_response = output;
             *out_present = 1;
@@ -3182,14 +3216,23 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_process_response_v1(
 }
 
 /// Reads Query Asynchronous Requests status; Table 286 payload content remains generic TTLV.
+///
+/// # Safety
+///
+/// `outcome_pointer` must be null or a live asynchronous-outcome handle. `out_present` and
+/// `out_response` must point to aligned, writable storage of their respective types and must not
+/// overlap each other or the outcome handle storage. Any returned correlation span borrows from
+/// the outcome and must be copied or discarded before the handle is released.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_async_operation_outcome_query_async_requests_response_v1(
+pub unsafe extern "C" fn kmipkit_client_async_operation_outcome_query_async_requests_response_v1(
     outcome_pointer: *mut kmipkit_client_async_operation_outcome_t,
     out_present: *mut u8,
     out_response: *mut kmipkit_client_async_operation_response_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        try_ffi!(async_response_v1_output(out_present, out_response));
+        // SAFETY: the export's caller must satisfy the documented pointer preconditions.
+        let output_initialization = unsafe { async_response_v1_output(out_present, out_response) };
+        try_ffi!(output_initialization);
         let handle = read_handle!(outcome_pointer, ClientAsyncOperationOutcome);
         let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -3217,7 +3260,7 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_query_async_requests_re
             reserved: 0,
             response_payload_member_count: 0,
         };
-        // SAFETY: the output pointers were checked and initialized above.
+        // SAFETY: the caller guarantees valid output storage; the helper checked null and overlap.
         unsafe {
             *out_response = output;
             *out_present = 1;
