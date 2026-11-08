@@ -699,12 +699,7 @@ fn compiled_c_consumer_dispatches_generic_object_and_key_material_schemas() {
         let mut output = ptr::null_mut();
         // SAFETY: The empty field list is valid storage for a zero count, and `output` is writable.
         let status = unsafe {
-            kmipkit_0053_key_material_from_fields(
-                format_raw,
-                ptr::null_mut(),
-                0,
-                &raw mut output,
-            )
+            kmipkit_0053_key_material_from_fields(format_raw, ptr::null_mut(), 0, &raw mut output)
         };
         assert!(
             status == SUCCESS || status == ERROR_INVALID_INPUT,
