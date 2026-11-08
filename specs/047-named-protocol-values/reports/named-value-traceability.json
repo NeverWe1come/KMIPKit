@@ -2,6 +2,154 @@
   "formatVersion": 1,
   "specId": "KMIPKIT-0047",
   "catalogPath": "specification/catalog/kmip-2.1.json",
+  "versionedCatalogPath": "specification/catalog/kmip-versioned-values.json",
+  "versionedGroups": [
+    {
+      "version": "v2_1",
+      "kind": "enumeration",
+      "name": "Operation",
+      "sourceId": "kmip-2.1",
+      "section": "11.36",
+      "table": "470",
+      "assignedValues": [
+        {
+          "name": "Set Defaults",
+          "identifier": "SET_DEFAULTS",
+          "wireValue": "0x00000036"
+        },
+        {
+          "name": "Set Constraints",
+          "identifier": "SET_CONSTRAINTS",
+          "wireValue": "0x00000037"
+        },
+        {
+          "name": "Get Constraints",
+          "identifier": "GET_CONSTRAINTS",
+          "wireValue": "0x00000038"
+        },
+        {
+          "name": "Query Asynchronous Requests",
+          "identifier": "QUERY_ASYNCHRONOUS_REQUESTS",
+          "wireValue": "0x00000039"
+        },
+        {
+          "name": "Process",
+          "identifier": "PROCESS",
+          "wireValue": "0x0000003A"
+        },
+        {
+          "name": "Ping",
+          "identifier": "PING",
+          "wireValue": "0x0000003B"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Operation",
+      "sourceId": "kmip-3.0",
+      "section": "11.37",
+      "table": "583",
+      "assignedValues": [
+        {
+          "name": "Create Group",
+          "identifier": "CREATE_GROUP",
+          "wireValue": "0x0000003C"
+        },
+        {
+          "name": "Obliterate",
+          "identifier": "OBLITERATE",
+          "wireValue": "0x0000003D"
+        },
+        {
+          "name": "Create User",
+          "identifier": "CREATE_USER",
+          "wireValue": "0x0000003E"
+        },
+        {
+          "name": "Create Credential",
+          "identifier": "CREATE_CREDENTIAL",
+          "wireValue": "0x0000003F"
+        },
+        {
+          "name": "Deactivate",
+          "identifier": "DEACTIVATE",
+          "wireValue": "0x00000040"
+        },
+        {
+          "name": "Encapsulate",
+          "identifier": "ENCAPSULATE",
+          "wireValue": "0x00000041"
+        },
+        {
+          "name": "Decapsulate",
+          "identifier": "DECAPSULATE",
+          "wireValue": "0x00000042"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Object Class",
+      "sourceId": "kmip-3.0",
+      "section": "11.34",
+      "table": "581",
+      "assignedValues": [
+        {
+          "name": "User",
+          "identifier": "USER",
+          "wireValue": "0x00000001"
+        },
+        {
+          "name": "System",
+          "identifier": "SYSTEM",
+          "wireValue": "0x00000002"
+        }
+      ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Object Type",
+      "sourceId": "kmip-3.0",
+      "section": "11.35",
+      "table": "582",
+      "assignedValues": [
+        {
+          "name": "User",
+          "identifier": "USER",
+          "wireValue": "0x0000000B"
+        },
+        {
+          "name": "Group",
+          "identifier": "GROUP",
+          "wireValue": "0x0000000C"
+        },
+        {
+          "name": "Password Credential",
+          "identifier": "PASSWORD_CREDENTIAL",
+          "wireValue": "0x0000000D"
+        },
+        {
+          "name": "Device Credential",
+          "identifier": "DEVICE_CREDENTIAL",
+          "wireValue": "0x0000000E"
+        },
+        {
+          "name": "One Time Password Credential",
+          "identifier": "ONE_TIME_PASSWORD_CREDENTIAL",
+          "wireValue": "0x0000000F"
+        },
+        {
+          "name": "Hashed Password Credential",
+          "identifier": "HASHED_PASSWORD_CREDENTIAL",
+          "wireValue": "0x00000010"
+        }
+      ]
+    }
+  ],
   "groups": [
     {
       "kind": "enumeration",

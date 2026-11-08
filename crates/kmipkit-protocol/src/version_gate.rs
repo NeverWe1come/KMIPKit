@@ -87,17 +87,19 @@ impl VersionGate {
     /// Returns the normative version span for a known KMIP client-to-server operation.
     #[must_use]
     pub fn operation_span(operation: u32) -> Option<VersionSpan> {
-        match operation {
-            // Operations introduced in KMIP 2.1 (Set Defaults through Ping)
-            0x0000_0036..=0x0000_003B => Some(VersionSpan::since(ProtocolVersion::V2_1)),
+        use crate::named_values_generated::values::{
+            enumeration::operation as kmip_2_1,
+            versions::{v2_1, v3_0},
+        };
 
-            // Operations introduced in KMIP 3.0 (Create User through ReEncrypt)
-            0x0000_003C..=0x0000_0042 => Some(VersionSpan::since(ProtocolVersion::V3_0)),
-
-            // Base operations existing in KMIP 2.0 (and 2.1)
-            0x0000_0001..=0x0000_0035 => Some(VersionSpan::since(ProtocolVersion::V2_0)),
-
-            _ => None,
+        if v3_0::enumeration::operation::name(operation).is_some() {
+            Some(VersionSpan::since(ProtocolVersion::V3_0))
+        } else if v2_1::enumeration::operation::name(operation).is_some() {
+            Some(VersionSpan::since(ProtocolVersion::V2_1))
+        } else if kmip_2_1::name(operation).is_some() {
+            Some(VersionSpan::since(ProtocolVersion::V2_0))
+        } else {
+            None
         }
     }
 

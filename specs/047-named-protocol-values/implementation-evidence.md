@@ -332,3 +332,52 @@ script-contract jobs passed. CodeQL run `42441188508`, zizmor run
 This hosted result supplies T007's previously missing cross-platform coverage
 and platform-control evidence. The historical note above describes the status
 before this rerun; T007 is now complete.
+
+## Versioned KMIP 2.1/3.0 correction (2026-11-08)
+
+Red commit `1e5f5caf5` added failing Rust, Python, and manifest-generator tests:
+the version namespace was absent, Python had no versioned catalog loader, and
+the reconciler did not accept versioned entries. Green commit `1ca02f6df`
+adds the checksum-pinned assignment catalog, deterministic four-language
+generation, manifest reconciliation, the KMIP 3.0 `ObjectClass`/`ObjectType`
+corrections, and explicit operation introduction lookup. Reserved Object Type
+6 and unassigned Operation values are not emitted as named assignments.
+
+Focused local evidence on the current implementation:
+
+- `cargo test -p kmipkit-protocol kmip30_operations_tests -- --nocapture`:
+  4 passed, including the exact KMIP 2.1/3.0 assignments and reserved/unknown
+  cases.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
+  warnings` and `cargo fmt --all --check`: passed.
+- `python -B -m unittest
+  tools.normative_catalog.tests.test_generate_named_values -q`: 17 passed.
+- `generate_named_values.py --check`,
+  `reconcile_named_value_manifest.py --check`, and
+  `tools/api_manifest/generate.py --check`: passed; 12 API outputs are current.
+- The C consumer compiled and ran under WSL with GCC strict warnings; the Java
+  `NamedProtocolValuesTest` passed under Gradle; Python exact-value checks passed
+  through the generated module. The full Rust workspace tests also passed.
+
+The full `python -B -m unittest discover -s tools/api_manifest/tests -q` run
+completed with 1,220 tests, 72 failures, 14 errors, and 3 skips. Investigation
+found broader baseline drift from the advanced `release/1.0.0` head: the
+2026-11-07 Rust export snapshot is stale, and refreshing it with the official
+auditor reports 23,406 observed paths, 6,067 matched, 13,150 approved
+exclusions, and 4,189 paths still missing from the public API manifest. None
+of the missing paths are from the new `named_values_generated::values::versions`
+namespace; they are broader Rust inventory work assigned to the final parity
+specification. The shared Rust inventory tests therefore remain blocked until
+that reconciliation is completed. The current audit snapshot is retained
+locally for diagnosis and is not committed as a complete report.
+
+The focused wire-encoding manifest tests also expose stale expectations already
+present at the pre-correction base `aba602426`: their expected Java
+`encodingOverride` is absent from the current `client_execute_with_options`
+signature, and declaration IDs differ from the current schema. This unrelated
+release synchronization gap will be addressed with the owning API-parity work.
+
+The current-head pull request remains Draft. At the time of this evidence, the
+updated GitHub workflows were still running or queued; T007 remains open until
+the applicable current-head CI and the cross-branch audit reconciliation are
+closed.

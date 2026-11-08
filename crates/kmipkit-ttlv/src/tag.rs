@@ -29,17 +29,20 @@ impl RawTag {
         self.0
     }
 
-    /// Checks this tag against the generated KMIP 2.1 allocation catalog.
+    /// Checks this tag against the generated allocation union for supported
+    /// KMIP versions.
     ///
     /// Exact catalog records take precedence over overlapping aggregate
     /// ranges, following the `KMIPKit` project policy recorded in ADR-0010.
-    /// This checks allocation only; it does not establish TTLV wire validity,
-    /// Structure schema validity, or extension semantics.
+    /// This checks allocation only. A tag assigned by one supported KMIP
+    /// version may be reserved or unassigned in another; the protocol layer
+    /// remains responsible for checking the effective version, as well as
+    /// Structure schemas and extension semantics.
     ///
     /// # Errors
     ///
     /// Returns [`ModelError::TagNotAllocated`] when the tag is reserved or
-    /// unallocated by the KMIP 2.1 catalog policy. The error contains only its
+    /// unallocated by the supported-version catalogs. The error contains only its
     /// category; it does not retain or expose the rejected tag value.
     pub fn try_checked(&self) -> Result<Tag, ModelError> {
         match allocation_kind(self.0) {
@@ -55,12 +58,14 @@ impl RawTag {
     }
 }
 
-/// A tag whose KMIP 2.1 allocation has been checked.
+/// A tag whose allocation in at least one supported KMIP version has been
+/// checked.
 ///
 /// Allocation follows `KMIPKit`'s project policy for exact records and
-/// aggregate ranges as recorded in ADR-0010. A checked tag is not a claim that
-/// its TTLV framing, Structure schema, extension semantics, or operation
-/// meaning is valid.
+/// aggregate ranges as recorded in ADR-0010 and the pinned versioned tag
+/// catalogs. A checked tag is not a claim that it is valid for a particular
+/// protocol version, or that its TTLV framing, Structure schema, extension
+/// semantics, or operation meaning is valid.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Tag(u32);
 
