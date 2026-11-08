@@ -74,6 +74,7 @@ impl Default for ProxyBehaviorConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AwsConfig {
     pub region: Option<String>,
+    pub endpoint_url: Option<String>,
     pub envelope_master_kek_id: Option<String>,
     pub secret_name_prefix: Option<String>,
 }
@@ -81,7 +82,9 @@ pub struct AwsConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AzureConfig {
     pub vault_url: Option<String>,
+    pub endpoint_url: Option<String>,
     pub envelope_master_kek_name: Option<String>,
+    pub secret_name_prefix: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -89,7 +92,10 @@ pub struct GcpConfig {
     pub project_id: Option<String>,
     pub location: Option<String>,
     pub key_ring: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub secret_name_prefix: Option<String>,
     pub envelope_master_kek_name: Option<String>,
+    pub access_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -99,7 +105,100 @@ pub struct OciConfig {
     pub crypto_endpoint: Option<String>,
     pub management_endpoint: Option<String>,
     pub secrets_endpoint: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub secret_name_prefix: Option<String>,
     pub envelope_master_kek_id: Option<String>,
+    pub auth_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VaultConfig {
+    pub endpoint_url: Option<String>,
+    pub namespace: Option<String>,
+    pub transit_mount: Option<String>,
+    pub kv_v2_mount: Option<String>,
+    pub item_prefix: Option<String>,
+    pub allow_transit_export: Option<bool>,
+    pub auth_method: Option<String>,
+    pub role_id: Option<String>,
+    pub role_cred: Option<String>,
+    pub auth_token: Option<String>,
+    pub envelope_master_kek_id: Option<String>,
+}
+
+impl Default for VaultConfig {
+    fn default() -> Self {
+        Self {
+            endpoint_url: None,
+            namespace: None,
+            transit_mount: Some("transit".to_string()),
+            kv_v2_mount: Some("secret".to_string()),
+            item_prefix: Some("kmipkit/".to_string()),
+            allow_transit_export: Some(true),
+            auth_method: Some("token".to_string()),
+            role_id: None,
+            role_cred: None,
+            auth_token: None,
+            envelope_master_kek_id: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct InfisicalConfig {
+    pub site_url: Option<String>,
+    pub project_id: Option<String>,
+    pub client_id: Option<String>,
+    pub client_cred: Option<String>,
+    pub auth_token: Option<String>,
+    pub item_prefix: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct IbmConfig {
+    pub region: Option<String>,
+    pub instance_id: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub tagging_endpoint_url: Option<String>,
+    pub search_endpoint_url: Option<String>,
+    pub iam_endpoint_url: Option<String>,
+    pub iam_api_cred: Option<String>,
+    pub default_extractable_for_get: Option<bool>,
+    pub envelope_master_kek_id: Option<String>,
+    pub auth_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AlibabaConfig {
+    pub region_id: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub access_key_id: Option<String>,
+    pub access_key_cred: Option<String>,
+    pub envelope_master_kek_id: Option<String>,
+    pub item_prefix: Option<String>,
+    pub auth_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ScalewayConfig {
+    pub region: Option<String>,
+    pub project_id: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub envelope_master_kek_id: Option<String>,
+    pub item_prefix: Option<String>,
+    pub auth_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct OtcConfig {
+    pub region: Option<String>,
+    pub project_id: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub access_key_id: Option<String>,
+    pub access_key_cred: Option<String>,
+    pub envelope_master_kek_id: Option<String>,
+    pub item_prefix: Option<String>,
+    pub auth_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -115,6 +214,18 @@ pub struct BackendConfig {
     pub gcp: GcpConfig,
     #[serde(default)]
     pub oci: OciConfig,
+    #[serde(default)]
+    pub vault: VaultConfig,
+    #[serde(default)]
+    pub infisical: InfisicalConfig,
+    #[serde(default)]
+    pub ibm: IbmConfig,
+    #[serde(default)]
+    pub alibaba: AlibabaConfig,
+    #[serde(default)]
+    pub scaleway: ScalewayConfig,
+    #[serde(default)]
+    pub otc: OtcConfig,
 }
 
 fn default_provider() -> String {
@@ -130,6 +241,12 @@ impl Default for BackendConfig {
             azure: AzureConfig::default(),
             gcp: GcpConfig::default(),
             oci: OciConfig::default(),
+            vault: VaultConfig::default(),
+            infisical: InfisicalConfig::default(),
+            ibm: IbmConfig::default(),
+            alibaba: AlibabaConfig::default(),
+            scaleway: ScalewayConfig::default(),
+            otc: OtcConfig::default(),
         }
     }
 }
