@@ -97,6 +97,9 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_rust(catalog)
 
+    def test_rust_string_escapes_quotes_and_backslashes(self) -> None:
+        self.assertEqual(r'"slash\\ quote\""', generator._rust_string('slash\\ quote"'))
+
     def test_renders_sorted_catalog_types_and_all_permitted_wire_forms(self) -> None:
         rendered = render_rust(small_catalog())
 
