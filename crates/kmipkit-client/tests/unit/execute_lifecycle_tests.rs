@@ -18,8 +18,9 @@ use std::fmt::Write as _;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, HashRequest, InteropRequest, ObjectType, OperationData,
-    Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
+    AttributeSet, CreateRequest, EndpointRole, HashRequest, InteropRequest, ObjectType,
+    OperationData, Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
+    SetEndpointRoleRequest,
 };
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
@@ -328,6 +329,18 @@ fn typed_request_preflight_uses_borrowed_protocol_validation() {
     let request = ClientRequest::Create(CreateRequest::new(ObjectType::from_raw(7), attributes));
 
     assert!(request.validate_local_shape().is_err());
+}
+
+#[test]
+fn deferred_set_endpoint_role_preserves_open_values_in_validation_report() {
+    // KMIP 2.1 §6.1.54, Table 331 defines Endpoint Role as a required
+    // Enumeration; KMIPKIT-0051 scopes pre-send rules to the 56 client_1_0
+    // operations, while this operation is deferred to 1.1.
+    let request = ClientRequest::SetEndpointRole(SetEndpointRoleRequest::new(
+        EndpointRole::from_raw(0x8000_1234),
+    ));
+
+    assert!(request.validation_report().is_valid());
 }
 
 #[test]
