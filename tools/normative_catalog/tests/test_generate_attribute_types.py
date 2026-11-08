@@ -97,7 +97,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_rust(catalog)
 
-    def test_rust_string_escapes_quotes_and_backslashes(self) -> None:
+    def test_rust_string_escapes_quotes_backslashes_and_control_characters(self) -> None:
         value = 'slash\\ quote" line\nreturn\r tab\t control\x01 delete\x7f unicode é'
         expected = (
             '"'
