@@ -1143,10 +1143,57 @@ fn import_validation_checks_required_fields_for_pgp_secret_and_split_keys() {
         )
         .validate();
         assert!(!report.is_valid(), "object tag 0x{object_tag:08x}");
-        assert!(report.issues().iter().any(|issue| {
-            issue.source().to_string().contains("KMIP v2.1 §2.")
-        }));
+        assert!(
+            report
+                .issues()
+                .iter()
+                .any(|issue| { issue.source().to_string().contains("KMIP v2.1 §2.") })
+        );
     }
+}
+
+#[test]
+fn split_key_requires_prime_field_size_for_polynomial_prime_sharing() {
+    const SPLIT_KEY: u32 = 0x0042_0089;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+
+    let key_block = schema_structure([
+        schema_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        schema_item(
+            KEY_VALUE,
+            Value::structure(schema_structure([schema_item(
+                KEY_MATERIAL,
+                Value::byte_string(vec![0xA5]),
+            )])),
+        ),
+    ]);
+    let split_key = schema_item(
+        SPLIT_KEY,
+        Value::structure(schema_structure([
+            schema_item(0x0042_008B, Value::integer(2)),
+            schema_item(0x0042_0044, Value::integer(1)),
+            schema_item(0x0042_008C, Value::integer(2)),
+            schema_item(0x0042_008A, Value::enumeration(3)),
+            schema_item(KEY_BLOCK, Value::structure(key_block)),
+        ])),
+    );
+
+    let report = ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(5),
+        AttributeSet::new(),
+        split_key,
+    )
+    .validate();
+
+    assert!(report_has_code(&report, "KMIPKIT-0051-R292"));
+    assert!(report.issues().iter().any(|issue| {
+        issue.code().as_str() == "KMIPKIT-0051-R292"
+            && issue.source().to_string() == "KMIP v2.1 §2.8, Table 9"
+    }));
 }
 
 #[test]
