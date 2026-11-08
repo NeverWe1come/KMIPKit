@@ -411,3 +411,4 @@ Password Link Attribute cross-check likewise remains with KMIPKIT-0051.
   complete.
 - Hosted CI and cross-platform coverage have not yet completed. T050 remains
   open and PR #141 remains a draft until those controls are green.
+- Refactor commit: `f8de31de2`.
