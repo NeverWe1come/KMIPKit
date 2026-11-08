@@ -357,3 +357,57 @@ Certify and optional-request T102 tests.
 
 The updated 0048 head must receive hosted CI after this merge-conflict repair;
 the previously queued workflows covered earlier SHAs.
+
+## KMIPKIT-0048 link normalization correction (2026-11-08)
+
+This correction follows pinned OASIS KMIP 2.1 §4.31 Table 90 and §11.28
+Table 465, plus KMIP 3.0 §§4.35.1–4.35.20 and §11.58. In particular, KMIP 3.0
+link attribute encodings list Reference, Name Reference, Unique Identifier
+Enumeration, or Integer; they do not list Text String. The converter therefore
+preserves Enumeration and Integer values and rejects Text String and all
+unrepresentable identifier forms before emitting a result.
+
+- **Red:** `a20fe669a`, `8ce6503b9`, `2a8dc8b7b`, and `587d9086a`. The final
+  focused Red test failed because the implementation accepted a Text String
+  identifier for a KMIP 3.0 Certificate Link; the pinned §4.35 encoding does
+  not permit it.
+- **Green:** `3296bc6bd` adds the checksum-pinned 20-tag KMIP 3.0 catalog,
+  merges exact assignments into the supported-version allocation union,
+  replaces range-derived LinkType mappings with the 14 explicit semantics,
+  and rejects lossy identifier conversions and unknown children.
+- **Refactor:** this documentation and evidence update records the exact
+  source-derived conversion boundary; code and generated output are unchanged.
+
+Local verification on the Green code:
+
+- `cargo test -p kmipkit-protocol --lib link_normalizer_tests -- --nocapture`:
+  6 passed.
+- `cargo test -p kmipkit-ttlv --test tag_allocation`: 8 passed.
+- `cargo test -p kmipkit-protocol --all-features`: 1,331 unit tests, all
+  integration tests, and 3 doctests passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
+  warnings` and `cargo fmt --all --check` passed.
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_ttlv_tags
+  -q`: 17 passed; `python -B tools/normative_catalog/generate_ttlv_tags.py
+  --check` passed.
+- `python -B tools/api_manifest/generate.py --check --repo-root .` verified all
+  12 generated API outputs; named-value manifest reconciliation and
+  `git diff --check` passed.
+- The Rust export auditor ran with zero incomplete-analysis issues and all
+  6,353 existing manifest declarations matched. It also reported 4,201 public
+  Rust declarations outside the manifest; this broader inventory remains in
+  KMIPKIT-0053's parity/reconciliation scope and is not represented here as
+  resolved.
+
+The full Windows command `cargo llvm-cov --workspace --all-features --locked
+--json --output-path target/kmipkit-workspace-coverage-raw.json` passed. Its
+report was normalized using `scripts/coverage_gate.py normalize`, then parsed
+with the gate's own `parse_llvm_export` and exact documented-source exclusion
+logic. KMIP protocol coverage was 21,027/21,833 (96.31%), and the changed
+`link_normalizer.rs` executable lines were 145/147 (98.64%). This meets the
+95-percent protocol and changed-code thresholds. The separate package-only
+summary was not used because its partial export lacks workspace dependency
+segments required by the coverage parser.
+
+Hosted PR checks are still pending on the updated head; T019 and TASK-071-008
+remain open until those controls finish.

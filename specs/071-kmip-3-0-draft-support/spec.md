@@ -29,20 +29,44 @@ The specification introduces:
 ## 3. Detailed Architectural Requirements
 
 ### 3.1 Typed Link Normalization (`LinkNormalizer`)
-- In KMIP 2.x, relationships are represented via generic `Link` (`0x00420047`) containing `Link Type` (`0x00420048`) and `Linked Object Identifier` (`0x00420049`).
-- In KMIP 3.0, generic `Link` is replaced by 20 discrete typed links (`0x00420153` through `0x00420166`):
-  - `CertificateLink` (`0x00420153`)
-  - `PublicKeyLink` (`0x00420154`)
-  - `PrivateKeyLink` (`0x00420155`)
-  - `PreviousKeyLink` (`0x00420156`)
-  - `NextKeyLink` (`0x00420157`)
-  - `DerivationBaseObjectLink` (`0x00420158`)
-  - `DerivedKeyLink` (`0x00420159`)
-  - `SplitKeyLink` (`0x0042015A`)
-  - `WrappingKeyLink` (`0x0042015B`)
-  - `ParentObjectLink` (`0x0042015C`)
-  - `ChildObjectLink` (`0x0042015D`)
-- `LinkNormalizer` converts 2.x generic links to 3.0 typed links when encoding for a 3.0 endpoint, and unpacks 3.0 typed links to canonical 2.x representations when requested by legacy code.
+- In KMIP 2.1, a generic `Link` (`0x00420047`) contains `Link Type`
+  (`0x00420048`) and `Linked Object Identifier` (`0x00420049`). Its 14 assigned
+  Link Type values are defined in §11.28, Table 465; the linked identifier may
+  use Text String, Enumeration, or Integer as specified by §4.31, Table 90.
+- KMIP 3.0 defines 20 individual link attributes in §§4.35.1–4.35.20, with
+  tags assigned by §11.58. The 14 semantic equivalents and their explicit
+  mappings are:
+
+| KMIP 2.1 Link Type | KMIP 3.0 link attribute | KMIP 3.0 tag |
+|---|---|---|
+| `0x101` Certificate Link | Certificate Link (§4.35.1) | `0x00420190` |
+| `0x102` Public Key Link | Public Key Link (§4.35.16) | `0x0042019A` |
+| `0x103` Private Key Link | Private Key Link (§4.35.15) | `0x00420199` |
+| `0x104` Derivation Base Object Link | Derivation Base Object Link (§4.35.5) | `0x00420192` |
+| `0x105` Derived Key Link | Derived Object Link (§4.35.6) | `0x00420193` |
+| `0x106` Replacement Object Link | Replacement Object Link (§4.35.18) | `0x0042019C` |
+| `0x107` Replaced Object Link | Replaced Object Link (§4.35.17) | `0x0042019B` |
+| `0x108` Parent Link | Parent Link (§4.35.10) | `0x00420195` |
+| `0x109` Child Link | Child Link (§4.35.3) | `0x00420191` |
+| `0x10A` Previous Link | Previous Link (§4.35.14) | `0x00420198` |
+| `0x10B` Next Link | Next Link (§4.35.9) | `0x00420194` |
+| `0x10C` PKCS#12 Certificate Link | PKCS#12 Certificate Link (§4.35.12) | `0x00420196` |
+| `0x10D` PKCS#12 Password Link | PKCS#12 Password Link (§4.35.13) | `0x00420197` |
+| `0x10E` Wrapping Key Link | Wrapping Key Link (§4.35.20) | `0x0042019D` |
+
+- Six KMIP 3.0 links have no KMIP 2.1 Link Type equivalent and are not
+  normalized to KMIP 2.1: Credential Link (`0x004201A0`), Password Link
+  (`0x004201A5`), Group Link (`0x004201B3`), Split Key Base Link
+  (`0x004201B4`), Joined Split Key Parts Link (`0x004201B5`), and Certificate
+  Request Link (`0x004201BC`). In particular, `0x00420153` is Object Defaults,
+  not a link tag.
+- `LinkNormalizer` converts only the explicit 14-entry semantic table.
+  Enumeration and Integer identifiers are preserved. Text String identifiers
+  are rejected when converting to KMIP 3.0 because the §4.35 link attribute
+  encodings do not list Text String; Reference and Name Reference values are
+  rejected when converting to KMIP 2.1 because its generic Link has no such
+  encoding. Unknown children, duplicate required fields, and links without a
+  counterpart are rejected instead of silently dropping or coercing data.
 
 ### 3.2 System Objects and Object Class
 - `ObjectType` includes:
@@ -75,7 +99,7 @@ The pre-1.0 API corrections to `ObjectType::CREDENTIAL` and the former
 - **`REQ-071-001` (Normative Ingestion)**:
   OASIS KMIP 3.0 draft specification files are pinned and tracked with SHA-256 digests.
 - **`REQ-071-002` (Link Normalizer)**:
-  `LinkNormalizer` accurately roundtrips between KMIP 2.x generic links and KMIP 3.0 discrete typed links.
+  `LinkNormalizer` accurately roundtrips the 14 source-defined shared Link Type semantics using the explicit mapping above, preserves Enumeration and Integer identifiers, rejects Text String conversion to KMIP 3.0, and rejects the six KMIP 3.0-only link attributes without changing the input.
 - **`REQ-071-003` (KMIP 3.0 Operations in VersionGate)**:
   `VersionGate` permits only the seven assigned operation codes in Table 583
   under `ProtocolVersion::V3_0`, and rejects those assignments under `V2_0`

@@ -55,6 +55,7 @@ As a Rust client author, I can use a typed attribute with `CurrentAttribute` or 
 - **KMIPKIT-0048-FR-008**: The 62 definitions and their API declarations MUST be reconciled with the normative catalog and public API manifest through deterministic tooling; generated outputs MUST use the repository generator and pass `--check`.
 - **KMIPKIT-0048-FR-009**: Rust rustdoc and English/Spanish user guides MUST include executable examples for typed scalar, repeated, and Structure-valued attributes, and explain generic fallback and open values.
 - **KMIPKIT-0048-FR-010**: C, Java, and Python binding parity for the typed attribute surface is assigned to KMIPKIT-0053; this specification MUST not claim those bindings are complete.
+- **KMIPKIT-0048-FR-011**: The approved Phase 5 audit correction MUST normalize only the 14 semantic Link Type assignments shared by KMIP 2.1 §11.28, Table 465, and KMIP 3.0 §§4.35.1–4.35.20 / §11.58, using explicit tag mappings. It MUST reject 3.0-only link attributes, identifier encodings with no counterpart in the destination version, duplicate required fields, and extra unrecognized children rather than discard or coerce them. Enumeration and Integer identifiers MUST round-trip unchanged. Text String identifiers MUST be rejected when converting to KMIP 3.0 because the KMIP 3.0 link attribute encoding in §4.35 does not list Text String.
 
 ### Normative Traceability
 
@@ -68,6 +69,7 @@ The detailed per-attribute matrix is in `gap-matrix.md`; every direct attribute 
 - **KMIPKIT-0048-SC-004**: Existing generic API behavior and serialized TTLV vectors remain unchanged.
 - **KMIPKIT-0048-SC-005**: All public Rust routes are accounted for by exact manifest mappings or justified exclusions, and generation is deterministic.
 - **KMIPKIT-0048-SC-006**: Each applicable normative/API requirement links to source, implementation, and executable verification before review; binding parity is explicitly tracked for 0053.
+- **KMIPKIT-0048-SC-007**: Every shared Link Type value maps to its exact KMIP 3.0 link attribute tag; all 20 KMIP 3.0 Link tags are allocation-checked, and six attributes without a KMIP 2.1 equivalent are rejected without changing the input.
 
 ## Key Entities
 
@@ -80,6 +82,7 @@ The detailed per-attribute matrix is in `gap-matrix.md`; every direct attribute 
 
 - This feature adds typed Rust APIs over existing TTLV Items and does not add protocol operations or change KMIP 2.1 wire behavior.
 - The catalog and immutable OASIS 2.1 source copy are the source of truth. Where the catalog counts a record that is not a direct tagged Attribute, the standard's encoded structure determines applicability.
+- The Phase 5 audit correction also uses the checksum-pinned KMIP 3.0 source and the reviewed versioned-tag catalog for LinkNormalizer; it does not reinterpret the KMIP 2.1 attribute inventory.
 - Detailed nested builders for managed cryptographic objects remain in KMIPKIT-0049. Here, Structure-valued attribute payloads use the existing lossless TTLV Structure representation.
 - Equivalent C, Java, and Python convenience APIs are delivered and verified under KMIPKIT-0053, after the Rust contract stabilizes.
 - Unknown tags, unknown Enumeration values, extension children, and generic Item access remain supported.
