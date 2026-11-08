@@ -7,6 +7,7 @@ report_dir="${1:-${repository_root}/coverage-ffi}"
 report_dir="$(mkdir -p -- "${report_dir}" && cd -- "${report_dir}" && pwd)"
 target_root="${CARGO_TARGET_DIR:-${repository_root}/target}"
 llvm_cov_target="${target_root}/llvm-cov-target"
+# Keep the coverage report aligned with the full FFI source tree as modules are split out.
 mapfile -d '' -t source_files < <(
     find "${repository_root}/crates/kmipkit-ffi/src" -type f -name "*.rs" -print0 | sort -z
 )
