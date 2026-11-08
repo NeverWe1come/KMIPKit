@@ -2,7 +2,7 @@
 
 use kmipkit_protocol::{
     EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyCompressionType, KeyFormatType,
-    KeyMaterial, KeyValue, KeyWrappingData, TransparentSymmetricKey,
+    KeyMaterial, KeyValue, KeyWrappingData, SecretBytes, TransparentSymmetricKey,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
@@ -54,7 +54,7 @@ fn plaintext_and_wrapped_key_values_have_distinct_ttlv_types() {
 
     let wrapped_builder = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("valid format")
-        .with_key_value(KeyBlockValue::Wrapped(vec![3, 4]))
+        .with_key_value(KeyBlockValue::Wrapped(SecretBytes::new(vec![3, 4])))
         .with_key_wrapping_data(
             KeyWrappingData::try_new(1)
                 .expect("assigned Wrapping Method")
