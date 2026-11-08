@@ -154,7 +154,8 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
 # The non-target snapshot includes the updated 0047 inventory and 0048 slices.
-DECLARATIONS_SHA256 = "6c73940a20f40d559f737ff0bc71f9329e706d6666314ad4749d597a7cde6a58"
+# Current approved declaration baseline after 0047/0048 stack synchronization.
+DECLARATIONS_SHA256 = "d578394c398d90255d38bbd976d87bd74bafa043e3dd7ba966b4cc741cf431b5"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 

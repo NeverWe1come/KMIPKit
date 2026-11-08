@@ -189,7 +189,8 @@ PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-573ae1d0de80ffa2884b",
 }
 # The non-target snapshot includes the updated 0047 inventory and 0048 slices.
-OTHER_DECLARATIONS_SHA256 = "b77c675a451433800096e6efae96389847509798fd2c027b06457e4925c0f4a7"
+# Current approved declaration baseline after 0047/0048 stack synchronization.
+OTHER_DECLARATIONS_SHA256 = "a83d1ced60c50855b8a34e28d18d53a2285a9d4f4db56af9fe38ab03b2ad0b44"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
