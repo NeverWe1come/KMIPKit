@@ -53,8 +53,10 @@ acceptance.
   all client initiated operations, including KMIP protocol asynchronous
   results. TTLV is the default encoding; JSON and XML use the approved OASIS
   KMIP 2.1 Profile encodings and their approved KMIPKIT specifications.
-- Server initiated operations begin in 1.1. Further language adapters follow
-  later. A server's policy may reject supported requests.
+- Server initiated operations (§6.2.1–§6.2.5), role reversal (§6.1.54, §6.2.5),
+  and HTTPS server reception (Profiles §5.3.1) are included in 1.0 under
+  KMIPKIT-0066 and ADR-0021. Further language adapters follow later. A server's
+  policy may reject supported requests.
 - The 1.0 public surface has high level operation builders, complete typed
   requests and responses, and generic TTLV access. Cryptographic choices
   MUST remain explicit to callers.
@@ -94,7 +96,7 @@ Every PR review MUST check compliance with this constitution and record any
 approved exception. `AGENTS.md` provides operational guidance subordinate
 to this document.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-11-05
+**Version**: 1.3.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-11-07
 
 ### Amendment 1.1.0 (2026-11-05)
 
@@ -104,3 +106,21 @@ and cross-language obligations are owned by KMIPKIT-0054 through KMIPKIT-0057
 and ADR-0017. This amendment changes product scope; it does not claim profile
 conformance or authorize implementation outside an approved feature
 specification.
+
+### Amendment 1.2.0 (2026-11-07)
+
+The maintainer approved advancing Server-to-Client operations (§6.2.1–§6.2.5),
+Client-to-Server Set Endpoint Role (§6.1.54), and HTTPS server reception
+(Profiles §5.3.1) into the supported scope of KMIPKit under specification
+KMIPKIT-0066 and ADR-0021, providing full bidirectional KMIP 2.1 support and
+four-language client listener capabilities.
+
+### Amendment 1.3.0 (2026-11-07)
+
+The maintainer approved establishing a multi-version architecture in KMIPKit to
+support modern OASIS KMIP versions (KMIP 2.0, KMIP 2.1, and KMIP 3.0 Draft/Standard)
+under specification KMIPKIT-0069 and ADR-0022. The 1.0 default version remains
+KMIP 2.1 with strict zero-breakage guarantees. Legacy KMIP 1.x (1.0–1.4) is
+formally excluded from the client library while backwards test-server adapters
+are preserved. Pre-send version validation enforces strict catalog conformity
+without automated retries.

@@ -387,6 +387,7 @@ impl ProfileValidationSelection {
         validate_selection(self, CLIENT_PROFILES, CLIENT_REQUIREMENTS)
     }
 
+    #[allow(clippy::unused_self)]
     fn skips_evidence_gate_for_test(&self) -> bool {
         #[cfg(feature = "test-support")]
         {

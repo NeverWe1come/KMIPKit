@@ -46,7 +46,9 @@ mod hash;
 mod import;
 mod interop;
 mod join_split_key;
+mod kem;
 mod lifecycle;
+pub mod link_normalizer;
 mod locate;
 mod log;
 mod login;
@@ -58,6 +60,7 @@ mod modify_attribute;
 mod multipart;
 /// Generated catalog-backed named values for KMIP 2.1 Enumerations and Bit Masks.
 pub mod named_values_generated;
+mod object_class;
 mod obtain_lease;
 mod operation_data;
 mod ping;
@@ -79,6 +82,7 @@ mod result;
 mod revoke;
 mod rng_retrieve;
 mod rng_seed;
+pub mod server_to_client;
 mod set_attribute;
 mod set_constraints;
 #[cfg(test)]
@@ -88,10 +92,14 @@ mod set_defaults;
 #[cfg(test)]
 #[path = "../tests/unit/set_defaults_tests.rs"]
 mod set_defaults_tests;
+mod set_endpoint_role;
 mod sign;
 mod signature_verify;
 mod ticket;
 mod validate;
+mod version_codec;
+mod version_gate;
+mod version_span;
 
 pub use activate::{ActivateError, ActivateRequest, ActivateResponse};
 pub use add_attribute::{AddAttributeError, AddAttributeRequest, AddAttributeResponse};
@@ -150,6 +158,11 @@ pub use interop::{InteropError, InteropRequest, InteropResponse};
 pub use join_split_key::{
     JoinSplitKeyError, JoinSplitKeyRequest, JoinSplitKeyResponse, SplitKeyReference,
 };
+pub use kem::{
+    DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,
+    EncapsulateRequest, EncapsulateResponse,
+};
+pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
 };
@@ -164,6 +177,7 @@ pub use message::{
     ResponseHeaderView, ResponseMessage,
 };
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
+pub use object_class::ObjectClass;
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
@@ -189,13 +203,30 @@ pub use result::{
 pub use revoke::{RevocationReason, RevokeError, RevokeRequest, RevokeResponse};
 pub use rng_retrieve::{RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse};
 pub use rng_seed::{RngSeedError, RngSeedRequest, RngSeedResponse};
+pub use server_to_client::{
+    PutFunction, ServerCapabilities, ServerDiscoverVersionsError, ServerDiscoverVersionsRequest,
+    ServerDiscoverVersionsResponse, ServerNotifyError, ServerNotifyRequest, ServerNotifyResponse,
+    ServerPutError, ServerPutRequest, ServerPutResponse, ServerQueryError, ServerQueryRequest,
+    ServerQueryResponse, ServerResponseBuilder,
+};
 pub use set_attribute::{SetAttributeError, SetAttributeRequest, SetAttributeResponse};
 pub use set_constraints::{SetConstraintsError, SetConstraintsRequest, SetConstraintsResponse};
 pub use set_defaults::{SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse};
+pub use set_endpoint_role::{
+    ENDPOINT_ROLE_TAG, EndpointRole, SET_ENDPOINT_ROLE_OPERATION, SetEndpointRoleError,
+    SetEndpointRoleRequest, SetEndpointRoleResponse, VENDOR_IDENTIFICATION_TAG,
+};
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
+pub use version_codec::{CodecContext, VersionedCodec};
+pub use version_gate::{VersionGate, VersionGateError};
+pub use version_span::VersionSpan;
+
+#[cfg(test)]
+#[path = "../tests/unit/version_foundation_tests.rs"]
+mod version_foundation_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/discover_versions_tests.rs"]
@@ -529,3 +560,43 @@ mod validate_operation_tests;
 #[cfg(test)]
 #[path = "../tests/unit/pkcs11_operation_tests.rs"]
 mod pkcs11_operation_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/set_endpoint_role_tests.rs"]
+mod set_endpoint_role_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_discover_versions_tests.rs"]
+mod s2c_discover_versions_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_notify_tests.rs"]
+mod s2c_notify_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_put_tests.rs"]
+mod s2c_put_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_query_tests.rs"]
+mod s2c_query_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/s2c_response_builder_tests.rs"]
+mod s2c_response_builder_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kmip20_tests.rs"]
+mod kmip20_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/link_normalizer_tests.rs"]
+mod link_normalizer_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kmip30_operations_tests.rs"]
+mod kmip30_operations_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kem_tests.rs"]
+mod kem_tests;

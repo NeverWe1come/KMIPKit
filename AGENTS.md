@@ -26,8 +26,10 @@ human reviewer. Never silently invent a KMIP requirement.
 - Protocol: OASIS KMIP 2.1 only for the 1.x line.
 - 1.0 encodings: TTLV, JSON, and XML, as specified by the approved
   KMIPKIT-0054 through KMIPKIT-0057 specifications.
-- 1.0 direction: client initiated operations. Protocol asynchronous behavior
-  is included. Server initiated operations are planned for 1.1.
+- 1.0 direction: client initiated operations (including asynchronous behavior),
+  server initiated operations (§6.2.1–§6.2.5), dynamic role reversal
+  (§6.1.54, §6.2.5), and HTTPS server reception (Profiles §5.3.1) as specified
+  by KMIPKIT-0066 and ADR-0021.
 - 1.0 transports: TTLV, JSON, and XML over raw TLS and HTTPS/HTTP 1.1,
   subject to the approved message-framing and encoding specifications.
 - TLS: TLS 1.3 only, mutual TLS, rustls with aws-lc-rs.
