@@ -314,3 +314,26 @@ Verification after the refactor:
 - The workspace-wide Clippy attempt could not complete on this Windows host:
   `aws-lc-sys` reported that NASM was unavailable. The affected protocol crate's
   all-target, all-feature Clippy check passed.
+
+## Linux literal-generator coverage remediation (2026-11-08)
+
+The stacked hosted run found that
+`tools/normative_catalog/generate_attribute_types.py` had 262 statements and
+28 uncovered statements (89%), below the unchanged 90% normative-generator
+gate.
+
+- RED `7c96c4a61`: the focused Rust-string test covered only quotes and
+  backslashes. Its Linux coverage result remained below the 90% gate.
+- GREEN `338cd7c86`: the same test now exercises newline, carriage return,
+  tab, control byte, DEL, and Unicode handling. On the current 0048 head, the
+  Linux coverage report is 262 statements, 27 missed, 90%; the eight tests
+  other than the mount-sensitive direct-CLI test pass under WSL.
+- REFACTOR `51734bea1`: the test name now describes its complete escape
+  coverage. The complete nine-test module passes on Windows.
+
+The WSL checkout is mounted under `/mnt/c`; in that environment,
+`test_direct_cli_check_exercises_script_import_path` returns exit code 2. This
+mount-specific result does not reproduce on Windows, where all nine tests pass,
+or in the earlier native hosted run, whose only reported failure was the
+89-percent coverage threshold. The current 0048 HEAD still needs a fresh hosted
+CI result; prior queued runs were for superseded SHAs and were cancelled.
