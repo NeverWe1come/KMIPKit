@@ -61,10 +61,11 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
     def test_generated_markers_keep_open_and_structure_value_categories(self) -> None:
         rendered = generate_attribute_types.render_typed_rust(self.catalog)
 
-        self.assertIn("pub struct ActivationDate;", rendered)
-        self.assertIn("pub struct VendorAttribute;", rendered)
-        self.assertIn("UniqueIdentifierValue", rendered)
-        self.assertIn("StructureView", rendered)
+        self.assertIn("pub struct $marker;", rendered)
+        self.assertIn("marker_name: \"ActivationDate\"", rendered)
+        self.assertIn("marker_name: \"VendorAttribute\"", rendered)
+        self.assertIn("super::super::UniqueIdentifierEncoding", rendered)
+        self.assertIn("super::super::StructureEncoding", rendered)
         self.assertIn("0x42_00_01", rendered)
         self.assertIn("pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[", rendered)
         self.assertIn("typed::ActivationDate::TAG", rendered)
