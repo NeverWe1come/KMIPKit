@@ -201,6 +201,22 @@ fn key_information_readers_reject_wrong_tags_types_and_missing_identifiers() {
 }
 
 #[test]
+fn key_information_requires_the_text_string_identifier_from_tables_16_and_17() {
+    assert!(kmipkit_protocol::EncryptionKeyInformation::try_from_unique_identifier(
+        kmipkit_protocol::UniqueIdentifier::Enumeration(1)
+    )
+    .is_err());
+    assert!(kmipkit_protocol::MacSignatureKeyInformation::try_from_unique_identifier(
+        kmipkit_protocol::UniqueIdentifier::Integer(0)
+    )
+    .is_err());
+    for value in [Value::enumeration(1), Value::integer(0)] {
+        let source = key_information(0x0042_0036, 0x0042_0094, value);
+        assert!(kmipkit_protocol::EncryptionKeyInformation::try_from_item(source).is_err());
+    }
+}
+
+#[test]
 fn wrapping_reader_rejects_bad_outer_schema_and_member_order() {
     assert!(KeyWrappingData::try_from_item(tagged(0x0042_009E, Value::enumeration(1))).is_err());
     assert!(KeyWrappingData::try_from_item(tagged(0x0042_0046, Value::enumeration(1))).is_err());
