@@ -35,6 +35,7 @@ one and links both directions.
 - [ADR-0020: TLS 1.3 session resumption without 0-RTT and HTTPS idle reconnect](0020-tls13-session-resumption-and-keepalive.md) (Accepted)
 - [ADR-0021: Server-to-Client operations and role inversion scope for KMIPKit](0021-server-to-client-operations-scope.md) (Accepted)
 - [ADR-0022: Multi-version modern KMIP architecture](0022-multi-version-modern-kmip-architecture.md) (Accepted)
+- [ADR-0023: Cloud KMS stateless sidecar proxy architecture](0023-cloud-kms-stateless-proxy.md) (Accepted)
 
 ## Template
 
