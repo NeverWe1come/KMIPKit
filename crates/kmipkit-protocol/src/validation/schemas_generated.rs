@@ -2,11 +2,47 @@
 //! Regenerate with `python tools/validation_schema/generate.py`.
 
 use super::{FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor};
-use super::{
-    TYPE_BIG_INTEGER, TYPE_BOOLEAN, TYPE_BYTE_STRING, TYPE_DATE_TIME, TYPE_DATE_TIME_EXTENDED,
-    TYPE_ENUMERATION, TYPE_INTEGER, TYPE_INTERVAL, TYPE_LONG_INTEGER, TYPE_STRUCTURE,
-    TYPE_TEXT_STRING,
-};
+
+macro_rules! field_tag {
+    (managed) => {
+        FieldTag::ManagedObject
+    };
+    ($tag:literal) => {
+        FieldTag::Exact($tag)
+    };
+}
+
+macro_rules! field_max {
+    (many) => {
+        None
+    };
+    ($max:literal) => {
+        Some($max)
+    };
+}
+
+macro_rules! field_nested {
+    (none) => {
+        None
+    };
+    ($nested:ident) => {
+        Some(NestedStructureSchema::$nested)
+    };
+}
+
+macro_rules! field {
+    ($rule:ident $name:literal $tag:tt $types:literal $min:literal $max:tt $nested:tt) => {
+        FieldDescriptor {
+            rule_id: concat!("KMIPKIT-0051-", stringify!($rule)),
+            name: $name,
+            tag: field_tag!($tag),
+            types: $types,
+            min_count: $min,
+            max_count: field_max!($max),
+            nested_schema: field_nested!($nested),
+        }
+    };
+}
 
 /// Explicit identity for a supported KMIP v2.1 client Request Payload.
 #[non_exhaustive]
@@ -444,1847 +480,338 @@ fn descriptor_group_4(schema: RequestPayloadSchema) -> Option<RequestSchemaDescr
     }
 }
 
-static ACTIVATE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R001",
-    name: "Unique Identifier",
-    tag: FieldTag::Exact(0x0042_0094),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static ACTIVATE_FIELDS: &[FieldDescriptor] =
+    &[field!(R001 "Unique Identifier" 0x420094 0x052 0 1 none)];
 
 static ADDATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R002",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R003",
-        name: "New Attribute",
-        tag: FieldTag::Exact(0x0042_013d),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::NewAttribute),
-    },
+    field!(R002 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R003 "New Attribute" 0x42013d 0x001 1 1 NewAttribute),
 ];
 
 static ADJUSTATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R004",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R005",
-        name: "Attribute Reference",
-        tag: FieldTag::Exact(0x0042_013b),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R006",
-        name: "Adjustment Type",
-        tag: FieldTag::Exact(0x0042_0158),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R007",
-        name: "Adjustment Value",
-        tag: FieldTag::Exact(0x0042_0162),
-        types: TYPE_STRUCTURE
-            | TYPE_INTEGER
-            | TYPE_LONG_INTEGER
-            | TYPE_BIG_INTEGER
-            | TYPE_ENUMERATION
-            | TYPE_BOOLEAN
-            | TYPE_TEXT_STRING
-            | TYPE_BYTE_STRING
-            | TYPE_DATE_TIME_EXTENDED
-            | TYPE_DATE_TIME
-            | TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R004 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R005 "Attribute Reference" 0x42013b 0x010 1 1 none),
+    field!(R006 "Adjustment Type" 0x420158 0x010 1 1 none),
+    field!(R007 "Adjustment Value" 0x420162 0x7ff 0 1 none),
 ];
 
-static ARCHIVE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R008",
-    name: "Unique Identifier",
-    tag: FieldTag::Exact(0x0042_0094),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static ARCHIVE_FIELDS: &[FieldDescriptor] =
+    &[field!(R008 "Unique Identifier" 0x420094 0x052 0 1 none)];
 
-static CANCEL_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R009",
-    name: "Asynchronous Correlation Value",
-    tag: FieldTag::Exact(0x0042_0006),
-    types: TYPE_BYTE_STRING,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static CANCEL_FIELDS: &[FieldDescriptor] =
+    &[field!(R009 "Asynchronous Correlation Value" 0x420006 0x080 1 1 none)];
 
 static CERTIFY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R010",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R011",
-        name: "Certificate Request Type",
-        tag: FieldTag::Exact(0x0042_0019),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R012",
-        name: "Certificate Request Value",
-        tag: FieldTag::Exact(0x0042_0140),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R013",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R014",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R010 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R011 "Certificate Request Type" 0x420019 0x010 0 1 none),
+    field!(R012 "Certificate Request Value" 0x420140 0x080 0 1 none),
+    field!(R013 "Attributes" 0x420125 0x001 0 1 Attributes),
+    field!(R014 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
 static CHECK_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R015",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R016",
-        name: "Usage Limits Count",
-        tag: FieldTag::Exact(0x0042_0096),
-        types: TYPE_INTEGER | TYPE_LONG_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R017",
-        name: "Cryptographic Usage Mask",
-        tag: FieldTag::Exact(0x0042_002c),
-        types: TYPE_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R018",
-        name: "Lease Time",
-        tag: FieldTag::Exact(0x0042_0049),
-        types: TYPE_DATE_TIME | TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R015 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R016 "Usage Limits Count" 0x420096 0x006 0 1 none),
+    field!(R017 "Cryptographic Usage Mask" 0x42002c 0x002 0 1 none),
+    field!(R018 "Lease Time" 0x420049 0x300 0 1 none),
 ];
 
 static CREATE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R019",
-        name: "Object Type",
-        tag: FieldTag::Exact(0x0042_0057),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R020",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R021",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R019 "Object Type" 0x420057 0x010 1 1 none),
+    field!(R020 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R021 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
 static CREATEKEYPAIR_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R022",
-        name: "Common Attributes",
-        tag: FieldTag::Exact(0x0042_0126),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R023",
-        name: "Private Key Attributes",
-        tag: FieldTag::Exact(0x0042_0127),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R024",
-        name: "Public Key Attributes",
-        tag: FieldTag::Exact(0x0042_0128),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R025",
-        name: "Common Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_0163),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R026",
-        name: "Private Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_0164),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R027",
-        name: "Public Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_0165),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R022 "Common Attributes" 0x420126 0x001 0 1 Attributes),
+    field!(R023 "Private Key Attributes" 0x420127 0x001 0 1 Attributes),
+    field!(R024 "Public Key Attributes" 0x420128 0x001 0 1 Attributes),
+    field!(R025 "Common Protection Storage Masks" 0x420163 0x001 0 1 none),
+    field!(R026 "Private Protection Storage Masks" 0x420164 0x001 0 1 none),
+    field!(R027 "Public Protection Storage Masks" 0x420165 0x001 0 1 none),
 ];
 
 static CREATESPLITKEY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R028",
-        name: "Object Type",
-        tag: FieldTag::Exact(0x0042_0057),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R029",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R030",
-        name: "Split Key Parts",
-        tag: FieldTag::Exact(0x0042_008b),
-        types: TYPE_INTEGER,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R031",
-        name: "Split Key Threshold",
-        tag: FieldTag::Exact(0x0042_008c),
-        types: TYPE_INTEGER,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R032",
-        name: "Split Key Method",
-        tag: FieldTag::Exact(0x0042_008a),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R033",
-        name: "Prime Field Size",
-        tag: FieldTag::Exact(0x0042_0062),
-        types: TYPE_INTEGER | TYPE_BIG_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R034",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R035",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R028 "Object Type" 0x420057 0x010 1 1 none),
+    field!(R029 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R030 "Split Key Parts" 0x42008b 0x002 1 1 none),
+    field!(R031 "Split Key Threshold" 0x42008c 0x002 1 1 none),
+    field!(R032 "Split Key Method" 0x42008a 0x010 1 1 none),
+    field!(R033 "Prime Field Size" 0x420062 0x00a 0 1 none),
+    field!(R034 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R035 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
 static DECRYPT_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R036",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R037",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R038",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R039",
-        name: "IV",
-        tag: FieldTag::Exact(0x0042_003d),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R040",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R041",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R042",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R043",
-        name: "Authenticated Encryption Additional Data",
-        tag: FieldTag::Exact(0x0042_00fe),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R044",
-        name: "Authenticated Encryption Tag",
-        tag: FieldTag::Exact(0x0042_00ff),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R036 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R037 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
+    field!(R038 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R039 "IV" 0x42003d 0x080 0 1 none),
+    field!(R040 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R041 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R042 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R043 "Authenticated Encryption Additional Data" 0x4200fe 0x080 0 1 none),
+    field!(R044 "Authenticated Encryption Tag" 0x4200ff 0x080 0 1 none),
 ];
 
 static DELEGATEDLOGIN_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R045",
-        name: "Lease Time",
-        tag: FieldTag::Exact(0x0042_0049),
-        types: TYPE_DATE_TIME | TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R046",
-        name: "Request Count",
-        tag: FieldTag::Exact(0x0042_014c),
-        types: TYPE_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R047",
-        name: "Usage Limits",
-        tag: FieldTag::Exact(0x0042_0095),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::UsageLimits),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R048",
-        name: "Rights",
-        tag: FieldTag::Exact(0x0042_014d),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Rights),
-    },
+    field!(R045 "Lease Time" 0x420049 0x300 0 1 none),
+    field!(R046 "Request Count" 0x42014c 0x002 0 1 none),
+    field!(R047 "Usage Limits" 0x420095 0x001 0 1 UsageLimits),
+    field!(R048 "Rights" 0x42014d 0x001 1 1 Rights),
 ];
 
 static DELETEATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R049",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R050",
-        name: "Current Attribute",
-        tag: FieldTag::Exact(0x0042_013c),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CurrentAttribute),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R051",
-        name: "Attribute Reference",
-        tag: FieldTag::Exact(0x0042_013b),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R049 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R050 "Current Attribute" 0x42013c 0x001 0 1 CurrentAttribute),
+    field!(R051 "Attribute Reference" 0x42013b 0x010 0 1 none),
 ];
 
 static DERIVEKEY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R052",
-        name: "Object Type",
-        tag: FieldTag::Exact(0x0042_0057),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R053",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 1,
-        max_count: None,
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R054",
-        name: "Derivation Method",
-        tag: FieldTag::Exact(0x0042_0031),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R055",
-        name: "Derivation Parameters",
-        tag: FieldTag::Exact(0x0042_0032),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::DerivationParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R056",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
+    field!(R052 "Object Type" 0x420057 0x010 1 1 none),
+    field!(R053 "Unique Identifier" 0x420094 0x052 1 many none),
+    field!(R054 "Derivation Method" 0x420031 0x010 1 1 none),
+    field!(R055 "Derivation Parameters" 0x420032 0x001 1 1 DerivationParameters),
+    field!(R056 "Attributes" 0x420125 0x001 1 1 Attributes),
 ];
 
-static DESTROY_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R057",
-    name: "Unique Identifier",
-    tag: FieldTag::Exact(0x0042_0094),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static DESTROY_FIELDS: &[FieldDescriptor] =
+    &[field!(R057 "Unique Identifier" 0x420094 0x052 0 1 none)];
 
-static DISCOVERVERSIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R058",
-    name: "Protocol Version",
-    tag: FieldTag::Exact(0x0042_0069),
-    types: TYPE_STRUCTURE,
-    min_count: 0,
-    max_count: None,
-    nested_schema: Some(NestedStructureSchema::ProtocolVersion),
-}];
+static DISCOVERVERSIONS_FIELDS: &[FieldDescriptor] =
+    &[field!(R058 "Protocol Version" 0x420069 0x001 0 many ProtocolVersion)];
 
 static ENCRYPT_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R059",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R060",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R061",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R062",
-        name: "IV",
-        tag: FieldTag::Exact(0x0042_003d),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R063",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R064",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R065",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R066",
-        name: "Authenticated Encryption Additional Data",
-        tag: FieldTag::Exact(0x0042_00fe),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R059 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R060 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
+    field!(R061 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R062 "IV" 0x42003d 0x080 0 1 none),
+    field!(R063 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R064 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R065 "Final Indicator" 0x4200d8 0x020 0 1 none),
+    field!(R066 "Authenticated Encryption Additional Data" 0x4200fe 0x080 0 1 none),
 ];
 
 static EXPORT_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R067",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R068",
-        name: "Key Format Type",
-        tag: FieldTag::Exact(0x0042_0042),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R069",
-        name: "Key Wrap Type",
-        tag: FieldTag::Exact(0x0042_00f8),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R070",
-        name: "Key Compression Type",
-        tag: FieldTag::Exact(0x0042_0041),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R071",
-        name: "Key Wrapping Specification",
-        tag: FieldTag::Exact(0x0042_0047),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::KeyWrappingSpecification),
-    },
+    field!(R067 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R068 "Key Format Type" 0x420042 0x010 0 1 none),
+    field!(R069 "Key Wrap Type" 0x4200f8 0x010 0 1 none),
+    field!(R070 "Key Compression Type" 0x420041 0x010 0 1 none),
+    field!(R071 "Key Wrapping Specification" 0x420047 0x001 0 1 KeyWrappingSpecification),
 ];
 
 static GET_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R072",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R073",
-        name: "Key Format Type",
-        tag: FieldTag::Exact(0x0042_0042),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R074",
-        name: "Key Wrap Type",
-        tag: FieldTag::Exact(0x0042_00f8),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R075",
-        name: "Key Compression Type",
-        tag: FieldTag::Exact(0x0042_0041),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R076",
-        name: "Key Wrapping Specification",
-        tag: FieldTag::Exact(0x0042_0047),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::KeyWrappingSpecification),
-    },
+    field!(R072 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R073 "Key Format Type" 0x420042 0x010 0 1 none),
+    field!(R074 "Key Wrap Type" 0x4200f8 0x010 0 1 none),
+    field!(R075 "Key Compression Type" 0x420041 0x010 0 1 none),
+    field!(R076 "Key Wrapping Specification" 0x420047 0x001 0 1 KeyWrappingSpecification),
 ];
 
-static GETATTRIBUTELIST_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R079",
-    name: "Unique Identifier",
-    tag: FieldTag::Exact(0x0042_0094),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static GETATTRIBUTELIST_FIELDS: &[FieldDescriptor] =
+    &[field!(R079 "Unique Identifier" 0x420094 0x052 0 1 none)];
 
 static GETATTRIBUTES_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R077",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R078",
-        name: "Attribute Reference",
-        tag: FieldTag::Exact(0x0042_013b),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: None,
-        nested_schema: None,
-    },
+    field!(R077 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R078 "Attribute Reference" 0x42013b 0x010 0 many none),
 ];
 
 static GETCONSTRAINTS_FIELDS: &[FieldDescriptor] = &[];
 
 static GETUSAGEALLOCATION_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R080",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R081",
-        name: "Usage Limits Count",
-        tag: FieldTag::Exact(0x0042_0096),
-        types: TYPE_INTEGER | TYPE_LONG_INTEGER,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R080 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R081 "Usage Limits Count" 0x420096 0x006 1 1 none),
 ];
 
 static HASH_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R082",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R083",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R084",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R085",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R086",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R082 "Cryptographic Parameters" 0x42002b 0x001 1 1 CryptographicParameters),
+    field!(R083 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R084 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R085 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R086 "Final Indicator" 0x4200d8 0x020 0 1 none),
 ];
 
 static IMPORT_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R087",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R088",
-        name: "Object Type",
-        tag: FieldTag::Exact(0x0042_0057),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R089",
-        name: "Replace Existing",
-        tag: FieldTag::Exact(0x0042_0124),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R090",
-        name: "Key Wrap Type",
-        tag: FieldTag::Exact(0x0042_00f8),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R091",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R092",
-        name: "Any Object (Section 2)",
-        tag: FieldTag::ManagedObject,
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R087 "Unique Identifier" 0x420094 0x052 1 1 none),
+    field!(R088 "Object Type" 0x420057 0x010 1 1 none),
+    field!(R089 "Replace Existing" 0x420124 0x020 0 1 none),
+    field!(R090 "Key Wrap Type" 0x4200f8 0x010 0 1 none),
+    field!(R091 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R092 "Any Object (Section 2)" managed 0x001 1 1 none),
 ];
 
 static INTEROP_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R093",
-        name: "Interop Function",
-        tag: FieldTag::Exact(0x0042_0160),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R094",
-        name: "Interop Identifier",
-        tag: FieldTag::Exact(0x0042_0161),
-        types: TYPE_TEXT_STRING,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R093 "Interop Function" 0x420160 0x010 1 1 none),
+    field!(R094 "Interop Identifier" 0x420161 0x040 1 1 none),
 ];
 
 static JOINSPLITKEY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R095",
-        name: "Object Type",
-        tag: FieldTag::Exact(0x0042_0057),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R096",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 1,
-        max_count: None,
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R097",
-        name: "Secret Data Type",
-        tag: FieldTag::Exact(0x0042_0086),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R098",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R099",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R095 "Object Type" 0x420057 0x010 1 1 none),
+    field!(R096 "Unique Identifier" 0x420094 0x052 1 many none),
+    field!(R097 "Secret Data Type" 0x420086 0x010 0 1 none),
+    field!(R098 "Attributes" 0x420125 0x001 0 1 Attributes),
+    field!(R099 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
 static LOCATE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R100",
-        name: "Maximum Items",
-        tag: FieldTag::Exact(0x0042_004f),
-        types: TYPE_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R101",
-        name: "Offset Items",
-        tag: FieldTag::Exact(0x0042_00d4),
-        types: TYPE_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R102",
-        name: "Storage Status Mask",
-        tag: FieldTag::Exact(0x0042_008e),
-        types: TYPE_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R103",
-        name: "Object Group Member",
-        tag: FieldTag::Exact(0x0042_00ac),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R104",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
+    field!(R100 "Maximum Items" 0x42004f 0x002 0 1 none),
+    field!(R101 "Offset Items" 0x4200d4 0x002 0 1 none),
+    field!(R102 "Storage Status Mask" 0x42008e 0x002 0 1 none),
+    field!(R103 "Object Group Member" 0x4200ac 0x010 0 1 none),
+    field!(R104 "Attributes" 0x420125 0x001 1 1 Attributes),
 ];
 
-static LOG_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R105",
-    name: "Log Message",
-    tag: FieldTag::Exact(0x0042_0141),
-    types: TYPE_TEXT_STRING,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static LOG_FIELDS: &[FieldDescriptor] = &[field!(R105 "Log Message" 0x420141 0x040 1 1 none)];
 
 static LOGIN_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R106",
-        name: "Lease Time",
-        tag: FieldTag::Exact(0x0042_0049),
-        types: TYPE_DATE_TIME | TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R107",
-        name: "Request Count",
-        tag: FieldTag::Exact(0x0042_014c),
-        types: TYPE_INTEGER,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R108",
-        name: "Usage Limits",
-        tag: FieldTag::Exact(0x0042_0095),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::UsageLimits),
-    },
+    field!(R106 "Lease Time" 0x420049 0x300 0 1 none),
+    field!(R107 "Request Count" 0x42014c 0x002 0 1 none),
+    field!(R108 "Usage Limits" 0x420095 0x001 0 1 UsageLimits),
 ];
 
-static LOGOUT_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R109",
-    name: "Ticket",
-    tag: FieldTag::Exact(0x0042_0149),
-    types: TYPE_STRUCTURE | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: Some(NestedStructureSchema::Ticket),
-}];
+static LOGOUT_FIELDS: &[FieldDescriptor] = &[field!(R109 "Ticket" 0x420149 0x091 1 1 Ticket)];
 
 static MAC_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R110",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R111",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R112",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R113",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R114",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R115",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R110 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R111 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
+    field!(R112 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R113 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R114 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R115 "Final Indicator" 0x4200d8 0x020 0 1 none),
 ];
 
 static MACVERIFY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R116",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R117",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R118",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R119",
-        name: "MAC Data",
-        tag: FieldTag::Exact(0x0042_00c6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R120",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R121",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R122",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R116 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R117 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
+    field!(R118 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R119 "MAC Data" 0x4200c6 0x080 0 1 none),
+    field!(R120 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R121 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R122 "Final Indicator" 0x4200d8 0x020 0 1 none),
 ];
 
 static MODIFYATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R123",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R124",
-        name: "Current Attribute",
-        tag: FieldTag::Exact(0x0042_013c),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CurrentAttribute),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R125",
-        name: "New Attribute",
-        tag: FieldTag::Exact(0x0042_013d),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::NewAttribute),
-    },
+    field!(R123 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R124 "Current Attribute" 0x42013c 0x001 0 1 CurrentAttribute),
+    field!(R125 "New Attribute" 0x42013d 0x001 1 1 NewAttribute),
 ];
 
-static OBTAINLEASE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R126",
-    name: "Unique Identifier",
-    tag: FieldTag::Exact(0x0042_0094),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static OBTAINLEASE_FIELDS: &[FieldDescriptor] =
+    &[field!(R126 "Unique Identifier" 0x420094 0x052 0 1 none)];
 
 static PING_FIELDS: &[FieldDescriptor] = &[];
 
 static PKCS11_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R127",
-        name: "PKCS#11 Interface",
-        tag: FieldTag::Exact(0x0042_0159),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Pkcs11Interface),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R128",
-        name: "PKCS#11 Function",
-        tag: FieldTag::Exact(0x0042_015a),
-        types: TYPE_INTEGER | TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R129",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R130",
-        name: "PKCS#11 Input Parameters",
-        tag: FieldTag::Exact(0x0042_015b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Pkcs11InputParameters),
-    },
+    field!(R127 "PKCS#11 Interface" 0x420159 0x001 0 1 Pkcs11Interface),
+    field!(R128 "PKCS#11 Function" 0x42015a 0x012 1 1 none),
+    field!(R129 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R130 "PKCS#11 Input Parameters" 0x42015b 0x001 0 1 Pkcs11InputParameters),
 ];
 
-static POLL_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R131",
-    name: "Asynchronous Correlation Value",
-    tag: FieldTag::Exact(0x0042_0006),
-    types: TYPE_BYTE_STRING,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static POLL_FIELDS: &[FieldDescriptor] =
+    &[field!(R131 "Asynchronous Correlation Value" 0x420006 0x080 1 1 none)];
 
-static PROCESS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R132",
-    name: "Asynchronous Correlation Value",
-    tag: FieldTag::Exact(0x0042_0006),
-    types: TYPE_BYTE_STRING,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static PROCESS_FIELDS: &[FieldDescriptor] =
+    &[field!(R132 "Asynchronous Correlation Value" 0x420006 0x080 1 1 none)];
 
 static QUERY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R133",
-        name: "Query Function",
-        tag: FieldTag::Exact(0x0042_0074),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: None,
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R134",
-        name: "Object Groups",
-        tag: FieldTag::Exact(0x0042_0166),
-        types: TYPE_STRUCTURE | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::ObjectGroups),
-    },
+    field!(R133 "Query Function" 0x420074 0x010 1 many none),
+    field!(R134 "Object Groups" 0x420166 0x041 0 1 ObjectGroups),
 ];
 
 static QUERYASYNCREQUESTS_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R135",
-        name: "Asynchronous Correlation Values",
-        tag: FieldTag::Exact(0x0042_0176),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::AsynchronousCorrelationValues),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R136",
-        name: "Operations",
-        tag: FieldTag::Exact(0x0042_014f),
-        types: TYPE_STRUCTURE | TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Operations),
-    },
+    field!(R135 "Asynchronous Correlation Values" 0x420176 0x001 0 1 AsynchronousCorrelationValues),
+    field!(R136 "Operations" 0x42014f 0x011 0 1 Operations),
 ];
 
 static REPROVISION_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R164",
-        name: "Certificate Request",
-        tag: FieldTag::Exact(0x0042_0018),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CertificateRequest),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R165",
-        name: "Certificate",
-        tag: FieldTag::Exact(0x0042_0013),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Certificate),
-    },
+    field!(R164 "Certificate Request" 0x420018 0x001 0 1 CertificateRequest),
+    field!(R165 "Certificate" 0x420013 0x001 0 1 Certificate),
 ];
 
 static RECERTIFY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R145",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R146",
-        name: "Certificate Request Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0139),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R147",
-        name: "Certificate Request Type",
-        tag: FieldTag::Exact(0x0042_0019),
-        types: TYPE_ENUMERATION,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R148",
-        name: "Certificate Request Value",
-        tag: FieldTag::Exact(0x0042_0140),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R149",
-        name: "Offset",
-        tag: FieldTag::Exact(0x0042_0058),
-        types: TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R150",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R151",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R145 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R146 "Certificate Request Unique Identifier" 0x420139 0x052 0 1 none),
+    field!(R147 "Certificate Request Type" 0x420019 0x010 0 1 none),
+    field!(R148 "Certificate Request Value" 0x420140 0x080 0 1 none),
+    field!(R149 "Offset" 0x420058 0x200 0 1 none),
+    field!(R150 "Attributes" 0x420125 0x001 0 1 Attributes),
+    field!(R151 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
-static RECOVER_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R137",
-    name: "Unique Identifier",
-    tag: FieldTag::Exact(0x0042_0094),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static RECOVER_FIELDS: &[FieldDescriptor] =
+    &[field!(R137 "Unique Identifier" 0x420094 0x052 0 1 none)];
 
 static REGISTER_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R138",
-        name: "Object Type",
-        tag: FieldTag::Exact(0x0042_0057),
-        types: TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R139",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R140",
-        name: "Any Object (Section 2)",
-        tag: FieldTag::ManagedObject,
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R141",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R138 "Object Type" 0x420057 0x010 1 1 none),
+    field!(R139 "Attributes" 0x420125 0x001 1 1 Attributes),
+    field!(R140 "Any Object (Section 2)" managed 0x001 1 1 none),
+    field!(R141 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
 static REKEY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R152",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R153",
-        name: "Offset",
-        tag: FieldTag::Exact(0x0042_0058),
-        types: TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R154",
-        name: "Attributes",
-        tag: FieldTag::Exact(0x0042_0125),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R155",
-        name: "Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_015f),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R152 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R153 "Offset" 0x420058 0x200 0 1 none),
+    field!(R154 "Attributes" 0x420125 0x001 0 1 Attributes),
+    field!(R155 "Protection Storage Masks" 0x42015f 0x001 0 1 none),
 ];
 
 static REKEYKEYPAIR_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R156",
-        name: "Private Key Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0066),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R157",
-        name: "Offset",
-        tag: FieldTag::Exact(0x0042_0058),
-        types: TYPE_INTERVAL,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R158",
-        name: "Common Attributes",
-        tag: FieldTag::Exact(0x0042_0126),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R159",
-        name: "Private Key Attributes",
-        tag: FieldTag::Exact(0x0042_0127),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R160",
-        name: "Public Key Attributes",
-        tag: FieldTag::Exact(0x0042_0128),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::Attributes),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R161",
-        name: "Common Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_0163),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R162",
-        name: "Private Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_0164),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R163",
-        name: "Public Protection Storage Masks",
-        tag: FieldTag::Exact(0x0042_0165),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R156 "Private Key Unique Identifier" 0x420066 0x052 0 1 none),
+    field!(R157 "Offset" 0x420058 0x200 0 1 none),
+    field!(R158 "Common Attributes" 0x420126 0x001 0 1 Attributes),
+    field!(R159 "Private Key Attributes" 0x420127 0x001 0 1 Attributes),
+    field!(R160 "Public Key Attributes" 0x420128 0x001 0 1 Attributes),
+    field!(R161 "Common Protection Storage Masks" 0x420163 0x001 0 1 none),
+    field!(R162 "Private Protection Storage Masks" 0x420164 0x001 0 1 none),
+    field!(R163 "Public Protection Storage Masks" 0x420165 0x001 0 1 none),
 ];
 
 static REVOKE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R142",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R143",
-        name: "Revocation Reason",
-        tag: FieldTag::Exact(0x0042_0081),
-        types: TYPE_STRUCTURE | TYPE_ENUMERATION,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::RevocationReason),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R144",
-        name: "Compromise Occurrence Date",
-        tag: FieldTag::Exact(0x0042_0021),
-        types: TYPE_DATE_TIME,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R142 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R143 "Revocation Reason" 0x420081 0x011 1 1 RevocationReason),
+    field!(R144 "Compromise Occurrence Date" 0x420021 0x100 0 1 none),
 ];
 
-static RNGRETRIEVE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R166",
-    name: "Data Length",
-    tag: FieldTag::Exact(0x0042_00c4),
-    types: TYPE_INTEGER,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static RNGRETRIEVE_FIELDS: &[FieldDescriptor] =
+    &[field!(R166 "Data Length" 0x4200c4 0x002 1 1 none)];
 
-static RNGSEED_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R167",
-    name: "Data",
-    tag: FieldTag::Exact(0x0042_00c2),
-    types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: None,
-}];
+static RNGSEED_FIELDS: &[FieldDescriptor] = &[field!(R167 "Data" 0x4200c2 0x092 1 1 none)];
 
 static SETATTRIBUTE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R168",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R169",
-        name: "New Attribute",
-        tag: FieldTag::Exact(0x0042_013d),
-        types: TYPE_STRUCTURE,
-        min_count: 1,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::NewAttribute),
-    },
+    field!(R168 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R169 "New Attribute" 0x42013d 0x001 1 1 NewAttribute),
 ];
 
-static SETCONSTRAINTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R170",
-    name: "Constraints",
-    tag: FieldTag::Exact(0x0042_0168),
-    types: TYPE_STRUCTURE,
-    min_count: 1,
-    max_count: Some(1),
-    nested_schema: Some(NestedStructureSchema::Constraints),
-}];
+static SETCONSTRAINTS_FIELDS: &[FieldDescriptor] =
+    &[field!(R170 "Constraints" 0x420168 0x001 1 1 Constraints)];
 
-static SETDEFAULTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R171",
-    name: "Defaults Information",
-    tag: FieldTag::Exact(0x0042_0152),
-    types: TYPE_STRUCTURE,
-    min_count: 0,
-    max_count: Some(1),
-    nested_schema: Some(NestedStructureSchema::DefaultsInformation),
-}];
+static SETDEFAULTS_FIELDS: &[FieldDescriptor] =
+    &[field!(R171 "Defaults Information" 0x420152 0x001 0 1 DefaultsInformation)];
 
 static SIGN_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R172",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R173",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R174",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R175",
-        name: "Digested Data",
-        tag: FieldTag::Exact(0x0042_0107),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R176",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R177",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R178",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R172 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R173 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
+    field!(R174 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R175 "Digested Data" 0x420107 0x080 0 1 none),
+    field!(R176 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R177 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R178 "Final Indicator" 0x4200d8 0x020 0 1 none),
 ];
 
 static SIGNATUREVERIFY_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R179",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R180",
-        name: "Cryptographic Parameters",
-        tag: FieldTag::Exact(0x0042_002b),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: Some(NestedStructureSchema::CryptographicParameters),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R181",
-        name: "Data",
-        tag: FieldTag::Exact(0x0042_00c2),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R182",
-        name: "Digested Data",
-        tag: FieldTag::Exact(0x0042_0107),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R183",
-        name: "Signature Data",
-        tag: FieldTag::Exact(0x0042_00c3),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R184",
-        name: "Correlation Value",
-        tag: FieldTag::Exact(0x0042_00d6),
-        types: TYPE_BYTE_STRING,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R185",
-        name: "Init Indicator",
-        tag: FieldTag::Exact(0x0042_00d7),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R186",
-        name: "Final Indicator",
-        tag: FieldTag::Exact(0x0042_00d8),
-        types: TYPE_BOOLEAN,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R179 "Unique Identifier" 0x420094 0x052 0 1 none),
+    field!(R180 "Cryptographic Parameters" 0x42002b 0x001 0 1 CryptographicParameters),
+    field!(R181 "Data" 0x4200c2 0x092 0 1 none),
+    field!(R182 "Digested Data" 0x420107 0x080 0 1 none),
+    field!(R183 "Signature Data" 0x4200c3 0x080 0 1 none),
+    field!(R184 "Correlation Value" 0x4200d6 0x080 0 1 none),
+    field!(R185 "Init Indicator" 0x4200d7 0x020 0 1 none),
+    field!(R186 "Final Indicator" 0x4200d8 0x020 0 1 none),
 ];
 
 static VALIDATE_FIELDS: &[FieldDescriptor] = &[
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R187",
-        name: "Certificate",
-        tag: FieldTag::Exact(0x0042_0013),
-        types: TYPE_STRUCTURE,
-        min_count: 0,
-        max_count: None,
-        nested_schema: Some(NestedStructureSchema::Certificate),
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R188",
-        name: "Unique Identifier",
-        tag: FieldTag::Exact(0x0042_0094),
-        types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
-        min_count: 0,
-        max_count: None,
-        nested_schema: None,
-    },
-    FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R189",
-        name: "Validity Date",
-        tag: FieldTag::Exact(0x0042_009a),
-        types: TYPE_DATE_TIME,
-        min_count: 0,
-        max_count: Some(1),
-        nested_schema: None,
-    },
+    field!(R187 "Certificate" 0x420013 0x001 0 many Certificate),
+    field!(R188 "Unique Identifier" 0x420094 0x052 0 many none),
+    field!(R189 "Validity Date" 0x42009a 0x100 0 1 none),
 ];

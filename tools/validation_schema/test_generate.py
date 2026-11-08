@@ -21,7 +21,7 @@ class NestedSchemaNameTests(unittest.TestCase):
         descriptor = field_descriptor(split_row(row))
 
         self.assertIn(
-            'field!(R127, "PKCS#11 Interface", 0x00420159, 0x001, 0, 1, Pkcs11Interface)',
+            'field!(R127 "PKCS#11 Interface" 0x420159 0x001 0 1 Pkcs11Interface)',
             descriptor,
         )
         self.assertNotIn("FieldDescriptor {", descriptor)
@@ -37,7 +37,7 @@ class NestedSchemaNameTests(unittest.TestCase):
         descriptor = field_descriptor(split_row(row))
 
         self.assertIn(
-            'field!(R130, "PKCS#11 Input Parameters", 0x0042015b, 0x001, 0, 1, Pkcs11InputParameters)',
+            'field!(R130 "PKCS#11 Input Parameters" 0x42015b 0x001 0 1 Pkcs11InputParameters)',
             descriptor,
         )
         self.assertNotIn("FieldDescriptor {", descriptor)
@@ -53,7 +53,7 @@ class NestedSchemaNameTests(unittest.TestCase):
         descriptor = field_descriptor(split_row(row))
 
         self.assertEqual(
-            '    field!(R140, "Any Object (Section 2)", managed, 0x001, 1, 1, none),',
+            '    field!(R140 "Any Object (Section 2)" managed 0x001 1 1 none),',
             descriptor,
         )
 

@@ -47,6 +47,20 @@ TYPE_NAMES = (
     ("Interval", "TYPE_INTERVAL"),
 )
 
+TYPE_BITS = {
+    "TYPE_STRUCTURE": 0,
+    "TYPE_INTEGER": 1,
+    "TYPE_LONG_INTEGER": 2,
+    "TYPE_BIG_INTEGER": 3,
+    "TYPE_ENUMERATION": 4,
+    "TYPE_BOOLEAN": 5,
+    "TYPE_TEXT_STRING": 6,
+    "TYPE_BYTE_STRING": 7,
+    "TYPE_DATE_TIME": 8,
+    "TYPE_INTERVAL": 9,
+    "TYPE_DATE_TIME_EXTENDED": 10,
+}
+
 
 def rust_variant(operation: str) -> str:
     if operation in ALIASES:
@@ -75,33 +89,37 @@ def source_map(lines: list[str]) -> dict[str, str]:
     return sources
 
 
-def type_mask(type_source: str) -> str:
+def type_mask(type_source: str) -> int:
     prefix = type_source.split(";", 1)[0]
     if prefix.startswith("Any TTLV Value"):
-        return " | ".join(name for _, name in TYPE_NAMES)
-    allowed = [
-        constant
-        for name, constant in TYPE_NAMES
-        if name.casefold() in prefix.casefold()
-    ]
-    if not allowed:
+        names = [constant for _, constant in TYPE_NAMES]
+    else:
+        names = [
+            constant
+            for name, constant in TYPE_NAMES
+            if name.casefold() in prefix.casefold()
+        ]
+    if not names:
         raise ValueError(f"unhandled TTLV type description: {type_source}")
-    return " | ".join(allowed)
+    mask = 0
+    for name in names:
+        mask |= 1 << TYPE_BITS[name]
+    return mask
 
 
-def cardinality(requiredness: str) -> tuple[int, str]:
+def cardinality(requiredness: str) -> tuple[int, int | None]:
     normalized = requiredness.casefold()
     if "conditional" in normalized:
-        return 0, "Some(1)"
+        return 0, 1
     match = re.search(r"/(?:\s*)0\.\.\*", requiredness)
     if match:
-        return 0, "None"
+        return 0, None
     if re.search(r"/\s*1\.\.\*", requiredness):
-        return 1, "None"
+        return 1, None
     if re.search(r"/\s*0\.\.1", requiredness):
-        return 0, "Some(1)"
+        return 0, 1
     if re.search(r"/\s*1(?:\s|$)", requiredness):
-        return 1, "Some(1)"
+        return 1, 1
     raise ValueError(f"unhandled requiredness: {requiredness}")
 
 
@@ -112,30 +130,24 @@ def field_descriptor(cells: list[str]) -> str:
     field_text = cells[3]
     name = field_text.split("/", 1)[0].replace("`", "").strip()
     if name.startswith("Any Object"):
-        tag = "FieldTag::ManagedObject"
+        tag = "managed"
     else:
         raw_tag = re.search(r"0x([0-9A-Fa-f]{6})", field_text)
         if raw_tag is None:
             raise ValueError(f"missing exact tag for {field_text}")
-        digits = f"{int(raw_tag.group(1), 16):08x}"
-        tag = f"FieldTag::Exact(0x{digits[:4]}_{digits[4:]})"
+        tag = f"0x{int(raw_tag.group(1), 16):06x}"
     minimum, maximum = cardinality(cells[5])
+    maximum_expression = "many" if maximum is None else str(maximum)
     nested_match = re.search(r"nested schema: ([A-Za-z][A-Za-z0-9]*)", cells[7])
     nested_schema = (
-        f"Some(NestedStructureSchema::{nested_match.group(1)})"
+        nested_match.group(1)
         if nested_match
-        else "None"
+        else "none"
     )
     return (
-        "    FieldDescriptor {\n"
-        f'        rule_id: "KMIPKIT-0051-{rule.group(0)}",\n'
-        f'        name: "{name}",\n'
-        f"        tag: {tag},\n"
-        f"        types: {type_mask(cells[4])},\n"
-        f"        min_count: {minimum},\n"
-        f"        max_count: {maximum},\n"
-        f"        nested_schema: {nested_schema},\n"
-        "    },"
+        f'    field!({rule.group(0)} "{name}" {tag} '
+        f"0x{type_mask(cells[4]):03x} {minimum} {maximum_expression} "
+        f"{nested_schema}),"
     )
 
 
@@ -160,11 +172,35 @@ def render() -> str:
         "//! Regenerate with `python tools/validation_schema/generate.py`.",
         "",
         "use super::{FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor};",
-        "use super::{",
-        "    TYPE_BIG_INTEGER, TYPE_BOOLEAN, TYPE_BYTE_STRING, TYPE_DATE_TIME,",
-        "    TYPE_DATE_TIME_EXTENDED, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_INTERVAL,",
-        "    TYPE_LONG_INTEGER, TYPE_STRUCTURE, TYPE_TEXT_STRING,",
-        "};",
+        "",
+        "macro_rules! field_tag {",
+        "    (managed) => { FieldTag::ManagedObject };",
+        "    ($tag:literal) => { FieldTag::Exact($tag) };",
+        "}",
+        "",
+        "macro_rules! field_max {",
+        "    (many) => { None };",
+        "    ($max:literal) => { Some($max) };",
+        "}",
+        "",
+        "macro_rules! field_nested {",
+        "    (none) => { None };",
+        "    ($nested:ident) => { Some(NestedStructureSchema::$nested) };",
+        "}",
+        "",
+        "macro_rules! field {",
+        "    ($rule:ident $name:literal $tag:tt $types:literal $min:literal $max:tt $nested:tt) => {",
+        "        FieldDescriptor {",
+        '            rule_id: concat!("KMIPKIT-0051-", stringify!($rule)),',
+        "            name: $name,",
+        "            tag: field_tag!($tag),",
+        "            types: $types,",
+        "            min_count: $min,",
+        "            max_count: field_max!($max),",
+        "            nested_schema: field_nested!($nested),",
+        "        }",
+        "    };",
+        "}",
         "",
         "/// Explicit identity for a supported KMIP v2.1 client Request Payload.",
         "#[non_exhaustive]",
