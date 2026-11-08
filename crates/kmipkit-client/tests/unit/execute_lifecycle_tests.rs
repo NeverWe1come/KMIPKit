@@ -18,8 +18,8 @@ use std::fmt::Write as _;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, EndpointRole, HashRequest, InteropRequest, ObjectType,
-    OperationData, Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
+    AttributeSet, CreateRequest, EndpointRole, HashRequest, ImportRequest, InteropRequest,
+    ObjectType, OperationData, Pkcs11Request, SecretBytes, SecretText, SetDefaultsRequest,
     SetEndpointRoleRequest,
 };
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
@@ -384,6 +384,71 @@ fn invalid_typed_request_is_not_encoded_or_written() {
     assert!(!debug.contains(CANARY));
     assert!(!display.contains(&canary_hex));
     assert!(!debug.contains(&canary_hex));
+}
+
+#[test]
+fn split_key_with_out_of_range_part_identifier_is_not_sent() {
+    let item = |tag, value| {
+        Item::new(
+            RawTag::new(tag)
+                .expect("fixture tag is a valid raw tag")
+                .try_checked()
+                .expect("fixture tag is allocated by KMIP"),
+            value,
+        )
+        .expect("fixture item is valid TTLV")
+    };
+    let structure = |items: Vec<Item>| {
+        let mut value = Structure::new();
+        for item in items {
+            value.try_push(item).expect("fixture fits TTLV limits");
+        }
+        value
+    };
+    let key_block = structure(vec![
+        item(0x0042_0042, Value::enumeration(1)),
+        item(
+            0x0042_0045,
+            Value::structure(structure(vec![item(
+                0x0042_0043,
+                Value::byte_string(vec![0xA5]),
+            )])),
+        ),
+    ]);
+    let split_key = item(
+        0x0042_0089,
+        Value::structure(structure(vec![
+            item(0x0042_008B, Value::integer(2)),
+            item(0x0042_0044, Value::integer(0)),
+            item(0x0042_008C, Value::integer(2)),
+            item(0x0042_008A, Value::enumeration(1)),
+            item(0x0042_0040, Value::structure(key_block)),
+        ])),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Import(
+        ImportRequest::new(
+            kmipkit_protocol::UniqueIdentifier::TextString("object-id".to_owned()),
+            ObjectType::from_raw(5),
+            AttributeSet::new(),
+            split_key,
+        ),
+    )));
+    let (mut client, fake, _) = client_for(
+        ExchangeScript::Success {
+            response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+            request_write_chunks: Vec::new(),
+        },
+        None,
+    );
+
+    let error = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect_err("an out-of-range Split Key part identifier must fail preflight");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+    assert_eq!(error.category(), ClientErrorCategory::Validation);
 }
 
 #[test]

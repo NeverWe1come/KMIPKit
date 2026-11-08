@@ -874,7 +874,7 @@ fn key_format_type_selects_known_key_material_ttlv_type() {
     assert!(report.issues().iter().any(|issue| {
         issue.code().as_str() == "KMIPKIT-0051-R280"
             && issue.path().to_string() == "Key Value.Key Material"
-            && issue.source().to_string() == "KMIP v2.1 §3.2, Table 13; §11.25, Table 460"
+            && issue.source().to_string() == "KMIP v2.1 §3.2, Table 13; §11.25, Table 461"
     }));
 }
 

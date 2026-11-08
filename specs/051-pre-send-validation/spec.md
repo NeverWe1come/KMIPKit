@@ -86,6 +86,8 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - **KMIPKIT-0051-FR-013**: Every normative validation rule MUST have a stable traceability identifier (`KMIPKIT-0051-R###`) linked to the exact OASIS source, implementation path, and executable test; project API decisions MUST be separately identified.
 - **KMIPKIT-0051-FR-014**: Public APIs MUST be additive; existing typed request, generic TTLV, and batch execution entry points MUST remain source-compatible.
 - **KMIPKIT-0051-FR-015**: When the audited implementation emits or expects a field tag that conflicts with an exact pinned KMIP 2.1 assignment, the same feature MUST correct that tag using a test-first regression whose expected value is taken independently from the production constant; the traceability record MUST identify every affected request serializer and response reader.
+- **KMIPKIT-0051-FR-016**: Import validation MUST check the required members, TTLV types, and table order of PGP Key, Secret Data, and Split Key objects as defined in KMIP v2.1 §2.4 Table 5, §2.7 Table 8, and §2.8 Table 9.
+- **KMIPKIT-0051-FR-017**: Split Key validation MUST require Prime Field Size when Split Key Method is Polynomial Sharing Prime Field and MUST reject a Key Part Identifier below 1 or above Split Key Parts, as specified in KMIP v2.1 §2.8 Table 9 and its normative prose.
 
 ### Key Entities
 
@@ -104,6 +106,7 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - **KMIPKIT-0051-SC-004**: Valid request fixtures retain byte-for-byte identical TTLV encoding before and after validation integration.
 - **KMIPKIT-0051-SC-005**: Automated checks find no credential, key material, raw request bytes, or input values in validation reports, error formatting, or Debug output.
 - **KMIPKIT-0051-SC-006**: Normative validation requirements have 100% traceability to pinned OASIS references, code, and executable tests.
+- **KMIPKIT-0051-SC-007**: Malformed PGP Key, Secret Data, and Split Key Import requests are rejected before transport with `NotSent`; the Split Key tests cover both conditional requiredness and the normative Key Part Identifier bounds.
 
 ## Assumptions
 

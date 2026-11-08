@@ -1,11 +1,13 @@
 //! Borrowed validators for reusable, explicitly identified KMIP structures.
 
-use kmipkit_ttlv::{ItemType, StructureView};
+use kmipkit_ttlv::{StructureView, ValueView};
+
+use crate::expected_key_material_item_type;
 
 use super::schema::{
-    FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor, TYPE_BOOLEAN,
-    TYPE_BYTE_STRING, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_LONG_INTEGER, TYPE_STRUCTURE,
-    TYPE_TEXT_STRING, validate_structure_with_descriptor_and_prefix,
+    FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor, TYPE_BIG_INTEGER,
+    TYPE_BOOLEAN, TYPE_BYTE_STRING, TYPE_ENUMERATION, TYPE_INTEGER, TYPE_LONG_INTEGER,
+    TYPE_STRUCTURE, TYPE_TEXT_STRING, validate_structure_with_descriptor_and_prefix,
 };
 use super::{
     ValidationCode, ValidationIssue, ValidationPath, ValidationReport, ValidationSeverity,
@@ -689,6 +691,75 @@ const KEY_BEARING_OBJECT_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
     nested_schema: Some(NestedStructureSchema::KeyBlock),
 }];
 
+const PGP_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R285",
+        "PGP Key Version",
+        0x0042_00BE,
+        TYPE_INTEGER
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R268",
+        "Key Block",
+        0x0042_0040,
+        TYPE_STRUCTURE
+    ),
+];
+
+const SECRET_DATA_OBJECT_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R286",
+        "Secret Data Type",
+        0x0042_0086,
+        TYPE_ENUMERATION
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R268",
+        "Key Block",
+        0x0042_0040,
+        TYPE_STRUCTURE
+    ),
+];
+
+const SPLIT_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
+    required_singleton_field!(
+        "KMIPKIT-0051-R287",
+        "Split Key Parts",
+        0x0042_008B,
+        TYPE_INTEGER
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R288",
+        "Key Part Identifier",
+        0x0042_0044,
+        TYPE_INTEGER
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R289",
+        "Split Key Threshold",
+        0x0042_008C,
+        TYPE_INTEGER
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R290",
+        "Split Key Method",
+        0x0042_008A,
+        TYPE_ENUMERATION
+    ),
+    optional_singleton_field!(
+        "KMIPKIT-0051-R291",
+        "Prime Field Size",
+        0x0042_0062,
+        TYPE_BIG_INTEGER
+    ),
+    required_singleton_field!(
+        "KMIPKIT-0051-R268",
+        "Key Block",
+        0x0042_0040,
+        TYPE_STRUCTURE
+    ),
+];
+
 const OPAQUE_OBJECT_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
         "KMIPKIT-0051-R269",
@@ -814,7 +885,7 @@ fn validate_key_format_material_type(
                 _ => None,
             })
         });
-    let Some(expected_material_type) = key_format_type.and_then(key_material_type_for_format)
+    let Some(expected_material_type) = key_format_type.and_then(expected_key_material_item_type)
     else {
         return ValidationReport::default();
     };
@@ -850,18 +921,10 @@ fn validate_key_format_material_type(
         ValidationSeverity::Error,
         ValidationSourceRef::Oasis {
             document: "KMIP v2.1",
-            reference: "§3.2, Table 13; §11.25, Table 460",
+            reference: "§3.2, Table 13; §11.25, Table 461",
         },
     ));
     report
-}
-
-fn key_material_type_for_format(format: u32) -> Option<ItemType> {
-    match format {
-        1..=4 | 6 => Some(ItemType::ByteString),
-        7..=13 | 20..=21 => Some(ItemType::Structure),
-        _ => None,
-    }
 }
 
 pub(super) fn validate_managed_object(
@@ -881,11 +944,21 @@ pub(super) fn validate_managed_object(
         0x0042_005B => {
             validate_nested_with_prefix(structure, NestedStructureSchema::OpaqueObject, prefix)
         }
-        0x0042_00BD => validate_key_bearing_object(structure, "§2.4, Table 5", prefix),
+        0x0042_00BD => validate_managed_object_fields(
+            structure,
+            "§2.4, Table 5",
+            PGP_KEY_OBJECT_FIELDS,
+            prefix,
+        ),
         0x0042_0064 => validate_key_bearing_object(structure, "§2.5, Table 6", prefix),
         0x0042_006D => validate_key_bearing_object(structure, "§2.6, Table 7", prefix),
-        0x0042_0085 => validate_key_bearing_object(structure, "§2.7, Table 8", prefix),
-        0x0042_0089 => validate_key_bearing_object(structure, "§2.8, Table 9", prefix),
+        0x0042_0085 => validate_managed_object_fields(
+            structure,
+            "§2.7, Table 8",
+            SECRET_DATA_OBJECT_FIELDS,
+            prefix,
+        ),
+        0x0042_0089 => validate_split_key_object(structure, prefix),
         0x0042_008F => validate_key_bearing_object(structure, "§2.9, Table 10", prefix),
         _ => ValidationReport::default(),
     }
@@ -896,11 +969,86 @@ fn validate_key_bearing_object(
     source: &'static str,
     prefix: &ValidationPath,
 ) -> ValidationReport {
-    let descriptor = RequestSchemaDescriptor {
-        source,
-        fields: KEY_BEARING_OBJECT_FIELDS,
-    };
+    validate_managed_object_fields(structure, source, KEY_BEARING_OBJECT_FIELDS, prefix)
+}
+
+fn validate_managed_object_fields(
+    structure: &StructureView<'_>,
+    source: &'static str,
+    fields: &'static [FieldDescriptor],
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    let descriptor = RequestSchemaDescriptor { source, fields };
     validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix)
+}
+
+fn validate_split_key_object(
+    structure: &StructureView<'_>,
+    prefix: &ValidationPath,
+) -> ValidationReport {
+    const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
+    const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
+    const KEY_PART_IDENTIFIER: u32 = 0x0042_0044;
+    const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
+    const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
+
+    let mut report =
+        validate_managed_object_fields(structure, "§2.8, Table 9", SPLIT_KEY_OBJECT_FIELDS, prefix);
+    let field_integer = |tag: u32| {
+        structure
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == tag)
+            .and_then(|item| {
+                item.with_value(|value| match value {
+                    ValueView::Integer(raw) => Some(*raw),
+                    _ => None,
+                })
+            })
+    };
+    if let (Some(parts), Some(part_id)) = (
+        field_integer(SPLIT_KEY_PARTS),
+        field_integer(KEY_PART_IDENTIFIER),
+    ) && (part_id < 1 || part_id > parts)
+    {
+        report.push(ValidationIssue::new(
+            ValidationCode::new("KMIPKIT-0051-R293"),
+            prefix.clone().field("Key Part Identifier"),
+            ValidationSeverity::Error,
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§2.8",
+            },
+        ));
+    }
+    let uses_prime_field = structure
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == SPLIT_KEY_METHOD)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                ValueView::Enumeration(raw) => Some(*raw == POLYNOMIAL_SHARING_PRIME_FIELD),
+                _ => None,
+            })
+        })
+        .unwrap_or(false);
+    if uses_prime_field
+        && !structure
+            .children()
+            .iter()
+            .any(|item| item.tag().raw() == PRIME_FIELD_SIZE)
+    {
+        report.push(ValidationIssue::new(
+            ValidationCode::new("KMIPKIT-0051-R292"),
+            prefix.clone().field("Prime Field Size"),
+            ValidationSeverity::Error,
+            ValidationSourceRef::Oasis {
+                document: "KMIP v2.1",
+                reference: "§2.8, Table 9",
+            },
+        ));
+    }
+    report
 }
 
 pub(super) fn validate_derive_key_conditions(
