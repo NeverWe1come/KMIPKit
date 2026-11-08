@@ -55,7 +55,7 @@ def test_batch_item_result_returns_caller_owned_generic_extension_copy(
         unique_batch_item_id=None,
         pending_correlation_value=None,
     )
-    object.__setattr__(result, "_native_response_extensions", NativeItem())
+    object.__setattr__(result, "_native_response_item", NativeItem())
 
     assert result.extension_count == 1
     assert result.extension_ttlv_at(0) is expected_structure
