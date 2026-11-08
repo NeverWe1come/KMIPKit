@@ -6,6 +6,7 @@ import socket
 import re
 import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -78,6 +79,34 @@ def test_typed_request_uses_the_shared_rust_validation_report():
         with item.validation_report() as report:
             assert report.is_valid
             assert report.issues == ()
+            assert "ValidationReport(closed=False)" == repr(report)
+
+
+def test_validation_binding_rejects_invalid_inputs_and_decodes_issue_spans():
+    with ttlv.ttlv_structure_create() as structure:
+        with pytest.raises(errors.InvalidInputError):
+            validation.validate_structure(object())  # type: ignore[arg-type]
+        with pytest.raises(errors.InvalidInputError):
+            validation.validate_structure(structure, schema=object())  # type: ignore[arg-type]
+        with pytest.raises(errors.InvalidInputError):
+            validation.validate_structure(structure, schema="\ud800")
+        with pytest.raises(errors.ResourceLimitError):
+            validation.validate_structure(structure, schema="x" * 129)
+
+    with pytest.raises(errors.InvalidInputError):
+        validation.validate_request(object())
+
+    assert validation._span_text(SimpleNamespace(length=0)) == ""
+    with pytest.raises(errors.InvalidInputError):
+        validation._span_text(SimpleNamespace(data=validation.ffi.NULL, length=1))
+
+    short_buffer = validation.ffi.new("uint8_t[]", b"x")
+    with pytest.raises(errors.ResourceLimitError):
+        validation._span_text(SimpleNamespace(data=short_buffer, length=4097))
+
+    invalid_utf8 = validation.ffi.new("uint8_t[]", b"\xff")
+    with pytest.raises(errors.InvalidInputError):
+        validation._span_text(SimpleNamespace(data=invalid_utf8, length=1))
 
 
 def test_invalid_typed_request_is_redacted_and_never_connects():

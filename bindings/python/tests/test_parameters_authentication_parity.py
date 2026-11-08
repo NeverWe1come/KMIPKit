@@ -146,6 +146,35 @@ def test_distinguishes_absent_and_present_empty_p_source():
         assert present_empty.p_source() == b""
 
 
+def test_cryptographic_parameters_builder_rejects_invalid_inputs_and_wipes_replaced_source(
+    monkeypatch,
+):
+    model = kmipkit.cryptographic_parameters.CryptographicParameters
+    with pytest.raises(errors.InvalidInputError):
+        model.from_ttlv(object())  # type: ignore[arg-type]
+
+    builder = model.builder()
+    with pytest.raises(errors.InvalidInputError):
+        builder.random_iv(1)  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        builder.p_source("not bytes")  # type: ignore[arg-type]
+
+    monkeypatch.setattr(kmipkit.cryptographic_parameters, "_MAX_P_SOURCE_BYTES", 1)
+    with pytest.raises(errors.ResourceLimitError):
+        builder.p_source(b"too long")
+
+    monkeypatch.setattr(kmipkit.cryptographic_parameters, "_MAX_P_SOURCE_BYTES", 1024)
+    builder.p_source(bytearray(b"old secret"))
+    previous = builder._values["p_source"]
+    builder.p_source(b"replacement")
+    assert previous == b"\x00" * len(previous)
+
+    with builder as same_builder:
+        assert same_builder is builder
+    with pytest.raises(errors.InvalidInputError):
+        builder.random_iv(True)
+
+
 def test_from_ttlv_parses_and_preserves_vendor_extension_in_source_order():
     limits = ttlv.codec_limits_defaults()
     source = ttlv.ttlv_structure_create()

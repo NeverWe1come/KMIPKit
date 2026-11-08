@@ -238,3 +238,68 @@ def test_typed_query_structure_fields_are_absent_without_losing_raw_payload() ->
             assert ttlv.ttlv_structure_view_item_count(raw) == 1
     finally:
         response.close()
+
+
+def test_query_response_rejects_inconsistent_metadata_and_closes_idempotently() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.QueryResponse(object(), ())  # type: ignore[arg-type]
+
+    payload = _sparse_query_payload()
+    with pytest.raises(errors.InvalidInputError):
+        client.QueryResponse(payload, ())
+    assert payload.closed
+
+    payload = _sparse_query_payload()
+    response = client.QueryResponse(payload, _classified_fields()[:1])
+    try:
+        assert response.field_at(0).item() is None
+    finally:
+        response.close()
+        response.close()
+    with pytest.raises(errors.InvalidInputError):
+        _ = response.raw_field_tags
+
+
+def test_query_response_text_reader_rejects_a_misclassified_ttlv_item() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        payload = _append(
+            ttlv.ttlv_structure_create(),
+            APPLICATION_NAMESPACE,
+            ttlv.ttlv_value_enumeration(7),
+            limits,
+        )
+    response = client.QueryResponse(
+        payload,
+        (client._QueryFieldData(APPLICATION_NAMESPACE, client.QueryFieldKind.TEXT_STRING, 0),),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            _ = response.application_namespaces
+    finally:
+        response.close()
+
+
+def test_typed_query_response_handles_absence_and_releases_partial_results(monkeypatch) -> None:
+    result = client.BatchItemResult(0, 0, None, None, None)
+    assert result.typed_query_response() is None
+
+    object.__setattr__(result, "_native_response_item", object())
+    monkeypatch.setattr(client, "_query_response", lambda _item: None)
+    assert result.typed_query_response() is None
+
+    payload = _sparse_query_payload()
+    monkeypatch.setattr(client, "_query_response", lambda _item: payload)
+    monkeypatch.setattr(client, "_query_response_fields", lambda _item: None)
+    assert result.typed_query_response() is None
+    assert payload.closed
+
+    payload = _sparse_query_payload()
+    monkeypatch.setattr(client, "_query_response", lambda _item: payload)
+
+    def fail_query_fields(_item):
+        raise ValueError("synthetic classifier failure")
+
+    monkeypatch.setattr(client, "_query_response_fields", fail_query_fields)
+    with pytest.raises(ValueError, match="synthetic classifier failure"):
+        result.typed_query_response()
+    assert payload.closed
