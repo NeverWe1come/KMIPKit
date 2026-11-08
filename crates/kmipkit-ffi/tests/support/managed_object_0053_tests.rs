@@ -679,6 +679,44 @@ fn compiled_c_consumer_builds_each_named_object_from_typed_fields() {
 }
 
 #[test]
+fn compiled_c_consumer_dispatches_generic_object_and_key_material_schemas() {
+    for object_type in [1, 2, 3, 4, 5, 7, 8, 9, 10, 6] {
+        let mut output = ptr::null_mut();
+        // SAFETY: The empty field list is valid storage for a zero count, and `output` is writable.
+        let status = unsafe {
+            kmipkit_0053_managed_object_from_fields(
+                object_type,
+                ptr::null_mut(),
+                0,
+                &raw mut output,
+            )
+        };
+        assert_eq!(status, ERROR_INVALID_INPUT, "Object Type {object_type}");
+        assert!(output.is_null());
+    }
+
+    for format_raw in [7, 8, 9, 10, 11, 12, 13, 0x14, 0x15] {
+        let mut output = ptr::null_mut();
+        // SAFETY: The empty field list is valid storage for a zero count, and `output` is writable.
+        let status = unsafe {
+            kmipkit_0053_key_material_from_fields(
+                format_raw,
+                ptr::null_mut(),
+                0,
+                &raw mut output,
+            )
+        };
+        assert!(
+            status == SUCCESS || status == ERROR_INVALID_INPUT,
+            "Key Format Type {format_raw} returned unexpected status {status}"
+        );
+        if !output.is_null() {
+            kmipkit_ttlv_item_release(output);
+        }
+    }
+}
+
+#[test]
 fn compiled_c_consumer_reads_named_certificate_fields_by_ttlv_type() {
     let mut fields = vec![
         field_handle(0x0042_001e, Value::byte_string(b"cert".to_vec())),
