@@ -156,8 +156,8 @@ BLOCKED_AFTER = 221
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-DECLARATIONS_SHA256 = "df2f8671c8f124d0085a609c12cae6f7908ab42335837dafe275b8d6777dc295"
-OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
+DECLARATIONS_SHA256 = "5e754caa5bc9c47f7aecf1e2a7157e720e66d01ee62aab94fbafcc95f20adcdc"
+OPERATIONS_SHA256 = "bad8067fd1898d957d5f3bc877faa0fd56b24194e2fdc1177dbdb3d5a8243f5f"
 
 
 def canonical_sha256(value: object) -> str:
@@ -437,12 +437,11 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
-        # The 930 blocked 0051 validation rows and predecessor stack additions
-        # remain inside the exact non-target fingerprint and
-        # cannot acquire four-language parity through snapshot normalization.
+        # Final T102 route resolution and predecessor stack additions remain
+        # inside this exact non-target fingerprint.
         for capability, count in (
-            ("typed_object_attributes", 286),
-            ("typed_managed_objects_and_key_material", 356),
+            ("typed_object_attributes", 544),
+            ("typed_managed_objects_and_key_material", 618),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [
@@ -450,11 +449,6 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     if row["capabilityId"] == capability
                 ]
                 self.assertEqual(count, len(typed_rows))
-                self.assertTrue(all(
-                    row["declarationState"] == "blocked"
-                    and row["candidateSpecId"] == "KMIPKIT-0053"
-                    for row in typed_rows
-                ))
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

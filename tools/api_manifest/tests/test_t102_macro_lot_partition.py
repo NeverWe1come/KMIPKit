@@ -69,7 +69,7 @@ class T102MacroLotPartitionTests(unittest.TestCase):
             and row.get("candidateSpecId") == "KMIPKIT-0043"
         }
         stack_routes = validation_stack_routes()
-        self.assertEqual(930, len(stack_routes))
+        self.assertEqual(1263, len(stack_routes))
         stack_candidates = {
             row["declarationId"]
             for row in self.manifest["publicDeclarations"]

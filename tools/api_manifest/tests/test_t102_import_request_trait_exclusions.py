@@ -141,7 +141,7 @@ class T102ImportRequestTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(conditional), 5)
         self.assertEqual(excluded, EXPECTED_PROTOCOL_TRAIT_EXPORTS)
 
-    def test_request_mapping_and_unmapped_root_surface_remain_unchanged(self) -> None:
+    def test_request_mapping_and_root_surface_match_managed_object_parity(self) -> None:
         protocol_rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -164,12 +164,40 @@ class T102ImportRequestTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ImportRequest::into_ttlv_payload",
             "kmipkit_protocol::ImportRequest::from_managed_object",
         }
-        blocked = {"kmipkit_protocol::ImportRequest::from_managed_object"}
+        blocked: set[str] = set()
         managed = protocol_rows["kmipkit_protocol::ImportRequest::from_managed_object"]
         self.assertEqual("typed_managed_objects_and_key_material", managed["capabilityId"])
-        self.assertEqual("KMIPKIT-0053", managed["candidateSpecId"])
-        self.assertEqual(["KMIPKIT-0049-FR-006", "KMIPKIT-0049-FR-007"], managed["requirementIds"])
-        self.assertNotIn("languageMappings", managed)
+        self.assertEqual(
+            [
+                "KMIPKIT-0049-FR-006",
+                "KMIPKIT-0049-FR-007",
+                "KMIPKIT-0053-FR-012",
+            ],
+            managed["requirementIds"],
+        )
+        self.assertNotIn("candidateSpecId", managed)
+        self.assertEqual("verified", managed["declarationState"])
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit-protocol",
+                    "name": "kmipkit_protocol::ImportRequest::from_managed_object",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_managed_value_field_read",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.ttlv.ManagedObject.readField",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.managed_objects.ManagedTtlvItem.field_read",
+                },
+            },
+            managed["languageMappings"],
+        )
         self.assertEqual(set(protocol_rows), verified | blocked)
         self.assertEqual(
             {
