@@ -143,7 +143,9 @@ specification.
 
 ## Proposed sequencing after 1.0.0
 
-1. Complete and publish KMIPKit 1.0.0 under the approved KMIP 2.1-only scope.
+1. Complete and publish KMIPKit 1.0.0 with KMIP 2.1 as the default and the
+   explicitly approved multi-version support defined by KMIPKIT-0069 through
+   KMIPKIT-0071.
 2. Prepare a reviewed ADR and approved feature specification for older-version
    support. Revisit `KMIPKIT-DISC-022` explicitly rather than silently
    changing the 1.0.0 behavior.

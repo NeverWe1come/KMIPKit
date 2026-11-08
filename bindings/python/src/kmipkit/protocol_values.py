@@ -2674,3 +2674,70 @@ class StorageStatusMask:
                 (0x00000004, 'Destroyed storage'),
             ) if raw & bit
         )
+
+# Exact assigned values added by later KMIP editions.
+V2_1_OPERATION_SET_DEFAULTS = 0x00000036  # kmip-2.1 §11.36, Table 470
+V2_1_OPERATION_SET_CONSTRAINTS = 0x00000037  # kmip-2.1 §11.36, Table 470
+V2_1_OPERATION_GET_CONSTRAINTS = 0x00000038  # kmip-2.1 §11.36, Table 470
+V2_1_OPERATION_QUERY_ASYNCHRONOUS_REQUESTS = 0x00000039  # kmip-2.1 §11.36, Table 470
+V2_1_OPERATION_PROCESS = 0x0000003A  # kmip-2.1 §11.36, Table 470
+V2_1_OPERATION_PING = 0x0000003B  # kmip-2.1 §11.36, Table 470
+
+def v2_1_operation_name(raw: int) -> str | None:
+    """Return the assigned KMIP v2.1 Operation name."""
+    return {
+        0x00000036: 'Set Defaults',
+        0x00000037: 'Set Constraints',
+        0x00000038: 'Get Constraints',
+        0x00000039: 'Query Asynchronous Requests',
+        0x0000003A: 'Process',
+        0x0000003B: 'Ping',
+    }.get(raw)
+
+V3_0_OPERATION_CREATE_GROUP = 0x0000003C  # kmip-3.0 §11.37, Table 583
+V3_0_OPERATION_OBLITERATE = 0x0000003D  # kmip-3.0 §11.37, Table 583
+V3_0_OPERATION_CREATE_USER = 0x0000003E  # kmip-3.0 §11.37, Table 583
+V3_0_OPERATION_CREATE_CREDENTIAL = 0x0000003F  # kmip-3.0 §11.37, Table 583
+V3_0_OPERATION_DEACTIVATE = 0x00000040  # kmip-3.0 §11.37, Table 583
+V3_0_OPERATION_ENCAPSULATE = 0x00000041  # kmip-3.0 §11.37, Table 583
+V3_0_OPERATION_DECAPSULATE = 0x00000042  # kmip-3.0 §11.37, Table 583
+
+def v3_0_operation_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Operation name."""
+    return {
+        0x0000003C: 'Create Group',
+        0x0000003D: 'Obliterate',
+        0x0000003E: 'Create User',
+        0x0000003F: 'Create Credential',
+        0x00000040: 'Deactivate',
+        0x00000041: 'Encapsulate',
+        0x00000042: 'Decapsulate',
+    }.get(raw)
+
+V3_0_OBJECT_CLASS_USER = 0x00000001  # kmip-3.0 §11.34, Table 581
+V3_0_OBJECT_CLASS_SYSTEM = 0x00000002  # kmip-3.0 §11.34, Table 581
+
+def v3_0_object_class_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Object Class name."""
+    return {
+        0x00000001: 'User',
+        0x00000002: 'System',
+    }.get(raw)
+
+V3_0_OBJECT_TYPE_USER = 0x0000000B  # kmip-3.0 §11.35, Table 582
+V3_0_OBJECT_TYPE_GROUP = 0x0000000C  # kmip-3.0 §11.35, Table 582
+V3_0_OBJECT_TYPE_PASSWORD_CREDENTIAL = 0x0000000D  # kmip-3.0 §11.35, Table 582
+V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL = 0x0000000E  # kmip-3.0 §11.35, Table 582
+V3_0_OBJECT_TYPE_ONE_TIME_PASSWORD_CREDENTIAL = 0x0000000F  # kmip-3.0 §11.35, Table 582
+V3_0_OBJECT_TYPE_HASHED_PASSWORD_CREDENTIAL = 0x00000010  # kmip-3.0 §11.35, Table 582
+
+def v3_0_object_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Object Type name."""
+    return {
+        0x0000000B: 'User',
+        0x0000000C: 'Group',
+        0x0000000D: 'Password Credential',
+        0x0000000E: 'Device Credential',
+        0x0000000F: 'One Time Password Credential',
+        0x00000010: 'Hashed Password Credential',
+    }.get(raw)

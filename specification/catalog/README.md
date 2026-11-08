@@ -110,3 +110,23 @@ This inventory is evidence for future protocol specifications. It does not
 replace the OASIS work products, amend their wording, resolve open source
 discrepancies, or serve as the separate public API manifest used for repetitive
 binding generation.
+
+## Versioned named-value supplement
+
+[`kmip-versioned-values.json`](kmip-versioned-values.json) is a separate,
+reviewed assignment catalog for the KMIP 2.1 Operation additions and the KMIP
+3.0 Operation, Object Class, and Object Type values used by version-aware
+models. Its generator verifies the exact SHA-256 checksums of the pinned local
+2.0, 2.1, and 3.0 specification sources before emitting values. Each group
+records its edition, section, table, and explicitly assigned entries. Reserved
+numbers and wildcard extension allocations are intentionally absent. This
+supplement does not change the scope or content of the comprehensive KMIP 2.1
+inventory above, and does not claim full KMIP 3.0 protocol support.
+
+[`kmip-versioned-tags.json`](kmip-versioned-tags.json) records the 20 exact
+KMIP 3.0 link attribute tags from §11.58 and their §4.35 definitions. The
+`generate_ttlv_tags.py` tool verifies the pinned source checksum and merges
+these assignments into the supported-version tag-allocation union. The union
+allows construction and decoding of assigned tags; it does not establish that
+a tag is valid for the effective protocol version or that the feature is
+otherwise supported.

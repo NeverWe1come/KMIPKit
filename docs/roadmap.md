@@ -24,7 +24,7 @@ Parallel feature development must wait until this phase is accepted.
 - Transport abstraction and deterministic fake transport.
 - Raw TLS and HTTPS vertical skeleton with mTLS.
 - Synchronous request/response client skeleton.
-- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; assigned outbound Batch Error Continuation values under §9.6 and Table 435; response-size enforcement and large-response policy under `KMIPKIT-REQ-SPEC-9.12-001-002/-003`; and ADR-0002's KMIP 2.1-only request/response version enforcement, documented as the §9.16 scope exception `KMIPKIT-DISC-022`. `KMIPKIT-DISC-043` records the §9.6/Table 435 value-range discrepancy separately from `KMIPKIT-DISC-001`; delegated decision `KMIPKIT-DEC-002` accepts assigned values for the initial client while raw Enumeration values remain preserved. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; a property check accepting protocol-version pairs iff they equal `(2, 1)`, plus representative non-2.1 mismatches and signed-32-bit boundary cases; assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of Batch Error Continuation extension-range outbound values under the project policy, raw-value preservation, exact/over-limit response-size boundaries, and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
+- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; assigned outbound Batch Error Continuation values under §9.6 and Table 435; response-size enforcement and large-response policy under `KMIPKIT-REQ-SPEC-9.12-001-002/-003`; and version enforcement for the initial KMIP 2.1 default. The later multi-version acceptance rules are owned by KMIPKIT-0069 through KMIPKIT-0071 and ADR-0022. `KMIPKIT-DISC-043` records the §9.6/Table 435 value-range discrepancy separately from `KMIPKIT-DISC-001`; delegated decision `KMIPKIT-DEC-002` accepts assigned values for the initial client while raw Enumeration values remain preserved. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; protocol-version pair validation for the configured edition, assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of Batch Error Continuation extension-range outbound values under the project policy, raw-value preservation, exact/over-limit response-size boundaries, and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
 - Minimal stable C ABI vertical slice.
 - Coverage, conformance, compatibility, and supply-chain CI gates.
 - `KMIPKIT-0011-dependency-policy-gates`: finite reviewed Cargo license/source
@@ -76,8 +76,9 @@ stabilized.
 
 ## Phase 5: high-level API usability and preflight validation
 
-- Add named values for the KMIP 2.1 enumerations and bitmasks while preserving
-  unknown and vendor values.
+- Add named values for KMIP 2.1 enumerations and bitmasks, plus reviewed
+  edition-specific deltas for KMIP 2.1 and 3.0, while preserving unknown and
+  vendor values.
 - Add typed builders and readers for attributes and managed objects, key
   material, and wrapping structures.
 - Complete typed operation parameters, request-scoped authentication, and

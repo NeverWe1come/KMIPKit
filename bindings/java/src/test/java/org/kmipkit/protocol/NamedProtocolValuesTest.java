@@ -31,6 +31,21 @@ final class NamedProtocolValuesTest {
         assertEquals(List.of("Encrypt"), KmipValues.CryptographicUsageMask.names(raw));
     }
 
+    // KMIP 2.1 §11.36 Table 470; KMIP 3.0 §§11.34–11.37 Tables 581–583.
+    @Test
+    void versionedNamedValuesMatchExactEditionTables() {
+        assertEquals(0x36L, KmipValues.V2_1_OPERATION_SET_DEFAULTS);
+        assertEquals("Ping", KmipValues.v2_1OperationName(KmipValues.V2_1_OPERATION_PING));
+        assertEquals(0x3DL, KmipValues.V3_0_OPERATION_OBLITERATE);
+        assertEquals("Create Credential",
+                KmipValues.v3_0OperationName(KmipValues.V3_0_OPERATION_CREATE_CREDENTIAL));
+        assertEquals("User", KmipValues.v3_0ObjectClassName(1));
+        assertNull(KmipValues.v3_0ObjectClassName(3));
+        assertEquals("Password Credential", KmipValues.v3_0ObjectTypeName(0x0D));
+        assertNull(KmipValues.v3_0ObjectTypeName(6));
+        assertNull(KmipValues.v3_0OperationName(0x43));
+    }
+
     // OASIS KMIP Specification v2.1 §§11–12; KMIPKIT-0047-FR-001–004.
     @Test
     void everyGeneratedEnumerationValueHasANameAndPreservesUnknownValues() throws Exception {

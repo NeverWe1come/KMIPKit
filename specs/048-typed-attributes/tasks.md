@@ -28,6 +28,12 @@
 - [x] T015 Run format, focused/workspace tests, Clippy, generator `--check`, manifest audit, and applicable coverage/security checks; record exact results in `specs/048-typed-attributes/implementation-evidence.md` (FR-001–FR-010).
 - [x] T016 Push `feature/KMIPKIT-0048-typed-attributes` and open draft stacked PR #115 targeting `feature/KMIPKIT-0047-named-values`.
 
+## Phase 5 audit correction: cross-version LinkNormalizer
+
+- [x] T017 [Red] Add failing tests for the exact 14 KMIP 2.1 Link Type to KMIP 3.0 tag mappings, all 20 versioned Link tag allocations, identifier round trips, and rejection of unmapped fields/tags (FR-011; Red commits `a20fe669a`, `8ce6503b9`, `2a8dc8b7b`, and `587d9086a`).
+- [x] T018 [Green] Add the checksum-pinned KMIP 3.0 Link tag catalog, regenerate the supported-version TTLV allocation union, and implement explicit lossless LinkNormalizer mappings (FR-011; Green commit `3296bc6bd`).
+- [ ] T019 [Refactor] Correct KMIPKIT-0071 references and migration documentation, update this spec's traceability and evidence, then run focused, generator, formatting, lint, API, coverage, and hosted CI checks (FR-011).
+
 ## Dependencies and independent criteria
 
 T001–T003 define the approved contract before implementation. T004–T007
@@ -52,3 +58,4 @@ contract.
 | KMIPKIT-0048-FR-008 | T004, T008, T012, T014, T015 |
 | KMIPKIT-0048-FR-009 | T013, T014, T015 |
 | KMIPKIT-0048-FR-010 | T013, T014, T015 |
+| KMIPKIT-0048-FR-011 | T017, T018, T019 |
