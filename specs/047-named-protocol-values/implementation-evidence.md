@@ -296,3 +296,23 @@ outputs. No generated manifest output changed.
 Refactor evidence: the profile diagnostic suffix inventory is defined once and
 reused for both expected Rust surfaces. Its focused test passed after the
 refactor.
+
+## JaCoCo generated-source exclusion alignment (2026-11-08)
+
+The first full CI run for PR #139, run `42436222557`, failed in
+`Coverage gate / selected scopes` because JaCoCo reported the generated
+`bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java` file. The
+source inventory already excludes that exact catalog-generated lookup table,
+but the JaCoCo parser only skipped the older Java metadata exclusions.
+
+Red: `test_jacoco_parser_ignores_catalog_generated_named_value_table` failed
+with `CoverageDataError` for that non-production path. Green: the JaCoCo parser
+now uses the same exact exclusion inventory as source eligibility. The new
+test confirms that only the catalog-generated table is skipped and a
+handwritten source in the same package remains in the report.
+
+Verification: all 30 tests in `test_multilanguage_coverage` pass. The parser
+also loaded the actual Linux and Windows JaCoCo reports from run `42436222557`
+and retained 115 production sources from each while excluding the generated
+table. The remote CI rerun on the updated PR is still required to confirm the
+coverage gate and full matrix.
