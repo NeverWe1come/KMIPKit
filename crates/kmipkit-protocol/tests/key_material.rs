@@ -1,6 +1,6 @@
 //! OASIS KMIP 2.1 §3.2, Table 13: Key Material encoding and fallback.
 
-use kmipkit_protocol::{KeyFormatType, KeyMaterial};
+use kmipkit_protocol::{KeyFormatType, KeyMaterial, expected_key_material_item_type};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
 #[test]
@@ -19,6 +19,27 @@ fn key_material_preserves_explicit_byte_string_and_structure_forms() {
 fn known_key_formats_reject_the_wrong_key_material_ttlv_form() {
     assert!(KeyMaterial::byte_string(7, vec![0x91]).is_err());
     assert!(KeyMaterial::structure(1, kmipkit_ttlv::Structure::new()).is_err());
+}
+
+#[test]
+fn assigned_key_formats_use_the_oasis_2_1_ttlv_types() {
+    for format in [5, 6, 22, 23] {
+        assert!(KeyMaterial::byte_string(format, vec![0x91]).is_ok());
+        assert_eq!(
+            expected_key_material_item_type(format),
+            Some(ItemType::ByteString)
+        );
+    }
+    for format in [7, 13, 20, 21] {
+        assert_eq!(
+            expected_key_material_item_type(format),
+            Some(ItemType::Structure)
+        );
+    }
+    for reserved in 14..=19 {
+        assert!(KeyMaterial::byte_string(reserved, vec![0x91]).is_ok());
+        assert_eq!(expected_key_material_item_type(reserved), None);
+    }
 }
 
 #[test]
