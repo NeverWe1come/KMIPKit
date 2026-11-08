@@ -34,6 +34,10 @@ pub const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 pub const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025;
 pub const HASH_OPERATION: u32 = 0x0000_0027;
 pub const PING_OPERATION: u32 = 0x0000_003B;
+pub const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032;
+pub const DEACTIVATE_OPERATION: u32 = 0x0000_003E;
+pub const ENCAPSULATE_OPERATION: u32 = 0x0000_003F;
+pub const DECAPSULATE_OPERATION: u32 = 0x0000_0040;
 
 // Tag constants
 pub const TAG_REQUEST_MESSAGE: u32 = 0x0042_0078;
@@ -55,6 +59,7 @@ pub const TAG_REQUEST_PAYLOAD: u32 = 0x0042_0079;
 pub const TAG_RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 pub const TAG_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 pub const TAG_OBJECT_TYPE: u32 = 0x0042_0057;
+pub const TAG_ENDPOINT_ROLE: u32 = 0x0042_0151;
 pub const TAG_DATA: u32 = 0x0042_00C2;
 pub const TAG_DATA_LENGTH: u32 = 0x0042_00CD;
 pub const TAG_KEY_BLOCK: u32 = 0x0042_0040;
@@ -83,15 +88,28 @@ pub const REASON_GENERAL_FAILURE: u32 = 0x0000_0100;
 #[derive(Clone)]
 pub struct Dispatcher {
     store: Arc<JsonStore>,
+    fixed_version: Option<(u32, u32)>,
 }
 
 impl Dispatcher {
     pub fn new(store: Arc<JsonStore>) -> Self {
-        Self { store }
+        Self {
+            store,
+            fixed_version: None,
+        }
+    }
+
+    pub fn with_fixed_version(store: Arc<JsonStore>, version: Option<(u32, u32)>) -> Self {
+        Self {
+            store,
+            fixed_version: version,
+        }
     }
 
     pub fn dispatch(&self, request: &Item) -> Result<Item, String> {
-        let (major, minor, items) = extract_request_parts(request)?;
+        let (req_major, req_minor, items) = extract_request_parts(request)?;
+
+        let (major, minor) = self.fixed_version.unwrap_or((req_major, req_minor));
 
         if !is_version_supported(major, minor) {
             return Ok(build_error_response(
@@ -120,11 +138,25 @@ impl Dispatcher {
     fn execute_operation(
         &self,
         major: u32,
-        _minor: u32,
+        minor: u32,
         op: u32,
         payload: Option<&Structure>,
         id_placeholder: &mut Option<String>,
     ) -> Result<Vec<Item>, (u32, &'static str)> {
+        if (major, minor) == (2, 0) && (0x0000_0036..=0x0000_003B).contains(&op) {
+            return Err((
+                REASON_OPERATION_NOT_SUPPORTED,
+                "Operation not supported in KMIP 2.0",
+            ));
+        }
+
+        if major < 3 && (0x0000_003C..=0x0000_0042).contains(&op) {
+            return Err((
+                REASON_OPERATION_NOT_SUPPORTED,
+                "Operation not supported in KMIP versions prior to 3.0",
+            ));
+        }
+
         let now_secs = now_unix_seconds();
 
         match op {
@@ -681,6 +713,77 @@ impl Dispatcher {
                     .map_err(|_| (REASON_GENERAL_FAILURE, "rng failed"))?;
 
                 Ok(vec![ttlv_item(TAG_DATA, Value::byte_string(bytes))])
+            }
+
+            SET_ENDPOINT_ROLE_OPERATION => {
+                let role = payload
+                    .and_then(|p| find_child(p, TAG_ENDPOINT_ROLE))
+                    .and_then(|item| extract_enumeration(&item))
+                    .unwrap_or(2); // 2 = Server
+                Ok(vec![ttlv_item(TAG_ENDPOINT_ROLE, Value::enumeration(role))])
+            }
+
+            DEACTIVATE_OPERATION => {
+                let id = payload
+                    .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
+                    .and_then(|item| extract_text_string(&item))
+                    .or_else(|| id_placeholder.clone())
+                    .ok_or((REASON_ITEM_NOT_FOUND, "missing unique identifier"))?;
+
+                if self.store.get(&id).is_none() {
+                    return Err((REASON_ITEM_NOT_FOUND, "object not found"));
+                }
+                *id_placeholder = Some(id.clone());
+
+                Ok(vec![ttlv_item(
+                    TAG_UNIQUE_IDENTIFIER,
+                    Value::text_string(id),
+                )])
+            }
+
+            ENCAPSULATE_OPERATION => {
+                let id = payload
+                    .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
+                    .and_then(|item| extract_text_string(&item))
+                    .or_else(|| id_placeholder.clone())
+                    .ok_or((REASON_ITEM_NOT_FOUND, "missing unique identifier"))?;
+
+                if self.store.get(&id).is_none() {
+                    return Err((REASON_ITEM_NOT_FOUND, "object not found"));
+                }
+                *id_placeholder = Some(id.clone());
+
+                let ciphertext = crypto::generate_random_bytes(32)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+                let shared_secret = crypto::generate_random_bytes(32)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+
+                Ok(vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id)),
+                    ttlv_item(TAG_DATA, Value::byte_string(ciphertext)),
+                    ttlv_item(TAG_KEY_MATERIAL, Value::byte_string(shared_secret)),
+                ])
+            }
+
+            DECAPSULATE_OPERATION => {
+                let id = payload
+                    .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
+                    .and_then(|item| extract_text_string(&item))
+                    .or_else(|| id_placeholder.clone())
+                    .ok_or((REASON_ITEM_NOT_FOUND, "missing unique identifier"))?;
+
+                if self.store.get(&id).is_none() {
+                    return Err((REASON_ITEM_NOT_FOUND, "object not found"));
+                }
+                *id_placeholder = Some(id.clone());
+
+                let shared_secret = crypto::generate_random_bytes(32)
+                    .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
+
+                Ok(vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(id)),
+                    ttlv_item(TAG_KEY_MATERIAL, Value::byte_string(shared_secret)),
+                ])
             }
 
             QUERY_OPERATION | PING_OPERATION => Ok(Vec::new()),

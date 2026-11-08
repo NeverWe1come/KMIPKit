@@ -33,6 +33,9 @@ one and links both directions.
 - [ADR-0018: KMIP 2.1 multi-encoding scope for 1.0](0018-multi-encoding-1-0-scope.md) (Accepted)
 - [ADR-0019: File-backed TLS hot-reload](0019-file-backed-tls-hot-reload.md) (Proposed)
 - [ADR-0020: TLS 1.3 session resumption without 0-RTT and HTTPS idle reconnect](0020-tls13-session-resumption-and-keepalive.md) (Accepted)
+- [ADR-0021: Server-to-Client operations and role inversion scope for KMIPKit](0021-server-to-client-operations-scope.md) (Accepted)
+- [ADR-0022: Multi-version modern KMIP architecture](0022-multi-version-modern-kmip-architecture.md) (Accepted)
+- [ADR-0023: Cloud KMS stateless sidecar proxy architecture](0023-cloud-kms-stateless-proxy.md) (Accepted)
 
 - [ADR-0017: Single-dependency Rust facade](0017-single-dependency-rust-facade.md) (Accepted)
 

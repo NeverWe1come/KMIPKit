@@ -1,0 +1,244 @@
+use crate::{
+    QueryFunction, RequestMessage, ServerCapabilities, ServerQueryRequest, ServerQueryResponse,
+};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+
+fn wrap_request_item(operation: u32, payload: Structure) -> RequestMessage {
+    let mut pv = Structure::new();
+    pv.try_push(
+        Item::new(
+            RawTag::new(0x0042_006A).unwrap().try_checked().unwrap(),
+            Value::integer(2),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    pv.try_push(
+        Item::new(
+            RawTag::new(0x0042_006B).unwrap().try_checked().unwrap(),
+            Value::integer(1),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+
+    let mut header = Structure::new();
+    header
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0069).unwrap().try_checked().unwrap(),
+                Value::structure(pv),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    header
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_000D).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut item_structure = Structure::new();
+    item_structure
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_005C).unwrap().try_checked().unwrap(),
+                Value::enumeration(operation),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    item_structure
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0079).unwrap().try_checked().unwrap(),
+                Value::structure(payload),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let mut msg = Structure::new();
+    msg.try_push(
+        Item::new(
+            RawTag::new(0x0042_0077).unwrap().try_checked().unwrap(),
+            Value::structure(header),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    msg.try_push(
+        Item::new(
+            RawTag::new(0x0042_000F).unwrap().try_checked().unwrap(),
+            Value::structure(item_structure),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+
+    RequestMessage::try_from_ttlv(msg).expect("valid request message fixture")
+}
+
+#[test]
+fn test_server_query_request_decoding() {
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0074).unwrap().try_checked().unwrap(),
+                Value::enumeration(1),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // Query Operations (1)
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0074).unwrap().try_checked().unwrap(),
+                Value::enumeration(2),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // Query Objects (2)
+
+    let msg = wrap_request_item(0x0000_0018, payload);
+    let view = msg.batch_items().next().expect("valid view");
+
+    let req = ServerQueryRequest::try_from_request_item(view).expect("valid query request");
+    assert_eq!(req.query_functions().len(), 2);
+    assert_eq!(req.query_functions()[0], QueryFunction::OPERATIONS);
+    assert_eq!(req.query_functions()[1], QueryFunction::OBJECTS);
+}
+
+#[test]
+fn test_server_query_response_extension_map_supersedes_extension_list() {
+    // Normative rule §6.2.4: If both Extension List (5) and Extension Map (6) are requested,
+    // only Extension Map is returned.
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0074).unwrap().try_checked().unwrap(),
+                Value::enumeration(5),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // Extension List
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0074).unwrap().try_checked().unwrap(),
+                Value::enumeration(6),
+            )
+            .unwrap(),
+        )
+        .unwrap(); // Extension Map
+
+    let msg = wrap_request_item(0x0000_0018, payload);
+    let view = msg.batch_items().next().expect("valid view");
+
+    let req = ServerQueryRequest::try_from_request_item(view).expect("valid query request");
+
+    let mut capabilities = ServerCapabilities::default();
+    capabilities.set_vendor_identification("KMIPKit");
+
+    let resp = ServerQueryResponse::respond(&req, &capabilities);
+    let payload_structure = resp.to_ttlv_payload().expect("payload build succeeds");
+
+    // Must NOT contain Extension List (tag 0x0042_00A3) if Extension Map (0x0042_00A4) is present or requested
+    for item in payload_structure.view().children() {
+        assert_ne!(
+            item.tag().raw(),
+            0x0042_00A3,
+            "Extension List must not be present when Extension Map is requested"
+        );
+    }
+}
+
+#[test]
+fn test_server_query_constructors_and_capabilities_coverage() {
+    use crate::QueryFunction;
+    use crate::server_to_client::query::ServerQueryError;
+
+    let mut caps = ServerCapabilities::new();
+    caps.set_vendor_identification("AcmeVendor");
+    caps.set_operations(vec![0x18, 0x1E]);
+    caps.set_object_types(vec![1, 2]);
+    caps.set_extension_tags(vec![0x8000_0001]);
+    assert_eq!(caps.vendor_identification(), Some("AcmeVendor"));
+
+    let req = ServerQueryRequest::new(vec![
+        QueryFunction::OPERATIONS,
+        QueryFunction::OBJECTS,
+        QueryFunction::SERVER_INFORMATION,
+        QueryFunction::EXTENSION_LIST,
+    ]);
+    assert_eq!(req.query_functions().len(), 4);
+
+    let resp = ServerQueryResponse::respond(&req, &caps);
+    let ttlv = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
+    let binding = ttlv.view();
+    let children = binding.children();
+    assert_eq!(children.len(), 6); // 2 operations + 2 object types + 1 server information + 1 extension list
+
+    let err1 = ServerQueryError::UnexpectedOperation;
+    assert!(format!("{err1}").contains("Query"));
+
+    let err2 = ServerQueryError::MissingPayload;
+    assert!(format!("{err2}").contains("missing payload"));
+
+    let err3 = ServerQueryError::MalformedPayload;
+    assert!(format!("{err3}").contains("malformed Query payload"));
+
+    let msg = wrap_request_item(0x0000_0001, Structure::new());
+    let view = msg.batch_items().next().expect("valid view");
+    let err = ServerQueryRequest::try_from_request_item(view).unwrap_err();
+    assert_eq!(err, ServerQueryError::UnexpectedOperation);
+
+    let model_err = kmipkit_ttlv::ModelError::StructureDepthExceeded;
+    let proto_err = crate::server_to_client::query::protocol_model_error(model_err);
+    assert_eq!(proto_err.kind(), crate::ProtocolErrorKind::InvalidValue);
+}
+
+#[test]
+fn test_server_query_extension_map_and_unknown_payload_fields() {
+    use crate::QueryFunction;
+
+    let mut caps = ServerCapabilities::new();
+    caps.set_extension_tags(vec![0x0001, 0x0002]);
+
+    let req = ServerQueryRequest::new(vec![QueryFunction::EXTENSION_MAP]);
+    let resp = ServerQueryResponse::respond(&req, &caps);
+    let ttlv = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
+    assert_eq!(ttlv.view().children().len(), 2);
+
+    // Mismatched value type in QUERY_FUNCTION_TAG (Integer instead of Enumeration) and unknown tag
+    let mut payload = Structure::new();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0074).unwrap().try_checked().unwrap(),
+                Value::integer(1),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    payload
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0001).unwrap().try_checked().unwrap(),
+                Value::integer(42),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+    let msg = wrap_request_item(0x0000_0018, payload);
+    let view = msg.batch_items().next().expect("valid view");
+    let parsed = ServerQueryRequest::try_from_request_item(view).expect("valid query request");
+    assert_eq!(parsed.query_functions(), []);
+}
