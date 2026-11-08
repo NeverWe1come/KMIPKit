@@ -1,5 +1,6 @@
 """Behavior checks for generated public API signature metadata."""
 
+import kmipkit
 from kmipkit._generated import extension_registry, public_api
 
 
@@ -39,3 +40,8 @@ def test_generated_public_api_manifest_has_unique_python_declarations() -> None:
         assert declaration["declarationId"]
         assert declaration["kind"]
         assert declaration["name"]
+
+
+def test_managed_objects_module_is_exported_from_the_package() -> None:
+    assert "managed_objects" in kmipkit.__all__
+    assert kmipkit.managed_objects.__name__ == "kmipkit.managed_objects"
