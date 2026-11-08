@@ -53,7 +53,7 @@ class ExecutableConsumerExampleTests(unittest.TestCase):
         self.assertIn("synthetic", document)
         self.assertIn("T078", document)
         tasks = (ROOT / "specs/053-api-parity-facade/tasks.md").read_text(encoding="utf-8")
-        self.assertIn("- [ ] T078 [US5]", tasks)
+        self.assertIn("- [x] T078 [US5]", tasks)
 
     def test_each_consumer_exercises_its_package_capabilities(self) -> None:
         required_markers = {

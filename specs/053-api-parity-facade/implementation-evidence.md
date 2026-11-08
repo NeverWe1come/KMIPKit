@@ -43,6 +43,12 @@
 
 The dated notes below are chronological implementation records. Their intermediate candidate counts and open-task statements are superseded by the current closure status above.
 
+## Release-stack CI and parity follow-ups (2026-11-08)
+
+- **Red:** the existing T091 manifest contracts found 23 mismatches across the high-level operation-options, `ClientOperation`, and batch-outcome tests: affected Rust declarations were still `declared` while their approved operations and cross-language evidence were `verified`. Commit `99fdf4101` adds the exact CI-only C symbol `kmipkit_test_client_batch_item_encoded_operation` to the required exclusion contract; its focused header-inventory test failed with a missing-exclusion `KeyError` before the manifest update.
+- **Green:** commit `b23f12387` reconciles 40 exact operation-related declaration rows to the existing four-language operation evidence, records the single feature-gated C consumer symbol as an exact KMIPKIT-0053 exclusion, and regenerates the manifest outputs. The focused T091 tests and C header inventory test pass (4 tests); `python -B tools/api_manifest/generate.py --check` verified all 12 outputs. The local CI-equivalent C build and ABI audit passed with 1,889/1,889 exact matches, zero missing/unobserved symbols, and zero kind mismatches.
+- **Refactor:** corrected the T078 quickstart statement to reflect the completed task, made the docs regression assert `[x] T078`, and synchronized current audit counts in the gap matrix and normative checklist. The focused docs suite passed (3 tests). The complete manifest-v2 suite is being rerun after these reconciliations; its result will be recorded before the PR is marked ready.
+
 
 - Initial baseline: a1ae6b402, `feature/KMIPKIT-0052-typed-responses`, draft PR #123. This records the original stack; the current predecessor is PR #149 and the canonical 0053 draft is PR #150.
 - Branch: feature/KMIPKIT-0053-parity-facade, created in a dedicated worktree from the approved 0052 head.

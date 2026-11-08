@@ -11,7 +11,7 @@
 - [x] All 750 baseline candidates are resolved: 693 exact four-language mappings and 57 exact per-route exclusions (50 enum-field artifacts, four trait implementation members, two module artifacts, and one Rust helper); the additional C block-copy bridge has its own exact exclusion.
 - [x] The 934 synced validation candidates are resolved as 12 exact alias mappings and 922 individual exclusions; no owner declaration remains blocked.
 - [x] Rust `RequestPayloadSchema` and `NestedStructureSchema` identities exactly match the foreign string parser, including `Unsupported` and the accepted-but-unsupported `SetEndpointRole` descriptor.
-- [x] Fresh compiled Rust/C/Java/Python export audits match all 6,922 Rust declarations plus 16,936 Rust exclusions / 1,866 C / 2,161 Java / 2,347 Python routes, with zero missing, unobserved, kind-mismatched, or audit-error entries.
+- [x] Fresh compiled Rust/C/Java/Python export audits match all 6,942 Rust declarations plus 16,976 Rust exclusions / 1,889 C / 2,188 Java / 2,377 Python routes, with zero missing, unobserved, kind-mismatched, or audit-error entries.
 - [x] Independent review checked normative references, security effects, evidence paths, and the KMIPKIT-0053 exclusion set; no normative mismatch remains.
 - [x] Redaction, release, zeroization, ABI, and bilingual limitations are verified.
 - [x] Coverage and hosted CI state is accurately recorded as deferred; no unsupported conformance claim is added.

@@ -66,10 +66,11 @@ certificates; it is limited to Ping and does not count as interoperability
 evidence or as a KMIP server implementation. The separate synthetic response
 continues to exercise the public parser and generic TTLV accessors.
 
-These examples do not claim complete operation-checked response-reader parity.
-Typed foreign readers that check operation identity for Cancel, Poll, Process,
-and Query Async remain open in
-[converged task T078](tasks.md).
+These examples do not independently demonstrate complete operation-checked
+response-reader parity. Typed foreign readers for Cancel, Poll, Process, and
+Query Async are implemented and tracked as complete in
+[converged task T078](tasks.md); broader parity evidence is in the operation
+binding matrix and response tests.
 
 ## Runnable sources
 
