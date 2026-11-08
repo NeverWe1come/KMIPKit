@@ -421,6 +421,7 @@ dependencies = [
  "aws-lc-rs",
  "bytes",
  "hyper",
+ "kmipkit-protocol",
  "kmipkit-test-support",
  "rcgen",
  "rustls",
