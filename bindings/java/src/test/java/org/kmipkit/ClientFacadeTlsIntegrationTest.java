@@ -2166,7 +2166,7 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals("get-response-secret-id",
                             getResponse.uniqueIdentifier().orElseThrow().text());
                     assertTagOrder(getObject, 0x42008f);
-                    assertTrue(containsByteString(getObject, 0x420045,
+                    assertTrue(containsByteString(getObject, 0x420043,
                             "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
                     assertFalse(getResponse.toString().contains("KMIPKit-get-response-sentinel"));
                     try (TtlvItemView keyBlockItem = getObject.itemAt(0);
