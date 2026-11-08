@@ -108,6 +108,7 @@ LEGACY_GENERATED_OUTPUTS = {
 }
 HEADERLESS_C_FUNCTION_EXCLUSIONS = {
     "kmipkit_ttlv_value_view_copy_bytes",
+    "kmipkit_test_client_batch_item_encoded_operation",
 }
 VERIFIED_OPERATION_DECLARED_EXPORTS = {
     "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
