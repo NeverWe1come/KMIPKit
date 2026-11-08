@@ -114,7 +114,8 @@ Normative identifiers in this feature use the prefix `KMIPKIT-0051-`. OASIS refe
 - `cargo fmt --all --check` — passed.
 - `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings` — passed. Windows printed non-fatal dependency build-script warnings for optional AWS-LC feature probes/NASM; the command exited successfully.
 - `python -B -m unittest scripts.tests.test_requirement_traceability -v` — 2 passed.
-- Full workspace verification and remote CI remain part of the PR closeout gate.
+- `cargo test --workspace --all-features --quiet` — passed across all workspace targets and doctests after updating the obsolete Key Format Type Table 460 assertion to Table 461 and aligning Key Information reader fixtures with Text String identifiers. Windows emitted non-fatal AWS-LC/NASM and C-linker warnings.
+- `git diff --check` — passed. Remote CI remains part of the PR closeout gate.
 
 ## Final verification evidence — 2026-11-06
 

@@ -121,15 +121,15 @@ fn wrapping_reader_checks_required_identifiers_and_keeps_unknown_fields() {
 #[test]
 fn wrapping_reader_covers_optional_fields_and_key_information_variants() {
     let encryption = EncryptionKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::Enumeration(1),
+        kmipkit_protocol::UniqueIdentifier::TextString("encryption-key".to_owned()),
     )
-    .expect("enumerated identifiers are open")
+    .expect("Key Information uses a Text String identifier")
     .with_cryptographic_parameters(Structure::new())
     .expect("optional parameters follow the identifier");
     let mac = MacSignatureKeyInformation::try_from_unique_identifier(
-        kmipkit_protocol::UniqueIdentifier::Integer(7),
+        kmipkit_protocol::UniqueIdentifier::TextString("mac-key".to_owned()),
     )
-    .expect("integer identifiers are open")
+    .expect("Key Information uses a Text String identifier")
     .with_cryptographic_parameters(Structure::new())
     .expect("optional parameters follow the identifier");
     let item = KeyWrappingData::try_new(1)
@@ -152,11 +152,19 @@ fn wrapping_reader_covers_optional_fields_and_key_information_variants() {
     });
     fields.push(tagged(0x0054_0101, Value::integer(1)));
     let item = structure_item(0x0042_0046, fields);
-    let encryption_source = key_information(0x0042_0036, 0x0042_0094, Value::enumeration(1));
+    let encryption_source = key_information(
+        0x0042_0036,
+        0x0042_0094,
+        Value::text_string("encryption-key".to_owned()),
+    );
     let encryption = EncryptionKeyInformation::try_from_item(encryption_source)
         .expect("read encryption key information");
     assert!(encryption.with_raw(|view| view.children().len()).is_ok());
-    let mac_source = key_information(0x0042_004E, 0x0042_0094, Value::integer(7));
+    let mac_source = key_information(
+        0x0042_004E,
+        0x0042_0094,
+        Value::text_string("mac-key".to_owned()),
+    );
     let mac = MacSignatureKeyInformation::try_from_item(mac_source)
         .expect("read MAC/Signature key information");
     assert!(mac.with_raw(|view| view.children().len()).is_ok());
