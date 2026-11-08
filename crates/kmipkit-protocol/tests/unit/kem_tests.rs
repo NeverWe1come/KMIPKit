@@ -36,9 +36,17 @@ fn test_encapsulate_request_and_response() {
     );
     assert_eq!(resp.unique_identifier(), "public-key-uuid-456");
     assert_eq!(resp.ciphertext(), &ciphertext);
-    assert_eq!(resp.shared_secret(), &shared_secret);
+    let debug = format!("{resp:?}");
     let resp_payload = resp.into_ttlv_payload().expect("valid payload");
-    assert_eq!(resp_payload.view().children().len(), 3);
+    let response_tags: Vec<u32> = resp_payload
+        .view()
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect();
+    assert_eq!(response_tags, [0x0042_0094, 0x0042_00C2]);
+    assert!(!debug.contains("shared_secret"));
+    assert!(!debug.contains("[170, 187, 204, 221]"));
 }
 
 #[test]
@@ -53,7 +61,15 @@ fn test_decapsulate_request_and_response() {
     let shared_secret = vec![0xAA, 0xBB, 0xCC, 0xDD];
     let resp = DecapsulateResponse::new("private-key-uuid-789", shared_secret.clone());
     assert_eq!(resp.unique_identifier(), "private-key-uuid-789");
-    assert_eq!(resp.shared_secret(), &shared_secret);
+    let debug = format!("{resp:?}");
     let resp_payload = resp.into_ttlv_payload().expect("valid payload");
-    assert_eq!(resp_payload.view().children().len(), 2);
+    let response_tags: Vec<u32> = resp_payload
+        .view()
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect();
+    assert_eq!(response_tags, [0x0042_0094]);
+    assert!(!debug.contains("shared_secret"));
+    assert!(!debug.contains("[170, 187, 204, 221]"));
 }
