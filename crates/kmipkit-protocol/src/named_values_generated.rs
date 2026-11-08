@@ -2841,21 +2841,21 @@ pub mod values {
         /// Values assigned in KMIP v3.0.
         pub mod v3_0 {
             pub mod enumeration {
-                /// KMIP Operation values from §11.37, Table 583.
+                /// KMIP Operation values from §11.37, Table 584.
                 pub mod operation {
-                    /// `Create Group`; kmip-3.0 §11.37, Table 583.
+                    /// `Create Group`; kmip-3.0 §11.37, Table 584.
                     pub const CREATE_GROUP: u32 = 0x0000_003C;
-                    /// `Obliterate`; kmip-3.0 §11.37, Table 583.
+                    /// `Obliterate`; kmip-3.0 §11.37, Table 584.
                     pub const OBLITERATE: u32 = 0x0000_003D;
-                    /// `Create User`; kmip-3.0 §11.37, Table 583.
+                    /// `Create User`; kmip-3.0 §11.37, Table 584.
                     pub const CREATE_USER: u32 = 0x0000_003E;
-                    /// `Create Credential`; kmip-3.0 §11.37, Table 583.
+                    /// `Create Credential`; kmip-3.0 §11.37, Table 584.
                     pub const CREATE_CREDENTIAL: u32 = 0x0000_003F;
-                    /// `Deactivate`; kmip-3.0 §11.37, Table 583.
+                    /// `Deactivate`; kmip-3.0 §11.37, Table 584.
                     pub const DEACTIVATE: u32 = 0x0000_0040;
-                    /// `Encapsulate`; kmip-3.0 §11.37, Table 583.
+                    /// `Encapsulate`; kmip-3.0 §11.37, Table 584.
                     pub const ENCAPSULATE: u32 = 0x0000_0041;
-                    /// `Decapsulate`; kmip-3.0 §11.37, Table 583.
+                    /// `Decapsulate`; kmip-3.0 §11.37, Table 584.
                     pub const DECAPSULATE: u32 = 0x0000_0042;
                     /// Returns the assigned name for a known value.
                     #[must_use]

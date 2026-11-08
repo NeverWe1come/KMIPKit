@@ -18,7 +18,7 @@
     - `DeactivateRequest` and `DeactivateResponse`.
     - `EncapsulateRequest`, `EncapsulateResponse`, `DecapsulateRequest`, `DecapsulateResponse`.
   - VersionGate:
-    - Update `operation_span` from exact Operation Enumeration assignments in Table 583: `0x3C`–`0x42` have the names Create Group, Obliterate, Create User, Create Credential, Deactivate, Encapsulate, and Decapsulate respectively; unknown codes have no inferred span.
+    - Update `operation_span` from exact Operation Enumeration assignments in §11.37, Table 584: `0x3C`–`0x42` have the names Create Group, Obliterate, Create User, Create Credential, Deactivate, Encapsulate, and Decapsulate respectively; unknown codes have no inferred span.
 - In `kmipkit-test-server`:
   - Support `(3, 0)` protocol version in `v1_compat.rs` `ALL_VERSIONS` and `is_version_supported`.
   - Dispatcher support for `Deactivate`, `Encapsulate`, `Decapsulate`.
