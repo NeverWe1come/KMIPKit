@@ -16,13 +16,14 @@
 - [x] T006 Refactor generator and language surfaces without changing their
   public behavior; rerun focused checks and generator `--check` (Refactor
   commit).
-- [ ] T007 Run applicable format, lint, unit, binding, manifest, coverage, and
+- [x] T007 Run applicable format, lint, unit, binding, manifest, coverage, and
   security checks; record exact commands and outcomes in
-  `implementation-evidence.md`. The recorded local Windows format, workspace
-  tests/Clippy, Rust coverage, four-language consumers, manifest
-  generators/audits, and scoped security scan pass. Keep this task open until
-  the required cross-platform aggregate coverage and hosted platform controls
-  are available and their results are recorded.
+  `implementation-evidence.md`. Local format, workspace tests/Clippy, Rust
+  coverage, four-language consumers, manifest generators/audits, and scoped
+  security scan pass. Hosted run `42441188505` completed the Rust, C, Java/JNI,
+  Python, cross-platform coverage, and selected-scope coverage gate checks;
+  CodeQL, zizmor, and SonarCloud also passed. See the hosted cross-platform
+  closeout evidence.
 - [x] T009 Reconcile the approved count discrepancy: the catalog rows include
   reserved and wildcard extension entries, which do not have assigned
   numeric values. Confirm that generated usable constants cover only entries
