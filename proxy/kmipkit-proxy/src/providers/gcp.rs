@@ -98,7 +98,7 @@ impl GcpKmsProvider {
         }
     }
 
-    fn is_secret_id(&self, unique_id: &str) -> bool {
+    fn is_secret_resource(&self, unique_id: &str) -> bool {
         let normalized_prefix = self.secret_name_prefix.replace('/', "-");
         unique_id.starts_with(&self.secret_name_prefix)
             || unique_id.starts_with(&normalized_prefix)
@@ -108,7 +108,7 @@ impl GcpKmsProvider {
                 && unique_id.contains("secret"))
     }
 
-    fn normalize_secret_id(&self, unique_id: &str) -> String {
+    fn extract_resource_name(&self, unique_id: &str) -> String {
         let s = if let Some(idx) = unique_id.rfind("/secrets/") {
             &unique_id[idx + 9..]
         } else {
@@ -294,13 +294,13 @@ impl CloudKmsProvider for GcpKmsProvider {
         let wrapped_b64 = base64::engine::general_purpose::STANDARD.encode(wrapped.to_bytes());
 
         let prefix = self.secret_name_prefix.replace('/', "-");
-        let secret_id = spec
+        let resource_name = spec
             .name
             .as_deref()
             .map(|n| format!("{prefix}{}", n.replace('/', "-")))
             .unwrap_or_else(|| {
                 format!(
-                    "{prefix}secret-{}",
+                    "{prefix}obj-{}",
                     std::time::SystemTime::now()
                         .elapsed()
                         .unwrap_or_default()
@@ -313,7 +313,7 @@ impl CloudKmsProvider for GcpKmsProvider {
             "{}/v1/projects/{}/secrets?secretId={}",
             self.secret_base_url(),
             self.project_id,
-            secret_id
+            resource_name
         );
 
         let body_create = serde_json::json!({
@@ -342,7 +342,7 @@ impl CloudKmsProvider for GcpKmsProvider {
             "{}/v1/projects/{}/secrets/{}:addVersion",
             self.secret_base_url(),
             self.project_id,
-            secret_id
+            resource_name
         );
 
         let body_version = serde_json::json!({
@@ -369,7 +369,7 @@ impl CloudKmsProvider for GcpKmsProvider {
 
         Ok(format!(
             "projects/{}/secrets/{}",
-            self.project_id, secret_id
+            self.project_id, resource_name
         ))
     }
 
@@ -377,13 +377,13 @@ impl CloudKmsProvider for GcpKmsProvider {
         &self,
         unique_id: &str,
     ) -> Result<(KeyMaterialPayload, CloudTagMap), ProxyError> {
-        if self.is_secret_id(unique_id) {
-            let sec_id = self.normalize_secret_id(unique_id);
+        if self.is_secret_resource(unique_id) {
+            let resource_name = self.extract_resource_name(unique_id);
             let url_access = format!(
                 "{}/v1/projects/{}/secrets/{}/versions/latest:access",
                 self.secret_base_url(),
                 self.project_id,
-                sec_id
+                resource_name
             );
 
             let resp = self
@@ -429,7 +429,7 @@ impl CloudKmsProvider for GcpKmsProvider {
                 "{}/v1/projects/{}/secrets/{}",
                 self.secret_base_url(),
                 self.project_id,
-                sec_id
+                resource_name
             );
             let mut tags = CloudTagMap::new();
             if let Ok(meta_resp) = self.apply_auth(self.client.get(&url_secret)).send().await {
@@ -500,13 +500,13 @@ impl CloudKmsProvider for GcpKmsProvider {
         unique_id: &str,
     ) -> Result<CloudResourceMeta, ProxyError> {
         let mut tags = CloudTagMap::new();
-        if self.is_secret_id(unique_id) {
-            let sec_id = self.normalize_secret_id(unique_id);
+        if self.is_secret_resource(unique_id) {
+            let resource_name = self.extract_resource_name(unique_id);
             let url_secret = format!(
                 "{}/v1/projects/{}/secrets/{}",
                 self.secret_base_url(),
                 self.project_id,
-                sec_id
+                resource_name
             );
             let resp = self
                 .apply_auth(self.client.get(&url_secret))
@@ -620,13 +620,13 @@ impl CloudKmsProvider for GcpKmsProvider {
             "labels": clean
         });
 
-        if self.is_secret_id(unique_id) {
-            let sec_id = self.normalize_secret_id(unique_id);
+        if self.is_secret_resource(unique_id) {
+            let resource_name = self.extract_resource_name(unique_id);
             let url = format!(
                 "{}/v1/projects/{}/secrets/{}?updateMask=labels",
                 self.secret_base_url(),
                 self.project_id,
-                sec_id
+                resource_name
             );
             let resp = self
                 .apply_auth(self.client.patch(&url).json(&body))
@@ -711,7 +711,7 @@ impl CloudKmsProvider for GcpKmsProvider {
         unique_id: &str,
         enabled: bool,
     ) -> Result<(), ProxyError> {
-        if self.is_secret_id(unique_id) {
+        if self.is_secret_resource(unique_id) {
             Ok(())
         } else {
             let key_name = self.normalize_crypto_key_path(unique_id);
@@ -742,13 +742,13 @@ impl CloudKmsProvider for GcpKmsProvider {
     }
 
     async fn schedule_destruction(&self, unique_id: &str) -> Result<(), ProxyError> {
-        if self.is_secret_id(unique_id) {
-            let sec_id = self.normalize_secret_id(unique_id);
+        if self.is_secret_resource(unique_id) {
+            let resource_name = self.extract_resource_name(unique_id);
             let url = format!(
                 "{}/v1/projects/{}/secrets/{}",
                 self.secret_base_url(),
                 self.project_id,
-                sec_id
+                resource_name
             );
             let resp = self
                 .apply_auth(self.client.delete(&url))
