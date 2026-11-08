@@ -1,7 +1,9 @@
 //! Azure Key Vault provider connector.
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "azure")]
 use std::collections::HashMap;
+#[cfg(feature = "azure")]
 use std::sync::Arc;
 
 use async_trait::async_trait;
