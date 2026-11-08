@@ -55,6 +55,14 @@ class ExecutableConsumerExampleTests(unittest.TestCase):
         tasks = (ROOT / "specs/053-api-parity-facade/tasks.md").read_text(encoding="utf-8")
         self.assertIn("- [x] T078 [US5]", tasks)
 
+    def test_guides_do_not_mark_completed_typed_response_readers_pending(self) -> None:
+        for guide in GUIDES:
+            with self.subTest(guide=guide):
+                document = guide.read_text(encoding="utf-8").lower()
+                self.assertIn("t078", document)
+                self.assertNotIn("do not claim complete typed-reader parity", document)
+                self.assertNotIn("siguen pendientes los lectores extranjeros", document)
+
     def test_each_consumer_exercises_its_package_capabilities(self) -> None:
         required_markers = {
             "rust": (
