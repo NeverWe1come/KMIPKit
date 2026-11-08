@@ -120,6 +120,11 @@ public final class AsyncOperationOutcome implements AutoCloseable {
         if (values == null) {
             return Optional.empty();
         }
+        validateTypedResponseValues(values, expectedOperation);
+        return Optional.of(values);
+    }
+
+    static void validateTypedResponseValues(long[] values, long expectedOperation) {
         if (values.length != 8 || values[0] != 1 || values[1] != expectedOperation
                 || values[2] < 0 || values[2] > 0xffff_ffffL
                 || values[3] < 0 || values[3] > 1
@@ -131,7 +136,6 @@ public final class AsyncOperationOutcome implements AutoCloseable {
                 || (values[6] == 0 && values[7] != 0)) {
             throw new InvalidInputException("native asynchronous typed response is invalid");
         }
-        return Optional.of(values);
     }
 
     private enum NativeReader {
@@ -148,11 +152,15 @@ public final class AsyncOperationOutcome implements AutoCloseable {
     }
 
     boolean withCancelCorrelationValue(Consumer<ByteBuffer> callback) {
+        requireCorrelationCallback(callback);
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(value -> withCancelResponseCorrelationValueV1(value, callback));
+    }
+
+    static void requireCorrelationCallback(Consumer<ByteBuffer> callback) {
         if (callback == null) {
             throw new InvalidInputException("asynchronous correlation callback is invalid");
         }
-        NativeExtensionRegistry.ensureLoaded();
-        return handle.withValue(value -> withCancelResponseCorrelationValueV1(value, callback));
     }
 
     void ensureOpen() {
