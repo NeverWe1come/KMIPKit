@@ -200,3 +200,9 @@ Verification passed: `cargo test -p kmipkit-protocol --test key_material --test 
 - **Green:** the test now records the exact 26 T053-verified package/export identities and requires each to remain present and verified; operation declarations retain their four-language and normative traceability assertions. No production API or manifest output changed.
 - **Refactor:** named the T053 identity set to distinguish this promotion from the earlier T101 evidence, and kept the full operation readiness test scoped to the verified set.
 - **Verification:** `python -B -m unittest tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v` passed (7 tests); `git diff --check` passed. Hosted CI must rerun on the new head.
+
+## Final T102 declaration snapshot alignment (2026-11-08)
+
+- **Red:** the #150 Windows `Script contracts` job failed `test_non_target_declarations_and_operation_rows_match_snapshot` with expected declaration fingerprint `5e754caa...` and actual `bdc6edb0...`. The focused test reproduced the mismatch locally. Manifest history shows the final verified operation-surface reconciliation (`b23f12387`) updated `public-api.json` after the test snapshot was refreshed (`1bb80e7de`); operation declarations and the typed-attribute/object counts remain covered by the same regression.
+- **Green:** updated only the test's expected non-target declaration fingerprint and its explanatory comment; generated manifest outputs and runtime code were not edited. The operation-row fingerprint remains unchanged.
+- **Verification:** `python -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping -v` passed (8 tests); `python tools/api_manifest/generate.py --check` verified all 12 generated outputs; `git diff --check` passed. The updated head still needs hosted CI confirmation.
