@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt::{self, Debug, Display};
 use std::marker::PhantomData;
 
-use kmipkit_ttlv::{Item, RawTag, Value, ValueView};
+use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
 
 /// A sealed description of one standard direct KMIP attribute.
 pub trait AttributeDefinition: sealed::Sealed + 'static {
@@ -35,6 +35,133 @@ pub trait AttributeDefinition: sealed::Sealed + 'static {
 
 mod sealed {
     pub trait Sealed {}
+}
+
+trait AttributeValueEncoding {
+    type Owned;
+    type View<'a>;
+
+    fn into_ttlv(value: Self::Owned) -> Value;
+    fn value_view(value: ValueView<'_>) -> Result<Self::View<'_>, AttributeValueError>;
+}
+
+macro_rules! project_attribute_view {
+    ($value:ident, borrow) => {
+        $value
+    };
+    ($value:ident, copy) => {
+        *$value
+    };
+}
+
+macro_rules! define_attribute_value_encoding {
+    ($(#[$attribute:meta])* $name:ident, $owned:ty, $view:ty, $constructor:ident, $variant:ident, $projection:ident) => {
+        $(#[$attribute])*
+        struct $name;
+
+        impl AttributeValueEncoding for $name {
+            type Owned = $owned;
+            type View<'a> = $view;
+
+            fn into_ttlv(value: Self::Owned) -> Value {
+                Value::$constructor(value)
+            }
+
+            fn value_view(
+                value: ValueView<'_>,
+            ) -> Result<Self::View<'_>, AttributeValueError> {
+                match value {
+                    ValueView::$variant(value) => {
+                        Ok(project_attribute_view!(value, $projection))
+                    }
+                    _ => Err(AttributeValueError::ValueTypeMismatch),
+                }
+            }
+        }
+    };
+}
+
+// These encodings are accepted by the generator but absent from this catalog's
+// direct typed attributes; retain them for future catalog entries.
+define_attribute_value_encoding!(
+    #[allow(dead_code)]
+    BigIntegerEncoding,
+    Vec<u8>,
+    &'a [u8],
+    big_integer,
+    BigInteger,
+    borrow
+);
+define_attribute_value_encoding!(BooleanEncoding, bool, bool, boolean, Boolean, copy);
+define_attribute_value_encoding!(
+    ByteStringEncoding,
+    Vec<u8>,
+    &'a [u8],
+    byte_string,
+    ByteString,
+    borrow
+);
+define_attribute_value_encoding!(DateTimeEncoding, i64, i64, date_time, DateTime, copy);
+// This encoding is accepted by the generator but absent from this catalog's
+// direct typed attributes; retain it for future catalog entries.
+define_attribute_value_encoding!(
+    #[allow(dead_code)]
+    DateTimeExtendedEncoding,
+    i64,
+    i64,
+    date_time_extended,
+    DateTimeExtended,
+    copy
+);
+define_attribute_value_encoding!(
+    EnumerationEncoding,
+    u32,
+    u32,
+    enumeration,
+    Enumeration,
+    copy
+);
+define_attribute_value_encoding!(IntegerEncoding, i32, i32, integer, Integer, copy);
+define_attribute_value_encoding!(IntervalEncoding, u32, u32, interval, Interval, copy);
+define_attribute_value_encoding!(
+    StructureEncoding,
+    Structure,
+    StructureView<'a>,
+    structure,
+    Structure,
+    borrow
+);
+define_attribute_value_encoding!(
+    TextStringEncoding,
+    String,
+    &'a str,
+    text_string,
+    TextString,
+    borrow
+);
+
+struct UniqueIdentifierEncoding;
+
+impl AttributeValueEncoding for UniqueIdentifierEncoding {
+    type Owned = UniqueIdentifierValue;
+    type View<'a> = UniqueIdentifierView<'a>;
+
+    fn into_ttlv(value: Self::Owned) -> Value {
+        match value {
+            UniqueIdentifierValue::TextString(value) => Value::text_string(value),
+            UniqueIdentifierValue::Enumeration(value) => Value::enumeration(value),
+            UniqueIdentifierValue::Integer(value) => Value::integer(value),
+        }
+    }
+
+    fn value_view(value: ValueView<'_>) -> Result<Self::View<'_>, AttributeValueError> {
+        match value {
+            ValueView::TextString(value) => Ok(UniqueIdentifierView::TextString(value)),
+            ValueView::Enumeration(value) => Ok(UniqueIdentifierView::Enumeration(*value)),
+            ValueView::Integer(value) => Ok(UniqueIdentifierView::Integer(*value)),
+            _ => Err(AttributeValueError::ValueTypeMismatch),
+        }
+    }
 }
 
 /// A redacted error returned when typed attribute construction or reading fails.

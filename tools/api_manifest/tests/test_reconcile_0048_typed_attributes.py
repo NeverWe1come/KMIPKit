@@ -122,7 +122,10 @@ class Reconcile0048TypedAttributesTests(unittest.TestCase):
         manifest = copy.deepcopy(self.manifest)
         report = copy.deepcopy(self.report)
 
-        self.assertEqual(reconcile(manifest, report), reconcile(manifest, report))
+        first_result = reconcile(copy.deepcopy(manifest), copy.deepcopy(report))
+        second_result = reconcile(copy.deepcopy(manifest), copy.deepcopy(report))
+
+        self.assertEqual(first_result, second_result)
         self.assertEqual(manifest, self.manifest)
         self.assertEqual(report, self.report)
 

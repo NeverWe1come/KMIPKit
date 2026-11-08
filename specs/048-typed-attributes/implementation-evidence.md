@@ -279,3 +279,38 @@ official exact Rust audit. That final audit still reports 21,507 observed
 routes, 6,285 exact matches, 15,222 exclusions, and zero discrepancies.
 `git diff --check` passed. No hosted CI was queried and no other feature
 worktree, PR metadata, or branch alias was changed.
+
+## SonarCloud quality gate remediation for PR #140 (2026-11-08)
+
+The current KMIPKIT-0048 head failed SonarCloud on one unreliable determinism
+assertion and duplicated lines in generated typed-attribute implementations,
+the `CurrentAttribute`/`NewAttribute` wrappers, and the 0048 manifest CLI.
+
+- RED `4fbbec344`: the generator test failed because the rendered source did
+  not define the shared attribute macro, and the new shared-CLI contract tests
+  failed because the runner module did not yet exist.
+- GREEN `ddda3419d`: the generator now emits each catalogued marker through a
+  shared codec implementation and regenerates the Rust output. The 0046 and
+  0048 reconcilers now use a common CLI runner while preserving their output
+  messages and write behavior.
+- REFACTOR `410b48b18`: the two public attribute wrappers share their methods
+  and redacted Debug implementation; the determinism test compares results
+  from independent input copies; the superseded full-implementation renderer
+  was removed.
+
+Verification after the refactor:
+
+- `cargo test -p kmipkit-protocol` passed all 1,327 unit tests and all
+  integration, guide-example, and doctests.
+- `cargo test -p kmipkit-protocol --lib typed_attribute_tests` passed all 15
+  typed-attribute tests.
+- The focused generator, shared CLI, 0048 reconciler, and 0046 reconciler
+  Python suites passed all 29 tests.
+- `python -B tools/normative_catalog/generate_attribute_types.py --check`
+  verified both generated Rust files.
+- `cargo fmt --all --check`,
+  `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`,
+  and `git diff --check` passed.
+- The workspace-wide Clippy attempt could not complete on this Windows host:
+  `aws-lc-sys` reported that NASM was unavailable. The affected protocol crate's
+  all-target, all-feature Clippy check passed.
