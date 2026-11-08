@@ -264,6 +264,11 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "Every supported pull-request platform must reject stale generated API outputs.",
         )
+        self.assertIn(
+            "tools/extension_fixtures/generate.py --check",
+            job,
+            "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
+        )
 
     def test_script_contract_job_fetches_history_for_pinned_git_provenance(self) -> None:
         contents = self.require_workflow()
@@ -274,11 +279,6 @@ class WorkflowContractTests(unittest.TestCase):
             checkout.group(1),
             r"(?m)^\s+fetch-depth: 0$",
             "Script contracts verify snapshots against pinned ancestor commits, so the full history must be available.",
-        )
-        self.assertIn(
-            "tools/extension_fixtures/generate.py --check",
-            job,
-            "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
         )
 
     def test_language_binding_job_compiles_bilingual_client_guide_examples(self) -> None:
