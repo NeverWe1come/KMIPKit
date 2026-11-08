@@ -1,4 +1,5 @@
 use super::*;
+use kmipkit_ttlv::{Item, RawTag, Value};
 
 unsafe extern "C" {
     fn kmipkit_request_validation_c_consumer() -> i32;
@@ -9,6 +10,73 @@ fn compiled_c_consumer_reads_safe_validation_metadata() {
     // SAFETY: The consumer owns and releases all TTLV and validation handles.
     let status = unsafe { kmipkit_request_validation_c_consumer() };
     assert_eq!(status, SUCCESS);
+}
+
+#[test]
+fn batch_item_validation_report_handles_invalid_wrong_kind_and_valid_requests() {
+    let mut report = std::ptr::null_mut();
+    // SAFETY: Null input is rejected before dereferencing, and `report` is a writable slot.
+    assert_eq!(
+        unsafe {
+            super::request_validation::kmipkit_client_batch_item_validation_report(
+                std::ptr::null_mut(),
+                &raw mut report,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    assert!(report.is_null());
+
+    let wrong_value = try_make_handle(
+        Kind::BatchItem,
+        HandleValue::Item(
+            Item::new(
+                RawTag::new(0x0054_0020)
+                    .expect("vendor tag fits")
+                    .try_checked()
+                    .expect("vendor tag is allocated"),
+                Value::integer(7),
+            )
+            .expect("test Item is valid"),
+        ),
+    )
+    .expect("test handle is allocated");
+    // SAFETY: The handle is live with a mismatched internal value variant; the output is writable.
+    assert_eq!(
+        unsafe {
+            super::request_validation::kmipkit_client_batch_item_validation_report(
+                wrong_value,
+                &raw mut report,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    release(wrong_value, Kind::BatchItem);
+
+    let item = try_make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(kmipkit_client::ClientBatchItem::ping())),
+    )
+    .expect("Ping Batch Item handle is allocated");
+    // SAFETY: `item` is live and `report` is an independent writable output slot.
+    assert_eq!(
+        unsafe {
+            super::request_validation::kmipkit_client_batch_item_validation_report(
+                item,
+                &raw mut report,
+            )
+        },
+        SUCCESS
+    );
+    assert!(!report.is_null());
+    let mut is_valid = 0;
+    assert_eq!(
+        super::request_validation::kmipkit_validation_report_is_valid(report, &raw mut is_valid),
+        SUCCESS
+    );
+    assert_eq!(is_valid, 1);
+    super::request_validation::kmipkit_validation_report_release(report);
+    release(item, Kind::BatchItem);
 }
 
 #[test]

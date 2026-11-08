@@ -8,18 +8,20 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 
 use base64::Engine;
-use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
+use kmipkit_client::{
+    Client, ClientBatchItem, ClientBatchResponse, ClientError, ClientErrorCategory,
+};
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, AttributeSet, CertifyRequest, CheckRequest,
-    CreateKeyPairRequest, CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, DestroyRequest, ExportRequest, GetRequest,
-    GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
-    ObjectGroupMember, ObjectType, ObtainLeaseRequest, OperationData, Pkcs11Request,
-    ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes,
-    SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, TicketType, UniqueIdentifier, ValidateRequest,
+    ActivateRequest, ArchiveRequest, AttributeSet, Authentication, CertifyRequest, CheckRequest,
+    CreateKeyPairRequest, CreateSplitKeyRequest, Credential, DelegatedLoginRequest,
+    DerivationMethod, DerivationParameters, DeriveKeyRequest, DestroyRequest, ExportRequest,
+    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
+    JoinSplitKeyRequest, LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest,
+    MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest, OperationData,
+    Pkcs11Request, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
+    RngSeedRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -37,6 +39,195 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
 use super::*;
 use crate::kmipkit_byte_span_v1_t;
+
+fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
+    let mut tree = Structure::new();
+    tree.try_push(
+        Item::new(
+            RawTag::new(0x0042_0024)
+                .expect("Credential Type tag fits")
+                .try_checked()
+                .expect("Credential Type tag is assigned"),
+            Value::enumeration(2),
+        )
+        .expect("Credential Type item is valid"),
+    )
+    .expect("Credential Type fits in the structure");
+    tree.try_push(
+        Item::new(
+            RawTag::new(0x0042_0025)
+                .expect("Credential Value tag fits")
+                .try_checked()
+                .expect("Credential Value tag is assigned"),
+            Value::structure(Structure::new()),
+        )
+        .expect("Credential Value item is valid"),
+    )
+    .expect("Credential Value fits in the structure");
+    let credential = Credential::try_from_ttlv(tree).expect("generic Credential is valid");
+    make_handle(
+        Kind::Authentication,
+        HandleValue::Authentication(
+            Authentication::new(vec![credential]).expect("Authentication has one Credential"),
+        ),
+    )
+}
+
+#[test]
+fn batch_authentication_setter_rejects_wrong_handles_and_consumes_on_success() {
+    let mut batch = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_create(&raw mut batch), SUCCESS);
+    assert_eq!(
+        kmipkit_client_batch_set_authentication(batch, ptr::null_mut()),
+        ERROR_INVALID_INPUT
+    );
+
+    let wrong_batch = make_handle(
+        Kind::Item,
+        HandleValue::Item(
+            Item::new(
+                RawTag::new(0x0054_0001)
+                    .expect("vendor tag fits")
+                    .try_checked()
+                    .expect("vendor tag is allocated"),
+                Value::integer(1),
+            )
+            .expect("test Item is valid"),
+        ),
+    );
+    let retained_authentication = coverage_authentication_handle();
+    assert_eq!(
+        kmipkit_client_batch_set_authentication(wrong_batch, retained_authentication),
+        ERROR_INVALID_INPUT
+    );
+    assert!(reference_handle(retained_authentication, Kind::Authentication).is_ok());
+    release(wrong_batch, Kind::Item);
+
+    let wrong_authentication: *mut kmipkit_ttlv_item_t = make_handle(
+        Kind::Item,
+        HandleValue::Item(
+            Item::new(
+                RawTag::new(0x0054_0002)
+                    .expect("vendor tag fits")
+                    .try_checked()
+                    .expect("vendor tag is allocated"),
+                Value::integer(2),
+            )
+            .expect("test Item is valid"),
+        ),
+    );
+    assert_eq!(
+        kmipkit_client_batch_set_authentication(batch, wrong_authentication.cast()),
+        ERROR_INVALID_INPUT
+    );
+    release(wrong_authentication, Kind::Item);
+
+    assert_eq!(
+        kmipkit_client_batch_set_authentication(batch, retained_authentication),
+        SUCCESS
+    );
+    assert!(reference_handle(retained_authentication, Kind::Authentication).is_err());
+    release(batch, Kind::ClientBatch);
+}
+
+#[test]
+fn batch_item_operation_readback_and_encoded_probe_validate_handle_state() {
+    let owner = Arc::new(Mutex::new(Some(ClientBatchBuilder::new())));
+    let invalid_readback = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItemReadback(ClientBatchItemReadback {
+            owner: Arc::clone(&owner),
+            index: 0,
+            metadata: ClientBatchItemMetadataSnapshot {
+                operation: 0x8000_0001,
+                unique_batch_item_id: None,
+                extensions: Vec::new(),
+            },
+        }),
+    );
+    let mut operation = u32::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_operation(invalid_readback, &raw mut operation),
+        ERROR_INTERNAL
+    );
+    assert_eq!(operation, 0);
+
+    owner
+        .lock()
+        .expect("readback owner lock is available")
+        .as_mut()
+        .expect("batch remains live")
+        .items
+        .push(ClientBatchItem::ping());
+    let valid_readback = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItemReadback(ClientBatchItemReadback {
+            owner,
+            index: 0,
+            metadata: ClientBatchItemMetadataSnapshot {
+                operation: 0x8000_0002,
+                unique_batch_item_id: None,
+                extensions: Vec::new(),
+            },
+        }),
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_operation(valid_readback, &raw mut operation),
+        SUCCESS
+    );
+    assert_eq!(operation, 0x8000_0002);
+    release(invalid_readback, Kind::BatchItem);
+    release(valid_readback, Kind::BatchItem);
+
+    let wrong_value = make_handle(
+        Kind::BatchItem,
+        HandleValue::Item(
+            Item::new(
+                RawTag::new(0x0054_0003)
+                    .expect("vendor tag fits")
+                    .try_checked()
+                    .expect("vendor tag is allocated"),
+                Value::integer(3),
+            )
+            .expect("test Item is valid"),
+        ),
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_operation(wrong_value, &raw mut operation),
+        ERROR_INVALID_INPUT
+    );
+    release(wrong_value, Kind::BatchItem);
+
+    let valid_item = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(ClientBatchItem::ping())),
+    );
+    let mut encoded_operation = 0;
+    let mut encoded_item = valid_item;
+    assert_eq!(
+        kmipkit_test_client_batch_item_encoded_operation(
+            &raw mut encoded_item,
+            &raw mut encoded_operation,
+        ),
+        SUCCESS
+    );
+    assert!(encoded_item.is_null());
+    assert_eq!(encoded_operation, operation_for_ping());
+
+    assert_eq!(
+        kmipkit_test_client_batch_item_encoded_operation(ptr::null_mut(), &raw mut operation),
+        ERROR_INVALID_INPUT
+    );
+    let mut empty_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_test_client_batch_item_encoded_operation(&raw mut empty_item, &raw mut operation,),
+        ERROR_INVALID_INPUT
+    );
+}
+
+fn operation_for_ping() -> u32 {
+    ClientBatchItem::ping().operation()
+}
 
 #[path = "add_attribute_abi_tests.rs"]
 mod add_attribute_abi_tests;
