@@ -1487,10 +1487,7 @@ class AsyncOperationOutcome(_ClientHandle):
             callback(borrowed)
         finally:
             if borrowed is not None:
-                try:
-                    borrowed.release()
-                except ValueError:
-                    pass
+                borrowed.release()
             for index in range(len(secret)):
                 secret[index] = 0
         return True
