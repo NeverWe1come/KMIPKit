@@ -101,6 +101,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "response_ttlv_navigation",
             "server_generated_creation",
             "ttlv_wire_codec",
+            "typed_async_response_readers",
             "typed_cryptographic_parameters",
             "typed_managed_objects_and_key_material",
             "typed_message_model",

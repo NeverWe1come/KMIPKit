@@ -14,6 +14,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("client_operation_identity"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("ffi_runtime_metadata"),
         Ok(true)
     );
@@ -47,6 +51,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
     );
     assert_eq!(
         kmipkit::capability_is_available("typed_message_model"),
+        Ok(true)
+    );
+    assert_eq!(
+        kmipkit::capability_is_available("typed_async_response_readers"),
         Ok(true)
     );
     assert_eq!(
