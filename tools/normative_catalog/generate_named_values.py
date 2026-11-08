@@ -7,6 +7,7 @@ writes and fails if any generated language surface is missing or stale.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -23,6 +24,22 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+VERSIONED_CATALOG_PATH = "specification/catalog/kmip-versioned-values.json"
+VERSIONED_SOURCE_MAX_BYTES = 24 * 1024 * 1024
+PINNED_VERSION_SOURCES = {
+    "kmip-2.0": (
+        "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+        "41346355fc966e555dbcbae68b4d73421b0da0f32fb1a86fc8e3cb5fd35bb4a2",
+    ),
+    "kmip-2.1": (
+        "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+        "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
+    ),
+    "kmip-3.0": (
+        "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+        "a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b",
+    ),
+}
 OUTPUTS = {
     "rust": "crates/kmipkit-protocol/src/named_values_generated.rs",
     "c": "bindings/c/include/kmipkit_named_value_helpers_generated.h",
@@ -55,6 +72,30 @@ class NamedGroup:
 class CatalogValues:
     enumerations: tuple[NamedGroup, ...]
     bitmasks: tuple[NamedGroup, ...]
+
+
+@dataclass(frozen=True)
+class VersionedNamedValue:
+    name: str
+    identifier: str
+    value: int
+
+
+@dataclass(frozen=True)
+class VersionedNamedGroup:
+    version: str
+    kind: str
+    name: str
+    identifier: str
+    source_id: str
+    section: str
+    table: str
+    values: tuple[VersionedNamedValue, ...]
+
+
+@dataclass(frozen=True)
+class VersionedCatalog:
+    groups: tuple[VersionedNamedGroup, ...]
 
 
 def _identifier(value: str) -> str:
@@ -118,6 +159,93 @@ def _wire_integer(element: dict[str, Any]) -> int:
     if not 0 <= value <= 0xFFFF_FFFF:
         raise ValueError("catalog value is outside the unsigned 32-bit range")
     return value
+
+
+def load_versioned_values(root: Path) -> VersionedCatalog:
+    """Load version deltas only after verifying their pinned local sources."""
+    raw = safe_read_bytes(root, VERSIONED_CATALOG_PATH, max_bytes=MAX_BYTES)
+    document = json.loads(raw)
+    if not isinstance(document, dict) or document.get("formatVersion") != 1:
+        raise ValueError("versioned values catalog has an unsupported format")
+    sources = document.get("sources")
+    if not isinstance(sources, dict) or set(sources) != set(PINNED_VERSION_SOURCES):
+        raise ValueError("versioned values catalog source inventory is incomplete")
+    for source_id, (expected_path, expected_hash) in PINNED_VERSION_SOURCES.items():
+        entry = sources[source_id]
+        if not isinstance(entry, dict) or entry.get("path") != expected_path:
+            raise ValueError(f"versioned values catalog has an invalid {source_id} path")
+        if entry.get("sha256") != expected_hash:
+            raise ValueError(f"versioned values catalog has an invalid {source_id} checksum")
+        source_bytes = safe_read_bytes(root, expected_path, max_bytes=VERSIONED_SOURCE_MAX_BYTES)
+        if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
+            raise ValueError(f"pinned source checksum does not match for {source_id}")
+
+    versions = document.get("versions")
+    if not isinstance(versions, dict) or set(versions) != {"v2_1", "v3_0"}:
+        raise ValueError("versioned values catalog must contain only the reviewed v2_1 and v3_0 deltas")
+    groups: list[VersionedNamedGroup] = []
+    for version in ("v2_1", "v3_0"):
+        source_id = "kmip-2.1" if version == "v2_1" else "kmip-3.0"
+        raw_groups = versions[version]
+        if not isinstance(raw_groups, list):
+            raise ValueError(f"{version} versioned groups must be an array")
+        seen_groups: set[tuple[str, str]] = set()
+        for raw_group in raw_groups:
+            if not isinstance(raw_group, dict):
+                raise ValueError(f"{version} versioned group must be an object")
+            kind = raw_group.get("kind")
+            name = raw_group.get("name")
+            reference = raw_group.get("sourceId")
+            section = raw_group.get("section")
+            table = raw_group.get("table")
+            raw_values = raw_group.get("values")
+            if (
+                kind != "enumeration"
+                or not isinstance(name, str)
+                or not name
+                or reference != source_id
+                or not isinstance(section, str)
+                or not re.fullmatch(r"\d+(?:\.\d+)*", section)
+                or not isinstance(table, str)
+                or not table.isdigit()
+                or not isinstance(raw_values, list)
+                or not raw_values
+            ):
+                raise ValueError(f"{version} versioned group metadata is malformed")
+            identity = (kind, name)
+            if identity in seen_groups:
+                raise ValueError(f"{version} contains a duplicate {name} group")
+            seen_groups.add(identity)
+            values: list[VersionedNamedValue] = []
+            seen_names: set[str] = set()
+            seen_numbers: set[int] = set()
+            for raw_value in raw_values:
+                if not isinstance(raw_value, dict):
+                    raise ValueError(f"{version} {name} entry must be an object")
+                value_name = raw_value.get("name")
+                if not isinstance(value_name, str) or not value_name:
+                    raise ValueError(f"{version} {name} value has no name")
+                identifier = _identifier(value_name)
+                numeric = _wire_integer(raw_value)
+                if identifier in seen_names or numeric in seen_numbers:
+                    raise ValueError(f"{version} {name} has a duplicate value name or assignment")
+                seen_names.add(identifier)
+                seen_numbers.add(numeric)
+                values.append(VersionedNamedValue(value_name, identifier, numeric))
+            values.sort(key=lambda item: (item.value, item.identifier))
+            groups.append(
+                VersionedNamedGroup(
+                    version,
+                    kind,
+                    name,
+                    _snake_identifier(name),
+                    source_id,
+                    section,
+                    table,
+                    tuple(values),
+                )
+            )
+    return VersionedCatalog(tuple(groups))
 
 
 def collect_values(catalog: dict[str, Any]) -> CatalogValues:
@@ -446,11 +574,115 @@ def _render_python(values: CatalogValues) -> str:
     return "\n".join(lines)
 
 
-def render_outputs(values: CatalogValues) -> dict[str, str]:
+def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
+    """Render exact version-delta constants and lookup helpers for four languages."""
+    rust = ["    /// Exact assigned values added by later KMIP editions.", "    pub mod versions {"]
+    java: list[str] = ["    // Exact assigned values added by later KMIP editions."]
+    c: list[str] = ["/* Exact assigned values added by later KMIP editions. */"]
+    python: list[str] = ["", "# Exact assigned values added by later KMIP editions."]
+    for version in ("v2_1", "v3_0"):
+        groups = [group for group in versioned.groups if group.version == version]
+        rust.extend([f"        /// Values assigned in KMIP {version.replace('_', '.') }.", f"        pub mod {version} {{", "            pub mod enumeration {"])
+        for group in groups:
+            rust.extend([f"                /// KMIP {group.name} values from §{group.section}, Table {group.table}.", f"                pub mod {group.identifier} {{"])
+            for value in group.values:
+                rust.append(
+                    f"                    /// `{value.name}`; {group.source_id} §{group.section}, Table {group.table}."
+                )
+                rust.append(
+                    f"                    pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
+                )
+            rust.extend(["                    /// Returns the assigned name for a known value.", "                    #[must_use]", "                    pub const fn name(raw: u32) -> Option<&'static str> {", "                        match raw {"])
+            for value in group.values:
+                rust.append(
+                    f"                            {_rust_u32_literal(value.value)} => Some({json.dumps(value.name, ensure_ascii=False)}),"
+                )
+            rust.extend(["                            _ => None,", "                        }", "                    }", "                }"])
+        rust.extend(["            }", "        }"])
+        for group in groups:
+            prefix = f"{version.upper()}_{group.identifier.upper()}"
+            c.extend(
+                [
+                    f"static inline const char *KMIPKIT_{prefix}_name(uint32_t raw) {{",
+                    "    switch (raw) {",
+                ]
+            )
+            c.extend(
+                f"    case UINT32_C(0x{value.value:08X}): return {_c_string(value.name)};"
+                for value in group.values
+            )
+            c.extend(["    default: return 0;", "    }", "}"])
+
+            java_prefix = f"{version.upper()}_{group.identifier.upper()}"
+            java.extend(
+                f"    /** {value.name}; {group.source_id} §{group.section}, Table {group.table}. */\n    public static final long {java_prefix}_{value.identifier} = 0x{value.value:08X}L;"
+                for value in group.values
+            )
+            java.extend(
+                [
+                    f"    /** Returns the KMIP {version.replace('_', '.')} {group.name} name, or null for an unassigned value. */",
+                    f"    public static String {version}{_type_identifier(group.name)}Name(long raw) {{",
+                    "        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;",
+                    "        return switch ((int) raw) {",
+                ]
+            )
+            java.extend(
+                f"            case 0x{value.value:08X} -> {json.dumps(value.name, ensure_ascii=False)};"
+                for value in group.values
+            )
+            java.extend(["            default -> null;", "        };", "    }"])
+
+            python_prefix = f"{version.upper()}_{group.identifier.upper()}"
+            python.extend(
+                f"{python_prefix}_{value.identifier} = 0x{value.value:08X}  # {group.source_id} §{group.section}, Table {group.table}"
+                for value in group.values
+            )
+            python.extend(
+                [
+                    "",
+                    f"def {version}_{group.identifier}_name(raw: int) -> str | None:",
+                    f'    """Return the assigned KMIP {version.replace("_", ".")} {group.name} name."""',
+                    "    return {",
+                ]
+            )
+            python.extend(
+                f"        0x{value.value:08X}: {value.name!r}," for value in group.values
+            )
+            python.extend(["    }.get(raw)", ""])
+    rust.append("    }")
+    return {
+        "rust": "\n".join(rust) + "\n",
+        "c": "\n".join(c) + "\n",
+        "java": "\n".join(java) + "\n",
+        "python": "\n".join(python),
+    }
+
+
+def render_outputs(
+    values: CatalogValues, versioned: VersionedCatalog | None = None
+) -> dict[str, str]:
+    versioned = versioned or VersionedCatalog(())
+    versioned_outputs = render_versioned_outputs(versioned)
     traceability = {
         "formatVersion": 1,
         "specId": "KMIPKIT-0047",
         "catalogPath": CATALOG_PATH,
+        "versionedCatalogPath": VERSIONED_CATALOG_PATH,
+        "versionedGroups": [
+            {
+                "version": group.version,
+                "kind": group.kind,
+                "name": group.name,
+                "sourceId": group.source_id,
+                "section": group.section,
+                "table": group.table,
+                "assignedValues": [
+                    {"name": value.name, "identifier": value.identifier, "wireValue": f"0x{value.value:08X}"}
+                    for value in group.values
+                ],
+            }
+            for group in versioned.groups
+        ],
         "groups": [
             {
                 "kind": kind,
@@ -475,11 +707,20 @@ def render_outputs(values: CatalogValues) -> dict[str, str]:
             for group in groups
         ],
     }
+    rust_base = _render_rust(values)
+    c_base = _render_c(values)
+    java_base = _render_java(values)
+    python_base = _render_python(values)
+    if versioned.groups:
+        rust_base = rust_base.rsplit("}\n", 1)[0] + versioned_outputs["rust"] + "}\n"
+        c_base = c_base.replace("#endif\n", versioned_outputs["c"] + "#endif\n")
+        java_base = java_base.rsplit("}\n", 1)[0] + versioned_outputs["java"] + "}\n"
+        python_base += versioned_outputs["python"]
     return {
-        "rust": _render_rust(values),
-        "c": _render_c(values),
-        "java": _render_java(values),
-        "python": _render_python(values),
+        "rust": rust_base,
+        "c": c_base,
+        "java": java_base,
+        "python": python_base,
         "traceability": json.dumps(traceability, ensure_ascii=False, indent=2) + "\n",
     }
 
@@ -495,7 +736,8 @@ def main(argv: list[str] | None = None) -> int:
         root = args.repo_root.resolve(strict=True)
         raw = safe_read_bytes(root, CATALOG_PATH, max_bytes=MAX_BYTES)
         catalog = load_validated_catalog(raw, root, require_complete=True)
-        rendered = render_outputs(collect_values(catalog))
+        versioned = load_versioned_values(root)
+        rendered = render_outputs(collect_values(catalog), versioned)
         for language, path in OUTPUTS.items():
             expected = rendered[language].encode("utf-8")
             if args.check:

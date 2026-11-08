@@ -14,6 +14,120 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_version_delta_catalog_maps_exact_kmip_2_1_and_3_0_assignments(self) -> None:
+        versioned = generate_named_values.load_versioned_values(ROOT)
+        rendered = generate_named_values.render_versioned_outputs(versioned)
+
+        actual = {
+            (group.version, group.name): [(value.name, value.value) for value in group.values]
+            for group in versioned.groups
+        }
+        self.assertEqual(
+            {
+                ("v2_1", "Operation"): [
+                    ("Set Defaults", 0x36),
+                    ("Set Constraints", 0x37),
+                    ("Get Constraints", 0x38),
+                    ("Query Asynchronous Requests", 0x39),
+                    ("Process", 0x3A),
+                    ("Ping", 0x3B),
+                ],
+                ("v3_0", "Operation"): [
+                    ("Create Group", 0x3C),
+                    ("Obliterate", 0x3D),
+                    ("Create User", 0x3E),
+                    ("Create Credential", 0x3F),
+                    ("Deactivate", 0x40),
+                    ("Encapsulate", 0x41),
+                    ("Decapsulate", 0x42),
+                ],
+                ("v3_0", "Object Class"): [("User", 1), ("System", 2)],
+                ("v3_0", "Object Type"): [
+                    ("User", 0x0B),
+                    ("Group", 0x0C),
+                    ("Password Credential", 0x0D),
+                    ("Device Credential", 0x0E),
+                    ("One Time Password Credential", 0x0F),
+                    ("Hashed Password Credential", 0x10),
+                ],
+            },
+            actual,
+        )
+
+        self.assertIn("CREATE_GROUP", rendered["rust"])
+        self.assertIn("OBLITERATE", rendered["rust"])
+        self.assertIn("CREATE_CREDENTIAL", rendered["rust"])
+        self.assertIn("PASSWORD_CREDENTIAL", rendered["rust"])
+        self.assertIn("KMIPKIT_V3_0_OPERATION_name", rendered["c"])
+        self.assertIn("V3_0_OPERATION_CREATE_GROUP", rendered["java"])
+        self.assertIn("V3_0_OBJECT_TYPE_PASSWORD_CREDENTIAL", rendered["python"])
+        self.assertNotIn("RE_ENCRYPT", rendered["rust"])
+        self.assertNotIn("CREDENTIAL = 0x0000000D", rendered["rust"])
+
+    def test_versioned_namespace_is_emitted_in_all_four_generated_surfaces(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        rendered = generate_named_values.render_outputs(
+            generate_named_values.collect_values(catalog),
+            generate_named_values.load_versioned_values(ROOT),
+        )
+
+        self.assertIn("pub mod versions", rendered["rust"])
+        self.assertIn("pub const OBLITERATE: u32 = 0x0000_003D", rendered["rust"])
+        self.assertIn("KMIPKIT_V3_0_OPERATION_name(uint32_t raw)", rendered["c"])
+        self.assertIn('case UINT32_C(0x0000003D): return "Obliterate";', rendered["c"])
+        self.assertIn("V3_0_OPERATION_OBLITERATE = 0x0000003DL", rendered["java"])
+        self.assertIn("V3_0_OPERATION_OBLITERATE = 0x0000003D", rendered["python"])
+
+    def test_versioned_public_values_are_reconciled_with_cross_language_mappings(self) -> None:
+        catalog = generate_named_values.load_validated_catalog(
+            generate_named_values.safe_read_bytes(
+                ROOT,
+                generate_named_values.CATALOG_PATH,
+                max_bytes=generate_named_values.MAX_BYTES,
+            ),
+            ROOT,
+            require_complete=True,
+        )
+        declarations, _ = reconcile_named_value_manifest.build_named_value_records(
+            catalog,
+            generate_named_values.load_versioned_values(ROOT),
+        )
+        rust_name = (
+            "kmipkit::protocol::named_values_generated::values::versions::"
+            "v3_0::enumeration::operation::CREATE_CREDENTIAL"
+        )
+        declaration = next(row for row in declarations if row["exportName"] == rust_name)
+
+        self.assertEqual(
+            {
+                "rust": rust_name,
+                "c": "KMIPKIT_V3_0_OPERATION_CREATE_CREDENTIAL",
+                "java": "org.kmipkit.protocol.KmipValues.V3_0_OPERATION_CREATE_CREDENTIAL",
+                "python": "kmipkit.protocol_values.V3_0_OPERATION_CREATE_CREDENTIAL",
+            },
+            {
+                language: mapping["name"]
+                for language, mapping in declaration["languageMappings"].items()
+            },
+        )
+
+        lookup = next(
+            row for row in declarations
+            if row["exportName"] == rust_name.rsplit("::", 1)[0] + "::name"
+        )
+        self.assertEqual(
+            "org.kmipkit.protocol.KmipValues.v3_0OperationName",
+            lookup["languageMappings"]["java"]["name"],
+        )
+
     def test_public_manifest_bound_covers_current_input_with_bounded_headroom(self) -> None:
         manifest_size = (ROOT / reconcile_named_value_manifest.MANIFEST_PATH).stat().st_size
 

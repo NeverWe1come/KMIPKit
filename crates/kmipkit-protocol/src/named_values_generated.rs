@@ -2803,4 +2803,120 @@ pub mod values {
             }
         }
     }
+    /// Exact assigned values added by later KMIP editions.
+    pub mod versions {
+        /// Values assigned in KMIP v2.1.
+        pub mod v2_1 {
+            pub mod enumeration {
+                /// KMIP Operation values from §11.36, Table 470.
+                pub mod operation {
+                    /// `Set Defaults`; kmip-2.1 §11.36, Table 470.
+                    pub const SET_DEFAULTS: u32 = 0x0000_0036;
+                    /// `Set Constraints`; kmip-2.1 §11.36, Table 470.
+                    pub const SET_CONSTRAINTS: u32 = 0x0000_0037;
+                    /// `Get Constraints`; kmip-2.1 §11.36, Table 470.
+                    pub const GET_CONSTRAINTS: u32 = 0x0000_0038;
+                    /// `Query Asynchronous Requests`; kmip-2.1 §11.36, Table 470.
+                    pub const QUERY_ASYNCHRONOUS_REQUESTS: u32 = 0x0000_0039;
+                    /// `Process`; kmip-2.1 §11.36, Table 470.
+                    pub const PROCESS: u32 = 0x0000_003A;
+                    /// `Ping`; kmip-2.1 §11.36, Table 470.
+                    pub const PING: u32 = 0x0000_003B;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0036 => Some("Set Defaults"),
+                            0x0000_0037 => Some("Set Constraints"),
+                            0x0000_0038 => Some("Get Constraints"),
+                            0x0000_0039 => Some("Query Asynchronous Requests"),
+                            0x0000_003A => Some("Process"),
+                            0x0000_003B => Some("Ping"),
+                            _ => None,
+                        }
+                    }
+                }
+            }
+        }
+        /// Values assigned in KMIP v3.0.
+        pub mod v3_0 {
+            pub mod enumeration {
+                /// KMIP Operation values from §11.37, Table 583.
+                pub mod operation {
+                    /// `Create Group`; kmip-3.0 §11.37, Table 583.
+                    pub const CREATE_GROUP: u32 = 0x0000_003C;
+                    /// `Obliterate`; kmip-3.0 §11.37, Table 583.
+                    pub const OBLITERATE: u32 = 0x0000_003D;
+                    /// `Create User`; kmip-3.0 §11.37, Table 583.
+                    pub const CREATE_USER: u32 = 0x0000_003E;
+                    /// `Create Credential`; kmip-3.0 §11.37, Table 583.
+                    pub const CREATE_CREDENTIAL: u32 = 0x0000_003F;
+                    /// `Deactivate`; kmip-3.0 §11.37, Table 583.
+                    pub const DEACTIVATE: u32 = 0x0000_0040;
+                    /// `Encapsulate`; kmip-3.0 §11.37, Table 583.
+                    pub const ENCAPSULATE: u32 = 0x0000_0041;
+                    /// `Decapsulate`; kmip-3.0 §11.37, Table 583.
+                    pub const DECAPSULATE: u32 = 0x0000_0042;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_003C => Some("Create Group"),
+                            0x0000_003D => Some("Obliterate"),
+                            0x0000_003E => Some("Create User"),
+                            0x0000_003F => Some("Create Credential"),
+                            0x0000_0040 => Some("Deactivate"),
+                            0x0000_0041 => Some("Encapsulate"),
+                            0x0000_0042 => Some("Decapsulate"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Object Class values from §11.34, Table 581.
+                pub mod object_class {
+                    /// `User`; kmip-3.0 §11.34, Table 581.
+                    pub const USER: u32 = 0x0000_0001;
+                    /// `System`; kmip-3.0 §11.34, Table 581.
+                    pub const SYSTEM: u32 = 0x0000_0002;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("User"),
+                            0x0000_0002 => Some("System"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Object Type values from §11.35, Table 582.
+                pub mod object_type {
+                    /// `User`; kmip-3.0 §11.35, Table 582.
+                    pub const USER: u32 = 0x0000_000B;
+                    /// `Group`; kmip-3.0 §11.35, Table 582.
+                    pub const GROUP: u32 = 0x0000_000C;
+                    /// `Password Credential`; kmip-3.0 §11.35, Table 582.
+                    pub const PASSWORD_CREDENTIAL: u32 = 0x0000_000D;
+                    /// `Device Credential`; kmip-3.0 §11.35, Table 582.
+                    pub const DEVICE_CREDENTIAL: u32 = 0x0000_000E;
+                    /// `One Time Password Credential`; kmip-3.0 §11.35, Table 582.
+                    pub const ONE_TIME_PASSWORD_CREDENTIAL: u32 = 0x0000_000F;
+                    /// `Hashed Password Credential`; kmip-3.0 §11.35, Table 582.
+                    pub const HASHED_PASSWORD_CREDENTIAL: u32 = 0x0000_0010;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_000B => Some("User"),
+                            0x0000_000C => Some("Group"),
+                            0x0000_000D => Some("Password Credential"),
+                            0x0000_000E => Some("Device Credential"),
+                            0x0000_000F => Some("One Time Password Credential"),
+                            0x0000_0010 => Some("Hashed Password Credential"),
+                            _ => None,
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

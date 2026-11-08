@@ -9,11 +9,21 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
-    from .generate_named_values import CATALOG_PATH, collect_values
+    from .generate_named_values import (
+        CATALOG_PATH,
+        VersionedCatalog,
+        collect_values,
+        load_versioned_values,
+    )
     from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from .validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 else:
-    from generate_named_values import CATALOG_PATH, collect_values
+    from generate_named_values import (
+        CATALOG_PATH,
+        VersionedCatalog,
+        collect_values,
+        load_versioned_values,
+    )
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
@@ -23,7 +33,7 @@ MAX_MANIFEST_BYTES = 64 * 1024 * 1024
 CAPABILITY_ID = "named_protocol_values"
 C_ONLY_MASK_CAPABILITY_ID = "named_protocol_mask_single_bit_lookup"
 SPEC_ID = "KMIPKIT-0047"
-REQUIREMENT_IDS = tuple(f"{SPEC_ID}-FR-{index:03}" for index in range(1, 8))
+REQUIREMENT_IDS = tuple(f"{SPEC_ID}-FR-{index:03}" for index in range(1, 11))
 LANGUAGE_PACKAGES = {
     "rust": "rust-kmipkit",
     "c": "c-kmipkit",
@@ -171,7 +181,9 @@ def _append_declaration(
     )
 
 
-def build_named_value_records(catalog: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
+def build_named_value_records(
+    catalog: dict[str, Any], versioned: VersionedCatalog | None = None
+) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
     values = collect_values(catalog)
     declarations: list[dict[str, Any]] = []
     root_names = _root_namespace_names()
@@ -263,6 +275,70 @@ def build_named_value_records(catalog: dict[str, Any]) -> tuple[list[dict[str, A
                         parity_scope="c-only",
                     )
                 )
+
+    seen_version_modules: set[str] = set()
+    for group in (versioned.groups if versioned is not None else ()):
+        group_path = (
+            "kmipkit::protocol::named_values_generated::values::versions::"
+            f"{group.version}::enumeration::{group.identifier}"
+        )
+        namespace_names = {
+            "rust": group_path,
+            "c": "kmipkit_named_values_namespace_t",
+            "java": "org.kmipkit.protocol.KmipValues",
+            "python": "kmipkit.protocol_values",
+        }
+        for module_path in (
+            "kmipkit::protocol::named_values_generated::values::versions",
+            f"kmipkit::protocol::named_values_generated::values::versions::{group.version}",
+            f"kmipkit::protocol::named_values_generated::values::versions::{group.version}::enumeration",
+            group_path,
+        ):
+            if module_path in seen_version_modules:
+                continue
+            seen_version_modules.add(module_path)
+            module_names = {**namespace_names, "rust": module_path}
+            _append_declaration(
+                declarations,
+                "rust",
+                module_path,
+                (f"{SPEC_ID}-FR-009", f"{SPEC_ID}-FR-005"),
+                declaration_kind="module",
+                language_names=module_names,
+            )
+        prefix = f"{group.version.upper()}_{group.identifier.upper()}"
+        for value in group.values:
+            names = {
+                "rust": f"{group_path}::{value.identifier}",
+                "c": f"KMIPKIT_{prefix}_{value.identifier}",
+                "java": f"org.kmipkit.protocol.KmipValues.{prefix}_{value.identifier}",
+                "python": f"kmipkit.protocol_values.{prefix}_{value.identifier}",
+            }
+            for language, export_name in names.items():
+                _append_declaration(
+                    declarations,
+                    language,
+                    export_name,
+                    (f"{SPEC_ID}-FR-009", f"{SPEC_ID}-FR-005"),
+                    c_value=value.value if language == "c" else None,
+                    declaration_kind="constant" if language == "rust" else None,
+                    language_names=names,
+                )
+        names = {
+            "rust": f"{group_path}::name",
+            "c": f"KMIPKIT_{prefix}_name",
+            "java": f"org.kmipkit.protocol.KmipValues.{group.version}{''.join(word.title() for word in group.identifier.split('_'))}Name",
+            "python": f"kmipkit.protocol_values.{group.version}_{group.identifier}_name",
+        }
+        for language, export_name in names.items():
+            _append_declaration(
+                declarations,
+                language,
+                export_name,
+                (f"{SPEC_ID}-FR-009", f"{SPEC_ID}-FR-005"),
+                is_c_helper=language == "c",
+                language_names=names,
+            )
 
     mappings = {
         language: sorted(
@@ -385,8 +461,9 @@ def main(argv: list[str] | None = None) -> int:
         catalog = load_validated_catalog(
             safe_read_bytes(root, CATALOG_PATH, max_bytes=MAX_BYTES), root, require_complete=True
         )
+        versioned = load_versioned_values(root)
         manifest = json.loads(safe_read_bytes(root, MANIFEST_PATH, max_bytes=MAX_MANIFEST_BYTES))
-        declarations, mappings = build_named_value_records(catalog)
+        declarations, mappings = build_named_value_records(catalog, versioned)
         updated = reconcile(manifest, declarations, mappings)
         expected = (json.dumps(updated, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
         if args.check:

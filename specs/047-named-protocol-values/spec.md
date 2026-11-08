@@ -9,7 +9,9 @@
 
 Make assigned KMIP 2.1 Enumeration and Bit Mask values discoverable by name in
 Rust, C, Java, and Python while preserving the exact numeric value for unknown,
-future, and vendor-defined values.
+future, and vendor-defined values. A separate, reviewable catalog also records
+the operation additions in KMIP 2.1 and the KMIP 3.0 Operation, Object Class,
+and Object Type assignments used by version-aware code.
 
 ## User Stories and Acceptance Scenarios
 
@@ -67,19 +69,32 @@ that are unknown, reserved, future, or vendor-defined.
 - **KMIPKIT-0047-FR-005**: Rust, C, Java, and Python MUST expose equivalent
   named-value capabilities through their existing package surfaces.
 - **KMIPKIT-0047-FR-006**: Generated values MUST come only from the checked-in
-  KMIP 2.1 catalog; generation MUST be deterministic and must not download or
-  scrape OASIS sources.
-- **KMIPKIT-0047-FR-007**: New constants and lookups MUST NOT change wire
-  encoding, operation behavior, existing public paths, or unknown-value
-  preservation.
+  KMIP 2.1 catalog or the checksum-verified version-delta catalog; generation
+  MUST be deterministic and must not download or scrape OASIS sources.
+- **KMIPKIT-0047-FR-007**: Named constants and lookups MUST NOT change wire
+  encoding, request formation, existing public paths, or unknown-value
+  preservation. Version-introduction metadata is governed by FR-010.
+- **KMIPKIT-0047-FR-008**: The version-delta catalog MUST use exact assigned
+  values from pinned OASIS sources and record the edition, section, table, and
+  source checksum for every group. Reserved and wildcard allocations MUST NOT
+  be emitted as named constants.
+- **KMIPKIT-0047-FR-009**: Rust, C, Java, and Python MUST expose the reviewed
+  KMIP 2.1 Operation additions and KMIP 3.0 Operation, Object Class, and Object
+  Type additions through deterministic generated values and lookups.
+- **KMIPKIT-0047-FR-010**: Version-aware operation lookup MUST return no
+  introduction span for unassigned codes; numeric ranges MUST NOT make
+  reserved or unassigned operation values valid.
 
 ## Normative Sources and Traceability
 
-The authoritative source is the pinned KMIP Specification v2.1 in
-`specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`. Enumeration
-and Bit Mask values are defined in §§11–12; each generated value is traced to
-its exact catalog `element_id` and `source_refs` entry. The catalog's four
-source documents and pinned digests remain authoritative; Usage Guide text is
+The authoritative source for KMIP 2.1 Enumeration and Bit Mask values is the
+pinned KMIP Specification v2.1 in
+`specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`. These values
+are defined in §§11–12; each generated value is traced to its exact catalog
+`element_id` and `source_refs` entry. Edition deltas are recorded separately in
+`specification/catalog/kmip-versioned-values.json`, with exact source checksums
+and section/table citations to KMIP 2.1, KMIP 3.0, and the pinned KMIP 2.0
+baseline. Reserved and wildcard allocations are omitted. Usage Guide text is
 not used to add requirements.
 
 | Requirement | Normative/catalog source | Verification |
@@ -88,11 +103,16 @@ not used to add requirements.
 | FR-002 | Catalog elements with kind `bitmask` and `bitmask_value`; each value's `source_refs` points to its exact KMIP 2.1 section | Generated count/bit tests and four-language API tests |
 | FR-003–004 | KMIP 2.1 §§11–12 and KMIPKIT unknown/future value preservation policy | Known/unknown raw value and unknown-bit tests |
 | FR-005–007 | Constitution §§3, 4, 9, 10; KMIPKIT-0043 manifest and generation contract | Manifest parity, deterministic generation, and regression tests |
+| FR-008–009 | KMIP 2.1 §11.36 Table 470; KMIP 3.0 §§11.34–11.35 Tables 581–582 and §11.37 Table 583; `specification/catalog/kmip-versioned-values.json` verifies pinned source checksums | Exact catalog assignment tests, four-language generation tests, and `VersionGate` tests |
+| FR-010 | KMIP 2.0/2.1/3.0 Operation Enumerations; assigned values in the checked-in versioned catalog | Assigned, reserved, and unknown operation code tests |
 
 ## Scope and Exclusions
 
 - In scope: symbolic constants and name inspection for the catalogued KMIP 2.1
   Enumerations and Bit Masks, in the four 1.0 languages.
+- Also in scope: exact version deltas for KMIP 2.1 Operations and KMIP 3.0
+  Operations, Object Class, and Object Type used by version gates and typed
+  models. These deltas do not imply complete KMIP 3.0 protocol support.
 - Existing raw-value constructors and generic TTLV interfaces remain supported.
 - This feature does not infer server support, profile conformance, or
   cryptographic policy from the presence of a constant.
@@ -110,3 +130,6 @@ not used to add requirements.
   construction, inspection, and serialization unchanged.
 - **KMIPKIT-0047-SC-004**: Re-running the pinned generator produces no diff;
   every new public declaration is reconciled in the API manifest.
+- **KMIPKIT-0047-SC-005**: The exact KMIP 2.1/3.0 delta tables are generated in
+  all four languages; reserved or unassigned codes have no generated name and
+  receive no version span.

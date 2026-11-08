@@ -24,5 +24,16 @@ int main(void) {
     assert(strcmp(names[0], "Encrypt") == 0);
     assert(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_names(raw, 0, 0) == 1);
     assert(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_names(raw, 0, 1) == 0);
+
+    /* KMIP 2.1 §11.36 Table 470 and KMIP 3.0 §§11.34–11.37 Tables 581–583. */
+    assert(KMIPKIT_V2_1_OPERATION_SET_DEFAULTS == UINT32_C(0x36));
+    assert(strcmp(KMIPKIT_V2_1_OPERATION_name(KMIPKIT_V2_1_OPERATION_PING), "Ping") == 0);
+    assert(KMIPKIT_V3_0_OPERATION_OBLITERATE == UINT32_C(0x3D));
+    assert(strcmp(KMIPKIT_V3_0_OPERATION_name(KMIPKIT_V3_0_OPERATION_CREATE_CREDENTIAL),
+                  "Create Credential") == 0);
+    assert(strcmp(KMIPKIT_V3_0_OBJECT_CLASS_name(UINT32_C(1)), "User") == 0);
+    assert(KMIPKIT_V3_0_OBJECT_CLASS_name(UINT32_C(3)) == 0);
+    assert(strcmp(KMIPKIT_V3_0_OBJECT_TYPE_name(UINT32_C(0x0D)), "Password Credential") == 0);
+    assert(KMIPKIT_V3_0_OBJECT_TYPE_name(UINT32_C(6)) == 0);
     return 0;
 }
