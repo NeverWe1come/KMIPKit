@@ -1,9 +1,11 @@
 //! Oracle Cloud Infrastructure (OCI) Vault and Secrets provider connector.
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "oci")]
 use std::collections::BTreeMap;
 
 use async_trait::async_trait;
+#[cfg(feature = "oci")]
 use base64::Engine;
 use zeroize::Zeroizing;
 
@@ -13,6 +15,7 @@ use super::{
 };
 use crate::ProxyError;
 use crate::config::OciConfig;
+#[cfg(feature = "oci")]
 use crate::envelope::{AutoEnvelope, WrappedEnvelopeKey};
 
 #[cfg(feature = "oci")]
