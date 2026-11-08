@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import unittest
+import json
 from pathlib import Path
 
 
@@ -48,6 +49,47 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
 
         self.assertIn("kmip-3.0-api-migration.md", requirement)
         self.assertIn("link_normalizer_tests.rs", requirement)
+
+    def test_kmip30_operation_values_and_table_reference_match_the_pinned_catalog(self) -> None:
+        spec = (ROOT / "specs/071-kmip-3-0-draft-support/spec.md").read_text(
+            encoding="utf-8"
+        )
+        plan = (ROOT / "specs/071-kmip-3-0-draft-support/plan.md").read_text(
+            encoding="utf-8"
+        )
+        traceability = (
+            ROOT / "specs/071-kmip-3-0-draft-support/traceability.md"
+        ).read_text(encoding="utf-8")
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-versioned-values.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        operation_group = next(
+            group
+            for group in catalog["versions"]["v3_0"]
+            if group["name"] == "Operation"
+        )
+
+        self.assertEqual("584", operation_group["table"])
+        expected = {
+            "Create Group": 0x3C,
+            "Obliterate": 0x3D,
+            "Create User": 0x3E,
+            "Create Credential": 0x3F,
+            "Deactivate": 0x40,
+            "Encapsulate": 0x41,
+            "Decapsulate": 0x42,
+        }
+        self.assertEqual(
+            expected,
+            {entry["name"]: int(entry["wire_value"], 16) for entry in operation_group["values"]},
+        )
+        self.assertIn("§11.37, Table 584", spec)
+        self.assertIn("§11.37, Table 584", traceability)
+        self.assertIn("Table 584", plan)
+        for name, value in expected.items():
+            self.assertRegex(spec, rf"`{re.escape(name)}` \(`0x{value:08X}`\)")
 
 
 if __name__ == "__main__":
