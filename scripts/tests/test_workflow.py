@@ -264,6 +264,17 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "Every supported pull-request platform must reject stale generated API outputs.",
         )
+
+    def test_script_contract_job_fetches_history_for_pinned_git_provenance(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        checkout = self.require_named_step(job, "Checkout pull request merge commit")
+
+        self.assertRegex(
+            checkout.group(1),
+            r"(?m)^\s+fetch-depth: 0$",
+            "Script contracts verify snapshots against pinned ancestor commits, so the full history must be available.",
+        )
         self.assertIn(
             "tools/extension_fixtures/generate.py --check",
             job,
