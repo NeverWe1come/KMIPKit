@@ -763,6 +763,17 @@ def test_absent_raw_payload_is_not_fabricated_and_header_requires_a_structure(
     assert released == [handle]
 
 
+def test_response_header_reader_rejects_missing_structure_from_required_reader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    object.__setattr__(result, "_native_response_item", SimpleNamespace(_pointer=object))
+    monkeypatch.setattr(client, "_response_structure", lambda *_args, **_kwargs: None)
+
+    with pytest.raises(errors.InvalidInputError):
+        result.response_header_ttlv()
+
+
 def test_response_ttlv_reader_releases_native_structure_on_status_and_wrapper_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

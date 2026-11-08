@@ -3661,6 +3661,8 @@ final class ClientFacadeTlsIntegrationTest {
                     singleAsyncResponseMessage(0x3a, 2, correlation, emptyPayload)));
             requests.add(serveOneResponse(listener,
                     singleAsyncResponseMessage(0x39, 2, queryCorrelation, emptyPayload)));
+            requests.add(serveOneResponse(listener,
+                    singleAsyncResponseMessage(0x19, 1, null, null)));
             return requests;
         });
         Thread peerThread = new Thread(peer, "kmipkit-java-default-async-fixture");
@@ -3760,6 +3762,12 @@ final class ClientFacadeTlsIntegrationTest {
                 assertTrue(outcome.cancelResponse().isEmpty());
                 assertTrue(outcome.processResponse().isEmpty());
             }
+            try (AsyncOperationOutcome outcome = client.executeCancel(
+                    correlation, CodecLimits.defaults())) {
+                var typed = outcome.cancelResponse().orElseThrow();
+                assertTrue(typed.cancellationResult().isEmpty());
+                assertFalse(typed.withEchoedCorrelationValue(value -> {}));
+            }
             requests = peer.get(24, TimeUnit.SECONDS);
         } finally {
             listener.close();
@@ -3771,6 +3779,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(requests.get(3), item(0x420006, 8, queryCorrelation));
         assertContains(requests.get(3), enumeration(0x42005c, (int) 0xdead_beefL));
         assertContains(requests.get(3), enumeration(0x420007, 2));
+        assertContains(requests.get(4), enumeration(0x42005c, 0x19));
         assertTrue(peer.isDone());
     }
 
@@ -6522,6 +6531,7 @@ final class ClientFacadeTlsIntegrationTest {
         List<byte[]> fields = new ArrayList<>();
         fields.add(enumeration(0x42005c, operation));
         fields.add(enumeration(0x42007f, status));
+        if (status == 1) fields.add(enumeration(0x42007e, 5));
         if (correlation != null) fields.add(item(0x420006, 8, correlation));
         if (payload != null) fields.add(payload);
         return structure(0x42007b, header, structure(0x42000f, fields.toArray(byte[][]::new)));
