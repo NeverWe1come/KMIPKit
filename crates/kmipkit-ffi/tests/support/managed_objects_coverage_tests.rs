@@ -68,8 +68,7 @@ fn private_schema_and_field_helpers_cover_open_contexts_and_limits() {
     let ordered = order_known_fields(
         vec![later_known, unknown, earlier_known],
         &[0x0042_0001, 0x0042_0002],
-    )
-    .expect("known fields reorder without moving unknown fields");
+    );
     assert_eq!(
         ordered
             .iter()

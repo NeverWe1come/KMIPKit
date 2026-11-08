@@ -67,10 +67,7 @@ fn copy_field_items(
         .collect()
 }
 
-fn order_known_fields(
-    fields: Vec<Item>,
-    schema_order: &[u32],
-) -> Result<Vec<Item>, ManagedObjectError> {
+fn order_known_fields(fields: Vec<Item>, schema_order: &[u32]) -> Vec<Item> {
     let mut slots = Vec::new();
     let mut known_positions = Vec::new();
     let mut known_fields = Vec::new();
@@ -87,7 +84,7 @@ fn order_known_fields(
     for (index, (_, item)) in known_positions.into_iter().zip(known_fields) {
         slots[index] = Some(item);
     }
-    Ok(slots.into_iter().flatten().collect())
+    slots.into_iter().flatten().collect()
 }
 
 fn structure_item(
@@ -95,7 +92,7 @@ fn structure_item(
     fields: Vec<Item>,
     schema_order: &[u32],
 ) -> Result<Item, ManagedObjectError> {
-    let fields = order_known_fields(fields, schema_order)?;
+    let fields = order_known_fields(fields, schema_order);
     let tag = RawTag::new(raw_tag)
         .map_err(|_| ManagedObjectError::TtlvModelLimit)?
         .try_checked()
