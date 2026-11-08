@@ -763,6 +763,65 @@ def test_absent_raw_payload_is_not_fabricated_and_header_requires_a_structure(
     assert released == [handle]
 
 
+def test_response_ttlv_reader_releases_native_structure_on_status_and_wrapper_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = ffi.cast("kmipkit_ttlv_structure_t *", 789)
+    released: list[object] = []
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    item = SimpleNamespace(_pointer=lambda: object())
+    object.__setattr__(result, "_native_response_item", item)
+
+    def failed_response(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 4
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_raw_ttlv=failed_response,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        result.raw()
+    assert released == [handle]
+
+    def present_response(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_raw_ttlv=present_response,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("test wrapper failure")),
+    )
+    with pytest.raises(RuntimeError, match="test wrapper failure"):
+        result.raw()
+    assert released == [handle, handle]
+
+
+def test_response_ttlv_readers_reject_items_without_a_native_response(monkeypatch) -> None:
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    monkeypatch.setattr(client, "lib", SimpleNamespace())
+
+    with pytest.raises(errors.InvalidInputError):
+        result.raw()
+    with pytest.raises(errors.InvalidInputError):
+        result.response_header_ttlv()
+
+
 def _opaque(type_name: str) -> tuple[object, object]:
     storage = ffi.new("uint8_t[]", b"\x00")
     return ffi.cast(f"{type_name} *", storage), storage
