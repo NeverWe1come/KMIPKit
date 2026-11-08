@@ -310,6 +310,16 @@ def test_query_response_text_reader_rejects_a_misclassified_ttlv_item() -> None:
         response.close()
 
 
+def test_query_response_context_manager_closes_the_owned_payload():
+    payload = _sparse_query_payload()
+    with client.QueryResponse(
+        payload,
+        (client._QueryFieldData(OPERATION, client.QueryFieldKind.ENUMERATION, 0x3B),),
+    ) as response:
+        assert response.field_count == 1
+    assert payload.closed
+
+
 def test_typed_query_response_handles_absence_and_releases_partial_results(monkeypatch) -> None:
     result = client.BatchItemResult(0, 0, None, None, None)
     assert result.typed_query_response() is None
@@ -381,3 +391,22 @@ def test_query_field_classifier_rejects_malformed_native_metadata(
 
     with pytest.raises(errors.KmipKitError):
         client._query_response_fields(NativeResponse())  # type: ignore[arg-type]
+
+
+def test_query_field_classifier_returns_none_when_no_fields_are_present(monkeypatch):
+    def read_count(_item, present, count):
+        present[0] = 0
+        count[0] = 0
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_query_field_count=read_count),
+    )
+
+    class NativeResponse:
+        def _pointer(self):
+            return client.ffi.cast("kmipkit_client_batch_item_response_t *", 1)
+
+    assert client._query_response_fields(NativeResponse()) is None  # type: ignore[arg-type]

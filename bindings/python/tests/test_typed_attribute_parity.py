@@ -298,6 +298,13 @@ def test_attribute_set_rejects_wrong_inputs_and_closes_partial_typed_results(mon
         assert probe.closed
 
 
+def test_ttlv_byte_view_copies_an_empty_string():
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_byte_string(b"", limits) as value:
+            with ttlv.ttlv_value_view(value) as view:
+                assert ttlv.ttlv_value_view_bytes(view) == b""
+
+
 def test_typed_attribute_rejects_wrong_tag_and_value_type_without_exposing_values():
     wrong_tag = _item(
         StandardAttribute.ACTIVATION_DATE,

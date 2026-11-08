@@ -109,6 +109,22 @@ def test_validation_binding_rejects_invalid_inputs_and_decodes_issue_spans():
         validation._span_text(SimpleNamespace(data=invalid_utf8, length=1))
 
 
+def test_validation_report_rejects_an_unbounded_issue_count(monkeypatch):
+    with ttlv.ttlv_structure_create() as structure:
+        with validation.validate_structure(structure) as report:
+            def excessive_count(_report, count):
+                count[0] = 100_001
+                return 0
+
+            monkeypatch.setattr(
+                validation,
+                "lib",
+                SimpleNamespace(kmipkit_validation_report_issue_count=excessive_count),
+            )
+            with pytest.raises(errors.ResourceLimitError):
+                _ = report.issues
+
+
 def test_invalid_typed_request_is_redacted_and_never_connects():
     canary = "VALIDATION_SECRET_CANARY"
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

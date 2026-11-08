@@ -201,6 +201,12 @@ def test_managed_object_helpers_reject_invalid_context_and_inputs():
                 with pytest.raises(errors.InvalidInputError):
                     managed.field_type(0x0054_0001)
 
+    with ttlv.codec_limits_defaults() as limits:
+        key_format = _item(0x0042_0042, ttlv.ttlv_value_enumeration(1), limits)
+        with key_format, KeyBlock.from_fields([key_format]) as key_block:
+            with pytest.raises(errors.InvalidInputError):
+                _ = key_block.key_value_type
+
 
 def test_key_wrappers_validate_and_retain_owned_generic_items():
     with ttlv.codec_limits_defaults() as limits:
@@ -493,6 +499,7 @@ def test_dispatches_all_nine_known_object_types_and_reads_key_structures():
             0x0042_0045, limits, [byte_string(0x0042_0043, b"secret-canary")]
         )
         with key_value, KeyValue.from_item(1, key_value) as typed_key_value:
+            assert typed_key_value.format_raw == 1
             with ttlv.ttlv_item_view_from_item(typed_key_value) as view:
                 with ttlv.ttlv_item_view_tag(view) as tag:
                     assert ttlv.tag_value(tag) == 0x0042_0045
