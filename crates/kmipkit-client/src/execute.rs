@@ -777,6 +777,10 @@ impl ClientRequest {
             Self::SignatureVerify(request) => request.validate(),
             Self::RngRetrieve(request) => request.validate(),
             Self::RngSeed(request) => request.validate(),
+            // Set Endpoint Role is deferred to 1.1. Its typed constructor
+            // always includes the required Endpoint Role (§6.1.54), and the
+            // open Enumeration must preserve future and vendor values.
+            Self::SetEndpointRole(_) => ValidationReport::default(),
         }
     }
 
