@@ -127,8 +127,8 @@ def _load_renderer(testcase: unittest.TestCase):
 
 
 class TagAllocationRenderingTests(unittest.TestCase):
-    def _render(self, catalog: dict[str, Any]) -> str:
-        return _load_renderer(self)(catalog)
+    def _render(self, catalog: dict[str, Any], versioned_tags=()) -> str:
+        return _load_renderer(self)(catalog, versioned_tags=versioned_tags)
 
     def _assert_allocation_near(self, rendered: str, value: str, allocation: str) -> None:
         normalized = rendered.lower().replace("_", "")
@@ -182,7 +182,10 @@ class TagAllocationRenderingTests(unittest.TestCase):
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),
             ROOT,
         )
-        rendered = self._render(catalog)
+        from tools.normative_catalog.generate_ttlv_tags import load_versioned_tag_allocations
+
+        versioned_tags = load_versioned_tag_allocations(ROOT)
+        rendered = self._render(catalog, versioned_tags=versioned_tags)
 
         # KMIP 3.0 §4.35.1–4.35.20 and §11.58. These tags are part of the
         # supported-version union even where KMIP 2.1 leaves them unallocated.
