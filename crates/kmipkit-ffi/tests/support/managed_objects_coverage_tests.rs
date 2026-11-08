@@ -156,6 +156,91 @@ fn typed_item_builders_map_invalid_limits_and_success() {
 }
 
 #[test]
+fn exported_managed_object_builders_and_converters_validate_public_inputs() {
+    type Constructor =
+        extern "C" fn(*mut *mut kmipkit_ttlv_item_t, u64, *mut *mut kmipkit_ttlv_item_t) -> i32;
+    let named_constructors: [Constructor; 9] = [
+        kmipkit_certificate_from_fields,
+        kmipkit_symmetric_key_from_fields,
+        kmipkit_public_key_from_fields,
+        kmipkit_private_key_from_fields,
+        kmipkit_split_key_from_fields,
+        kmipkit_secret_data_from_fields,
+        kmipkit_opaque_object_from_fields,
+        kmipkit_pgp_key_from_fields,
+        kmipkit_certificate_request_from_fields,
+    ];
+    for constructor in named_constructors {
+        let mut output = ptr::null_mut();
+        assert_eq!(
+            constructor(ptr::null_mut(), 0, &raw mut output),
+            ERROR_INVALID_INPUT
+        );
+        assert!(output.is_null());
+    }
+
+    let mut output = ptr::null_mut();
+    assert_eq!(
+        kmipkit_managed_object_from_fields(6, ptr::null_mut(), 0, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_block_from_fields(ptr::null_mut(), 0, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_value_from_fields(1, ptr::null_mut(), 0, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_material_from_fields(1, ptr::null_mut(), 0, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_wrapping_data_from_fields(ptr::null_mut(), 0, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut excessive_key_material_fields = [
+        item_handle(fixture_item(0x0042_0043, Value::byte_string(vec![1]))),
+        item_handle(fixture_item(0x0042_0043, Value::byte_string(vec![2]))),
+    ];
+    assert_eq!(
+        kmipkit_key_material_from_fields(
+            1,
+            excessive_key_material_fields.as_mut_ptr(),
+            excessive_key_material_fields.len() as u64,
+            &raw mut output,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    for field in excessive_key_material_fields {
+        release(field, Kind::Item);
+    }
+
+    assert_eq!(
+        kmipkit_managed_object_from_item(1, ptr::null_mut(), &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_block_from_item(ptr::null_mut(), &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_value_from_item(1, ptr::null_mut(), &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_material_from_item(1, ptr::null_mut(), &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_key_wrapping_data_from_item(ptr::null_mut(), &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+}
+
+#[test]
 fn managed_value_reader_abi_rejects_invalid_arguments_and_contexts() {
     let input = item_handle(fixture_certificate());
     let mut present = 0_u8;
