@@ -24,6 +24,13 @@ class AnalysisWorkflowTests(unittest.TestCase):
                 self.assertRegex(workflow, rf"(?m)^\s+- language: {language}$")
         self.assertRegex(workflow, r"(?m)^\s+- language: rust\n\s+build-mode: none$")
 
+    def test_codeql_c_consumer_build_enables_test_only_abi_helper(self) -> None:
+        workflow = self.read_workflow("codeql.yml")
+        self.assertIn(
+            "cargo build --locked -p kmipkit-ffi --features coverage-c-consumer",
+            workflow,
+        )
+
     def test_codeql_actions_are_pinned_to_reviewed_commits(self) -> None:
         workflow = self.read_workflow("codeql.yml")
         action_lines = [line for line in workflow.splitlines() if re.search(r"\buses:\s", line)]
