@@ -1,4 +1,4 @@
-"""Current manifest totals and historical T102 Rust audit snapshot totals."""
+"""Shared manifest snapshot guards and historical T102 Rust audit totals."""
 
 T102_BLOCKED_CANDIDATES = 0
 T102_PUBLIC_DECLARATIONS = 11_731
