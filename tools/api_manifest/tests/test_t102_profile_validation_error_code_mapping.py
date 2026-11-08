@@ -41,6 +41,11 @@ VARIANT_CODES = {
     "ProfileStateContextRequired": "profile_state_context_required",
     "ProfileStateBindingMismatch": "profile_state_binding_mismatch",
 }
+PROFILE_ERROR_CODE_SUFFIXES = (
+    "",
+    "::as_str",
+    *(f"::{variant}" for variant in VARIANT_CODES),
+)
 LANGUAGE_TARGETS = {
     "c": (
         "c-kmipkit",
@@ -71,22 +76,14 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
         expected = {
             (package, f"{crate}::ProfileValidationErrorCode{suffix}")
             for package, crate in PACKAGES.items()
-            for suffix in (
-                "",
-                "::as_str",
-                *(f"::{variant}" for variant in VARIANT_CODES),
-            )
+            for suffix in PROFILE_ERROR_CODE_SUFFIXES
         }
         expected.update(
             (
                 "rust-kmipkit",
                 f"kmipkit::protocol::ProfileValidationErrorCode{suffix}",
             )
-            for suffix in (
-                "",
-                "::as_str",
-                *(f"::{variant}" for variant in VARIANT_CODES),
-            )
+            for suffix in PROFILE_ERROR_CODE_SUFFIXES
         )
         self.assertEqual(expected, set(rows))
         self.assertEqual(80, len(rows))

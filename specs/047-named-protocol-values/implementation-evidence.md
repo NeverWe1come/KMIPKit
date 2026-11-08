@@ -292,3 +292,7 @@ and profile-validation snapshots explicitly include the facade aliases, and
 the validator fixture supplies its approved exclusions. The full T102 suite
 passed (399 tests), and API-manifest generation `--check` verified all 12
 outputs. No generated manifest output changed.
+
+Refactor evidence: the profile diagnostic suffix inventory is defined once and
+reused for both expected Rust surfaces. Its focused test passed after the
+refactor.
