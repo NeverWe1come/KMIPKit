@@ -121,7 +121,15 @@ fn decode_json_element(v: &JsonVal) -> Result<Item, String> {
             }
             Some("DateTime") => {
                 let secs = if let Some(s) = value_elem.as_str() {
-                    parse_datetime(s)?
+                    parse_datetime(s).or_else(|_| {
+                        let clean_hex = s.strip_prefix("0x").unwrap_or(s);
+                        if let Ok(v) = u64::from_str_radix(clean_hex, 16) {
+                            Ok(v as i64)
+                        } else {
+                            s.parse::<i64>()
+                                .map_err(|e| format!("invalid datetime int: {e}"))
+                        }
+                    })?
                 } else if let Some(i) = value_elem.as_i64() {
                     i
                 } else {
