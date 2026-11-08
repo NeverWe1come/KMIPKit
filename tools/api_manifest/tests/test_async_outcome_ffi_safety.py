@@ -20,16 +20,35 @@ ASYNC_RESPONSE_EXPORTS = (
 class AsyncOutcomeFfiSafetyTests(unittest.TestCase):
     def test_pointer_dereferencing_async_response_exports_are_unsafe(self) -> None:
         source = CLIENT_ABI_SOURCE.read_text(encoding="utf-8")
+        export_pattern = re.compile(
+            r"(?P<docs>(?:^///.*\n)+)^#\[unsafe\(no_mangle\)\]\n"
+            r"^pub (?P<unsafe>unsafe )?extern \"C\" fn (?P<name>\w+)\(",
+            re.MULTILINE,
+        )
+        declarations = {
+            declaration.group("name"): declaration
+            for declaration in export_pattern.finditer(source)
+        }
 
         for name in ASYNC_RESPONSE_EXPORTS:
             with self.subTest(function=name):
-                declaration = re.search(
-                    rf"pub (?:unsafe )?extern \"C\" fn {name}\(", source
-                )
+                declaration = declarations.get(name)
                 self.assertIsNotNone(declaration)
                 assert declaration is not None
-                self.assertIn("pub unsafe extern \"C\" fn", declaration.group(0))
-                self.assertIn("# Safety", source[max(0, declaration.start() - 400) : declaration.start()])
+                self.assertEqual(declaration.group("unsafe"), "unsafe ")
+                self.assertIn("# Safety", declaration.group("docs"))
+
+    def test_async_response_output_helper_keeps_its_unsafe_precondition(self) -> None:
+        source = CLIENT_ABI_SOURCE.read_text(encoding="utf-8")
+        helper = re.search(
+            r"(?P<docs>(?:^///.*\n)+)^unsafe fn async_response_v1_output\(",
+            source,
+            re.MULTILINE,
+        )
+
+        self.assertIsNotNone(helper)
+        assert helper is not None
+        self.assertIn("# Safety", helper.group("docs"))
 
 
 if __name__ == "__main__":
