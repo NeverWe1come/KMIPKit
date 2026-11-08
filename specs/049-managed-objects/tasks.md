@@ -126,7 +126,7 @@
 2. Implement only enough code to make those tests pass and commit Green.
 3. Refactor while keeping tests green and commit Refactor.
 4. Repeat Red/Green/Refactor for managed objects and operation integration, updating the traceability matrix with each requirement.
-5. Finish manifest generation, tested examples, bilingual docs, audits, coverage, and review before opening the stacked draft PR against PR #115.
+5. Finish manifest generation, tested examples, bilingual docs, audits, coverage, and review before updating the stacked draft PR against PR #140.
 
 ## Approved KMIP 3.0 system credential object addendum
 
@@ -134,6 +134,10 @@
 - [x] T048 [Green] Implement typed, lossless Rust models and semantic constructors/readers for Password, Device, One Time Password, and Hashed Password Credential system objects; redact and zeroize owned values, preserve unknown children, reconcile exact public routes, and regenerate outputs. Green commit: `1384419bd`.
 - [x] T049 [Refactor] Add exact OASIS traceability, executable Rust examples, bilingual guide notes, coverage for typed readers and defensive helpers, and local generation/test/format/lint evidence. Refactor evidence is recorded in `implementation-evidence.md`.
 - [ ] T050 Run the hosted CI and cross-platform coverage controls for PR #141, update this evidence with the results, and keep the PR in draft until every required check is green.
+- [x] T051 [Red] Extend the public-manifest encoding regression to reject mojibake punctuation beyond section signs and verify the temporary protocol coverage policy; record the expected failures in `implementation-evidence.md`.
+- [x] T052 [Green] Normalize the reviewed manifest's mojibake punctuation and stale trait-exclusion evidence, regenerate all official outputs, and reconcile T102 declaration/exclusion snapshots; verify all 399 T102 tests.
+- [x] T053 [Green] Apply the maintainer-approved temporary 90% threshold to changed production code and `kmipkit-protocol`, retaining the existing TTLV, transport, and FFI scope thresholds; update threshold tests.
+- [x] T054 [Refactor] Remove test-only code from the production source module after the coverage preflight rejected inline `#[cfg(test)]`; retain the external credential-object integration tests and record the resulting coverage.
 
 ## Independent test criteria
 

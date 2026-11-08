@@ -412,3 +412,60 @@ Password Link Attribute cross-check likewise remains with KMIPKIT-0051.
 - Hosted CI and cross-platform coverage have not yet completed. T050 remains
   open and PR #141 remains a draft until those controls are green.
 - Refactor commit: `f8de31de2`.
+
+## 2026-11-08 CI and manifest correction follow-up
+
+The following local checks supersede earlier coverage measurements above for
+the current PR head. An inline private test module had caused the repository
+coverage preflight to reject the source file; it was removed while the
+public-facing malformed-input and redaction cases remain covered by the
+`system_credential_objects` integration tests.
+
+### Red
+
+- `10ff13505` expanded the manifest encoding regression to reject common
+  UTF-8/Windows-1252 mojibake, including punctuation sequences. It failed
+  against 1,794 encoded en dashes, 152 encoded opening quotes, and 10 deeply
+  double-encoded requirement ranges in the reviewed manifest input.
+- `538206c16` added the approved temporary 90% protocol coverage policy
+  assertion. It failed while `kmipkit-protocol` still had a 95% crate gate.
+
+### Green
+
+- `601a77c63` repaired the reviewed `public-api.json` input, corrected stale
+  evidence for 30 inherited approved exclusions, updated the T102 snapshot to
+  12,517 public declarations and 17,552 exclusions, regenerated all 12
+  official manifest outputs, and applied the temporary 90% threshold to
+  changed production code and `kmipkit-protocol`. TTLV remains at 95%; transport
+  and FFI remain at 85%. The temporary thresholds are limited to the active
+  Phase 5 development and should be restored after that phase closes.
+- The complete T102 manifest suite passed 399 tests. The updated credential
+  response and Set Constraints evidence tests also pass.
+
+### Refactor and current local verification
+
+- `python -B -m unittest scripts.tests.test_coverage_threshold_policy
+  scripts.tests.test_coverage_gate scripts.tests.test_workflow -q`: 167 passed,
+  3 skipped.
+- `python -B -m unittest discover -s scripts/tests -p
+  'test_multilanguage_coverage.py' -q`: 30 passed.
+- `python -B -m unittest tools.api_manifest.tests.test_manifest_encoding
+  tools.api_manifest.tests.test_reconcile_0049_managed_objects -q`: 5 passed.
+- `python -B tools/api_manifest/generate.py --check --repo-root .`,
+  `python -B tools/normative_catalog/generate_ttlv_tags.py --check`, and
+  `python -B tools/normative_catalog/generate_named_values.py --repo-root .
+  --check`: all 12 manifest outputs, TTLV tags, and four-language named-value
+  outputs verified.
+- `cargo fmt --all --check`,
+  `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
+  warnings`, `cargo test -p kmipkit-protocol --all-features`, and
+  `git diff --check`: passed. The package ran 1,331 unit tests, its integration
+  tests, and three doctests; all 10 credential-object integration tests passed.
+- `cargo llvm-cov --package kmipkit-protocol --all-features --summary-only`:
+  all tests passed; protocol crate line coverage was 91.12% and
+  `system_credential_objects.rs` measured 92.57%. Both exceed the temporary
+  90% gate. This package-only local measurement does not replace hosted
+  workspace, platform, or adapter coverage results.
+- Hosted CI has not yet run on this updated head. T050 remains open; PR #141
+  stays draft until all required hosted checks pass.
+- Red commits: `10ff13505`, `538206c16`; Green commit: `601a77c63`.
