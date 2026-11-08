@@ -99,6 +99,7 @@ mod set_defaults_tests;
 mod set_endpoint_role;
 mod sign;
 mod signature_verify;
+mod system_credential_objects;
 mod ticket;
 mod typed_attributes;
 mod validate;
@@ -238,6 +239,12 @@ pub use set_endpoint_role::{
 };
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
+pub use system_credential_objects::{
+    DeviceCredentialObject, DeviceCredentialObjectFields, HashedPasswordCredentialObject,
+    HashedPasswordCredentialObjectFields, OneTimePasswordCredentialObject,
+    OneTimePasswordCredentialObjectFields, PasswordCredentialObject,
+    PasswordCredentialObjectFields,
+};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
 pub use version_codec::{CodecContext, VersionedCodec};

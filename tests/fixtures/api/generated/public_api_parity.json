@@ -214850,6 +214850,2190 @@
       "exportName": "kmipkit_ttlv::try_clone_value",
       "packageId": "rust-kmipkit-ttlv",
       "reason": "This exact doc-hidden Rust helper exists for the binding implementation to copy secret-bearing values safely. It is not a supported end-user operation; each binding already performs owned copies at its opaque-handle boundary."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::DeviceCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::DeviceCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::DeviceCredentialObject>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::DeviceCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::DeviceCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::DeviceCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::DeviceCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObject>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::HashedPasswordCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObject>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::OneTimePasswordCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::PasswordCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::PasswordCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::PasswordCredentialObject>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::PasswordCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::PasswordCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::PasswordCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit::protocol::PasswordCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::DeviceCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::DeviceCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::DeviceCredentialObject>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::DeviceCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::DeviceCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::DeviceCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::DeviceCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObject>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::HashedPasswordCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::HashedPasswordCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObject>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::OneTimePasswordCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::OneTimePasswordCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::PasswordCredentialObject>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::PasswordCredentialObject>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::convert::From<kmipkit_protocol::system_credential_objects::PasswordCredentialObject>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObject as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::borrow::Borrow<kmipkit_protocol::system_credential_objects::PasswordCredentialObjectFields>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::borrow::BorrowMut<kmipkit_protocol::system_credential_objects::PasswordCredentialObjectFields>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::convert::From<kmipkit_protocol::system_credential_objects::PasswordCredentialObjectFields>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by maintainer plan authorization",
+        "kind": "feature-specification",
+        "path": "specs/049-managed-objects/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0049",
+      "evidence": "KMIPKIT-0049-FR-001 through KMIPKIT-0049-FR-008; the owned public type and its protocol capability are inventoried as separate exact declarations.",
+      "exportName": "<kmipkit_protocol::PasswordCredentialObjectFields as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact Rust trait-implementation projection is compiler-visible behavior of the typed managed-object API, not an independent KMIPKit protocol capability."
     }
   ],
   "capabilities": [

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import unittest
 import json
+import unittest
 from pathlib import Path
 
 from tools.api_manifest import reconcile_0049_managed_objects as reconcile
