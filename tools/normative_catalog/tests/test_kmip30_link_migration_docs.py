@@ -23,7 +23,7 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
         self.assertIn("§11.28, Table 465", migration_note)
         self.assertIn("`0x101`–`0x10E`", migration_note)
         self.assertIn("../../specs/071-kmip-3-0-draft-support/spec.md", migration_note)
-        self.assertIn("14 semantic equivalents", migration_note)
+        self.assertIn("14 exact semantic equivalents", migration_note)
         self.assertIn("`0x101` Certificate Link", link_spec)
         self.assertIn("`0x10E` Wrapping Key Link", link_spec)
         self.assertNotRegex(migration_note, r"Link Type values?[^\n]{0,80}`0x0[1-9A-E]`")
@@ -60,6 +60,9 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
         traceability = (
             ROOT / "specs/071-kmip-3-0-draft-support/traceability.md"
         ).read_text(encoding="utf-8")
+        operation_tests = (
+            ROOT / "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs"
+        ).read_text(encoding="utf-8")
         catalog = json.loads(
             (ROOT / "specification/catalog/kmip-versioned-values.json").read_text(
                 encoding="utf-8"
@@ -88,6 +91,10 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
         self.assertIn("§11.37, Table 584", spec)
         self.assertIn("§11.37, Table 584", traceability)
         self.assertIn("Table 584", plan)
+        self.assertIn(
+            "kmip30_allows_the_seven_operations_assigned_in_table_584",
+            operation_tests,
+        )
         for name, value in expected.items():
             self.assertRegex(spec, rf"`{re.escape(name)}` \(`0x{value:08X}`\)")
 
