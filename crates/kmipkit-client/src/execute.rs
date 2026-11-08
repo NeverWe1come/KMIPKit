@@ -42,6 +42,7 @@ use kmipkit_protocol::{
     SignatureVerifyResponse, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+use kmipkit_protocol::{SetEndpointRoleRequest, SetEndpointRoleResponse};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
@@ -210,6 +211,7 @@ const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011; // §6.1.23, Table 232.
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
 const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
+const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032; // KMIP v2.1 §6.1.54, Table 331.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -330,9 +332,17 @@ pub enum ClientRequest {
     RngRetrieve(RngRetrieveRequest),
     /// An explicit client-to-server RNG Seed request.
     RngSeed(RngSeedRequest),
+    /// An explicit client-to-server Set Endpoint Role request (§6.1.54).
+    SetEndpointRole(SetEndpointRoleRequest),
 }
 
 impl ClientRequest {
+    /// Creates an explicit client-to-server Set Endpoint Role request variant.
+    #[must_use]
+    pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
+        Self::SetEndpointRole(request)
+    }
+
     /// Creates the KMIP 2.1 Discover Versions request variant.
     #[must_use]
     pub const fn discover_versions() -> Self {
@@ -681,6 +691,7 @@ impl ClientRequest {
             Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
             Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
             Self::RngSeed(_) => RNG_SEED_OPERATION,
+            Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
         }
     }
 
@@ -933,6 +944,7 @@ impl ClientRequest {
             Self::SignatureVerify(request) => request.to_ttlv_payload(),
             Self::RngRetrieve(request) => request.to_ttlv_payload(),
             Self::RngSeed(request) => request.to_ttlv_payload(),
+            Self::SetEndpointRole(request) => request.to_ttlv_payload(),
         }
     }
 }
@@ -1024,6 +1036,10 @@ impl fmt::Debug for ClientRequest {
                 formatter.debug_tuple("RngRetrieve").field(request).finish()
             }
             Self::RngSeed(_) => formatter.write_str("RngSeed([REDACTED])"),
+            Self::SetEndpointRole(request) => formatter
+                .debug_tuple("SetEndpointRole")
+                .field(request)
+                .finish(),
         }
     }
 }
@@ -1062,6 +1078,12 @@ impl ClientBatchItem {
     #[must_use]
     pub fn query(request: QueryRequest) -> Self {
         Self::new(ClientRequest::query(request))
+    }
+
+    /// Creates a batch item for one typed Set Endpoint Role request (§6.1.54).
+    #[must_use]
+    pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
+        Self::new(ClientRequest::set_endpoint_role(request))
     }
 
     /// Creates a Query batch item only when its payload fits the supplied codec limits.
@@ -1188,6 +1210,7 @@ pub struct ClientBatch {
     batch_error_continuation_values: Vec<u32>,
     asynchronous_indicator: Option<u32>,
     client_correlation_value: Option<String>,
+    protocol_version: Option<ProtocolVersion>,
 }
 
 impl ClientBatch {
@@ -1208,6 +1231,7 @@ impl ClientBatch {
             batch_error_continuation_values: Vec::new(),
             asynchronous_indicator: None,
             client_correlation_value: None,
+            protocol_version: None,
         }
     }
 
@@ -1222,7 +1246,27 @@ impl ClientBatch {
             batch_error_continuation_values: Vec::new(),
             asynchronous_indicator: None,
             client_correlation_value: None,
+            protocol_version: None,
         }
+    }
+
+    /// Sets the optional protocol version override for this batch.
+    #[must_use]
+    pub const fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.protocol_version = Some(version);
+        self
+    }
+
+    /// Forces the protocol version override for this batch (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub const fn force_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Returns this batch's protocol version override, or `None` to inherit the client default.
+    #[must_use]
+    pub const fn protocol_version(&self) -> Option<ProtocolVersion> {
+        self.protocol_version
     }
 
     /// Appends a typed request item in execution order.
@@ -1315,6 +1359,7 @@ impl fmt::Debug for ClientBatch {
                 "client_correlation_value",
                 &self.client_correlation_value.is_some(),
             )
+            .field("protocol_version", &self.protocol_version)
             .finish()
     }
 }
@@ -1398,6 +1443,7 @@ enum PendingResponse {
     RngRetrieve(RngRetrieveResponse),
     RngSeed(RngSeedResponse),
     Query(QueryResponse),
+    SetEndpointRole(SetEndpointRoleResponse),
 }
 
 impl PendingResponse {
@@ -1455,6 +1501,7 @@ impl PendingResponse {
             Self::RngRetrieve(response) => ClientResponseRef::RngRetrieve(response),
             Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
+            Self::SetEndpointRole(response) => ClientResponseRef::SetEndpointRole(response),
         };
         ClientResponseView { response }
     }
@@ -1727,6 +1774,8 @@ pub enum ClientOperation {
     Process,
     /// Query outstanding asynchronous requests with a generic response.
     QueryAsyncRequests,
+    /// Set Endpoint Role (§6.1.54).
+    SetEndpointRole,
 }
 
 impl ClientOperation {
@@ -1790,6 +1839,7 @@ impl ClientOperation {
             Self::SignatureVerify => 0x22,
             Self::Validate => 0x17,
             Self::DelegatedLogin => 0x2f,
+            Self::SetEndpointRole => 0x32,
         }
     }
 }
@@ -1960,6 +2010,7 @@ enum ClientResponseRef<'a> {
     RngRetrieve(&'a RngRetrieveResponse),
     RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
+    SetEndpointRole(&'a SetEndpointRoleResponse),
 }
 
 /// A borrowed view of one typed response in a [`ClientBatchOutcome`].
@@ -2034,6 +2085,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::RngRetrieve(response) => response.result(),
             ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
+            ClientResponseRef::SetEndpointRole(response) => response.result(),
         }
     }
 
@@ -2517,6 +2569,15 @@ impl<'a> ClientResponseView<'a> {
             _ => None,
         }
     }
+
+    /// Returns the Set Endpoint Role response when this view represents it.
+    #[must_use]
+    pub const fn set_endpoint_role(&self) -> Option<&'a SetEndpointRoleResponse> {
+        match self.response {
+            ClientResponseRef::SetEndpointRole(response) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 fn debug_response<T>(formatter: &mut fmt::Formatter<'_>, name: &str, _response: &T) -> fmt::Result {
@@ -2647,6 +2708,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             }
             ClientResponseRef::RngSeed(response) => debug_response(formatter, "RngSeed", response),
             ClientResponseRef::Query(response) => debug_response(formatter, "Query", response),
+            ClientResponseRef::SetEndpointRole(response) => {
+                debug_response(formatter, "SetEndpointRole", response)
+            }
         }
     }
 }
@@ -2760,6 +2824,8 @@ pub enum ClientBatchOutcome {
     RngRetrieve(RngRetrieveResponse),
     /// The server returned an RNG Seed result.
     RngSeed(RngSeedResponse),
+    /// The server returned a Set Endpoint Role result (§6.1.54).
+    SetEndpointRole(SetEndpointRoleResponse),
 }
 
 impl ClientBatchOutcome {
@@ -2818,6 +2884,7 @@ impl ClientBatchOutcome {
             | Self::RngRetrieve(_)
             | Self::RngSeed(_)
             | Self::Query(_)
+            | Self::SetEndpointRole(_)
             | Self::Pkcs11(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -2879,6 +2946,7 @@ impl ClientBatchOutcome {
             Self::RngRetrieve(response) => response.result(),
             Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
+            Self::SetEndpointRole(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -2939,6 +3007,7 @@ impl ClientBatchOutcome {
             Self::RngRetrieve(_) => ClientOperation::RngRetrieve,
             Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
+            Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -3366,6 +3435,21 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Set Endpoint Role response when this is one.
+    #[must_use]
+    pub const fn set_endpoint_role_response(&self) -> Option<&SetEndpointRoleResponse> {
+        match self {
+            Self::SetEndpointRole(response) => Some(response),
+            Self::Pending(pending) => match pending.response() {
+                ClientResponseView {
+                    response: ClientResponseRef::SetEndpointRole(response),
+                } => Some(response),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -3504,6 +3588,9 @@ impl ClientBatchOutcome {
                 ClientResponseView::new(ClientResponseRef::RngSeed(response))
             }
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
+            Self::SetEndpointRole(response) => {
+                ClientResponseView::new(ClientResponseRef::SetEndpointRole(response))
+            }
         }
     }
 }
@@ -3644,11 +3731,16 @@ impl fmt::Debug for ClientBatchOutcome {
                 .field(response)
                 .finish(),
             Self::RngSeed(response) => formatter.debug_tuple("RngSeed").field(response).finish(),
+            Self::SetEndpointRole(response) => formatter
+                .debug_tuple("SetEndpointRole")
+                .field(response)
+                .finish(),
         }
     }
 }
 
 impl fmt::Display for ClientBatchOutcome {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Completed(response) => write!(formatter, "Completed({})", response.result()),
@@ -3748,6 +3840,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Query(response) => write!(formatter, "Query({})", response.result()),
             Self::RngRetrieve(response) => write!(formatter, "RngRetrieve({})", response.result()),
             Self::RngSeed(response) => write!(formatter, "RngSeed({})", response.result()),
+            Self::SetEndpointRole(response) => {
+                write!(formatter, "SetEndpointRole({})", response.result())
+            }
         }
     }
 }
@@ -3812,6 +3907,12 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub fn extensions(&self) -> &[ClientMessageExtension] {
         &self.extensions
+    }
+
+    /// Returns the typed Set Endpoint Role response when this item contains one.
+    #[must_use]
+    pub const fn set_endpoint_role(&self) -> Option<&SetEndpointRoleResponse> {
+        self.outcome.set_endpoint_role_response()
     }
 }
 
@@ -4517,7 +4618,7 @@ impl Client {
     // The approved API takes ownership of the caller's typed batch. It keeps
     // the execution lifetime local and avoids retaining request values after
     // the synchronous exchange completes.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute(
         &mut self,
         batch: ClientBatch,
@@ -4537,7 +4638,7 @@ impl Client {
     ///
     /// Returns a sanitized validation, protocol, or transport error with the
     /// strongest available request-delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_options(
         &mut self,
         batch: ClientBatch,
@@ -4572,7 +4673,7 @@ impl Client {
     /// Returns stable profile error IDs with `NotSent` for selection or
     /// outbound-rule failures, and preserves the exchange delivery state for
     /// response-rule failures.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles(
         &mut self,
         batch: ClientBatch,
@@ -4590,7 +4691,7 @@ impl Client {
     /// Returns the same profile, protocol, and transport failures as
     /// [`Self::execute_with_profiles`], preserving the strongest delivery
     /// evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_options(
         &mut self,
         batch: ClientBatch,
@@ -4618,7 +4719,7 @@ impl Client {
     ///
     /// Returns profile, protocol, or transport errors. Caller-state failures
     /// occur before transport I/O and redact object identifiers and values.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_context(
         &mut self,
         batch: ClientBatch,
@@ -4642,7 +4743,7 @@ impl Client {
     ///
     /// Returns the same failures as
     /// [`Self::execute_with_profiles_and_context`], preserving delivery state.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_with_profiles_and_context_and_options(
         &mut self,
         batch: ClientBatch,
@@ -4689,7 +4790,10 @@ impl Client {
                     ClientError::profile_validation(error, RequestDeliveryState::NotSent)
                 })?;
         }
-        let options = validate_batch(&batch).map_err(|error| {
+        let effective_version =
+            resolve_and_gate_version(&self.configuration, request_options, &batch)?;
+
+        let options = validate_batch(&batch, effective_version).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
                 RequestDeliveryState::NotSent,
@@ -4806,7 +4910,7 @@ impl Client {
     /// operation, missing or mismatched identifier, invalid cost, or cost
     /// above the locally available allocation. Otherwise returns the standard
     /// execution error with the strongest available delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_guarded_protection(
         &mut self,
         context: &mut UsageAllocationContext,
@@ -4830,7 +4934,7 @@ impl Client {
     /// operation, missing or mismatched identifier, invalid cost, or cost
     /// above the locally available allocation. Otherwise returns the standard
     /// execution error with the strongest available delivery evidence.
-    #[allow(clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
     pub fn execute_guarded_protection_with_asynchronous_indicator(
         &mut self,
         context: &mut UsageAllocationContext,
@@ -5743,6 +5847,40 @@ impl Client {
         take_single_response(response)
     }
 
+    /// Executes one Set Endpoint Role request (§6.1.54) with one exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_endpoint_role(
+        &mut self,
+        request: SetEndpointRoleRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.set_endpoint_role_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one Set Endpoint Role request (§6.1.54) with per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn set_endpoint_role_with_options(
+        &mut self,
+        request: SetEndpointRoleRequest,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let response = self.execute_with_options(
+            ClientBatch::new(ClientBatchItem::set_endpoint_role(request)),
+            limits,
+            request_options,
+        )?;
+        take_single_response(response)
+    }
+
     /// Executes one Derive Key request with caller-selected derivation inputs.
     ///
     /// The request travels through one server exchange. `KMIPKit` does not
@@ -6615,9 +6753,27 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientOperationOutcome, ClientError> {
-        let request_message =
-            build_async_request_message(operation, payload, asynchronous_indicator)
-                .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let effective_version = request_options
+            .protocol_version()
+            .unwrap_or_else(|| self.configuration.protocol_version());
+
+        kmipkit_protocol::VersionGate::validate_operation(effective_version, operation).map_err(
+            |error| {
+                ClientError::validation(
+                    ClientCauseCategory::InvalidInput,
+                    RequestDeliveryState::NotSent,
+                    error,
+                )
+            },
+        )?;
+
+        let request_message = build_async_request_message(
+            operation,
+            payload,
+            asynchronous_indicator,
+            effective_version,
+        )
+        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
         let (response, delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
         validate_async_response(
@@ -6628,6 +6784,7 @@ impl Client {
             expected_cancel_correlation,
             self.configuration.extension_registry(),
             limits,
+            effective_version,
         )
         .map_err(|error| protocol_failure_at(error, delivery_state))
     }
@@ -6837,13 +6994,49 @@ impl fmt::Display for BatchValidationError {
 
 impl Error for BatchValidationError {}
 
+fn resolve_and_gate_version(
+    configuration: &ClientConfiguration,
+    request_options: &RequestOptions,
+    batch: &ClientBatch,
+) -> Result<ProtocolVersion, ClientError> {
+    let effective_version = request_options
+        .protocol_version()
+        .or_else(|| batch.protocol_version())
+        .unwrap_or_else(|| configuration.protocol_version());
+
+    if !effective_version.is_catalogued() {
+        return Err(ClientError::validation(
+            ClientCauseCategory::InvalidInput,
+            RequestDeliveryState::NotSent,
+            kmipkit_protocol::VersionGateError::UnsupportedProtocolVersion(effective_version),
+        ));
+    }
+
+    for item in &batch.items {
+        kmipkit_protocol::VersionGate::validate_operation(
+            effective_version,
+            item.request.operation(),
+        )
+        .map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+    }
+
+    Ok(effective_version)
+}
+
 pub(super) fn validate_batch(
     batch: &ClientBatch,
+    effective_version: ProtocolVersion,
 ) -> Result<ValidatedBatchOptions, BatchValidationError> {
     if batch.items.is_empty() {
         return Err(BatchValidationError::EmptyBatch);
     }
-    let options = validate_batch_options(batch)?;
+    let options = validate_batch_options(batch, effective_version)?;
 
     let mut identifiers = HashSet::new();
     for item in &batch.items {
@@ -7011,6 +7204,7 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::SignatureVerify(_)
         | ClientRequest::RngRetrieve(_)
         | ClientRequest::RngSeed(_)
+        | ClientRequest::SetEndpointRole(_)
         | ClientRequest::Pkcs11(_) => false,
     }
 }
@@ -7087,10 +7281,12 @@ fn vendor_attribute_item_is_prohibited(item: &Item, mutation: ClientAttributeMut
 pub(super) struct ValidatedBatchOptions {
     asynchronous_indicator: Option<u32>,
     batch_error_continuation: BatchErrorContinuation,
+    protocol_version: ProtocolVersion,
 }
 
 fn validate_batch_options(
     batch: &ClientBatch,
+    effective_version: ProtocolVersion,
 ) -> Result<ValidatedBatchOptions, BatchValidationError> {
     let asynchronous_indicator = validate_asynchronous_indicator(batch.asynchronous_indicator)
         .map_err(|()| BatchValidationError::InvalidAsynchronousIndicator)?;
@@ -7101,6 +7297,7 @@ fn validate_batch_options(
     Ok(ValidatedBatchOptions {
         asynchronous_indicator,
         batch_error_continuation,
+        protocol_version: effective_version,
     })
 }
 
@@ -7215,12 +7412,12 @@ fn build_request_header(
     push(
         &mut version_fields,
         PROTOCOL_VERSION_MAJOR,
-        Value::integer(2),
+        Value::integer(options.protocol_version.major()),
     )?;
     push(
         &mut version_fields,
         PROTOCOL_VERSION_MINOR,
-        Value::integer(1),
+        Value::integer(options.protocol_version.minor()),
     )?;
 
     let mut header = Structure::new();
@@ -7347,10 +7544,17 @@ fn build_async_request_message(
     operation: u32,
     payload: Structure,
     asynchronous_indicator: Option<u32>,
+    protocol_version: ProtocolVersion,
 ) -> Result<RequestMessage, ProtocolError> {
     let version_fields = structure([
-        (PROTOCOL_VERSION_MAJOR, Value::integer(2)),
-        (PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        (
+            PROTOCOL_VERSION_MAJOR,
+            Value::integer(protocol_version.major()),
+        ),
+        (
+            PROTOCOL_VERSION_MINOR,
+            Value::integer(protocol_version.minor()),
+        ),
     ])?;
     let mut header = Structure::new();
     push(
@@ -7420,7 +7624,7 @@ fn model_protocol_error(error: ModelError) -> ProtocolError {
 }
 
 pub(super) fn protocol_version_is_supported(version: ProtocolVersion) -> bool {
-    version.major() == 2 && version.minor() == 1
+    version.is_catalogued()
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -7566,7 +7770,7 @@ pub(super) fn validate_unknown_extension(critical: bool) -> Result<(), OutcomeVa
 
 // Consuming the validated response makes this the single lifetime boundary
 // for the owned, decoded response tree on both success and error paths.
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_response(
     request_identities: &[BatchIdentity],
     options: &ValidatedBatchOptions,
@@ -7603,7 +7807,8 @@ fn validate_response_inner(
     limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<ClientBatchResponse, ProtocolError> {
-    if !protocol_version_is_supported(response.header().protocol_version()) {
+    let resp_ver = response.header().protocol_version();
+    if !protocol_version_is_supported(resp_ver) || resp_ver != options.protocol_version {
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
 
@@ -7653,6 +7858,7 @@ fn validate_response_inner(
     Ok(ClientBatchResponse { items: ordered })
 }
 
+#[allow(clippy::too_many_lines)]
 fn response_outcome(
     operation: u32,
     item: ResponseBatchItemView<'_>,
@@ -7710,6 +7916,14 @@ fn response_outcome(
             QueryResponse::result,
             PendingResponse::Query,
             ClientBatchOutcome::Query,
+        ),
+        SET_ENDPOINT_ROLE_OPERATION => read_operation_outcome(
+            ClientOperation::SetEndpointRole,
+            item,
+            SetEndpointRoleResponse::try_from_response_item,
+            SetEndpointRoleResponse::result,
+            PendingResponse::SetEndpointRole,
+            ClientBatchOutcome::SetEndpointRole,
         ),
         PKCS11_OPERATION => pkcs11_response_outcome(item),
         PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {
@@ -8459,7 +8673,7 @@ fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
         })
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_async_response(
     response: ResponseMessage,
     operation: u32,
@@ -8468,8 +8682,10 @@ fn validate_async_response(
     expected_cancel_correlation: Option<&[u8]>,
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
+    expected_version: ProtocolVersion,
 ) -> Result<ClientOperationOutcome, ProtocolError> {
-    if !protocol_version_is_supported(response.header().protocol_version()) {
+    let resp_ver = response.header().protocol_version();
+    if !protocol_version_is_supported(resp_ver) || resp_ver != expected_version {
         return Err(protocol_error(ProtocolErrorKind::UnsupportedValue));
     }
 
@@ -8911,7 +9127,8 @@ pub(super) fn decode_request_message_for_test(
     request: ClientBatch,
     limits: &CodecLimits,
 ) -> Result<RequestMessage, ProtocolError> {
-    let options = validate_batch_options(&request).map_err(|error| {
+    let effective_version = request.protocol_version().unwrap_or(ProtocolVersion::V2_1);
+    let options = validate_batch_options(&request, effective_version).map_err(|error| {
         ProtocolError::new(
             ProtocolErrorKind::InvalidValue,
             ProtocolCauseCategory::InvalidValue,

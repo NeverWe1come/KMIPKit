@@ -14,6 +14,7 @@ autotests = false
 aws-lc-rs.workspace = true
 bytes.workspace = true
 hyper.workspace = true
+kmipkit-protocol.workspace = true
 rustls.workspace = true
 rustls-native-certs.workspace = true
 tokio.workspace = true

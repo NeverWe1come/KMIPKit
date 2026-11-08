@@ -212,7 +212,10 @@ fn response(batch_items: Vec<CandidateBatchItem>) -> CandidateResponse {
 }
 
 fn version_header_acceptance_is_exact(case: CandidateProtocolVersion) -> bool {
-    candidate_accepts_header_version(case) == (case == CandidateProtocolVersion::new(2, 1))
+    candidate_accepts_header_version(case)
+        == (case == CandidateProtocolVersion::new(2, 0)
+            || case == CandidateProtocolVersion::new(2, 1)
+            || case == CandidateProtocolVersion::new(3, 0))
 }
 
 fn reordered_pair_associates_by_id(case: ReorderedBatchCase, batch_order_option: bool) -> bool {
@@ -255,7 +258,13 @@ fn response_header_acceptance_is_exactly_kmip_2_1_for_signed_integer_pairs() {
 #[test]
 fn response_header_accepts_kmip_2_1() {
     assert!(candidate_accepts_header_version(
+        CandidateProtocolVersion::new(2, 0)
+    ));
+    assert!(candidate_accepts_header_version(
         CandidateProtocolVersion::new(2, 1)
+    ));
+    assert!(candidate_accepts_header_version(
+        CandidateProtocolVersion::new(3, 0)
     ));
 }
 
