@@ -2169,21 +2169,29 @@ final class ClientFacadeTlsIntegrationTest {
                     assertTrue(containsByteString(getObject, 0x420043,
                             "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
                     assertFalse(getResponse.toString().contains("KMIPKit-get-response-sentinel"));
-                    try (TtlvItemView keyBlockItem = getObject.itemAt(0);
-                            Tag keyBlockTag = keyBlockItem.tag();
-                            TtlvValueView keyBlockValue = keyBlockItem.value();
-                            TtlvStructureView keyBlock = keyBlockValue.structure();
-                            TtlvItemView vendorExtensionItem = keyBlock.itemAt(2);
-                            Tag vendorExtensionTag = vendorExtensionItem.tag();
-                            TtlvValueView vendorExtensionValue = vendorExtensionItem.value();
-                            TtlvStructureView vendorExtension = vendorExtensionValue.structure();
-                            TtlvItemView nestedVendorItem = vendorExtension.itemAt(0);
-                            Tag nestedVendorTag = nestedVendorItem.tag();
-                            TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
-                        assertEquals(0x420040, keyBlockTag.raw());
-                        assertEquals(0x540001, vendorExtensionTag.raw());
-                        assertEquals(0x540002, nestedVendorTag.raw());
-                        assertEquals(0x1234, nestedVendorValue.integer());
+                    try (TtlvItemView anyObjectItem = getObject.itemAt(0);
+                            Tag anyObjectTag = anyObjectItem.tag();
+                            TtlvValueView anyObjectValue = anyObjectItem.value();
+                            TtlvStructureView managedObject = anyObjectValue.structure()) {
+                        assertEquals(0x42008f, anyObjectTag.raw());
+                        assertTagOrder(managedObject, 0x420040);
+                        try (TtlvItemView keyBlockItem = managedObject.itemAt(0);
+                                Tag keyBlockTag = keyBlockItem.tag();
+                                TtlvValueView keyBlockValue = keyBlockItem.value();
+                                TtlvStructureView keyBlock = keyBlockValue.structure();
+                                TtlvItemView vendorExtensionItem = keyBlock.itemAt(2);
+                                Tag vendorExtensionTag = vendorExtensionItem.tag();
+                                TtlvValueView vendorExtensionValue = vendorExtensionItem.value();
+                                TtlvStructureView vendorExtension = vendorExtensionValue.structure();
+                                TtlvItemView nestedVendorItem = vendorExtension.itemAt(0);
+                                Tag nestedVendorTag = nestedVendorItem.tag();
+                                TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                            assertEquals(0x420040, keyBlockTag.raw());
+                            assertTagOrder(keyBlock, 0x420042, 0x420045, 0x540001);
+                            assertEquals(0x540001, vendorExtensionTag.raw());
+                            assertEquals(0x540002, nestedVendorTag.raw());
+                            assertEquals(0x1234, nestedVendorValue.integer());
+                        }
                     }
                     assertFalse(getResponse.toString().contains("get-response-secret-id"));
                 }
