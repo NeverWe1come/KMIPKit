@@ -24,6 +24,23 @@ const SUCCESS: u32 = 0;
 pub struct ObjectType(u32);
 
 impl ObjectType {
+    /// KMIP 3.0 User system object (§5.1).
+    pub const USER: Self = Self(0x0000_000B);
+    /// KMIP 3.0 Group system object (§5.1).
+    pub const GROUP: Self = Self(0x0000_000C);
+    /// KMIP 3.0 Credential system object (§5.1).
+    pub const CREDENTIAL: Self = Self(0x0000_000D);
+
+    /// KMIP 3.0 User system object alias.
+    #[allow(non_upper_case_globals)]
+    pub const User: Self = Self::USER;
+    /// KMIP 3.0 Group system object alias.
+    #[allow(non_upper_case_globals)]
+    pub const Group: Self = Self::GROUP;
+    /// KMIP 3.0 Credential system object alias.
+    #[allow(non_upper_case_globals)]
+    pub const Credential: Self = Self::CREDENTIAL;
+
     /// Creates an Object Type from its raw unsigned Enumeration value.
     #[must_use]
     pub const fn from_raw(raw: u32) -> Self {
@@ -33,6 +50,12 @@ impl ObjectType {
     /// Returns the exact raw unsigned Enumeration value.
     #[must_use]
     pub const fn raw(self) -> u32 {
+        self.0
+    }
+
+    /// Returns the exact raw unsigned Enumeration value (alias for [`Self::raw`]).
+    #[must_use]
+    pub const fn to_raw(self) -> u32 {
         self.0
     }
 }

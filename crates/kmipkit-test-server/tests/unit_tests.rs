@@ -418,7 +418,8 @@ fn v1_compat_full_roundtrip() {
     assert!(is_version_supported(1, 4));
     assert!(is_version_supported(2, 0));
     assert!(is_version_supported(2, 1));
-    assert!(!is_version_supported(3, 0));
+    assert!(is_version_supported(3, 0));
+    assert!(!is_version_supported(4, 0));
 
     // Convert v2 attributes of each type into v1
     let int_item = ttlv_item(TAG_CRYPTOGRAPHIC_LENGTH, Value::integer(256));
@@ -991,6 +992,72 @@ fn dispatcher_all_operations_and_error_handling() {
     let rng_resp = dispatcher.dispatch(&make_req(2, 1, rng_item)).unwrap();
     assert!(extract_payload_child(&rng_resp, TAG_DATA).is_some());
 
+    // Deactivate
+    let mut deact_item = Structure::new();
+    let _ = deact_item.try_push(ttlv_item(
+        TAG_OPERATION,
+        Value::enumeration(DEACTIVATE_OPERATION),
+    ));
+    let mut deact_payload = Structure::new();
+    let _ = deact_payload.try_push(ttlv_item(
+        TAG_UNIQUE_IDENTIFIER,
+        Value::text_string(sym_id.clone()),
+    ));
+    let _ = deact_item.try_push(ttlv_item(
+        TAG_REQUEST_PAYLOAD,
+        Value::structure(deact_payload),
+    ));
+    let deact_resp = dispatcher.dispatch(&make_req(3, 0, deact_item)).unwrap();
+    assert_eq!(
+        extract_text_field(&deact_resp, TAG_UNIQUE_IDENTIFIER).unwrap(),
+        sym_id
+    );
+
+    // Encapsulate
+    let mut encap_item = Structure::new();
+    let _ = encap_item.try_push(ttlv_item(
+        TAG_OPERATION,
+        Value::enumeration(ENCAPSULATE_OPERATION),
+    ));
+    let mut encap_payload = Structure::new();
+    let _ = encap_payload.try_push(ttlv_item(
+        TAG_UNIQUE_IDENTIFIER,
+        Value::text_string(sym_id.clone()),
+    ));
+    let _ = encap_item.try_push(ttlv_item(
+        TAG_REQUEST_PAYLOAD,
+        Value::structure(encap_payload),
+    ));
+    let encap_resp = dispatcher.dispatch(&make_req(3, 0, encap_item)).unwrap();
+    assert_eq!(
+        extract_text_field(&encap_resp, TAG_UNIQUE_IDENTIFIER).unwrap(),
+        sym_id
+    );
+    assert!(extract_payload_child(&encap_resp, TAG_DATA).is_some());
+    assert!(extract_payload_child(&encap_resp, TAG_KEY_MATERIAL).is_some());
+
+    // Decapsulate
+    let mut decap_item = Structure::new();
+    let _ = decap_item.try_push(ttlv_item(
+        TAG_OPERATION,
+        Value::enumeration(DECAPSULATE_OPERATION),
+    ));
+    let mut decap_payload = Structure::new();
+    let _ = decap_payload.try_push(ttlv_item(
+        TAG_UNIQUE_IDENTIFIER,
+        Value::text_string(sym_id.clone()),
+    ));
+    let _ = decap_item.try_push(ttlv_item(
+        TAG_REQUEST_PAYLOAD,
+        Value::structure(decap_payload),
+    ));
+    let decap_resp = dispatcher.dispatch(&make_req(3, 0, decap_item)).unwrap();
+    assert_eq!(
+        extract_text_field(&decap_resp, TAG_UNIQUE_IDENTIFIER).unwrap(),
+        sym_id
+    );
+    assert!(extract_payload_child(&decap_resp, TAG_KEY_MATERIAL).is_some());
+
     // 9. Error paths: ItemNotFound
     let mut not_found_item = Structure::new();
     let _ = not_found_item.try_push(ttlv_item(TAG_OPERATION, Value::enumeration(GET_OPERATION)));
@@ -1014,6 +1081,31 @@ fn dispatcher_all_operations_and_error_handling() {
             assert_eq!(*e, STATUS_OPERATION_FAILED);
         }
     });
+
+    // Error paths: Deactivate / Encapsulate / Decapsulate with non-existent ID
+    for op in [
+        DEACTIVATE_OPERATION,
+        ENCAPSULATE_OPERATION,
+        DECAPSULATE_OPERATION,
+    ] {
+        let mut op_item = Structure::new();
+        let _ = op_item.try_push(ttlv_item(TAG_OPERATION, Value::enumeration(op)));
+        let mut op_payload = Structure::new();
+        let _ = op_payload.try_push(ttlv_item(
+            TAG_UNIQUE_IDENTIFIER,
+            Value::text_string("non-existent-id".into()),
+        ));
+        let _ = op_item.try_push(ttlv_item(TAG_REQUEST_PAYLOAD, Value::structure(op_payload)));
+
+        let resp = dispatcher.dispatch(&make_req(3, 0, op_item)).unwrap();
+        let batch_res = extract_child(&resp, TAG_BATCH_ITEM).unwrap();
+        let result_status = extract_child(&batch_res, TAG_RESULT_STATUS).unwrap();
+        result_status.with_value(|v| {
+            if let ValueView::Enumeration(e) = v {
+                assert_eq!(*e, STATUS_OPERATION_FAILED);
+            }
+        });
+    }
 
     // 10. Unsupported operation
     let mut unsupported_item = Structure::new();

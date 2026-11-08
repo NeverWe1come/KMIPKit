@@ -17,6 +17,8 @@ PROJECT_INVENTORY_PATHS = {
     "specification/oasis/kmip-2.1/README.md",
     "specification/oasis/kmip-2.1/SOURCES.md",
 }
+APPROVED_VERSIONS = {"kmip-2.0", "kmip-2.1", "kmip-3.0"}
+APPROVED_VERSION_DOCS = {"README.md", "SOURCES.md", "CHECKSUMS.sha256"}
 
 
 class ImmutableSourceError(ValueError):
@@ -84,23 +86,60 @@ def _base_inventory_paths(root: Path, base_sha: str) -> set[str]:
     return {os.fsdecode(path) for path in output.split(b"\0") if path}
 
 
+def _base_upstream_paths(root: Path, base_sha: str) -> set[str]:
+    """Return upstream paths already present in the exact base commit."""
+    output = _git(
+        root,
+        "ls-tree",
+        "--full-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        base_sha,
+        "--",
+        OASIS_ROOT,
+    )
+    return {
+        os.fsdecode(path)
+        for path in output.split(b"\0")
+        if path and "/upstream/" in os.fsdecode(path)
+    }
+
+
 def _is_permitted_change(
     path: str,
     statuses: set[str],
     existing_fixture_paths: set[str],
     existing_inventory_paths: set[str],
+    existing_upstream_paths: set[str],
 ) -> bool:
-    """Allow only edits to tracked inventories and additions of new fixtures."""
-    if path.startswith(UPSTREAM_ROOT):
+    """Allow edits to tracked inventories, additions of new fixtures, and new version trees."""
+    parts = Path(path).as_posix().split("/")
+    if len(parts) < 3 or parts[0] != "specification" or parts[1] != "oasis":
         return False
-    if path in PROJECT_INVENTORY_PATHS:
-        return path in existing_inventory_paths and statuses == {"M"}
-    if path.startswith(FIXTURE_ROOT):
+    version = parts[2]
+    if version not in APPROVED_VERSIONS:
+        return False
+
+    if len(parts) >= 4 and parts[3] == "upstream":
+        if path in existing_upstream_paths:
+            return False  # Upstream cannot be modified once pinned
+        return statuses <= {"A"}  # New upstream additions are permitted
+
+    if len(parts) >= 4 and parts[3] == "fixtures":
         return (
             path not in existing_fixture_paths
             and "A" in statuses
             and statuses <= {"A", "M"}
         )
+
+    if len(parts) == 4 and parts[3] in APPROVED_VERSION_DOCS:
+        if version == "kmip-2.1":
+            return path in existing_inventory_paths and statuses == {"M"}
+        if path in existing_inventory_paths:
+            return statuses == {"M"}
+        return statuses <= {"A"}
+
     return False
 
 
@@ -142,12 +181,16 @@ def _untracked_fixture_count(root: Path) -> tuple[bool, int]:
             paths = (remainder + chunk).split(b"\0")
             remainder = paths.pop()
             for path in paths:
-                if path and not os.fsdecode(path).startswith(FIXTURE_ROOT):
+                if not path:
+                    continue
+                decoded = os.fsdecode(path)
+                parts = decoded.split("/")
+                if len(parts) >= 4 and parts[2] in APPROVED_VERSIONS and parts[3] == "fixtures":
+                    fixture_count += 1
+                else:
                     process.kill()
                     process.wait()
                     return True, fixture_count
-                if path:
-                    fixture_count += 1
         return_code = process.wait()
     except OSError as error:
         process.kill()
@@ -180,6 +223,7 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
         changed_statuses.setdefault(path, set()).update(statuses)
     existing_fixture_paths = _base_fixture_paths(root, base_sha)
     existing_inventory_paths = _base_inventory_paths(root, base_sha)
+    existing_upstream_paths = _base_upstream_paths(root, base_sha)
     unsupported_paths = {
         path
         for path, statuses in changed_statuses.items()
@@ -188,12 +232,13 @@ def check_immutable_sources(repo_root: Path, base_sha: str) -> dict[str, object]
             statuses,
             existing_fixture_paths,
             existing_inventory_paths,
+            existing_upstream_paths,
         )
     }
     has_unsupported_untracked, untracked_fixture_count = _untracked_fixture_count(root)
     if unsupported_paths or has_unsupported_untracked:
         raise ImmutableSourceError(
-            "only project OASIS README/SOURCES edits and new KMIP 2.1 fixture additions are permitted"
+            "only project OASIS README/SOURCES edits, approved version additions, and fixtures are permitted"
         )
     return {
         "base_sha": base_sha,
