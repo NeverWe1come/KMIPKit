@@ -317679,7 +317679,7 @@
       "section": "6.1.4"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
@@ -317939,7 +317939,7 @@
       "section": "6.1.7"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Accepted for implementation.",
         "kind": "feature-specification",
@@ -318030,7 +318030,7 @@
       "section": "6.1.8"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Accepted for implementation.",
         "kind": "feature-specification",
@@ -318129,7 +318129,7 @@
       "section": "6.1.9"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Accepted for implementation.",
         "kind": "feature-specification",
@@ -318599,6 +318599,7 @@
         "state": "approved"
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/operation_parity_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
         "bindings/python/tests/test_derive_key_operation.py",
@@ -319448,7 +319449,7 @@
       "section": "6.1.23"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
@@ -320209,7 +320210,7 @@
       "section": "6.1.31"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
@@ -320286,7 +320287,7 @@
       "section": "6.1.32"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
@@ -320728,7 +320729,7 @@
       "section": "6.1.37"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
@@ -320772,7 +320773,7 @@
       "section": "6.1.38"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
@@ -320864,7 +320865,7 @@
       "section": "6.1.40"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
@@ -322283,7 +322284,7 @@
       "section": "6.1.53"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
@@ -322361,7 +322362,7 @@
       "section": "6.1.55"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",

@@ -498,7 +498,7 @@ jobs:
       - name: Build the C consumer and example
         id: build-the-c-consumer-and-example
         run: |
-          cargo build --locked -p kmipkit-ffi
+          cargo build --locked -p kmipkit-ffi --features coverage-c-consumer
 
       - name: Audit the built C ABI export allowlist
         id: audit-the-built-c-abi-export-allowlist

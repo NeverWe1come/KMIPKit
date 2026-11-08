@@ -157,7 +157,7 @@ BLOCKED_AFTER = 221
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 DECLARATIONS_SHA256 = "5e754caa5bc9c47f7aecf1e2a7157e720e66d01ee62aab94fbafcc95f20adcdc"
-OPERATIONS_SHA256 = "bad8067fd1898d957d5f3bc877faa0fd56b24194e2fdc1177dbdb3d5a8243f5f"
+OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
 def canonical_sha256(value: object) -> str:

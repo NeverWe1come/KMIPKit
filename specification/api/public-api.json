@@ -951605,7 +951605,7 @@
       "name": "Cancel",
       "section": "6.1.5",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0009"
@@ -951865,7 +951865,7 @@
       "name": "Create",
       "section": "6.1.8",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0014"
@@ -951956,7 +951956,7 @@
       "name": "Create Key Pair",
       "section": "6.1.9",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0014"
@@ -952055,7 +952055,7 @@
       "name": "Create Split Key",
       "section": "6.1.10",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0014"
@@ -952523,6 +952523,7 @@
         ]
       },
       "parityEvidenceIds": [
+        "bindings/c/tests/operation_parity_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
         "bindings/python/tests/test_derive_key_operation.py",
@@ -953374,7 +953375,7 @@
       "name": "Hash",
       "section": "6.1.24",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0021"
@@ -954135,7 +954136,7 @@
       "name": "MAC",
       "section": "6.1.32",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0021"
@@ -954212,7 +954213,7 @@
       "name": "MAC Verify",
       "section": "6.1.33",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0021"
@@ -954654,7 +954655,7 @@
       "name": "Poll",
       "section": "6.1.38",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0009"
@@ -954698,7 +954699,7 @@
       "name": "Process",
       "section": "6.1.39",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0009"
@@ -954790,7 +954791,7 @@
       "name": "Query Asynchronous Requests",
       "section": "6.1.41",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0009"
@@ -956209,7 +956210,7 @@
       "name": "Sign",
       "section": "6.1.55",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0021"
@@ -956287,7 +956288,7 @@
       "name": "Signature Verify",
       "section": "6.1.56",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0021"
