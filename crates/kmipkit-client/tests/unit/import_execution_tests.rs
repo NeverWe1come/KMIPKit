@@ -2,8 +2,8 @@
 
 use kmipkit_protocol::{
     AttributeSet, EncryptionKeyInformation, ImportRequest, KeyBlock, KeyBlockValue, KeyFormatType,
-    KeyWrapType, KeyWrappingData, ManagedObject, ObjectType, ResultReason, SymmetricKey,
-    UniqueIdentifier,
+    KeyWrapType, KeyWrappingData, ManagedObject, ObjectType, ResultReason, SecretBytes,
+    SymmetricKey, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -86,9 +86,9 @@ fn request() -> ImportRequest {
 fn typed_wrapped_symmetric_key_import_uses_direct_object_tag_on_fake_transport() {
     let key_block = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("valid Key Format Type")
-        .with_key_value(KeyBlockValue::Wrapped(
+        .with_key_value(KeyBlockValue::Wrapped(SecretBytes::new(
             b"typed-wrapped-import-object".to_vec(),
-        ))
+        )))
         .with_key_wrapping_data(
             KeyWrappingData::try_new(1)
                 .expect("assigned Wrapping Method")

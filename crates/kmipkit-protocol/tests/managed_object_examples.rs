@@ -2,7 +2,8 @@
 
 use kmipkit_protocol::{
     AttributeSet, EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyFormatType, KeyMaterial,
-    KeyValue, KeyWrappingData, ManagedObject, ObjectType, SymmetricKey, TransparentSymmetricKey,
+    KeyValue, KeyWrappingData, ManagedObject, ObjectType, SecretBytes, SymmetricKey,
+    TransparentSymmetricKey,
 };
 
 #[test]
@@ -31,7 +32,7 @@ fn wrapped_object_keeps_wrapping_metadata_and_uses_byte_string() {
         );
     let key_block = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("Raw Key Format Type")
-        .with_key_value(KeyBlockValue::Wrapped(vec![0xB1, 0xB2]))
+        .with_key_value(KeyBlockValue::Wrapped(SecretBytes::new(vec![0xB1, 0xB2])))
         .with_key_wrapping_data(wrapping);
     assert_eq!(
         key_block.key_value_type(),

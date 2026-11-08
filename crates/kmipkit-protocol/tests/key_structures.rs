@@ -80,6 +80,15 @@ fn plaintext_and_wrapped_key_values_have_distinct_ttlv_types() {
     };
     assert_eq!(key_value_type(&plaintext_block), Some(ItemType::Structure));
     assert_eq!(key_value_type(&wrapped_block), Some(ItemType::ByteString));
+    assert!(wrapped_block.with_value(|value| match value {
+        ValueView::Structure(block) => block.children().iter().any(|field| {
+            field.tag().raw() == 0x0042_0045
+                && field.with_value(
+                    |value| matches!(value, ValueView::ByteString(bytes) if bytes == [3, 4]),
+                )
+        }),
+        _ => false,
+    }));
 }
 
 #[test]
@@ -95,7 +104,7 @@ fn key_block_rejects_unpaired_algorithm_and_length() {
 fn wrapped_key_value_requires_key_wrapping_data() {
     let item = KeyBlock::try_new(KeyFormatType::from_raw(1))
         .expect("valid format")
-        .with_key_value(KeyBlockValue::Wrapped(vec![3, 4]))
+        .with_key_value(KeyBlockValue::Wrapped(SecretBytes::new(vec![3, 4])))
         .try_into_item();
     assert!(item.is_err());
 }

@@ -36,7 +36,7 @@
 
 ### Green — minimum implementation
 
-- [x] T010 [US2] Implement typed Key Block and plaintext/wrapped Key Value construction and borrowed inspection in `crates/kmipkit-protocol/src/key_block.rs`.
+- [x] T010 [US2] Implement typed Key Block and plaintext/wrapped Key Value construction and borrowed inspection in `crates/kmipkit-protocol/src/key_block.rs`; own wrapped bytes through `SecretBytes` from construction so dropping a standalone value zeroizes its payload before builder transfer.
 - [x] T011 [US2] Implement open Key Material format handling, raw/opaque/PKCS and extension fallbacks, and typed material Structure conversion in `crates/kmipkit-protocol/src/key_material.rs`.
 - [x] T012 [US2] Implement named types for Transparent Symmetric, DSA Private/Public, RSA Private/Public, DH Private/Public, and EC Private/Public Key Structures, including each source-defined field type and RSA private-key alternatives, in `crates/kmipkit-protocol/src/key_material.rs`.
 - [x] T013 [US2] Implement typed Key Wrapping Data and its child Structures in `crates/kmipkit-protocol/src/key_wrapping.rs`.
