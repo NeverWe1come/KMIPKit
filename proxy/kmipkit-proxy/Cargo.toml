@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "kmipkit-proxy"
 version = "1.0.0"
@@ -8,6 +10,7 @@ description = "Zero-DB Stateless Cloud KMS Bridge for KMIP 2.0, 2.1, and 3.0"
 readme = "README.md"
 keywords = ["kmip", "kms", "cloud", "security", "encryption"]
 categories = ["cryptography", "network-programming"]
+publish = false
 
 [[bin]]
 name = "kmipkit-proxy"
@@ -45,9 +48,12 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.43", features = ["full"] }
 tokio-rustls = { version = "=0.26.6", default-features = false, features = ["aws_lc_rs"] }
+toml = "0.8"
 zeroize = { version = "1.8", features = ["derive"] }
 
 [dev-dependencies]
 kmipkit-client = { path = "../../crates/kmipkit-client" }
 tempfile = "3.16"
-toml = "0.8"
+
+[patch.crates-io]
+aws-lc-sys = { path = "../../vendor/aws-lc-sys-0.45.0" }
