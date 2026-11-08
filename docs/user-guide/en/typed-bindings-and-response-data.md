@@ -145,6 +145,6 @@ not contact a KMIP server. The complete sources are [Rust](../../../tests/consum
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java),
 and [Python](../../../tests/consumers/0053-parity/python/main.py).
-The examples exercise generic response TTLV access and do not claim complete
-typed-reader parity: foreign response readers that check operation identity
-for Cancel, Poll, Process, and Query Async remain open in [task T078](../../../specs/053-api-parity-facade/tasks.md).
+The examples exercise generic response TTLV access. C, Java, and Python also
+expose typed readers that check operation identity for Cancel, Poll, Process,
+and Query Async; their parity tests are recorded in [task T078](../../../specs/053-api-parity-facade/tasks.md).

@@ -146,7 +146,7 @@ completos de [Rust](../../../tests/consumers/0053-parity/rust/src/main.rs),
 [C](../../../tests/consumers/0053-parity/c/main.c),
 [Java](../../../tests/consumers/0053-parity/java/src/main/java/Consumer.java)
 y [Python](../../../tests/consumers/0053-parity/python/main.py).
-Los ejemplos acceden al TTLV genérico de la respuesta y no afirman paridad
-completa de lectores tipados: siguen pendientes los lectores extranjeros que
-comprueban la identidad de operación para Cancel, Poll, Process y Query Async
-en la [tarea T078](../../../specs/053-api-parity-facade/tasks.md).
+Los ejemplos acceden al TTLV genérico de la respuesta. C, Java y Python también
+exponen lectores tipados con comprobación de identidad de operación para
+Cancel, Poll, Process y Query Async; las pruebas de paridad asociadas están
+registradas en la [tarea T078](../../../specs/053-api-parity-facade/tasks.md).

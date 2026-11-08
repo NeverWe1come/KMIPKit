@@ -170,6 +170,14 @@ Verification passed: `cargo test -p kmipkit-protocol --test key_material --test 
 - Java's 56-operation matrix now points to `cancelResponse`, `pollResponse`, `processResponse`, and `queryAsyncRequestsResponse` instead of `metadataV1`. The existing TLS 1.3/mTLS integration verifies each operation identity, its typed fields, generic raw payload, and cross-operation absence. The compiled C consumer checks all four operation identities and typed response fields; Python verifies typed views, fields, raw payload, and mismatched-operation absence.
 - Green verification passed: manifest contract and reconciliation tests (52); Python asynchronous mapping tests (30); Java `OperationFacadeParityMatrixTest` and `ClientFacadeTlsIntegrationTest`; C/FFI asynchronous ABI tests (11); `cargo +1.94 fmt --all --check`; `cargo +1.94 clippy -p kmipkit-ffi --features coverage-c-consumer --all-targets -- -D warnings`; and `python -B tools/api_manifest/generate.py --check` (12 outputs). AWS-LC stdalign/NASM diagnostics are non-fatal Windows toolchain notices.
 
+## Python package export and guide status correction (2026-11-08)
+
+- Red `bcbfd2ac5` adds a public-package regression that failed because `kmipkit.managed_objects` was not listed in `kmipkit.__all__`, even though the module and its typed APIs were implemented.
+- Green `a07d8a0d6` reexports `managed_objects` from the package root and adds it to `__all__`. `uv run --python 3.12 --project bindings/python --with pytest pytest -q bindings/python/tests/test_generated_api_manifest.py` passed all 3 tests.
+- Using the pinned Python coverage requirements and freshly built Maturin package, `bindings/python/.venv/Scripts/python.exe -m pytest -q bindings/python/tests` passed 1,243 tests with 1 skipped.
+- Red `15abc3c62` adds a docs regression that fails while either language guide describes the completed T078 typed readers as pending. After the guide correction, all 4 tests in `tests/docs/test_0053_executable_consumer_examples.py` passed.
+- The English and Spanish typed-binding guides now report the completed C/Java/Python asynchronous readers from T078 accurately. T078 remains checked complete; the tests protect both the parity claim and the Python managed-object import path.
+
 ## T080 Exact inherited C ABI route reconciliation (2026-11-07)
 
 - Red `20e9358de` and Green `1856e3d80` remove only the exact C-only exclusions for `kmipkit_client_batch_item_response_metadata_v1` and `kmipkit_transport_config_create_v1`. The current release manifest contains each symbol once as a four-language function and has no matching C-only exclusion. The focused removal regression passed, the complete 0053 reconciliation tests passed (51), and the compiled C consumer build includes the public client API consumer.
