@@ -1120,9 +1120,6 @@ def main() -> int:
         result["rustKindCorrections"] = copy.deepcopy(
             rust_document.get("kindCorrections", [])
         )
-        result["rustKindCorrections"] = copy.deepcopy(
-            rust_document.get("kindCorrections", [])
-        )
         content = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         current = route_path.read_text(encoding="utf-8")
     except (OSError, json.JSONDecodeError, ResolutionError) as error:

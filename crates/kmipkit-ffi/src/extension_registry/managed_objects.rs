@@ -375,9 +375,18 @@ fn convert_typed_item(
 /// owns all output storage. For byte reads, a null buffer with zero capacity
 /// queries the required length; a short buffer is rejected without partial copy.
 /// The input Item remains caller-owned and the returned bytes are caller-owned.
+///
+/// # Safety
+///
+/// `item` must be null or a live Item handle created by `KMIPKit`. `out_present`
+/// must point to writable, properly aligned `u8` storage. Every other non-null
+/// output pointer must point to writable, properly aligned storage of its
+/// declared type, and output regions must not overlap. If `out_bytes` is
+/// non-null, it must cover `byte_capacity` writable bytes and must not overlap
+/// the input handle or any other output region.
 #[allow(clippy::too_many_arguments)]
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_managed_value_field_read(
+pub unsafe extern "C" fn kmipkit_managed_value_field_read(
     owner_kind: u32,
     context_raw: u32,
     item: *mut kmipkit_ttlv_item_t,
@@ -476,8 +485,15 @@ pub extern "C" fn kmipkit_managed_value_field_read(
 /// `owner_kind` and `context_raw` use the same values as
 /// `kmipkit_managed_value_field_read`. When the field is absent, `out_present` is zero and
 /// `out_item` is null. When present, the caller owns the copied Item and must release it.
+///
+/// # Safety
+///
+/// `item` must be null or a live Item handle created by `KMIPKit`. `out_present`
+/// and `out_item` must point to distinct, writable, properly aligned output
+/// storage of their declared types. Neither output region may overlap the input
+/// handle or another output region.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_managed_value_field_item_read(
+pub unsafe extern "C" fn kmipkit_managed_value_field_item_read(
     owner_kind: u32,
     context_raw: u32,
     item: *mut kmipkit_ttlv_item_t,
