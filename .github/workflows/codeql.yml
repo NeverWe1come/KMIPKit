@@ -50,6 +50,7 @@ jobs:
       - name: Build C/C++ FFI
         if: matrix.language == 'c-cpp'
         run: |
+          # The ABI consumer links a test-only helper guarded by this feature.
           cargo build --locked -p kmipkit-ffi --features coverage-c-consumer
           cmake -G Ninja -S bindings/c -B build/c-consumer
           cmake --build build/c-consumer --config Release
