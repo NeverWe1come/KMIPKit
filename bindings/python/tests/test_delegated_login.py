@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 from _test_support import install_ticket_native_response, no_response_extension_test_symbols
-from kmipkit import client, extensions, ttlv
+from kmipkit import _handles, client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit.errors import InvalidInputError
 
@@ -378,7 +378,12 @@ def test_batch_result_dispatches_delegated_login_to_typed_response(monkeypatch) 
         **no_response_extension_test_symbols(client.ffi),
     )
     monkeypatch.setattr(client, "lib", fake)
-    monkeypatch.setattr(client, "_wrap_owned_handle", lambda _kind, handle, *_owners: OwnedHandle(handle))
+    def wrap_owned_handle(wrapper, handle, *owners):
+        if wrapper is client.BatchResult:
+            return _handles._wrap_owned_handle(wrapper, handle, *owners)
+        return OwnedHandle(handle)
+
+    monkeypatch.setattr(client, "_wrap_owned_handle", wrap_owned_handle)
     monkeypatch.setattr(
         ttlv,
         "_structure_from_native_address",
