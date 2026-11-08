@@ -7841,21 +7841,21 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         }
         if (present > 1 || (present == 1 && response_ttlv == nullptr)
                 || (present == 0 && response_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: the Rust ABI writes the presence flag and handle as one validated result; no FFI hook can produce a mismatched pair.
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: the Rust ABI writes the presence flag and handle as one validated result; no FFI hook can produce a mismatched pair.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: the Rust ABI writes the presence flag and handle as one validated result; no FFI hook can produce a mismatched pair.
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
         if (fields == nullptr) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            return static_cast<jobjectArray>(nullptr);
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: JNI array allocation failure is controlled by the VM and has no deterministic test hook.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: JNI array allocation failure is controlled by the VM and has no deterministic test hook.
         }
         jlongArray response_ttlv_handle = make_long_array(
                 env, {to_java_handle(response_ttlv)});
         if (response_ttlv_handle == nullptr) {
-            env->DeleteLocalRef(fields);
-            kmipkit_ttlv_structure_release(response_ttlv);
-            return static_cast<jobjectArray>(nullptr);
+            env->DeleteLocalRef(fields); // COVERAGE-EXCLUDE: JNI array allocation failure is controlled by the VM and has no deterministic test hook.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: JNI array allocation failure is controlled by the VM and has no deterministic test hook.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: JNI array allocation failure is controlled by the VM and has no deterministic test hook.
         }
         jobjectArray result = make_object_array(env, {fields, response_ttlv_handle});
         if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
@@ -9565,9 +9565,9 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             return static_cast<jlong>(0);
         }
         if (present != 1 || header == nullptr) {
-            kmipkit_ttlv_structure_release(header);
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jlong>(0);
+            kmipkit_ttlv_structure_release(header); // COVERAGE-EXCLUDE: Response Header is required by the typed Rust response ABI and is validated before handle creation.
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: Response Header is required by the typed Rust response ABI and is validated before handle creation.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: Response Header is required by the typed Rust response ABI and is validated before handle creation.
         }
         return to_java_handle(header);
     });
@@ -11781,8 +11781,8 @@ jlongArray read_async_response_v1(
                                         && response.asynchronous_correlation_value.data == nullptr)))
                 || (response.has_response_payload == 0
                         && response.response_payload_member_count != 0)) {
-            throw_invalid_input(env);
-            return static_cast<jlongArray>(nullptr);
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: each typed Rust response reader initializes this ABI record from validated model state; no reader injection seam exists.
+            return static_cast<jlongArray>(nullptr); // COVERAGE-EXCLUDE: each typed Rust response reader initializes this ABI record from validated model state; no reader injection seam exists.
         }
         const std::vector<jlong> values = {
             response.abi_version, response.operation, response.result_status,
