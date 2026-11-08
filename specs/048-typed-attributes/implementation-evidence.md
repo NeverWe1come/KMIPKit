@@ -375,8 +375,9 @@ unrepresentable identifier forms before emitting a result.
   merges exact assignments into the supported-version allocation union,
   replaces range-derived LinkType mappings with the 14 explicit semantics,
   and rejects lossy identifier conversions and unknown children.
-- **Refactor:** this documentation and evidence update records the exact
-  source-derived conversion boundary; code and generated output are unchanged.
+- **Refactor:** `9c7dc5a15` records the exact source-derived conversion
+  boundary in the specifications, traceability, migration note, and evidence;
+  code and generated output are unchanged.
 
 Local verification on the Green code:
 
