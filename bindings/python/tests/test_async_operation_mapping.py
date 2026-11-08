@@ -594,12 +594,14 @@ def test_typed_correlation_span_is_copied_before_concurrent_close(monkeypatch) -
 
     def read_correlation() -> None:
         try:
-            assert outcome._with_typed_correlation_value(
+            read_succeeded = outcome._with_typed_correlation_value(
                 "kmipkit_client_async_operation_outcome_cancel_response_v1",
                 lambda view: callback_values.append(bytes(view)),
             )
         except Exception as error:
             failures.append(error)
+        else:
+            outcome_reads.append(read_succeeded)
 
     def close_outcome() -> None:
         outcome.close()
