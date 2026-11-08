@@ -77,7 +77,7 @@ description: "Dependency-ordered KMIPKIT-0051 implementation tasks"
 
 **Purpose**: Close traceability, docs, source audit, and applicable quality checks.
 
-- [x] T032 Complete `specs/051-pre-send-validation/gap-matrix.md` with each audited field rule and its stable ID, implementation path, and executable test; complete 100% field-rule and functional-requirement mappings in `specs/051-pre-send-validation/traceability.md`. All R001–R189 rows link the descriptor-driven contract test and their operation/model evidence; R190–R284 link the condition-specific or nested-schema validators and tests; FR and project-policy rows are mapped.
+- [x] T032 Complete `specs/051-pre-send-validation/gap-matrix.md` with each audited field rule and its stable ID, implementation path, and executable test; complete 100% field-rule and functional-requirement mappings in `specs/051-pre-send-validation/traceability.md`. All R001–R189 rows link the descriptor-driven contract test and their operation/model evidence; R190–R293 link the condition-specific or nested-schema validators and tests; FR and project-policy rows are mapped.
 - [x] T033 Document Rust validation APIs, explicit schema use, server-side boundaries, and `NotSent` behavior in `docs/architecture/public-api.md`, crate rustdoc, and the English and Spanish client guides.
 - [x] T034 Run focused protocol/client validation tests, `cargo fmt --all --check`, workspace Clippy and tests, `python -B -m unittest scripts.tests.test_requirement_traceability -v`, `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v`, API manifest generation `--check`, and public Rust export audit; record exact results in `specs/051-pre-send-validation/traceability.md` and the draft PR description. Original results remain recorded in `traceability.md`; current predecessor synchronization results are in `synchronization-evidence-2026-11-07.md`, and the current Rust export report is `reports/rust-export-report-2026-11-07.json`. The original 0051 report is preserved in `reports/rust-export-report-pre-sync-2026-11-06.json`.
 
@@ -89,6 +89,12 @@ description: "Dependency-ordered KMIPKIT-0051 implementation tasks"
 - User Story 2 pre-send integration (T026–T028) depends on the complete typed validator dispatch.
 - User Story 3 preservation/redaction (T029–T031) depends on the report and traversal APIs; it may be tested while client integration is underway but must be green before final polish.
 - T032–T034 depend on all implementation and tests being complete.
+
+## Review follow-up — managed-object validation gaps
+
+- [x] T035 [US1] Add Red tests for required PGP Key, Secret Data, and Split Key members, the conditional Prime Field Size rule, Key Part Identifier bounds, and Import preflight delivery state. Red commits: `4fa8145c5`, `a904da9de`, and `bd1b52093`. The pre-send regression observed `ResponseStarted` with the missing range validation, proving the invalid request crossed the validation boundary.
+- [x] T036 [US1] Add explicit managed-object descriptors and locally decidable Split Key checks in `validation/nested.rs`, reusing the shared key-format classifier. Green commit: `529b54a24`. Green evidence: `cargo test -p kmipkit-protocol --lib import_validation_checks_required_fields_for_pgp_secret_and_split_keys`; `cargo test -p kmipkit-protocol --lib split_key_requires_prime_field_size_for_polynomial_prime_sharing`; `cargo test -p kmipkit-protocol --lib split_key_part_identifier_must_be_within_the_declared_parts`; `cargo test -p kmipkit-client --lib split_key_with_out_of_range_part_identifier_is_not_sent`.
+- [x] T037 Refactor and trace the new rules, correct the Key Format Type reference to §11.25 Table 461, and preserve unknown formats and enum values. `nested-schemas.md`, `gap-matrix.md`, and this traceability record contain the schema and evidence mapping; the complete protocol/client suites and workspace checks remain in the PR verification gate.
 
 ## Commit and implementation strategy
 
