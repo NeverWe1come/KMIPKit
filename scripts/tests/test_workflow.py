@@ -44,6 +44,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def read_gradle_wrapper_properties(self) -> dict[str, str]:
+        wrapper_properties = REPOSITORY_ROOT / "bindings/java/gradle/wrapper/gradle-wrapper.properties"
+        return {
+            key: value
+            for line in wrapper_properties.read_text(encoding="utf-8").splitlines()
+            if "=" in line
+            for key, value in [line.split("=", maxsplit=1)]
+        }
+
     def assert_generator_check_step(
         self,
         job: str,
@@ -963,17 +972,12 @@ class WorkflowContractTests(unittest.TestCase):
                 self.assertIn(required, smoke)
 
     def test_gradle_wrapper_retries_transient_distribution_download_failures(self) -> None:
-        wrapper_properties = REPOSITORY_ROOT / "bindings/java/gradle/wrapper/gradle-wrapper.properties"
-        properties = {
-            key: value
-            for line in wrapper_properties.read_text(encoding="utf-8").splitlines()
-            if "=" in line
-            for key, value in [line.split("=", maxsplit=1)]
-        }
+        properties = self.read_gradle_wrapper_properties()
+        minimums = {"networkTimeout": 60_000, "retries": 3, "retryBackOffMs": 1_000}
 
-        self.assertGreaterEqual(int(properties.get("networkTimeout", "0")), 60_000)
-        self.assertGreaterEqual(int(properties.get("retries", "0")), 3)
-        self.assertGreaterEqual(int(properties.get("retryBackOffMs", "0")), 1_000)
+        for property_name, minimum in minimums.items():
+            with self.subTest(property_name=property_name):
+                self.assertGreaterEqual(int(properties.get(property_name, "0")), minimum)
 
     def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
         contents = self.require_workflow()
