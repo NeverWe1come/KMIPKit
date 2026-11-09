@@ -38,6 +38,14 @@
 - [x] T013 Synchronize shared T102 aggregate snapshot guards with the 143
   versioned-value declarations added by this specification; preserve the
   historical Rust audit snapshot and rerun dependent contract tests.
+- [x] T014 [Red] Add regressions proving `Object Defaults` and `Protection
+  Storage Masks` remain available under KMIP 2.1 while `NIST Security Category`
+  is gated to KMIP 3.0, citing KMIP 2.1 §11.56 and KMIP 3.0 §11.58 Table 605.
+- [x] T015 [Green] Replace the inferred KMIP 3.0 tag interval with the exact
+  assigned tag values from the pinned Table 605 source; preserve the explicit
+  KMIP 2.1 attribute spans.
+- [x] T016 [Refactor] Update traceability and implementation evidence, then run
+  focused protocol tests, protocol Clippy, formatting, and diff checks.
 - [x] T008 Push this feature branch and open a draft PR against
   `feature/KMIPKIT-0043-t076-shared-client-mapping`; later change its base to
   `release/1.0.0` as described by the approved Phase 5 plan.

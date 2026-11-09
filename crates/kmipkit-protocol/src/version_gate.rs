@@ -138,10 +138,9 @@ impl VersionGate {
             0x0042_014A..=0x0042_0150 | 0x0042_0152 => {
                 Some(VersionSpan::since(ProtocolVersion::V2_1))
             }
-
-            // KMIP 3.0 System Objects & PQC attributes
-            0x0042_0153..=0x0042_0172 => Some(VersionSpan::since(ProtocolVersion::V3_0)),
-
+            _ if KMIP_3_0_TAG_ASSIGNMENTS.binary_search(&tag).is_ok() => {
+                Some(VersionSpan::since(ProtocolVersion::V3_0))
+            }
             _ => None,
         }
     }
@@ -208,3 +207,68 @@ impl VersionGate {
         Ok(())
     }
 }
+
+// Exact assignments from KMIP 3.0 §11.58, Table 605. Do not replace this list
+// with an allocation range: adjacent tags are valid in KMIP 2.0/2.1.
+const KMIP_3_0_TAG_ASSIGNMENTS: &[u32] = &[
+    0x0042_0190,
+    0x0042_0191,
+    0x0042_0192,
+    0x0042_0193,
+    0x0042_0194,
+    0x0042_0195,
+    0x0042_0196,
+    0x0042_0197,
+    0x0042_0198,
+    0x0042_0199,
+    0x0042_019A,
+    0x0042_019B,
+    0x0042_019C,
+    0x0042_019D,
+    0x0042_019E,
+    0x0042_019F,
+    0x0042_01A0,
+    0x0042_01A1,
+    0x0042_01A2,
+    0x0042_01A3,
+    0x0042_01A4,
+    0x0042_01A5,
+    0x0042_01A6,
+    0x0042_01A7,
+    0x0042_01A8,
+    0x0042_01A9,
+    0x0042_01AA,
+    0x0042_01AB,
+    0x0042_01AC,
+    0x0042_01AD,
+    0x0042_01AE,
+    0x0042_01AF,
+    0x0042_01B0,
+    0x0042_01B1,
+    0x0042_01B2,
+    0x0042_01B3,
+    0x0042_01B4,
+    0x0042_01B5,
+    0x0042_01B6,
+    0x0042_01B7,
+    0x0042_01B8,
+    0x0042_01B9,
+    0x0042_01BA,
+    0x0042_01BB,
+    0x0042_01BC,
+    0x0042_01BD,
+    0x0042_01BE,
+    0x0042_01BF,
+    0x0042_01C0,
+    0x0042_01C1,
+    0x0042_01C2,
+    0x0042_01C3,
+    0x0042_01C4,
+    0x0042_01C5,
+    0x0042_01C6,
+    0x0042_01C7,
+    0x0042_01C8,
+    0x0042_01C9,
+    0x0042_01CA,
+    0x0042_01CB,
+];
