@@ -84,6 +84,10 @@ that are unknown, reserved, future, or vendor-defined.
 - **KMIPKIT-0047-FR-010**: Version-aware operation lookup MUST return no
   introduction span for unassigned codes; numeric ranges MUST NOT make
   reserved or unassigned operation values valid.
+- **KMIPKIT-0047-FR-011**: Version-aware tag lookup MUST use the exact tag
+  assignments introduced by each pinned KMIP edition. It MUST NOT classify
+  previously assigned KMIP 2.0/2.1 tags as KMIP 3.0 tags based on an adjacent
+  numeric range.
 
 ## Normative Sources and Traceability
 
@@ -97,6 +101,13 @@ and section/table citations to KMIP 2.1, KMIP 3.0, and the pinned KMIP 2.0
 baseline. Reserved and wildcard allocations are omitted. Usage Guide text is
 not used to add requirements.
 
+KMIP tag version introductions are checked against exact assignments in KMIP
+2.1 §11.56 and KMIP 3.0 §11.58, Table 605. For example, `Object Defaults`
+(`0x420153`) and `Protection Storage Masks` (`0x42015F`) remain valid tags in
+KMIP 2.1, while `NIST Security Category` (`0x4201C2`) is introduced in KMIP
+3.0. Version gates use explicit assignments and do not infer edition from a
+tag-number interval.
+
 | Requirement | Normative/catalog source | Verification |
 |---|---|---|
 | FR-001 | Catalog elements with kind `enumeration` and `enumeration_value`; each value's `source_refs` points to its exact KMIP 2.1 section | Generated count/value tests and four-language API tests |
@@ -105,6 +116,7 @@ not used to add requirements.
 | FR-005–007 | Constitution §§3, 4, 9, 10; KMIPKIT-0043 manifest and generation contract | Manifest parity, deterministic generation, and regression tests |
 | FR-008–009 | KMIP 2.1 §11.36 Table 470; KMIP 3.0 §§11.34–11.35 Tables 581–582 and §11.37 Table 583; `specification/catalog/kmip-versioned-values.json` verifies pinned source checksums | Exact catalog assignment tests, four-language generation tests, and `VersionGate` tests |
 | FR-010 | KMIP 2.0/2.1/3.0 Operation Enumerations; assigned values in the checked-in versioned catalog | Assigned, reserved, and unknown operation code tests |
+| FR-011 | KMIP 2.1 §11.56; KMIP 3.0 §11.58 Table 605 and checksum-pinned assignments | `VersionGate` exact tag-span tests for legacy and 3.0 tags |
 
 ## Scope and Exclusions
 
@@ -112,7 +124,8 @@ not used to add requirements.
   Enumerations and Bit Masks, in the four 1.0 languages.
 - Also in scope: exact version deltas for KMIP 2.1 Operations and KMIP 3.0
   Operations, Object Class, and Object Type used by version gates and typed
-  models. These deltas do not imply complete KMIP 3.0 protocol support.
+  models, plus exact KMIP 3.0 tag assignments used by version gates. These
+  deltas do not imply complete KMIP 3.0 protocol support.
 - Existing raw-value constructors and generic TTLV interfaces remain supported.
 - This feature does not infer server support, profile conformance, or
   cryptographic policy from the presence of a constant.
@@ -133,3 +146,5 @@ not used to add requirements.
 - **KMIPKIT-0047-SC-005**: The exact KMIP 2.1/3.0 delta tables are generated in
   all four languages; reserved or unassigned codes have no generated name and
   receive no version span.
+- **KMIPKIT-0047-SC-006**: KMIP 2.0/2.1 tags retain their existing version
+  spans; only exact KMIP 3.0 Table 605 assignments receive a KMIP 3.0 span.
