@@ -91,6 +91,8 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "ffi_runtime_metadata",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
+            "kmip30_draft_routes",
+            "kmip_protocol_version_selection",
             "named_protocol_values",
             "nonce_ttlv_parity",
             "opaque_register_context",
@@ -504,6 +506,10 @@ fn source_c_exports() -> Vec<(String, bool)> {
     exports.extend(macro_generated_c_exports(
         sources[4],
         "managed_object_constructor",
+    ));
+    exports.extend(macro_generated_c_exports(
+        sources[0],
+        "kmip30_draft_batch_item_constructor",
     ));
 
     exports

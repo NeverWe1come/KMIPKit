@@ -1122,6 +1122,8 @@ impl ClientRequest {
 }
 
 impl fmt::Debug for ClientRequest {
+    // Keep the exhaustive request redaction allowlist together for review.
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::DiscoverVersions(_) => formatter.write_str("DiscoverVersions"),
