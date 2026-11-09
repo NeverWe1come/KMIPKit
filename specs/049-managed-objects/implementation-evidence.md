@@ -523,3 +523,7 @@ The CodeQL and zizmor checks associated with the original check suite ended as
 `timed_out` without findings or diagnostic output. They are not treated as
 successful; the new feature head must receive fresh security checks. PR #141
 remains draft until its aggregate CI and fresh security checks pass.
+
+## Security check retry on the current feature head (2026-11-09)
+
+CI run `42591793448` completed successfully on head `4e73c352a969fbba7bc50ced26c1ac6dbdb671b2` (43 checks passed; three scheduled or policy checks were skipped). The separate GitHub Advanced Security checks `CodeQL` (`129084629655`) and `zizmor` (`129086191990`) again ended as `timed_out` without findings or diagnostic output. GitHub's check-suite re-request endpoint returned HTTP 404 for both suites, so this evidence-only commit requests fresh checks on an updated head. T050 remains open until those checks complete successfully.
