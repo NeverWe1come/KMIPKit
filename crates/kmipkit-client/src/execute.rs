@@ -221,13 +221,13 @@ const QUERY_OPERATION: u32 = 0x0000_0018;
 const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
 const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
 const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032; // KMIP v2.1 §6.1.54, Table 331.
-const CREATE_GROUP_OPERATION: u32 = 0x0000_003C; // KMIP 3.0 §11.37, Table 583.
-const OBLITERATE_OPERATION: u32 = 0x0000_003D; // KMIP 3.0 §11.37, Table 583.
-const CREATE_USER_OPERATION: u32 = 0x0000_003E; // KMIP 3.0 §11.37, Table 583.
-const CREATE_CREDENTIAL_OPERATION: u32 = 0x0000_003F; // KMIP 3.0 §11.37, Table 583.
-const DEACTIVATE_OPERATION: u32 = 0x0000_0040; // KMIP 3.0 §11.37, Table 583.
-const ENCAPSULATE_OPERATION: u32 = 0x0000_0041; // KMIP 3.0 §11.37, Table 583.
-const DECAPSULATE_OPERATION: u32 = 0x0000_0042; // KMIP 3.0 §11.37, Table 583.
+const CREATE_GROUP_OPERATION: u32 = 0x0000_003C; // KMIP 3.0 §11.37, Table 584.
+const OBLITERATE_OPERATION: u32 = 0x0000_003D; // KMIP 3.0 §11.37, Table 584.
+const CREATE_USER_OPERATION: u32 = 0x0000_003E; // KMIP 3.0 §11.37, Table 584.
+const CREATE_CREDENTIAL_OPERATION: u32 = 0x0000_003F; // KMIP 3.0 §11.37, Table 584.
+const DEACTIVATE_OPERATION: u32 = 0x0000_0040; // KMIP 3.0 §11.37, Table 584.
+const ENCAPSULATE_OPERATION: u32 = 0x0000_0041; // KMIP 3.0 §11.37, Table 584.
+const DECAPSULATE_OPERATION: u32 = 0x0000_0042; // KMIP 3.0 §11.37, Table 584.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -1909,19 +1909,19 @@ pub enum ClientOperation {
     QueryAsyncRequests,
     /// Set Endpoint Role (§6.1.54).
     SetEndpointRole,
-    /// Create Group (KMIP 3.0 §11.37, Table 583).
+    /// Create Group (KMIP 3.0 §11.37, Table 584).
     CreateGroup,
-    /// Obliterate (KMIP 3.0 §11.37, Table 583).
+    /// Obliterate (KMIP 3.0 §11.37, Table 584).
     Obliterate,
-    /// Create User (KMIP 3.0 §11.37, Table 583).
+    /// Create User (KMIP 3.0 §11.37, Table 584).
     CreateUser,
-    /// Create Credential (KMIP 3.0 §11.37, Table 583).
+    /// Create Credential (KMIP 3.0 §11.37, Table 584).
     CreateCredential,
-    /// Deactivate (KMIP 3.0 §11.37, Table 583).
+    /// Deactivate (KMIP 3.0 §11.37, Table 584).
     Deactivate,
-    /// Encapsulate (KMIP 3.0 §11.37, Table 583).
+    /// Encapsulate (KMIP 3.0 §11.37, Table 584).
     Encapsulate,
-    /// Decapsulate (KMIP 3.0 §11.37, Table 583).
+    /// Decapsulate (KMIP 3.0 §11.37, Table 584).
     Decapsulate,
 }
 
@@ -1929,7 +1929,7 @@ impl ClientOperation {
     /// Returns the operation enumeration assigned by the selected KMIP version.
     ///
     /// Operations shared by KMIP 2.0 and 2.1 use §11.36, Table 470. The seven
-    /// KMIP 3.0 operations use §11.37, Table 583 and are rejected before send
+    /// KMIP 3.0 operations use §11.37, Table 584 and are rejected before send
     /// unless the effective protocol version supports them.
     #[must_use]
     pub const fn raw(self) -> u32 {
@@ -2935,7 +2935,7 @@ impl fmt::Debug for ClientResponseView<'_> {
 }
 
 /// Typed response payloads for the seven KMIP 3.0 client operations added in
-/// KMIP 3.0 §11.37, Table 583.
+/// KMIP 3.0 §11.37, Table 584.
 #[non_exhaustive]
 pub enum Kmip30OperationResponse {
     /// Create Group response.
