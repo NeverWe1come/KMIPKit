@@ -119,6 +119,12 @@ pub enum NestedStructureSchema {
     KeyWrappingData,
     /// The §2.3 Opaque Object structure.
     OpaqueObject,
+    /// The §2.4 PGP Key managed-object structure.
+    PgpKey,
+    /// The §2.7 Secret Data managed-object structure.
+    SecretData,
+    /// The §2.8 Split Key managed-object structure and conditional fields.
+    SplitKey,
 }
 
 #[derive(Clone, Copy)]

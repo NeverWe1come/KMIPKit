@@ -21,6 +21,14 @@ pub enum VersionGateError {
         /// The earliest protocol version where this operation was introduced.
         introduced: ProtocolVersion,
     },
+    /// The operation value is outside the vendor-extension allocation and is
+    /// not assigned by the selected KMIP edition.
+    UnassignedOperationInVersion {
+        /// The unassigned KMIP operation enumeration.
+        operation: u32,
+        /// The effective negotiated or forced protocol version.
+        version: ProtocolVersion,
+    },
     /// A requested attribute or tag is not supported in the negotiated version.
     AttributeNotSupportedInVersion {
         /// The raw TTLV tag of the attribute or field.
@@ -56,6 +64,12 @@ impl fmt::Display for VersionGateError {
                 write!(
                     formatter,
                     "operation 0x{operation:08X} requires KMIP {introduced} or newer, but session is {negotiated}"
+                )
+            }
+            Self::UnassignedOperationInVersion { operation, version } => {
+                write!(
+                    formatter,
+                    "operation 0x{operation:08X} is not assigned by KMIP {version}"
                 )
             }
             Self::AttributeNotSupportedInVersion {
@@ -117,14 +131,19 @@ impl VersionGate {
             return Err(VersionGateError::UnsupportedProtocolVersion(version));
         }
 
-        if let Some(span) = Self::operation_span(operation)
-            && !span.is_supported_in(version)
-        {
-            return Err(VersionGateError::OperationNotSupportedInVersion {
-                operation,
-                negotiated: version,
-                introduced: span.introduced,
-            });
+        match Self::operation_span(operation) {
+            Some(span) if !span.is_supported_in(version) => {
+                return Err(VersionGateError::OperationNotSupportedInVersion {
+                    operation,
+                    negotiated: version,
+                    introduced: span.introduced,
+                });
+            }
+            Some(_) => {}
+            None if is_operation_extension(operation) => {}
+            None => {
+                return Err(VersionGateError::UnassignedOperationInVersion { operation, version });
+            }
         }
 
         Ok(())
@@ -206,6 +225,13 @@ impl VersionGate {
 
         Ok(())
     }
+}
+
+// OASIS KMIP Enumeration extensions use the allocated 8XXXXXXX range. Keep
+// this exact extension allocation separate from the assigned standard table
+// values so numeric gaps never become standard operations.
+const fn is_operation_extension(operation: u32) -> bool {
+    matches!(operation, 0x8000_0000..=0x8FFF_FFFF)
 }
 
 // Exact assignments from KMIP 3.0 §11.58, Table 605. Do not replace this list

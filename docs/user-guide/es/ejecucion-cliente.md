@@ -516,7 +516,10 @@ deduce el esquema a partir de tags coincidentes. Conserva tags desconocidos,
 valores Enumeration futuros, bits de máscaras desconocidos y extensiones de
 fabricante mientras comprueba los campos conocidos. El orden sigue la
 descripción de estructura aplicable en KMIP v2.1 §10.1.2, no el orden numérico
-de los tags. Un informe local válido no predice las capacidades,
+de los tags. Para objetos gestionados, selecciona `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData` o `NestedStructureSchema::SplitKey` para
+validar directamente la estructura correspondiente. Un informe local válido
+no predice las capacidades,
 autorizaciones, estado del objeto ni políticas del servidor, y tampoco
 afirma conformidad con un perfil.
 

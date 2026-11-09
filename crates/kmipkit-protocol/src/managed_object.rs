@@ -121,6 +121,19 @@ pub(crate) fn rebuild_ordered_structure(
     ordered_tags: &[u32],
     replacements: Vec<Item>,
 ) -> Result<Item, ManagedObjectError> {
+    rebuild_ordered_structure_with_removals(source, ordered_tags, replacements, &[])
+}
+
+/// Replaces/removes selected fields while preserving unknown siblings and order.
+///
+/// A replacement for a tag takes precedence over its membership in
+/// `removed_tags`; all other matching children are omitted.
+pub(crate) fn rebuild_ordered_structure_with_removals(
+    source: &Item,
+    ordered_tags: &[u32],
+    replacements: Vec<Item>,
+    removed_tags: &[u32],
+) -> Result<Item, ManagedObjectError> {
     let mut pending = replacements;
     let mut children = source.with_value(|value| {
         let ValueView::Structure(structure) = value else {
@@ -133,7 +146,7 @@ pub(crate) fn rebuild_ordered_structure(
                 .position(|replacement| replacement.tag() == child.tag())
             {
                 children.push(pending.remove(position));
-            } else {
+            } else if !removed_tags.contains(&child.tag().raw()) {
                 children.push(child.try_clone().map_err(ManagedObjectError::from)?);
             }
         }
@@ -224,10 +237,16 @@ pub(crate) fn validate_structure(
 fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), ManagedObjectError> {
     match expected_tag {
         SECRET_DATA => {
-            let has_crypto_properties = with_item(item, KEY_BLOCK, |key_block| {
-                KeyBlock::has_cryptographic_properties_item(key_block)
+            let (has_key_value, has_crypto_properties) = with_item(item, KEY_BLOCK, |key_block| {
+                Ok::<_, ManagedObjectError>((
+                    KeyBlock::has_key_value_item(key_block)?,
+                    KeyBlock::has_cryptographic_properties_item(key_block)?,
+                ))
             })
             .ok_or(ManagedObjectError::MissingRequiredField)??;
+            if !has_key_value {
+                return Err(ManagedObjectError::MissingRequiredField);
+            }
             if has_crypto_properties {
                 return Err(ManagedObjectError::InvalidFieldCombination);
             }
@@ -235,14 +254,11 @@ fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), Man
         SPLIT_KEY => {
             let parts = integer_field(item, SPLIT_KEY_PARTS)?;
             let identifier = integer_field(item, KEY_PART_IDENTIFIER)?;
-            let threshold = integer_field(item, SPLIT_KEY_THRESHOLD)?;
             let method = enumeration_field(item, SPLIT_KEY_METHOD)?;
             let has_prime_field_size = with_field(item, PRIME_FIELD_SIZE, |_| ()).is_some();
             if parts < 1
                 || identifier < 1
                 || identifier > parts
-                || threshold < 2
-                || threshold > parts
                 || (method == 3 && !has_prime_field_size)
             {
                 return Err(ManagedObjectError::InvalidFieldCombination);
@@ -541,6 +557,9 @@ impl PublicKey {
 impl SecretData {
     /// Constructs the Table 8 Secret Data fields in source order.
     pub fn try_new(data_type: u32, key_block: KeyBlock) -> Result<Self, ManagedObjectError> {
+        if key_block.key_value_type().is_none() {
+            return Err(ManagedObjectError::MissingRequiredField);
+        }
         if key_block.has_cryptographic_properties() {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
@@ -577,8 +596,6 @@ impl SplitKey {
         if key_part_identifier < 1
             || split_key_parts < 1
             || key_part_identifier > split_key_parts
-            || split_key_threshold < 2
-            || split_key_threshold > split_key_parts
             || (split_key_method.raw() == 3 && prime_field_size.is_none())
         {
             return Err(ManagedObjectError::InvalidFieldCombination);
