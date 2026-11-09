@@ -65,7 +65,7 @@ An application developer wants unknown values and extension data to remain avail
 
 ### Normative Source Boundary
 
-Use only the pinned OASIS KMIP 2.1 specification in `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html` as the protocol source of truth. In particular, the implementation must use the structure-specific operation payload tables and prose rather than invent a universal schema. The principal cross-cutting sources are §8.1 Table 394, §8.2 Table 395, §8.3 Table 396, §9.4, §9.5, §9.13, §10.1.2, §10.1.3, and §11.56 Table 487 for tag assignments. Operation-specific rules come from the relevant §6.1 operation subsections and their Request Payload tables; nested field types and structures come from their defining OASIS tables. Cryptographic Parameters rules already implemented under KMIPKIT-0050 remain governed by §4.16 Table 59 and are not broadened by this feature.
+For operation schemas and request validation, use the pinned OASIS KMIP 2.1 source in `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`. The principal cross-cutting sources are §8.1 Table 394, §8.2 Table 395, §8.3 Table 396, §9.4, §9.5, §9.13, §10.1.2, §10.1.3, and §11.56 Table 487 for tag assignments. Operation-specific rules come from the relevant §6.1 operation subsections and their Request Payload tables; nested field types and structures come from their defining OASIS tables. For the already-approved multi-version pre-send gate, use the corresponding pinned 2.0, 2.1, and 3.0 sources identified by KMIPKIT-0069 through KMIPKIT-0071. KMIP 2.0 attribute mutation restrictions use KMIP 2.0 §5 and KMIPKIT-0070 REQ-070-003; KMIP 3.0 tag assignments use §11.58 Table 605 in the pinned 3.0 draft. Cryptographic Parameters rules already implemented under KMIPKIT-0050 remain governed by KMIP 2.1 §4.16 Table 59 and are not broadened by this feature.
 
 OASIS specifies structure fields and their encoding order, data types, requiredness, and conditional rules. It does not prescribe a library method named `validate()`, a client-side pre-send policy, or KMIPKit's `NotSent` delivery-state enum; these are project API and transport decisions recorded separately in `plan.md` and `traceability.md`.
 
@@ -88,6 +88,7 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - **KMIPKIT-0051-FR-015**: When the audited implementation emits or expects a field tag that conflicts with an exact pinned KMIP 2.1 assignment, the same feature MUST correct that tag using a test-first regression whose expected value is taken independently from the production constant; the traceability record MUST identify every affected request serializer and response reader.
 - **KMIPKIT-0051-FR-016**: Import validation MUST check the required members, TTLV types, and table order of PGP Key, Secret Data, and Split Key objects as defined in KMIP v2.1 §2.4 Table 5, §2.7 Table 8, and §2.8 Table 9.
 - **KMIPKIT-0051-FR-017**: Split Key validation MUST require Prime Field Size when Split Key Method is Polynomial Sharing Prime Field and MUST reject a Key Part Identifier below 1 or above Split Key Parts, as specified in KMIP v2.1 §2.8 Table 9 and its normative prose.
+- **KMIPKIT-0051-FR-018**: Before transport, `Client::execute` MUST apply the existing `VersionGate` to every tag in each serialized Request Payload and to every tag-form attribute mutation using the effective request version. KMIP 2.0 rotate-only mutation restrictions follow the pinned KMIP 2.0 source and KMIPKIT-0070 REQ-070-003; versioned tags and operations follow KMIPKIT-0069 REQ-069-004 and exact assignments in the corresponding pinned OASIS version catalogs, including KMIP 3.0 §11.58 Table 605. Rejection MUST return `NotSent` with zero exchanges and writes. Unknown tags and opaque vendor extension contents remain open as defined in FR-010.
 
 ### Key Entities
 
@@ -107,12 +108,13 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - **KMIPKIT-0051-SC-005**: Automated checks find no credential, key material, raw request bytes, or input values in validation reports, error formatting, or Debug output.
 - **KMIPKIT-0051-SC-006**: Normative validation requirements have 100% traceability to pinned OASIS references, code, and executable tests.
 - **KMIPKIT-0051-SC-007**: Malformed PGP Key, Secret Data, and Split Key Import requests are rejected before transport with `NotSent`; the Split Key tests cover both conditional requiredness and the normative Key Part Identifier bounds.
+- **KMIPKIT-0051-SC-008**: Request payload tags and attribute mutations outside the effective KMIP version are rejected before transport; version 2.1 remains the default, and unknown extension data is not rejected solely for being unknown.
 
 ## Assumptions
 
 - The maintainer-approved Phase 5 plan authorizes this implementation scope and its branch to be based on the pushed KMIPKIT-0050 branch.
 - KMIP v2.1 §6.1 contains 57 client-initiated operation subsections. The 1.0 product scope supports the 56 operations implemented by KMIPKIT-0050 and defers the client-initiated Set Endpoint Role operation in §6.1.54 to 1.1. This product-scope exclusion is distinct from the §6.2 server-initiated operations, which are also out of scope.
-- KMIP 2.1 is the source of truth. Where it does not prescribe a local behavior, the recommended project behavior is a deterministic, read-only validator that reports only what can be proven from the supplied request.
+- KMIP 2.1 is the source of truth for operation schemas and remains the default client version. The already-approved multi-version boundary uses the pinned 2.0 and 3.0 sources only for their version-specific tag, operation, and mutation gates. Where a source does not prescribe local behavior, use a deterministic, read-only validator that reports only what can be proven from the supplied request.
 - The validator covers typed Rust client APIs in this specification; C, Java, and Python parity is reconciled by KMIPKIT-0053 as already planned.
 - Existing multipart, profile, message-shape, Cryptographic Parameters, Authentication, and model-local checks are reused or reconciled rather than duplicated with conflicting semantics.
 - A successful local validation is not a claim that a server supports or will accept the request.
