@@ -64,3 +64,12 @@ The same run passed the full hosted matrix: Rust 1.94 and stable on Linux, Windo
 ## GitHub security-check retry (2026-11-09)
 
 The hosted CI run `42598623479` on head `70fac1a94a476494cdd6fb876b348137dbaf045d` has passed every completed job; its five pending checks are macOS jobs awaiting runners. The separate GitHub Advanced Security `CodeQL` check (`129099812071`) ended as `timed_out` without diagnostics. Re-requesting its check suite through the GitHub REST API returned HTTP 404, so this evidence-only commit requests fresh checks on an updated head. Keep T082 open until the new security check and all queued platform checks complete.
+
+## Serialized stack CI verification for PR #149 (2026-11-09)
+
+PR #143 completed immediately before this update. CI run `42645028702` passed all
+38 jobs; CodeQL Analysis `42645028588`, zizmor `42645028752`, and the five
+interop validator workflows all succeeded. The separate GitHub Advanced
+Security CodeQL check was neutral because release-base scan configurations were
+not found; it reported no findings. This evidence-only commit starts isolated
+hosted validation for PR #149 after #143 completed.
