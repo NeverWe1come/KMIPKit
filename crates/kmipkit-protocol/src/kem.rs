@@ -9,7 +9,7 @@ use crate::{
     AttributeSet, CryptographicParameters, KmipOperationResult, ResponseBatchItemView,
     UniqueIdentifier,
     kmip30_operations::{
-        Kmip30OperationError, clone_success_response, parse_result, parse_success_identifier,
+        Kmip30OperationError, parse_success_identifier, parse_typed_success_response,
     },
 };
 
@@ -24,8 +24,6 @@ const DEACTIVATION_DATE_TAG: u32 = 0x0042_002F;
 const DEACTIVATE_OPERATION: u32 = 0x0000_0040;
 const ENCAPSULATE_OPERATION: u32 = 0x0000_0041;
 const DECAPSULATE_OPERATION: u32 = 0x0000_0042;
-const SUCCESS: u32 = 0;
-
 fn ttlv_item(raw_tag: u32, value: Value) -> Result<Item, String> {
     let tag = RawTag::new(raw_tag)
         .map_err(|error| error.to_string())?
@@ -186,20 +184,10 @@ impl DeactivateResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let result = parse_result(item, DEACTIVATE_OPERATION)?;
-        let unique_identifier = if result.status().raw() == SUCCESS {
-            Some(
-                item.with_response_payload(|payload| parse_success_identifier(&payload))
-                    .ok_or(Kmip30OperationError::MissingSuccessPayload)??,
-            )
-        } else {
-            None
-        };
-        let response_ttlv = if result.status().raw() == SUCCESS {
-            Some(clone_success_response(item, "Deactivate")?)
-        } else {
-            None
-        };
+        let (result, unique_identifier, response_ttlv) =
+            parse_typed_success_response(item, DEACTIVATE_OPERATION, "Deactivate", |payload| {
+                parse_success_identifier(&payload)
+            })?;
         Ok(Self {
             result,
             unique_identifier,
@@ -357,20 +345,13 @@ impl EncapsulateResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let result = parse_result(item, ENCAPSULATE_OPERATION)?;
-        let (unique_identifier, data) = if result.status().raw() == SUCCESS {
-            let parsed = item
-                .with_response_payload(|payload| parse_encapsulate_payload(&payload))
-                .ok_or(Kmip30OperationError::MissingSuccessPayload)??;
-            (Some(parsed.0), Some(parsed.1))
-        } else {
-            (None, None)
-        };
-        let response_ttlv = if result.status().raw() == SUCCESS {
-            Some(clone_success_response(item, "Encapsulate")?)
-        } else {
-            None
-        };
+        let (result, parsed, response_ttlv) =
+            parse_typed_success_response(item, ENCAPSULATE_OPERATION, "Encapsulate", |payload| {
+                parse_encapsulate_payload(&payload)
+            })?;
+        let (unique_identifier, data) = parsed.map_or((None, None), |(identifier, data)| {
+            (Some(identifier), Some(data))
+        });
         Ok(Self {
             result,
             unique_identifier,
@@ -627,20 +608,10 @@ impl DecapsulateResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let result = parse_result(item, DECAPSULATE_OPERATION)?;
-        let unique_identifier = if result.status().raw() == SUCCESS {
-            Some(
-                item.with_response_payload(|payload| parse_decapsulate_response_payload(&payload))
-                    .ok_or(Kmip30OperationError::MissingSuccessPayload)??,
-            )
-        } else {
-            None
-        };
-        let response_ttlv = if result.status().raw() == SUCCESS {
-            Some(clone_success_response(item, "Decapsulate")?)
-        } else {
-            None
-        };
+        let (result, unique_identifier, response_ttlv) =
+            parse_typed_success_response(item, DECAPSULATE_OPERATION, "Decapsulate", |payload| {
+                parse_decapsulate_response_payload(&payload)
+            })?;
         Ok(Self {
             result,
             unique_identifier,
