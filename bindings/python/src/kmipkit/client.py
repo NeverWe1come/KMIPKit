@@ -6871,6 +6871,7 @@ __all__ = [
     "ProfileValidationContext",
     "ProfileValidationResult",
     "ProfileValidationSelection",
+    "ProtocolVersion",
     "HashResponse",
     "GetUsageAllocationResponse",
     "ObtainLeaseResponse",

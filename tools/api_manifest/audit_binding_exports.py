@@ -872,6 +872,25 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
             current = target
         return None
 
+    def imported_dataclass_class(
+        module: str, name: str
+    ) -> tuple[str, list[tuple[str, str, int]]] | None:
+        current = (module, name)
+        visited: set[tuple[str, str]] = set()
+        while current not in visited:
+            visited.add(current)
+            class_record = classes.get(f"{current[0]}.{current[1]}")
+            if class_record is not None:
+                source_module, source_name, _, members = class_record
+                if any(member == "__dataclass_fields__" for member, _, _ in members):
+                    return f"{source_module}.{source_name}", members
+                return None
+            target = imported.get(current)
+            if target is None or not target[1]:
+                return None
+            current = target
+        return None
+
     for qualified, (module, name, bases, direct_members) in sorted(classes.items()):
         if module not in public_modules or name.startswith("_"):
             continue
@@ -930,6 +949,17 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
                 _record(package, f"{export_name}.{member}", kind, f"inherited:{source_class}:{line}")
                 for member, kind, line in members
             )
+        else:
+            dataclass_class = imported_dataclass_class(module, name)
+            if dataclass_class is not None:
+                source_class, members = dataclass_class
+                for member, kind, line in members:
+                    record = _record(package, f"{export_name}.{member}", kind,
+                                     f"inherited:{source_class}:{line}")
+                    signature = generated_signatures.get(f"{source_class}.{member}")
+                    if signature is not None:
+                        record["signature"] = signature
+                    records.append(record)
     return _report(records, issues)
 
 

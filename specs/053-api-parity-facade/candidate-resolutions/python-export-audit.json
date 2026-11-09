@@ -3,10 +3,10 @@
   "auditSummary": {
     "source": "%TEMP%/kmipkit-0053-binding-audit.json",
     "packageId": "python-kmipkit",
-    "missingFromManifest": 266,
+    "missingFromManifest": 282,
     "missingByKind": {
-      "python-export": 240,
-      "field": 17,
+      "python-export": 246,
+      "field": 27,
       "type": 5,
       "module": 4
     },
@@ -11002,6 +11002,422 @@
         "exportName": "kmipkit.validation.ValidationReport.closed",
         "artifactKind": "python-runtime-member",
         "reason": "Local handle state only."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.batch_item_index",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.batch_item_index",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.batch_item_index field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.error_code",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.error_code",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.error_code field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.profile_id",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.profile_id",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.profile_id field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.requirement_id",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.requirement_id",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.requirement_id field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.source_clause_id",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.source_clause_id",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.source_clause_id field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.source_gap_id",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.source_gap_id",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.source_gap_id field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.source_gap_locator",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.source_gap_locator",
+        "artifactKind": "python-reexport-alias",
+        "reason": "This root-package alias exposes the same ProfileValidationDetails.source_gap_locator field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__dataclass_fields__",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__dataclass_fields__",
+        "artifactKind": "dataclass-metadata",
+        "reason": "This root-package alias exposes generated dataclass or slots metadata for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__dataclass_params__",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__dataclass_params__",
+        "artifactKind": "dataclass-metadata",
+        "reason": "This root-package alias exposes generated dataclass or slots metadata for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__match_args__",
+      "observedKind": "field",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__match_args__",
+        "artifactKind": "dataclass-metadata",
+        "reason": "This root-package alias exposes generated dataclass or slots metadata for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__delattr__",
+      "observedKind": "python-export",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__delattr__",
+        "artifactKind": "dataclass-generated-method",
+        "reason": "This root-package alias exposes generated dataclass value behavior for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__eq__",
+      "observedKind": "python-export",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__eq__",
+        "artifactKind": "dataclass-generated-method",
+        "reason": "This root-package alias exposes generated dataclass value behavior for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__hash__",
+      "observedKind": "python-export",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__hash__",
+        "artifactKind": "dataclass-generated-method",
+        "reason": "This root-package alias exposes generated dataclass value behavior for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__init__",
+      "observedKind": "python-export",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__init__",
+        "artifactKind": "dataclass-generated-method",
+        "reason": "This root-package alias exposes generated dataclass value behavior for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__repr__",
+      "observedKind": "python-export",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__repr__",
+        "artifactKind": "dataclass-generated-method",
+        "reason": "This root-package alias exposes generated dataclass value behavior for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
+      }
+    },
+    {
+      "packageId": "python-kmipkit",
+      "name": "kmipkit.ProfileValidationDetails.__setattr__",
+      "observedKind": "python-export",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-009",
+        "KMIPKIT-0053-FR-012"
+      ],
+      "evidencePaths": [
+        "bindings/python/src/kmipkit/__init__.py",
+        "bindings/python/src/kmipkit/errors.py",
+        "tools/api_manifest/tests/test_binding_exports.py",
+        "specs/053-api-parity-facade/spec.md"
+      ],
+      "approval": {
+        "status": "Approved",
+        "path": "specs/053-api-parity-facade/approval-record.md",
+        "evidence": "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      },
+      "exclusion": {
+        "exportName": "kmipkit.ProfileValidationDetails.__setattr__",
+        "artifactKind": "dataclass-generated-method",
+        "reason": "This root-package alias exposes generated dataclass value behavior for the same ProfileValidationDetails type already inventoried under kmipkit.errors."
       }
     }
   ],
