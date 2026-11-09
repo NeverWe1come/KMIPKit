@@ -59,12 +59,20 @@ loopback con TLS 1.3/mTLS. Esto comprueba la ejecución del cliente y la ruta de
 resultado tipado; el respondedor no es una implementación de servidor KMIP ni
 aporta evidencia de interoperabilidad.
 
-KMIPKit 1.0 se limita a KMIP 2.1. Esta parte emite y acepta únicamente la
-versión de protocolo 2.1 conforme a la decisión de producto registrada para
+La API tipada de operaciones KMIP 1.0 sigue limitada a KMIP 2.1 conforme a la
+decisión de producto registrada para
 [`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md); esto no afirma
 compatibilidad retroactiva entre versiones principales conforme a KMIP §9.16.
-Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para conocer el
-alcance de la versión.
+Por separado, KMIPKit ofrece rutas optativas para las operaciones del Working
+Draft de KMIP 3.0 Create Group, Obliterate, Create User, Create Credential,
+Deactivate, Encapsulate y Decapsulate. Aceptan y conservan payloads TTLV
+genéricos ordenados por el llamador; no ofrecen constructores tipados por
+operación ni validación de esquema. Selecciona explícitamente la versión del
+protocolo mediante `ClientConfiguration::with_protocol_version`; el valor
+predeterminado sigue siendo KMIP 2.1. La capacidad `kmip30_draft_routes` solo
+indica que existe la API y no afirma conformidad de perfil ni certificación.
+Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para el alcance de
+las operaciones tipadas de 1.0.
 
 ## Métodos directos y opciones por intercambio
 

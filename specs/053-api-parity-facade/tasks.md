@@ -113,7 +113,7 @@
 
 - [x] T081 [US6] Correct double-encoded OASIS section and en-dash citations in the affected Rust trait-exclusion evidence, preserving the exact audited declaration paths; regenerate the manifest-derived Java parity fixtures and verify the 92 focused T102 contract tests.
 - [ ] T082 [US6] Run the complete script-contract matrix on this corrected head and verify the fresh hosted workflows; resolve any remaining contract or CI failures before marking this PR review-ready.
-- [ ] T083 [US5] Add four-language evidence for the seven opt-in KMIP 3.0 draft request routes and protocol-version selection; preserve the default KMIP 2.1 behavior and the exact 56-operation 1.0 manifest, add a separately validated versioned manifest, and run C/Java/Python consumers against the request identities and generic response views.
+- [ ] T083 [US5] Add four-language evidence for the seven opt-in KMIP 3.0 draft request routes and protocol-version selection. Verify ordered generic TTLV payload preservation, document that these routes have no operation-specific typed builders or schema validation, preserve the KMIP 2.1 default and exact 56-operation 1.0 manifest, validate the separate versioned manifest, and run C/Java/Python consumers against request identities and generic response views without claiming profile conformance.
 
 ## Dependencies
 T001–T005 precede the user stories. US1 and US2 stabilize typed value/secret patterns; US3 follows; US4 reuses the shared Rust validator; US5 consumes the prior request/response bindings; US6 closes packages, docs, manifest and PR evidence. Keep each lot sequential on this branch.
