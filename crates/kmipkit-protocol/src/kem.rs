@@ -10,7 +10,7 @@ use crate::{
     UniqueIdentifier,
     kmip30_operations::{
         Kmip30OperationError, optional_identifier_payload, parse_success_identifier,
-        parse_typed_success_response, with_response_ttlv,
+        parse_typed_success_response, parse_typed_success_response_as, with_response_ttlv,
     },
 };
 
@@ -74,6 +74,35 @@ fn append_cryptographic_parameters(
         CRYPTOGRAPHIC_PARAMETERS_TAG,
         Value::structure(parameters),
     )
+}
+
+macro_rules! impl_optional_kem_request_builders {
+    ($request:ty) => {
+        impl $request {
+            /// Supplies optional generic Cryptographic Parameters.
+            #[must_use]
+            pub fn with_cryptographic_parameters(mut self, parameters: Structure) -> Self {
+                self.cryptographic_parameters = Some(parameters);
+                self
+            }
+
+            /// Supplies optional typed Cryptographic Parameters.
+            #[must_use]
+            pub fn with_typed_cryptographic_parameters(
+                self,
+                parameters: CryptographicParameters,
+            ) -> Self {
+                self.with_cryptographic_parameters(parameters.into_ttlv())
+            }
+
+            /// Supplies the optional ordered Attributes Structure contents.
+            #[must_use]
+            pub fn with_attributes(mut self, attributes: AttributeSet) -> Self {
+                self.attributes = Some(attributes);
+                self
+            }
+        }
+    };
 }
 
 /// A KMIP 3.0 Deactivate request from §6.1.14, Table 293.
@@ -175,15 +204,17 @@ impl DeactivateResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let (result, unique_identifier, response_ttlv) =
-            parse_typed_success_response(item, DEACTIVATE_OPERATION, "Deactivate", |payload| {
-                parse_success_identifier(&payload)
-            })?;
-        Ok(Self {
-            result,
-            unique_identifier,
-            response_ttlv,
-        })
+        parse_typed_success_response_as(
+            item,
+            DEACTIVATE_OPERATION,
+            "Deactivate",
+            |payload| parse_success_identifier(&payload),
+            |result, unique_identifier, response_ttlv| Self {
+                result,
+                unique_identifier,
+                response_ttlv,
+            },
+        )
     }
 
     /// Returns the exact KMIP operation result.
@@ -249,26 +280,6 @@ impl EncapsulateRequest {
         &self.unique_identifier
     }
 
-    /// Supplies optional generic Cryptographic Parameters.
-    #[must_use]
-    pub fn with_cryptographic_parameters(mut self, parameters: Structure) -> Self {
-        self.cryptographic_parameters = Some(parameters);
-        self
-    }
-
-    /// Supplies optional typed Cryptographic Parameters.
-    #[must_use]
-    pub fn with_typed_cryptographic_parameters(self, parameters: CryptographicParameters) -> Self {
-        self.with_cryptographic_parameters(parameters.into_ttlv())
-    }
-
-    /// Supplies the optional ordered Attributes Structure contents.
-    #[must_use]
-    pub fn with_attributes(mut self, attributes: AttributeSet) -> Self {
-        self.attributes = Some(attributes);
-        self
-    }
-
     /// Serializes Table 317 members in source order.
     ///
     /// # Errors
@@ -285,6 +296,8 @@ impl EncapsulateRequest {
         Ok(payload)
     }
 }
+
+impl_optional_kem_request_builders!(EncapsulateRequest);
 
 impl fmt::Debug for EncapsulateRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -510,26 +523,6 @@ impl DecapsulateRequest {
         &self.ciphertext
     }
 
-    /// Supplies optional generic Cryptographic Parameters.
-    #[must_use]
-    pub fn with_cryptographic_parameters(mut self, parameters: Structure) -> Self {
-        self.cryptographic_parameters = Some(parameters);
-        self
-    }
-
-    /// Supplies optional typed Cryptographic Parameters.
-    #[must_use]
-    pub fn with_typed_cryptographic_parameters(self, parameters: CryptographicParameters) -> Self {
-        self.with_cryptographic_parameters(parameters.into_ttlv())
-    }
-
-    /// Supplies the optional ordered Attributes Structure contents.
-    #[must_use]
-    pub fn with_attributes(mut self, attributes: AttributeSet) -> Self {
-        self.attributes = Some(attributes);
-        self
-    }
-
     /// Serializes Table 296 members in their defined order.
     ///
     /// # Errors
@@ -547,6 +540,8 @@ impl DecapsulateRequest {
         Ok(payload)
     }
 }
+
+impl_optional_kem_request_builders!(DecapsulateRequest);
 
 impl fmt::Debug for DecapsulateRequest {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -592,15 +587,17 @@ impl DecapsulateResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let (result, unique_identifier, response_ttlv) =
-            parse_typed_success_response(item, DECAPSULATE_OPERATION, "Decapsulate", |payload| {
-                parse_decapsulate_response_payload(&payload)
-            })?;
-        Ok(Self {
-            result,
-            unique_identifier,
-            response_ttlv,
-        })
+        parse_typed_success_response_as(
+            item,
+            DECAPSULATE_OPERATION,
+            "Decapsulate",
+            |payload| parse_decapsulate_response_payload(&payload),
+            |result, unique_identifier, response_ttlv| Self {
+                result,
+                unique_identifier,
+                response_ttlv,
+            },
+        )
     }
 
     /// Returns the exact KMIP operation result.
