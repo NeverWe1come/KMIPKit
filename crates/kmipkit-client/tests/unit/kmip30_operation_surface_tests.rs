@@ -58,6 +58,114 @@ fn all_seven_kmip30_operations_have_direct_and_options_methods() {
     assert_direct_methods!(ObliterateRequest, obliterate, obliterate_with_options);
 }
 
+macro_rules! assert_direct_calls {
+    ($operation:expr, $request:expr, $method:ident, $options_method:ident) => {{
+        let (mut client, transport, _) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::FailBeforeWrite);
+        let error = client
+            .$method($request, &CodecLimits::defaults())
+            .expect_err("KMIP 3.0 method is gated by the default KMIP 2.1 configuration");
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(transport.borrow().exchange_count(), 0);
+
+        let (mut client, transport, _) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+                response: direct_response_bytes($operation),
+                request_write_chunks: Vec::new(),
+            });
+        let response = client
+            .$options_method(
+                $request,
+                &CodecLimits::defaults(),
+                &RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0),
+            )
+            .expect("KMIP 3.0 direct method executes with an explicit version");
+        assert_eq!(
+            response
+                .kmip30_response()
+                .map(|value| value.operation().raw()),
+            Some($operation)
+        );
+        assert_eq!(transport.borrow().exchange_count(), 1);
+    }};
+}
+
+#[test]
+fn all_seven_kmip30_direct_client_methods_follow_the_configured_version() {
+    assert_direct_calls!(
+        0x3C,
+        CreateGroupRequest::new(AttributeSet::new()),
+        create_group,
+        create_group_with_options
+    );
+    assert_direct_calls!(
+        0x3D,
+        ObliterateRequest::new(kmipkit_protocol::UniqueIdentifier::TextString(
+            "uid".to_owned()
+        )),
+        obliterate,
+        obliterate_with_options
+    );
+    assert_direct_calls!(
+        0x3E,
+        CreateUserRequest::new(AttributeSet::new()),
+        create_user,
+        create_user_with_options
+    );
+    assert_direct_calls!(
+        0x3F,
+        CreateCredentialRequest::new(
+            CredentialType::UsernameAndPassword,
+            AttributeSet::new(),
+            CreateCredentialObject::PasswordCredential(
+                PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+                    password: Some(SecretText::new("sentinel".to_owned())),
+                    ..PasswordCredentialObjectFields::default()
+                })
+                .expect("password credential fixture is valid"),
+            ),
+        ),
+        create_credential,
+        create_credential_with_options
+    );
+    assert_direct_calls!(
+        0x40,
+        DeactivateRequest::new("uid"),
+        deactivate,
+        deactivate_with_options
+    );
+    assert_direct_calls!(
+        0x41,
+        EncapsulateRequest::new("public-key"),
+        encapsulate,
+        encapsulate_with_options
+    );
+    assert_direct_calls!(
+        0x42,
+        DecapsulateRequest::new("private-key", vec![1, 2, 3]),
+        decapsulate,
+        decapsulate_with_options
+    );
+}
+
+fn direct_response_bytes(operation: u32) -> Vec<u8> {
+    let payload = match operation {
+        0x3D => Structure::new(),
+        0x41 => test_structure([
+            test_item(
+                0x0042_0094,
+                Value::text_string("new-secret-object".to_owned()),
+            ),
+            test_item(0x0042_00C2, Value::byte_string(vec![0xCA, 0xFE])),
+        ]),
+        _ => test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("created-object".to_owned()),
+        )]),
+    };
+    response_bytes(operation, payload)
+}
+
 #[test]
 fn all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21() {
     for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
