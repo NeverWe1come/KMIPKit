@@ -1,4 +1,4 @@
-//! Compile-time client surface for the seven KMIP 3.0 operations in Table 583.
+//! Compile-time client surface for the seven KMIP 3.0 operations in Table 584.
 
 use kmipkit_protocol::{
     AttributeSet, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest,
@@ -214,7 +214,7 @@ fn kmip30_requests() -> [ClientRequest; 7] {
 }
 
 #[test]
-// KMIP 3.0 Working Draft §6.1 operation tables and Table 583 define this
+// KMIP 3.0 Working Draft §6.1 operation tables and Table 584 define this
 // request/response surface; the exact pinned source is recorded in T044.
 fn all_kmip30_requests_use_the_table_583_wire_code_and_preserve_typed_response() {
     for request in kmip30_requests() {
