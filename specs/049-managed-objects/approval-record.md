@@ -7,6 +7,11 @@ The maintainer's direct approval of the audit-correction plan on 2026-11-08
 also authorizes adding the four KMIP 3.0 system credential object models from
 §2.1.3, Tables 5–12, with their exact Object Type and tag assignments. This
 does not authorize authentication operations or cryptographic processing.
+The maintainer's direct approval of the correction plan on 2026-11-09 also
+authorizes the Key Block mutation correction, the Secret Data Key Value
+requirement, and source-faithful Split Key validation against KMIP 2.1 §§2.7–2.8.
+Key Format Type classifications remain tied to the exact assignments in
+§11.25, Table 461; reserved values are not promoted to assigned values.
 The maintainer's direct branch-base instruction authorizes this feature to
 start from the predecessor feature branch and stack its draft PR on PR #140
 before eventual integration into `release/1.0.0`.

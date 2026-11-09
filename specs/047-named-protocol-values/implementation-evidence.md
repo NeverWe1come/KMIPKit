@@ -430,3 +430,32 @@ Verification on this revision:
 
 The implementation remains local and the pull request remains Draft pending
 the full stacked-branch synchronization and current-head CI checks.
+
+## KMIP 2.0/2.1/3.0 correction closeout (2026-11-09)
+
+The KMIP 3.0 value corrections are present in the published head
+`f3b2199f8143dd2baad0d366b0d460b8e99d6940`. Exact assignments and version
+gates are recorded in the checksum-pinned catalog, with reserved values left
+unassigned; generated constants are emitted only for exact assigned entries.
+The spec-specific manifest audit has no missing named-value routes. The
+remaining shared Rust export inventory is tracked by KMIPKIT-0053 and is not
+used to infer named-value or reserved-code assignments.
+
+Local verification on this head:
+
+- `cargo fmt --all --check` — passed.
+- `cargo test -p kmipkit-protocol version_foundation --quiet` — 9 passed.
+- `uv run --project bindings/python --with pytest==8.4.2 pytest -q bindings/python/tests/test_protocol_values.py` — 2 passed.
+- `python -m unittest tools.api_manifest.tests.test_047_binding_audit_reconciliation` — 5 passed.
+- `python tools/normative_catalog/generate_named_values.py --check` — all four language outputs verified.
+- `python tools/normative_catalog/reconcile_named_value_manifest.py --check` — passed.
+- `git diff --check` — passed.
+
+Hosted verification for PR #139 at that head is recorded in GitHub Actions run
+[`42545727788`](https://github.com/NeverWe1come/KMIPKit/actions/runs/42545727788).
+Its Rust platform matrix, C consumers and sanitizer, Java/JNI and Python
+bindings, coverage jobs and selected-scope gate, script contracts, dependency
+policy, CodeQL, zizmor, SonarCloud, and CI summary all succeeded; only the
+documented conditional/nightly jobs were skipped. After this evidence update,
+the workflow matrix must be green again on the resulting PR head before the
+stack is considered ready for review.

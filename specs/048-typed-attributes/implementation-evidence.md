@@ -477,6 +477,36 @@ tools/api_manifest/generate.py --check` verifies all 12 outputs; and
 remaining KMIPKIT-0071 documentation updates, applicable coverage, and hosted
 CI on the synchronized head.
 
+## KMIP 2.1/3.0 Link correction closeout (2026-11-09)
+
+The branch already contains the explicit semantic mapping required by
+KMIPKIT-0048-FR-011: all 14 values from KMIP 2.1 §11.28, Table 465 map to the
+corresponding exact KMIP 3.0 link tags in §§4.35.1–4.35.20 and §11.58. The six
+KMIP 3.0 link attributes without a KMIP 2.1 counterpart are rejected; unknown
+children, duplicate fields, and unsupported identifier encodings are not
+discarded or coerced. KMIP 3.0 tags are individually allocation-checked from
+the reviewed catalog, including the exact 60 assignments in §11.58, Table
+605. No further protocol-code change was needed for this report item.
+
+Local verification on branch head `a2c7bc24602396450b629e2c337d2bb65f84b09c`:
+
+- `cargo test -p kmipkit-protocol --all-features` — 1,332 unit/integration tests and 3 doctests passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo test -p kmipkit-protocol --all-features link_normalizer` — all 6 focused LinkNormalizer tests passed.
+- `python -m unittest tools.normative_catalog.tests.test_kmip30_link_migration_docs` — 4 documentation contracts passed.
+- `python tools/normative_catalog/generate_named_values.py --check` — all four outputs verified.
+- `python tools/api_manifest/generate.py --check` — all 12 outputs verified.
+- `cargo fmt --all --check` and `git diff --check` — passed.
+
+Hosted verification at that head is recorded in GitHub Actions run
+[`42545734880`](https://github.com/NeverWe1come/KMIPKit/actions/runs/42545734880).
+The Rust platform matrix, C, Java/JNI and Python consumers, sanitizer and fuzz
+jobs, coverage jobs and selected-scope gate, dependency policy, script
+contracts, CodeQL, zizmor, SonarCloud, and CI summary succeeded; documented
+conditional/nightly jobs were skipped. The stack-sync and evidence-only commit
+must also pass its newly triggered CI before the overall correction series is
+considered ready for review.
+
 ## KMIP 3.0 operation references and migration documentation (2026-11-09)
 
 The checksum-pinned KMIP 3.0 HTML source (`a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b`)
