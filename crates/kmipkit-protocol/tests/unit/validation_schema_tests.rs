@@ -362,6 +362,52 @@ fn key_information_requires_text_string_unique_identifier() {
 }
 
 #[test]
+fn managed_object_schemas_are_public_and_validate_required_fields() {
+    for (schema, rule) in [
+        (NestedStructureSchema::PgpKey, "KMIPKIT-0051-R285"),
+        (
+            NestedStructureSchema::SecretData,
+            "KMIPKIT-0051-R286",
+        ),
+        (NestedStructureSchema::SplitKey, "KMIPKIT-0051-R287"),
+    ] {
+        let report = validate_structure(
+            &Structure::new().view(),
+            Some(ValidationSchema::Nested(schema)),
+        );
+
+        assert!(
+            report.issues().iter().any(|issue| issue.code().as_str() == rule),
+            "{schema:?} should report required rule {rule}; got {report:?}"
+        );
+    }
+}
+
+#[test]
+fn public_split_key_schema_checks_conditional_prime_field_size() {
+    let split_key = structure([
+        item(0x0042_008B, Value::integer(2)),
+        item(0x0042_0044, Value::integer(1)),
+        item(0x0042_008C, Value::integer(2)),
+        item(0x0042_008A, Value::enumeration(3)),
+        item(KEY_BLOCK, Value::structure(Structure::new())),
+    ]);
+
+    let report = validate_structure(
+        &split_key.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::SplitKey)),
+    );
+
+    assert!(
+        report
+            .issues()
+            .iter()
+            .any(|issue| issue.code().as_str() == "KMIPKIT-0051-R292"),
+        "Split Key public schema should enforce Prime Field Size for Polynomial Sharing Prime Field; got {report:?}"
+    );
+}
+
+#[test]
 fn rights_schema_recursively_validates_usage_limits_and_preserves_empty_rights() {
     let malformed_usage_limits = structure([item(USAGE_LIMITS_TOTAL, Value::integer(2))]);
     let right = structure([item(USAGE_LIMITS, Value::structure(malformed_usage_limits))]);
