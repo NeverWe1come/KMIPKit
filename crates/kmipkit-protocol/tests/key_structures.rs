@@ -277,6 +277,51 @@ fn key_block_setters_update_decoded_tree_and_preserve_extensions() {
 }
 
 #[test]
+fn key_block_clearing_paired_crypto_fields_updates_raw_view_and_conversion() {
+    let source = KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Raw format")
+        .with_cryptographic_properties(Some(3), Some(128))
+        .try_into_item()
+        .expect("paired cryptographic fields");
+    let mut children = source.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(Item::try_clone)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("explicit zeroizing copy"),
+        _ => Vec::new(),
+    });
+    children.push(tagged(0x0054_0101, Value::integer(77)));
+    let parsed = KeyBlock::try_from_item(structure_item(0x0042_0040, children))
+        .expect("read valid Key Block")
+        .with_cryptographic_properties(None, None);
+
+    let raw_tags = parsed
+        .with_raw(|view| {
+            view.children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>()
+        })
+        .expect("raw view reflects a clearing mutation");
+    assert_eq!(raw_tags, [0x0042_0042, 0x0054_0101]);
+
+    let encoded = parsed
+        .try_into_item()
+        .expect("cleared paired fields leave a valid Key Block");
+    let encoded_tags = encoded.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        _ => Vec::new(),
+    });
+    assert_eq!(encoded_tags, raw_tags);
+}
+
+#[test]
 fn key_block_and_key_value_readers_reject_malformed_trees() {
     let valid_format = || tagged(0x0042_0042, Value::enumeration(1));
     let missing_format = structure_item(0x0042_0040, []);
