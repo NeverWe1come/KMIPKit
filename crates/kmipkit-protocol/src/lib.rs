@@ -56,6 +56,7 @@ mod kem;
 mod key_block;
 mod key_material;
 mod key_wrapping;
+mod kmip30_operations;
 mod lifecycle;
 pub mod link_normalizer;
 mod locate;
@@ -106,6 +107,7 @@ mod set_defaults_tests;
 mod set_endpoint_role;
 mod sign;
 mod signature_verify;
+mod system_credential_objects;
 mod ticket;
 mod typed_attributes;
 mod validate;
@@ -203,6 +205,11 @@ pub use key_material::{
     expected_key_material_item_type,
 };
 pub use key_wrapping::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
+pub use kmip30_operations::{
+    CreateCredentialObject, CreateCredentialRequest, CreateCredentialResponse, CreateGroupRequest,
+    CreateGroupResponse, CreateUserRequest, CreateUserResponse, Kmip30OperationError,
+    ObliterateRequest, ObliterateResponse,
+};
 pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
@@ -267,6 +274,12 @@ pub use set_endpoint_role::{
 };
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
+pub use system_credential_objects::{
+    DeviceCredentialObject, DeviceCredentialObjectFields, HashedPasswordCredentialObject,
+    HashedPasswordCredentialObjectFields, OneTimePasswordCredentialObject,
+    OneTimePasswordCredentialObjectFields, PasswordCredentialObject,
+    PasswordCredentialObjectFields,
+};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
 pub use validation::{
@@ -658,3 +671,6 @@ mod kmip30_operations_tests;
 #[cfg(test)]
 #[path = "../tests/unit/kem_tests.rs"]
 mod kem_tests;
+#[cfg(test)]
+#[path = "../tests/unit/kmip30_client_models_tests.rs"]
+mod kmip30_client_models_tests;

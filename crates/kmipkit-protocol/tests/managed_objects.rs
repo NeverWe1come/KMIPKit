@@ -1,15 +1,26 @@
 //! OASIS KMIP 2.1 §§2.1–2.9, Tables 2–10: typed object wire contracts.
 
 use kmipkit_protocol::{
-    Certificate, CertificateRequest, KeyBlock, KeyFormatType, ManagedObject, ObjectType,
-    OpaqueObject, PgpKey, PrivateKey, PublicKey, SecretData, SplitKey, SplitKeyMethod,
-    SymmetricKey,
+    Certificate, CertificateRequest, KeyBlock, KeyBlockValue, KeyFormatType, KeyMaterial, KeyValue,
+    ManagedObject, ObjectType, OpaqueObject, PgpKey, PrivateKey, PublicKey, SecretData, SplitKey,
+    SplitKeyMethod, SymmetricKey,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Value, ValueView};
 
 fn key_block() -> KeyBlock {
     KeyBlock::try_new(KeyFormatType::from_raw(0xFFFF_FFFE))
         .expect("an open future Key Format Type remains representable")
+}
+
+fn secret_data_key_block() -> KeyBlock {
+    let value = KeyValue::try_new(
+        KeyMaterial::byte_string(1, vec![0xA1]).expect("Raw Secret Data material"),
+        None,
+    )
+    .expect("valid Secret Data Key Value");
+    KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .expect("Raw format")
+        .with_key_value(KeyBlockValue::Plaintext(value))
 }
 
 fn item_shape(item: &Item) -> (u32, Vec<(u32, ItemType)>) {
@@ -49,7 +60,7 @@ fn every_known_managed_object_uses_its_oasis_structure_tag_and_field_order() {
         PublicKey::try_new(key_block())
             .expect("valid Public Key fields")
             .into_item(),
-        SecretData::try_new(0x8000_0004, key_block())
+        SecretData::try_new(0x8000_0004, secret_data_key_block())
             .expect("valid Secret Data fields")
             .into_item(),
         SplitKey::try_new(key_block(), 2, SplitKeyMethod::from_raw(1), 5, 3, None)
@@ -135,7 +146,9 @@ fn every_known_object_type_dispatches_only_its_matching_structure_tag() {
         PgpKey::try_new(1, key_block()).unwrap().into_item(),
         PrivateKey::try_new(key_block()).unwrap().into_item(),
         PublicKey::try_new(key_block()).unwrap().into_item(),
-        SecretData::try_new(1, key_block()).unwrap().into_item(),
+        SecretData::try_new(1, secret_data_key_block())
+            .unwrap()
+            .into_item(),
         SplitKey::try_new(key_block(), 1, SplitKeyMethod::from_raw(1), 2, 2, None)
             .unwrap()
             .into_item(),
@@ -208,10 +221,40 @@ fn polynomial_prime_field_requires_prime_field_size() {
 }
 
 #[test]
+fn split_key_threshold_one_is_not_rejected_by_an_unstated_local_limit() {
+    let split = SplitKey::try_new(key_block(), 1, SplitKeyMethod::from_raw(1), 2, 1, None)
+        .expect("KMIP 2.1 §2.8 does not impose a threshold minimum of two");
+    assert_eq!(
+        item_shape(&split.into_item()).1[2],
+        (0x0042_008C, ItemType::Integer)
+    );
+
+    let parsed = SplitKey::try_from_item(split_key_item(2, 1, 1, 1, false));
+    assert!(parsed.is_ok(), "the reader preserves the source threshold");
+}
+
+#[test]
 fn secret_data_rejects_key_block_algorithm_and_length_fields() {
-    let block = key_block().with_cryptographic_properties(Some(3), Some(256));
+    let block = secret_data_key_block().with_cryptographic_properties(Some(3), Some(256));
     let result = SecretData::try_new(1, block);
     assert!(result.is_err());
+}
+
+#[test]
+fn secret_data_requires_a_key_value_in_constructor_and_reader() {
+    assert!(SecretData::try_new(1, key_block()).is_err());
+
+    let block = key_block()
+        .try_into_item()
+        .expect("a Key Block may be structurally read without a Key Value");
+    let secret = structure_item(
+        0x0042_0085,
+        [
+            Item::new(tag(0x0042_0086), Value::enumeration(1)).expect("Secret Data Type"),
+            block,
+        ],
+    );
+    assert!(SecretData::try_from_item(secret).is_err());
 }
 
 #[test]
@@ -225,7 +268,7 @@ fn split_key_reader_rejects_invalid_numeric_and_conditional_fields() {
 
 #[test]
 fn secret_data_reader_rejects_cryptographic_properties_in_key_block() {
-    let block = key_block()
+    let block = secret_data_key_block()
         .with_cryptographic_properties(Some(3), Some(256))
         .try_into_item()
         .expect("paired Key Block cryptographic fields are structurally valid");
@@ -374,7 +417,7 @@ fn typed_object_accessors_and_raw_views_cover_all_managed_object_models() {
     assert!(private.with_raw(|view| view.children().len()).is_ok());
     let public = PublicKey::try_new(key_block()).expect("Public Key");
     assert!(public.with_raw(|view| view.children().len()).is_ok());
-    let secret = SecretData::try_new(4, key_block()).expect("Secret Data");
+    let secret = SecretData::try_new(4, secret_data_key_block()).expect("Secret Data");
     assert_eq!(secret.secret_data_type(), Some(4));
     assert!(secret.with_raw(|view| view.children().len()).is_ok());
     let split = SplitKey::try_new(key_block(), 1, SplitKeyMethod::from_raw(1), 2, 2, None)
@@ -382,6 +425,22 @@ fn typed_object_accessors_and_raw_views_cover_all_managed_object_models() {
     assert!(split.with_raw(|view| view.children().len()).is_ok());
     let symmetric = SymmetricKey::try_new(key_block()).expect("Symmetric Key");
     assert!(symmetric.with_raw(|view| view.children().len()).is_ok());
+
+    for object in [
+        ManagedObject::PgpKey(pgp),
+        ManagedObject::PrivateKey(private),
+        ManagedObject::PublicKey(public),
+        ManagedObject::SecretData(secret),
+        ManagedObject::SplitKey(split),
+        ManagedObject::SymmetricKey(symmetric),
+    ] {
+        assert!(
+            object
+                .key_block()
+                .expect("key object has a Key Block")
+                .is_ok()
+        );
+    }
 
     let typed = ManagedObject::try_from_item(ObjectType::from_raw(1), certificate.into_item())
         .expect("typed dispatch");

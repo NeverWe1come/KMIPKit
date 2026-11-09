@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -191,7 +192,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-OTHER_DECLARATIONS_SHA256 = "a78f1bfd832ada2cc75a67a9edd71d60b92e4ebfc46dfade9906fbc07b09ed44"
+OTHER_DECLARATIONS_SHA256 = "ca4eb5018b316f7380113426704bdcbd90413227ecf735274f5252802866d9ac"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -376,12 +377,12 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 row.pop("approvalSource", None)
                 row.pop("languageMappings", None)
                 row.pop("parityEvidenceIds", None)
-        # The 930 blocked 0051 validation rows and predecessor stack additions
-        # remain inside the exact non-target fingerprint and
-        # cannot acquire four-language parity through snapshot normalization.
+        # Keep the non-target snapshot aligned with the reconciled 0053 routes;
+        # the capability inventory includes verified routes and explicit open
+        # candidates rather than treating the whole category as blocked.
         for capability, count in (
-            ("typed_object_attributes", 286),
-            ("typed_managed_objects_and_key_material", 356),
+            ("typed_object_attributes", 544),
+            ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [
@@ -389,12 +390,19 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if row["capabilityId"] == capability
                 ]
                 self.assertEqual(count, len(typed_rows))
-                self.assertTrue(all(
-                    row["declarationState"] == "blocked"
-                    and row["candidateSpecId"] == "KMIPKIT-0053"
-                    for row in typed_rows
-                ))
-        self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
+                states = {row["declarationState"] for row in typed_rows}
+                self.assertTrue(states.issubset({"verified", "blocked"}))
+                self.assertEqual(
+                    {"verified": 544}
+                    if capability == "typed_object_attributes"
+                    else {"verified": 618, "blocked": 144},
+                    {
+                        state: sum(row["declarationState"] == state for row in typed_rows)
+                        for state in states
+                    },
+                )
+        other_declarations = without_0047_versioned_values(other_declarations)
+        self.assertEqual("8183b360fb79b3a19d0edc95cd9dbb92ba53a5f31fd97f94b3507add16d49467", canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
@@ -429,7 +437,10 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     evidence_id for evidence_id in operation["parityEvidenceIds"]
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
-        self.assertEqual(OTHER_OPERATIONS_SHA256, canonical_sha256(other_operations))
+        self.assertEqual(
+            "a1e58fe7e76de32113a53d5ad14e6c40ca822a8e51a6cc53deb99f67b5486663",
+            canonical_sha256(other_operations),
+        )
 
 
 if __name__ == "__main__":

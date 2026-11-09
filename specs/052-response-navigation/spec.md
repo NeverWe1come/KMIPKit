@@ -89,6 +89,7 @@ An application developer can use raw response access from Rust, C, Java, and Pyt
 - **KMIPKIT-0052-FR-010**: The implementation MUST preserve existing response decoding, Result Status semantics, asynchronous correlation handling, error redaction, and public ABI compatibility.
 - **KMIPKIT-0052-FR-011**: Every normative response-structure requirement MUST cite the exact KMIP v2.1 section and table and have a stable traceability ID linked to implementation and executable tests. Project-specific API/lifetime decisions MUST use separate project decision IDs.
 - **KMIPKIT-0052-FR-012**: The API manifest and generated Rust, C, Java, Python, test, and documentation outputs MUST be reconciled using the pinned generator; generated files MUST NOT be hand-edited.
+- **KMIPKIT-0052-FR-013**: Rust Get and Export responses MUST provide typed access to a successful managed object and, when that object defines one, its Key Block. These accessors MUST preserve the original response tree, retain unknown and vendor children in their typed copies, return absence for non-success results or objects without a Key Block, and keep failures payload-free and redacted.
 
 ### Normative Source References
 
@@ -110,6 +111,7 @@ An application developer can use raw response access from Rust, C, Java, and Pyt
 - **KMIPKIT-0052-SC-003**: Rust, C, Java, and Python consumers each successfully navigate a vendor-tagged nested Structure in both Key Block and Server Information while preserving repeated fields and value types.
 - **KMIPKIT-0052-SC-004**: Response ownership and release tests pass in all four languages, and response canary values are absent from Debug and error output.
 - **KMIPKIT-0052-SC-005**: All new public routes have exact manifest declarations or narrowly justified exclusions; generated output is clean under `generate.py --check`.
+- **KMIPKIT-0052-SC-006**: Rust Get and Export results expose validated managed-object and Key Block models without losing access to the original decoded TTLV tree; tests prove extension preservation, absent accessors for non-key objects, and redaction of secret payloads.
 
 ## Assumptions
 

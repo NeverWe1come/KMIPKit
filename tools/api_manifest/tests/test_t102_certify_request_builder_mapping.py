@@ -13,6 +13,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -157,7 +158,7 @@ BLOCKED_AFTER = 221
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # The snapshot includes the final KMIPKIT-0053 verified operation surfaces.
-DECLARATIONS_SHA256 = "bdc6edb03533ecb98c20692a74ea357d4688eb4b1e7bd6e1c73a11da0f5593be"
+DECLARATIONS_SHA256 = "7a1506d309c0229acc174999dcb681da4a1dce4beed6ec1763cd76587e79bfde"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
@@ -442,7 +443,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         # inside this exact non-target fingerprint.
         for capability, count in (
             ("typed_object_attributes", 544),
-            ("typed_managed_objects_and_key_material", 618),
+            ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [
@@ -450,6 +451,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     if row["capabilityId"] == capability
                 ]
                 self.assertEqual(count, len(typed_rows))
+        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

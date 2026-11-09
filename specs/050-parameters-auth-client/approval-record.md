@@ -21,3 +21,14 @@ target that branch, with eventual integration into `release/1.0.0`.
 This record captures feature and branch-base authorization. It does not claim
 human review, merge, server acceptance, interoperability, profile conformance,
 formal certification, or release readiness.
+
+## Maintainer correction authorization (2026-11-09)
+
+The maintainer-approved Phase 5 correction plan authorizes KMIPKIT-0050 to
+complete the client-side KMIP 3.0 operation surface already catalogued by
+KMIPKIT-0071: Create Credential, Create Group, Create User, Deactivate,
+Decapsulate, Encapsulate, and Obliterate. This work adds typed request and
+response payload models plus direct `Client` methods with per-exchange options,
+gated to KMIP 3.0 by the selected protocol version. It does not make KMIP 3.0
+the default, claim final-standard conformance, or add server-initiated
+operations.

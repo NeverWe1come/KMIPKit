@@ -81,6 +81,21 @@
 - [x] T038 Commit Red, Green, and Refactor evidence in distinct commits for each implementation group; commit IDs are listed in `implementation-evidence.md`.
 - [x] T039 Open a draft PR with `gh` from `feature/KMIPKIT-0050-parameters-auth-client` to `feature/KMIPKIT-0049-managed-objects`; verify URL, state, base, head, and commit in implementation evidence. At the initial 2026-11-07 audit snapshot, PR #118 was open/draft at base OID `28d209fd0a159376a8b7ca2b58c71704b37cc9a2` and head OID `ecbd9c978c625ba3648e49f74149287b54ae6c09`; the original PR-open head `4f23fba09f791dbbd7f510188151a3683fef1dfb` is historical. The #116 evidence refresh (`77b3d91ca`) was then merged here through documentation-only merge `79277e78f`; hosted platform/CI gates remain outstanding.
 
+## Phase 7: KMIP 3.0 KEM response correction
+
+- [x] T040 Add failing tests for the exact Encapsulate/Decapsulate response fields and ensure shared-secret bytes are absent from typed responses and their `Debug` output. Red commits: `ffdf21c3c` (typed models) and `8fcb01c6e` (test server).
+- [x] T041 Correct the KMIP 3.0 response models to emit `Unique Identifier` + `Data` for Encapsulate and only `Unique Identifier` for Decapsulate; store the generated Secret Data result on the test server and return its identifier without Key Material in the response. Green commit: `73e7f1ec7` plus the dispatcher fix recorded in implementation evidence.
+- [x] T042 Correct the KMIP 3.0 operation identifiers and public model naming, update KMIPKIT-0050/0071 traceability, and add a pre-1.0 migration note for the corrected constructors and accessors.
+- [x] T043 Run focused KEM/client-server tests, workspace format/lint/test checks, public API and generated-manifest checks; record results and remote CI state in `implementation-evidence.md`. The 226-route 0050 delta is reconciled. A separate 4,199-route whole-tree manifest gap remains open for owner-by-owner assignment; it is not attributed wholesale to 0050 or 0053, and this audit did not pass the global gate.
+
+## Phase 8: Complete KMIP 3.0 client operations (maintainer correction)
+
+- [x] T044 Reconcile each of the seven KMIP 3.0 request/response payload tables and exact operation codes against the pinned source; record empty payloads and permitted object alternatives explicitly. Exact tables and assignments are recorded in FR-016/017 and `traceability.md`; source SHA-256 is in `specification/oasis/kmip-3.0/SOURCES.md`.
+- [x] T045 Add Red tests for typed payload order, request type construction, direct client methods and `_with_options` signatures, exact operation enumeration mapping, and rejection of `0x43`. The client surface compilation test is expected to fail until T046; the VersionGate test passes against the pre-existing exact seven-tag table.
+- [x] T046 Implement typed KMIP 3.0 request/response payload models and add all seven operations to `ClientRequest`, `ClientOperation`, and the client execution path. Red: `69bc4ae26`; Green: `b1fd28664`.
+- [x] T047 Add fake-transport tests for request codes/payloads, response preservation, KMIP 2.0/2.1 `NotSent` with zero writes, Pending/correlation preservation, and no shared-secret leakage from KEM responses or diagnostics.
+- [ ] T048 Correct stale KMIP 3.0 operation identifiers in existing tests; record Red/Green/Refactor commits and focused local verification. Complete the versioned public API manifest reconciliation for the KMIP 3.0 routes in KMIPKIT-0053, together with C, Java, and Python parity. Track hosted CI separately from local checks.
+
 ## Dependencies
 
 - T001–T004 precede implementation.
@@ -88,3 +103,4 @@
 - US2 Authentication (T013–T020) depends on T003's secret-lifetime audit and uses the existing Credential models.
 - US3 direct methods (T021–T028) reuses the existing operation types and common client execution path; it can be implemented after its inventory Red test.
 - T029–T039 require all three stories complete. Security/QA review precedes PR creation.
+- T040–T043 are a targeted correction to the KMIP 3.0 KEM models already inherited from KMIPKIT-0071; their payload contract follows the pinned draft tables and does not change the KMIP 2.1 default.

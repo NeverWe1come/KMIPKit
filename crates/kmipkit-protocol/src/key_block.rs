@@ -11,7 +11,9 @@ use crate::key_material::{
     KeyMaterial, expected_key_material_item_type, validate_key_material_item,
 };
 use crate::key_wrapping::KeyWrappingData;
-use crate::managed_object::{checked_tag, make_item, rebuild_ordered_structure};
+use crate::managed_object::{
+    checked_tag, make_item, rebuild_ordered_structure, rebuild_ordered_structure_with_removals,
+};
 
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
@@ -42,6 +44,7 @@ struct ParsedKeyBlock {
     key_compression_type: Option<KeyCompressionType>,
     cryptographic_algorithm: Option<u32>,
     cryptographic_length: Option<i32>,
+    key_value_present: bool,
 }
 
 /// A typed Key Block builder that emits members in Table 12 order.
@@ -51,6 +54,7 @@ pub struct KeyBlock {
     key_value: Option<StoredKeyBlockValue>,
     cryptographic_algorithm: Option<u32>,
     cryptographic_length: Option<i32>,
+    replace_cryptographic_properties: bool,
     key_wrapping_data: Option<KeyWrappingData>,
     raw_item: Option<Item>,
 }
@@ -80,6 +84,7 @@ impl KeyBlock {
             key_value: None,
             cryptographic_algorithm: None,
             cryptographic_length: None,
+            replace_cryptographic_properties: false,
             key_wrapping_data: None,
             raw_item: None,
         })
@@ -94,6 +99,7 @@ impl KeyBlock {
             key_value: None,
             cryptographic_algorithm: parsed.cryptographic_algorithm,
             cryptographic_length: parsed.cryptographic_length,
+            replace_cryptographic_properties: false,
             key_wrapping_data: None,
             raw_item: Some(item),
         })
@@ -108,6 +114,10 @@ impl KeyBlock {
     ) -> Result<bool, ManagedObjectError> {
         let parsed = parse_key_block(item)?;
         Ok(parsed.cryptographic_algorithm.is_some() || parsed.cryptographic_length.is_some())
+    }
+
+    pub(crate) fn has_key_value_item(item: &Item) -> Result<bool, ManagedObjectError> {
+        parse_key_block(item).map(|parsed| parsed.key_value_present)
     }
 
     /// Returns the source-preserving Key Format Type.
@@ -179,6 +189,7 @@ impl KeyBlock {
     ) -> Self {
         self.cryptographic_algorithm = algorithm;
         self.cryptographic_length = length;
+        self.replace_cryptographic_properties = true;
         self
     }
 
@@ -330,18 +341,24 @@ impl KeyBlock {
         if let Some(wrapping) = &self.key_wrapping_data {
             replacements.push(wrapping.snapshot_item()?);
         }
-        rebuild_ordered_structure(
-            item,
-            &[
-                KEY_FORMAT_TYPE,
-                KEY_COMPRESSION_TYPE,
-                KEY_VALUE,
-                CRYPTOGRAPHIC_ALGORITHM,
-                CRYPTOGRAPHIC_LENGTH,
-                KEY_WRAPPING_DATA,
-            ],
-            replacements,
-        )
+        let ordered_tags = [
+            KEY_FORMAT_TYPE,
+            KEY_COMPRESSION_TYPE,
+            KEY_VALUE,
+            CRYPTOGRAPHIC_ALGORITHM,
+            CRYPTOGRAPHIC_LENGTH,
+            KEY_WRAPPING_DATA,
+        ];
+        if self.replace_cryptographic_properties {
+            rebuild_ordered_structure_with_removals(
+                item,
+                &ordered_tags,
+                replacements,
+                &[CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH],
+            )
+        } else {
+            rebuild_ordered_structure(item, &ordered_tags, replacements)
+        }
     }
 }
 
@@ -461,6 +478,7 @@ fn parse_key_block(item: &Item) -> Result<ParsedKeyBlock, ManagedObjectError> {
             key_compression_type,
             cryptographic_algorithm,
             cryptographic_length,
+            key_value_present: value_type.is_some(),
         })
     })
 }

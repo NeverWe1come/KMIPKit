@@ -489,7 +489,10 @@ when you want KMIP field checks. KMIPKit does not guess a schema from matching
 tags. It preserves unknown tags, future Enumeration values, unknown bit-mask
 bits, and vendor extensions while checking known fields. Field order follows
 the relevant structure description in KMIP v2.1 §10.1.2, not numeric tag
-order. A successful local report does not predict server capabilities,
+order. For managed objects, select `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData`, or `NestedStructureSchema::SplitKey` to
+check the corresponding object structure directly. A successful local report
+does not predict server capabilities,
 authorization, object state, or policy and is not a claim of profile
 conformance.
 

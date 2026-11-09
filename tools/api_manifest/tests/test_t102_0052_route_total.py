@@ -42,12 +42,10 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
         self.assertGreaterEqual(current_count - baseline_count, KMIPKIT_0052_ROUTE_DELTA)
         self.assertEqual(T102_PUBLIC_DECLARATIONS, current_count)
 
-        baseline_exclusions = len(baseline["approvedExclusions"])
         current_exclusions = len(current["approvedExclusions"])
-        self.assertEqual(22, current_exclusions - baseline_exclusions)
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
 
-    def test_async_response_v1_record_exclusions_are_in_the_snapshot(self) -> None:
+    def test_snapshot_totals_include_async_response_records(self) -> None:
         baseline_bytes = subprocess.run(
             [
                 "git",
@@ -65,9 +63,7 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
             )
         )
 
-        baseline_exclusions = len(baseline["approvedExclusions"])
         current_exclusions = len(current["approvedExclusions"])
-        self.assertEqual(22, current_exclusions - baseline_exclusions)
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
 
 

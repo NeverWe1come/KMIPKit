@@ -79,7 +79,7 @@ RELATED_STATES = {
     "ExportRequest": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::with_key_compression_type": "verified", "::with_key_format_type": "verified", "::with_key_wrap_type": "verified", "::with_key_wrapping_specification": "verified", "::with_unique_identifier": "verified", "::unique_identifier": "verified"},
     "ExportResponse": {"": "verified", "::attributes": "verified", "::object": "verified", "::object_type": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
     "ImportRequest": {
-        "::from_managed_object": "blocked",
+        "::from_managed_object": "verified",
         "": "verified",
         "::attributes": "verified",
         "::into_ttlv_payload": "verified",

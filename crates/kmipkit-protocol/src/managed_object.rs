@@ -1,4 +1,4 @@
-//! Typed KMIP 2.1 managed-object structures from §§2.1–2.9, Tables 2–10.
+//! Typed KMIP 2.1 user objects and KMIP 3.0 system credential objects.
 #![allow(clippy::missing_errors_doc)] // Fallible constructors share the sanitized schema error documented below.
 
 use std::{error::Error, fmt};
@@ -10,6 +10,10 @@ use kmipkit_ttlv::{
 use crate::{ObjectType, SplitKeyMethod};
 
 use crate::key_block::KeyBlock;
+use crate::system_credential_objects::{
+    DeviceCredentialObject, HashedPasswordCredentialObject, OneTimePasswordCredentialObject,
+    PasswordCredentialObject,
+};
 
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
@@ -117,6 +121,19 @@ pub(crate) fn rebuild_ordered_structure(
     ordered_tags: &[u32],
     replacements: Vec<Item>,
 ) -> Result<Item, ManagedObjectError> {
+    rebuild_ordered_structure_with_removals(source, ordered_tags, replacements, &[])
+}
+
+/// Replaces/removes selected fields while preserving unknown siblings and order.
+///
+/// A replacement for a tag takes precedence over its membership in
+/// `removed_tags`; all other matching children are omitted.
+pub(crate) fn rebuild_ordered_structure_with_removals(
+    source: &Item,
+    ordered_tags: &[u32],
+    replacements: Vec<Item>,
+    removed_tags: &[u32],
+) -> Result<Item, ManagedObjectError> {
     let mut pending = replacements;
     let mut children = source.with_value(|value| {
         let ValueView::Structure(structure) = value else {
@@ -129,7 +146,7 @@ pub(crate) fn rebuild_ordered_structure(
                 .position(|replacement| replacement.tag() == child.tag())
             {
                 children.push(pending.remove(position));
-            } else {
+            } else if !removed_tags.contains(&child.tag().raw()) {
                 children.push(child.try_clone().map_err(ManagedObjectError::from)?);
             }
         }
@@ -220,10 +237,16 @@ pub(crate) fn validate_structure(
 fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), ManagedObjectError> {
     match expected_tag {
         SECRET_DATA => {
-            let has_crypto_properties = with_item(item, KEY_BLOCK, |key_block| {
-                KeyBlock::has_cryptographic_properties_item(key_block)
+            let (has_key_value, has_crypto_properties) = with_item(item, KEY_BLOCK, |key_block| {
+                Ok::<_, ManagedObjectError>((
+                    KeyBlock::has_key_value_item(key_block)?,
+                    KeyBlock::has_cryptographic_properties_item(key_block)?,
+                ))
             })
             .ok_or(ManagedObjectError::MissingRequiredField)??;
+            if !has_key_value {
+                return Err(ManagedObjectError::MissingRequiredField);
+            }
             if has_crypto_properties {
                 return Err(ManagedObjectError::InvalidFieldCombination);
             }
@@ -231,14 +254,11 @@ fn validate_object_constraints(item: &Item, expected_tag: u32) -> Result<(), Man
         SPLIT_KEY => {
             let parts = integer_field(item, SPLIT_KEY_PARTS)?;
             let identifier = integer_field(item, KEY_PART_IDENTIFIER)?;
-            let threshold = integer_field(item, SPLIT_KEY_THRESHOLD)?;
             let method = enumeration_field(item, SPLIT_KEY_METHOD)?;
             let has_prime_field_size = with_field(item, PRIME_FIELD_SIZE, |_| ()).is_some();
             if parts < 1
                 || identifier < 1
                 || identifier > parts
-                || threshold < 2
-                || threshold > parts
                 || (method == 3 && !has_prime_field_size)
             {
                 return Err(ManagedObjectError::InvalidFieldCombination);
@@ -537,6 +557,9 @@ impl PublicKey {
 impl SecretData {
     /// Constructs the Table 8 Secret Data fields in source order.
     pub fn try_new(data_type: u32, key_block: KeyBlock) -> Result<Self, ManagedObjectError> {
+        if key_block.key_value_type().is_none() {
+            return Err(ManagedObjectError::MissingRequiredField);
+        }
         if key_block.has_cryptographic_properties() {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
@@ -573,8 +596,6 @@ impl SplitKey {
         if key_part_identifier < 1
             || split_key_parts < 1
             || key_part_identifier > split_key_parts
-            || split_key_threshold < 2
-            || split_key_threshold > split_key_parts
             || (split_key_method.raw() == 3 && prime_field_size.is_none())
         {
             return Err(ManagedObjectError::InvalidFieldCombination);
@@ -609,6 +630,14 @@ pub enum ManagedObject {
     Certificate(Certificate),
     /// Certificate Request object (Object Type 10).
     CertificateRequest(CertificateRequest),
+    /// Password Credential system object (KMIP 3.0 Object Type 13).
+    PasswordCredential(PasswordCredentialObject),
+    /// Device Credential system object (KMIP 3.0 Object Type 14).
+    DeviceCredential(DeviceCredentialObject),
+    /// One Time Password Credential system object (KMIP 3.0 Object Type 15).
+    OneTimePasswordCredential(OneTimePasswordCredentialObject),
+    /// Hashed Password Credential system object (KMIP 3.0 Object Type 16).
+    HashedPasswordCredential(HashedPasswordCredentialObject),
     /// Opaque Object (Object Type 8).
     OpaqueObject(OpaqueObject),
     /// PGP Key object (Object Type 9).
@@ -645,6 +674,12 @@ impl ManagedObject {
             8 => OpaqueObject::try_from_item(item).map(Self::OpaqueObject),
             9 => PgpKey::try_from_item(item).map(Self::PgpKey),
             10 => CertificateRequest::try_from_item(item).map(Self::CertificateRequest),
+            13 => PasswordCredentialObject::try_from_item(item).map(Self::PasswordCredential),
+            14 => DeviceCredentialObject::try_from_item(item).map(Self::DeviceCredential),
+            15 => OneTimePasswordCredentialObject::try_from_item(item)
+                .map(Self::OneTimePasswordCredential),
+            16 => HashedPasswordCredentialObject::try_from_item(item)
+                .map(Self::HashedPasswordCredential),
             _ => {
                 validate_any_structure(&item)?;
                 if known_object_tag(item.tag().raw()) {
@@ -660,8 +695,10 @@ impl ManagedObject {
     /// # Errors
     /// Returns an error if the Object Type or Item tag belongs to a known object.
     pub fn unknown(object_type: ObjectType, item: Item) -> Result<Self, ManagedObjectError> {
-        if matches!(object_type.raw(), 1 | 2 | 3 | 4 | 5 | 7 | 8 | 9 | 10)
-            || known_object_tag(item.tag().raw())
+        if matches!(
+            object_type.raw(),
+            1 | 2 | 3 | 4 | 5 | 7 | 8 | 9 | 10 | 13 | 14 | 15 | 16
+        ) || known_object_tag(item.tag().raw())
         {
             return Err(ManagedObjectError::MismatchedObjectType);
         }
@@ -682,8 +719,57 @@ impl ManagedObject {
             Self::OpaqueObject(_) => ObjectType::from_raw(8),
             Self::PgpKey(_) => ObjectType::from_raw(9),
             Self::CertificateRequest(_) => ObjectType::from_raw(10),
+            Self::PasswordCredential(_) => ObjectType::PASSWORD_CREDENTIAL,
+            Self::DeviceCredential(_) => ObjectType::DEVICE_CREDENTIAL,
+            Self::OneTimePasswordCredential(_) => ObjectType::ONE_TIME_PASSWORD_CREDENTIAL,
+            Self::HashedPasswordCredential(_) => ObjectType::HASHED_PASSWORD_CREDENTIAL,
             Self::Unknown { object_type, .. } => *object_type,
         }
+    }
+
+    /// Returns an owned typed Key Block for objects that define one.
+    ///
+    /// The returned model is an explicit, zeroizing copy of this object's Key
+    /// Block. Unknown children and their source order are retained. Objects
+    /// without a KMIP Key Block return `None`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error if the retained Key Block cannot be copied or
+    /// no longer satisfies the Key Block schema.
+    #[must_use]
+    pub fn key_block(&self) -> Option<Result<KeyBlock, ManagedObjectError>> {
+        let object = match self {
+            Self::PgpKey(value) => Some(&value.item),
+            Self::PrivateKey(value) => Some(&value.item),
+            Self::PublicKey(value) => Some(&value.item),
+            Self::SecretData(value) => Some(&value.item),
+            Self::SplitKey(value) => Some(&value.item),
+            Self::SymmetricKey(value) => Some(&value.item),
+            Self::Certificate(_)
+            | Self::CertificateRequest(_)
+            | Self::PasswordCredential(_)
+            | Self::DeviceCredential(_)
+            | Self::OneTimePasswordCredential(_)
+            | Self::HashedPasswordCredential(_)
+            | Self::OpaqueObject(_)
+            | Self::Unknown { .. } => None,
+        }?;
+
+        Some((|| {
+            let key_block = object.with_value(|value| {
+                let ValueView::Structure(structure) = value else {
+                    return Err(ManagedObjectError::InvalidStructure); // COVERAGE-EXCLUDE: typed managed-object constructors retain validated Structure Items.
+                };
+                let field = structure
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == KEY_BLOCK)
+                    .ok_or(ManagedObjectError::MissingRequiredField)?; // COVERAGE-EXCLUDE: each key-bearing object's required-field schema includes Key Block.
+                field.try_clone().map_err(ManagedObjectError::from) // COVERAGE-EXCLUDE: cloning a validated bounded item cannot exceed its original TTLV limits.
+            })?;
+            KeyBlock::try_from_item(key_block) // COVERAGE-EXCLUDE: ManagedObject construction validated this exact Key Block item.
+        })())
     }
 
     /// Consumes the wrapper into the direct object-specific TTLV Item.
@@ -692,6 +778,10 @@ impl ManagedObject {
         match self {
             Self::Certificate(value) => value.into_item(),
             Self::CertificateRequest(value) => value.into_item(),
+            Self::PasswordCredential(value) => value.into_item(),
+            Self::DeviceCredential(value) => value.into_item(),
+            Self::OneTimePasswordCredential(value) => value.into_item(),
+            Self::HashedPasswordCredential(value) => value.into_item(),
             Self::OpaqueObject(value) => value.into_item(),
             Self::PgpKey(value) => value.into_item(),
             Self::PrivateKey(value) => value.into_item(),
@@ -719,6 +809,10 @@ impl ManagedObject {
         match self {
             Self::Certificate(value) => value.item.tag().raw(),
             Self::CertificateRequest(value) => value.item.tag().raw(),
+            Self::PasswordCredential(value) => value.with_item(|item| item.tag().raw()),
+            Self::DeviceCredential(value) => value.with_item(|item| item.tag().raw()),
+            Self::OneTimePasswordCredential(value) => value.with_item(|item| item.tag().raw()),
+            Self::HashedPasswordCredential(value) => value.with_item(|item| item.tag().raw()),
             Self::OpaqueObject(value) => value.item.tag().raw(),
             Self::PgpKey(value) => value.item.tag().raw(),
             Self::PrivateKey(value) => value.item.tag().raw(),
@@ -736,6 +830,10 @@ fn known_object_tag(tag: u32) -> bool {
         tag,
         CERTIFICATE
             | CERTIFICATE_REQUEST
+            | 0x0042_01A1
+            | 0x0042_01A6
+            | 0x0042_01A7
+            | 0x0042_01AF
             | OPAQUE_OBJECT
             | PGP_KEY
             | PRIVATE_KEY

@@ -1,9 +1,10 @@
 //! Unit tests for multi-version client configuration, override, and `VersionGate` enforcement (KMIPKIT-0069).
 
-use kmipkit_protocol::ProtocolVersion;
+use kmipkit_protocol::{NewAttribute, ProtocolVersion, SetAttributeRequest};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::{Item, RawTag, Value};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::decode_request_message_for_test;
@@ -141,22 +142,77 @@ fn test_version_gate_rejects_uncatalogued_version_before_send() {
 fn test_version_gate_kmip30_operations_validation() {
     use kmipkit_protocol::VersionGate;
 
-    const DEACTIVATE_OPERATION: u32 = 0x0000_003E;
-    const ENCAPSULATE_OPERATION: u32 = 0x0000_003F;
-    const DECAPSULATE_OPERATION: u32 = 0x0000_0040;
+    const KMIP30_OPERATIONS: [u32; 7] = [
+        0x0000_003C, // Create Group.
+        0x0000_003D, // Obliterate.
+        0x0000_003E, // Create User.
+        0x0000_003F, // Create Credential.
+        0x0000_0040, // Deactivate.
+        0x0000_0041, // Encapsulate.
+        0x0000_0042, // Decapsulate.
+    ];
 
-    // Allowed under KMIP 3.0
-    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, DEACTIVATE_OPERATION).is_ok());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, ENCAPSULATE_OPERATION).is_ok());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, DECAPSULATE_OPERATION).is_ok());
+    for operation in KMIP30_OPERATIONS {
+        assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, operation).is_ok());
+        assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, operation).is_err());
+        assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, operation).is_err());
+    }
 
-    // Rejected under KMIP 2.1
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, DEACTIVATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, ENCAPSULATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, DECAPSULATE_OPERATION).is_err());
+    // Table 584 assigns no operation code after Decapsulate.
+    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, 0x0000_0043).is_err());
+}
 
-    // Rejected under KMIP 2.0
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, DEACTIVATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, ENCAPSULATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, DECAPSULATE_OPERATION).is_err());
+#[test]
+fn version_gate_rejects_kmip30_attribute_before_transport() {
+    const KMIP_3_0_ONLY_TAG: u32 = 0x0042_01C2;
+    let attribute_item = Item::new(
+        RawTag::new(KMIP_3_0_ONLY_TAG)
+            .expect("tag fits in the TTLV tag field")
+            .try_checked()
+            .expect("tag is allocated in a supported KMIP version"),
+        Value::boolean(true),
+    )
+    .expect("valid item model");
+    let request = ClientRequest::set_attribute(SetAttributeRequest::new(
+        Some("object".to_owned()),
+        NewAttribute::new(attribute_item),
+    ));
+    let batch = ClientBatch::new(ClientBatchItem::new(request));
+    let options = RequestOptions::default().with_protocol_version(ProtocolVersion::V2_1);
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .execute_with_options(batch, &CodecLimits::defaults(), &options)
+        .expect_err("KMIP 3.0 attribute must be rejected for a KMIP 2.1 request");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn kmip20_rotate_only_attribute_mutation_is_not_sent() {
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    let attribute_item = Item::new(
+        RawTag::new(CRYPTOGRAPHIC_ALGORITHM)
+            .expect("tag fits in the TTLV tag field")
+            .try_checked()
+            .expect("tag is allocated in a supported KMIP version"),
+        Value::enumeration(1),
+    )
+    .expect("valid item model");
+    let request = ClientRequest::set_attribute(SetAttributeRequest::new(
+        Some("object".to_owned()),
+        NewAttribute::new(attribute_item),
+    ));
+    let batch = ClientBatch::new(ClientBatchItem::new(request));
+    let options = RequestOptions::default().with_protocol_version(ProtocolVersion::V2_0);
+    let (mut client, transport, request_bytes) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .execute_with_options(batch, &CodecLimits::defaults(), &options)
+        .expect_err("KMIP 2.0 rotate-only mutation must be rejected locally");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert!(request_bytes.borrow().is_none());
 }

@@ -302,6 +302,13 @@ For a generic TTLV `Structure`, callers must select a
 `RequestPayloadSchema` or `NestedStructureSchema` explicitly when they want
 schema checks. `validate_structure(&view, None)` performs no KMIP schema
 inference; generic model validity is already enforced by the TTLV model.
+The public nested identities include `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData`, and `NestedStructureSchema::SplitKey` for
+the KMIP 2.1 §2.4 Table 5, §2.7 Table 8, and §2.8 Table 9 object schemas.
+KMIP 3.0 Working Draft operations use their own typed request models rather
+than the KMIP 2.1 payload-schema registry; execution still gates their operation
+codes and serialized tags against the effective protocol version before
+calling the transport.
 Schema-aware validation checks known field order, type, cardinality, and
 requiredness while retaining unknown tags, future enum values, unknown mask
 bits, and extensions. The order check follows each OASIS structure

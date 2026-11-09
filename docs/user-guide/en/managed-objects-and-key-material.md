@@ -114,3 +114,42 @@ let secret_owner = KeyMaterial::byte_string(1, caller_owned_secret)?;
 drop(secret_owner);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+## KMIP 3.0 system credential objects
+
+KMIP 3.0 defines typed Password, Device, One Time Password, and Hashed
+Password Credential system objects. KMIPKit builds their fields in OASIS table
+order and exposes callback-scoped readers. The active-version validator must
+select KMIP 3.0 before these object types are sent; KMIP 2.1 remains the client
+default.
+
+```rust
+use kmipkit_protocol::{
+    DeviceCredentialObject, DeviceCredentialObjectFields, PasswordCredentialObject,
+    PasswordCredentialObjectFields, SecretText,
+};
+
+let password = PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+    password: Some(SecretText::new("caller-provided secret".into())),
+    ..PasswordCredentialObjectFields::default()
+})?;
+assert_eq!(password.effective_iteration_count(), 100);
+
+let device = DeviceCredentialObject::try_new(DeviceCredentialObjectFields {
+    device_identifier: Some(SecretText::new("device identifier".into())),
+    ..DeviceCredentialObjectFields::default()
+})?;
+assert!(device.with_device_identifier(|value| value.is_some()));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The Password Link alternative is an Attribute, so checking it requires the
+credential object together with its Attribute Set. A salted Password object
+must not also contain Password and must include Password Salt Algorithm.
+Device Credential must contain at least one identifier; uniqueness remains a
+server policy. OTP Algorithm and both Hashed Password hash fields are required.
+An omitted Hashing Algorithm uses the SHA-256 default without adding a field.
+KMIPKit transports these values; it does not calculate passwords, OTPs, salts,
+or hashes. Secret text and bytes are redacted and KMIP-owned payload storage is
+zeroized when released; copies made by callers or external runtimes are outside
+that guarantee.

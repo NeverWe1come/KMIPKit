@@ -231,6 +231,70 @@ fn success_preserves_all_response_fields_unknown_children_and_redacts_object_mat
 }
 
 #[test]
+fn export_response_exposes_typed_managed_object_and_key_block() {
+    let message = response_message(
+        SUCCESS,
+        None,
+        Some(structure([
+            item(OBJECT_TYPE, Value::enumeration(2)),
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("exported-key".to_owned()),
+            ),
+            item(ATTRIBUTES, Value::structure(structure([]))),
+            exported_key(),
+        ])),
+    );
+    let response = ExportResponse::try_from_response_item(response_item(&message))
+        .expect("valid Export response");
+
+    let managed_object = response
+        .managed_object()
+        .expect("successful Export has an object")
+        .expect("the symmetric key is a valid managed object");
+    assert!(matches!(
+        managed_object,
+        crate::ManagedObject::SymmetricKey(_)
+    ));
+
+    let key_block = response
+        .key_block()
+        .expect("symmetric key has a Key Block")
+        .expect("the retained Key Block is valid");
+    assert_eq!(key_block.key_format_type().raw(), 1);
+    assert!(!format!("{managed_object:?}").contains("synthetic-export-material"));
+
+    let malformed_message = response_message(
+        SUCCESS,
+        None,
+        Some(structure([
+            item(OBJECT_TYPE, Value::enumeration(2)),
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("malformed-key".to_owned()),
+            ),
+            item(ATTRIBUTES, Value::structure(structure([]))),
+            item(SYMMETRIC_KEY, Value::structure(structure([]))),
+        ])),
+    );
+    let malformed_response =
+        ExportResponse::try_from_response_item(response_item(&malformed_message))
+            .expect("generic Export parser retains an object for typed validation");
+    assert!(
+        malformed_response
+            .managed_object()
+            .expect("success response includes the object")
+            .is_err()
+    );
+    assert!(
+        malformed_response
+            .key_block()
+            .expect("success response includes the object")
+            .is_err()
+    );
+}
+
+#[test]
 fn failure_keeps_unknown_result_reason_and_malformed_success_is_rejected() {
     let failed = response_message(OPERATION_FAILED, Some(FUTURE_RESULT_REASON), None);
     let response = ExportResponse::try_from_response_item(response_item(&failed))
@@ -239,6 +303,8 @@ fn failure_keeps_unknown_result_reason_and_malformed_success_is_rejected() {
         response.result().reason().map(ResultReason::raw),
         Some(FUTURE_RESULT_REASON)
     );
+    assert!(response.managed_object().is_none());
+    assert!(response.key_block().is_none());
 
     let malformed = response_message(SUCCESS, None, Some(structure([])));
     assert!(matches!(

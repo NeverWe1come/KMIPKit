@@ -16,8 +16,10 @@ OASIS Key Management Interoperability Protocol Specification Version 2.1 (OASIS 
 | Request Message and Request Header layout; one header per message and ordered batch items | §§8.1–8.3, Tables 394–396 | Request Message, Request Header, Authentication, and Request Batch Item catalog elements |
 | Optional Authentication, non-empty Credential list, repeatable Credential field | §9.4 | `KMIPKIT-REQ-SPEC-9.4-001-001`, `KMIPKIT-REQ-SPEC-9.4-001-002`, `KMIPKIT-REQ-SPEC-9.4-002` |
 | Direct typed operation calls | Each applicable client-to-server operation in §6.1 and asynchronous operation in §6.1.42–§6.1.45 | Corresponding `KMIPKIT-ELEM-OP-C2S-*` elements in the normative catalog; operation payload ownership remains with the existing approved operation specifications |
+| Corrected KMIP 3.0 KEM response models inherited from KMIPKIT-0071 | Pinned KMIP 3.0 Working Draft §6.1.15, Table 297 (Decapsulate Response Payload); §6.1.22, Table 318 (Encapsulate Response Payload); §11.58, Table 605 (tag assignments) | KMIP 3.0 models in `crates/kmipkit-protocol/src/kem.rs`; this targeted correction is authorized by the Phase 5 correction plan and does not change the 2.1 product default |
+| KMIP 3.0 request/response models and direct methods added by FR-016/017 | Pinned KMIP 3.0 Working Draft §6.1.9 Tables 277–278, §6.1.10 Tables 280–281, §6.1.13 Tables 290–291, §6.1.14 Tables 293–294, §6.1.15 Tables 296–297, §6.1.22 Tables 317–318, §6.1.41 Tables 374–375, and §11.37 Table 583 | `crates/kmipkit-protocol/src/kmip30_operations.rs`, `crates/kmipkit-client/src/execute.rs`, and `traceability.md`; source identity and digest are recorded in `specification/oasis/kmip-3.0/SOURCES.md`; support remains opt-in draft support |
 
-This feature adds a Rust high-level façade over existing typed requests. It does not add new KMIP operations or alter their wire payloads. Authentication is represented at Request Header scope as specified by OASIS. A single Request Header applies to every Batch Item in its Request Message; there is no per-Batch-Item Authentication field.
+This feature adds the Rust high-level façade over the KMIP 2.1 client operations and the seven explicitly authorized KMIP 3.0 Working Draft operations in FR-016/FR-017. KMIP 2.1 remains the 1.0 release baseline; the KMIP 3.0 additions are opt-in draft support and do not establish KMIP 3.0 profile conformance. C, Java, and Python parity for these draft additions is completed in KMIPKIT-0053. Authentication is represented at Request Header scope as specified by OASIS. A single Request Header applies to every Batch Item in its Request Message; there is no per-Batch-Item Authentication field.
 
 ## User Scenarios & Testing
 
@@ -94,6 +96,10 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 - **KMIPKIT-0050-FR-011**: Direct methods MUST preserve one-exchange semantics, caller-selected options, operation results, delivery evidence, and asynchronous Pending/correlation behavior; they MUST NOT retry or poll implicitly.
 - **KMIPKIT-0050-FR-012**: The generic batch API and all existing direct method signatures MUST remain available; this feature MUST NOT expose raw transport exchange, add server operations, change TLS policy, or implement server-side authentication.
 - **KMIPKIT-0050-FR-013**: Each normative requirement MUST link to the pinned OASIS clause, implementation path, and executable test; project API decisions MUST be traced separately and MUST NOT be represented as OASIS requirements.
+- **KMIPKIT-0050-FR-014**: The KMIP 3.0 `EncapsulateResponse` model MUST serialize the §6.1.22 Table 318 fields `Unique Identifier` and `Data` in order; it MUST NOT include the shared secret. The `DecapsulateResponse` model MUST serialize only the `Unique Identifier` required by §6.1.15 Table 297. Their public model shape MUST NOT expose a shared-secret response field.
+- **KMIPKIT-0050-FR-015**: Debug formatting for the KMIP 3.0 Encapsulate and Decapsulate response models MUST NOT disclose shared-secret material. Encapsulated `Data` remains available as the protocol's public ciphertext output; this requirement does not classify that `Data` as secret.
+- **KMIPKIT-0050-FR-016**: The KMIP 3.0 client API MUST provide typed request and response payload models and direct `Client` methods, including `_with_options` forms, for Create Credential, Create Group, Create User, Deactivate, Decapsulate, Encapsulate, and Obliterate. Payload members and order MUST follow the pinned KMIP 3.0 Working Draft §6.1.9 Tables 277–278, §6.1.10 Tables 280–281, §6.1.13 Tables 290–291, §6.1.14 Tables 293–294, §6.1.15 Tables 296–297, §6.1.22 Tables 317–318, and §6.1.41 Tables 374–375. Create Credential MUST accept only the object alternatives defined by Table 277 and their referenced system-object encodings. The client MUST preserve the existing batch execution path, delivery evidence, and no-retry behavior.
+- **KMIPKIT-0050-FR-017**: The KMIP 3.0 operation codes MUST follow KMIP 3.0 §11.37, Table 583 exactly: Create Group=`0x3C`, Obliterate=`0x3D`, Create User=`0x3E`, Create Credential=`0x3F`, Deactivate=`0x40`, Encapsulate=`0x41`, and Decapsulate=`0x42`. They MUST be accepted only when the effective protocol version is KMIP 3.0 and rejected under KMIP 2.0/2.1. The client MUST NOT infer support for reserved or unassigned values such as `0x43`. KEM request/response models MUST keep the shared secret server-managed; only Encapsulate's encapsulated output `Data` may be returned as specified by Table 318.
 
 ### Key Entities
 
@@ -110,7 +116,8 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 - **KMIPKIT-0050-SC-002**: Tests cover all 18 known Cryptographic Parameters members and show builder-order-independent Table 59 output, typed round-trip, unknown-member preservation, and malformed-type/duplicate/order rejection.
 - **KMIPKIT-0050-SC-003**: Protocol tests show empty/malformed generic Authentication cannot become a typed value; fake-transport tests show exactly one Authentication header for valid single-item and multi-item batches, no implicit retry, and accurate delivery state for failures before or during transport.
 - **KMIPKIT-0050-SC-004**: Debug, Display, and error assertions for Authentication and client execution contain no credential values or request body bytes.
-- **KMIPKIT-0050-SC-005**: Existing tests and Rust APIs using generic `Structure` parameters or `ClientBatch` continue to pass unchanged.
+- **KMIPKIT-0050-SC-005**: A Rust consumer can construct each of the seven KMIP 3.0 operation requests, invoke direct and `_with_options` client methods, and observe exact operation codes and request payload order; fake-transport tests reject these operations before any write under KMIP 2.0/2.1.
+- **KMIPKIT-0050-SC-006**: Existing tests and Rust APIs using generic `Structure` parameters or `ClientBatch` continue to pass unchanged.
 
 ## Assumptions
 
@@ -124,6 +131,6 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 
 - Implementing credential variants, attestation evidence generation/verification, or changing secret model ownership.
 - Authentication inheritance, default credentials, per-operation credential policy, retries, caching, or server login state.
-- Adding operations or changing their request/response schemas.
+- Adding operations outside the seven KMIP 3.0 operations explicitly authorized in the approval-record addendum.
 - Implementing FFI and Java/Python wrappers; these are reconciled in KMIPKIT-0053.
 - Claiming profile conformance, server acceptance, formal certification, or interoperability.

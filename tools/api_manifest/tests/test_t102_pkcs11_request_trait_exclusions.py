@@ -292,7 +292,9 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         self.assertIn("§7.26 Table 378", research)
         self.assertIn("vendor-defined functions", research)
 
-    def test_t102_manifest_and_rust_audit_totals_reflect_only_this_ten_path_slice(self) -> None:
+    def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
+        # The checked-in API inventory includes the 0047 versioned values,
+        # 0048 typed attributes, and 0049 managed-object additions.
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"

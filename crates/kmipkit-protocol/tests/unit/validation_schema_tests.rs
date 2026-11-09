@@ -338,18 +338,73 @@ fn key_wrapping_specification_requires_key_information_but_allows_both_forms() {
 
 #[test]
 fn key_information_requires_text_string_unique_identifier() {
-    let information = structure([item(UNIQUE_IDENTIFIER, Value::enumeration(7))]);
+    for (schema, table) in [
+        (NestedStructureSchema::EncryptionKeyInformation, "Table 16"),
+        (
+            NestedStructureSchema::MacSignatureKeyInformation,
+            "Table 17",
+        ),
+    ] {
+        for information in [
+            structure([]),
+            structure([item(UNIQUE_IDENTIFIER, Value::enumeration(7))]),
+            structure([item(UNIQUE_IDENTIFIER, Value::integer(7))]),
+        ] {
+            let report =
+                validate_structure(&information.view(), Some(ValidationSchema::Nested(schema)));
+
+            assert!(report.issues().iter().any(|issue| {
+                issue.path().to_string() == "Unique Identifier"
+                    && issue.source().to_string() == format!("KMIP v2.1 §3.3, {table}")
+            }));
+        }
+    }
+}
+
+#[test]
+fn managed_object_schemas_are_public_and_validate_required_fields() {
+    for (schema, rule) in [
+        (NestedStructureSchema::PgpKey, "KMIPKIT-0051-R285"),
+        (NestedStructureSchema::SecretData, "KMIPKIT-0051-R286"),
+        (NestedStructureSchema::SplitKey, "KMIPKIT-0051-R287"),
+    ] {
+        let report = validate_structure(
+            &Structure::new().view(),
+            Some(ValidationSchema::Nested(schema)),
+        );
+
+        assert!(
+            report
+                .issues()
+                .iter()
+                .any(|issue| issue.code().as_str() == rule),
+            "{schema:?} should report required rule {rule}; got {report:?}"
+        );
+    }
+}
+
+#[test]
+fn public_split_key_schema_checks_conditional_prime_field_size() {
+    let split_key = structure([
+        item(0x0042_008B, Value::integer(2)),
+        item(0x0042_0044, Value::integer(1)),
+        item(0x0042_008C, Value::integer(2)),
+        item(0x0042_008A, Value::enumeration(3)),
+        item(KEY_BLOCK, Value::structure(Structure::new())),
+    ]);
+
     let report = validate_structure(
-        &information.view(),
-        Some(ValidationSchema::Nested(
-            NestedStructureSchema::EncryptionKeyInformation,
-        )),
+        &split_key.view(),
+        Some(ValidationSchema::Nested(NestedStructureSchema::SplitKey)),
     );
 
-    assert!(report.issues().iter().any(|issue| {
-        issue.path().to_string() == "Unique Identifier"
-            && issue.source().to_string() == "KMIP v2.1 §3.3, Table 16"
-    }));
+    assert!(
+        report
+            .issues()
+            .iter()
+            .any(|issue| issue.code().as_str() == "KMIPKIT-0051-R292"),
+        "Split Key public schema should enforce Prime Field Size for Polynomial Sharing Prime Field; got {report:?}"
+    );
 }
 
 #[test]

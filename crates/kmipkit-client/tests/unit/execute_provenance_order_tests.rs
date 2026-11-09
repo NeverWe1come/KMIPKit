@@ -18,10 +18,33 @@ fn registry_provenance_precedes_request_build_codec_and_adapter_handoff() {
         execute.block.stmts.as_slice(),
         "validate_request_extension_ownership",
     );
-    let request_build = call_position(execute.block.stmts.as_slice(), "build_request_message");
+    let request_build = call_position(
+        execute.block.stmts.as_slice(),
+        "build_and_validate_request_message",
+    );
     let exchange = call_position(execute.block.stmts.as_slice(), "exchange_operation");
     assert!(provenance < request_build);
     assert!(request_build < exchange);
+
+    let build_and_validate = syntax
+        .items
+        .iter()
+        .find_map(|item| match item {
+            Item::Fn(function) if function.sig.ident == "build_and_validate_request_message" => {
+                Some(function)
+            }
+            _ => None,
+        })
+        .expect("request build and version gate helper exists");
+    let build = call_position(
+        build_and_validate.block.stmts.as_slice(),
+        "build_request_message",
+    );
+    let version_gate = call_position(
+        build_and_validate.block.stmts.as_slice(),
+        "validate_request_message_version_tags",
+    );
+    assert!(build < version_gate);
 
     let exchange_operation = method(client_impl, "exchange_operation");
     let encode = call_position(

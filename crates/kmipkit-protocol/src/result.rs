@@ -120,6 +120,16 @@ pub struct KmipOperationResult {
 }
 
 impl KmipOperationResult {
+    /// Creates the canonical KMIP Success result with no reason or message.
+    #[must_use]
+    pub const fn success() -> Self {
+        Self {
+            status: ResultStatus::from_raw(0),
+            reason: None,
+            message: None,
+        }
+    }
+
     /// Creates a result and enforces the KMIP Success/Failure reason invariant.
     ///
     /// A Failure status requires a reason and a Success status forbids one.

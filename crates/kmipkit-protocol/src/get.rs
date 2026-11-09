@@ -6,8 +6,9 @@ use std::fmt;
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::{
-    KmipOperationResult, ObjectType, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, UniqueIdentifier,
+    KeyBlock, KmipOperationResult, ManagedObject, ManagedObjectError, ObjectType,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, UniqueIdentifier,
 };
 
 const GET_OPERATION: u32 = 0x0000_000A;
@@ -326,6 +327,35 @@ impl GetResponse {
     #[must_use]
     pub const fn object(&self) -> Option<&Item> {
         self.object.as_ref()
+    }
+
+    /// Returns an owned typed managed object for a successful response.
+    ///
+    /// The response keeps its original TTLV tree unchanged. This accessor
+    /// creates a caller-owned copy, which `KMIPKit` zeroizes when dropped; any
+    /// copies subsequently made by the caller are outside that guarantee.
+    /// Unknown object types remain available as the generic `Unknown` variant.
+    #[must_use]
+    pub fn managed_object(&self) -> Option<Result<ManagedObject, ManagedObjectError>> {
+        let (object_type, object) = self.object_type.zip(self.object.as_ref())?; // COVERAGE-EXCLUDE: response parsing sets both fields on Success and neither otherwise.
+        Some(
+            object
+                .try_clone()
+                .map_err(ManagedObjectError::from)
+                .and_then(|item| ManagedObject::try_from_item(object_type, item)),
+        )
+    }
+
+    /// Returns an owned typed Key Block when the successful object defines one.
+    ///
+    /// The copy retains unknown fields and source order and is zeroized when
+    /// dropped. See [`ManagedObject::key_block`] for object-type behavior.
+    #[must_use]
+    pub fn key_block(&self) -> Option<Result<KeyBlock, ManagedObjectError>> {
+        self.managed_object().and_then(|object| match object {
+            Ok(object) => object.key_block(),
+            Err(error) => Some(Err(error)),
+        })
     }
 }
 
