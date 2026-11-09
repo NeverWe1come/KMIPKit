@@ -167,3 +167,19 @@ fn request_and_nested_names_map_to_the_expected_typed_schemas() {
         )))
     ));
 }
+
+#[test]
+fn schema_parser_accepts_managed_object_nested_schema_names() {
+    for (name, expected) in [
+        ("PgpKey", NestedStructureSchema::PgpKey),
+        ("SecretData", NestedStructureSchema::SecretData),
+        ("SplitKey", NestedStructureSchema::SplitKey),
+    ] {
+        let schema = format!("Nested/{name}");
+        assert_eq!(
+            parse_schema(schema.as_bytes()),
+            Ok(Some(ValidationSchema::Nested(expected))),
+            "nested schema {name} must map to its Rust variant"
+        );
+    }
+}
