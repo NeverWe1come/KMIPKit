@@ -411,3 +411,22 @@ pass; `python -B tools/api_manifest/generate.py --check` verifies all 12
 outputs; and `git diff --check` passes. T007 remains open pending the
 current-head hosted CI matrix and resolution of the broader Rust inventory
 audit gaps documented above.
+
+## Exact KMIP 3.0 tag-version gate (2026-11-09)
+
+Red commit `5f5bab807` added a failing check showing that the former
+`0x420153..=0x420172` range incorrectly classified KMIP 2.1 `Object Defaults`
+and `Protection Storage Masks` as KMIP 3.0. Green commit `752c51aa6` gates only
+the 60 explicit tag assignments in KMIP 3.0 §11.58, Table 605, and corrects
+the earlier test fixture to use `NIST Security Category` (`0x4201C2`) for a
+KMIP 3.0 example. It retains the KMIP 2.1 spans for Rotate attributes and
+Constraints.
+
+Verification on this revision:
+
+- `cargo test -p kmipkit-protocol --lib`: 1,314 passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`: passed.
+- `git diff --check`: passed.
+
+The implementation remains local and the pull request remains Draft pending
+the full stacked-branch synchronization and current-head CI checks.
