@@ -95,6 +95,8 @@
 - [x] T046 Implement typed KMIP 3.0 request/response payload models and add all seven operations to `ClientRequest`, `ClientOperation`, and the client execution path. Red: `69bc4ae26`; Green: `b1fd28664`.
 - [x] T047 Add fake-transport tests for request codes/payloads, response preservation, KMIP 2.0/2.1 `NotSent` with zero writes, Pending/correlation preservation, and no shared-secret leakage from KEM responses or diagnostics.
 - [ ] T048 Correct stale KMIP 3.0 operation identifiers in existing tests; record Red/Green/Refactor commits and focused local verification. Complete the versioned public API manifest reconciliation for the KMIP 3.0 routes in KMIPKIT-0053, together with C, Java, and Python parity. Track hosted CI separately from local checks.
+- [x] T049 Add behavior-focused tests for the KMIP 3.0 execution and Cryptographic Parameters paths identified by hosted run 42568647774: typed response views, response formatting/redaction, and all Table 59 typed setters/readers. Red `d521c529e`; Green `c6e8ddeaf`.
+- [ ] T050 Re-run changed-code coverage and the full relevant local checks after T049; record exact uncovered lines and percentage, then push and verify the resulting hosted run before closing this coverage correction.
 
 ## Dependencies
 
