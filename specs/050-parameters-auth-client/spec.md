@@ -16,6 +16,7 @@ OASIS Key Management Interoperability Protocol Specification Version 2.1 (OASIS 
 | Request Message and Request Header layout; one header per message and ordered batch items | §§8.1–8.3, Tables 394–396 | Request Message, Request Header, Authentication, and Request Batch Item catalog elements |
 | Optional Authentication, non-empty Credential list, repeatable Credential field | §9.4 | `KMIPKIT-REQ-SPEC-9.4-001-001`, `KMIPKIT-REQ-SPEC-9.4-001-002`, `KMIPKIT-REQ-SPEC-9.4-002` |
 | Direct typed operation calls | Each applicable client-to-server operation in §6.1 and asynchronous operation in §6.1.42–§6.1.45 | Corresponding `KMIPKIT-ELEM-OP-C2S-*` elements in the normative catalog; operation payload ownership remains with the existing approved operation specifications |
+| Corrected KMIP 3.0 KEM response models inherited from KMIPKIT-0071 | Pinned KMIP 3.0 Working Draft §6.1.15, Table 297 (Decapsulate Response Payload); §6.1.22, Table 318 (Encapsulate Response Payload); §11.58, Table 605 (tag assignments) | KMIP 3.0 models in `crates/kmipkit-protocol/src/kem.rs`; this targeted correction is authorized by the Phase 5 correction plan and does not change the 2.1 product default |
 
 This feature adds a Rust high-level façade over existing typed requests. It does not add new KMIP operations or alter their wire payloads. Authentication is represented at Request Header scope as specified by OASIS. A single Request Header applies to every Batch Item in its Request Message; there is no per-Batch-Item Authentication field.
 
@@ -94,6 +95,8 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 - **KMIPKIT-0050-FR-011**: Direct methods MUST preserve one-exchange semantics, caller-selected options, operation results, delivery evidence, and asynchronous Pending/correlation behavior; they MUST NOT retry or poll implicitly.
 - **KMIPKIT-0050-FR-012**: The generic batch API and all existing direct method signatures MUST remain available; this feature MUST NOT expose raw transport exchange, add server operations, change TLS policy, or implement server-side authentication.
 - **KMIPKIT-0050-FR-013**: Each normative requirement MUST link to the pinned OASIS clause, implementation path, and executable test; project API decisions MUST be traced separately and MUST NOT be represented as OASIS requirements.
+- **KMIPKIT-0050-FR-014**: The KMIP 3.0 `EncapsulateResponse` model MUST serialize the §6.1.22 Table 318 fields `Unique Identifier` and `Data` in order; it MUST NOT include the shared secret. The `DecapsulateResponse` model MUST serialize only the `Unique Identifier` required by §6.1.15 Table 297. Their public model shape MUST NOT expose a shared-secret response field.
+- **KMIPKIT-0050-FR-015**: Debug formatting for the KMIP 3.0 Encapsulate and Decapsulate response models MUST NOT disclose shared-secret material. Encapsulated `Data` remains available as the protocol's public ciphertext output; this requirement does not classify that `Data` as secret.
 
 ### Key Entities
 

@@ -1033,7 +1033,9 @@ fn dispatcher_all_operations_and_error_handling() {
     // while the resulting Secret Data remains stored on the server.
     let encap_secret_id = extract_text_field(&encap_resp, TAG_UNIQUE_IDENTIFIER).unwrap();
     assert_ne!(encap_secret_id, sym_id);
-    let encap_secret = store.get(&encap_secret_id).expect("encapsulated Secret Data is stored");
+    let encap_secret = store
+        .get(&encap_secret_id)
+        .expect("encapsulated Secret Data is stored");
     assert_eq!(encap_secret.object_type, "SecretData");
     assert!(encap_secret.key_material_base64.is_some());
     assert!(extract_payload_child(&encap_resp, TAG_DATA).is_some());
@@ -1059,7 +1061,9 @@ fn dispatcher_all_operations_and_error_handling() {
     // OASIS KMIP 3.0 §6.1.15 Table 297 returns only the resulting object's ID.
     let decap_secret_id = extract_text_field(&decap_resp, TAG_UNIQUE_IDENTIFIER).unwrap();
     assert_ne!(decap_secret_id, sym_id);
-    let decap_secret = store.get(&decap_secret_id).expect("decapsulated Secret Data is stored");
+    let decap_secret = store
+        .get(&decap_secret_id)
+        .expect("decapsulated Secret Data is stored");
     assert_eq!(decap_secret.object_type, "SecretData");
     assert!(decap_secret.key_material_base64.is_some());
     assert!(extract_payload_child(&decap_resp, TAG_KEY_MATERIAL).is_none());

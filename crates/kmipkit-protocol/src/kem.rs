@@ -82,10 +82,7 @@ pub struct EncapsulateResponse {
 
 impl EncapsulateResponse {
     #[must_use]
-    pub fn new(
-        unique_identifier: impl Into<String>,
-        data: Vec<u8>,
-    ) -> Self {
+    pub fn new(unique_identifier: impl Into<String>, data: Vec<u8>) -> Self {
         Self {
             unique_identifier: unique_identifier.into(),
             data,

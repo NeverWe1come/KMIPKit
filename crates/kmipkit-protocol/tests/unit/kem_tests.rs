@@ -33,6 +33,7 @@ fn test_encapsulate_request_and_response() {
     assert_eq!(resp.data(), &ciphertext);
     let debug = format!("{resp:?}");
     let resp_payload = resp.into_ttlv_payload().expect("valid payload");
+    // OASIS KMIP 3.0 §6.1.22 Table 318 requires Unique Identifier and Data only.
     let response_tags: Vec<u32> = resp_payload
         .view()
         .children()
@@ -57,6 +58,7 @@ fn test_decapsulate_request_and_response() {
     assert_eq!(resp.unique_identifier(), "private-key-uuid-789");
     let debug = format!("{resp:?}");
     let resp_payload = resp.into_ttlv_payload().expect("valid payload");
+    // OASIS KMIP 3.0 §6.1.15 Table 297 requires only Unique Identifier.
     let response_tags: Vec<u32> = resp_payload
         .view()
         .children()

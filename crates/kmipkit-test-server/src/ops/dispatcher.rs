@@ -4,6 +4,7 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
+use zeroize::Zeroize;
 
 use super::crypto;
 use crate::store::{JsonStore, LocateFilter, StoredAttribute, StoredObject};
@@ -757,18 +758,7 @@ impl Dispatcher {
                     .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
                 let shared_secret = crypto::generate_random_bytes(32)
                     .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
-                let secret_id = generate_uuid();
-                let mut secret_object = StoredObject::new(
-                    secret_id.clone(),
-                    "SecretData",
-                    "PreActive",
-                    now_secs,
-                );
-                secret_object.key_material_base64 =
-                    Some(crate::codec::datetime::octets_to_hex(&shared_secret));
-                self.store
-                    .save(&secret_object)
-                    .map_err(|_| (REASON_GENERAL_FAILURE, "storage write failure"))?;
+                let secret_id = store_secret_data(&self.store, shared_secret, now_secs)?;
                 *id_placeholder = Some(secret_id.clone());
 
                 Ok(vec![
@@ -787,22 +777,15 @@ impl Dispatcher {
                 if self.store.get(&id).is_none() {
                     return Err((REASON_ITEM_NOT_FOUND, "object not found"));
                 }
-                *id_placeholder = Some(id.clone());
+
+                let _ciphertext = payload
+                    .and_then(|p| find_child(p, TAG_DATA))
+                    .and_then(|item| extract_byte_string(&item))
+                    .ok_or((REASON_GENERAL_FAILURE, "missing encapsulated data"))?;
 
                 let shared_secret = crypto::generate_random_bytes(32)
                     .map_err(|_| (REASON_GENERAL_FAILURE, "crypto failure"))?;
-                let secret_id = generate_uuid();
-                let mut secret_object = StoredObject::new(
-                    secret_id.clone(),
-                    "SecretData",
-                    "PreActive",
-                    now_secs,
-                );
-                secret_object.key_material_base64 =
-                    Some(crate::codec::datetime::octets_to_hex(&shared_secret));
-                self.store
-                    .save(&secret_object)
-                    .map_err(|_| (REASON_GENERAL_FAILURE, "storage write failure"))?;
+                let secret_id = store_secret_data(&self.store, shared_secret, now_secs)?;
                 *id_placeholder = Some(secret_id.clone());
 
                 Ok(vec![ttlv_item(
@@ -819,6 +802,22 @@ impl Dispatcher {
 }
 
 // Helpers
+
+fn store_secret_data(
+    store: &JsonStore,
+    mut key_material: Vec<u8>,
+    now_secs: i64,
+) -> Result<String, (u32, &'static str)> {
+    let secret_id = generate_uuid();
+    let mut secret_object =
+        StoredObject::new(secret_id.clone(), "SecretData", "PreActive", now_secs);
+    secret_object.key_material_base64 = Some(crate::codec::datetime::octets_to_hex(&key_material));
+    key_material.zeroize();
+    store
+        .save(&secret_object)
+        .map_err(|_| (REASON_GENERAL_FAILURE, "storage write failure"))?;
+    Ok(secret_id)
+}
 
 fn now_unix_seconds() -> i64 {
     SystemTime::now()
