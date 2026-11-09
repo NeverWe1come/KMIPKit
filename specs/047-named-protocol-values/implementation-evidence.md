@@ -498,5 +498,5 @@ fresh hosted checks after the stack update.
 ## Hosted changed-code coverage remediation (2026-11-09)
 
 - **Red:** hosted PR #139 run `42566965462` failed the selected coverage gate because changed production coverage was 24/27 (88.89%) against its then-active 95% threshold. Parsing the uploaded Ubuntu LLVM coverage artifact identified only `crates/kmipkit-protocol/src/version_gate.rs:69-71`, the `UnassignedOperationInVersion` Display arm. This branch has correct formatting behavior but no assertion that exercises that arm.
-- **Green:** pending the exact-string regression for the existing operation-gate error.
-- **Refactor:** pending local coverage verification and checklist closure.
+- **Green:** `version_gate_rejects_unassigned_standard_operation_codes_but_keeps_extensions` now asserts the complete error string `operation 0x00000043 is not assigned by KMIP 3.0`. The focused test passed, and a full protocol coverage run now executes all three previously uncovered display lines; `version_gate.rs` reports 100.00% line coverage.
+- **Refactor:** pending the full local verification record and checklist closure.

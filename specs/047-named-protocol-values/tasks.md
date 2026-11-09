@@ -63,7 +63,7 @@
   `VersionGateError::UnassignedOperationInVersion` display branch (24/27
   changed production lines, below the applicable 95% gate); identify the
   uncovered formatting arm before adding coverage.
-- [ ] T021 [Green] Extend the existing operation-gate regression to assert the
+- [x] T021 [Green] Extend the existing operation-gate regression to assert the
   complete `UnassignedOperationInVersion` display string and cover its format
   branch without changing production behavior.
 - [ ] T022 [Refactor] Record local coverage and regression evidence, update
