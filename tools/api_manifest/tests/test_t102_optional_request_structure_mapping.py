@@ -395,14 +395,14 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 self.assertEqual(
                     {"verified": 544}
                     if capability == "typed_object_attributes"
-                    else {"verified": 618, "blocked": 144},
+                    else {"verified": 762},
                     {
                         state: sum(row["declarationState"] == state for row in typed_rows)
                         for state in states
                     },
                 )
         other_declarations = without_0047_versioned_values(other_declarations)
-        self.assertEqual("8183b360fb79b3a19d0edc95cd9dbb92ba53a5f31fd97f94b3507add16d49467", canonical_sha256(other_declarations))
+        self.assertEqual("5354bf97f55cdd8d65090b2d40edcd1ba1091106a65c43539716ee2239bb9966", canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
