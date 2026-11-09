@@ -92,6 +92,22 @@ fn capability_query_matches_manifest_ready_capabilities() {
 }
 
 #[test]
+fn capability_query_reports_the_opt_in_kmip30_draft_routes() {
+    assert_eq!(
+        kmipkit::capability_is_available("kmip30_draft_routes"),
+        Ok(true)
+    );
+}
+
+#[test]
+fn capability_query_reports_protocol_version_selection() {
+    assert_eq!(
+        kmipkit::capability_is_available("kmip_protocol_version_selection"),
+        Ok(true)
+    );
+}
+
+#[test]
 fn capability_query_rejects_ids_over_128_utf8_bytes_as_a_resource_limit() {
     assert_eq!(
         kmipkit::capability_is_available(&"x".repeat(128)),
