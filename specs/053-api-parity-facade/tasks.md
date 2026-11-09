@@ -111,6 +111,9 @@
 - [x] T079 [US5, US6] Extend the four external consumers to execute Ping through `Client.execute` against a loopback-only, TLS 1.3/mTLS test responder built from the existing disposable `login-mtls` fixtures; assert the typed Ping result and decoded generic Response Payload, and clearly exclude this responder from interoperability evidence.
 - [x] T080 [US6] Reconcile inherited C ABI routes that are now represented by ready four-language functions: remove only the exact superseded C-only exclusions, add exact ready `c-symbol` declarations so the pinned generator emits both public prototypes, and verify the generated header, compiled ABI, and release manifest contain each symbol exactly once.
 
+- [x] T081 [US6] Correct double-encoded OASIS section and en-dash citations in the affected Rust trait-exclusion evidence, preserving the exact audited declaration paths; regenerate the manifest-derived Java parity fixtures and verify the 92 focused T102 contract tests.
+- [ ] T082 [US6] Run the complete script-contract matrix on this corrected head and verify the fresh hosted workflows; resolve any remaining contract or CI failures before marking this PR review-ready.
+
 ## Dependencies
 T001–T005 precede the user stories. US1 and US2 stabilize typed value/secret patterns; US3 follows; US4 reuses the shared Rust validator; US5 consumes the prior request/response bindings; US6 closes packages, docs, manifest and PR evidence. Keep each lot sequential on this branch.
 
