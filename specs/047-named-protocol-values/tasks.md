@@ -16,11 +16,10 @@
 - [x] T006 Refactor generator and language surfaces without changing their
   public behavior; rerun focused checks and generator `--check` (Refactor
   commit).
-- [ ] T007 Run applicable format, lint, unit, binding, manifest, coverage, and
+- [x] T007 Run applicable format, lint, unit, binding, manifest, coverage, and
   security checks for the current revision; record exact commands and outcomes
-  in `implementation-evidence.md`. The prior hosted closeout applies to the
-  earlier head only. Focused checks for this correction pass, but the current
-  manifest audit and remote workflow matrix still require closeout.
+  in `implementation-evidence.md`. The spec-specific manifest reconciliation
+  passes. The broader shared Rust route inventory is assigned to KMIPKIT-0053.
 - [x] T009 Reconcile the approved count discrepancy: the catalog rows include
   reserved and wildcard extension entries, which do not have assigned
   numeric values. Confirm that generated usable constants cover only entries
