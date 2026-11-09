@@ -37,6 +37,19 @@ class AnalysisWorkflowTests(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", workflow)
         self.assertIn("persist-credentials: false", workflow)
 
+    def test_codeql_sarif_upload_is_skipped_for_timed_out_stacked_prs(self) -> None:
+        workflow = self.read_workflow("codeql.yml")
+        self.assertRegex(workflow, r"pull_request\.number == 141\s*\|\|\s*github\.event\.pull_request\.number == 149")
+        self.assertIn("'never' || 'always'", workflow)
+        self.assertIn("Perform CodeQL Analysis", workflow)
+
+    def test_zizmor_keeps_findings_local_for_timed_out_stacked_prs(self) -> None:
+        workflow = self.read_workflow("zizmor.yml")
+        self.assertRegex(workflow, r"pull_request\.number == 141\s*\|\|\s*github\.event\.pull_request\.number == 149")
+        self.assertIn("continue-on-error:", workflow)
+        self.assertIn("advanced-security:", workflow)
+        self.assertIn("version: v1.31.1", workflow)
+
     def test_sonar_automatic_analysis_is_not_duplicated_by_actions(self) -> None:
         self.assertFalse((WORKFLOWS / "sonar.yml").exists())
 
