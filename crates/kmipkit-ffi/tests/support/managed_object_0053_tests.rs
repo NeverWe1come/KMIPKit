@@ -169,6 +169,15 @@ fn key_block() -> KeyBlock {
     KeyBlock::try_new(KeyFormatType::from_raw(1)).expect("Raw Key Format Type is valid")
 }
 
+fn secret_data_key_block() -> KeyBlock {
+    let key_value = kmipkit_protocol::KeyValue::try_new(
+        KeyMaterial::byte_string(1, vec![0xa1]).expect("Secret Data Key Material"),
+        None,
+    )
+    .expect("Secret Data Key Value");
+    key_block().with_key_value(KeyBlockValue::Plaintext(key_value))
+}
+
 fn transparent_material_item(format_raw: u32, fields: impl IntoIterator<Item = Item>) -> Item {
     let mut structure = Structure::new();
     for field in fields {
@@ -227,7 +236,7 @@ fn all_objects() -> [(u32, Item); 9] {
         ),
         (
             7,
-            SecretData::try_new(0x8000_0004, key_block())
+            SecretData::try_new(0x8000_0004, secret_data_key_block())
                 .expect("secret data")
                 .into_item(),
         ),
@@ -254,7 +263,10 @@ fn assert_copied_item(
     let source_handle = make_handle(Kind::Item, HandleValue::Item(source));
     let mut output = ptr::null_mut();
     let status = convert(source_handle, &raw mut output);
-    assert_eq!(status, SUCCESS);
+    assert_eq!(
+        status, SUCCESS,
+        "typed object conversion failed for expected object tag {expected_tag:#010x}"
+    );
     let input = reference_handle(source_handle, Kind::Item).expect("source remains caller-owned");
     let result = reference_handle(output, Kind::Item).expect("result is an owned generic Item");
     let HandleValue::Item(input) = &input.value else {
@@ -335,7 +347,10 @@ fn assert_compiled_c_field_constructor(
             &raw mut output_handle,
         )
     };
-    assert_eq!(status, SUCCESS);
+    assert_eq!(
+        status, SUCCESS,
+        "typed field constructor failed for expected object tag {expected_tag:#010x}"
+    );
     let output = reference_handle(output_handle, Kind::Item).expect("typed structure output");
     let HandleValue::Item(item) = &output.value else {
         panic!("typed structure output is an Item")
@@ -644,7 +659,14 @@ fn compiled_c_consumer_builds_each_named_object_from_typed_fields() {
             kmipkit_0053_secret_data_from_fields,
             SECRET_DATA,
             vec![
-                key_block_field(),
+                make_handle(
+                    Kind::Item,
+                    HandleValue::Item(
+                        secret_data_key_block()
+                            .try_into_item()
+                            .expect("valid Secret Data Key Block"),
+                    ),
+                ),
                 field_handle(0x0042_0086, Value::enumeration(3)),
             ],
         ),
