@@ -373,3 +373,11 @@ candidate-test gates remain outstanding; the branch remains draft.
 - **Red:** the new `test_kmip30_operation_references_use_operation_enumeration_table_584` failed against six source, test, and specification files that cited Table 583 for §11.37 Operation Enumeration. The pinned KMIP 3.0 draft identifies Operation Enumeration as Table 584; Table 583 is the preceding Opaque Data Type Enumeration.
 - **Green:** corrected the seven operation-code references in `execute.rs`, the operation tests, KMIPKIT-0050 `spec.md` and `traceability.md`, and the operation assignment narrative in this evidence. Renamed two operation tests that still said `table_583`. No wire behavior changed.
 - **Verification:** the new citation regression test and all six KMIPKIT-0050 reconciliation tests passed; the six focused KMIP 3.0 client tests passed; the protocol KMIP 3.0 operation tests, `cargo fmt --all --check`, `cargo clippy -p kmipkit-client -p kmipkit-protocol --all-targets --all-features -- -D warnings`, and `git diff --check` passed. Hosted CI must rerun on the corrected branch. T048 remains open for the versioned manifest and C/Java/Python parity work assigned to KMIPKIT-0053; T050 remains open pending fresh hosted CI and coverage confirmation.
+
+## Serialized stack CI retry (2026-11-09)
+
+PR #141 completed its current-head CI run with 38 of 38 jobs successful. Its
+CodeQL Analysis and zizmor workflows also succeeded; the separate GitHub
+Advanced Security CodeQL and zizmor checks timed out without diagnostics, which
+the maintainer has accepted for this stack-validation pass. This evidence-only
+commit starts the isolated hosted validation for PR #142 after PR #141 finished.
