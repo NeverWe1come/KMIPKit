@@ -116,7 +116,7 @@ fn test_version_gate_validates_operations_and_spans() {
 #[test]
 fn test_version_gate_validates_tags() {
     let rotate_attr = 0x0042_014A; // Rotate Automatic (2.1)
-    let pqc_attr = 0x0042_0153; // PQC (3.0)
+    let pqc_attr = 0x0042_01C2; // NIST Security Category (3.0)
     let unknown_tag = 0x0042_9999;
 
     assert!(VersionGate::tag_span(rotate_attr).is_some());
