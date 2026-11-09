@@ -246,6 +246,35 @@ fn valid_successful_payload() -> Structure {
     ])
 }
 
+#[test]
+fn get_response_exposes_typed_managed_object_and_key_block() {
+    let message = response_message(SUCCESS, None, None, Some(valid_successful_payload()));
+    let response = decode_get(&message).expect("valid Get response");
+
+    let managed_object = response
+        .managed_object()
+        .expect("successful Get has an object")
+        .expect("the symmetric key is a valid managed object");
+    assert!(matches!(managed_object, crate::ManagedObject::SymmetricKey(_)));
+
+    let key_block = response
+        .key_block()
+        .expect("symmetric key has a Key Block")
+        .expect("the retained Key Block is valid");
+    let has_nested_vendor_extension = key_block
+        .with_raw(|structure| {
+            structure
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == TEST_EXTENSION_TAG)
+        })
+        .expect("typed Key Block remains navigable");
+    assert!(has_nested_vendor_extension);
+
+    let debug = format!("{managed_object:?}");
+    assert!(!debug.contains("\u{80}"));
+}
+
 fn malformed_success(payload: Structure) -> Result<GetResponse, GetError> {
     let message = response_message(SUCCESS, None, None, Some(payload));
     decode_get(&message)
