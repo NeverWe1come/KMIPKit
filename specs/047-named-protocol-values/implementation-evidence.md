@@ -494,3 +494,9 @@ claim a new cross-language error API.
 
 The follow-up source and documentation commits are local; PR #139 must receive
 fresh hosted checks after the stack update.
+
+## Hosted changed-code coverage remediation (2026-11-09)
+
+- **Red:** hosted PR #139 run `42566965462` failed the selected coverage gate because changed production coverage was 24/27 (88.89%) against its then-active 95% threshold. Parsing the uploaded Ubuntu LLVM coverage artifact identified only `crates/kmipkit-protocol/src/version_gate.rs:69-71`, the `UnassignedOperationInVersion` Display arm. This branch has correct formatting behavior but no assertion that exercises that arm.
+- **Green:** pending the exact-string regression for the existing operation-gate error.
+- **Refactor:** pending local coverage verification and checklist closure.
