@@ -804,12 +804,11 @@ pub(super) fn validate_nested_with_prefix(
     schema: NestedStructureSchema,
     prefix: &ValidationPath,
 ) -> ValidationReport {
-    let mut report = match schema {
-        NestedStructureSchema::SplitKey => validate_split_key_object(structure, prefix),
-        _ => {
-            let descriptor = descriptor(schema);
-            validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix)
-        }
+    let mut report = if schema == NestedStructureSchema::SplitKey {
+        validate_split_key_object(structure, prefix)
+    } else {
+        let descriptor = descriptor(schema);
+        validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix)
     };
 
     if matches!(

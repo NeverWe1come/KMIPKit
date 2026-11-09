@@ -365,10 +365,7 @@ fn key_information_requires_text_string_unique_identifier() {
 fn managed_object_schemas_are_public_and_validate_required_fields() {
     for (schema, rule) in [
         (NestedStructureSchema::PgpKey, "KMIPKIT-0051-R285"),
-        (
-            NestedStructureSchema::SecretData,
-            "KMIPKIT-0051-R286",
-        ),
+        (NestedStructureSchema::SecretData, "KMIPKIT-0051-R286"),
         (NestedStructureSchema::SplitKey, "KMIPKIT-0051-R287"),
     ] {
         let report = validate_structure(
@@ -377,7 +374,10 @@ fn managed_object_schemas_are_public_and_validate_required_fields() {
         );
 
         assert!(
-            report.issues().iter().any(|issue| issue.code().as_str() == rule),
+            report
+                .issues()
+                .iter()
+                .any(|issue| issue.code().as_str() == rule),
             "{schema:?} should report required rule {rule}; got {report:?}"
         );
     }

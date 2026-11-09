@@ -858,17 +858,16 @@ impl ClientRequest {
             // than the KMIP 2.1 Request Payload schema registry. Execution
             // still version-gates the operation and every serialized payload
             // tag before transport, returning NotSent for an older version.
+            // Set Endpoint Role is deferred to 1.1; its open Enumeration must
+            // preserve future and vendor values.
             Self::CreateGroup(_)
             | Self::Obliterate(_)
             | Self::CreateUser(_)
             | Self::CreateCredential(_)
             | Self::Deactivate(_)
             | Self::Encapsulate(_)
-            | Self::Decapsulate(_) => ValidationReport::default(),
-            // Set Endpoint Role is deferred to 1.1. Its typed constructor
-            // requires Endpoint Role (§6.1.54), while the open Enumeration
-            // must preserve future and vendor values.
-            Self::SetEndpointRole(_) => ValidationReport::default(),
+            | Self::Decapsulate(_)
+            | Self::SetEndpointRole(_) => ValidationReport::default(),
         }
     }
 

@@ -89,6 +89,7 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - **KMIPKIT-0051-FR-016**: Import validation MUST check the required members, TTLV types, and table order of PGP Key, Secret Data, and Split Key objects as defined in KMIP v2.1 §2.4 Table 5, §2.7 Table 8, and §2.8 Table 9.
 - **KMIPKIT-0051-FR-017**: Split Key validation MUST require Prime Field Size when Split Key Method is Polynomial Sharing Prime Field and MUST reject a Key Part Identifier below 1 or above Split Key Parts, as specified in KMIP v2.1 §2.8 Table 9 and its normative prose.
 - **KMIPKIT-0051-FR-018**: Before transport, `Client::execute` MUST apply the existing `VersionGate` to every tag in each serialized Request Payload and to every tag-form attribute mutation using the effective request version. KMIP 2.0 rotate-only mutation restrictions follow the pinned KMIP 2.0 source and KMIPKIT-0070 REQ-070-003; versioned tags and operations follow KMIPKIT-0069 REQ-069-004 and exact assignments in the corresponding pinned OASIS version catalogs, including KMIP 3.0 §11.58 Table 605. Rejection MUST return `NotSent` with zero exchanges and writes. Unknown tags and opaque vendor extension contents remain open as defined in FR-010.
+- **KMIPKIT-0051-FR-019**: The public `NestedStructureSchema` MUST expose explicit identities for the KMIP 2.1 PGP Key (§2.4, Table 5), Secret Data (§2.7, Table 8), and Split Key (§2.8, Table 9) structures. Selecting one MUST apply that structure's required fields, TTLV types, order, cardinality, and locally decidable conditional rules without inferring a schema from the input tags.
 
 ### Key Entities
 
@@ -109,6 +110,7 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - **KMIPKIT-0051-SC-006**: Normative validation requirements have 100% traceability to pinned OASIS references, code, and executable tests.
 - **KMIPKIT-0051-SC-007**: Malformed PGP Key, Secret Data, and Split Key Import requests are rejected before transport with `NotSent`; the Split Key tests cover both conditional requiredness and the normative Key Part Identifier bounds.
 - **KMIPKIT-0051-SC-008**: Request payload tags and attribute mutations outside the effective KMIP version are rejected before transport; version 2.1 remains the default, and unknown extension data is not rejected solely for being unknown.
+- **KMIPKIT-0051-SC-009**: A caller can select explicit PGP Key, Secret Data, and Split Key nested schemas and receive the same required-field and locally decidable condition findings as the managed-object pre-send path.
 
 ## Assumptions
 

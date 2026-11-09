@@ -14,6 +14,7 @@
 ## Requirement Completeness
 
 - [x] Requirements are testable and assigned stable identifiers.
+- [x] Managed-object nested schemas include public identities and explicit validation evidence for PGP Key, Secret Data, and Split Key.
 - [x] Validation diagnostics and pre-send delivery behavior are specified.
 - [x] Unknown/future values and server-dependent rules have explicit handling.
 - [x] Normative references identify the OASIS clause groups and require per-operation payload tables.
