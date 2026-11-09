@@ -146,7 +146,9 @@ fn every_known_object_type_dispatches_only_its_matching_structure_tag() {
         PgpKey::try_new(1, key_block()).unwrap().into_item(),
         PrivateKey::try_new(key_block()).unwrap().into_item(),
         PublicKey::try_new(key_block()).unwrap().into_item(),
-        SecretData::try_new(1, key_block()).unwrap().into_item(),
+        SecretData::try_new(1, secret_data_key_block())
+            .unwrap()
+            .into_item(),
         SplitKey::try_new(key_block(), 1, SplitKeyMethod::from_raw(1), 2, 2, None)
             .unwrap()
             .into_item(),

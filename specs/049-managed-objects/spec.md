@@ -133,12 +133,14 @@ formatting.
 - The `Object Type` and `Key Format Type` are open numeric values. Unknown and
   extension values remain usable through a generic fallback.
 - `Key Value` in `Key Block` can be absent, a plaintext Structure, or wrapped
-  Byte String according to the source schema; the typed model does not
-  synthesize missing fields.
+  Byte String according to the general source schema. A Secret Data object
+  specifically requires its Key Block to contain a Key Value under §2.7.
 - `Key Material` encoding is selected explicitly by the caller's Key Format
   Type. KMIPKit does not infer algorithm, size, usage, or protection policy.
 - A Split Key's Prime Field Size is required only for Polynomial Sharing
   Prime Field; Key Part Identifier must be from 1 through Split Key Parts.
+  KMIP 2.1 §2.8 does not state numeric bounds for Split Key Threshold, so the
+  model preserves that integer without imposing an additional local range.
 - Builders follow source table order even where it is not intuitive: Table 9
   places Key Block after Split Key Parts, Key Part Identifier, Split Key
   Threshold, Split Key Method, and optional Prime Field Size; Table 12 places
@@ -171,7 +173,9 @@ formatting.
   §3.3, Tables 12–17.
 - **KMIPKIT-0049-FR-003**: Key Material MUST cover the Byte String and Structure
   forms defined by Key Format Type and all transparent material Structures in
-  §§3.4–3.12, Tables 18–26. Unknown and extension key formats MUST remain
+  §§3.4–3.12, Tables 18–26. The assigned/reserved mapping MUST match §11.25,
+  Table 461 exactly, including reserved values `0x0E`–`0x13` and assigned
+  formats `0x14`–`0x17`. Unknown and extension key formats MUST remain
   representable without narrowing the generic TTLV path.
 - **KMIPKIT-0049-FR-004**: Builders MUST emit each known Structure's fields in
   KMIP 2.1 §10.1.2 order regardless of setter call order. They MUST retain
@@ -207,8 +211,10 @@ formatting.
   fields MUST retain their values and relative order. `with_raw()` MUST expose
   the current structure of both parsed models and builders, including
   incomplete builders; this inspection view MUST NOT bypass validation during
-  final conversion. This requirement defines local API behavior and does not
-  claim that KMIP specifies a builder mutation model.
+  final conversion. Clearing an optional field through a setter MUST remove
+  the source field from both the inspection view and converted tree. This
+  requirement defines local API behavior and does not claim that KMIP specifies
+  a builder mutation model.
 - **KMIPKIT-0049-FR-012**: The Rust protocol API MUST provide typed construction
   and borrowed reading for the Password Credential, Device Credential, One
   Time Password Credential, and Hashed Password Credential system objects
@@ -226,6 +232,12 @@ formatting.
   verify, or transform passwords, salts, OTPs, or hashes. Edition-specific
   acceptance is enforced by the request/version validation assigned to
   KMIPKIT-0051; this model layer preserves and validates structure only.
+- **KMIPKIT-0049-FR-014**: A typed Secret Data object MUST contain its required
+  Key Value within Key Block as specified by KMIP 2.1 §2.7 and Table 8; readers
+  MUST reject an absent Key Value. Split Key validation MUST enforce the
+  explicit Key Part Identifier bounds and Polynomial Sharing Prime Field
+  condition from §2.8 and Table 9, but MUST NOT impose an unstated numeric
+  bound on Split Key Threshold.
 
 ### Normative Traceability
 
