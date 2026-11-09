@@ -459,3 +459,44 @@ policy, CodeQL, zizmor, SonarCloud, and CI summary all succeeded; only the
 documented conditional/nightly jobs were skipped. After this evidence update,
 the workflow matrix must be green again on the resulting PR head before the
 stack is considered ready for review.
+
+## Unassigned Operation values and extension preservation (2026-11-09)
+
+The KMIPKIT-0050 client suite exposed a gap in the inherited KMIPKIT-0047
+version gate: `operation_span(0x43)` correctly returned `None`, but
+`validate_operation(V3_0, 0x43)` returned success. A new Red test in
+`kmip30_operations_tests::version_gate_rejects_unassigned_standard_operation_codes_but_keeps_extensions`
+failed on that behavior (commit `6f03022dc`).
+
+Green commit `4d5ee9468` changes the pre-send gate to reject unassigned
+standard Operation values while retaining unknown values in the OASIS
+`8XXXXXXX` Enumeration extension allocation. The operation table stays
+catalog-backed and no contiguous standard-code range was introduced. The
+assigned KMIP 3.0 operation list remains Create Group through Decapsulate at
+`0x3C`–`0x42` (KMIP 3.0 §11.37, Table 583); `0x43` remains unassigned.
+
+Local Red/Green verification:
+
+- `cargo test -p kmipkit-protocol --lib version_gate_rejects_unassigned_standard_operation_codes_but_keeps_extensions` — Red failed because `0x43` was accepted; Green passed.
+- `cargo test -p kmipkit-client --lib test_version_gate_kmip30_operations_validation` — passed, including rejection of `0x43`.
+- `cargo fmt --all --check` — passed.
+- `cargo test -p kmipkit-protocol --lib --quiet` — 1,315 passed.
+- `cargo test -p kmipkit-client --lib --quiet` — 717 passed.
+- `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features -- -D warnings` — passed.
+- `python tools/normative_catalog/generate_named_values.py --check` — all four language outputs verified.
+- `python tools/normative_catalog/reconcile_named_value_manifest.py --check` — passed.
+- `git diff --check` — passed.
+
+`VersionGateError::UnassignedOperationInVersion` is a new Rust enum variant.
+Its exact public-route record remains part of the complete four-language
+declaration reconciliation assigned to KMIPKIT-0053; this correction does not
+claim a new cross-language error API.
+
+The follow-up source and documentation commits are local; PR #139 must receive
+fresh hosted checks after the stack update.
+
+## Hosted changed-code coverage remediation (2026-11-09)
+
+- **Red:** hosted PR #139 run `42566965462` failed the selected coverage gate because changed production coverage was 24/27 (88.89%) against its then-active 95% threshold. Parsing the uploaded Ubuntu LLVM coverage artifact identified only `crates/kmipkit-protocol/src/version_gate.rs:69-71`, the `UnassignedOperationInVersion` Display arm. This branch has correct formatting behavior but no assertion that exercises that arm.
+- **Green:** `version_gate_rejects_unassigned_standard_operation_codes_but_keeps_extensions` now asserts the complete error string `operation 0x00000043 is not assigned by KMIP 3.0`. The focused test passed, and a full protocol coverage run now executes all three previously uncovered display lines; `version_gate.rs` reports 100.00% line coverage.
+- **Refactor:** local `cargo llvm-cov -p kmipkit-protocol --all-targets --all-features --summary-only` passed 1,315 tests and reported 90.93% protocol line coverage; `version_gate.rs` is at 100.00%. `cargo fmt --all --check`, protocol Clippy, requirement-traceability checks (2 passed), and `git diff --check` also passed. No production behavior changed. T022 is complete locally; fresh hosted coverage and platform jobs remain to verify after push.
