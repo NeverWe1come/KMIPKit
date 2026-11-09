@@ -4817,6 +4817,7 @@ impl Client {
                 error,
             )
         })?;
+        validate_attribute_mutation_versions(&batch, effective_version)?;
         let mutation_policy = if profiles.is_some() {
             Some(validate_attribute_mutation_policy(&batch))
         } else {
@@ -4834,6 +4835,7 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        validate_request_message_version_tags(&request_message, effective_version)?;
         let profile_request = if profiles.is_some() {
             Some(
                 clone_request_message(&request_message, limits)
@@ -7135,6 +7137,89 @@ fn validate_attribute_mutation_policy(batch: &ClientBatch) -> Result<(), ClientE
     } else {
         Ok(())
     }
+}
+
+fn validate_attribute_mutation_versions(
+    batch: &ClientBatch,
+    version: ProtocolVersion,
+) -> Result<(), ClientError> {
+    for item in &batch.items {
+        let validate = |tag| {
+            kmipkit_protocol::VersionGate::validate_attribute_mutation(version, tag).map_err(
+                |error| {
+                    ClientError::validation(
+                        ClientCauseCategory::InvalidInput,
+                        RequestDeliveryState::NotSent,
+                        error,
+                    )
+                },
+            )
+        };
+        match &item.request {
+            ClientRequest::AddAttribute(request) => {
+                validate(request.new_attribute().item().tag().raw())?;
+            }
+            ClientRequest::AdjustAttribute(request) => {
+                if let Some(tag) = request.attribute_reference().tag_value() {
+                    validate(tag)?;
+                }
+            }
+            ClientRequest::DeleteAttribute(request) => {
+                if let Some(attribute) = request.current_attribute() {
+                    validate(attribute.item().tag().raw())?;
+                }
+                if let Some(tag) = request
+                    .attribute_reference()
+                    .and_then(AttributeReference::tag_value)
+                {
+                    validate(tag)?;
+                }
+            }
+            ClientRequest::ModifyAttribute(request) => {
+                if let Some(attribute) = request.current_attribute() {
+                    validate(attribute.item().tag().raw())?;
+                }
+                validate(request.new_attribute().item().tag().raw())?;
+            }
+            ClientRequest::SetAttribute(request) => {
+                validate(request.new_attribute().item().tag().raw())?;
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn validate_request_message_version_tags(
+    request: &RequestMessage,
+    version: ProtocolVersion,
+) -> Result<(), ClientError> {
+    for batch_item in request.batch_items() {
+        if let Some(Err(error)) = batch_item
+            .with_request_payload(|payload| validate_version_tags_in_structure(&payload, version))
+        {
+            return Err(ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_version_tags_in_structure(
+    structure: &StructureView<'_>,
+    version: ProtocolVersion,
+) -> Result<(), kmipkit_protocol::VersionGateError> {
+    for item in structure.children() {
+        kmipkit_protocol::VersionGate::validate_tag(version, item.tag().raw())?;
+        item.with_value(|value| match value {
+            ValueView::Structure(nested) => validate_version_tags_in_structure(&nested, version),
+            _ => Ok(()),
+        })?;
+    }
+    Ok(())
 }
 
 fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
