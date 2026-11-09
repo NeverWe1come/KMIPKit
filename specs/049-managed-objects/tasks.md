@@ -139,6 +139,20 @@
 - [x] T053 [Green] Apply the maintainer-approved temporary 90% threshold to changed production code and `kmipkit-protocol`, retaining the existing TTLV, transport, and FFI scope thresholds; update threshold tests.
 - [x] T054 [Refactor] Remove test-only code from the production source module after the coverage preflight rejected inline `#[cfg(test)]`; retain the external credential-object integration tests and record the resulting coverage.
 
+## Phase 7: audit-correction follow-up
+
+- [x] T055 [Red] Add regressions for clearing parsed Key Block cryptographic
+  fields, requiring Key Value in Secret Data, and accepting source-valid Split
+  Key threshold values. Red commit: `5b3159488`.
+- [x] T056 [Green] Apply optional-field removals to the current Key Block tree,
+  enforce the Secret Data Key Value requirement in constructors and readers,
+  and remove Split Key Threshold bounds that KMIP 2.1 §2.8 does not state.
+- [x] T057 [Refactor] Update the source-derived contract and traceability for
+  Secret Data, Split Key, and exact Key Format Type allocations; retain
+  `0x0E`–`0x13` as reserved and test assigned `0x14`–`0x17` forms.
+- [x] T058 [Verification] Run focused tests, protocol workspace tests, Clippy,
+  format, API and named-value generation checks, and document evidence.
+
 ## Independent test criteria
 
 - **US1**: Nine known managed-object schemas and unknown fallback round-trip with exact field order and preserved extensions.

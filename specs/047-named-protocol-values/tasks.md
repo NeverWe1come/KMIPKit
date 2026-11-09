@@ -16,11 +16,10 @@
 - [x] T006 Refactor generator and language surfaces without changing their
   public behavior; rerun focused checks and generator `--check` (Refactor
   commit).
-- [ ] T007 Run applicable format, lint, unit, binding, manifest, coverage, and
+- [x] T007 Run applicable format, lint, unit, binding, manifest, coverage, and
   security checks for the current revision; record exact commands and outcomes
-  in `implementation-evidence.md`. The prior hosted closeout applies to the
-  earlier head only. Focused checks for this correction pass, but the current
-  manifest audit and remote workflow matrix still require closeout.
+  in `implementation-evidence.md`. The spec-specific manifest reconciliation
+  passes. The broader shared Rust route inventory is assigned to KMIPKIT-0053.
 - [x] T009 Reconcile the approved count discrepancy: the catalog rows include
   reserved and wildcard extension entries, which do not have assigned
   numeric values. Confirm that generated usable constants cover only entries
@@ -46,6 +45,17 @@
   KMIP 2.1 attribute spans.
 - [x] T016 [Refactor] Update traceability and implementation evidence, then run
   focused protocol tests, protocol Clippy, formatting, and diff checks.
+- [x] T017 [Red] Pin that the version gate rejects unassigned standard
+  operation values such as KMIP 3.0 `0x43`, while preserving raw values in the
+  `8XXXXXXX` Operation Enumeration extension allocation. Red commit:
+  `6f03022dc`.
+- [x] T018 [Green] Reject Operation values without an exact versioned catalog
+  assignment unless they are within the OASIS extension allocation; preserve
+  `operation_span(None)` for unassigned values. Green implementation and
+  focused tests pass locally.
+- [x] T019 [Refactor] Tighten FR-010, traceability, and implementation evidence
+  to distinguish representable unknown values from values valid for sending;
+  rerun formatter, exact version-gate tests, and protocol/client suites.
 - [x] T008 Push this feature branch and open a draft PR against
   `feature/KMIPKIT-0043-t076-shared-client-mapping`; later change its base to
   `release/1.0.0` as described by the approved Phase 5 plan.

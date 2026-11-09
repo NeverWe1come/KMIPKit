@@ -15,28 +15,32 @@ use kmipkit_protocol::{
     AdjustAttributeRequest, AdjustAttributeResponse, ArchiveRequest, ArchiveResponse,
     AsynchronousOperationError, AttributeReference, Authentication, CancelRequest, CancelResponse,
     CancellationResult, CertifyRequest, CertifyResponse, CheckRequest, CheckResponse,
+    CreateCredentialRequest, CreateCredentialResponse, CreateGroupRequest, CreateGroupResponse,
     CreateKeyPairRequest, CreateKeyPairResponse, CreateRequest, CreateResponse,
-    CreateSplitKeyRequest, CreateSplitKeyResponse, CryptographicOperationResponseContext,
-    DecryptRequest, DecryptResponse, DelegatedLoginRequest, DelegatedLoginResponse,
-    DeleteAttributeRequest, DeleteAttributeResponse, DeriveKeyRequest, DeriveKeyResponse,
-    DestroyRequest, DestroyResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
-    EncryptRequest, EncryptResponse, ExportRequest, ExportResponse, GetAttributeListRequest,
+    CreateSplitKeyRequest, CreateSplitKeyResponse, CreateUserRequest, CreateUserResponse,
+    CryptographicOperationResponseContext, DeactivateRequest, DeactivateResponse,
+    DecapsulateRequest, DecapsulateResponse, DecryptRequest, DecryptResponse,
+    DelegatedLoginRequest, DelegatedLoginResponse, DeleteAttributeRequest, DeleteAttributeResponse,
+    DeriveKeyRequest, DeriveKeyResponse, DestroyRequest, DestroyResponse, DiscoverVersionsRequest,
+    DiscoverVersionsResponse, EncapsulateRequest, EncapsulateResponse, EncryptRequest,
+    EncryptResponse, ExportRequest, ExportResponse, GetAttributeListRequest,
     GetAttributeListResponse, GetAttributesRequest, GetAttributesResponse, GetConstraintsRequest,
     GetConstraintsResponse, GetRequest, GetResponse, GetUsageAllocationRequest,
     GetUsageAllocationResponse, HashRequest, HashResponse, ImportRequest, ImportResponse,
     JoinSplitKeyRequest, JoinSplitKeyResponse, KmipOperationResult, LocateRequest, LocateResponse,
     LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
-    ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
-    PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProfileTransport, ProfileValidationContext, ProfileValidationError,
-    ProfileValidationResult, ProfileValidationSelection, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
-    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
-    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
-    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
-    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
-    RngRetrieveRequest, RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
+    ModifyAttributeResponse, NewAttribute, ObliterateRequest, ObliterateResponse,
+    ObtainLeaseRequest, ObtainLeaseResponse, PingRequest, PingResponse, Pkcs11Request,
+    Pkcs11Response, PollRequest, PollResponse, ProcessRequest, ProcessResponse, ProfileTransport,
+    ProfileValidationContext, ProfileValidationError, ProfileValidationResult,
+    ProfileValidationSelection, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
+    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
+    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
+    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest,
+    RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
     SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
     SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
     SignatureVerifyResponse, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
@@ -88,6 +92,10 @@ mod import_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/key_transfer_operations_execution_tests.rs"]
 mod key_transfer_operations_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/kmip30_operation_surface_tests.rs"]
+mod kmip30_operation_surface_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/execute_id_placeholder_tests.rs"]
@@ -212,6 +220,13 @@ const QUERY_OPERATION: u32 = 0x0000_0018;
 const RNG_RETRIEVE_OPERATION: u32 = 0x0000_0025; // KMIP v2.1 §6.1.49, Tables 316–318.
 const RNG_SEED_OPERATION: u32 = 0x0000_0026; // KMIP v2.1 §6.1.50, Tables 319–321.
 const SET_ENDPOINT_ROLE_OPERATION: u32 = 0x0000_0032; // KMIP v2.1 §6.1.54, Table 331.
+const CREATE_GROUP_OPERATION: u32 = 0x0000_003C; // KMIP 3.0 §11.37, Table 583.
+const OBLITERATE_OPERATION: u32 = 0x0000_003D; // KMIP 3.0 §11.37, Table 583.
+const CREATE_USER_OPERATION: u32 = 0x0000_003E; // KMIP 3.0 §11.37, Table 583.
+const CREATE_CREDENTIAL_OPERATION: u32 = 0x0000_003F; // KMIP 3.0 §11.37, Table 583.
+const DEACTIVATE_OPERATION: u32 = 0x0000_0040; // KMIP 3.0 §11.37, Table 583.
+const ENCAPSULATE_OPERATION: u32 = 0x0000_0041; // KMIP 3.0 §11.37, Table 583.
+const DECAPSULATE_OPERATION: u32 = 0x0000_0042; // KMIP 3.0 §11.37, Table 583.
 const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
@@ -334,9 +349,65 @@ pub enum ClientRequest {
     RngSeed(RngSeedRequest),
     /// An explicit client-to-server Set Endpoint Role request (§6.1.54).
     SetEndpointRole(SetEndpointRoleRequest),
+    /// An explicit KMIP 3.0 Create Group request.
+    CreateGroup(CreateGroupRequest),
+    /// An explicit KMIP 3.0 Obliterate request.
+    Obliterate(ObliterateRequest),
+    /// An explicit KMIP 3.0 Create User request.
+    CreateUser(CreateUserRequest),
+    /// An explicit KMIP 3.0 Create Credential request.
+    CreateCredential(CreateCredentialRequest),
+    /// An explicit KMIP 3.0 Deactivate request.
+    Deactivate(DeactivateRequest),
+    /// An explicit KMIP 3.0 Encapsulate request.
+    Encapsulate(EncapsulateRequest),
+    /// An explicit KMIP 3.0 Decapsulate request.
+    Decapsulate(DecapsulateRequest),
 }
 
 impl ClientRequest {
+    /// Creates a typed KMIP 3.0 Create Group request variant.
+    #[must_use]
+    pub fn create_group(request: CreateGroupRequest) -> Self {
+        Self::CreateGroup(request)
+    }
+
+    /// Creates a typed KMIP 3.0 Obliterate request variant.
+    #[must_use]
+    pub fn obliterate(request: ObliterateRequest) -> Self {
+        Self::Obliterate(request)
+    }
+
+    /// Creates a typed KMIP 3.0 Create User request variant.
+    #[must_use]
+    pub fn create_user(request: CreateUserRequest) -> Self {
+        Self::CreateUser(request)
+    }
+
+    /// Creates a typed KMIP 3.0 Create Credential request variant.
+    #[must_use]
+    pub fn create_credential(request: CreateCredentialRequest) -> Self {
+        Self::CreateCredential(request)
+    }
+
+    /// Creates a typed KMIP 3.0 Deactivate request variant.
+    #[must_use]
+    pub fn deactivate(request: DeactivateRequest) -> Self {
+        Self::Deactivate(request)
+    }
+
+    /// Creates a typed KMIP 3.0 Encapsulate request variant.
+    #[must_use]
+    pub fn encapsulate(request: EncapsulateRequest) -> Self {
+        Self::Encapsulate(request)
+    }
+
+    /// Creates a typed KMIP 3.0 Decapsulate request variant.
+    #[must_use]
+    pub fn decapsulate(request: DecapsulateRequest) -> Self {
+        Self::Decapsulate(request)
+    }
+
     /// Creates an explicit client-to-server Set Endpoint Role request variant.
     #[must_use]
     pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
@@ -692,6 +763,13 @@ impl ClientRequest {
             Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
             Self::RngSeed(_) => RNG_SEED_OPERATION,
             Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
+            Self::CreateGroup(_) => CREATE_GROUP_OPERATION,
+            Self::Obliterate(_) => OBLITERATE_OPERATION,
+            Self::CreateUser(_) => CREATE_USER_OPERATION,
+            Self::CreateCredential(_) => CREATE_CREDENTIAL_OPERATION,
+            Self::Deactivate(_) => DEACTIVATE_OPERATION,
+            Self::Encapsulate(_) => ENCAPSULATE_OPERATION,
+            Self::Decapsulate(_) => DECAPSULATE_OPERATION,
         }
     }
 
@@ -949,6 +1027,27 @@ impl ClientRequest {
             Self::RngRetrieve(request) => request.to_ttlv_payload(),
             Self::RngSeed(request) => request.to_ttlv_payload(),
             Self::SetEndpointRole(request) => request.to_ttlv_payload(),
+            Self::CreateGroup(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::Obliterate(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::CreateUser(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::CreateCredential(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::Deactivate(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::Encapsulate(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::Decapsulate(request) => request
+                .into_ttlv_payload()
+                .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
         }
     }
 }
@@ -1044,8 +1143,25 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("SetEndpointRole")
                 .field(request)
                 .finish(),
+            Self::CreateGroup(request) => debug_kmip30_request(formatter, "CreateGroup", request),
+            Self::Obliterate(request) => debug_kmip30_request(formatter, "Obliterate", request),
+            Self::CreateUser(request) => debug_kmip30_request(formatter, "CreateUser", request),
+            Self::CreateCredential(request) => {
+                debug_kmip30_request(formatter, "CreateCredential", request)
+            }
+            Self::Deactivate(request) => debug_kmip30_request(formatter, "Deactivate", request),
+            Self::Encapsulate(request) => debug_kmip30_request(formatter, "Encapsulate", request),
+            Self::Decapsulate(request) => debug_kmip30_request(formatter, "Decapsulate", request),
         }
     }
+}
+
+fn debug_kmip30_request(
+    formatter: &mut fmt::Formatter<'_>,
+    operation: &'static str,
+    request: &impl fmt::Debug,
+) -> fmt::Result {
+    formatter.debug_tuple(operation).field(request).finish()
 }
 
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
@@ -1448,6 +1564,7 @@ enum PendingResponse {
     RngSeed(RngSeedResponse),
     Query(QueryResponse),
     SetEndpointRole(SetEndpointRoleResponse),
+    Kmip30(Kmip30OperationResponse),
 }
 
 impl PendingResponse {
@@ -1506,6 +1623,7 @@ impl PendingResponse {
             Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
             Self::SetEndpointRole(response) => ClientResponseRef::SetEndpointRole(response),
+            Self::Kmip30(response) => ClientResponseRef::Kmip30(response),
         };
         ClientResponseView { response }
     }
@@ -1780,10 +1898,28 @@ pub enum ClientOperation {
     QueryAsyncRequests,
     /// Set Endpoint Role (§6.1.54).
     SetEndpointRole,
+    /// Create Group (KMIP 3.0 §11.37, Table 583).
+    CreateGroup,
+    /// Obliterate (KMIP 3.0 §11.37, Table 583).
+    Obliterate,
+    /// Create User (KMIP 3.0 §11.37, Table 583).
+    CreateUser,
+    /// Create Credential (KMIP 3.0 §11.37, Table 583).
+    CreateCredential,
+    /// Deactivate (KMIP 3.0 §11.37, Table 583).
+    Deactivate,
+    /// Encapsulate (KMIP 3.0 §11.37, Table 583).
+    Encapsulate,
+    /// Decapsulate (KMIP 3.0 §11.37, Table 583).
+    Decapsulate,
 }
 
 impl ClientOperation {
-    /// Returns the KMIP 2.1 Operation Enumeration from §11.36, Table 470.
+    /// Returns the operation enumeration assigned by the selected KMIP version.
+    ///
+    /// Operations shared by KMIP 2.0 and 2.1 use §11.36, Table 470. The seven
+    /// KMIP 3.0 operations use §11.37, Table 583 and are rejected before send
+    /// unless the effective protocol version supports them.
     #[must_use]
     pub const fn raw(self) -> u32 {
         match self {
@@ -1844,6 +1980,13 @@ impl ClientOperation {
             Self::Validate => 0x17,
             Self::DelegatedLogin => 0x2f,
             Self::SetEndpointRole => 0x32,
+            Self::CreateGroup => CREATE_GROUP_OPERATION,
+            Self::Obliterate => OBLITERATE_OPERATION,
+            Self::CreateUser => CREATE_USER_OPERATION,
+            Self::CreateCredential => CREATE_CREDENTIAL_OPERATION,
+            Self::Deactivate => DEACTIVATE_OPERATION,
+            Self::Encapsulate => ENCAPSULATE_OPERATION,
+            Self::Decapsulate => DECAPSULATE_OPERATION,
         }
     }
 }
@@ -2015,6 +2158,7 @@ enum ClientResponseRef<'a> {
     RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
     SetEndpointRole(&'a SetEndpointRoleResponse),
+    Kmip30(&'a Kmip30OperationResponse),
 }
 
 /// A borrowed view of one typed response in a [`ClientBatchOutcome`].
@@ -2090,6 +2234,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
             ClientResponseRef::SetEndpointRole(response) => response.result(),
+            ClientResponseRef::Kmip30(response) => response.result(),
         }
     }
 
@@ -2582,6 +2727,15 @@ impl<'a> ClientResponseView<'a> {
             _ => None,
         }
     }
+
+    /// Returns a typed response for one of the seven KMIP 3.0 operations.
+    #[must_use]
+    pub const fn kmip30(&self) -> Option<&'a Kmip30OperationResponse> {
+        match self.response {
+            ClientResponseRef::Kmip30(response) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 fn debug_response<T>(formatter: &mut fmt::Formatter<'_>, name: &str, _response: &T) -> fmt::Result {
@@ -2715,7 +2869,70 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::SetEndpointRole(response) => {
                 debug_response(formatter, "SetEndpointRole", response)
             }
+            ClientResponseRef::Kmip30(response) => {
+                formatter.debug_tuple("Kmip30").field(response).finish()
+            }
         }
+    }
+}
+
+/// Typed response payloads for the seven KMIP 3.0 client operations added in
+/// KMIP 3.0 §11.37, Table 583.
+#[non_exhaustive]
+pub enum Kmip30OperationResponse {
+    /// Create Group response.
+    CreateGroup(CreateGroupResponse),
+    /// Obliterate response.
+    Obliterate(ObliterateResponse),
+    /// Create User response.
+    CreateUser(CreateUserResponse),
+    /// Create Credential response.
+    CreateCredential(CreateCredentialResponse),
+    /// Deactivate response.
+    Deactivate(DeactivateResponse),
+    /// Encapsulate response.
+    Encapsulate(EncapsulateResponse),
+    /// Decapsulate response.
+    Decapsulate(DecapsulateResponse),
+}
+
+impl Kmip30OperationResponse {
+    /// Returns the KMIP result for the typed operation response.
+    #[must_use]
+    pub const fn result(&self) -> &KmipOperationResult {
+        match self {
+            Self::CreateGroup(response) => response.result(),
+            Self::Obliterate(response) => response.result(),
+            Self::CreateUser(response) => response.result(),
+            Self::CreateCredential(response) => response.result(),
+            Self::Deactivate(response) => response.result(),
+            Self::Encapsulate(response) => response.result(),
+            Self::Decapsulate(response) => response.result(),
+        }
+    }
+
+    /// Returns the KMIP operation represented by this response.
+    #[must_use]
+    pub const fn operation(&self) -> ClientOperation {
+        match self {
+            Self::CreateGroup(_) => ClientOperation::CreateGroup,
+            Self::Obliterate(_) => ClientOperation::Obliterate,
+            Self::CreateUser(_) => ClientOperation::CreateUser,
+            Self::CreateCredential(_) => ClientOperation::CreateCredential,
+            Self::Deactivate(_) => ClientOperation::Deactivate,
+            Self::Encapsulate(_) => ClientOperation::Encapsulate,
+            Self::Decapsulate(_) => ClientOperation::Decapsulate,
+        }
+    }
+}
+
+impl fmt::Debug for Kmip30OperationResponse {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Kmip30OperationResponse")
+            .field("operation", &self.operation())
+            .field("result", self.result())
+            .finish()
     }
 }
 
@@ -2830,6 +3047,8 @@ pub enum ClientBatchOutcome {
     RngSeed(RngSeedResponse),
     /// The server returned a Set Endpoint Role result (§6.1.54).
     SetEndpointRole(SetEndpointRoleResponse),
+    /// The server returned a typed KMIP 3.0 operation result.
+    Kmip30(Kmip30OperationResponse),
 }
 
 impl ClientBatchOutcome {
@@ -2889,7 +3108,8 @@ impl ClientBatchOutcome {
             | Self::RngSeed(_)
             | Self::Query(_)
             | Self::SetEndpointRole(_)
-            | Self::Pkcs11(_) => None,
+            | Self::Pkcs11(_)
+            | Self::Kmip30(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -2951,6 +3171,7 @@ impl ClientBatchOutcome {
             Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::SetEndpointRole(response) => response.result(),
+            Self::Kmip30(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
     }
@@ -3012,6 +3233,7 @@ impl ClientBatchOutcome {
             Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
             Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
+            Self::Kmip30(response) => response.operation(),
             Self::Pending(pending) => pending.operation(),
         }
     }
@@ -3454,6 +3676,16 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed KMIP 3.0 response, including for a Pending result.
+    #[must_use]
+    pub const fn kmip30_response(&self) -> Option<&Kmip30OperationResponse> {
+        match self {
+            Self::Kmip30(response) => Some(response),
+            Self::Pending(pending) => pending.response().kmip30(),
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -3595,6 +3827,7 @@ impl ClientBatchOutcome {
             Self::SetEndpointRole(response) => {
                 ClientResponseView::new(ClientResponseRef::SetEndpointRole(response))
             }
+            Self::Kmip30(response) => ClientResponseView::new(ClientResponseRef::Kmip30(response)),
         }
     }
 }
@@ -3739,6 +3972,7 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("SetEndpointRole")
                 .field(response)
                 .finish(),
+            Self::Kmip30(response) => formatter.debug_tuple("Kmip30").field(response).finish(),
         }
     }
 }
@@ -3847,6 +4081,14 @@ impl fmt::Display for ClientBatchOutcome {
             Self::SetEndpointRole(response) => {
                 write!(formatter, "SetEndpointRole({})", response.result())
             }
+            Self::Kmip30(response) => {
+                write!(
+                    formatter,
+                    "{:?}({})",
+                    response.operation(),
+                    response.result()
+                )
+            }
         }
     }
 }
@@ -3917,6 +4159,12 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub const fn set_endpoint_role(&self) -> Option<&SetEndpointRoleResponse> {
         self.outcome.set_endpoint_role_response()
+    }
+
+    /// Returns the typed KMIP 3.0 response, including for a Pending result.
+    #[must_use]
+    pub const fn kmip30_response(&self) -> Option<&Kmip30OperationResponse> {
+        self.outcome.kmip30_response()
     }
 }
 
@@ -6149,6 +6397,198 @@ impl Client {
         self.execute_one_typed_request(ClientRequest::SignatureVerify(request), limits, options)
     }
 
+    /// Executes one KMIP 3.0 Create Group request.
+    ///
+    /// The effective protocol version must support KMIP 3.0; otherwise the
+    /// request is rejected locally with delivery state `NotSent`.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_group(
+        &mut self,
+        request: CreateGroupRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_group_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Create Group request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_group_with_options(
+        &mut self,
+        request: CreateGroupRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::create_group(request), limits, options)
+    }
+
+    /// Executes one KMIP 3.0 Obliterate request.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obliterate(
+        &mut self,
+        request: ObliterateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.obliterate_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Obliterate request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn obliterate_with_options(
+        &mut self,
+        request: ObliterateRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::obliterate(request), limits, options)
+    }
+
+    /// Executes one KMIP 3.0 Create User request.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_user(
+        &mut self,
+        request: CreateUserRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_user_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Create User request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_user_with_options(
+        &mut self,
+        request: CreateUserRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::create_user(request), limits, options)
+    }
+
+    /// Executes one KMIP 3.0 Create Credential request.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_credential(
+        &mut self,
+        request: CreateCredentialRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.create_credential_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Create Credential request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn create_credential_with_options(
+        &mut self,
+        request: CreateCredentialRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::create_credential(request), limits, options)
+    }
+
+    /// Executes one KMIP 3.0 Deactivate request.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn deactivate(
+        &mut self,
+        request: DeactivateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.deactivate_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Deactivate request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn deactivate_with_options(
+        &mut self,
+        request: DeactivateRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::deactivate(request), limits, options)
+    }
+
+    /// Executes one KMIP 3.0 Encapsulate request.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn encapsulate(
+        &mut self,
+        request: EncapsulateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.encapsulate_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Encapsulate request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn encapsulate_with_options(
+        &mut self,
+        request: EncapsulateRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::encapsulate(request), limits, options)
+    }
+
+    /// Executes one KMIP 3.0 Decapsulate request.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn decapsulate(
+        &mut self,
+        request: DecapsulateRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.decapsulate_with_options(request, limits, &RequestOptions::default())
+    }
+
+    /// Executes one KMIP 3.0 Decapsulate request with per-exchange options.
+    ///
+    /// # Errors
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn decapsulate_with_options(
+        &mut self,
+        request: DecapsulateRequest,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(ClientRequest::decapsulate(request), limits, options)
+    }
+
     fn execute_one_typed_request(
         &mut self,
         request: ClientRequest,
@@ -7315,7 +7755,14 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::RngRetrieve(_)
         | ClientRequest::RngSeed(_)
         | ClientRequest::SetEndpointRole(_)
-        | ClientRequest::Pkcs11(_) => false,
+        | ClientRequest::Pkcs11(_)
+        | ClientRequest::CreateGroup(_)
+        | ClientRequest::Obliterate(_)
+        | ClientRequest::CreateUser(_)
+        | ClientRequest::CreateCredential(_)
+        | ClientRequest::Deactivate(_)
+        | ClientRequest::Encapsulate(_)
+        | ClientRequest::Decapsulate(_) => false,
     }
 }
 
@@ -8035,6 +8482,13 @@ fn response_outcome(
             PendingResponse::SetEndpointRole,
             ClientBatchOutcome::SetEndpointRole,
         ),
+        CREATE_GROUP_OPERATION
+        | OBLITERATE_OPERATION
+        | CREATE_USER_OPERATION
+        | CREATE_CREDENTIAL_OPERATION
+        | DEACTIVATE_OPERATION
+        | ENCAPSULATE_OPERATION
+        | DECAPSULATE_OPERATION => kmip30_response_outcome(operation, item),
         PKCS11_OPERATION => pkcs11_response_outcome(item),
         PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {
             diagnostics_response_outcome(operation, item)
@@ -8076,6 +8530,42 @@ fn response_outcome(
         LOCATE_OPERATION => locate_response_outcome(item),
         GET_ATTRIBUTE_LIST_OPERATION => get_attribute_list_response_outcome(item),
         _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+}
+
+fn kmip30_response_outcome(
+    operation: u32,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    let response = match operation {
+        CREATE_GROUP_OPERATION => CreateGroupResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::CreateGroup),
+        OBLITERATE_OPERATION => ObliterateResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::Obliterate),
+        CREATE_USER_OPERATION => CreateUserResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::CreateUser),
+        CREATE_CREDENTIAL_OPERATION => CreateCredentialResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::CreateCredential),
+        DEACTIVATE_OPERATION => DeactivateResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::Deactivate),
+        ENCAPSULATE_OPERATION => EncapsulateResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::Encapsulate),
+        DECAPSULATE_OPERATION => DecapsulateResponse::try_from_response_item(item)
+            .map(Kmip30OperationResponse::Decapsulate),
+        _ => return Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
+    }
+    .map_err(read_response_error)?;
+    let result = response.result().clone();
+    if result.status().raw() == RESULT_STATUS_PENDING {
+        pending_outcome(
+            response.operation(),
+            result,
+            PendingResponse::Kmip30(response),
+            item,
+        )
+        .map(ClientBatchOutcome::Pending)
+    } else {
+        Ok(ClientBatchOutcome::Kmip30(response))
     }
 }
 

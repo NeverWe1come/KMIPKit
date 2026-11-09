@@ -23,20 +23,20 @@ fn known_key_formats_reject_the_wrong_key_material_ttlv_form() {
 
 #[test]
 fn assigned_key_formats_use_the_oasis_2_1_ttlv_types() {
-    for format in [5, 6, 22, 23] {
+    for format in [5, 6, 0x16, 0x17] {
         assert!(KeyMaterial::byte_string(format, vec![0x91]).is_ok());
         assert_eq!(
             expected_key_material_item_type(format),
             Some(ItemType::ByteString)
         );
     }
-    for format in [7, 13, 20, 21] {
+    for format in [7, 13, 0x14, 0x15] {
         assert_eq!(
             expected_key_material_item_type(format),
             Some(ItemType::Structure)
         );
     }
-    for reserved in 14..=19 {
+    for reserved in 0x0E..=0x13 {
         assert!(KeyMaterial::byte_string(reserved, vec![0x91]).is_ok());
         assert_eq!(expected_key_material_item_type(reserved), None);
     }
