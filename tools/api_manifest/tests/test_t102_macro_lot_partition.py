@@ -10,6 +10,7 @@ from tools.api_manifest.tests.pre_send_validation_routes import validation_stack
 from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
+    T102_KMIP30_DRAFT_ROUTE_DECLARATIONS,
     T102_PUBLIC_DECLARATIONS,
 )
 
@@ -108,6 +109,13 @@ class T102MacroLotPartitionTests(unittest.TestCase):
 
         self.assertEqual(0, len(blocked))
         self.assertEqual(0, T102_BLOCKED_CANDIDATES)
+        self.assertEqual(
+            T102_KMIP30_DRAFT_ROUTE_DECLARATIONS,
+            sum(
+                "KMIPKIT-0053-FR-018" in row.get("requirementIds", [])
+                for row in self.manifest["publicDeclarations"]
+            ),
+        )
         self.assertEqual(
             T102_PUBLIC_DECLARATIONS,
             len(self.manifest["publicDeclarations"]),
