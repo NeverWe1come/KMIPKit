@@ -470,6 +470,14 @@ def test_dispatches_all_nine_known_object_types_and_reads_key_structures():
                 0x0042_0040, limits, [enum(0x0042_0042, 1)]
             )
 
+        def secret_data_key_block() -> ttlv.TtlvItem:
+            key_value = _structure_with_children(
+                0x0042_0045, limits, [byte_string(0x0042_0043)]
+            )
+            return _structure_with_children(
+                0x0042_0040, limits, [enum(0x0042_0042, 1), key_value]
+            )
+
         objects = [
             _structure_with_children(0x0042_0013, limits,
                                      [enum(0x0042_001D, 1), byte_string(0x0042_001E)]),
@@ -480,7 +488,7 @@ def test_dispatches_all_nine_known_object_types_and_reads_key_structures():
                                      [integer(0x0042_008B, 2), integer(0x0042_0044, 1),
                                       integer(0x0042_008C, 2), enum(0x0042_008A, 1), key_block()]),
             _structure_with_children(0x0042_0085, limits,
-                                     [enum(0x0042_0086, 1), key_block()]),
+                                         [enum(0x0042_0086, 1), secret_data_key_block()]),
             _structure_with_children(0x0042_005B, limits,
                                      [enum(0x0042_0059, 1), byte_string(0x0042_005A)]),
             _structure_with_children(0x0042_00BD, limits,
@@ -610,6 +618,14 @@ def test_named_object_constructors_read_all_object_specific_fields():
         def key_block() -> ttlv.TtlvItem:
             return _structure_with_children(0x0042_0040, limits, [enum(0x0042_0042, 1)])
 
+        def secret_data_key_block() -> ttlv.TtlvItem:
+            key_value = _structure_with_children(
+                0x0042_0045, limits, [byte_string(0x0042_0043, b"\x01")]
+            )
+            return _structure_with_children(
+                0x0042_0040, limits, [enum(0x0042_0042, 1), key_value]
+            )
+
         typed = []
         source_items = []
 
@@ -628,7 +644,7 @@ def test_named_object_constructors_read_all_object_specific_fields():
             integer(0x0042_008C, 2), enum(0x0042_008A, 1), key_block()
         ], 5)
         construct(ManagedObject.secret_data, [
-            enum(0x0042_0086, 3), key_block()
+                enum(0x0042_0086, 3), secret_data_key_block()
         ], 7)
         construct(ManagedObject.opaque_object, [
             enum(0x0042_0059, 9), byte_string(0x0042_005A, b"opaque")

@@ -93,7 +93,8 @@ final class ManagedObjectParityTest {
                         item(0x0042008c, TtlvValue.Integer(2), limits),
                         item(0x0042008a, TtlvValue.Enumeration(1), limits), keyBlock(limits)),
                 structureItem(0x00420085, limits,
-                        item(0x00420086, TtlvValue.Enumeration(1), limits), keyBlock(limits)),
+                        item(0x00420086, TtlvValue.Enumeration(1), limits),
+                        secretDataKeyBlock(limits)),
                 structureItem(0x0042005b, limits,
                         item(0x00420059, TtlvValue.Enumeration(1), limits),
                         item(0x0042005a, TtlvValue.ByteString(new byte[] {1}, limits), limits)),
@@ -232,7 +233,8 @@ final class ManagedObjectParityTest {
             assertEquals(7, pgp.pgpKeyVersion());
         }
         try (TtlvItem type = item(0x00420086, TtlvValue.Enumeration(3), limits);
-                ManagedObject secret = ManagedObject.secretData(List.of(type, keyBlock(limits)))) {
+                ManagedObject secret = ManagedObject.secretData(
+                        List.of(type, secretDataKeyBlock(limits)))) {
             assertEquals(3, secret.secretDataType());
         }
         try (ManagedObject symmetric = ManagedObject.symmetricKey(List.of(keyBlock(limits)));
@@ -622,6 +624,13 @@ final class ManagedObjectParityTest {
     private static TtlvItem keyBlock(CodecLimits limits) {
         return structureItem(0x00420040, limits,
                 item(0x00420042, TtlvValue.Enumeration(1), limits));
+    }
+
+    private static TtlvItem secretDataKeyBlock(CodecLimits limits) {
+        return structureItem(0x00420040, limits,
+                item(0x00420042, TtlvValue.Enumeration(1), limits),
+                structureItem(0x00420045, limits,
+                        item(0x00420043, TtlvValue.ByteString(new byte[] {1}, limits), limits)));
     }
 
     private static TtlvItemType itemType(TtlvItem item) {

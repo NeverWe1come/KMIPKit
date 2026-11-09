@@ -31,6 +31,7 @@ import org.kmipkit.extensions.ExtensionRecognition;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ExtensionSchema;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
+import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.RegisteredExtensionValue;
 import org.kmipkit.extensions.TtlvPath;
 import org.kmipkit.ResourceLimitException;
@@ -236,6 +237,39 @@ final class ExtensionRegistryTest {
             assertEquals(WireEncoding.JSON, json.wireEncoding());
             assertEquals(WireEncoding.XML, xml.wireEncoding());
             assertThrows(InvalidInputException.class, () -> ttlv.withWireEncoding(null));
+        }
+    }
+
+    @Test
+    void clientConfigurationsKeepProtocolVersionAcrossImmutableCopies() throws Exception {
+        ClientExtensionRegistry registry = registry(List.of(alphaDefinition()), defaults());
+        try (ClientConfiguration ttlv = ClientConfiguration.create(registry);
+                ClientConfiguration v3 = ttlv.withProtocolVersion(new ProtocolVersion(3, 0));
+                ClientConfiguration jsonV3 = v3.withWireEncoding(WireEncoding.JSON)) {
+            assertEquals(new ProtocolVersion(2, 1), ttlv.protocolVersion());
+            assertEquals(new ProtocolVersion(3, 0), v3.protocolVersion());
+            assertEquals(new ProtocolVersion(3, 0), jsonV3.protocolVersion());
+            assertThrows(InvalidInputException.class, () -> ttlv.withProtocolVersion(null));
+        }
+    }
+
+    @Test
+    void kmip30DraftRequestFactoriesKeepOperationIdentity() {
+        try (TtlvStructure payload = TtlvStructure.create();
+                ClientBatchItem createGroup = ClientBatchItem.createGroup(payload);
+                ClientBatchItem obliterate = ClientBatchItem.obliterate(payload);
+                ClientBatchItem createUser = ClientBatchItem.createUser(payload);
+                ClientBatchItem createCredential = ClientBatchItem.createCredential(payload);
+                ClientBatchItem deactivate = ClientBatchItem.deactivate(payload);
+                ClientBatchItem encapsulate = ClientBatchItem.encapsulate(payload);
+                ClientBatchItem decapsulate = ClientBatchItem.decapsulate(payload)) {
+            assertEquals(0x3C, createGroup.operation());
+            assertEquals(0x3D, obliterate.operation());
+            assertEquals(0x3E, createUser.operation());
+            assertEquals(0x3F, createCredential.operation());
+            assertEquals(0x40, deactivate.operation());
+            assertEquals(0x41, encapsulate.operation());
+            assertEquals(0x42, decapsulate.operation());
         }
     }
 

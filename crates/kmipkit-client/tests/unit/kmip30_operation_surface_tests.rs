@@ -44,6 +44,25 @@ fn all_seven_kmip30_operations_have_exact_table_584_codes() {
 }
 
 #[test]
+fn draft_batch_item_routes_keep_each_fixed_operation_identity() {
+    let routes = [
+        (ClientBatchItem::create_group_draft(Structure::new()), 0x3C),
+        (ClientBatchItem::obliterate_draft(Structure::new()), 0x3D),
+        (ClientBatchItem::create_user_draft(Structure::new()), 0x3E),
+        (
+            ClientBatchItem::create_credential_draft(Structure::new()),
+            0x3F,
+        ),
+        (ClientBatchItem::deactivate_draft(Structure::new()), 0x40),
+        (ClientBatchItem::encapsulate_draft(Structure::new()), 0x41),
+        (ClientBatchItem::decapsulate_draft(Structure::new()), 0x42),
+    ];
+    for (item, expected_operation) in routes {
+        assert_eq!(item.operation(), expected_operation);
+    }
+}
+
+#[test]
 fn all_seven_kmip30_operations_have_direct_and_options_methods() {
     assert_direct_methods!(
         CreateCredentialRequest,

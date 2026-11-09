@@ -9979,6 +9979,127 @@ fn client_configuration_wire_encoding_is_immutable_and_defaults_to_ttlv() {
 }
 
 #[test]
+fn client_configuration_protocol_version_is_immutable_and_survives_encoding_copy() {
+    let mut limits = kmipkit_extension_registry_limits_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())
+            .expect("limits struct size fits ABI field"),
+        abi_version: 1,
+        max_definitions: 0,
+        max_schema_nodes: 0,
+        max_child_rules_per_structure: 0,
+        max_text_bytes_per_field: 0,
+        max_registry_text_bytes: 0,
+        max_discriminator_scalar_bytes: 0,
+        max_total_discriminator_scalar_bytes: 0,
+        max_constraint_members_per_rule: 0,
+        max_total_constraint_members: 0,
+        max_payload_index_records: 0,
+        max_lookup_comparisons: 0,
+        max_depth: 0,
+    };
+    assert_eq!(
+        kmipkit_extension_registry_limits_v1_default_values(&mut limits),
+        SUCCESS
+    );
+    let mut registry = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_create_v1(ptr::null_mut(), 0, &limits, &mut registry,),
+        SUCCESS
+    );
+    let mut default_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_create(registry, &mut default_configuration),
+        SUCCESS
+    );
+
+    let mut major = 0;
+    let mut minor = 0;
+    assert_eq!(
+        kmipkit_client_configuration_protocol_version(
+            default_configuration,
+            &mut major,
+            &mut minor
+        ),
+        SUCCESS
+    );
+    assert_eq!((major, minor), (2, 1));
+
+    let mut v3_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_protocol_version(
+            default_configuration,
+            3,
+            0,
+            &mut v3_configuration,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_configuration_protocol_version(v3_configuration, &mut major, &mut minor),
+        SUCCESS
+    );
+    assert_eq!((major, minor), (3, 0));
+
+    let mut json_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_wire_encoding(
+            v3_configuration,
+            1,
+            &mut json_configuration,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_configuration_protocol_version(json_configuration, &mut major, &mut minor),
+        SUCCESS
+    );
+    assert_eq!((major, minor), (3, 0));
+    assert_eq!(
+        kmipkit_client_configuration_protocol_version(
+            default_configuration,
+            &mut major,
+            &mut minor
+        ),
+        SUCCESS
+    );
+    assert_eq!((major, minor), (2, 1));
+
+    kmipkit_client_configuration_release(json_configuration);
+    kmipkit_client_configuration_release(v3_configuration);
+    kmipkit_client_configuration_release(default_configuration);
+}
+
+#[test]
+fn kmip30_draft_batch_item_routes_preserve_the_selected_operation() {
+    let routes: [(
+        extern "C" fn(*mut kmipkit_ttlv_structure_t, *mut *mut kmipkit_client_batch_item_t) -> i32,
+        u32,
+    ); 7] = [
+        (kmipkit_client_batch_item_create_group, 0x3C),
+        (kmipkit_client_batch_item_obliterate, 0x3D),
+        (kmipkit_client_batch_item_create_user, 0x3E),
+        (kmipkit_client_batch_item_create_credential, 0x3F),
+        (kmipkit_client_batch_item_deactivate, 0x40),
+        (kmipkit_client_batch_item_encapsulate, 0x41),
+        (kmipkit_client_batch_item_decapsulate, 0x42),
+    ];
+
+    for (route, expected_operation) in routes {
+        let payload = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+        let mut item = ptr::null_mut();
+        assert_eq!(route(payload, &raw mut item), SUCCESS);
+        let mut operation = 0;
+        assert_eq!(
+            kmipkit_client_batch_item_operation(item, &raw mut operation),
+            SUCCESS
+        );
+        assert_eq!(operation, expected_operation);
+        release(item, Kind::BatchItem);
+        release(payload, Kind::Structure);
+    }
+}
+
+#[test]
 fn validated_raw_tls_config_accepts_memory_der_crl_and_every_timeout_kind() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let chain = pki.client_identity().certificate_chain_der();
