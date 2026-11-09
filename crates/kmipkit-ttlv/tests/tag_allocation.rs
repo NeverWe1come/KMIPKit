@@ -79,10 +79,10 @@ fn every_exact_catalog_record_matches_public_allocation_check() {
         assert_public_check_matches_catalog(raw);
     }
 
-    // The allocation union includes the 20 exact KMIP 3.0 link tags reviewed
-    // in the versioned catalog, while retaining the KMIP 2.1 reserved entries.
-    assert_eq!(EXACT_TAG_ALLOCATIONS.len(), 394);
-    assert_eq!(assigned, 374);
+    // The allocation union includes all 60 exact KMIP 3.0 Table 605 tags,
+    // while retaining the KMIP 2.1 reserved entries.
+    assert_eq!(EXACT_TAG_ALLOCATIONS.len(), 434);
+    assert_eq!(assigned, 414);
     assert_eq!(reserved, 20);
 }
 

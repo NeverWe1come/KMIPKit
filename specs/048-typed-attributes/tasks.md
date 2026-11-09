@@ -33,6 +33,21 @@
 - [x] T017 [Red] Add failing tests for the exact 14 KMIP 2.1 Link Type to KMIP 3.0 tag mappings, all 20 versioned Link tag allocations, identifier round trips, and rejection of unmapped fields/tags (FR-011; Red commits `a20fe669a`, `8ce6503b9`, `2a8dc8b7b`, and `587d9086a`).
 - [x] T018 [Green] Add the checksum-pinned KMIP 3.0 Link tag catalog, regenerate the supported-version TTLV allocation union, and implement explicit lossless LinkNormalizer mappings (FR-011; Green commit `3296bc6bd`).
 - [ ] T019 [Refactor] Correct KMIPKIT-0071 references and migration documentation, update this spec's traceability and evidence, then run focused, generator, formatting, lint, API, coverage, and hosted CI checks (FR-011).
+- [x] T020 [Red] Require the exact 60 assigned KMIP 3.0 tags from §11.58, Table 605, including credential and KEM tags, and fail when the reviewed catalog contains only the 20 link tags (FR-012; Red commit `36abc5940`).
+- [x] T021 [Green] Extend the versioned tag catalog and deterministic allocator to all exact Table 605 assignments without deriving assignments from ranges; regenerate the allocation union (FR-012; Green commit `0fd8ea58e`).
+- [x] T022 [Refactor] Update KMIPKIT-0071 traceability, catalog documentation, and implementation evidence; run tag/API generation checks, focused tests, format, and lint (FR-012; Refactor commit `c68aa922b`).
+- [ ] T023 [Verification] Pass the applicable coverage gates and all hosted CI checks on the final PR head (FR-012).
+- [x] T024 [Red/Green/Refactor] Add a manifest-text integrity contract, restore
+  4,601 UTF-8-damaged reviewed strings in the source manifest, regenerate
+  official outputs, and stream the regression scan without changing behavior.
+- [x] T025 [Verification] Synchronize aggregate T102 declaration counts and
+  unchanged-surface fingerprints with the corrected 0047/0048 stack; verify
+  the dependent manifest-contract tests.
+- [x] T026 [Red/Green/Refactor] Add KMIP 3.0 migration-document contracts;
+  correct the §11.37, Table 584 operation references and assignments, refresh
+  generated value citations, and link FR-011 to KMIPKIT-0071 REQ-071-002.
+  Red commits `996a39dd1`, `02bb55e86`, and `318a6ebd8`; Green commit
+  `fc54c1f9f`; Refactor commit `dd735910d`.
 
 ## Dependencies and independent criteria
 
@@ -59,3 +74,4 @@ contract.
 | KMIPKIT-0048-FR-009 | T013, T014, T015 |
 | KMIPKIT-0048-FR-010 | T013, T014, T015 |
 | KMIPKIT-0048-FR-011 | T017, T018, T019 |
+| KMIPKIT-0048-FR-012 | T020, T021, T022, T023 |

@@ -381,3 +381,52 @@ The current-head pull request remains Draft. At the time of this evidence, the
 updated GitHub workflows were still running or queued; T007 remains open until
 the applicable current-head CI and the cross-branch audit reconciliation are
 closed.
+
+## T102 aggregate snapshot alignment (2026-11-09)
+
+Red evidence: PR #139 CI run `42518688661` failed its Windows Script contracts
+matrix because the checked-in manifest had 11,731 public declarations while
+the shared T102 snapshot expected 11,588. The same test failed locally before
+the count was changed. KMIPKIT-0047 added 143 versioned-value declarations;
+the failure was a stale aggregate guard, not a mismatch in the KMIPKIT-0043
+ten-path slice or its historical Rust audit report.
+
+Green commit `211c78baf` updates the shared public-declaration snapshot to
+11,731. Refactor commit `6f1dd1aca` renames the assertion to describe its two
+scopes and clarifies that the `T102_*` module holds shared snapshot guards.
+The Red test commit is `54857e3f6`.
+
+Expanding the local regression run exposed three more stale T102 fingerprints
+that included the new FR-009 declarations in their unchanged-surface hashes.
+The tests now exclude exactly those requirement-tagged declarations from the
+older snapshot projections; the aggregate manifest fingerprint is refreshed to
+include the approved FR-009 capability metadata.
+Refactor commit `0b8561b7a` centralizes the exact requirement-based filter for
+the three declaration fingerprints.
+
+Verification: all 6 tests in
+`tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions` pass; the
+243 tests across all 44 modules that consume the shared declaration snapshot
+pass; `python -B tools/api_manifest/generate.py --check` verifies all 12
+outputs; and `git diff --check` passes. T007 remains open pending the
+current-head hosted CI matrix and resolution of the broader Rust inventory
+audit gaps documented above.
+
+## Exact KMIP 3.0 tag-version gate (2026-11-09)
+
+Red commit `5f5bab807` added a failing check showing that the former
+`0x420153..=0x420172` range incorrectly classified KMIP 2.1 `Object Defaults`
+and `Protection Storage Masks` as KMIP 3.0. Green commit `752c51aa6` gates only
+the 60 explicit tag assignments in KMIP 3.0 §11.58, Table 605, and corrects
+the earlier test fixture to use `NIST Security Category` (`0x4201C2`) for a
+KMIP 3.0 example. It retains the KMIP 2.1 spans for Rotate attributes and
+Constraints.
+
+Verification on this revision:
+
+- `cargo test -p kmipkit-protocol --lib`: 1,314 passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`: passed.
+- `git diff --check`: passed.
+
+The implementation remains local and the pull request remains Draft pending
+the full stacked-branch synchronization and current-head CI checks.

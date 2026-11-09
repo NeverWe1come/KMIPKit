@@ -72,7 +72,7 @@ def _exact_tag_allocations(catalog: dict[str, Any]) -> list[tuple[int, str]]:
 
 
 def load_versioned_tag_allocations(root: Path) -> list[tuple[int, str]]:
-    """Load reviewed KMIP 3.0 tag additions after checking the pinned source."""
+    """Load exact KMIP 3.0 Table 605 assignments after checking the pinned source."""
     raw = safe_read_bytes(root, VERSIONED_TAG_CATALOG_PATH, max_bytes=MAX_BYTES)
     document = json.loads(raw)
     if not isinstance(document, dict) or document.get("formatVersion") != 1:
@@ -90,33 +90,49 @@ def load_versioned_tag_allocations(root: Path) -> list[tuple[int, str]]:
         raise ValueError("pinned KMIP 3.0 source checksum does not match")
 
     tag_enumeration = document.get("tagEnumeration")
-    if not isinstance(tag_enumeration, dict) or tag_enumeration.get("section") != "11.58":
+    if (
+        not isinstance(tag_enumeration, dict)
+        or tag_enumeration.get("section") != "11.58"
+        or tag_enumeration.get("table") != 605
+    ):
         raise ValueError("versioned tag catalog has an invalid Tag Enumeration source")
     assignments = tag_enumeration.get("assignments")
-    if not isinstance(assignments, list) or len(assignments) != 20:
-        raise ValueError("versioned tag catalog must contain the 20 reviewed Link assignments")
+    if not isinstance(assignments, list) or len(assignments) != 60:
+        raise ValueError("versioned tag catalog must contain all 60 Table 605 assignments")
 
     allocations: list[tuple[int, str]] = []
     seen_values: set[int] = set()
     seen_names: set[str] = set()
     seen_sections: set[str] = set()
     for assignment in assignments:
-        if not isinstance(assignment, dict) or set(assignment) != {
-            "name", "wire_value", "attribute_section"
-        }:
+        if not isinstance(assignment, dict) or set(assignment) not in (
+            {"name", "wire_value"},
+            {"name", "wire_value", "attribute_section"},
+        ):
             raise ValueError("versioned tag catalog has a malformed assignment")
         name = assignment.get("name")
         attribute_section = assignment.get("attribute_section")
         if not isinstance(name, str) or not name.strip():
             raise ValueError("versioned tag catalog assignment has no name")
-        if not isinstance(attribute_section, str) or not re.fullmatch(r"4\.35\.(?:[1-9]|1[0-9]|20)", attribute_section):
+        if attribute_section is not None and (
+            not isinstance(attribute_section, str)
+            or not re.fullmatch(r"4\.35\.(?:[1-9]|1[0-9]|20)", attribute_section)
+        ):
             raise ValueError("versioned tag catalog assignment has an invalid attribute section")
         numeric_value = _parse_exact_value(assignment.get("wire_value"))
-        if numeric_value in seen_values or name in seen_names or attribute_section in seen_sections:
+        if (
+            numeric_value in seen_values
+            or name in seen_names
+            or (
+                attribute_section is not None
+                and attribute_section in seen_sections
+            )
+        ):
             raise ValueError("versioned tag catalog contains duplicate assignments")
         seen_values.add(numeric_value)
         seen_names.add(name)
-        seen_sections.add(attribute_section)
+        if attribute_section is not None:
+            seen_sections.add(attribute_section)
         allocations.append((numeric_value, "assigned"))
     return sorted(allocations)
 

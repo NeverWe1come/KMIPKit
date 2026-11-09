@@ -84,6 +84,29 @@ fn split_key_import_request(
     )
 }
 
+fn managed_object_import_request(
+    object_tag: u32,
+    object_type: u32,
+    fields: impl IntoIterator<Item = Item>,
+) -> ImportRequest {
+    ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(object_type),
+        AttributeSet::new(),
+        schema_item(object_tag, Value::structure(schema_structure(fields))),
+    )
+}
+
+fn valid_key_block_item() -> Item {
+    schema_item(
+        0x0042_0040,
+        Value::structure(schema_structure([schema_item(
+            0x0042_0042,
+            Value::enumeration(1),
+        )])),
+    )
+}
+
 fn gcm_parameters_without_required_lengths() -> Structure {
     schema_structure([schema_item(0x0042_0011, Value::enumeration(9))])
 }
@@ -1202,6 +1225,89 @@ fn import_validation_checks_required_fields_for_pgp_secret_and_split_keys() {
             }
         }
     }
+}
+
+#[test]
+fn managed_object_import_schemas_enforce_field_type_cardinality_and_order() {
+    let pgp_version = || schema_item(0x0042_00BE, Value::integer(1));
+    let secret_data_type = || schema_item(0x0042_0086, Value::enumeration(1));
+    let split_fields = || {
+        vec![
+            schema_item(0x0042_008B, Value::integer(2)),
+            schema_item(0x0042_0044, Value::integer(1)),
+            schema_item(0x0042_008C, Value::integer(2)),
+            schema_item(0x0042_008A, Value::enumeration(1)),
+            valid_key_block_item(),
+        ]
+    };
+
+    let pgp_valid =
+        managed_object_import_request(0x0042_00BD, 9, [pgp_version(), valid_key_block_item()]);
+    assert!(pgp_valid.validate().is_valid());
+    for fields in [
+        vec![
+            schema_item(0x0042_00BE, Value::enumeration(1)),
+            valid_key_block_item(),
+        ],
+        vec![pgp_version(), pgp_version(), valid_key_block_item()],
+        vec![valid_key_block_item(), pgp_version()],
+    ] {
+        assert!(
+            !managed_object_import_request(0x0042_00BD, 9, fields)
+                .validate()
+                .is_valid()
+        );
+    }
+
+    let secret_valid =
+        managed_object_import_request(0x0042_0085, 7, [secret_data_type(), valid_key_block_item()]);
+    assert!(secret_valid.validate().is_valid());
+    for fields in [
+        vec![
+            schema_item(0x0042_0086, Value::text_string("invalid-type".to_owned())),
+            valid_key_block_item(),
+        ],
+        vec![
+            secret_data_type(),
+            secret_data_type(),
+            valid_key_block_item(),
+        ],
+        vec![valid_key_block_item(), secret_data_type()],
+    ] {
+        assert!(
+            !managed_object_import_request(0x0042_0085, 7, fields)
+                .validate()
+                .is_valid()
+        );
+    }
+
+    assert!(
+        managed_object_import_request(0x0042_0089, 5, split_fields())
+            .validate()
+            .is_valid()
+    );
+    let mut wrong_split_type = split_fields();
+    wrong_split_type[0] = schema_item(0x0042_008B, Value::enumeration(2));
+    assert!(
+        !managed_object_import_request(0x0042_0089, 5, wrong_split_type)
+            .validate()
+            .is_valid()
+    );
+    let mut duplicate_split_field = split_fields();
+    duplicate_split_field.insert(1, schema_item(0x0042_008B, Value::integer(2)));
+    assert!(
+        !managed_object_import_request(0x0042_0089, 5, duplicate_split_field)
+            .validate()
+            .is_valid()
+    );
+    let mut reordered_split_fields = split_fields();
+    let key_block = reordered_split_fields.pop().expect("key block is present");
+    reordered_split_fields.insert(0, key_block);
+    assert!(
+        !managed_object_import_request(0x0042_0089, 5, reordered_split_fields)
+            .validate()
+            .is_valid()
+    );
 }
 
 #[test]

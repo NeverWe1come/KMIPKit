@@ -56,6 +56,7 @@ As a Rust client author, I can use a typed attribute with `CurrentAttribute` or 
 - **KMIPKIT-0048-FR-009**: Rust rustdoc and English/Spanish user guides MUST include executable examples for typed scalar, repeated, and Structure-valued attributes, and explain generic fallback and open values.
 - **KMIPKIT-0048-FR-010**: C, Java, and Python binding parity for the typed attribute surface is assigned to KMIPKIT-0053; this specification MUST not claim those bindings are complete.
 - **KMIPKIT-0048-FR-011**: The approved Phase 5 audit correction MUST normalize only the 14 semantic Link Type assignments shared by KMIP 2.1 §11.28, Table 465, and KMIP 3.0 §§4.35.1–4.35.20 / §11.58, using explicit tag mappings. It MUST reject 3.0-only link attributes, identifier encodings with no counterpart in the destination version, duplicate required fields, and extra unrecognized children rather than discard or coerce them. Enumeration and Integer identifiers MUST round-trip unchanged. Text String identifiers MUST be rejected when converting to KMIP 3.0 because the KMIP 3.0 link attribute encoding in §4.35 does not list Text String.
+- **KMIPKIT-0048-FR-012**: The supported-version TTLV allocation input MUST record all 60 exact KMIP 3.0 tag assignments from §11.58, Table 605. Each assignment MUST be explicit; reserved or unassigned values MUST NOT become assigned through a numeric range. The generated union reports allocation in at least one supported edition and MUST NOT be used as a version-specific legality check.
 
 ### Normative Traceability
 

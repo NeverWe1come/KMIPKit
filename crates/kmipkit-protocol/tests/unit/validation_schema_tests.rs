@@ -338,18 +338,27 @@ fn key_wrapping_specification_requires_key_information_but_allows_both_forms() {
 
 #[test]
 fn key_information_requires_text_string_unique_identifier() {
-    let information = structure([item(UNIQUE_IDENTIFIER, Value::enumeration(7))]);
-    let report = validate_structure(
-        &information.view(),
-        Some(ValidationSchema::Nested(
-            NestedStructureSchema::EncryptionKeyInformation,
-        )),
-    );
+    for (schema, table) in [
+        (NestedStructureSchema::EncryptionKeyInformation, "Table 16"),
+        (
+            NestedStructureSchema::MacSignatureKeyInformation,
+            "Table 17",
+        ),
+    ] {
+        for information in [
+            structure([]),
+            structure([item(UNIQUE_IDENTIFIER, Value::enumeration(7))]),
+            structure([item(UNIQUE_IDENTIFIER, Value::integer(7))]),
+        ] {
+            let report =
+                validate_structure(&information.view(), Some(ValidationSchema::Nested(schema)));
 
-    assert!(report.issues().iter().any(|issue| {
-        issue.path().to_string() == "Unique Identifier"
-            && issue.source().to_string() == "KMIP v2.1 §3.3, Table 16"
-    }));
+            assert!(report.issues().iter().any(|issue| {
+                issue.path().to_string() == "Unique Identifier"
+                    && issue.source().to_string() == format!("KMIP v2.1 §3.3, {table}")
+            }));
+        }
+    }
 }
 
 #[test]

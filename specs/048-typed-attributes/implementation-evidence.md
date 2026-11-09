@@ -412,3 +412,98 @@ segments required by the coverage parser.
 
 Hosted PR checks are still pending on the updated head; T019 and TASK-071-008
 remain open until those controls finish.
+
+## KMIP 3.0 Table 605 catalog correction (2026-11-08)
+
+The pinned KMIP 3.0 source assigns 60 exact tags in §11.58, Table 605. The
+earlier versioned catalog listed only its 20 link tags, leaving credential,
+object-class, split-key, and KEM tags unclassified by the generated TTLV
+allocation union. No assignments are inferred from numeric ranges.
+
+- **Red:** commit `36abc5940` adds a test requiring all 60 exact names and wire
+  values, the Table 605 source reference, and preservation of a reserved value.
+  It failed before implementation because the catalog had no Table 605 source
+  metadata and did not contain the complete assignment list.
+- **Green:** commit `0fd8ea58e` adds the remaining exact assignments, validates
+  the pinned Table 605 metadata and exact count, and regenerates the allocation
+  union. The Rust allocation test also checks that the reserved range remains
+  reserved beyond the final Table 605 assignment.
+- **Refactor:** commit `c68aa922b` updates the requirement wording to cover all
+  60 exact assignments, records task and traceability status, and documents
+  the Table 605 catalog scope in KMIPKIT-0071 and the catalog README.
+
+Local verification on the Green code:
+
+- `python -B -m unittest tools.normative_catalog.tests.test_generate_ttlv_tags
+  -q`: 17 passed.
+- `python -B tools/normative_catalog/generate_ttlv_tags.py --write` regenerated
+  the allocation union; `--check` passed.
+- `cargo test -p kmipkit-ttlv --test tag_allocation`: 8 passed.
+- `cargo test -p kmipkit-protocol --all-features`: 1,331 unit tests, integration
+  tests, and 3 doctests passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
+  warnings`, `cargo fmt --all --check`, and `git diff --check` passed.
+- Named-value reconciliation passed; `python -B tools/api_manifest/generate.py
+  --check --repo-root .` verified all 12 generated API outputs.
+
+Coverage and hosted checks have not been rerun for this correction. The PR
+remains draft until the applicable coverage and hosted CI controls pass.
+
+## Stacked T102 and manifest text integrity correction (2026-11-09)
+
+Red commit `d91f2357b` adds a source-manifest text-integrity test. Its first
+run failed on 4,601 strings containing UTF-8 decoding damage, including the
+KMIP 2.1 section citations used by the PKCS#11 trait exclusion evidence. The
+stale T102 snapshot tests also exposed the updated aggregate inventory when
+the 0047 branch was merged.
+
+Green commit `e354d8d63` restores the affected source strings through validated
+CP1252-to-UTF-8 recovery steps: 4,601 strings were repaired in 4,816
+round-trips, with no unresolved candidate text. The change is textual; it
+does not alter declaration identities, protocol behavior, or parity states.
+The official API generator rewrote four derived outputs and verified all 12
+outputs in `--check` mode. The aggregate T102 snapshot now records 12,017
+public declarations and the corresponding current declaration fingerprints.
+
+Refactor commit `495ebeb5f` changes the integrity test to stream over JSON
+strings and retain only a small sample of failures. T102 snapshot updates also
+filter exactly the new KMIPKIT-0047-FR-009 declarations from the historical
+T102 fingerprints, while pinning the current aggregate baseline.
+
+Verification: 244 tests across 45 manifest-inventory modules pass, including
+the text-integrity and T102 contract tests; `python -B
+tools/api_manifest/generate.py --check` verifies all 12 outputs; and
+`git diff --check` passes. T019 and T023 remain open pending review of the
+remaining KMIPKIT-0071 documentation updates, applicable coverage, and hosted
+CI on the synchronized head.
+
+## KMIP 3.0 operation references and migration documentation (2026-11-09)
+
+The checksum-pinned KMIP 3.0 HTML source (`a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b`)
+assigns the seven new operations in §11.37, Table 584. The reviewed value
+catalog and generated constants already had the correct wire values, but the
+catalog called the table 583 and the KMIPKIT-0071 spec gave incorrect codes
+for `Deactivate`, `Encapsulate`, and `Decapsulate`. The existing Rust test name
+also cited Table 583.
+
+- **Red:** commits `996a39dd1`, `02bb55e86`, and `318a6ebd8` add documentation
+  contracts for the 14 Link Type mappings, the operation table metadata and
+  values, the KMIPKIT-0071 task state, and FR-011 cross-spec traceability. The
+  tests failed on the missing mapping reference, unchecked implemented task,
+  incorrect table metadata, and stale operation test name.
+- **Green:** `fc54c1f9f` corrects the KMIPKIT-0071 operation values and Table
+  584 references, fixes the named-value source catalog, regenerates the
+  four-language value outputs through the official generator, marks the
+  implemented LinkNormalizer task complete, and links the migration note and
+  FR-011 to KMIPKIT-0071 REQ-071-002.
+- **Refactor:** `dd735910d` orders imports, wraps the long assertions, and
+  keeps the documentation checks focused without changing their behavior.
+
+Local verification: all four new documentation contracts and 21 named-value
+generator tests pass; the focused Rust operation tests pass (4); the pinned
+source checksum matches; both named-value and API-manifest generators pass
+`--check`; workspace formatting, workspace Clippy, workspace tests with all
+features, and `git diff --check` pass. The broad API-manifest test discovery
+was stopped after running for more than 11 minutes without a final result; it
+is not counted as passing. Full coverage and final hosted CI remain tracked by
+T019/T023.

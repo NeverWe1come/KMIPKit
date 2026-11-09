@@ -32,4 +32,4 @@
 ## Notes
 
 - Binding parity is explicitly deferred to KMIPKIT-0053; response integration is deferred to KMIPKIT-0052.
-- KMIP 2.1 is the authority for field shape and conditional semantics; the catalog is the reviewed traceability input.
+- KMIP 2.1 is the authority for the original nine user-object shapes. The approved KMIP 3.0 addendum uses the pinned v3.0 source for system credential objects and keeps version-specific legality in KMIPKIT-0051.

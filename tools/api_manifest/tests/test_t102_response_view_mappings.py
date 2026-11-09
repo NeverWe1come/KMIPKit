@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import (
     EXPECTED as REMAINING_RESPONSE_VIEWS,
@@ -169,14 +170,14 @@ EXPECTED = (
 # The non-target snapshots include subsequent approved T102 manifest slices.
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-UNCHANGED_DECLARATIONS_SHA256 = "d0add21fcbc29332760875cd201ed7ac156fc2c9ad8520c7da447ebd914caac6"
+UNCHANGED_DECLARATIONS_SHA256 = "b3212d8289623f928705345cd30b614950ffacae118a64101f8660bfb7beb067"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
 # The non-target snapshot includes the async reader routes and exact Python adapter exclusions.
-OTHER_MANIFEST_SHA256 = "889d787a26245d2cef59445d4cf7ca275b44efe9d3f8177b8697b268986fe50c"
+OTHER_MANIFEST_SHA256 = "03148fafcbf2cbec51646166c6c4094b1ba87349a4b5793b218efba061a8146e"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -549,7 +550,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 )
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
-            canonical_sha256(unchanged_declarations),
+            canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
         target_operations = {

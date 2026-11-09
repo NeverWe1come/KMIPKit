@@ -116,3 +116,42 @@ let secret_owner = KeyMaterial::byte_string(1, caller_owned_secret)?;
 drop(secret_owner);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+## Objetos de credenciales del sistema en KMIP 3.0
+
+KMIP 3.0 define objetos tipados Password, Device, One Time Password y Hashed
+Password Credential. KMIPKit construye sus campos en el orden de las tablas
+OASIS y ofrece lectores mediante callbacks acotados. El validador de versión
+activa debe seleccionar KMIP 3.0 antes de enviar estos tipos; KMIP 2.1 sigue
+siendo la versión predeterminada del cliente.
+
+```rust
+use kmipkit_protocol::{
+    DeviceCredentialObject, DeviceCredentialObjectFields, PasswordCredentialObject,
+    PasswordCredentialObjectFields, SecretText,
+};
+
+let password = PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+    password: Some(SecretText::new("secreto proporcionado por el llamador".into())),
+    ..PasswordCredentialObjectFields::default()
+})?;
+assert_eq!(password.effective_iteration_count(), 100);
+
+let device = DeviceCredentialObject::try_new(DeviceCredentialObjectFields {
+    device_identifier: Some(SecretText::new("identificador del dispositivo".into())),
+    ..DeviceCredentialObjectFields::default()
+})?;
+assert!(device.with_device_identifier(|value| value.is_some()));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+La alternativa Password Link es un atributo, por lo que comprobarla requiere el
+objeto de credenciales junto con su Attribute Set. Un objeto con Salted
+Password no puede incluir Password y debe incluir Password Salt Algorithm.
+Device Credential debe incluir al menos un identificador; la unicidad depende
+de la política del servidor. OTP Algorithm y los dos campos hash de Hashed
+Password son obligatorios. Si se omite Hashing Algorithm se aplica el valor
+predeterminado SHA-256 sin insertar un campo. KMIPKit transporta estos valores;
+no calcula contraseñas, OTP, sales ni hashes. El texto y los bytes secretos se
+ocultan y el almacenamiento propiedad de KMIPKit se pone a cero al liberarse;
+las copias del llamador o de runtimes externos quedan fuera de esa garantía.
