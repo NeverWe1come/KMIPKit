@@ -46,22 +46,22 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
 
     def test_snapshot_totals_include_async_response_records(self) -> None:
-        baseline_bytes = subprocess.run(
-            [
-                "git",
-                "show",
-                f"{KMIPKIT_0051_BASELINE}:specification/api/public-api.json",
-            ],
-            cwd=REPOSITORY_ROOT,
-            check=True,
-            capture_output=True,
-        ).stdout
-        baseline = json.loads(baseline_bytes)
         current = json.loads(
             (REPOSITORY_ROOT / "specification/api/public-api.json").read_text(
                 encoding="utf-8"
             )
         )
+
+        exports = [row["exportName"] for row in current["publicDeclarations"]]
+        for response_name in (
+            "AsyncOperationResponseV1",
+            "AsyncCancelResponse",
+            "AsyncPollResponse",
+            "AsyncProcessResponse",
+            "AsyncQueryAsyncRequestsResponse",
+        ):
+            with self.subTest(response=response_name):
+                self.assertTrue(any(response_name in name for name in exports))
 
         current_exclusions = len(current["approvedExclusions"])
         self.assertEqual(T102_APPROVED_EXCLUSIONS, current_exclusions)
