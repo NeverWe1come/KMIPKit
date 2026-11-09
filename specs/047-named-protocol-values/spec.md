@@ -82,8 +82,11 @@ that are unknown, reserved, future, or vendor-defined.
   KMIP 2.1 Operation additions and KMIP 3.0 Operation, Object Class, and Object
   Type additions through deterministic generated values and lookups.
 - **KMIPKIT-0047-FR-010**: Version-aware operation lookup MUST return no
-  introduction span for unassigned codes; numeric ranges MUST NOT make
-  reserved or unassigned operation values valid.
+  introduction span for unassigned codes; pre-send validation MUST reject
+  unassigned standard Operation values for the effective version. It MUST
+  accept unknown values only in the KMIP Enumeration extension allocation
+  (`8XXXXXXX`). Numeric ranges MUST NOT make reserved or unassigned standard
+  operation values valid.
 - **KMIPKIT-0047-FR-011**: Version-aware tag lookup MUST use the exact tag
   assignments introduced by each pinned KMIP edition. It MUST NOT classify
   previously assigned KMIP 2.0/2.1 tags as KMIP 3.0 tags based on an adjacent
@@ -127,6 +130,9 @@ tag-number interval.
   models, plus exact KMIP 3.0 tag assignments used by version gates. These
   deltas do not imply complete KMIP 3.0 protocol support.
 - Existing raw-value constructors and generic TTLV interfaces remain supported.
+  Unknown Operation extension values remain representable and may be sent;
+  unknown values outside the assigned or extension allocations are rejected
+  by the client pre-send gate.
 - This feature does not infer server support, profile conformance, or
   cryptographic policy from the presence of a constant.
 - This feature does not add protocol operations or modify wire behavior.
