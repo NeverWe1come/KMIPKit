@@ -6,6 +6,7 @@ use kmipkit_protocol::{
     SymmetricKey, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
+use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, Value, ValueView};
 
@@ -81,6 +82,51 @@ fn request() -> ImportRequest {
     )
     .with_replace_existing(true)
     .with_key_wrap_type(KeyWrapType::from_raw(0xF123_4568))
+}
+
+fn import_request_with_object_fields_omitted(object_tag: u32, object_type: u32) -> ImportRequest {
+    let key_block = test_structure([test_item(KEY_FORMAT_TYPE, Value::enumeration(1))]);
+    let object = test_item(
+        object_tag,
+        Value::structure(test_structure([test_item(
+            KEY_BLOCK,
+            Value::structure(key_block),
+        )])),
+    );
+    ImportRequest::new(
+        UniqueIdentifier::TextString("invalid-import".to_owned()),
+        ObjectType::from_raw(object_type),
+        attributes(),
+        object,
+    )
+}
+
+#[test]
+fn import_with_missing_pgp_key_version_is_not_sent() {
+    let request = import_request_with_object_fields_omitted(0x0042_00BD, 9);
+    let (mut client, fake, request_bytes) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .import(request, &CodecLimits::defaults())
+        .expect_err("PGP Key requires PGP Key Version");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert!(request_bytes.borrow().is_none());
+}
+
+#[test]
+fn import_with_missing_secret_data_type_is_not_sent() {
+    let request = import_request_with_object_fields_omitted(0x0042_0085, 7);
+    let (mut client, fake, request_bytes) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .import(request, &CodecLimits::defaults())
+        .expect_err("Secret Data requires Secret Data Type");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert!(request_bytes.borrow().is_none());
 }
 
 #[test]

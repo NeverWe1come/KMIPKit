@@ -164,7 +164,7 @@ fn test_version_gate_kmip30_operations_validation() {
 
 #[test]
 fn version_gate_rejects_kmip30_attribute_before_transport() {
-    const KMIP_3_0_ONLY_TAG: u32 = 0x0042_0153;
+    const KMIP_3_0_ONLY_TAG: u32 = 0x0042_01C2;
     let attribute_item = Item::new(
         RawTag::new(KMIP_3_0_ONLY_TAG)
             .expect("tag fits in the TTLV tag field")
@@ -187,4 +187,32 @@ fn version_gate_rejects_kmip30_attribute_before_transport() {
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn kmip20_rotate_only_attribute_mutation_is_not_sent() {
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    let attribute_item = Item::new(
+        RawTag::new(CRYPTOGRAPHIC_ALGORITHM)
+            .expect("tag fits in the TTLV tag field")
+            .try_checked()
+            .expect("tag is allocated in a supported KMIP version"),
+        Value::enumeration(1),
+    )
+    .expect("valid item model");
+    let request = ClientRequest::set_attribute(SetAttributeRequest::new(
+        Some("object".to_owned()),
+        NewAttribute::new(attribute_item),
+    ));
+    let batch = ClientBatch::new(ClientBatchItem::new(request));
+    let options = RequestOptions::default().with_protocol_version(ProtocolVersion::V2_0);
+    let (mut client, transport, request_bytes) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .execute_with_options(batch, &CodecLimits::defaults(), &options)
+        .expect_err("KMIP 2.0 rotate-only mutation must be rejected locally");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert!(request_bytes.borrow().is_none());
 }
