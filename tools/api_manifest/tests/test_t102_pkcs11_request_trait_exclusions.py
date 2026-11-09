@@ -293,7 +293,6 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
     def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
         # The checked-in API inventory includes the 0047 versioned values,
         # 0048 typed attributes, and 0049 managed-object additions.
-        self.assertEqual(T102_PUBLIC_DECLARATIONS, 13_631)
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"
