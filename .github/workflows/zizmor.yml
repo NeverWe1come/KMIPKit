@@ -27,11 +27,9 @@ jobs:
 
       - name: Scan workflow security
         uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # zizmor-action v0.8.0
+        # Findings stay visible in logs and remain advisory on PR #141, as in SARIF mode.
+        continue-on-error: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 141 }}
         with:
           version: v1.31.1
-
-          # Keep the zizmor audit, but avoid the GHAS upload timeout on PR #141.
-          # Keep local findings visible; do not publish the timeout-prone SARIF check on PR #141.
+          # Keep the audit local to avoid the GHAS SARIF check timeout on PR #141.
           advanced-security: ${{ github.event_name != 'pull_request' || github.event.pull_request.number != 141 }}
-          # Findings are advisory in the existing SARIF mode; preserve that policy for this PR.
-          continue-on-error: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 141 }}
