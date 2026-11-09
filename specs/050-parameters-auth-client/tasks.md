@@ -86,7 +86,7 @@
 - [x] T040 Add failing tests for the exact Encapsulate/Decapsulate response fields and ensure shared-secret bytes are absent from typed responses and their `Debug` output. Red commits: `ffdf21c3c` (typed models) and `8fcb01c6e` (test server).
 - [x] T041 Correct the KMIP 3.0 response models to emit `Unique Identifier` + `Data` for Encapsulate and only `Unique Identifier` for Decapsulate; store the generated Secret Data result on the test server and return its identifier without Key Material in the response. Green commit: `73e7f1ec7` plus the dispatcher fix recorded in implementation evidence.
 - [x] T042 Correct the KMIP 3.0 operation identifiers and public model naming, update KMIPKIT-0050/0071 traceability, and add a pre-1.0 migration note for the corrected constructors and accessors.
-- [x] T043 Run focused KEM/client-server tests, workspace format/lint/test checks, public API and generated-manifest checks; record results and remote CI state in `implementation-evidence.md`.
+- [x] T043 Run focused KEM/client-server tests, workspace format/lint/test checks, public API and generated-manifest checks; record results and remote CI state in `implementation-evidence.md`. The 226-route 0050 delta is reconciled. A separate 4,199-route whole-tree manifest gap remains open for owner-by-owner assignment; it is not attributed wholesale to 0050 or 0053, and this audit did not pass the global gate.
 
 ## Dependencies
 

@@ -287,6 +287,29 @@ resolution. Rust commands emitted the established non-fatal Windows AWS-LC
 compiler-probe and missing NASM warnings.
 
 No PR metadata was changed, no alias was created, and remote CI was not queried.
+
+## Full public-surface audit after the 0049 merge (2026-11-09)
+
+The preceding 0050 audit summary is superseded for the combined branch. The
+post-sync Rust export report now records 27,234 observed routes: 7,037 exact
+manifest matches, 15,998 exact exclusions, and 4,199 routes missing from the
+manifest. The scanner is complete and reports zero kind mismatches, conditional
+mismatches, or other issues, but `matchesManifest` is false. Consequently,
+`audit_rust_exports.py --check` exits nonzero and
+`audit_shared_rust_inventory.py --check` reports unresolved missing routes.
+Examples in the missing set include `ClientListener` APIs; the total is a
+whole-tree inventory and must not be described as 4,199 KMIPKIT-0050-owned
+routes. The pre-reconciliation report records exactly 226 0050-owned paths
+(184 declarations and 42 trait exclusions), and none of those paths remain in
+the current missing set. The remaining routes require owner-by-owner review
+under the 0043 whole-tree manifest gate. KMIPKIT-0053 separately owns the
+cross-language parity for 0050's APIs and is the planned final phase-5
+reconciliation point; it does not own every missing route by default.
+
+T043's command-execution scope is complete, but this audit is not a passing
+release gate. The branch remains Draft until the final manifest reconciliation
+and all required hosted checks pass. The old remote CI result was for a prior
+branch head; it must be rerun after publishing the synchronized branch.
 Existing untracked files and target directories were preserved; target sizes
 were never inspected. There is no fresh coverage measurement or cross-platform
 aggregate. Existing hosted CI, coverage, human review, and ADR-0012 hosted
@@ -318,3 +341,10 @@ candidate-test gates remain outstanding; the branch remains draft.
 - **Green:** commit `73e7f1ec7` removes shared-secret fields/getters from both response types, serializes only the exact table fields, names the encapsulated output `data`, and uses the correct Data tag for the Decapsulate request. Commit `8fcb01c6e` adds server-test expectations; it failed before its fix because Encapsulate returned the input key identifier instead of a new Secret Data identifier. Commit `6fad2b833` creates and stores that Secret Data result server-side, returns only its identifier for Decapsulate, and corrects the server operation IDs to Table 584 (`Deactivate=0x40`, `Encapsulate=0x41`, `Decapsulate=0x42`).
 - **Refactor/docs:** updated KMIPKIT-0050 FR-014/015 and `traceability.md`, corrected the KMIP 3.0 KEM description in KMIPKIT-0071, and added the pre-1.0 constructor/accessor migration guidance to `docs/development/kmip-3.0-api-migration.md`.
 - **Focused verification:** `cargo test -p kmipkit-protocol kem_tests -- --nocapture` passed (3 tests); `cargo test -p kmipkit-test-server dispatcher_all_operations_and_error_handling -- --nocapture` passed (1 test). Both commands emitted the known non-fatal Windows aws-lc-sys/NASM warnings. Workspace-level checks for this correction are recorded below after completion.
+
+## Binding audit snapshot refresh (2026-11-09)
+
+- **Red:** `python -B -m unittest tools.api_manifest.tests.test_c_api_docs -q` failed because the checked-in C/Java/Python report and its Markdown table still described 1,708/1,881/2,000 declarations, while the merged manifest contains 1,733/1,906/2,025.
+- **Green:** regenerated the JSON report using `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json --check`; the official audit confirmed complete scans and exact matches for all three packages. The 0050 post-sync report was regenerated from the same current tree.
+- **Refactor/docs:** updated the authored audit guide's status date, source range, and table to the regenerated counts, and clarified that a complete binding audit does not close the separate whole-tree Rust manifest gate.
+- **Verification:** `python -B -m unittest tools.api_manifest.tests.test_c_api_docs -q` passed all 4 tests after the report and table refresh. `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json --check` exited 0. The separate 97 focused manifest tests also passed.
