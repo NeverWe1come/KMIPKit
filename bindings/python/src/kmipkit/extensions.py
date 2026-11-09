@@ -37,6 +37,7 @@ from ._handles import (
     synchronize_public_functions,
 )
 from .validation import ValidationReport
+from ._protocol_version import ProtocolVersion
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,6 +136,13 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_get_attribute_list_from_request",
         "kmipkit_client_batch_item_destroy",
         "kmipkit_client_batch_item_recover",
+        "kmipkit_client_batch_item_create_group",
+        "kmipkit_client_batch_item_obliterate",
+        "kmipkit_client_batch_item_create_user",
+        "kmipkit_client_batch_item_create_credential",
+        "kmipkit_client_batch_item_deactivate",
+        "kmipkit_client_batch_item_encapsulate",
+        "kmipkit_client_batch_item_decapsulate",
     }
 )
 
@@ -292,16 +300,47 @@ class ClientConfiguration(NativeHandle):
         *,
         _token: object,
         wire_encoding: WireEncoding = WireEncoding.TTLV,
+        protocol_version: ProtocolVersion | None = None,
     ) -> None:
         super().__init__(handle, _token=_token, owner=definitions)
         self._definitions = definitions
         self.limits = limits
         self._wire_encoding = wire_encoding
+        if protocol_version is None:
+            from .client import ProtocolVersion
+
+            protocol_version = ProtocolVersion(2, 1)
+        self._protocol_version = protocol_version
 
     @property
     def wire_encoding(self) -> WireEncoding:
         """Return this immutable configuration's default wire encoding."""
         return self._wire_encoding
+
+    @property
+    def protocol_version(self) -> ProtocolVersion:
+        """Return this immutable configuration's default KMIP protocol version."""
+        return self._protocol_version
+
+    def with_protocol_version(self, version: ProtocolVersion) -> ClientConfiguration:
+        """Return a native configuration copy using a different KMIP version."""
+        from .client import ProtocolVersion
+
+        if not isinstance(version, ProtocolVersion):
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_client_configuration_t",
+            "kmipkit_client_configuration_with_protocol_version",
+            (self._pointer(), version.major, version.minor),
+        )
+        return _wrap_owned_handle(
+            ClientConfiguration,
+            handle,
+            self._definitions,
+            self.limits,
+            wire_encoding=self._wire_encoding,
+            protocol_version=version,
+        )
 
     def with_wire_encoding(self, encoding: WireEncoding) -> ClientConfiguration:
         """Return a native configuration copy with a different wire encoding."""
@@ -318,6 +357,7 @@ class ClientConfiguration(NativeHandle):
             self._definitions,
             self.limits,
             wire_encoding=encoding,
+            protocol_version=self._protocol_version,
         )
 
 
@@ -1754,6 +1794,54 @@ def client_batch_item_ping() -> ClientBatchItem:
         (),
     )
     return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def _client_batch_item_kmip30_draft(
+    operation: str, payload: ttlv.Structure
+) -> ClientBatchItem:
+    if not isinstance(payload, ttlv.Structure):
+        errors.raise_for_status(4)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        f"kmipkit_client_batch_item_{operation}",
+        (_client_native_structure(payload, required=True),),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_group(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Create Group route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("create_group", payload)
+
+
+def client_batch_item_obliterate(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Obliterate route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("obliterate", payload)
+
+
+def client_batch_item_create_user(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Create User route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("create_user", payload)
+
+
+def client_batch_item_create_credential(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Create Credential route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("create_credential", payload)
+
+
+def client_batch_item_deactivate(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Deactivate route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("deactivate", payload)
+
+
+def client_batch_item_encapsulate(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Encapsulate route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("encapsulate", payload)
+
+
+def client_batch_item_decapsulate(payload: ttlv.Structure) -> ClientBatchItem:
+    """Create the opt-in KMIP 3.0 draft Decapsulate route from ordered generic TTLV."""
+    return _client_batch_item_kmip30_draft("decapsulate", payload)
 
 
 def client_batch_item_logout(ticket: ttlv.Structure) -> ClientBatchItem:
@@ -3708,6 +3796,13 @@ __all__ = [
     "client_batch_item_discover_versions",
     "client_batch_item_unique_batch_item_id",
     "client_batch_item_ping",
+    "client_batch_item_create_group",
+    "client_batch_item_obliterate",
+    "client_batch_item_create_user",
+    "client_batch_item_create_credential",
+    "client_batch_item_deactivate",
+    "client_batch_item_encapsulate",
+    "client_batch_item_decapsulate",
     "client_batch_item_query",
     "client_batch_item_query_with_limits",
     "client_batch_item_encrypt",

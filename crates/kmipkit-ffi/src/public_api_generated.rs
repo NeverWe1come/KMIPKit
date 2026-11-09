@@ -18,6 +18,8 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "ffi_runtime_metadata",
     "generic_ttlv_model",
     "hashed_password_timestamp_sequence",
+    "kmip30_draft_routes",
+    "kmip_protocol_version_selection",
     "named_protocol_values",
     "nonce_ttlv_parity",
     "opaque_register_context",
@@ -35053,5 +35055,50 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-da66a966650f80290347",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::validate_structure",
+    ),
+    (
+        "client_configuration_protocol_version:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
+    ),
+    (
+        "client_configuration_with_protocol_version:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:create_group",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_group_draft",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:obliterate",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::obliterate_draft",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:create_user",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_user_draft",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:create_credential",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_credential_draft",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:deactivate",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::deactivate_draft",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:encapsulate",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::encapsulate_draft",
+    ),
+    (
+        "KMIPKIT-0053-T083:route:decapsulate",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::decapsulate_draft",
     ),
 ];

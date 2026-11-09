@@ -3196,6 +3196,34 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+#define KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(java_name, c_function) \
+    JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_##java_name( \
+            JNIEnv* env, jclass, jlong raw_payload) { \
+        return guarded<jlong>(env, 0, [&] { \
+            return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) { \
+                return c_function( \
+                        from_java_handle<kmipkit_ttlv_structure_t>(raw_payload), output); \
+            }); \
+        }); \
+    }
+
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemCreateGroup,
+        kmipkit_client_batch_item_create_group)
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemObliterate,
+        kmipkit_client_batch_item_obliterate)
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemCreateUser,
+        kmipkit_client_batch_item_create_user)
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemCreateCredential,
+        kmipkit_client_batch_item_create_credential)
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemDeactivate,
+        kmipkit_client_batch_item_deactivate)
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemEncapsulate,
+        kmipkit_client_batch_item_encapsulate)
+KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR(clientBatchItemDecapsulate,
+        kmipkit_client_batch_item_decapsulate)
+
+#undef KMIP30_DRAFT_BATCH_ITEM_CONSTRUCTOR
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCertify(
         JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
         jlong raw_identifier_number, jboolean raw_has_certificate_request_type,
@@ -5878,6 +5906,17 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigura
             return kmipkit_client_configuration_with_wire_encoding(
                     from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
                     static_cast<kmipkit_wire_encoding_t>(encoding), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_configuration, jint major, jint minor) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_configuration_t>(env, [&](auto output) {
+            return kmipkit_client_configuration_with_protocol_version(
+                    from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
+                    static_cast<int32_t>(major), static_cast<int32_t>(minor), output);
         });
     });
 }

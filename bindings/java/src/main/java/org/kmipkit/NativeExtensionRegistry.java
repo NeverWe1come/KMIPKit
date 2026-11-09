@@ -236,6 +236,8 @@ public final class NativeExtensionRegistry {
     public static native long extensionDefinitionValidate(long definition, long value, long[] codecLimits);
     public static native long clientConfigurationCreate(long registry);
     public static native long clientConfigurationWithWireEncoding(long configuration, int encoding);
+    public static native long clientConfigurationWithProtocolVersion(
+            long configuration, int major, int minor);
     public static native int clientConfigurationWireEncoding(long configuration);
     public static native long clientConfigurationExtensionRegistry(long configuration);
     public static native long clientExtensionRegistryCreate(long[] definitions, long[] limits);
@@ -255,6 +257,13 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemQueryWithLimits(
             int[] functions, @Nullable byte[][] objectGroups, long[] codecLimits);
     public static native long clientBatchItemCreate(long objectType, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemCreateGroup(long payload);
+    public static native long clientBatchItemObliterate(long payload);
+    public static native long clientBatchItemCreateUser(long payload);
+    public static native long clientBatchItemCreateCredential(long payload);
+    public static native long clientBatchItemDeactivate(long payload);
+    public static native long clientBatchItemEncapsulate(long payload);
+    public static native long clientBatchItemDecapsulate(long payload);
     public static native long clientBatchItemCreateKeyPair(long commonAttributes, long privateKeyAttributes,
             long publicKeyAttributes, long commonProtectionStorageMasks,
             long privateProtectionStorageMasks, long publicProtectionStorageMasks);

@@ -238,10 +238,53 @@ const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
 const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const RESULT_STATUS_PENDING: u32 = 2;
 
+/// An opt-in KMIP 3.0 Working Draft operation exposed through generic TTLV.
+///
+/// These routes do not imply KMIP 3.0 profile conformance. The caller supplies
+/// an ordered Request Payload Structure and remains responsible for its
+/// operation-specific schema until the draft models are available in each
+/// language binding.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+#[doc(hidden)]
+pub enum Kmip30DraftOperation {
+    /// Create Group (operation `0x3C`).
+    CreateGroup,
+    /// Obliterate (operation `0x3D`).
+    Obliterate,
+    /// Create User (operation `0x3E`).
+    CreateUser,
+    /// Create Credential (operation `0x3F`).
+    CreateCredential,
+    /// Deactivate (operation `0x40`).
+    Deactivate,
+    /// Encapsulate (operation `0x41`).
+    Encapsulate,
+    /// Decapsulate (operation `0x42`).
+    Decapsulate,
+}
+
+impl Kmip30DraftOperation {
+    /// Returns the KMIP 3.0 Working Draft Operation Enumeration.
+    #[must_use]
+    const fn raw(self) -> u32 {
+        match self {
+            Self::CreateGroup => CREATE_GROUP_OPERATION,
+            Self::Obliterate => OBLITERATE_OPERATION,
+            Self::CreateUser => CREATE_USER_OPERATION,
+            Self::CreateCredential => CREATE_CREDENTIAL_OPERATION,
+            Self::Deactivate => DEACTIVATE_OPERATION,
+            Self::Encapsulate => ENCAPSULATE_OPERATION,
+            Self::Decapsulate => DECAPSULATE_OPERATION,
+        }
+    }
+}
+
 /// One request variant admitted by the typed client execution path.
 ///
-/// Only explicitly requested typed operations are accepted. Generic TTLV items
-/// and caller-provided wire bytes are not accepted.
+/// KMIP 2.1 operations use typed request models. The seven opt-in KMIP 3.0
+/// Working Draft operations have separate generic-TTLV routes; those routes
+/// are version-gated but do not claim operation-specific schema validation.
 #[non_exhaustive]
 pub enum ClientRequest {
     /// An explicit client-to-server Discover Versions request.
@@ -364,6 +407,13 @@ pub enum ClientRequest {
     Encapsulate(EncapsulateRequest),
     /// An explicit KMIP 3.0 Decapsulate request.
     Decapsulate(DecapsulateRequest),
+    /// An opt-in KMIP 3.0 Working Draft route with caller-supplied generic TTLV.
+    Kmip30Draft {
+        /// The fixed operation identity selected by the binding route.
+        operation: Kmip30DraftOperation,
+        /// The ordered, opaque Request Payload; debug formatting never reads it.
+        payload: Structure,
+    },
 }
 
 impl ClientRequest {
@@ -407,6 +457,10 @@ impl ClientRequest {
     #[must_use]
     pub fn decapsulate(request: DecapsulateRequest) -> Self {
         Self::Decapsulate(request)
+    }
+
+    fn kmip30_draft(operation: Kmip30DraftOperation, payload: Structure) -> Self {
+        Self::Kmip30Draft { operation, payload }
     }
 
     /// Creates an explicit client-to-server Set Endpoint Role request variant.
@@ -771,6 +825,7 @@ impl ClientRequest {
             Self::Deactivate(_) => DEACTIVATE_OPERATION,
             Self::Encapsulate(_) => ENCAPSULATE_OPERATION,
             Self::Decapsulate(_) => DECAPSULATE_OPERATION,
+            Self::Kmip30Draft { operation, .. } => operation.raw(),
         }
     }
 
@@ -869,6 +924,7 @@ impl ClientRequest {
             | Self::Deactivate(_)
             | Self::Encapsulate(_)
             | Self::Decapsulate(_)
+            | Self::Kmip30Draft { .. }
             | Self::SetEndpointRole(_) => ValidationReport::default(),
         }
     }
@@ -1060,6 +1116,7 @@ impl ClientRequest {
             Self::Decapsulate(request) => request
                 .into_ttlv_payload()
                 .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
+            Self::Kmip30Draft { payload, .. } => Ok(payload),
         }
     }
 }
@@ -1164,6 +1221,11 @@ impl fmt::Debug for ClientRequest {
             Self::Deactivate(request) => debug_kmip30_request(formatter, "Deactivate", request),
             Self::Encapsulate(request) => debug_kmip30_request(formatter, "Encapsulate", request),
             Self::Decapsulate(request) => debug_kmip30_request(formatter, "Decapsulate", request),
+            Self::Kmip30Draft { operation, .. } => formatter
+                .debug_struct("Kmip30Draft")
+                .field("operation", operation)
+                .field("payload", &"[REDACTED]")
+                .finish(),
         }
     }
 }
@@ -1201,6 +1263,97 @@ impl ClientBatchItem {
     #[must_use]
     pub const fn ping() -> Self {
         Self::new(ClientRequest::ping())
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Create Group request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 280 payload.
+    #[must_use]
+    pub fn create_group_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::CreateGroup,
+            payload,
+        ))
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Obliterate request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 374 payload.
+    #[must_use]
+    pub fn obliterate_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::Obliterate,
+            payload,
+        ))
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Create User request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 290 payload.
+    #[must_use]
+    pub fn create_user_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::CreateUser,
+            payload,
+        ))
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Create Credential request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 277 payload.
+    #[must_use]
+    pub fn create_credential_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::CreateCredential,
+            payload,
+        ))
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Deactivate request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 293 payload.
+    #[must_use]
+    pub fn deactivate_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::Deactivate,
+            payload,
+        ))
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Encapsulate request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 317 payload.
+    #[must_use]
+    pub fn encapsulate_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::Encapsulate,
+            payload,
+        ))
+    }
+
+    /// Creates an opt-in KMIP 3.0 draft Decapsulate request from generic TTLV.
+    ///
+    /// The client version-gates the operation and every payload tag before
+    /// writing. This route does not validate operation-specific field order,
+    /// cardinality, or types; the caller must supply the Table 296 payload.
+    #[must_use]
+    pub fn decapsulate_draft(payload: Structure) -> Self {
+        Self::new(ClientRequest::kmip30_draft(
+            Kmip30DraftOperation::Decapsulate,
+            payload,
+        ))
     }
 
     /// Creates a batch item for one typed Query request.
@@ -7860,7 +8013,8 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::CreateCredential(_)
         | ClientRequest::Deactivate(_)
         | ClientRequest::Encapsulate(_)
-        | ClientRequest::Decapsulate(_) => false,
+        | ClientRequest::Decapsulate(_)
+        | ClientRequest::Kmip30Draft { .. } => false,
     }
 }
 

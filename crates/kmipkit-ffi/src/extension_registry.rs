@@ -4078,11 +4078,58 @@ pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
         let configured = client_extension::ClientConfiguration::from_shared_registry(
             configuration.shared_extension_registry(),
         )
-        .with_wire_encoding(encoding);
+        .with_wire_encoding(encoding)
+        .with_protocol_version(configuration.protocol_version());
         *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configured)
         ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_with_protocol_version(
+    configuration: *mut kmipkit_client_configuration_t,
+    major: i32,
+    minor: i32,
+    out_configuration: *mut *mut kmipkit_client_configuration_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_configuration);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let configured = client_extension::ClientConfiguration::from_shared_registry(
+            configuration.shared_extension_registry(),
+        )
+        .with_wire_encoding(configuration.wire_encoding())
+        .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(major, minor));
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_protocol_version(
+    configuration: *mut kmipkit_client_configuration_t,
+    out_major: *mut i32,
+    out_minor: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_major = scalar_out!(out_major);
+        let out_minor = scalar_out!(out_minor);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let version = configuration.protocol_version();
+        *out_major = version.major();
+        *out_minor = version.minor();
         SUCCESS
     })
 }
@@ -6943,6 +6990,78 @@ pub extern "C" fn kmipkit_client_batch_item_create(
         SUCCESS
     })
 }
+
+fn kmip30_draft_batch_item_handle(
+    constructor: fn(Structure) -> ClientBatchItem,
+    payload: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<*mut kmipkit_client_batch_item_t> {
+    let payload = copy_required_structure_handle(payload)?;
+    try_make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(constructor(payload))),
+    )
+}
+
+macro_rules! kmip30_draft_batch_item_constructor {
+    ($name:ident, $method:ident, $label:literal) => {
+        #[doc = concat!(
+                                    "Creates an opt-in KMIP 3.0 Working Draft ",
+                                    $label,
+                                    " request from an ordered generic Request Payload Structure. " ,
+                                    "This does not validate the operation-specific payload schema."
+                                )]
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(
+            payload: *mut kmipkit_ttlv_structure_t,
+            out_item: *mut *mut kmipkit_client_batch_item_t,
+        ) -> i32 {
+            ffi_entrypoint(|| {
+                let out = out_slot!(out_item);
+                *out = try_ffi!(kmip30_draft_batch_item_handle(
+                    ClientBatchItem::$method,
+                    payload,
+                ));
+                SUCCESS
+            })
+        }
+    };
+}
+
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_create_group,
+    create_group_draft,
+    "Create Group"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_obliterate,
+    obliterate_draft,
+    "Obliterate"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_create_user,
+    create_user_draft,
+    "Create User"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_create_credential,
+    create_credential_draft,
+    "Create Credential"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_deactivate,
+    deactivate_draft,
+    "Deactivate"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_encapsulate,
+    encapsulate_draft,
+    "Encapsulate"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_decapsulate,
+    decapsulate_draft,
+    "Decapsulate"
+);
 
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_create_key_pair(

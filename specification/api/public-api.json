@@ -346,6 +346,7 @@
     "KMIPKIT-0050-FR-011",
     "KMIPKIT-0050-FR-012",
     "KMIPKIT-0050-FR-013",
+    "KMIPKIT-0050-FR-017",
     "KMIPKIT-0051-FR-001",
     "KMIPKIT-0051-FR-002",
     "KMIPKIT-0052-FR-001",
@@ -366,6 +367,7 @@
     "KMIPKIT-0053-FR-010",
     "KMIPKIT-0053-FR-011",
     "KMIPKIT-0053-FR-012",
+    "KMIPKIT-0053-FR-018",
     "KMIPKIT-0057-FR-001",
     "KMIPKIT-0057-FR-002",
     "KMIPKIT-0057-FR-003",
@@ -52081,6 +52083,730 @@
         "returnType": "QueryField"
       },
       "ordering": "preserves-response-field-wire-order"
+    },
+    {
+      "id": "client_configuration_protocol_version",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry::ClientConfiguration",
+        "name": "protocol_version",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "&ClientConfiguration"
+          }
+        ],
+        "returnType": "ProtocolVersion"
+      },
+      "c": {
+        "symbol": "kmipkit_client_configuration_protocol_version",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "handle",
+            "type": "kmipkit_client_configuration_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_major",
+            "kind": "output-scalar-pointer",
+            "type": "int32_t *",
+            "valueType": "int32_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_minor",
+            "kind": "output-scalar-pointer",
+            "type": "int32_t *",
+            "valueType": "int32_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientConfiguration",
+        "method": "protocolVersion",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationProtocolVersion",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "ProtocolVersion"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "client_configuration_protocol_version",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_configuration_protocol_version",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "returnType": "ProtocolVersion"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_configuration_with_protocol_version",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry::ClientConfiguration",
+        "name": "with_protocol_version",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "version",
+            "type": "ProtocolVersion"
+          }
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "c": {
+        "symbol": "kmipkit_client_configuration_with_protocol_version",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "handle",
+            "type": "kmipkit_client_configuration_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "major",
+            "kind": "scalar",
+            "type": "int32_t"
+          },
+          {
+            "name": "minor",
+            "kind": "scalar",
+            "type": "int32_t"
+          },
+          {
+            "name": "out_configuration",
+            "kind": "output",
+            "type": "kmipkit_client_configuration_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientConfiguration",
+        "method": "withProtocolVersion",
+        "parameters": [
+          {
+            "name": "version",
+            "type": "ProtocolVersion"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithProtocolVersion",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "ClientConfiguration.with_protocol_version",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "version",
+            "type": "ProtocolVersion"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_configuration_with_protocol_version",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "returnType": "ClientConfiguration"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_create_group",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "create_group_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_create_group",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft CreateGroup route from ordered generic TTLV, citing §6.1.10, Table 280. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "createGroup",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCreateGroup",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_create_group",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_create_group",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_obliterate",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "obliterate_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_obliterate",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft Obliterate route from ordered generic TTLV, citing §6.1.41, Table 374. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "obliterate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemObliterate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_obliterate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_obliterate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_create_user",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "create_user_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_create_user",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft CreateUser route from ordered generic TTLV, citing §6.1.13, Table 290. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "createUser",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCreateUser",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_create_user",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_create_user",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_create_credential",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "create_credential_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_create_credential",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft CreateCredential route from ordered generic TTLV, citing §6.1.9, Table 277. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "createCredential",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCreateCredential",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_create_credential",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_create_credential",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_deactivate",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "deactivate_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_deactivate",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft Deactivate route from ordered generic TTLV, citing §6.1.14, Table 293. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "deactivate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDeactivate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_deactivate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_deactivate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_encapsulate",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "encapsulate_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_encapsulate",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft Encapsulate route from ordered generic TTLV, citing §6.1.22, Table 317. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "encapsulate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemEncapsulate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_encapsulate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_encapsulate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_decapsulate",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "decapsulate_draft",
+        "owner": "client",
+        "requestBoundary": "validates-generic-ttlv",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "Structure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_decapsulate",
+        "parameters": [
+          {
+            "name": "payload",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates an opt-in KMIP 3.0 Working Draft Decapsulate route from ordered generic TTLV, citing §6.1.15, Table 296. This route preserves fields but does not validate operation-specific schema."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "decapsulate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDecapsulate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_decapsulate",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": "ttlv.Structure"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_decapsulate",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
     }
   ],
   "errorCategories": [
@@ -700569,6 +701295,1478 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0053",
       "blockedReason": "This exact typed managed-object Rust route is implemented under KMIPKIT-0049. Its C, Java, and Python equivalents are assigned to KMIPKIT-0053; the route remains blocked for four-language parity until those mappings and evidence exist."
+    },
+    {
+      "declarationId": "client_configuration_protocol_version:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_configuration_protocol_version",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.protocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_protocol_version:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientConfiguration.protocolVersion",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.protocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_protocol_version:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.ClientConfiguration.protocol_version",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.protocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_protocol_version:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.protocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_protocol_version:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_configuration_with_protocol_version",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withProtocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_protocol_version:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientConfiguration.withProtocolVersion",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withProtocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_protocol_version:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.ClientConfiguration.with_protocol_version",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withProtocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "client_configuration_with_protocol_version:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version",
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_configuration_with_protocol_version"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientConfiguration.withProtocolVersion"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.ClientConfiguration.with_protocol_version"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_group",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::create_group_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_group_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_group"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createGroup"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_group"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:obliterate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::obliterate_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::obliterate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_obliterate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.obliterate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_obliterate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_user",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::create_user_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_user_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_user"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createUser"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_user"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_credential",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::create_credential_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_credential_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_credential"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredential"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_credential"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:deactivate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::deactivate_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::deactivate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_deactivate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.deactivate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_deactivate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:encapsulate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::encapsulate_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::encapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_encapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_encapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:decapsulate",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItem::decapsulate_draft",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::decapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_decapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_decapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_group:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_create_group",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_group_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_group"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createGroup"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_group"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_group:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.createGroup",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_group_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_group"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createGroup"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_group"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_group:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_create_group",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_group_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_group"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createGroup"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_group"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:obliterate:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_obliterate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::obliterate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_obliterate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.obliterate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_obliterate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:obliterate:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.obliterate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::obliterate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_obliterate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.obliterate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_obliterate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:obliterate:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_obliterate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::obliterate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_obliterate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.obliterate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_obliterate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_user:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_create_user",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_user_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_user"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createUser"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_user"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_user:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.createUser",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_user_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_user"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createUser"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_user"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_user:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_create_user",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_user_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_user"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createUser"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_user"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_credential:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_create_credential",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_credential_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_credential"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredential"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_credential"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_credential:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.createCredential",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_credential_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_credential"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredential"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_credential"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:create_credential:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_create_credential",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::create_credential_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_credential"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.createCredential"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_create_credential"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:deactivate:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_deactivate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::deactivate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_deactivate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.deactivate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_deactivate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:deactivate:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.deactivate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::deactivate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_deactivate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.deactivate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_deactivate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:deactivate:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_deactivate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::deactivate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_deactivate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.deactivate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_deactivate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:encapsulate:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_encapsulate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::encapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_encapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_encapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:encapsulate:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.encapsulate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::encapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_encapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_encapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:encapsulate:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_encapsulate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::encapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_encapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.encapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_encapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:decapsulate:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_decapsulate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::decapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_decapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_decapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:decapsulate:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.decapsulate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::decapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_decapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_decapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
+    },
+    {
+      "declarationId": "KMIPKIT-0053-T083:route:decapsulate:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_decapsulate",
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItem::decapsulate_draft"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_decapsulate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.decapsulate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_decapsulate"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+        "bindings/python/tests/test_client.py"
+      ]
     }
   ],
   "approvedExclusions": [
@@ -978319,6 +980517,93 @@
           "kmipkit.extensions.WireEncoding.TTLV",
           "kmipkit.extensions.WireEncoding.XML",
           "kmipkit.extensions.client_configuration_wire_encoding"
+        ]
+      }
+    },
+    {
+      "capabilityId": "kmip_protocol_version_selection",
+      "requirementIds": [
+        "KMIPKIT-0050-FR-017",
+        "KMIPKIT-0053-FR-018"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0053",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
+          "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version"
+        ],
+        "c": [
+          "kmipkit_client_configuration_protocol_version",
+          "kmipkit_client_configuration_with_protocol_version"
+        ],
+        "java": [
+          "org.kmipkit.extensions.ClientConfiguration.protocolVersion",
+          "org.kmipkit.extensions.ClientConfiguration.withProtocolVersion"
+        ],
+        "python": [
+          "kmipkit.extensions.ClientConfiguration.protocol_version",
+          "kmipkit.extensions.ClientConfiguration.with_protocol_version"
+        ]
+      }
+    },
+    {
+      "capabilityId": "kmip30_draft_routes",
+      "requirementIds": [
+        "KMIPKIT-0053-FR-018"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0053",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/053-api-parity-facade/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::ClientBatchItem::create_credential_draft",
+          "kmipkit_client::ClientBatchItem::create_group_draft",
+          "kmipkit_client::ClientBatchItem::create_user_draft",
+          "kmipkit_client::ClientBatchItem::deactivate_draft",
+          "kmipkit_client::ClientBatchItem::decapsulate_draft",
+          "kmipkit_client::ClientBatchItem::encapsulate_draft",
+          "kmipkit_client::ClientBatchItem::obliterate_draft"
+        ],
+        "c": [
+          "kmipkit_client_batch_item_create_credential",
+          "kmipkit_client_batch_item_create_group",
+          "kmipkit_client_batch_item_create_user",
+          "kmipkit_client_batch_item_deactivate",
+          "kmipkit_client_batch_item_decapsulate",
+          "kmipkit_client_batch_item_encapsulate",
+          "kmipkit_client_batch_item_obliterate"
+        ],
+        "java": [
+          "org.kmipkit.extensions.ClientBatchItem.createCredential",
+          "org.kmipkit.extensions.ClientBatchItem.createGroup",
+          "org.kmipkit.extensions.ClientBatchItem.createUser",
+          "org.kmipkit.extensions.ClientBatchItem.deactivate",
+          "org.kmipkit.extensions.ClientBatchItem.decapsulate",
+          "org.kmipkit.extensions.ClientBatchItem.encapsulate",
+          "org.kmipkit.extensions.ClientBatchItem.obliterate"
+        ],
+        "python": [
+          "kmipkit.extensions.client_batch_item_create_credential",
+          "kmipkit.extensions.client_batch_item_create_group",
+          "kmipkit.extensions.client_batch_item_create_user",
+          "kmipkit.extensions.client_batch_item_deactivate",
+          "kmipkit.extensions.client_batch_item_decapsulate",
+          "kmipkit.extensions.client_batch_item_encapsulate",
+          "kmipkit.extensions.client_batch_item_obliterate"
         ]
       }
     }

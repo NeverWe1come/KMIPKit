@@ -3100,6 +3100,38 @@ int32_t kmipkit_client_batch_item_response_query_field_count(kmipkit_client_batc
  */
 /* KMIPKIT-0053-FR-008, KMIPKIT-0053-FR-009, KMIPKIT-0053-FR-011, KMIPKIT-0053-FR-012 */
 int32_t kmipkit_client_batch_item_response_query_field_at(kmipkit_client_batch_item_response_t * item, uint64_t index, uint8_t * out_present, uint32_t * out_tag, uint8_t * out_kind, uint32_t * out_enumeration, kmipkit_ttlv_item_t ** out_item);
+/* KMIPKIT-0050-FR-017, KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_configuration_protocol_version(kmipkit_client_configuration_t * configuration, int32_t * out_major, int32_t * out_minor);
+/* KMIPKIT-0050-FR-017, KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_configuration_with_protocol_version(kmipkit_client_configuration_t * configuration, int32_t major, int32_t minor, kmipkit_client_configuration_t ** out_configuration);
+/* Creates an opt-in KMIP 3.0 Working Draft CreateGroup route from ordered generic TTLV, citing §6.1.10, Table 280. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_create_group(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* Creates an opt-in KMIP 3.0 Working Draft Obliterate route from ordered generic TTLV, citing §6.1.41, Table 374. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_obliterate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* Creates an opt-in KMIP 3.0 Working Draft CreateUser route from ordered generic TTLV, citing §6.1.13, Table 290. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_create_user(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* Creates an opt-in KMIP 3.0 Working Draft CreateCredential route from ordered generic TTLV, citing §6.1.9, Table 277. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_create_credential(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* Creates an opt-in KMIP 3.0 Working Draft Deactivate route from ordered generic TTLV, citing §6.1.14, Table 293. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_deactivate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* Creates an opt-in KMIP 3.0 Working Draft Encapsulate route from ordered generic TTLV, citing §6.1.22, Table 317. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_encapsulate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* Creates an opt-in KMIP 3.0 Working Draft Decapsulate route from ordered generic TTLV, citing §6.1.15, Table 296. This route preserves fields but does not validate operation-specific schema.
+ */
+/* KMIPKIT-0053-FR-018 */
+int32_t kmipkit_client_batch_item_decapsulate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

@@ -1318,6 +1318,27 @@ ffi.cdef(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_ping(
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_group(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_obliterate(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_user(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_credential(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_deactivate(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_encapsulate(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_decapsulate(
+        kmipkit_ttlv_structure_t *payload,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_query(
         const uint32_t *functions,
         uint64_t function_count,

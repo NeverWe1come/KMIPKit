@@ -27,6 +27,11 @@ from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+try:
+    from .kmip30_draft_api import DraftApiManifestError, validate_kmip30_draft_api
+except ImportError:  # Direct execution as ``python tools/api_manifest/generate.py``.
+    from kmip30_draft_api import DraftApiManifestError, validate_kmip30_draft_api
+
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
@@ -36,6 +41,7 @@ CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 MAX_MANIFEST_BYTES = 56 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
+MAX_DRAFT_API_CATALOG_BYTES = 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
 _AUTHORIZATION_ONLY_STATUS_PATTERN = re.compile(
     r"\bautonomous\b"
@@ -3849,6 +3855,24 @@ def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int
             _validate_v2_manifest(
                 manifest, schema, catalog, root, require_complete=require_complete
             )
+            has_draft_routes = any(
+                isinstance(capability, dict)
+                and capability.get("capabilityId") == "kmip30_draft_routes"
+                for capability in manifest.get("capabilities", [])
+            )
+            draft_catalog_path = root / "specification/api/kmip-3.0-draft-api.json"
+            if has_draft_routes or draft_catalog_path.exists():
+                draft_catalog = _load_json(
+                    root,
+                    "specification/api/kmip-3.0-draft-api.json",
+                    MAX_DRAFT_API_CATALOG_BYTES,
+                )
+                if not isinstance(draft_catalog, dict):
+                    raise ManifestError("KMIP 3.0 draft API catalog root must be an object")
+                try:
+                    validate_kmip30_draft_api(draft_catalog, manifest, root)
+                except DraftApiManifestError as error:
+                    raise ManifestError("KMIP 3.0 draft API catalog validation failed") from error
         else:
             if require_complete:
                 raise ManifestError("release validation requires a v2 public API manifest")
