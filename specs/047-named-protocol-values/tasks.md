@@ -35,6 +35,9 @@
 - [x] T012 Reconcile the versioned public declarations, traceability,
   documentation, and corrected KMIPKIT-0071 references; run generator and API
   manifest checks.
+- [x] T013 Synchronize shared T102 aggregate snapshot guards with the 143
+  versioned-value declarations added by this specification; preserve the
+  historical Rust audit snapshot and rerun dependent contract tests.
 - [x] T008 Push this feature branch and open a draft PR against
   `feature/KMIPKIT-0043-t076-shared-client-mapping`; later change its base to
   `release/1.0.0` as described by the approved Phase 5 plan.

@@ -37,6 +37,17 @@
 - [x] T021 [Green] Extend the versioned tag catalog and deterministic allocator to all exact Table 605 assignments without deriving assignments from ranges; regenerate the allocation union (FR-012; Green commit `0fd8ea58e`).
 - [x] T022 [Refactor] Update KMIPKIT-0071 traceability, catalog documentation, and implementation evidence; run tag/API generation checks, focused tests, format, and lint (FR-012; Refactor commit `c68aa922b`).
 - [ ] T023 [Verification] Pass the applicable coverage gates and all hosted CI checks on the final PR head (FR-012).
+- [x] T024 [Red/Green/Refactor] Add a manifest-text integrity contract, restore
+  4,601 UTF-8-damaged reviewed strings in the source manifest, regenerate
+  official outputs, and stream the regression scan without changing behavior.
+- [x] T025 [Verification] Synchronize aggregate T102 declaration counts and
+  unchanged-surface fingerprints with the corrected 0047/0048 stack; verify
+  the dependent manifest-contract tests.
+- [x] T026 [Red/Green/Refactor] Add KMIP 3.0 migration-document contracts;
+  correct the §11.37, Table 584 operation references and assignments, refresh
+  generated value citations, and link FR-011 to KMIPKIT-0071 REQ-071-002.
+  Red commits `996a39dd1`, `02bb55e86`, and `318a6ebd8`; Green commit
+  `fc54c1f9f`; Refactor commit `dd735910d`.
 
 ## Dependencies and independent criteria
 

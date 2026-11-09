@@ -11,7 +11,7 @@ const ENCAPSULATE_OPERATION: u32 = 0x0000_0041;
 const DECAPSULATE_OPERATION: u32 = 0x0000_0042;
 
 #[test]
-fn kmip30_allows_the_seven_operations_assigned_in_table_583() {
+fn kmip30_allows_the_seven_operations_assigned_in_table_584() {
     let kmip30_ops = [
         CREATE_GROUP_OPERATION,
         OBLITERATE_OPERATION,
