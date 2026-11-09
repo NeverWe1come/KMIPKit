@@ -487,8 +487,11 @@ def test_dispatches_all_nine_known_object_types_and_reads_key_structures():
             _structure_with_children(0x0042_0089, limits,
                                      [integer(0x0042_008B, 2), integer(0x0042_0044, 1),
                                       integer(0x0042_008C, 2), enum(0x0042_008A, 1), key_block()]),
-            _structure_with_children(0x0042_0085, limits,
-                                         [enum(0x0042_0086, 1), secret_data_key_block()]),
+            _structure_with_children(
+                0x0042_0085,
+                limits,
+                [enum(0x0042_0086, 1), secret_data_key_block()],
+            ),
             _structure_with_children(0x0042_005B, limits,
                                      [enum(0x0042_0059, 1), byte_string(0x0042_005A)]),
             _structure_with_children(0x0042_00BD, limits,
@@ -643,9 +646,11 @@ def test_named_object_constructors_read_all_object_specific_fields():
             integer(0x0042_008B, 2), integer(0x0042_0044, 1),
             integer(0x0042_008C, 2), enum(0x0042_008A, 1), key_block()
         ], 5)
-        construct(ManagedObject.secret_data, [
-                enum(0x0042_0086, 3), secret_data_key_block()
-        ], 7)
+        construct(
+            ManagedObject.secret_data,
+            [enum(0x0042_0086, 3), secret_data_key_block()],
+            7,
+        )
         construct(ManagedObject.opaque_object, [
             enum(0x0042_0059, 9), byte_string(0x0042_005A, b"opaque")
         ], 8)
