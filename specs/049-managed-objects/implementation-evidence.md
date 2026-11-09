@@ -509,3 +509,17 @@ Byte String forms.
 Cross-platform coverage and all hosted checks for the new stack head still
 require the #141 CI run. T050 remains open and the PR remains a draft until
 that run is green.
+
+## Hosted retry status (2026-11-09)
+
+GitHub Actions run `42567003181` reran the previously failed jobs after the
+Gradle distribution service returned HTTP 504. The Rust stable and MSRV matrix,
+coverage producers and 90% selected-scope gate, C and Java/JNI integrations,
+Python bindings, and script-contract jobs on Linux, Windows, and macOS all
+completed successfully. The aggregate `CI summary / at a glance` job remains
+queued, so T050 is still open.
+
+The CodeQL and zizmor checks associated with the original check suite ended as
+`timed_out` without findings or diagnostic output. They are not treated as
+successful; the new feature head must receive fresh security checks. PR #141
+remains draft until its aggregate CI and fresh security checks pass.
