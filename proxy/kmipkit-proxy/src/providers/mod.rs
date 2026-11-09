@@ -21,6 +21,35 @@ pub mod otc;
 pub mod scaleway;
 pub mod vault;
 
+/// Returns the cloud providers compiled into this proxy binary in stable order.
+#[must_use]
+pub fn compiled_provider_names() -> Vec<&'static str> {
+    // Feature-gated pushes leave this mutable only in provider-free builds.
+    #[allow(unused_mut)]
+    let mut providers = Vec::new();
+    #[cfg(feature = "alibaba")]
+    providers.push("alibaba");
+    #[cfg(feature = "aws")]
+    providers.push("aws");
+    #[cfg(feature = "azure")]
+    providers.push("azure");
+    #[cfg(feature = "gcp")]
+    providers.push("gcp");
+    #[cfg(feature = "ibm")]
+    providers.push("ibm");
+    #[cfg(feature = "infisical")]
+    providers.push("infisical");
+    #[cfg(feature = "oci")]
+    providers.push("oci");
+    #[cfg(feature = "otc")]
+    providers.push("otc");
+    #[cfg(feature = "scaleway")]
+    providers.push("scaleway");
+    #[cfg(feature = "vault")]
+    providers.push("vault");
+    providers
+}
+
 /// Normalized map of cloud tags/labels.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CloudTagMap(pub BTreeMap<String, String>);
@@ -485,7 +514,17 @@ impl CloudKmsProvider for InMemoryMockProvider {
 
 /// Factory function to create the active CloudKmsProvider based on configuration.
 pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvider>, ProxyError> {
-    match config.provider.to_ascii_lowercase().as_str() {
+    let provider_name = config.provider.to_ascii_lowercase();
+    let compiled_providers = compiled_provider_names();
+    let provider_is_compiled = compiled_providers.contains(&provider_name.as_str())
+        || (provider_name == "openbao" && compiled_providers.contains(&"vault"));
+    if provider_name != "mock" && !provider_is_compiled {
+        return Err(ProxyError::ConfigError(format!(
+            "provider '{}' is not compiled into this binary",
+            config.provider
+        )));
+    }
+    match provider_name.as_str() {
         "mock" => {
             let kek = if let Some(ref hex) = config.master_kek_hex {
                 let bytes = hex::decode(hex)

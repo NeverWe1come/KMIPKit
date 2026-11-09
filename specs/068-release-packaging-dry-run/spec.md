@@ -9,6 +9,7 @@ This specification governs:
 4. Maven Central bundle staging (JAR, native JAR per platform, sources, javadoc, checksums, GPG signature dry-run) and isolated native loader verification.
 5. PyPI wheel and sdist building, metadata inspection (PEP 621), FFI symbol auditing, and isolated venv smoke verification.
 6. Unified artifact inventory manifest and `SHA256SUMS` generation.
+7. Dry-run packaging for the KMIPKit proxy: one all-provider image, ten provider-specific images, and one Helm chart. These artifacts are separate from the eight public library packages and are never published by this workflow.
 
 ## 2. Requirements & Traceability
 - **KMIPKIT-REQ-PKG-001**: Version Synchronization: All packaging files (`specification/api/public-api.json`, `Cargo.toml`, `bindings/c/package.toml`, `bindings/java/pom.xml`, `bindings/java/build.gradle.kts`, `bindings/python/pyproject.toml`) MUST match `releaseLine` ("1.0.0").
@@ -17,3 +18,7 @@ This specification governs:
 - **KMIPKIT-REQ-PKG-004**: Maven Central Dry-Run: Must produce standard bundle with POM, primary JAR, platform native JAR, sources JAR, javadoc JAR, checksums, and ASC signatures.
 - **KMIPKIT-REQ-PKG-005**: PyPI Dry-Run: Must build valid wheel and sdist, audit FFI symbols, and pass isolated offline smoke execution.
 - **KMIPKIT-REQ-PKG-006**: Automated CI Pipeline: Workflow `.github/workflows/release-dry-run.yml` with pinned commit SHAs MUST execute these verifications on Linux, macOS, and Windows.
+- **KMIPKIT-REQ-PKG-007**: Proxy Image Variants: A dedicated CI workflow MUST build one all-provider Linux x86-64 image and one image for each of the ten provider features, using digest-pinned base images and without publishing them.
+- **KMIPKIT-REQ-PKG-008**: Proxy Provider Selection: The proxy MUST list compiled providers for local verification and MUST fail explicitly when a configured provider is unknown or not compiled; it MUST NOT fall back to the mock provider.
+- **KMIPKIT-REQ-PKG-009**: Proxy Helm Dry-Run: CI MUST lint and render the Helm chart for the universal image and each provider-specific image, then package the chart once.
+- **KMIPKIT-REQ-PKG-010**: Proxy Artifact Evidence: CI MUST upload image archives, the Helm package, a deterministic artifact inventory, and SHA-256 checksums.

@@ -1,0 +1,13 @@
+.git
+**/target
+**/.venv
+**/__pycache__
+dist
+.coverage
+.env
+.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/secrets/**

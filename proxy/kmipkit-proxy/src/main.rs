@@ -30,13 +30,18 @@
 
 use clap::Parser;
 use kmipkit_proxy::config::{CliArgs, ProxyConfig};
-use kmipkit_proxy::providers::{CloudKmsProvider, InMemoryMockProvider};
+use kmipkit_proxy::providers::{CloudKmsProvider, compiled_provider_names, create_provider};
 use kmipkit_proxy::server::ProxyServer;
 use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = CliArgs::parse();
+
+    if args.list_providers {
+        println!("{}", compiled_provider_names().join("\n"));
+        return Ok(());
+    }
 
     let config = if let Some(config_path) = &args.config {
         let loaded = ProxyConfig::from_file(config_path)?;
@@ -46,41 +51,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         args.merge_into(default_config)
     };
 
-    let provider: Arc<dyn CloudKmsProvider> = match config.backend.provider.as_str() {
-        "mock" => Arc::new(InMemoryMockProvider::default()),
-        #[cfg(feature = "aws")]
+    let provider_name = config.backend.provider.to_ascii_lowercase();
+    let compiled_providers = compiled_provider_names();
+    let provider_is_compiled = compiled_providers.contains(&provider_name.as_str())
+        || (provider_name == "openbao" && compiled_providers.contains(&"vault"));
+    if provider_name != "mock" && !provider_is_compiled {
+        return Err(format!(
+            "provider '{}' is not compiled into this binary",
+            config.backend.provider
+        )
+        .into());
+    }
+
+    let provider: Arc<dyn CloudKmsProvider> = match provider_name.as_str() {
         "aws" => {
-            let master_kek = config.backend.master_kek_hex.as_deref().and_then(|hex| {
-                kmipkit_proxy::codec::datetime::hex_to_octets(hex)
-                    .ok()
-                    .and_then(|b| b.try_into().ok())
-            });
-            Arc::new(
-                kmipkit_proxy::providers::aws::AwsKmsProvider::from_config(
-                    &config.backend.aws,
-                    master_kek,
+            #[cfg(feature = "aws")]
+            {
+                let master_kek = config.backend.master_kek_hex.as_deref().and_then(|hex| {
+                    kmipkit_proxy::codec::datetime::hex_to_octets(hex)
+                        .ok()
+                        .and_then(|b| b.try_into().ok())
+                });
+                Arc::new(
+                    kmipkit_proxy::providers::aws::AwsKmsProvider::from_config(
+                        &config.backend.aws,
+                        master_kek,
+                    )
+                    .await?,
                 )
-                .await?,
-            )
+            }
+            #[cfg(not(feature = "aws"))]
+            {
+                return Err("AWS provider is not compiled into this binary".into());
+            }
         }
-        #[cfg(feature = "azure")]
-        "azure" => Arc::new(kmipkit_proxy::providers::azure::AzureKeyVaultProvider::new(
-            &config.backend.azure,
-        )?),
-        #[cfg(feature = "gcp")]
-        "gcp" => Arc::new(kmipkit_proxy::providers::gcp::GcpKmsProvider::new(
-            &config.backend.gcp,
-        )?),
-        #[cfg(feature = "oci")]
-        "oci" => Arc::new(kmipkit_proxy::providers::oci::OciVaultProvider::new(
-            &config.backend.oci,
-        )?),
-        other => {
-            eprintln!(
-                "Unknown or unconfigured cloud provider: {other}, defaulting to in-memory mock"
-            );
-            Arc::new(InMemoryMockProvider::default())
-        }
+        _ => create_provider(&config.backend)?,
     };
 
     println!(
