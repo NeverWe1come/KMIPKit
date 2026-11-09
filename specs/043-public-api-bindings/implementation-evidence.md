@@ -11234,3 +11234,9 @@ Coverage minima are recorded per the maintainer's direct instruction: former 95%
 The existing English and Spanish guides and the manifest already report `public_binding_surface` as `verified`, while explicitly distinguishing a verified binding surface from KMIP conformance and release readiness. The old T073 test still required both guides to say `blocked`; it failed at baseline `1d445c193`.
 
 Red was reproduced against that baseline. Green commit `a4b0aabe6` updates the test to read `capabilityState` from the manifest, require the corresponding current bilingual status, and retain assertions for the non-conformance and non-release-readiness disclaimers. Refactor keeps this as a focused documentation contract with no runtime or generated-output changes. The complete `test_t073_doc_reconciliation` module passes 6/6 tests. The requirement-traceability test passes, `tools/api_manifest/generate.py --check` verifies all 12 generated outputs, and `git diff --check` passes.
+## T102 declaration-count drift found in KMIPKIT-0051 CI (2026-11-09)
+
+- **Red:** hosted run `42546425839` failed the Windows Script Contracts job in `test_t102_slice_and_manifest_snapshots_remain_consistent`: the shared T102 snapshot constant was `13,631`, while this test still hard-coded `12,701`. The focused local command reproduced the same failure.
+- The manifest and `tools/api_manifest/tests/t102_manifest_totals.py` agree on `13,631` public declarations. This branch has no blocked declarations; the stale literal is a duplicate snapshot left behind after the approved T102 reconciliation.
+- **Green:** commit `480c290d9` refreshed the test's exact snapshot to `13,631`; the focused regression and all six tests in `test_t102_pkcs11_request_trait_exclusions` passed.
+- **Refactor:** removed the duplicate numeric assertion. The centralized pinned total remains the single snapshot source, and the regression continues to compare the manifest's declaration count with it.
