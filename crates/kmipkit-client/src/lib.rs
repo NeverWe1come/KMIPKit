@@ -330,7 +330,7 @@ pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory, ClientErr
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, ClientResponseView, PendingOutcome,
+    ClientRequest, ClientResponseView, Kmip30OperationResponse, PendingOutcome,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
