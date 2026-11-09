@@ -351,3 +351,4 @@ informative and does not add requirements.
   extension variants use a generic representation.
 - Typed response accessors and cross-language parity are delivered in 0052
   and 0053, after this Rust object model is stable.
+<!-- retry-141-2 -->
