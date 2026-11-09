@@ -1139,6 +1139,21 @@ class PublicApiParityTests(unittest.TestCase):
         registry_parity = json.loads(
             (ROOT / GENERATED_OUTPUTS["parityFixtures"]).read_text(encoding="utf-8")
         )
+        registry_function_ids = [record["id"] for record in registry_parity["functions"]]
+        expected_registry_function_ids = [
+            record["id"] for record in self.manifest["functions"]
+            if record.get("legacyRegistry", True)
+            and any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
+        ]
+        self.assertEqual(registry_function_ids, expected_registry_function_ids)
+
+        registry_type_ids = [record["id"] for record in registry_parity["types"]]
+        expected_registry_type_ids = [
+            record["id"] for record in self.manifest["types"]
+            if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
+        ]
+        self.assertEqual(registry_type_ids, expected_registry_type_ids)
+
         registry_baseline = json.loads(REGISTRY_MANIFEST.read_text(encoding="utf-8"))
         self.assertEqual(registry_parity, registry_baseline)
 
