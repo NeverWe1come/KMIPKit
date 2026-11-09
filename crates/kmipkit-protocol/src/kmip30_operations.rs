@@ -102,6 +102,24 @@ pub(crate) fn parse_result(
         .map_err(Kmip30OperationError::InvalidOperationResult)
 }
 
+pub(crate) fn parse_typed_success_response<T>(
+    item: ResponseBatchItemView<'_>,
+    expected_operation: u32,
+    operation_name: &'static str,
+    parse_payload: impl for<'a> FnOnce(StructureView<'a>) -> Result<T, Kmip30OperationError>,
+) -> Result<(KmipOperationResult, Option<T>, Option<OwnedResponseTtlv>), Kmip30OperationError> {
+    let result = parse_result(item, expected_operation)?;
+    if result.status().raw() != SUCCESS {
+        return Ok((result, None, None));
+    }
+
+    let payload = item
+        .with_response_payload(parse_payload)
+        .ok_or(Kmip30OperationError::MissingSuccessPayload)??;
+    let response_ttlv = clone_success_response(item, operation_name)?;
+    Ok((result, Some(payload), Some(response_ttlv)))
+}
+
 pub(crate) fn clone_success_response(
     item: ResponseBatchItemView<'_>,
     operation: &'static str,
@@ -322,20 +340,12 @@ macro_rules! define_create_request {
             pub fn try_from_response_item(
                 item: ResponseBatchItemView<'_>,
             ) -> Result<Self, Kmip30OperationError> {
-                let result = parse_result(item, $operation)?;
-                let unique_identifier = if result.status().raw() == SUCCESS {
-                    Some(
-                        item.with_response_payload(|payload| parse_success_identifier(&payload))
-                            .ok_or(Kmip30OperationError::MissingSuccessPayload)??,
-                    )
-                } else {
-                    None
-                };
-                let response_ttlv = if result.status().raw() == SUCCESS {
-                    Some(clone_success_response(item, stringify!($request))?)
-                } else {
-                    None
-                };
+                let (result, unique_identifier, response_ttlv) = parse_typed_success_response(
+                    item,
+                    $operation,
+                    stringify!($request),
+                    |payload| parse_success_identifier(&payload),
+                )?;
                 Ok(Self {
                     result,
                     unique_identifier,
@@ -427,20 +437,12 @@ impl CreateCredentialResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let result = parse_result(item, CREATE_CREDENTIAL_OPERATION)?;
-        let unique_identifier = if result.status().raw() == SUCCESS {
-            Some(
-                item.with_response_payload(|payload| parse_success_identifier(&payload))
-                    .ok_or(Kmip30OperationError::MissingSuccessPayload)??,
-            )
-        } else {
-            None
-        };
-        let response_ttlv = if result.status().raw() == SUCCESS {
-            Some(clone_success_response(item, "Create Credential")?)
-        } else {
-            None
-        };
+        let (result, unique_identifier, response_ttlv) = parse_typed_success_response(
+            item,
+            CREATE_CREDENTIAL_OPERATION,
+            "Create Credential",
+            |payload| parse_success_identifier(&payload),
+        )?;
         Ok(Self {
             result,
             unique_identifier,
@@ -554,20 +556,14 @@ impl ObliterateResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let result = parse_result(item, OBLITERATE_OPERATION)?;
-        if result.status().raw() == SUCCESS {
-            let member_count = item
-                .with_response_payload(|payload| payload.children().len())
-                .ok_or(Kmip30OperationError::MissingSuccessPayload)?;
-            if member_count != 0 {
-                return Err(Kmip30OperationError::MalformedSuccessPayload);
-            }
-        }
-        let response_ttlv = if result.status().raw() == SUCCESS {
-            Some(clone_success_response(item, "Obliterate")?)
-        } else {
-            None
-        };
+        let (result, _payload, response_ttlv) =
+            parse_typed_success_response(item, OBLITERATE_OPERATION, "Obliterate", |payload| {
+                if payload.children().is_empty() {
+                    Ok(())
+                } else {
+                    Err(Kmip30OperationError::MalformedSuccessPayload)
+                }
+            })?;
         Ok(Self {
             result,
             response_ttlv,
