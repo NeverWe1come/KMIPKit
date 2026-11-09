@@ -45,6 +45,26 @@
   KMIP 2.1 attribute spans.
 - [x] T016 [Refactor] Update traceability and implementation evidence, then run
   focused protocol tests, protocol Clippy, formatting, and diff checks.
+- [x] T017 [Red] Pin that the version gate rejects unassigned standard
+  operation values such as KMIP 3.0 `0x43`, while preserving raw values in the
+  `8XXXXXXX` Operation Enumeration extension allocation. Red commit:
+  `6f03022dc`.
+- [x] T018 [Green] Reject Operation values without an exact versioned catalog
+  assignment unless they are within the OASIS extension allocation; preserve
+  `operation_span(None)` for unassigned values. Green implementation and
+  focused tests pass locally.
+- [x] T019 [Refactor] Tighten FR-010, traceability, and implementation evidence
+  to distinguish representable unknown values from values valid for sending;
+  rerun formatter, exact version-gate tests, and protocol/client suites.
 - [x] T008 Push this feature branch and open a draft PR against
   `feature/KMIPKIT-0043-t076-shared-client-mapping`; later change its base to
   `release/1.0.0` as described by the approved Phase 5 plan.
+- [x] T020 [Red] Record the hosted selected-coverage failure for the changed
+  `VersionGateError::UnassignedOperationInVersion` display branch (24/27
+  changed production lines, below the applicable 95% gate); identify the
+  uncovered formatting arm before adding coverage.
+- [x] T021 [Green] Extend the existing operation-gate regression to assert the
+  complete `UnassignedOperationInVersion` display string and cover its format
+  branch without changing production behavior.
+- [x] T022 [Refactor] Record local coverage and regression evidence, update
+  this checklist, and rerun format, protocol tests, Clippy, and diff checks.

@@ -69,6 +69,23 @@ fn kmip20_and_kmip21_prohibit_all_seven_kmip30_operations() {
     }
 }
 
+#[test]
+fn version_gate_rejects_unassigned_standard_operation_codes_but_keeps_extensions() {
+    // KMIP 3.0 §11.37, Table 583 assigns operation codes through 0x42;
+    // 0x43 has no assigned Operation name in the pinned source catalog.
+    let unassigned = VersionGate::validate_operation(ProtocolVersion::V3_0, 0x43)
+        .expect_err("unassigned standard operations are rejected");
+    assert_eq!(
+        unassigned.to_string(),
+        "operation 0x00000043 is not assigned by KMIP 3.0"
+    );
+    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, 0x9999).is_err());
+
+    // Unknown extension values remain representable and can be sent as
+    // vendor-defined operations within the KMIP Enumeration extension range.
+    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, 0x8000_0001).is_ok());
+}
+
 // OASIS KMIP 2.1 §11.36 Table 470; KMIP 3.0 §§11.34–11.37 Tables 581–583.
 #[test]
 fn versioned_named_values_match_the_pinned_2_1_and_3_0_tables() {
