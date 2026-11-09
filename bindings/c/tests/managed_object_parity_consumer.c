@@ -388,11 +388,135 @@ static int32_t params_0053_create_item(
         status = kmipkit_ttlv_value_text_string(limits, bytes, byte_length, &value);
     else if (status == 0 && kind == KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING)
         status = kmipkit_ttlv_value_byte_string(limits, bytes, byte_length, &value);
+    else if (status == 0 && kind == KMIPKIT_TTLV_ITEM_TYPE_INTEGER)
+        status = kmipkit_ttlv_value_integer((int32_t)enumeration, &value);
     if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, out_item);
     if (status == 0) value = NULL;
     if (value != NULL) kmipkit_ttlv_value_release(value);
     if (tag != NULL) kmipkit_tag_release(tag);
     if (raw != NULL) kmipkit_raw_tag_release(raw);
+    return status;
+}
+
+int32_t kmipkit_0053_system_credential_consumer(void) {
+    static const uint8_t password_bytes[] = "credential-canary";
+    static const uint8_t device_bytes[] = "device-id";
+    static const uint8_t one[] = {0x61};
+    static const uint8_t two[] = {0x62};
+    static const uint8_t vendor_password[] = {0x51};
+    static const uint8_t vendor_device[] = {0x52};
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_ttlv_item_t *password = NULL, *password_algorithm = NULL, *password_vendor = NULL;
+    kmipkit_ttlv_item_t *device_identifier = NULL, *device_vendor = NULL;
+    kmipkit_ttlv_item_t *otp_algorithm = NULL, *otp_digits = NULL;
+    kmipkit_ttlv_item_t *hashing_algorithm = NULL, *username_password_hash = NULL;
+    kmipkit_ttlv_item_t *password_username_hash = NULL, *managed = NULL;
+    kmipkit_ttlv_item_t *fields[3] = {NULL, NULL, NULL};
+    const uint32_t password_tags[] = {0x004200a1, 0x00540010, 0x004201a3};
+    const uint8_t password_types[] = {
+        KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION};
+    const uint8_t *password_values[] = {password_bytes, vendor_password, NULL};
+    const uint64_t password_lengths[] = {sizeof(password_bytes) - 1, sizeof(vendor_password), 0};
+    const uint32_t device_tags[] = {0x00540011, 0x004200a2};
+    const uint8_t device_types[] = {
+        KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING};
+    const uint8_t *device_values[] = {vendor_device, device_bytes};
+    const uint64_t device_lengths[] = {sizeof(vendor_device), sizeof(device_bytes) - 1};
+    const uint32_t otp_tags[] = {0x004201a8, 0x004201ad};
+    const uint8_t otp_types[] = {
+        KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, KMIPKIT_TTLV_ITEM_TYPE_INTEGER};
+    const uint32_t hash_tags[] = {0x00420038, 0x004201b0, 0x004201b1};
+    const uint8_t hash_types[] = {
+        KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+        KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING};
+    const uint8_t *hash_values[] = {NULL, one, two};
+    const uint64_t hash_lengths[] = {0, sizeof(one), sizeof(two)};
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = params_0053_create_item(
+        0x004200a1, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, 0,
+        password_bytes, sizeof(password_bytes) - 1, limits, &password);
+    if (status == 0) status = params_0053_create_item(
+        0x004201a3, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, 0x80000031,
+        NULL, 0, limits, &password_algorithm);
+    if (status == 0) status = params_0053_create_item(
+        0x00540010, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, 0,
+        vendor_password, sizeof(vendor_password), limits, &password_vendor);
+    if (status == 0) {
+        fields[0] = password_algorithm; fields[1] = password_vendor; fields[2] = password;
+        status = kmipkit_0053_managed_object_from_fields(13, fields, 3, &managed);
+    }
+    if (status == 0) status = check_nested_structure_children(
+        managed, password_tags, password_types, password_values, password_lengths, 3);
+    if (managed != NULL) { kmipkit_ttlv_item_release(managed); managed = NULL; }
+    fields[0] = fields[1] = fields[2] = NULL;
+    if (status != 0) goto cleanup;
+
+    if (status == 0) status = params_0053_create_item(
+        0x004200a2, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, 0,
+        device_bytes, sizeof(device_bytes) - 1, limits, &device_identifier);
+    if (status == 0) status = params_0053_create_item(
+        0x00540011, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, 0,
+        vendor_device, sizeof(vendor_device), limits, &device_vendor);
+    if (status == 0) {
+        fields[0] = device_vendor; fields[1] = device_identifier;
+        status = kmipkit_0053_managed_object_from_fields(14, fields, 2, &managed);
+    }
+    if (status == 0) status = check_nested_structure_children(
+        managed, device_tags, device_types, device_values, device_lengths, 2);
+    if (managed != NULL) { kmipkit_ttlv_item_release(managed); managed = NULL; }
+    fields[0] = fields[1] = NULL;
+    if (status != 0) goto cleanup;
+
+    if (status == 0) status = params_0053_create_item(
+        0x004201a8, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, 0x80000042,
+        NULL, 0, limits, &otp_algorithm);
+    if (status == 0) status = params_0053_create_item(
+        0x004201ad, KMIPKIT_TTLV_ITEM_TYPE_INTEGER, 8,
+        NULL, 0, limits, &otp_digits);
+    if (status == 0) {
+        fields[0] = otp_digits; fields[1] = otp_algorithm;
+        status = kmipkit_0053_managed_object_from_fields(15, fields, 2, &managed);
+    }
+    if (status == 0) status = check_nested_structure_children(
+        managed, otp_tags, otp_types, NULL, NULL, 2);
+    if (managed != NULL) { kmipkit_ttlv_item_release(managed); managed = NULL; }
+    fields[0] = fields[1] = NULL;
+    if (status != 0) goto cleanup;
+
+    if (status == 0) status = params_0053_create_item(
+        0x00420038, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, 0x80000043,
+        NULL, 0, limits, &hashing_algorithm);
+    if (status == 0) status = params_0053_create_item(
+        0x004201b0, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, 0,
+        one, sizeof(one), limits, &username_password_hash);
+    if (status == 0) status = params_0053_create_item(
+        0x004201b1, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, 0,
+        two, sizeof(two), limits, &password_username_hash);
+    if (status == 0) {
+        fields[0] = password_username_hash;
+        fields[1] = hashing_algorithm;
+        fields[2] = username_password_hash;
+        status = kmipkit_0053_managed_object_from_fields(16, fields, 3, &managed);
+    }
+    if (status == 0) status = check_nested_structure_children(
+        managed, hash_tags, hash_types, hash_values, hash_lengths, 3);
+
+cleanup:
+    if (managed != NULL) kmipkit_ttlv_item_release(managed);
+    if (password != NULL) kmipkit_ttlv_item_release(password);
+    if (password_algorithm != NULL) kmipkit_ttlv_item_release(password_algorithm);
+    if (password_vendor != NULL) kmipkit_ttlv_item_release(password_vendor);
+    if (device_identifier != NULL) kmipkit_ttlv_item_release(device_identifier);
+    if (device_vendor != NULL) kmipkit_ttlv_item_release(device_vendor);
+    if (otp_algorithm != NULL) kmipkit_ttlv_item_release(otp_algorithm);
+    if (otp_digits != NULL) kmipkit_ttlv_item_release(otp_digits);
+    if (hashing_algorithm != NULL) kmipkit_ttlv_item_release(hashing_algorithm);
+    if (username_password_hash != NULL) kmipkit_ttlv_item_release(username_password_hash);
+    if (password_username_hash != NULL) kmipkit_ttlv_item_release(password_username_hash);
+    if (limits != NULL) kmipkit_codec_limits_release(limits);
     return status;
 }
 

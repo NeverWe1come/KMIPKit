@@ -578,6 +578,86 @@ def test_certificate_from_fields_orders_known_fields_and_reads_named_values():
         vendor_repeat.close()
 
 
+def test_kmip30_system_credentials_use_validated_generic_managed_object_routes():
+    with ttlv.codec_limits_defaults() as limits:
+        password = _item(
+            0x0042_00A1,
+            ttlv.ttlv_value_text_string(b"credential-canary", limits),
+            limits,
+        )
+        password_algorithm = _item(
+            0x0042_01A3, ttlv.ttlv_value_enumeration(0x8000_0031), limits
+        )
+        password_vendor = _item(
+            0x0054_0010, ttlv.ttlv_value_byte_string(b"V", limits), limits
+        )
+        device_identifier = _item(
+            0x0042_00A2, ttlv.ttlv_value_text_string(b"device-id", limits), limits
+        )
+        unknown_device_field = _item(
+            0x0054_0011, ttlv.ttlv_value_byte_string(b"D", limits), limits
+        )
+        otp_algorithm = _item(
+            0x0042_01A8, ttlv.ttlv_value_enumeration(0x8000_0042), limits
+        )
+        otp_digits = _item(0x0042_01AD, ttlv.ttlv_value_integer(8), limits)
+        hashing_algorithm = _item(
+            0x0042_0038, ttlv.ttlv_value_enumeration(0x8000_0043), limits
+        )
+        username_password_hash = _item(
+            0x0042_01B0, ttlv.ttlv_value_byte_string(b"U", limits), limits
+        )
+        password_username_hash = _item(
+            0x0042_01B1, ttlv.ttlv_value_byte_string(b"P", limits), limits
+        )
+    try:
+        with ManagedObject.from_fields(
+            13, [password_algorithm, password_vendor, password]
+        ) as credential:
+            assert credential.object_type == 13
+            assert credential.field_enumeration(0x0042_01A3) == 0x8000_0031
+            assert _child_tags(credential) == [0x0042_00A1, 0x0054_0010, 0x0042_01A3]
+            assert repr(credential).find("credential-canary") == -1
+            with credential.field_item(0x0042_00A1) as password_copy:
+                assert _item_bytes(password_copy) == b"credential-canary"
+
+        with ManagedObject.from_fields(
+            14, [unknown_device_field, device_identifier]
+        ) as credential:
+            assert credential.object_type == 14
+            assert _child_tags(credential) == [0x0054_0011, 0x0042_00A2]
+            with credential.field_item(0x0042_00A2) as device_copy:
+                assert _item_bytes(device_copy) == b"device-id"
+
+        with ManagedObject.from_fields(15, [otp_digits, otp_algorithm]) as credential:
+            assert credential.object_type == 15
+            assert credential.field_enumeration(0x0042_01A8) == 0x8000_0042
+            assert credential.field_integer(0x0042_01AD) == 8
+            assert _child_tags(credential) == [0x0042_01A8, 0x0042_01AD]
+
+        with ManagedObject.from_fields(
+            16,
+            [password_username_hash, hashing_algorithm, username_password_hash],
+        ) as credential:
+            assert credential.object_type == 16
+            assert credential.field_enumeration(0x0042_0038) == 0x8000_0043
+            assert _child_tags(credential) == [0x0042_0038, 0x0042_01B0, 0x0042_01B1]
+    finally:
+        for field in (
+            password,
+            password_algorithm,
+            password_vendor,
+            device_identifier,
+            unknown_device_field,
+            otp_algorithm,
+            otp_digits,
+            hashing_algorithm,
+            username_password_hash,
+            password_username_hash,
+        ):
+            field.close()
+
+
 def test_transparent_rsa_public_fields_are_typed_and_reordered():
     with ttlv.codec_limits_defaults() as limits:
         exponent = _item(

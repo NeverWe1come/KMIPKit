@@ -31,6 +31,10 @@ EXPECTED_0053_PARITY_BRIDGE_MEMBERS = frozenset(
         "keyWrappingDataFromFields", "keyWrappingDataFromItem",
         "managedObjectFromFields", "managedObjectFromItem",
         "managedValueFieldItemRead", "managedValueFieldRead", "ttlvValueViewBytes",
+        "clientBatchItemCreateCredential", "clientBatchItemCreateGroup",
+        "clientBatchItemCreateUser", "clientBatchItemDeactivate",
+        "clientBatchItemDecapsulate", "clientBatchItemEncapsulate",
+        "clientBatchItemObliterate", "clientConfigurationWithProtocolVersion",
         "typedAttributeFromItem", "typedAttributeFromValue", "typedAttributeValue",
         "validationReportIsValid", "validationReportIssueAt",
         "validationReportIssueCount", "validationRequest", "validationStructure",
@@ -879,6 +883,29 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("kmipkit.typed_attributes.StandardAttribute.ACTIVATION_DATE", names)
         self.assertIn("kmipkit.typed_attributes.StandardAttribute.CRYPTOGRAPHIC_ALGORITHM", names)
         self.assertTrue(result["complete"])
+
+    def test_python_inventory_expands_members_of_publicly_reexported_private_dataclass(self):
+        sources = {
+            "kmipkit/_models.py": textwrap.dedent("""
+                from dataclasses import dataclass
+
+                @dataclass(frozen=True, slots=True)
+                class ProtocolVersion:
+                    major: int
+                    minor: int
+            """),
+            "kmipkit/client.py": textwrap.dedent("""
+                from ._models import ProtocolVersion
+                __all__ = ["ProtocolVersion"]
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertTrue(result["complete"])
+        self.assertIn("kmipkit.client.ProtocolVersion", names)
+        self.assertIn("kmipkit.client.ProtocolVersion.__init__", names)
+        self.assertIn("kmipkit.client.ProtocolVersion.major", names)
+        self.assertIn("kmipkit.client.ProtocolVersion.minor", names)
 
     def test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions(self):
         repo_root = Path(__file__).resolve().parents[3]

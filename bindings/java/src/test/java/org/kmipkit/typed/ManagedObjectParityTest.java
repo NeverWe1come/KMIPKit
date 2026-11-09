@@ -147,6 +147,68 @@ final class ManagedObjectParityTest {
     }
 
     @Test
+    void buildsKmip30SystemCredentialsThroughValidatedGenericManagedObjectRoutes() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvItem password = item(0x004200a1,
+                TtlvValue.TextString("credential-canary".getBytes(), limits), limits);
+        TtlvItem passwordAlgorithm = item(0x004201a3,
+                TtlvValue.Enumeration(0x80000031L), limits);
+        TtlvItem passwordVendor = item(0x00540010,
+                TtlvValue.ByteString(new byte[] {0x51}, limits), limits);
+        try (password; passwordAlgorithm; passwordVendor;
+                ManagedObject credential = ManagedObject.fromFields(13,
+                        List.of(passwordAlgorithm, passwordVendor, password))) {
+            assertEquals(13, credential.objectType());
+            assertEquals(0x80000031L, credential.readField(0x004201a3, 3));
+            assertEquals(List.of(0x004200a1, 0x00540010, 0x004201a3), childTags(credential));
+            try (TtlvItem passwordCopy = credential.fieldItem(0x004200a1)) {
+                assertEquals("credential-canary", new String(byteValue(passwordCopy)));
+            }
+            assertFalse(credential.toString().contains("credential-canary"));
+        }
+
+        TtlvItem deviceIdentifier = item(0x004200a2,
+                TtlvValue.TextString("device-id".getBytes(), limits), limits);
+        TtlvItem unknownDeviceField = item(0x00540011,
+                TtlvValue.ByteString(new byte[] {0x52}, limits), limits);
+        try (deviceIdentifier; unknownDeviceField;
+                ManagedObject credential = ManagedObject.fromFields(14,
+                        List.of(unknownDeviceField, deviceIdentifier))) {
+            assertEquals(14, credential.objectType());
+            assertEquals(List.of(0x00540011, 0x004200a2), childTags(credential));
+            try (TtlvItem value = credential.fieldItem(0x004200a2)) {
+                assertEquals("device-id", new String(byteValue(value)));
+            }
+        }
+
+        TtlvItem otpAlgorithm = item(0x004201a8,
+                TtlvValue.Enumeration(0x80000042L), limits);
+        TtlvItem otpDigits = item(0x004201ad, TtlvValue.Integer(8), limits);
+        try (otpAlgorithm; otpDigits;
+                ManagedObject credential = ManagedObject.fromFields(15,
+                        List.of(otpDigits, otpAlgorithm))) {
+            assertEquals(15, credential.objectType());
+            assertEquals(0x80000042L, credential.readField(0x004201a8, 3));
+            assertEquals(8, credential.readField(0x004201ad, 4));
+            assertEquals(List.of(0x004201a8, 0x004201ad), childTags(credential));
+        }
+
+        TtlvItem hashingAlgorithm = item(0x00420038,
+                TtlvValue.Enumeration(0x80000043L), limits);
+        TtlvItem usernamePasswordHash = item(0x004201b0,
+                TtlvValue.ByteString(new byte[] {0x61}, limits), limits);
+        TtlvItem passwordUsernameHash = item(0x004201b1,
+                TtlvValue.ByteString(new byte[] {0x62}, limits), limits);
+        try (hashingAlgorithm; usernamePasswordHash; passwordUsernameHash;
+                ManagedObject credential = ManagedObject.fromFields(16,
+                        List.of(passwordUsernameHash, hashingAlgorithm, usernamePasswordHash))) {
+            assertEquals(16, credential.objectType());
+            assertEquals(0x80000043L, credential.readField(0x00420038, 3));
+            assertEquals(List.of(0x00420038, 0x004201b0, 0x004201b1), childTags(credential));
+        }
+    }
+
+    @Test
     void buildsCertificateInSchemaOrderAndReadsNamedValues() {
         CodecLimits limits = CodecLimits.defaults();
         TtlvItem certificateValue = item(0x0042001e,
@@ -640,6 +702,20 @@ final class ManagedObjectParityTest {
     }
 
     private static List<Integer> childTags(TtlvItem item) {
+        try (TtlvItemView view = item.view();
+                TtlvValueView value = view.value();
+                TtlvStructureView structure = value.structure()) {
+            List<Integer> tags = new java.util.ArrayList<>();
+            for (long index = 0; index < structure.itemCount(); index++) {
+                try (TtlvItemView child = structure.itemAt(index); Tag tag = child.tag()) {
+                    tags.add(tag.raw());
+                }
+            }
+            return tags;
+        }
+    }
+
+    private static List<Integer> childTags(ManagedObject item) {
         try (TtlvItemView view = item.view();
                 TtlvValueView value = view.value();
                 TtlvStructureView structure = value.structure()) {

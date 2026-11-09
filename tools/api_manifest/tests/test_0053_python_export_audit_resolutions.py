@@ -31,9 +31,9 @@ class PythonExportAuditResolutionTests(unittest.TestCase):
             set(self.document),
         )
         audit = self.document["auditSummary"]
-        self.assertEqual(266, audit["missingFromManifest"])
+        self.assertEqual(282, audit["missingFromManifest"])
         self.assertEqual(
-            {"python-export": 240, "field": 17, "type": 5, "module": 4},
+            {"python-export": 246, "field": 27, "type": 5, "module": 4},
             audit["missingByKind"],
         )
 
@@ -44,8 +44,8 @@ class PythonExportAuditResolutionTests(unittest.TestCase):
         ]
         identities = [(row["packageId"], row["name"]) for row in resolved]
         # The corrected KeyWrappingData path is an additional route for a stale manifest row.
-        self.assertEqual(267, len(identities))
-        self.assertEqual(267, len(set(identities)))
+        self.assertEqual(283, len(identities))
+        self.assertEqual(283, len(set(identities)))
         self.assertIn(
             ("python-kmipkit", "kmipkit.managed_objects.KeyWrappingData.from_fields"),
             identities,
@@ -63,6 +63,22 @@ class PythonExportAuditResolutionTests(unittest.TestCase):
             for evidence_path in row["evidencePaths"]:
                 self.assertTrue((ROOT / evidence_path).exists(), evidence_path)
         self.assertEqual([], self.document["unresolved"])
+
+        expected_root_alias_members = {
+            f"kmipkit.ProfileValidationDetails.{member}"
+            for member in (
+                "__dataclass_fields__", "__dataclass_params__", "__delattr__",
+                "__eq__", "__hash__", "__init__", "__match_args__", "__repr__",
+                "__setattr__", "batch_item_index", "error_code", "profile_id",
+                "requirement_id", "source_clause_id", "source_gap_id",
+                "source_gap_locator",
+            )
+        }
+        self.assertEqual(
+            expected_root_alias_members,
+            {row["name"] for row in self.document["exclusions"]
+             if row["name"].startswith("kmipkit.ProfileValidationDetails.")},
+        )
 
     def test_mapping_rows_name_exact_four_language_routes(self) -> None:
         package_ids = {
@@ -189,6 +205,7 @@ class PythonExportAuditResolutionTests(unittest.TestCase):
             "catalog-metadata",
             "local-builder-lifecycle",
             "catalog-container",
+            "python-reexport-alias",
         }
         for row in self.document["exclusions"]:
             self.assertEqual(row["name"], row["exclusion"]["exportName"])

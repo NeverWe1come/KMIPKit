@@ -13,6 +13,10 @@ const PUBLIC_KEY: u32 = 0x0042_006d;
 const SECRET_DATA: u32 = 0x0042_0085;
 const SPLIT_KEY: u32 = 0x0042_0089;
 const SYMMETRIC_KEY: u32 = 0x0042_008f;
+const PASSWORD_CREDENTIAL: u32 = 0x0042_01a1;
+const DEVICE_CREDENTIAL: u32 = 0x0042_01a6;
+const ONE_TIME_PASSWORD_CREDENTIAL: u32 = 0x0042_01a7;
+const HASHED_PASSWORD_CREDENTIAL: u32 = 0x0042_01af;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
@@ -24,6 +28,7 @@ const FIELD_OWNER_KEY_MATERIAL: u32 = 4;
 #[link(name = "kmipkit_managed_object_parity_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_0053_key_information_parameters_consumer() -> i32;
+    fn kmipkit_0053_system_credential_consumer() -> i32;
     fn kmipkit_0053_managed_object_from_item(
         object_type: u32,
         item: *mut kmipkit_ttlv_item_t,
@@ -367,6 +372,39 @@ fn assert_compiled_c_field_constructor(
     }
 }
 
+fn assert_compiled_c_generic_object_constructor(
+    object_type: u32,
+    mut fields: Vec<*mut kmipkit_ttlv_item_t>,
+    expected_tag: u32,
+) {
+    let mut output_handle = ptr::null_mut();
+    // SAFETY: The field handles are live and the output slot is writable.
+    let status = unsafe {
+        kmipkit_0053_managed_object_from_fields(
+            object_type,
+            fields.as_mut_ptr(),
+            fields.len() as u64,
+            &raw mut output_handle,
+        )
+    };
+    assert_eq!(status, SUCCESS, "Object Type {object_type}");
+    let output = reference_handle(output_handle, Kind::Item).expect("typed output item");
+    let HandleValue::Item(item) = &output.value else {
+        panic!("typed output is an Item")
+    };
+    assert_eq!(item.tag().raw(), expected_tag);
+    for field in &fields {
+        assert!(
+            reference_handle(*field, Kind::Item).is_ok(),
+            "inputs remain caller-owned"
+        );
+    }
+    kmipkit_ttlv_item_release(output_handle);
+    for field in fields.drain(..) {
+        kmipkit_ttlv_item_release(field);
+    }
+}
+
 #[test]
 fn compiled_c_consumer_reads_all_nine_known_object_types() {
     let expected_tags = [
@@ -698,6 +736,59 @@ fn compiled_c_consumer_builds_each_named_object_from_typed_fields() {
     for (constructor, expected_tag, mut fields) in cases {
         assert_compiled_c_field_constructor(constructor, std::mem::take(&mut fields), expected_tag);
     }
+}
+
+#[test]
+fn compiled_c_consumer_builds_kmip30_system_credentials_from_generic_fields() {
+    let cases = [
+        (
+            13,
+            PASSWORD_CREDENTIAL,
+            vec![
+                field_handle(0x0042_003c, Value::integer(7)),
+                field_handle(0x0042_01a3, Value::enumeration(0x8000_0031)),
+                field_handle(0x0042_00a1, Value::text_string("[REDACTED]".into())),
+            ],
+        ),
+        (
+            14,
+            DEVICE_CREDENTIAL,
+            vec![field_handle(
+                0x0042_00a2,
+                Value::text_string("device-id".into()),
+            )],
+        ),
+        (
+            15,
+            ONE_TIME_PASSWORD_CREDENTIAL,
+            vec![
+                field_handle(0x0042_01ad, Value::integer(8)),
+                field_handle(0x0042_01ab, Value::byte_string(vec![0x31, 0x32])),
+                field_handle(0x0042_01a8, Value::enumeration(0x8000_0042)),
+            ],
+        ),
+        (
+            16,
+            HASHED_PASSWORD_CREDENTIAL,
+            vec![
+                field_handle(0x0042_01b1, Value::byte_string(vec![0x22, 0x23])),
+                field_handle(0x0042_0038, Value::enumeration(6)),
+                field_handle(0x0042_01b0, Value::byte_string(vec![0x20, 0x21])),
+            ],
+        ),
+    ];
+
+    for (object_type, expected_tag, fields) in cases {
+        assert_compiled_c_generic_object_constructor(object_type, fields, expected_tag);
+    }
+}
+
+#[test]
+fn compiled_c_consumer_builds_and_reads_all_kmip30_system_credentials() {
+    // SAFETY: The compiled C consumer creates, validates, reads, and releases
+    // all temporary TTLV handles within the call.
+    let status = unsafe { kmipkit_0053_system_credential_consumer() };
+    assert_eq!(status, SUCCESS);
 }
 
 #[test]

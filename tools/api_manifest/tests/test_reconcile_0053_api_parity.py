@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from tools.api_manifest import reconcile_0053_api_parity
+from tools.api_manifest import prepare_0053_system_credential_routes
 
 
 class Reconcile0053ApiParityTests(unittest.TestCase):
@@ -219,6 +220,99 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             "typed_cryptographic_parameters",
         ):
             self.assertEqual("verified", capabilities[capability_id])
+
+    def test_kmip30_system_credential_models_have_exact_generic_routes_in_all_languages(self) -> None:
+        manifest = json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
+        route_data = json.loads(
+            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        candidates = {
+            row["declarationId"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("packageId") in {"rust-kmipkit", "rust-kmipkit-protocol"}
+            and "KMIPKIT-0049-FR-012" in row.get("requirementIds", [])
+            and any(
+                name in row.get("exportName", "")
+                for name in (
+                    "PasswordCredential",
+                    "DeviceCredential",
+                    "OneTimePasswordCredential",
+                    "HashedPasswordCredential",
+                )
+            )
+        }
+        resolutions = {
+            row["declarationId"]: row
+            for row in route_data["candidateResolutions"]
+            if row.get("declarationId") in candidates
+        }
+        generated = prepare_0053_system_credential_routes.build_system_credential_resolutions(
+            manifest
+        )
+        self.assertEqual(
+            route_data,
+            prepare_0053_system_credential_routes.prepare_route_data(manifest, route_data),
+        )
+        self.assertEqual(
+            {row["declarationId"]: row for row in generated},
+            resolutions,
+        )
+        self.assertEqual(144, len(candidates))
+        self.assertEqual(set(candidates), set(resolutions))
+
+        constructor_routes = {
+            "c": "kmipkit_managed_object_from_fields",
+            "java": "org.kmipkit.ttlv.ManagedObject.fromFields",
+            "python": "kmipkit.managed_objects.ManagedObject.from_fields",
+        }
+        reader_routes = {
+            "c": "kmipkit_managed_value_field_item_read",
+            "java": "org.kmipkit.ttlv.ManagedObject.fieldItem",
+            "python": "kmipkit.managed_objects.ManagedTtlvItem.field_item",
+        }
+        item_routes = {
+            "c": "kmipkit_ttlv_item_view_from_item",
+            "java": "org.kmipkit.ttlv.ManagedObject.view",
+            "python": "kmipkit.ttlv.ttlv_item_view_from_item",
+        }
+        from_item_routes = {
+            "c": "kmipkit_managed_object_from_item",
+            "java": "org.kmipkit.ttlv.ManagedObject.fromItem",
+            "python": "kmipkit.managed_objects.ManagedObject.from_item",
+        }
+        required_evidence = {
+            "crates/kmipkit-protocol/src/system_credential_objects.rs",
+            "bindings/c/tests/managed_object_parity_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/typed/ManagedObjectParityTest.java",
+            "bindings/python/tests/test_managed_object_parity.py",
+        }
+        for declaration_id, declaration in candidates.items():
+            with self.subTest(export=declaration["exportName"]):
+                resolution = resolutions[declaration_id]
+                self.assertEqual("mapped", resolution["resolution"])
+                self.assertEqual(declaration["packageId"], resolution["packageId"])
+                self.assertEqual(declaration["exportName"], resolution["exportName"])
+                self.assertEqual(
+                    declaration["exportName"], resolution["languageMappings"]["rust"]["name"]
+                )
+                mappings = resolution["languageMappings"]
+                export_name = declaration["exportName"]
+                if "try_new" in export_name or "ObjectFields" in export_name:
+                    allowed = constructor_routes
+                elif "try_from_item" in export_name or "ManagedObject::" in export_name:
+                    allowed = from_item_routes
+                elif "into_item" in export_name or "with_item" in export_name:
+                    allowed = item_routes
+                elif declaration["kind"] == "type":
+                    allowed = constructor_routes
+                else:
+                    allowed = reader_routes
+                for language, expected_name in allowed.items():
+                    self.assertEqual(expected_name, mappings[language]["name"])
+                self.assertTrue(required_evidence <= set(resolution["evidencePaths"]))
+                self.assertIn("KMIPKIT-0049-FR-012", declaration["requirementIds"])
 
     def test_reconciles_only_executable_table59_field_getters_and_builder_setters(self) -> None:
         manifest = json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
