@@ -9,7 +9,8 @@ use crate::{
     AttributeSet, CryptographicParameters, KmipOperationResult, ResponseBatchItemView,
     UniqueIdentifier,
     kmip30_operations::{
-        Kmip30OperationError, parse_success_identifier, parse_typed_success_response,
+        Kmip30OperationError, optional_identifier_payload, parse_success_identifier,
+        parse_typed_success_response, with_response_ttlv,
     },
 };
 
@@ -44,16 +45,6 @@ fn identifier_value(identifier: UniqueIdentifier) -> Value {
         UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
         UniqueIdentifier::Integer(value) => Value::integer(value),
     }
-}
-
-fn single_uid_payload(identifier: UniqueIdentifier) -> Result<Structure, String> {
-    let mut payload = Structure::new();
-    push(
-        &mut payload,
-        UNIQUE_IDENTIFIER_TAG,
-        identifier_value(identifier),
-    )?;
-    Ok(payload)
 }
 
 fn append_attributes(payload: &mut Structure, attributes: AttributeSet) -> Result<(), String> {
@@ -129,7 +120,7 @@ impl DeactivateRequest {
     ///
     /// Returns a sanitized TTLV model error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut payload = single_uid_payload(self.unique_identifier)?;
+        let mut payload = optional_identifier_payload(Some(self.unique_identifier))?;
         if let Some(reason) = self.deactivation_reason {
             push(
                 &mut payload,
@@ -211,9 +202,7 @@ impl DeactivateResponse {
     ///
     /// Failure and Pending results do not retain a response item.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
-        self.response_ttlv
-            .as_ref()
-            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
+        with_response_ttlv(self.response_ttlv.as_ref(), callback)
     }
 
     /// Serializes the response payload.
@@ -222,10 +211,7 @@ impl DeactivateResponse {
     ///
     /// Returns a sanitized TTLV model error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        match self.unique_identifier {
-            Some(identifier) => single_uid_payload(identifier),
-            None => Ok(Structure::new()),
-        }
+        optional_identifier_payload(self.unique_identifier)
     }
 }
 
@@ -289,7 +275,7 @@ impl EncapsulateRequest {
     ///
     /// Returns a sanitized TTLV or Cryptographic Parameters validation error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut payload = single_uid_payload(self.unique_identifier)?;
+        let mut payload = optional_identifier_payload(Some(self.unique_identifier))?;
         if let Some(parameters) = self.cryptographic_parameters {
             append_cryptographic_parameters(&mut payload, parameters)?;
         }
@@ -382,9 +368,7 @@ impl EncapsulateResponse {
     ///
     /// Failure and Pending results do not retain a response item.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
-        self.response_ttlv
-            .as_ref()
-            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
+        with_response_ttlv(self.response_ttlv.as_ref(), callback)
     }
 
     /// Serializes the response fields in Table 318 order.
@@ -552,7 +536,7 @@ impl DecapsulateRequest {
     ///
     /// Returns a sanitized TTLV or Cryptographic Parameters validation error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut payload = single_uid_payload(self.unique_identifier)?;
+        let mut payload = optional_identifier_payload(Some(self.unique_identifier))?;
         if let Some(parameters) = self.cryptographic_parameters {
             append_cryptographic_parameters(&mut payload, parameters)?;
         }
@@ -635,9 +619,7 @@ impl DecapsulateResponse {
     ///
     /// Failure and Pending results do not retain a response item.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
-        self.response_ttlv
-            .as_ref()
-            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
+        with_response_ttlv(self.response_ttlv.as_ref(), callback)
     }
 
     /// Serializes the Table 297 response payload.
@@ -646,10 +628,7 @@ impl DecapsulateResponse {
     ///
     /// Returns a sanitized TTLV model error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        match self.unique_identifier {
-            Some(identifier) => single_uid_payload(identifier),
-            None => Ok(Structure::new()),
-        }
+        optional_identifier_payload(self.unique_identifier)
     }
 }
 
