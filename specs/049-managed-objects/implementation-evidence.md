@@ -527,3 +527,12 @@ remains draft until its aggregate CI and fresh security checks pass.
 ## Security check retry on the current feature head (2026-11-09)
 
 CI run `42591793448` completed successfully on head `4e73c352a969fbba7bc50ced26c1ac6dbdb671b2` (43 checks passed; three scheduled or policy checks were skipped). The separate GitHub Advanced Security checks `CodeQL` (`129084629655`) and `zizmor` (`129086191990`) again ended as `timed_out` without findings or diagnostic output. GitHub's check-suite re-request endpoint returned HTTP 404 for both suites, so this evidence-only commit requests fresh checks on an updated head. T050 remains open until those checks complete successfully.
+
+## Serialized stack isolation retry (2026-11-09)
+
+The full CI, CodeQL Analysis, and zizmor workflows for PRs #139 and #140 were
+rerun one PR at a time and completed successfully before refreshing this head.
+No other stack PR CI matrix was active when this evidence-only change was
+created. This new head requests a fresh run for PR #141; record its conclusions
+and check-run identifiers here after they complete. T050 remains open until all
+required checks pass.
