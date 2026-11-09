@@ -157,3 +157,58 @@ fn typed_parameters_attach_to_key_wrapping_information_structures() {
 
     let _ = KeyWrappingData::try_new(1).expect("raw wrapping method remains accepted");
 }
+
+#[test]
+// OASIS KMIP 2.1 §4.16, Table 59 defines the ordered optional members.
+fn every_table_59_builder_setter_and_typed_reader_roundtrips() {
+    let parameters = CryptographicParametersBuilder::new()
+        .with_block_cipher_mode(6)
+        .with_padding_method(2)
+        .with_hashing_algorithm(6)
+        .with_key_role_type(3)
+        .with_digital_signature_algorithm(1)
+        .with_cryptographic_algorithm(3)
+        .with_random_iv(true)
+        .with_iv_length(96)
+        .with_tag_length(128)
+        .with_fixed_field_length(32)
+        .with_invocation_field_length(64)
+        .with_counter_length(32)
+        .with_initial_counter_value(1)
+        .with_salt_length(16)
+        .with_mask_generator(1)
+        .with_mask_generator_hashing_algorithm(6)
+        .with_p_source(vec![0xA5, 0x5A])
+        .with_trailer_field(1)
+        .with_extension(item(0x0054_0001, Value::text_string("vendor".to_owned())))
+        .build()
+        .expect("all optional Table 59 fields form a valid structure");
+
+    assert_eq!(parameters.block_cipher_mode(), Some(6));
+    assert_eq!(parameters.padding_method(), Some(2));
+    assert_eq!(parameters.hashing_algorithm(), Some(6));
+    assert_eq!(parameters.key_role_type(), Some(3));
+    assert_eq!(parameters.digital_signature_algorithm(), Some(1));
+    assert_eq!(parameters.cryptographic_algorithm(), Some(3));
+    assert_eq!(parameters.random_iv(), Some(true));
+    assert_eq!(parameters.iv_length(), Some(96));
+    assert_eq!(parameters.tag_length(), Some(128));
+    assert_eq!(parameters.fixed_field_length(), Some(32));
+    assert_eq!(parameters.invocation_field_length(), Some(64));
+    assert_eq!(parameters.counter_length(), Some(32));
+    assert_eq!(parameters.initial_counter_value(), Some(1));
+    assert_eq!(parameters.salt_length(), Some(16));
+    assert_eq!(parameters.mask_generator(), Some(1));
+    assert_eq!(parameters.mask_generator_hashing_algorithm(), Some(6));
+    assert_eq!(
+        parameters.with_p_source(<[u8]>::to_vec),
+        Some(vec![0xA5, 0x5A])
+    );
+    assert_eq!(parameters.trailer_field(), Some(1));
+    assert!(format!("{parameters:?}").contains("member_count"));
+    assert!(parameters.with_ttlv(|raw| {
+        raw.children()
+            .iter()
+            .any(|field| field.tag().raw() == 0x0054_0001)
+    }));
+}
