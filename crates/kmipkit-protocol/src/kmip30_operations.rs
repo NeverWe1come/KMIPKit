@@ -47,6 +47,25 @@ fn unique_identifier_item(identifier: UniqueIdentifier) -> Result<Item, String> 
     item(UNIQUE_IDENTIFIER_TAG, unique_identifier_value(identifier))
 }
 
+pub(crate) fn optional_identifier_payload(
+    identifier: Option<UniqueIdentifier>,
+) -> Result<Structure, String> {
+    let mut payload = Structure::new();
+    if let Some(identifier) = identifier {
+        payload
+            .try_push(unique_identifier_item(identifier)?)
+            .map_err(|error| error.to_string())?;
+    }
+    Ok(payload)
+}
+
+pub(crate) fn with_response_ttlv<R>(
+    response_ttlv: Option<&OwnedResponseTtlv>,
+    callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
+) -> Option<R> {
+    response_ttlv.map(|response_ttlv| response_ttlv.with_ttlv(callback))
+}
+
 fn attributes_item(attributes: AttributeSet) -> Result<Item, String> {
     let mut fields = Structure::new();
     for attribute in attributes.into_items() {
@@ -372,9 +391,7 @@ macro_rules! define_create_request {
                 &self,
                 callback: impl for<'a> FnOnce(StructureView<'a>) -> R,
             ) -> Option<R> {
-                self.response_ttlv
-                    .as_ref()
-                    .map(|response_ttlv| response_ttlv.with_ttlv(callback))
+                with_response_ttlv(self.response_ttlv.as_ref(), callback)
             }
 
             /// Serializes the successful response payload, or an empty payload for non-success.
@@ -383,13 +400,7 @@ macro_rules! define_create_request {
             ///
             /// Returns a sanitized TTLV model error.
             pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-                let mut payload = Structure::new();
-                if let Some(identifier) = self.unique_identifier {
-                    payload
-                        .try_push(unique_identifier_item(identifier)?)
-                        .map_err(|error| error.to_string())?;
-                }
-                Ok(payload)
+                optional_identifier_payload(self.unique_identifier)
             }
         }
     };
@@ -466,9 +477,7 @@ impl CreateCredentialResponse {
     ///
     /// Failure and Pending results do not retain a response item.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
-        self.response_ttlv
-            .as_ref()
-            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
+        with_response_ttlv(self.response_ttlv.as_ref(), callback)
     }
 
     /// Serializes the successful response payload, or an empty payload for non-success.
@@ -477,13 +486,7 @@ impl CreateCredentialResponse {
     ///
     /// Returns a sanitized TTLV model error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        let mut payload = Structure::new();
-        if let Some(identifier) = self.unique_identifier {
-            payload
-                .try_push(unique_identifier_item(identifier)?)
-                .map_err(|error| error.to_string())?;
-        }
-        Ok(payload)
+        optional_identifier_payload(self.unique_identifier)
     }
 }
 
@@ -580,9 +583,7 @@ impl ObliterateResponse {
     ///
     /// Failure and Pending results do not retain a response item.
     pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
-        self.response_ttlv
-            .as_ref()
-            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
+        with_response_ttlv(self.response_ttlv.as_ref(), callback)
     }
 
     /// Serializes the empty Obliterate response payload.
