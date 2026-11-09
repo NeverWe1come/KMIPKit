@@ -107,6 +107,9 @@ fn nested_schema(name: &str) -> Option<NestedStructureSchema> {
         "KeyValue" => NestedStructureSchema::KeyValue,
         "KeyWrappingData" => NestedStructureSchema::KeyWrappingData,
         "OpaqueObject" => NestedStructureSchema::OpaqueObject,
+        "PgpKey" => NestedStructureSchema::PgpKey,
+        "SecretData" => NestedStructureSchema::SecretData,
+        "SplitKey" => NestedStructureSchema::SplitKey,
         _ => return None,
     })
 }
