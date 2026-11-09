@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import unittest
 import re
+import unittest
 from pathlib import Path
 
 from tools.api_manifest import reconcile_0050_parameters_auth_client as reconcile
