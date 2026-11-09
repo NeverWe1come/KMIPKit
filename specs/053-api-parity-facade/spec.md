@@ -164,3 +164,4 @@ An application developer can use KMIPKit from the documented package surface, wi
 ## Clarifications
 
 No unresolved clarification remains. The maintainer-approved Phase 5 plan fixes the language set, scope, ordering, required capabilities, security invariants, and stack; the pinned OASIS Standard supplies protocol semantics.
+<!-- retry-150 -->
