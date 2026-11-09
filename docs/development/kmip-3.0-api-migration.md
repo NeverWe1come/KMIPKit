@@ -36,7 +36,9 @@ The pre-1.0 `LinkType` API previously inferred KMIP 2.1 values and KMIP 3.0
 attribute tags from enum discriminants and contiguous ranges. Those numbers do
 not share an ordering: KMIP 2.1 §11.28, Table 465 assigns Link Type values
 `0x101`–`0x10E`, while KMIP 3.0 §§4.35.1–4.35.20 and §11.58 assign different
-tags. Use the corrected semantic variants and explicit lookup methods. The
+tags. The [KMIPKIT-0071 link mapping](../../specs/071-kmip-3-0-draft-support/spec.md)
+documents the 14 exact semantic equivalents and their KMIP 3.0 tags. Use the
+corrected semantic variants and explicit lookup methods. The
 former `PreviousKey`, `NextKey`, `ParentObject`, `ChildObject`, and `SplitKey`
 variants are removed; use `Previous`, `Next`, `Parent`, and `Child` for the
 corresponding shared values. `ReplacementObject`, `ReplacedObject`,
@@ -50,6 +52,21 @@ KMIP 2.1 permits Text String identifiers, but KMIP 3.0 §4.35 does not list
 Text String for these link attributes, so conversion to KMIP 3.0 also rejects
 that encoding. Enumeration and Integer identifiers round-trip unchanged. The
 original item remains unchanged when normalization fails.
+
+## KEM response models
+
+The pre-1.0 `EncapsulateResponse` incorrectly accepted a shared-secret value,
+exposed it through `shared_secret()`, and serialized it using the Key Material
+tag. KMIP 3.0 §6.1.22, Table 318 defines the response as `Unique Identifier`
+followed by `Data`; the resulting shared secret remains in the server-managed
+Secret Data object. Use `EncapsulateResponse::new(unique_identifier, data)`
+and `data()`.
+
+The pre-1.0 `DecapsulateResponse` likewise exposed and serialized a shared
+secret. KMIP 3.0 §6.1.15, Table 297 defines only the resulting object's
+`Unique Identifier`. Use `DecapsulateResponse::new(unique_identifier)`; the
+secret is accessed through the server-managed object under the protocol's
+authorization rules.
 
 These corrected values and models do not claim complete KMIP 3.0 protocol or
 profile support. See KMIPKIT-0069 through KMIPKIT-0071 for the scoped

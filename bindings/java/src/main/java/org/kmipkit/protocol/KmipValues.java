@@ -2874,19 +2874,19 @@ public final class KmipValues {
             default -> null;
         };
     }
-    /** Create Group; kmip-3.0 §11.37, Table 583. */
+    /** Create Group; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_CREATE_GROUP = 0x0000003CL;
-    /** Obliterate; kmip-3.0 §11.37, Table 583. */
+    /** Obliterate; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_OBLITERATE = 0x0000003DL;
-    /** Create User; kmip-3.0 §11.37, Table 583. */
+    /** Create User; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_CREATE_USER = 0x0000003EL;
-    /** Create Credential; kmip-3.0 §11.37, Table 583. */
+    /** Create Credential; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_CREATE_CREDENTIAL = 0x0000003FL;
-    /** Deactivate; kmip-3.0 §11.37, Table 583. */
+    /** Deactivate; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_DEACTIVATE = 0x00000040L;
-    /** Encapsulate; kmip-3.0 §11.37, Table 583. */
+    /** Encapsulate; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_ENCAPSULATE = 0x00000041L;
-    /** Decapsulate; kmip-3.0 §11.37, Table 583. */
+    /** Decapsulate; kmip-3.0 §11.37, Table 584. */
     public static final long V3_0_OPERATION_DECAPSULATE = 0x00000042L;
     /** Returns the KMIP v3.0 Operation name, or null for an unassigned value. */
     public static String v3_0OperationName(long raw) {

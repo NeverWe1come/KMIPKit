@@ -177,26 +177,107 @@ class TagAllocationRenderingTests(unittest.TestCase):
             self._assert_allocation_near(rendered, lower, allocation)
             self._assert_allocation_near(rendered, upper, allocation)
 
-    def test_renders_all_twenty_kmip30_link_tags_as_assigned(self) -> None:
+    def test_renders_every_assigned_kmip30_tag_from_table_605(self) -> None:
         catalog = load_validated_catalog(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),
             ROOT,
         )
-        from tools.normative_catalog.generate_ttlv_tags import load_versioned_tag_allocations
+        from tools.normative_catalog.generate_ttlv_tags import (
+            _tag_allocation_ranges,
+            load_versioned_tag_allocations,
+        )
 
         versioned_tags = load_versioned_tag_allocations(ROOT)
         rendered = self._render(catalog, versioned_tags=versioned_tags)
 
-        # KMIP 3.0 §4.35.1–4.35.20 and §11.58. These tags are part of the
-        # supported-version union even where KMIP 2.1 leaves them unallocated.
-        link_tags = (
-            "420190", "420191", "420192", "420193", "420194", "420195",
-            "420196", "420197", "420198", "420199", "42019A", "42019B",
-            "42019C", "42019D", "4201A0", "4201A5", "4201B3", "4201B4",
-            "4201B5", "4201BC",
+        # KMIP 3.0 §11.58, Table 605. Keep this explicit so a reserved or
+        # unassigned value cannot become valid through a broad numeric range.
+        expected_tags = (
+            ("Certificate Link", "420190"),
+            ("Child Link", "420191"),
+            ("Derivation Base Object Link", "420192"),
+            ("Derived Object Link", "420193"),
+            ("Next Link", "420194"),
+            ("Parent Link", "420195"),
+            ("PKCS#12 Certificate Link", "420196"),
+            ("PKCS#12 Password Link", "420197"),
+            ("Previous Link", "420198"),
+            ("Private Key Link", "420199"),
+            ("Public Key Link", "42019A"),
+            ("Replaced Object Link", "42019B"),
+            ("Replacement Object Link", "42019C"),
+            ("Wrapping Key Link", "42019D"),
+            ("Object Class", "42019E"),
+            ("Object Class Mask", "42019F"),
+            ("Credential Link", "4201A0"),
+            ("Password Credential", "4201A1"),
+            ("Password Salt", "4201A2"),
+            ("Password Salt Algorithm", "4201A3"),
+            ("Salted Password", "4201A4"),
+            ("Password Link", "4201A5"),
+            ("Device Credential", "4201A6"),
+            ("OTP Credential", "4201A7"),
+            ("OTP Algorithm", "4201A8"),
+            ("OTP Digest", "4201A9"),
+            ("OTP Serial", "4201AA"),
+            ("OTP Seed", "4201AB"),
+            ("OTP Interval", "4201AC"),
+            ("OTP Digits", "4201AD"),
+            ("OTP Counter", "4201AE"),
+            ("Hashed Password Credential", "4201AF"),
+            ("Hashed Username Password", "4201B0"),
+            ("Hashed Password Username", "4201B1"),
+            ("Credential Information", "4201B2"),
+            ("Group Link", "4201B3"),
+            ("Split Key Base Link", "4201B4"),
+            ("Joined Split Key Parts Link", "4201B5"),
+            ("Split Key Polynomial", "4201B6"),
+            ("Deactivation Message", "4201B7"),
+            ("Deactivation Reason", "4201B8"),
+            ("Deactivation Reason Code", "4201B9"),
+            ("Certificate Subject DN", "4201BA"),
+            ("Certificate Issuer DN", "4201BB"),
+            ("Certificate Request Link", "4201BC"),
+            ("Certify Counter", "4201BD"),
+            ("Decrypt Counter", "4201BE"),
+            ("Encrypt Counter", "4201BF"),
+            ("Sign Counter", "4201C0"),
+            ("Signature Verify Counter", "4201C1"),
+            ("NIST Security Category", "4201C2"),
+            ("KEM Algorithm", "4201C3"),
+            ("Deterministic", "4201C4"),
+            ("Context String", "4201C5"),
+            ("Seed", "4201C6"),
+            ("Input Key Material", "4201C7"),
+            ("Internal", "4201C8"),
+            ("External Mu", "4201C9"),
+            ("Random", "4201CA"),
+            ("Performs CRL Checks", "4201CB"),
         )
-        for tag in link_tags:
-            self._assert_allocation_near(rendered, tag, "assigned")
+        versioned_document = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-versioned-tags.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        tag_enumeration = versioned_document["tagEnumeration"]
+        self.assertEqual(tag_enumeration.get("table"), 605)
+        self.assertEqual(
+            [(row["name"], row["wire_value"].removeprefix("0x")) for row in tag_enumeration["assignments"]],
+            list(expected_tags),
+        )
+        self.assertEqual(
+            versioned_tags,
+            [(int(value, 16), "assigned") for _, value in expected_tags],
+        )
+        for _, value in expected_tags:
+            self._assert_allocation_near(rendered, value, "assigned")
+        self.assertNotIn((0x4201CC, "assigned"), versioned_tags)
+        self.assertTrue(
+            any(
+                lower <= 0x4201CC <= upper and allocation == "reserved"
+                for lower, upper, allocation in _tag_allocation_ranges(catalog)
+            )
+        )
 
     def test_keeps_exact_assignments_visible_alongside_overlapping_reserved_range(self) -> None:
         rendered = self._render(small_catalog())

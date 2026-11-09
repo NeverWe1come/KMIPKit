@@ -13,7 +13,7 @@ from typing import Any
 SPEC_ID = "KMIPKIT-0049"
 PARITY_SPEC_ID = "KMIPKIT-0053"
 CAPABILITY_ID = "typed_managed_objects_and_key_material"
-REQUIREMENTS = [f"{SPEC_ID}-FR-{number:03}" for number in range(1, 11)]
+REQUIREMENTS = [f"{SPEC_ID}-FR-{number:03}" for number in range(1, 14)]
 BLOCKED_REASON = (
     "This exact typed managed-object Rust route is implemented under KMIPKIT-0049. "
     "Its C, Java, and Python equivalents are assigned to KMIPKIT-0053; the route "
@@ -43,6 +43,16 @@ PUBLIC_TYPES = {
     "TransparentEcPrivateKey", "TransparentEcPublicKey", "TransparentRsaPrivateKey",
     "TransparentRsaPublicKey", "TransparentSymmetricKey", "RegisterRequest",
     "ImportRequest",
+    "PasswordCredentialObject", "PasswordCredentialObjectFields",
+    "DeviceCredentialObject", "DeviceCredentialObjectFields",
+    "OneTimePasswordCredentialObject", "OneTimePasswordCredentialObjectFields",
+    "HashedPasswordCredentialObject", "HashedPasswordCredentialObjectFields",
+}
+SYSTEM_CREDENTIAL_TYPES = {
+    "PasswordCredentialObject", "PasswordCredentialObjectFields",
+    "DeviceCredentialObject", "DeviceCredentialObjectFields",
+    "OneTimePasswordCredentialObject", "OneTimePasswordCredentialObjectFields",
+    "HashedPasswordCredentialObject", "HashedPasswordCredentialObjectFields",
 }
 PACKAGE_PREFIXES = {
     "rust-kmipkit": "kmipkit::protocol::",
@@ -70,7 +80,24 @@ def _root_type(export_name: str, package_id: str) -> str | None:
 
 def _requirements_for(export_name: str, package_id: str) -> list[str]:
     root = _root_type(export_name, package_id)
-    if root in {"RegisterRequest", "ImportRequest"}:
+    if root in SYSTEM_CREDENTIAL_TYPES:
+        relevant = [
+            f"{SPEC_ID}-FR-005",
+            f"{SPEC_ID}-FR-007",
+            f"{SPEC_ID}-FR-009",
+            f"{SPEC_ID}-FR-012",
+            f"{SPEC_ID}-FR-013",
+        ]
+    elif root == "ManagedObject":
+        relevant = [
+            f"{SPEC_ID}-FR-001",
+            f"{SPEC_ID}-FR-004",
+            f"{SPEC_ID}-FR-005",
+            f"{SPEC_ID}-FR-007",
+            f"{SPEC_ID}-FR-012",
+            f"{SPEC_ID}-FR-013",
+        ]
+    elif root in {"RegisterRequest", "ImportRequest"}:
         relevant = [f"{SPEC_ID}-FR-006", f"{SPEC_ID}-FR-007"]
     elif root == "ManagedObjectError":
         relevant = [f"{SPEC_ID}-FR-007", f"{SPEC_ID}-FR-009"]
@@ -113,6 +140,9 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> dict[str, Any
         capabilities.append(capability)
     elif capability.get("capabilityState") != "blocked" or "mappings" in capability:
         raise ReconciliationError("0049 capability must remain blocked until four-language parity is verified")
+    capability["requirementIds"] = sorted(
+        set(capability.get("requirementIds", [])) | set(REQUIREMENTS)
+    )
 
     declaration_keys = {(row.get("packageId"), row.get("exportName")) for row in declarations}
     exclusion_keys = {(row.get("packageId"), row.get("exportName")) for row in exclusions}

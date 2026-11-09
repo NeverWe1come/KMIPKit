@@ -9,7 +9,11 @@ The specification introduces:
 1. Bidirectional Link Normalization (`LinkNormalizer`) bridging KMIP 2.x generic links and KMIP 3.0 discrete typed links.
 2. System Objects (`User`, `Group`, `Password Credential`, `Device Credential`, `One Time Password Credential`, and `Hashed Password Credential`).
 3. `Object Class` values `User` (`1`) and `System` (`2`), preserving unrecognized raw values.
-4. The KMIP 3.0 Operation Enumeration assignments in §11.37, Table 583: `Create Group` (`0x3C`), `Obliterate` (`0x3D`), `Create User` (`0x3E`), `Create Credential` (`0x3F`), `Deactivate` (`0x40`), `Encapsulate` (`0x41`), and `Decapsulate` (`0x42`).
+4. The KMIP 3.0 Operation Enumeration assignments in §11.37, Table 584:
+   `Create Group` (`0x0000003C`), `Obliterate` (`0x0000003D`),
+   `Create User` (`0x0000003E`), `Create Credential` (`0x0000003F`),
+   `Deactivate` (`0x00000040`), `Encapsulate` (`0x00000041`), and
+   `Decapsulate` (`0x00000042`).
 5. Post-Quantum Cryptography (PQC) algorithm enumerations and Key Encapsulation Mechanism (KEM) data structures.
 6. Test Server (`kmipkit-test-server`) KMIP 3.0 execution mode.
 
@@ -19,7 +23,8 @@ The specification introduces:
   - §4 Cryptographic and System Objects (§4.8 User, §4.9 Group, §4.10 Credential)
   - §5 Attributes (§5.2 Object Class, §5.45–§5.64 Discrete Typed Links)
   - §6 Operations (§6.1.9 Create Credential, §6.1.10 Create Group, §6.1.13 Create User, §6.1.14 Deactivate, §6.1.15 Decapsulate, §6.1.22 Encapsulate, §6.1.41 Obliterate)
-  - §11.34 Table 581 Object Class Enumeration; §11.35 Table 582 Object Type Enumeration; §11.37 Table 583 Operation Enumeration
+  - §11.34 Table 581 Object Class Enumeration; §11.35 Table 582 Object Type Enumeration; §11.37 Table 584 Operation Enumeration
+  - §11.58 Table 605 Tag Enumeration
   - §8 Messages
   - §9 Protocol Details
 - **OASIS KMIP 3.0 Working Draft Profiles** (13 July 2026)
@@ -84,12 +89,18 @@ The specification introduces:
   - `MlKem512`, `MlKem768`, `MlKem1024`
   - `MlDsa44`, `MlDsa65`, `MlDsa87`
   - `SlhDsa`
-- KEM operations:
-  - `Encapsulate` (`0x0000003F`): takes public key identifier, returns ciphertext and shared secret.
-  - `Decapsulate` (`0x00000040`): takes private key identifier and ciphertext, returns shared secret.
+- KEM operations, using the assignments in §11.37 Table 584:
+  - `Encapsulate` (`0x00000041`): takes the key's `Unique Identifier`; its
+    response contains the newly created Secret Data object's `Unique
+    Identifier` and encapsulated output in `Data` (§6.1.22, Tables 317–318).
+  - `Decapsulate` (`0x00000042`): takes the key's `Unique Identifier` and the
+    peer's encapsulated value in `Data`; its response contains only the newly
+    created Secret Data object's `Unique Identifier` (§6.1.15, Tables 296–297).
+  - Neither response payload returns the shared secret. KMIPKit's typed
+    response models therefore do not expose it or include it in `Debug` output.
 
 ### 3.4 Deactivate Operation
-- `Deactivate` (`0x0000003E`): explicitly transitions an active object to the deactivated lifecycle state without immediate destruction.
+- `Deactivate` (`0x00000040`): explicitly transitions an active object to the deactivated lifecycle state without immediate destruction.
 
 ## 4. Acceptance Criteria
 
@@ -101,7 +112,7 @@ The pre-1.0 API corrections to `ObjectType::CREDENTIAL` and the former
 - **`REQ-071-002` (Link Normalizer)**:
   `LinkNormalizer` accurately roundtrips the 14 source-defined shared Link Type semantics using the explicit mapping above, preserves Enumeration and Integer identifiers, rejects Text String conversion to KMIP 3.0, and rejects the six KMIP 3.0-only link attributes without changing the input.
 - **`REQ-071-003` (KMIP 3.0 Operations in VersionGate)**:
-  `VersionGate` permits only the seven assigned operation codes in Table 583
+  `VersionGate` permits only the seven assigned operation codes in Table 584
   under `ProtocolVersion::V3_0`, and rejects those assignments under `V2_0`
   and `V2_1`. Unassigned values, including `0x43`, receive no inferred span.
 - **`REQ-071-004` (System Objects and Object Class)**:
@@ -110,3 +121,9 @@ The pre-1.0 API corrections to `ObjectType::CREDENTIAL` and the former
   `EncapsulateRequest`, `EncapsulateResponse`, `DecapsulateRequest`, and `DecapsulateResponse` are implemented and validated.
 - **`REQ-071-006` (Test Server KMIP 3.0 Mode)**:
   `kmipkit-test-server` supports KMIP 3.0 mode, returns protocol version 3.0, and executes 3.0 operations.
+- **`REQ-071-007` (Exact Tag Enumeration)**:
+  The versioned tag catalog records all 60 explicitly assigned values in
+  §11.58, Table 605, including credential, system-object, certificate,
+  deactivation, and KEM tags. It does not turn reserved or unassigned values
+  into assignments by numeric range. The allocation union is not a substitute
+  for effective-version validation.

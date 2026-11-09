@@ -15,6 +15,8 @@
 | KMIPKIT-0050-FR-011 | Existing operation specifications; KMIP v2.1 async §§6.1.42–6.1.45 | Direct wrappers use the common typed one-item `ClientBatch` execution path | `direct_method_behavior_tests.rs` compares all 14 new request encodings with their batch equivalents and checks delivery and timeout-option propagation; async result behavior remains covered by the operation-specific lifecycle tests |
 | KMIPKIT-0050-FR-012 | Product boundary `AGENTS.md` §2; project API policy §9 | Existing generic APIs remain source-compatible; no transport/configuration surface is added | `direct_method_surface_tests.rs`, existing compatibility tests, and public export auditor |
 | KMIPKIT-0050-FR-013 | KMIP v2.1 source hierarchy and project traceability policy `AGENTS.md` §5 | This file, `gap-matrix.md`, and `implementation-evidence.md` | Manifest generator and Rust export audit; generated parity fixtures include the final declaration set |
+| KMIPKIT-0050-FR-014 | Pinned OASIS KMIP 3.0 Working Draft §6.1.15 Table 297; §6.1.22 Table 318; §11.58 Table 605 | `crates/kmipkit-protocol/src/kem.rs` (`EncapsulateResponse`, `DecapsulateResponse`, `DATA_TAG`) | `kem_tests::test_encapsulate_request_and_response` and `kem_tests::test_decapsulate_request_and_response` assert exact response tag order and absence of the Key Material tag |
+| KMIPKIT-0050-FR-015 | Project secret-redaction policy in `AGENTS.md` §8; payload scope from KMIP 3.0 §6.1.15 Table 297 and §6.1.22 Table 318 | KEM response structs contain no shared-secret field and derive `Debug` only over permitted response values | The two KEM response tests assert Debug output has no `shared_secret` field or shared-secret bytes |
 
 ## Table 59 stable catalog elements
 
