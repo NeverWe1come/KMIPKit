@@ -134,3 +134,4 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 - Adding operations outside the seven KMIP 3.0 operations explicitly authorized in the approval-record addendum.
 - Implementing FFI and Java/Python wrappers; these are reconciled in KMIPKIT-0053.
 - Claiming profile conformance, server acceptance, formal certification, or interoperability.
+<!-- retry-142 -->

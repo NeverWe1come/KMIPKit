@@ -128,3 +128,4 @@ OASIS specifies structure fields and their encoding order, data types, requiredn
 - Changing the wire encoder, transport framing, TLS policy, request retry behavior, or response validation.
 - Claiming Baseline Client conformance, formal certification, or interoperability from local validation.
 - C, Java, or Python API parity work assigned to KMIPKIT-0053.
+<!-- retry-143 -->
