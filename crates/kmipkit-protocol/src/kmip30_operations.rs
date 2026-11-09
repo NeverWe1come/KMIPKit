@@ -139,6 +139,18 @@ pub(crate) fn parse_typed_success_response<T>(
     Ok((result, Some(payload), Some(response_ttlv)))
 }
 
+pub(crate) fn parse_typed_success_response_as<T, R>(
+    item: ResponseBatchItemView<'_>,
+    expected_operation: u32,
+    operation_name: &'static str,
+    parse_payload: impl for<'a> FnOnce(StructureView<'a>) -> Result<T, Kmip30OperationError>,
+    build: impl FnOnce(KmipOperationResult, Option<T>, Option<OwnedResponseTtlv>) -> R,
+) -> Result<R, Kmip30OperationError> {
+    let (result, payload, response_ttlv) =
+        parse_typed_success_response(item, expected_operation, operation_name, parse_payload)?;
+    Ok(build(result, payload, response_ttlv))
+}
+
 pub(crate) fn clone_success_response(
     item: ResponseBatchItemView<'_>,
     operation: &'static str,
@@ -359,17 +371,17 @@ macro_rules! define_create_request {
             pub fn try_from_response_item(
                 item: ResponseBatchItemView<'_>,
             ) -> Result<Self, Kmip30OperationError> {
-                let (result, unique_identifier, response_ttlv) = parse_typed_success_response(
+                parse_typed_success_response_as(
                     item,
                     $operation,
                     stringify!($request),
                     |payload| parse_success_identifier(&payload),
-                )?;
-                Ok(Self {
-                    result,
-                    unique_identifier,
-                    response_ttlv,
-                })
+                    |result, unique_identifier, response_ttlv| Self {
+                        result,
+                        unique_identifier,
+                        response_ttlv,
+                    },
+                )
             }
 
             /// Returns the exact KMIP result, including Pending and unknown statuses.
@@ -448,17 +460,17 @@ impl CreateCredentialResponse {
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, Kmip30OperationError> {
-        let (result, unique_identifier, response_ttlv) = parse_typed_success_response(
+        parse_typed_success_response_as(
             item,
             CREATE_CREDENTIAL_OPERATION,
             "Create Credential",
             |payload| parse_success_identifier(&payload),
-        )?;
-        Ok(Self {
-            result,
-            unique_identifier,
-            response_ttlv,
-        })
+            |result, unique_identifier, response_ttlv| Self {
+                result,
+                unique_identifier,
+                response_ttlv,
+            },
+        )
     }
 
     /// Returns the exact KMIP result, including Pending and unknown statuses.
