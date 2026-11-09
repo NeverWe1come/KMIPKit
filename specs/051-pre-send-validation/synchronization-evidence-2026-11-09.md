@@ -38,3 +38,11 @@ Coverage was not run under the maintainer's instruction to suspend coverage
 thresholds while the in-progress branches are being completed. This evidence
 does not claim hosted CI success. PR #143 remains Draft until all applicable
 repository gates and required CI checks pass.
+
+## Serial stack CI verification for PR #143
+
+PR #142 finished before this update: CI run `42639149336` passed all 38 jobs,
+CodeQL Analysis run `42639149601` and zizmor run `42639149341` succeeded, and
+GitHub Advanced Security CodeQL check `129236779384` succeeded. This
+synchronization-only commit starts a fresh hosted run for PR #143 on top of the
+verified #142 head. T048 and the remaining 0051 acceptance work stay open.
