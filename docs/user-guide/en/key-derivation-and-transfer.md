@@ -177,6 +177,13 @@ Unique Identifier retains its wire type, and Attributes and Any Object remain
 generic TTLV. The C, Java, and Python Any Object value is a one-item Structure
 whose child retains the original polymorphic item tag and order.
 
+Rust callers can opt into typed copies with `ExportResponse::managed_object()`
+and `ExportResponse::key_block()`; the matching Get response exposes the same
+methods. They return absence when the result has no object or the object has
+no Key Block. The original response's generic TTLV remains available, and
+typed copies preserve unknown and vendor children. KMIPKit zeroizes copies it
+owns when they are dropped; caller-created copies are outside that guarantee.
+
 Close caller-owned response copies when finished. KMIPKit zeroizes memory it
 owns, but Java and Python runtimes may retain external copies outside that
 control. Do not format, log, or place object data, Attributes, or raw response

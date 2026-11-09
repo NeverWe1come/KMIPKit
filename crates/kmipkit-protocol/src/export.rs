@@ -210,13 +210,12 @@ impl ExportResponse {
     /// Returns an owned typed managed object for a successful response.
     ///
     /// The response keeps its original TTLV tree unchanged. This accessor
-    /// creates a caller-owned copy, which KMIPKit zeroizes when dropped; any
+    /// creates a caller-owned copy, which `KMIPKit` zeroizes when dropped; any
     /// copies subsequently made by the caller are outside that guarantee.
     /// Unknown object types remain available as the generic `Unknown` variant.
     #[must_use]
     pub fn managed_object(&self) -> Option<Result<ManagedObject, ManagedObjectError>> {
-        let object_type = self.object_type?;
-        let object = self.object.as_ref()?;
+        let (object_type, object) = self.object_type.zip(self.object.as_ref())?; // COVERAGE-EXCLUDE: response parsing sets both fields on Success and neither otherwise.
         Some(
             object
                 .try_clone()
