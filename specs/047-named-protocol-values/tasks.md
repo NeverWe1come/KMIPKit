@@ -66,5 +66,5 @@
 - [x] T021 [Green] Extend the existing operation-gate regression to assert the
   complete `UnassignedOperationInVersion` display string and cover its format
   branch without changing production behavior.
-- [ ] T022 [Refactor] Record local coverage and regression evidence, update
+- [x] T022 [Refactor] Record local coverage and regression evidence, update
   this checklist, and rerun format, protocol tests, Clippy, and diff checks.
