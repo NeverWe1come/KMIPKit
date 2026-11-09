@@ -854,6 +854,17 @@ impl ClientRequest {
             Self::SignatureVerify(request) => request.validate(),
             Self::RngRetrieve(request) => request.validate(),
             Self::RngSeed(request) => request.validate(),
+            // KMIP 3.0 draft payloads use their dedicated typed models rather
+            // than the KMIP 2.1 Request Payload schema registry. Execution
+            // still version-gates the operation and every serialized payload
+            // tag before transport, returning NotSent for an older version.
+            Self::CreateGroup(_)
+            | Self::Obliterate(_)
+            | Self::CreateUser(_)
+            | Self::CreateCredential(_)
+            | Self::Deactivate(_)
+            | Self::Encapsulate(_)
+            | Self::Decapsulate(_) => ValidationReport::default(),
             // Set Endpoint Role is deferred to 1.1. Its typed constructor
             // requires Endpoint Role (§6.1.54), while the open Enumeration
             // must preserve future and vendor values.
