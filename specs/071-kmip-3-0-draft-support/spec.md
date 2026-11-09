@@ -9,7 +9,11 @@ The specification introduces:
 1. Bidirectional Link Normalization (`LinkNormalizer`) bridging KMIP 2.x generic links and KMIP 3.0 discrete typed links.
 2. System Objects (`User`, `Group`, `Password Credential`, `Device Credential`, `One Time Password Credential`, and `Hashed Password Credential`).
 3. `Object Class` values `User` (`1`) and `System` (`2`), preserving unrecognized raw values.
-4. The KMIP 3.0 Operation Enumeration assignments in §11.37, Table 584: `Create Group` (`0x3C`), `Obliterate` (`0x3D`), `Create User` (`0x3E`), `Create Credential` (`0x3F`), `Deactivate` (`0x40`), `Encapsulate` (`0x41`), and `Decapsulate` (`0x42`).
+4. The KMIP 3.0 Operation Enumeration assignments in §11.37, Table 584:
+   `Create Group` (`0x0000003C`), `Obliterate` (`0x0000003D`),
+   `Create User` (`0x0000003E`), `Create Credential` (`0x0000003F`),
+   `Deactivate` (`0x00000040`), `Encapsulate` (`0x00000041`), and
+   `Decapsulate` (`0x00000042`).
 5. Post-Quantum Cryptography (PQC) algorithm enumerations and Key Encapsulation Mechanism (KEM) data structures.
 6. Test Server (`kmipkit-test-server`) KMIP 3.0 execution mode.
 
@@ -96,7 +100,7 @@ The specification introduces:
     response models therefore do not expose it or include it in `Debug` output.
 
 ### 3.4 Deactivate Operation
-- `Deactivate` (`0x0000003E`): explicitly transitions an active object to the deactivated lifecycle state without immediate destruction.
+- `Deactivate` (`0x00000040`): explicitly transitions an active object to the deactivated lifecycle state without immediate destruction.
 
 ## 4. Acceptance Criteria
 

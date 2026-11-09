@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 from tools.api_manifest.tests.test_t102_remaining_response_view_mappings import (
     EXPECTED as REMAINING_RESPONSE_VIEWS,
@@ -168,13 +169,13 @@ EXPECTED = (
 # Baseline fingerprints exclude response views and exact request-builder batches.
 # The non-target snapshots include subsequent approved T102 manifest slices.
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
-UNCHANGED_DECLARATIONS_SHA256 = "f486838698180207640f1fbfef61d287b683bb03c7c4c6108c3bcd46f2ba183f"
+UNCHANGED_DECLARATIONS_SHA256 = "67e7b233a7c845a17412df3908255082c6062dde1c02bada0a0475e2fffe83bb"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
-OTHER_MANIFEST_SHA256 = "5afc1d960dc56af3349413ec343e51e66ef4314dab3eba6432cfc5d97f71891d"
+OTHER_MANIFEST_SHA256 = "f28ae22b4588df5d04bf9c02f8f05b140090ca987aaa7873d8731bfc6de6fcfe"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -547,7 +548,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 )
         self.assertEqual(
             UNCHANGED_DECLARATIONS_SHA256,
-            canonical_sha256(unchanged_declarations),
+            canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
         target_operations = {

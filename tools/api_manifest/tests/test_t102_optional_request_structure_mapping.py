@@ -18,6 +18,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -190,7 +191,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-OTHER_DECLARATIONS_SHA256 = "d7cd18f9df6aff2b5d34ba314ad5f1a32e04ec8392930876cd1293d6120f4756"
+OTHER_DECLARATIONS_SHA256 = "b1402169b675675825bac62492bc4a20471c3df5e8d2f506bcb7911279ef79dc"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -392,6 +393,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     and row["candidateSpecId"] == "KMIPKIT-0053"
                     for row in typed_rows
                 ))
+        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])

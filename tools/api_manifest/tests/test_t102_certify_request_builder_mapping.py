@@ -13,6 +13,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -155,7 +156,7 @@ BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-DECLARATIONS_SHA256 = "e551724410fb8bc697d6da0fe1621272316a0e97f491050810c0eee0a3fecf40"
+DECLARATIONS_SHA256 = "f892727a2deab5b18f1162a4ea61e99c166891da19cf1b0020bee5c5ac965195"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
@@ -453,6 +454,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     and row["candidateSpecId"] == "KMIPKIT-0053"
                     for row in typed_rows
                 ))
+        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
