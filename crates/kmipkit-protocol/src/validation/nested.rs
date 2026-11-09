@@ -698,12 +698,15 @@ const PGP_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
         0x0042_00BE,
         TYPE_INTEGER
     ),
-    required_singleton_field!(
-        "KMIPKIT-0051-R268",
-        "Key Block",
-        0x0042_0040,
-        TYPE_STRUCTURE
-    ),
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R268",
+        name: "Key Block",
+        tag: FieldTag::Exact(0x0042_0040),
+        types: TYPE_STRUCTURE,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::KeyBlock),
+    },
 ];
 
 const SECRET_DATA_OBJECT_FIELDS: &[FieldDescriptor] = &[
@@ -713,12 +716,15 @@ const SECRET_DATA_OBJECT_FIELDS: &[FieldDescriptor] = &[
         0x0042_0086,
         TYPE_ENUMERATION
     ),
-    required_singleton_field!(
-        "KMIPKIT-0051-R268",
-        "Key Block",
-        0x0042_0040,
-        TYPE_STRUCTURE
-    ),
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R268",
+        name: "Key Block",
+        tag: FieldTag::Exact(0x0042_0040),
+        types: TYPE_STRUCTURE,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::KeyBlock),
+    },
 ];
 
 const SPLIT_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
@@ -752,12 +758,15 @@ const SPLIT_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
         0x0042_0062,
         TYPE_BIG_INTEGER
     ),
-    required_singleton_field!(
-        "KMIPKIT-0051-R268",
-        "Key Block",
-        0x0042_0040,
-        TYPE_STRUCTURE
-    ),
+    FieldDescriptor {
+        rule_id: "KMIPKIT-0051-R268",
+        name: "Key Block",
+        tag: FieldTag::Exact(0x0042_0040),
+        types: TYPE_STRUCTURE,
+        min_count: 1,
+        max_count: Some(1),
+        nested_schema: Some(NestedStructureSchema::KeyBlock),
+    },
 ];
 
 const OPAQUE_OBJECT_FIELDS: &[FieldDescriptor] = &[
@@ -795,8 +804,13 @@ pub(super) fn validate_nested_with_prefix(
     schema: NestedStructureSchema,
     prefix: &ValidationPath,
 ) -> ValidationReport {
-    let descriptor = descriptor(schema);
-    let mut report = validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix);
+    let mut report = match schema {
+        NestedStructureSchema::SplitKey => validate_split_key_object(structure, prefix),
+        _ => {
+            let descriptor = descriptor(schema);
+            validate_structure_with_descriptor_and_prefix(structure, &descriptor, prefix)
+        }
+    };
 
     if matches!(
         schema,
@@ -1205,6 +1219,9 @@ fn descriptor(schema: NestedStructureSchema) -> RequestSchemaDescriptor {
         NestedStructureSchema::KeyValue => ("§3.2, Table 13", KEY_VALUE_FIELDS),
         NestedStructureSchema::KeyWrappingData => ("§3.3, Table 14", KEY_WRAPPING_DATA_FIELDS),
         NestedStructureSchema::OpaqueObject => ("§2.3, Table 4", OPAQUE_OBJECT_FIELDS),
+        NestedStructureSchema::PgpKey => ("§2.4, Table 5", PGP_KEY_OBJECT_FIELDS),
+        NestedStructureSchema::SecretData => ("§2.7, Table 8", SECRET_DATA_OBJECT_FIELDS),
+        NestedStructureSchema::SplitKey => ("§2.8, Table 9", SPLIT_KEY_OBJECT_FIELDS),
     };
     RequestSchemaDescriptor { source, fields }
 }
