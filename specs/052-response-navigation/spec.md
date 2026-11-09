@@ -133,3 +133,4 @@ An application developer can use raw response access from Rust, C, Java, and Pyt
 
 No critical ambiguities remain: the maintainer-approved Phase 5 plan establishes the language set, optional payload behavior, decoded-tree semantics, nested vendor access, ownership, and redaction boundaries.
 <!-- retry-149 -->
+<!-- retry-149-2 -->
