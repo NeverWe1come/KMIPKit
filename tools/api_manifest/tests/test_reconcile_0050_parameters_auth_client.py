@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import unittest
+import re
+from pathlib import Path
 
 from tools.api_manifest import reconcile_0050_parameters_auth_client as reconcile
 
@@ -165,6 +167,23 @@ class Reconcile0050Tests(unittest.TestCase):
             manifest["operations"][0]["approvalEvidence"],
             result["publicDeclarations"][0]["approvalSource"],
         )
+
+
+    def test_kmip30_operation_references_use_operation_enumeration_table_584(self) -> None:
+        root = Path(__file__).resolve().parents[3]
+        paths = (
+            "crates/kmipkit-client/src/execute.rs",
+            "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs",
+            "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs",
+            "specs/050-parameters-auth-client/spec.md",
+            "specs/050-parameters-auth-client/traceability.md",
+            "specs/050-parameters-auth-client/implementation-evidence.md",
+        )
+        for relative_path in paths:
+            with self.subTest(path=relative_path):
+                content = (root / relative_path).read_text(encoding="utf-8")
+                self.assertIsNone(re.search(r"§11\.37,?\s+Table 583", content), relative_path)
+                self.assertTrue("Table 584" in content, relative_path)
 
 
 if __name__ == "__main__":
