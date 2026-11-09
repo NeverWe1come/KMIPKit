@@ -30,7 +30,9 @@
 
 use clap::Parser;
 use kmipkit_proxy::config::{CliArgs, ProxyConfig};
-use kmipkit_proxy::providers::{CloudKmsProvider, compiled_provider_names, create_provider};
+use kmipkit_proxy::providers::{
+    CloudKmsProvider, compiled_provider_names, create_provider, is_provider_compiled,
+};
 use kmipkit_proxy::server::ProxyServer;
 use std::sync::Arc;
 
@@ -52,10 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let provider_name = config.backend.provider.to_ascii_lowercase();
-    let compiled_providers = compiled_provider_names();
-    let provider_is_compiled = compiled_providers.contains(&provider_name.as_str())
-        || (provider_name == "openbao" && compiled_providers.contains(&"vault"));
-    if provider_name != "mock" && !provider_is_compiled {
+    if !is_provider_compiled(&provider_name) {
         return Err(format!(
             "provider '{}' is not compiled into this binary",
             config.backend.provider

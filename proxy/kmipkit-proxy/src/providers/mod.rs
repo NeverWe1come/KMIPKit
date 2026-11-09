@@ -50,6 +50,19 @@ pub fn compiled_provider_names() -> Vec<&'static str> {
     providers
 }
 
+/// Returns whether a provider name can be selected by this build.
+#[must_use]
+pub fn is_provider_compiled(provider_name: &str) -> bool {
+    if provider_name.eq_ignore_ascii_case("mock") {
+        return true;
+    }
+    let compiled = compiled_provider_names();
+    compiled
+        .iter()
+        .any(|name| provider_name.eq_ignore_ascii_case(name))
+        || (provider_name.eq_ignore_ascii_case("openbao") && compiled.contains(&"vault"))
+}
+
 /// Normalized map of cloud tags/labels.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CloudTagMap(pub BTreeMap<String, String>);
@@ -515,10 +528,7 @@ impl CloudKmsProvider for InMemoryMockProvider {
 /// Factory function to create the active CloudKmsProvider based on configuration.
 pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvider>, ProxyError> {
     let provider_name = config.provider.to_ascii_lowercase();
-    let compiled_providers = compiled_provider_names();
-    let provider_is_compiled = compiled_providers.contains(&provider_name.as_str())
-        || (provider_name == "openbao" && compiled_providers.contains(&"vault"));
-    if provider_name != "mock" && !provider_is_compiled {
+    if !is_provider_compiled(&provider_name) {
         return Err(ProxyError::ConfigError(format!(
             "provider '{}' is not compiled into this binary",
             config.provider
@@ -559,6 +569,25 @@ pub fn create_provider(config: &BackendConfig) -> Result<Arc<dyn CloudKmsProvide
         other => Err(ProxyError::ConfigError(format!(
             "unknown provider: {other}"
         ))),
+    }
+}
+
+#[cfg(test)]
+mod provider_selection_tests {
+    use super::{compiled_provider_names, is_provider_compiled};
+
+    #[test]
+    fn provider_selection_is_case_insensitive_and_respects_features() {
+        assert!(is_provider_compiled("MOCK"));
+        assert!(!is_provider_compiled("unknown"));
+        assert_eq!(
+            is_provider_compiled("aws"),
+            compiled_provider_names().contains(&"aws")
+        );
+        assert_eq!(
+            is_provider_compiled("openbao"),
+            compiled_provider_names().contains(&"vault")
+        );
     }
 }
 
