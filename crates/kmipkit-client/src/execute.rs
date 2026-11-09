@@ -4817,13 +4817,8 @@ impl Client {
                 error,
             )
         })?;
-        validate_attribute_mutation_versions(&batch, effective_version)?;
-        let mutation_policy = if profiles.is_some() {
-            Some(validate_attribute_mutation_policy(&batch))
-        } else {
-            validate_attribute_mutation_policy(&batch)?;
-            None
-        };
+        let mutation_policy =
+            validate_attribute_mutation_preflight(&batch, effective_version, profiles.is_some())?;
         validate_query_batch_limits(&batch, limits)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
 
@@ -4833,9 +4828,8 @@ impl Client {
             .map(BatchIdentity::from_request)
             .collect::<Vec<_>>();
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
-        let request_message = build_request_message(batch, &options, maximum_response_size)
-            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
-        validate_request_message_version_tags(&request_message, effective_version)?;
+        let request_message =
+            build_and_validate_request_message(batch, &options, maximum_response_size)?;
         let profile_request = if profiles.is_some() {
             Some(
                 clone_request_message(&request_message, limits)
@@ -7139,6 +7133,20 @@ fn validate_attribute_mutation_policy(batch: &ClientBatch) -> Result<(), ClientE
     }
 }
 
+fn validate_attribute_mutation_preflight(
+    batch: &ClientBatch,
+    version: ProtocolVersion,
+    defer_source_policy: bool,
+) -> Result<Option<Result<(), ClientError>>, ClientError> {
+    validate_attribute_mutation_versions(batch, version)?;
+    if defer_source_policy {
+        Ok(Some(validate_attribute_mutation_policy(batch)))
+    } else {
+        validate_attribute_mutation_policy(batch)?;
+        Ok(None)
+    }
+}
+
 fn validate_attribute_mutation_versions(
     batch: &ClientBatch,
     version: ProtocolVersion,
@@ -7206,6 +7214,17 @@ fn validate_request_message_version_tags(
         }
     }
     Ok(())
+}
+
+fn build_and_validate_request_message(
+    batch: ClientBatch,
+    options: &ValidatedBatchOptions,
+    maximum_response_size: Option<i32>,
+) -> Result<RequestMessage, ClientError> {
+    let request = build_request_message(batch, options, maximum_response_size)
+        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+    validate_request_message_version_tags(&request, options.protocol_version)?;
+    Ok(request)
 }
 
 fn validate_version_tags_in_structure(
