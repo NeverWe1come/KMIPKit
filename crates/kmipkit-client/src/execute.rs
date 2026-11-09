@@ -90,6 +90,10 @@ mod import_execution_tests;
 mod key_transfer_operations_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/kmip30_operation_surface_tests.rs"]
+mod kmip30_operation_surface_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/execute_id_placeholder_tests.rs"]
 mod id_placeholder_tests;
 

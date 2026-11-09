@@ -97,6 +97,8 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 - **KMIPKIT-0050-FR-013**: Each normative requirement MUST link to the pinned OASIS clause, implementation path, and executable test; project API decisions MUST be traced separately and MUST NOT be represented as OASIS requirements.
 - **KMIPKIT-0050-FR-014**: The KMIP 3.0 `EncapsulateResponse` model MUST serialize the §6.1.22 Table 318 fields `Unique Identifier` and `Data` in order; it MUST NOT include the shared secret. The `DecapsulateResponse` model MUST serialize only the `Unique Identifier` required by §6.1.15 Table 297. Their public model shape MUST NOT expose a shared-secret response field.
 - **KMIPKIT-0050-FR-015**: Debug formatting for the KMIP 3.0 Encapsulate and Decapsulate response models MUST NOT disclose shared-secret material. Encapsulated `Data` remains available as the protocol's public ciphertext output; this requirement does not classify that `Data` as secret.
+- **KMIPKIT-0050-FR-016**: The KMIP 3.0 client API MUST provide typed request and response payload models and direct `Client` methods, including `_with_options` forms, for Create Credential, Create Group, Create User, Deactivate, Decapsulate, Encapsulate, and Obliterate. Payload members and order MUST follow the pinned KMIP 3.0 Working Draft §6.1.9 Tables 277–278, §6.1.10 Tables 280–281, §6.1.13 Tables 290–291, §6.1.14 Tables 293–294, §6.1.15 Tables 296–297, §6.1.22 Tables 317–318, and §6.1.41 Tables 374–375. Create Credential MUST accept only the object alternatives defined by Table 277 and their referenced system-object encodings. The client MUST preserve the existing batch execution path, delivery evidence, and no-retry behavior.
+- **KMIPKIT-0050-FR-017**: The seven KMIP 3.0 operation codes MUST be associated with their exact §11.37 Table 584 assignments (`0x3C` through `0x42` in the listed order), accepted only when the effective protocol version is KMIP 3.0, and rejected under KMIP 2.0/2.1. The client MUST NOT infer support for reserved or unassigned values such as `0x43`. KEM request/response models MUST keep the shared secret server-managed; only Encapsulate's encapsulated output `Data` may be returned as specified by Table 318.
 
 ### Key Entities
 
@@ -113,6 +115,7 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 - **KMIPKIT-0050-SC-002**: Tests cover all 18 known Cryptographic Parameters members and show builder-order-independent Table 59 output, typed round-trip, unknown-member preservation, and malformed-type/duplicate/order rejection.
 - **KMIPKIT-0050-SC-003**: Protocol tests show empty/malformed generic Authentication cannot become a typed value; fake-transport tests show exactly one Authentication header for valid single-item and multi-item batches, no implicit retry, and accurate delivery state for failures before or during transport.
 - **KMIPKIT-0050-SC-004**: Debug, Display, and error assertions for Authentication and client execution contain no credential values or request body bytes.
+- **KMIPKIT-0050-SC-005**: A Rust consumer can construct each of the seven KMIP 3.0 operation requests, invoke direct and `_with_options` client methods, and observe exact operation codes and request payload order; fake-transport tests reject these operations before any write under KMIP 2.0/2.1.
 - **KMIPKIT-0050-SC-005**: Existing tests and Rust APIs using generic `Structure` parameters or `ClientBatch` continue to pass unchanged.
 
 ## Assumptions
@@ -127,6 +130,6 @@ As a Rust caller, I can invoke each of the 56 supported client-initiated operati
 
 - Implementing credential variants, attestation evidence generation/verification, or changing secret model ownership.
 - Authentication inheritance, default credentials, per-operation credential policy, retries, caching, or server login state.
-- Adding operations or changing their request/response schemas.
+- Adding operations outside the seven KMIP 3.0 operations explicitly authorized in the approval-record addendum.
 - Implementing FFI and Java/Python wrappers; these are reconciled in KMIPKIT-0053.
 - Claiming profile conformance, server acceptance, formal certification, or interoperability.

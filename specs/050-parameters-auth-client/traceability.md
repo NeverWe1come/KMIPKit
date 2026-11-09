@@ -17,6 +17,8 @@
 | KMIPKIT-0050-FR-013 | KMIP v2.1 source hierarchy and project traceability policy `AGENTS.md` §5 | This file, `gap-matrix.md`, and `implementation-evidence.md` | Manifest generator and Rust export audit; generated parity fixtures include the final declaration set |
 | KMIPKIT-0050-FR-014 | Pinned OASIS KMIP 3.0 Working Draft §6.1.15 Table 297; §6.1.22 Table 318; §11.58 Table 605 | `crates/kmipkit-protocol/src/kem.rs` (`EncapsulateResponse`, `DecapsulateResponse`, `DATA_TAG`) | `kem_tests::test_encapsulate_request_and_response` and `kem_tests::test_decapsulate_request_and_response` assert exact response tag order and absence of the Key Material tag |
 | KMIPKIT-0050-FR-015 | Project secret-redaction policy in `AGENTS.md` §8; payload scope from KMIP 3.0 §6.1.15 Table 297 and §6.1.22 Table 318 | KEM response structs contain no shared-secret field and derive `Debug` only over permitted response values | The two KEM response tests assert Debug output has no `shared_secret` field or shared-secret bytes |
+| KMIPKIT-0050-FR-016 | Pinned KMIP 3.0 Working Draft §6.1.9 Tables 277–278; §6.1.10 Tables 280–281; §6.1.13 Tables 290–291; §6.1.14 Tables 293–294; §6.1.15 Tables 296–297; §6.1.22 Tables 317–318; §6.1.41 Tables 374–375 | `crates/kmipkit-protocol/src/kmip30_operations.rs`; `crates/kmipkit-client/src/execute.rs` | `kmip30_operation_tests.rs`; `kmip30_operation_surface_tests.rs` checks each direct and option method |
+| KMIPKIT-0050-FR-017 | Pinned KMIP 3.0 §11.37 Table 584; KMIPKIT-0071 VersionGate requirement | `crates/kmipkit-protocol/src/version_gate.rs`; `crates/kmipkit-client/src/execute.rs` | Exact seven-code mapping, `0x43` negative test, and fake transport confirms V2.0/V2.1 rejection is `NotSent` |
 
 ## Table 59 stable catalog elements
 

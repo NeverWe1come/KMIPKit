@@ -141,22 +141,22 @@ fn test_version_gate_rejects_uncatalogued_version_before_send() {
 fn test_version_gate_kmip30_operations_validation() {
     use kmipkit_protocol::VersionGate;
 
-    const DEACTIVATE_OPERATION: u32 = 0x0000_003E;
-    const ENCAPSULATE_OPERATION: u32 = 0x0000_003F;
-    const DECAPSULATE_OPERATION: u32 = 0x0000_0040;
+    const KMIP30_OPERATIONS: [u32; 7] = [
+        0x0000_003C, // Create Group.
+        0x0000_003D, // Obliterate.
+        0x0000_003E, // Create User.
+        0x0000_003F, // Create Credential.
+        0x0000_0040, // Deactivate.
+        0x0000_0041, // Encapsulate.
+        0x0000_0042, // Decapsulate.
+    ];
 
-    // Allowed under KMIP 3.0
-    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, DEACTIVATE_OPERATION).is_ok());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, ENCAPSULATE_OPERATION).is_ok());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, DECAPSULATE_OPERATION).is_ok());
+    for operation in KMIP30_OPERATIONS {
+        assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, operation).is_ok());
+        assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, operation).is_err());
+        assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, operation).is_err());
+    }
 
-    // Rejected under KMIP 2.1
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, DEACTIVATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, ENCAPSULATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_1, DECAPSULATE_OPERATION).is_err());
-
-    // Rejected under KMIP 2.0
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, DEACTIVATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, ENCAPSULATE_OPERATION).is_err());
-    assert!(VersionGate::validate_operation(ProtocolVersion::V2_0, DECAPSULATE_OPERATION).is_err());
+    // Table 584 assigns no operation code after Decapsulate.
+    assert!(VersionGate::validate_operation(ProtocolVersion::V3_0, 0x0000_0043).is_err());
 }
