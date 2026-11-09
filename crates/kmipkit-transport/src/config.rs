@@ -272,7 +272,7 @@ impl CertificateInput {
         Ok(Self::from_der(vec![bytes]))
     }
 
-    fn parse(self) -> Result<Vec<CertificateDer<'static>>, TransportConfigError> {
+    pub(crate) fn parse(self) -> Result<Vec<CertificateDer<'static>>, TransportConfigError> {
         let certificates = match self.bytes {
             CertificateBytes::Pem(bytes) => CertificateDer::pem_slice_iter(bytes.as_slice())
                 .collect::<Result<Vec<_>, _>>()
@@ -338,7 +338,9 @@ impl RevocationListInput {
         }
     }
 
-    fn parse(self) -> Result<Vec<CertificateRevocationListDer<'static>>, TransportConfigError> {
+    pub(crate) fn parse(
+        self,
+    ) -> Result<Vec<CertificateRevocationListDer<'static>>, TransportConfigError> {
         let lists = match self.bytes {
             RevocationListBytes::Pem(bytes) => {
                 CertificateRevocationListDer::pem_slice_iter(bytes.as_slice())
@@ -523,7 +525,10 @@ impl ClientIdentity {
         }
     }
 
-    fn parse(self, provider: &CryptoProvider) -> Result<CertifiedKey, TransportConfigError> {
+    pub(crate) fn parse(
+        self,
+        provider: &CryptoProvider,
+    ) -> Result<CertifiedKey, TransportConfigError> {
         let certificates = self.certificate_chain.parse()?;
         let private_key = self.private_key.parse()?;
         CertifiedKey::from_der(certificates, private_key, provider)
@@ -726,9 +731,29 @@ pub struct RequestOptions {
     read: Option<TimeoutLimit>,
     total: Option<TimeoutLimit>,
     wire_encoding: Option<WireEncoding>,
+    protocol_version: Option<kmipkit_protocol::ProtocolVersion>,
 }
 
 impl RequestOptions {
+    /// Selects the protocol version override for this request.
+    #[must_use]
+    pub const fn with_protocol_version(mut self, value: kmipkit_protocol::ProtocolVersion) -> Self {
+        self.protocol_version = Some(value);
+        self
+    }
+
+    /// Forces the protocol version override for this request (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub const fn force_kmip_version(self, value: kmipkit_protocol::ProtocolVersion) -> Self {
+        self.with_protocol_version(value)
+    }
+
+    /// Returns this call's protocol version override, or `None` to inherit client defaults.
+    #[must_use]
+    pub const fn protocol_version(&self) -> Option<kmipkit_protocol::ProtocolVersion> {
+        self.protocol_version
+    }
+
     /// Selects the encoding for one request and its response.
     #[must_use]
     pub const fn with_wire_encoding(mut self, value: WireEncoding) -> Self {
