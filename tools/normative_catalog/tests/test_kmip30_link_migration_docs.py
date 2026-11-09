@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import re
 import unittest
-import json
 from pathlib import Path
 
 
@@ -26,17 +26,27 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
         self.assertIn("14 exact semantic equivalents", migration_note)
         self.assertIn("`0x101` Certificate Link", link_spec)
         self.assertIn("`0x10E` Wrapping Key Link", link_spec)
-        self.assertNotRegex(migration_note, r"Link Type values?[^\n]{0,80}`0x0[1-9A-E]`")
+        self.assertNotRegex(
+            migration_note, r"Link Type values?[^\n]{0,80}`0x0[1-9A-E]`"
+        )
 
     def test_implemented_link_task_is_not_left_marked_open(self) -> None:
         tasks = (ROOT / "specs/071-kmip-3-0-draft-support/tasks.md").read_text(
             encoding="utf-8"
         )
-        task = re.search(r"^- \[([ x])\] \*\*TASK-071-008\*\*:(.*(?:\n  .*)*)", tasks, re.MULTILINE)
+        task = re.search(
+            r"^- \[([ x])\] \*\*TASK-071-008\*\*:(.*(?:\n  .*)*)",
+            tasks,
+            re.MULTILINE,
+        )
 
-        self.assertIsNotNone(task, "TASK-071-008 must remain in the KMIPKIT-0071 task list")
+        self.assertIsNotNone(
+            task, "TASK-071-008 must remain in the KMIPKIT-0071 task list"
+        )
         assert task is not None
-        self.assertEqual("x", task.group(1), "the implemented and verified LinkNormalizer task is still open")
+        self.assertEqual(
+            "x", task.group(1), "the implemented LinkNormalizer task remains unchecked"
+        )
         self.assertIn("KMIPKIT-0048", task.group(2))
 
     def test_0048_traceability_links_the_migration_evidence(self) -> None:
@@ -50,7 +60,9 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
         self.assertIn("kmip-3.0-api-migration.md", requirement)
         self.assertIn("link_normalizer_tests.rs", requirement)
 
-    def test_kmip30_operation_values_and_table_reference_match_the_pinned_catalog(self) -> None:
+    def test_kmip30_operation_values_and_table_reference_match_the_pinned_catalog(
+        self,
+    ) -> None:
         spec = (ROOT / "specs/071-kmip-3-0-draft-support/spec.md").read_text(
             encoding="utf-8"
         )
@@ -86,7 +98,10 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
         }
         self.assertEqual(
             expected,
-            {entry["name"]: int(entry["wire_value"], 16) for entry in operation_group["values"]},
+            {
+                entry["name"]: int(entry["wire_value"], 16)
+                for entry in operation_group["values"]
+            },
         )
         self.assertIn("§11.37, Table 584", spec)
         self.assertIn("§11.37, Table 584", traceability)
