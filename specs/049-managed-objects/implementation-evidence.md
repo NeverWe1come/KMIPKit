@@ -469,3 +469,43 @@ public-facing malformed-input and redaction cases remain covered by the
 - Hosted CI has not yet run on this updated head. T050 remains open; PR #141
   stays draft until all required hosted checks pass.
 - Red commits: `10ff13505`, `538206c16`; Green commit: `601a77c63`.
+
+## KMIP 2.1 object-validation corrections (2026-11-09)
+
+The maintainer-approved audit plan corrects three source/API gaps in this PR.
+KMIP 2.1 §2.7, Table 8 says the Secret Data Key Block contains a Key Value;
+its constructor and reader now reject absence. KMIP 2.1 §2.8, Table 9 explicitly
+bounds Key Part Identifier by Split Key Parts and makes Prime Field Size
+conditional for Polynomial Sharing Prime Field, but it does not state numeric
+bounds for Split Key Threshold; the typed model no longer invents them. The
+existing Key Format Type classification matches §11.25, Table 461: `0x0E`–
+`0x13` remain reserved, and `0x14`–`0x17` retain their assigned Structure or
+Byte String forms.
+
+### TDD and verification
+
+- **Red**: `5b3159488` added tests for clearing parsed paired cryptographic
+  fields, missing Secret Data Key Value, and threshold 1. The new tests failed
+  before implementation: old Key Block raw view retained Algorithm/Length;
+  Secret Data accepted an absent Key Value; Split Key rejected threshold 1.
+- **Green**: `6726b591d` adds explicit optional-field removal to the ordered
+  snapshot builder, checks Secret Data Key Value presence on construction and
+  parse, removes the unsupported Threshold range check, and makes the exact
+  reserved/assigned Key Format test values explicit.
+- **Refactor**: this evidence update documents the source contract; the ordered
+  rebuild helper now states that replacement wins over removal, and its loop
+  avoids a redundant `continue` without changing behavior.
+- `cargo test -p kmipkit-protocol --all-features` — 1,332 tests and 3 doctests
+  passed.
+- `cargo test -p kmipkit-protocol --test managed_objects --test key_structures --test key_material` — 38 tests passed.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — passed.
+- `cargo fmt --all --check` — passed.
+- `python tools/normative_catalog/generate_named_values.py --check` — all four
+  language outputs verified.
+- `python -B tools/api_manifest/generate.py --check` — all 12 outputs verified;
+  no public API routes changed.
+- `git diff --check` — passed.
+
+Cross-platform coverage and all hosted checks for the new stack head still
+require the #141 CI run. T050 remains open and the PR remains a draft until
+that run is green.

@@ -150,7 +150,7 @@
 - [x] T057 [Refactor] Update the source-derived contract and traceability for
   Secret Data, Split Key, and exact Key Format Type allocations; retain
   `0x0E`–`0x13` as reserved and test assigned `0x14`–`0x17` forms.
-- [ ] T058 [Verification] Run focused tests, protocol workspace tests, Clippy,
+- [x] T058 [Verification] Run focused tests, protocol workspace tests, Clippy,
   format, API and named-value generation checks, and document evidence.
 
 ## Independent test criteria

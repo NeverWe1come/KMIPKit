@@ -124,6 +124,10 @@ pub(crate) fn rebuild_ordered_structure(
     rebuild_ordered_structure_with_removals(source, ordered_tags, replacements, &[])
 }
 
+/// Replaces/removes selected fields while preserving unknown siblings and order.
+///
+/// A replacement for a tag takes precedence over its membership in
+/// `removed_tags`; all other matching children are omitted.
 pub(crate) fn rebuild_ordered_structure_with_removals(
     source: &Item,
     ordered_tags: &[u32],
@@ -142,9 +146,7 @@ pub(crate) fn rebuild_ordered_structure_with_removals(
                 .position(|replacement| replacement.tag() == child.tag())
             {
                 children.push(pending.remove(position));
-            } else if removed_tags.contains(&child.tag().raw()) {
-                continue;
-            } else {
+            } else if !removed_tags.contains(&child.tag().raw()) {
                 children.push(child.try_clone().map_err(ManagedObjectError::from)?);
             }
         }
