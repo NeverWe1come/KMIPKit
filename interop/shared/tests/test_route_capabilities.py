@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import unittest
 import sys
+import subprocess
 
 SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
@@ -89,6 +90,35 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
         self.data['routes'][0]['protocol_versions'] = ['2.1']
         self.reject(self.data, 'protocol_versions')
+
+    def test_transparent_key_constructor_is_bound_to_its_owned_key_material_table(self):
+        route = next(r for r in self.data['routes'] if r['public_api_symbol'] ==
+                     'kmipkit_protocol::TransparentRsaPrivateKey::try_from_components')
+        ids = route['normative_target_ids']
+        self.assertTrue(any(target.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-') for target in ids))
+        self.assertFalse(any(target.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-') for target in ids))
+
+    def test_referenced_pkcs11_values_remain_covered_when_named_constants_are_absent(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        expected = {target['target_id'] for target in catalog['normative_targets']
+                    if target['kind'] == 'referenced_enum_value'}
+        for language in ('rust', 'c', 'java', 'python'):
+            rows = [row for row in self.data['value_symbols'] if row['language'] == language
+                    and row['target_id'] in expected]
+            self.assertEqual(expected, {row['target_id'] for row in rows})
+            constructors = {route['public_api_symbol'] for route in self.data['routes'] if route['language'] == language}
+            for row in rows:
+                if row['availability'] == 'numeric-only':
+                    self.assertIsNone(row['public_api_symbol'])
+                    self.assertIn(row['numeric_constructor'], constructors)
+
+    def test_check_cli_is_read_only_and_accepts_current_generated_metadata(self):
+        manifest = SHARED / 'coverage/route-capabilities.json'
+        before = manifest.read_bytes()
+        result = subprocess.run([sys.executable, str(SHARED / 'tools/route_capabilities.py'), '--check'],
+                                capture_output=True, text=True, check=False)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(before, manifest.read_bytes())
 
     def test_checked_in_manifest_validates_against_public_api(self):
         self.module.validate(self.data, ROOT)
