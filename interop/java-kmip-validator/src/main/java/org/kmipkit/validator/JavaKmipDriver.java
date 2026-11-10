@@ -13,6 +13,7 @@ import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.TransportConfiguration;
+import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.WireEncoding;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
@@ -25,6 +26,7 @@ import org.kmipkit.ttlv.TtlvValue;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
 public final class JavaKmipDriver implements AutoCloseable {
@@ -55,6 +57,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
+        if ("Create".equals(testCase.operation())) {
+            return executeCreateWithCleanup(testCase, start);
+        }
         ClientBatchItem request = TypedRequestFactory.create(testCase.operation());
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
@@ -104,6 +109,154 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
+        String objectName = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
+        UniqueIdentifier createdIdentifier = null;
+        long createStatus = -1;
+        long createReason = -1;
+        long createObjectType = -1;
+        try (TtlvStructure attributes = createTestKeyAttributes(objectName);
+                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
+                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+                ClientBatch batch = ClientBatch.create()) {
+            long requestOperation = request.operation();
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return CaseOutcome.failed("Create response batch item count did not match the request.",
+                            elapsedMillis(start));
+                }
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    if (result.operation() != requestOperation) {
+                        return CaseOutcome.failed("Create response operation did not match the request.",
+                                elapsedMillis(start));
+                    }
+                    createStatus = result.resultStatus();
+                    createReason = result.resultReason().orElse(-1);
+                    if (createStatus != 0) {
+                        return nonSuccessOutcome(testCase, createStatus, createReason, start);
+                    }
+                    var payload = result.createResponse();
+                    if (payload.isEmpty()) {
+                        return CaseOutcome.failed("Create success response omitted its typed payload.",
+                                elapsedMillis(start), createStatus, optionalCode(createReason));
+                    }
+                    var created = payload.orElseThrow();
+                    createObjectType = created.objectType();
+                    createdIdentifier = created.uniqueIdentifier();
+                }
+            }
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+
+        if (createdIdentifier == null) {
+            return CaseOutcome.failed("Create success response omitted the object identifier; cleanup could not run.",
+                    elapsedMillis(start), createStatus, optionalCode(createReason));
+        }
+
+        try (ClientBatchItem request = ClientBatchItem.destroy(createdIdentifier)
+                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+                ClientBatch batch = ClientBatch.create()) {
+            long requestOperation = request.operation();
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return CaseOutcome.failed("Create succeeded, but cleanup response count was invalid.",
+                            elapsedMillis(start), createStatus, optionalCode(createReason));
+                }
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    if (result.operation() != requestOperation || result.resultStatus() != 0) {
+                        return CaseOutcome.failed("Create succeeded, but cleanup Destroy did not succeed.",
+                                elapsedMillis(start), optionalCode(result.resultStatus()),
+                                optionalCode(result.resultReason().orElse(-1)));
+                    }
+                    var payload = result.destroyResponse();
+                    if (payload.isEmpty()
+                            || !sameIdentifier(createdIdentifier, payload.orElseThrow().uniqueIdentifier())) {
+                        return CaseOutcome.failed("Create succeeded, but Destroy did not confirm the same object.",
+                                elapsedMillis(start), createStatus, optionalCode(createReason));
+                    }
+                }
+            }
+        } catch (Exception exception) {
+            return CaseOutcome.failed("Create succeeded, but cleanup exchange failed ("
+                    + exception.getClass().getSimpleName() + "); remote diagnostic text was suppressed.",
+                    elapsedMillis(start), createStatus, optionalCode(createReason));
+        }
+
+        if (createObjectType != 2) {
+            return CaseOutcome.failed("Create returned an object type different from Symmetric Key.",
+                    elapsedMillis(start), createStatus, optionalCode(createReason));
+        }
+        return CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason));
+    }
+
+    private static TtlvStructure createTestKeyAttributes(String objectName) {
+        TtlvStructure name = TtlvStructure.create();
+        TtlvStructure attributes = null;
+        try {
+            name = appendOwnedValue(name, 0x0042_0055,
+                    TtlvValue.TextString(objectName.getBytes(java.nio.charset.StandardCharsets.UTF_8), CODEC_LIMITS));
+            name = appendOwnedValue(name, 0x0042_0054, TtlvValue.Enumeration(1));
+
+            attributes = TtlvStructure.create();
+            attributes = appendOwnedValue(attributes, 0x0042_0053, TtlvValue.structure(name, CODEC_LIMITS));
+            name.close();
+            name = null;
+            attributes = appendOwnedValue(attributes, 0x0042_0028, TtlvValue.Enumeration(3));
+            attributes = appendOwnedValue(attributes, 0x0042_002a, TtlvValue.Integer(256));
+            TtlvStructure result = attributes;
+            attributes = null;
+            return result;
+        } finally {
+            if (name != null) name.close();
+            if (attributes != null) attributes.close();
+        }
+    }
+
+    private static TtlvStructure appendOwnedValue(TtlvStructure previous, int rawTag, TtlvValue value) {
+        try {
+            return appendValue(previous, rawTag, value);
+        } finally {
+            previous.close();
+        }
+    }
+
+    private static boolean sameIdentifier(UniqueIdentifier left, UniqueIdentifier right) {
+        if (left.kind() != right.kind()) return false;
+        return left.kind() == UniqueIdentifier.Kind.TEXT_STRING
+                ? left.text().equals(right.text()) : left.number() == right.number();
+    }
+
+    private static CaseOutcome nonSuccessOutcome(
+            CatalogLoader.CatalogCase testCase, long status, long reason, long start) {
+        if (reason == KmipValues.ResultReason.OPERATION_NOT_SUPPORTED
+                || reason == KmipValues.ResultReason.FEATURE_NOT_SUPPORTED) {
+            return CaseOutcome.unsupported(elapsedMillis(start), status, reason);
+        }
+        if (reason == KmipValues.ResultReason.PERMISSION_DENIED
+                || reason == KmipValues.ResultReason.AUTHENTICATION_NOT_SUCCESSFUL) {
+            return CaseOutcome.policyRestricted(elapsedMillis(start), status, reason);
+        }
+        if (expectedReason(testCase, reason)) {
+            return CaseOutcome.passed(elapsedMillis(start), status, reason);
+        }
+        return CaseOutcome.failed("The KMIP server returned a non-success Create result.",
+                elapsedMillis(start), status, optionalCode(reason));
+    }
+
+    private static CaseOutcome exchangeFailure(Exception exception, long start) {
+        return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
+                + "); remote diagnostic text was suppressed.", elapsedMillis(start));
+    }
+
     private boolean verifyTypedResponse(String operation, ClientBatchItemResult result) {
         return switch (operation) {
             case "Ping" -> result.pingResponse().orElse(false);
@@ -120,6 +273,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                 payload.orElseThrow().close();
                 yield true;
             }
+            case "Create" -> false;
             case "Get Constraints" -> {
                 var payload = result.getConstraintsResponse();
                 if (payload.isEmpty()) yield false;

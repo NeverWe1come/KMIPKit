@@ -52,6 +52,7 @@ public final class JavaRouteInventory {
         executable(routes, "Discover Versions", "discoverVersions");
         executable(routes, "Ping", "ping");
         executable(routes, "Query", "query");
+        executable(routes, "Create", "create");
         pendingSafetyClassification(routes, "Log", "log");
         pendingRecipe(routes, "Get Constraints", "getConstraints");
         pendingRecipe(routes, "Get Attribute List", "getAttributeList");
@@ -63,7 +64,6 @@ public final class JavaRouteInventory {
         payloadOnly(routes, "Cancel", "CancelRequest");
         typed(routes, "Certify", "certify");
         typed(routes, "Check", "check");
-        typed(routes, "Create", "create");
         typed(routes, "Create Key Pair", "createKeyPair");
         typed(routes, "Create Split Key", "createSplitKey");
         typed(routes, "Decrypt", "decrypt");

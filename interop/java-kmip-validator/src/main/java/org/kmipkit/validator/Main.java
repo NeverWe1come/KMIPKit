@@ -115,7 +115,9 @@ public final class Main {
                         && JavaRouteInventory.routeFor(testCase).status()
                                 == JavaRouteInventory.Status.EXECUTABLE_TYPED
                         && "typed-protocol".equals(connection.apiLevel())
-                        && !"2.0".equals(connection.protocolVersion()));
+                        && !"2.0".equals(connection.protocolVersion())
+                        && (!"mutating".equals(testCase.execution().mutation())
+                                || (connection.allowMutations() && enableMutations)));
         JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
         try {
             for (CatalogLoader.CatalogCase testCase : applicable) {

@@ -43,15 +43,19 @@ correctness, observed server support, policy rejection, parity, and coverage
 that has not run.
 
 The current live executor sends typed requests for `Discover Versions`,
-`Ping`, and `Query`. The installed Java API can build and decode `Log`, and a
+`Ping`, `Query`, and `Create`. The Create recipe generates a unique named
+AES-256 Symmetric Key, verifies the typed response, and sends a separate
+`Destroy` exchange using the returned Unique Identifier. The CLI only sends
+this recipe when both mutation opt-ins are set. The controlled TLS test covers
+both exchanges. The installed Java API can also build and decode `Log`, and a
 controlled TLS test covers its request and response. The catalog currently
 classifies `Log` as read-only even though KMIP 2.1 §6.1.29 writes the message
 to the server log, so the live CLI keeps it pending until the shared contract
 requires mutation opt-in. Although the installed Java API also provides
 `Get Constraints` and `Get Attribute List` request constructors, their catalog
-cases require an isolated object fixture, response assertions, and cleanup;
-they remain pending until that complete recipe is implemented. The route
-inventory checks every catalog operation against the installed Java API.
+cases require complete object setup, response assertions, and cleanup; they
+remain pending until those recipes are implemented. The route inventory checks
+every catalog operation against the installed Java API.
 Other public typed request constructors are reported as pending until their
 case has a complete fixture, request recipe, response assertion, and cleanup.
 Asynchronous request types that only build payloads and operations with no
