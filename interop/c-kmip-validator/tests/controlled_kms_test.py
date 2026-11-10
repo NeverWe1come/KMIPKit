@@ -245,6 +245,19 @@ def main() -> int:
             raise AssertionError("successful exchanges must report the client library as validated")
         if result["summary"]["policy_restricted"] == 0 or result["summary"]["not_run"] == 0:
             raise AssertionError("report must distinguish policy-restricted and uncovered cases")
+        expected_summary = {
+            "total": 212,
+            "passed": 71,
+            "failed": 0,
+            "unsupported": 0,
+            "policy_restricted": 132,
+            "not_run": 9,
+        }
+        if result["summary"] != expected_summary:
+            raise AssertionError(
+                f"controlled run must execute only the mapped recipes and classify all other cases: "
+                f"{result['summary']!r}"
+            )
         if not markdown_path.is_file() or not html_path.is_file():
             raise AssertionError("requested human-readable reports were not written")
         secret_values = (b"interop-user", b"interop-password")
