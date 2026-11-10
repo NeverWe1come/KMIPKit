@@ -66,9 +66,12 @@ class ExecutableContractTests(unittest.TestCase):
             "catalog_sha256": "c" * 64,
             "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol", "library_commit": "abcdef0", "artifact_sha256": "b" * 64},
             "summary": {"total": 1, "passed": 1, "failed": 0, "unsupported": 0, "policy_restricted": 0, "not_run": 0},
-            "cases": [{"case_id": "test-get", "status": "passed", "library_correctness": "passed", "server_compatibility": "supported", "parity": "not_compared"}],
+            "cases": [{"case_id": "test-get", "status": "passed", "library_correctness": "passed", "server_compatibility": "supported", "parity": "not_compared", "result_status_code": 0, "result_reason_code": 7}],
         }
         jsonschema.validate(sample, result_schema)
+        sample["cases"][0]["result_reason_code"] = 4294967296
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(sample, result_schema)
 
     def test_live_configuration_requires_isolation_and_mutation_opt_in(self) -> None:
         try:

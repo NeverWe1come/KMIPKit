@@ -218,7 +218,7 @@ class VersionedContractTests(unittest.TestCase):
         except ImportError:
             self.skipTest("jsonschema dependency is not installed")
         schema = json.loads((ROOT / "interop/shared/schemas/test-catalog.schema.json").read_text(encoding="utf-8"))
-        for value in ([], [7, 7], [256]):
+        for value in ([], [7, 7], [4294967296]):
             invalid = json.loads(json.dumps(self.catalog))
             negative = next(case for case in invalid["test_cases"] if case["case_id"] == "test-neg-encrypt-preactive-key")
             negative["requires"]["expected_result_reasons"] = value
@@ -293,6 +293,8 @@ class VersionedContractTests(unittest.TestCase):
         self.assertEqual("PARITY_MISMATCH", row["status"])
         pending = next(row for row in matrix21["cases"] if row["case_id"] == "test-ping")
         self.assertEqual({"NOT_RUN"}, {item["status"] for item in pending["results"].values()})
+        matrix20 = next(item for item in matrix["matrices"] if item["protocol_version"] == "2.0")
+        self.assertEqual("NOT_COMPARED", matrix20["cases"][0]["status"])
 
         markdown = generate_markdown(matrix)
         html_output = generate_html(matrix)
@@ -350,6 +352,7 @@ class VersionedContractTests(unittest.TestCase):
             row = matrix["matrices"][0]["cases"][0]
             self.assertEqual("INCOMPARABLE", matrix["matrices"][0]["comparability"])
             self.assertEqual("NOT_COMPARABLE", row["status"])
+            self.assertEqual([], row["difference_dimensions"])
 
             second["server"]["configuration_fingerprint"] = first["server"]["configuration_fingerprint"]
             second["server"].pop("version")
@@ -358,16 +361,17 @@ class VersionedContractTests(unittest.TestCase):
             row = matrix["matrices"][0]["cases"][0]
             self.assertEqual("UNVERIFIED", matrix["matrices"][0]["comparability"])
             self.assertEqual("UNVERIFIED", row["status"])
+            self.assertEqual([], row["difference_dimensions"])
 
     def test_aggregator_compares_parity_reasons_and_library_correctness(self) -> None:
         first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="failed")
         second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="failed")
         first["cases"][0].update({
-            "result_status": "OperationFailed", "result_reason": "InvalidField",
+            "result_status": "OperationFailed", "result_reason": "Invalid Field",
             "library_correctness": "passed", "parity": "matched",
         })
         second["cases"][0].update({
-            "result_status": "OperationFailed", "result_reason": "CryptographicFailure",
+            "result_status": "operation_failed", "result_reason": "CryptographicFailure",
             "library_correctness": "failed", "parity": "mismatched",
         })
         with tempfile.TemporaryDirectory() as directory:
@@ -381,8 +385,24 @@ class VersionedContractTests(unittest.TestCase):
         self.assertEqual({"result_reason", "library_correctness", "parity"}, set(row["difference_dimensions"]))
         markdown = generate_markdown(matrix)
         html_output = html.unescape(generate_html(matrix))
-        for label in ("InvalidField", "CryptographicFailure", "library:passed", "library:failed", "parity:mismatched"):
+        self.assertEqual({7, 10}, {result["result_reason_code"] for result in row["results"].values()})
+        for label in ("KMIP:1:7", "KMIP:1:10", "library:passed", "library:failed", "parity:mismatched"):
             self.assertIn(label, markdown + html_output)
+
+    def test_enum_name_aliases_normalize_to_the_same_numeric_code(self) -> None:
+        first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
+        second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="passed")
+        first["cases"][0].update({"result_status": "OperationSucceeded", "result_reason": "InvalidField"})
+        second["cases"][0].update({"result_status": "operation_succeeded", "result_reason": "INVALID_FIELD"})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = aggregate_results([
+                write_result(root, "first", first), write_result(root, "second", second),
+            ])
+        row = matrix["matrices"][0]["cases"][0]
+        self.assertEqual("PARITY_OK", row["status"])
+        self.assertEqual({0}, {result["result_status_code"] for result in row["results"].values()})
+        self.assertEqual({7}, {result["result_reason_code"] for result in row["results"].values()})
 
 
 if __name__ == "__main__":

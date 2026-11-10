@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -20,9 +21,10 @@ RESULT_STATUS_NAMES = {
 }
 CASE_RESULT_FIELDS = (
     "library_correctness", "server_compatibility", "parity", "duration_ms",
-    "result_status", "result_reason",
 )
 SUMMARY_FIELDS = ("total", "passed", "failed", "unsupported", "policy_restricted", "not_run")
+RESULT_ENUMS = {"result_status": "Result Status", "result_reason": "Result Reason"}
+RESULT_ENUM_ALIASES = {"Result Status": {"operationsucceeded": 0}}
 
 
 def parse_result_file(file_path: Path) -> dict | None:
@@ -36,11 +38,64 @@ def parse_result_file(file_path: Path) -> dict | None:
         return None
 
 
-def _case_for_report(case: dict) -> dict:
+def _enum_key(value: str) -> str:
+    value = value.strip().rsplit("::", 1)[-1].rsplit(".", 1)[-1]
+    return re.sub(r"[^a-z0-9]", "", value.casefold())
+
+
+def _load_enum_codes() -> dict[str, dict[str, int]]:
+    source_path = Path(__file__).resolve().parents[3] / "specification" / "catalog" / "kmip-2.1.json"
+    try:
+        catalog = json.loads(source_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {enum_name: {} for enum_name in RESULT_ENUMS.values()}
+    enum_ids = {
+        element["name"]: element["element_id"]
+        for element in catalog.get("elements", [])
+        if element.get("kind") == "enumeration" and element.get("name") in RESULT_ENUMS.values()
+    }
+    codes = {enum_name: {} for enum_name in RESULT_ENUMS.values()}
+    for element in catalog.get("elements", []):
+        if element.get("kind") != "enumeration_value" or not isinstance(element.get("wire_value"), str):
+            continue
+        wire_value = element["wire_value"]
+        if not re.fullmatch(r"[0-9a-fA-F]{8}", wire_value):
+            continue
+        for enum_name in RESULT_ENUMS.values():
+            if enum_ids.get(enum_name) not in element.get("parent_element_ids", []):
+                continue
+            codes[enum_name][_enum_key(element["name"])] = int(wire_value, 16)
+    for enum_name, aliases in RESULT_ENUM_ALIASES.items():
+        codes[enum_name].update(aliases)
+    return codes
+
+
+def _normalize_enum_code(value: object, enum_name: str, enum_codes: dict[str, dict[str, int]]) -> int | str | None:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    text = str(value).strip()
+    if re.fullmatch(r"[0-9a-fA-F]{8}", text):
+        return int(text, 16)
+    try:
+        return int(text, 0) if text.lower().startswith("0x") else int(text, 10)
+    except ValueError:
+        pass
+    key = _enum_key(text)
+    known_code = enum_codes.get(enum_name, {}).get(key)
+    return known_code if known_code is not None else f"unmapped:{key}"
+
+
+def _case_for_report(case: dict, enum_codes: dict[str, dict[str, int]]) -> dict:
     """Keep result fields useful for comparison and omit free-form diagnostics/bodies."""
     safe_result = {field: case[field] for field in CASE_RESULT_FIELDS if field in case}
     safe_result["case_id"] = case["case_id"]
     safe_result["status"] = RESULT_STATUS_NAMES.get(case.get("status"), case.get("status", "NOT_RUN"))
+    for field, enum_name in RESULT_ENUMS.items():
+        raw_value = case.get(f"{field}_code", case.get(field))
+        if raw_value is not None:
+            safe_result[f"{field}_code"] = _normalize_enum_code(raw_value, enum_name, enum_codes)
     return safe_result
 
 
@@ -68,7 +123,24 @@ def _case_result_for_run(run: dict, case_id: str) -> dict:
         "library_correctness": case.get("library_correctness", "not_checked") if case else "not_checked",
         "server_compatibility": case.get("server_compatibility", "unknown") if case else "unknown",
         "parity": case.get("parity", "not_compared") if case else "not_compared",
+        "result_status_code": case.get("result_status_code") if case else None,
+        "result_reason_code": case.get("result_reason_code") if case else None,
     }
+
+
+def _difference_dimensions(results: list[dict]) -> list[str]:
+    compared_fields = (
+        ("status", "status"),
+        ("result_status_code", "result_status"),
+        ("result_reason_code", "result_reason"),
+        ("library_correctness", "library_correctness"),
+        ("server_compatibility", "server_compatibility"),
+        ("parity", "parity"),
+    )
+    return [
+        dimension for field, dimension in compared_fields
+        if len({result.get(field) for result in results}) > 1
+    ]
 
 
 def aggregate_results(result_files: list[Path]) -> dict:
@@ -78,6 +150,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
     all_servers = set()
     all_languages = set()
     case_metadata = {}
+    enum_codes = _load_enum_codes()
     catalog_path = Path(__file__).resolve().parents[1] / "catalog" / "kmipkit-1.0-test-catalog.json"
     try:
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -105,7 +178,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
             if not case_id:
                 continue
             all_cases.add(case_id)
-            run_cases[case_id] = _case_for_report(case)
+            run_cases[case_id] = _case_for_report(case, enum_codes)
         run = {
             "run_id": run_id,
             "language": language,
@@ -149,20 +222,32 @@ def aggregate_results(result_files: list[Path]) -> dict:
                 "case_id": case_id,
                 **case_metadata.get(case_id, {}),
                 "results": {},
-                "status": "PARITY_OK",
+                "status": "NOT_RUN",
+                "difference_dimensions": [],
             }
-            observed_statuses = set()
             for run in runs:
                 result = _case_result_for_run(run, case_id)
                 row["results"][run["result_key"]] = result
-                if result["status"] != "NOT_RUN":
-                    observed_statuses.add(result["status"])
                 correctness[result["library_correctness"]] += 1
                 compatibility[result["server_compatibility"]] += 1
                 if result["status"] == "NOT_RUN":
                     not_executed += 1
-            if len(observed_statuses) > 1:
-                row["status"] = "PARITY_MISMATCH"
+            if comparability == "INCOMPARABLE":
+                row["status"] = "NOT_COMPARABLE"
+            elif comparability == "UNVERIFIED":
+                row["status"] = "UNVERIFIED"
+            else:
+                executed_results = [result for result in row["results"].values() if result["status"] != "NOT_RUN"]
+                if len(executed_results) == 1:
+                    row["status"] = "PARTIAL" if len(runs) > 1 else "NOT_COMPARED"
+                elif len(executed_results) > 1:
+                    row["difference_dimensions"] = _difference_dimensions(executed_results)
+                    if row["difference_dimensions"]:
+                        row["status"] = "PARITY_MISMATCH"
+                    elif len(executed_results) < len(runs):
+                        row["status"] = "PARTIAL"
+                    else:
+                        row["status"] = "PARITY_OK"
             rows.append(row)
         matrices.append({
             "server_id": server_id,
@@ -211,10 +296,16 @@ def generate_markdown(aggregated: dict) -> str:
             cells = [f"`{row['case_id']}`", row.get("category", "")]
             for run in matrix["runs"]:
                 result = row["results"][run.get("result_key", run["run_id"])]
+                status_code = result["result_status_code"]
+                reason_code = result["result_reason_code"]
                 cells.append(
-                    f"{result['status']} / library:{result['library_correctness']} / server:{result['server_compatibility']}"
+                    f"{result['status']} / library:{result['library_correctness']} / "
+                    f"server:{result['server_compatibility']} / parity:{result['parity']} / "
+                    f"KMIP:{status_code if status_code is not None else '-'}:"
+                    f"{reason_code if reason_code is not None else '-'}"
                 )
-            cells.append(row["status"])
+            difference = ", ".join(row["difference_dimensions"])
+            cells.append(f"{row['status']}" + (f" ({difference})" if difference else ""))
             md.append("| " + " | ".join(str(cell).replace("|", "\\|") for cell in cells) + " |")
         md.append("")
     return "\n".join(md)
@@ -290,9 +381,18 @@ def generate_html(aggregated: dict) -> str:
             out.append(f'<tr class="matrix-row"><td><code>{html.escape(str(row.get("case_id", "")))}</code></td><td>{html.escape(str(row.get("category", "")))}</td>')
             for run in runs:
                 result = row.get("results", {}).get(run.get("result_key", run.get("run_id")), {})
-                details = f"{result.get('status', 'NOT_RUN')} · library {result.get('library_correctness', 'not_checked')} · server {result.get('server_compatibility', 'unknown')}"
+                status_code = result.get("result_status_code")
+                reason_code = result.get("result_reason_code")
+                details = (
+                    f"{result.get('status', 'NOT_RUN')} · library {result.get('library_correctness', 'not_checked')} · "
+                    f"server {result.get('server_compatibility', 'unknown')} · parity {result.get('parity', 'not_compared')} · "
+                    f"KMIP {status_code if status_code is not None else '-'}:"
+                    f"{reason_code if reason_code is not None else '-'}"
+                )
                 out.append(f'<td class="status">{html.escape(details)}</td>')
-            out.append(f'<td>{html.escape(str(row.get("status", "PARITY_OK")))}</td></tr>')
+            difference = ", ".join(row.get("difference_dimensions", []))
+            row_status = str(row.get("status", "PARITY_OK")) + (f" ({difference})" if difference else "")
+            out.append(f'<td>{html.escape(row_status)}</td></tr>')
         out.append('</tbody></table></div></section>')
     out.extend([
         '<script>document.getElementById("search-input").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll(".matrix-row").forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?"":"none";});});</script>',
