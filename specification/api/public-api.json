@@ -389,6 +389,11 @@
     "KMIPKIT-0091-FR-014",
     "KMIPKIT-0091-FR-015",
     "KMIPKIT-0091-FR-016",
+    "KMIPKIT-0095-FR-001",
+    "KMIPKIT-0095-FR-002",
+    "KMIPKIT-0095-FR-003",
+    "KMIPKIT-0095-FR-004",
+    "KMIPKIT-0095-FR-005",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -714782,6 +714787,294 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator"
+    },
+    {
+      "declarationId": "rust-observed-f565a1d575967c6f3449",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::ClientBatchItemResponse::json",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-50721bfeed3db00f2879",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::ClientBatchItemResponse::ttlv_hex",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-6621590fbc07ede71db2",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::ClientBatchItemResponse::xml",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-8ce7f848667287618924",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItemResponse::json",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-bd31dedc5f1b947880a2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItemResponse::ttlv_hex",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-6b35c1c5b42080462bfa",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItemResponse::xml",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-b30c28caa8c16c628350",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::ResponseEncodingError",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-91c9d4ad8344905ab07c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::ResponseEncodingError::AllocationFailed",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-9b8d2cb573ff70c316fe",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::ResponseEncodingError::EncodingFailed",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-614853835dc02285d70d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::ResponseEncodingError::InvalidResponseTree",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-bec26d33cfb564ec9df2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::ResponseEncodingError::LimitExceeded",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-542f0f669a0b17e9b818",
+      "packageId": "rust-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit::ResponseEncodingError",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-1bd88044722c8a867719",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ResponseEncodingError::AllocationFailed",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-9824290ccc6f31623de2",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ResponseEncodingError::EncodingFailed",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-7a4da7a0df48c74e4197",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ResponseEncodingError::InvalidResponseTree",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-2174331666329c4a52c2",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ResponseEncodingError::LimitExceeded",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0095",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     }
   ],
   "approvedExclusions": [
@@ -976554,6 +976847,630 @@
         "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
       },
       "evidence": "KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, and KMIPKIT-0091-FR-016 are represented by explicit declarations for the module exports."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::borrow::Borrow<kmipkit_client::execute::ResponseEncodingError>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::borrow::BorrowMut<kmipkit_client::execute::ResponseEncodingError>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::convert::From<kmipkit_client::execute::ResponseEncodingError>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::error::Error>::description",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::error::Error>::source",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::ResponseEncodingError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::borrow::Borrow<kmipkit_client::execute::ResponseEncodingError>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::borrow::BorrowMut<kmipkit_client::execute::ResponseEncodingError>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::convert::From<kmipkit_client::execute::ResponseEncodingError>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::error::Error>::description",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::error::Error>::source",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "<kmipkit::ResponseEncodingError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the response encoding error value, not a separate KMIPKit product capability; the payload-free error semantics are exposed through the response representation contract.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
     }
   ],
   "apiLevels": [

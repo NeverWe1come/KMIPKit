@@ -4324,6 +4324,33 @@ pub struct ClientBatchItemResponse {
     pending_owner_observer: Option<ZeroizationObserver>,
 }
 
+/// A payload-free failure while rendering a retained response for inspection.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ResponseEncodingError {
+    /// The retained response tree could not be cloned within model limits.
+    InvalidResponseTree,
+    /// The requested representation exceeds the supplied codec limits.
+    LimitExceeded,
+    /// Memory could not be reserved for the representation.
+    AllocationFailed,
+    /// A retained field could not be represented by the selected codec.
+    EncodingFailed,
+}
+
+impl fmt::Display for ResponseEncodingError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::InvalidResponseTree => "retained response tree is invalid",
+            Self::LimitExceeded => "response representation exceeds configured limits",
+            Self::AllocationFailed => "unable to allocate response representation",
+            Self::EncodingFailed => "retained response cannot be represented by this encoding",
+        })
+    }
+}
+
+impl Error for ResponseEncodingError {}
+
 struct PendingClientBatchItemResponse {
     unique_batch_item_id: Option<Vec<u8>>,
     outcome: ClientBatchOutcome,
@@ -4368,6 +4395,88 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub fn response_header_raw(&self) -> Option<StructureView<'_>> {
         self.response.header().raw()
+    }
+
+    fn render_response(
+        &self,
+        limits: &CodecLimits,
+        encoding: WireEncoding,
+    ) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        let tree = self
+            .response
+            .with_ttlv(|view| view.try_clone())
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?;
+        let tag = RawTag::new(0x0042_007B)
+            .and_then(|raw| raw.try_checked())
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?;
+        let item = Item::new(tag, Value::structure(tree))
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?;
+        private_wire_writer::render_for_inspection(&item, limits, encoding).map_err(|error| {
+            match error {
+                private_wire_writer::EncodeError::LimitExceeded => {
+                    ResponseEncodingError::LimitExceeded
+                }
+                private_wire_writer::EncodeError::AllocationFailed(_) => {
+                    ResponseEncodingError::AllocationFailed
+                }
+                private_wire_writer::EncodeError::WireCodec(error) => match error.kind() {
+                    crate::wire_codec_common::WireCodecErrorKind::LimitExceeded => {
+                        ResponseEncodingError::LimitExceeded
+                    }
+                    crate::wire_codec_common::WireCodecErrorKind::AllocationFailed => {
+                        ResponseEncodingError::AllocationFailed
+                    }
+                    crate::wire_codec_common::WireCodecErrorKind::InvalidDocument
+                    | crate::wire_codec_common::WireCodecErrorKind::InvalidValue => {
+                        ResponseEncodingError::EncodingFailed
+                    }
+                },
+                _ => ResponseEncodingError::EncodingFailed,
+            }
+        })
+    }
+
+    /// Returns canonical uppercase TTLV hex for the complete retained response.
+    ///
+    /// The returned zeroizing string contains all response fields, including
+    /// any secret values returned by the server. Use only for explicit
+    /// inspection; it is never included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn ttlv_hex(
+        &self,
+        limits: &CodecLimits,
+    ) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Ttlv)
+    }
+
+    /// Returns the complete retained response encoded as OASIS KMIP JSON.
+    ///
+    /// The returned zeroizing string may contain secrets returned by the
+    /// server and is not included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn json(&self, limits: &CodecLimits) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Json)
+    }
+
+    /// Returns the complete retained response encoded as OASIS KMIP XML.
+    ///
+    /// The returned zeroizing string may contain secrets returned by the
+    /// server and is not included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn xml(&self, limits: &CodecLimits) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Xml)
     }
 
     /// Lends the successful Discover Versions response list, when this item

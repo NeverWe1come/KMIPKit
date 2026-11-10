@@ -13,6 +13,7 @@ use zeroize::Zeroizing;
 const HEADER_BYTES: u64 = 8;
 const PADDING_BYTES: u64 = 8;
 const MODEL_MAX_STRUCTURE_DEPTH: u64 = 64;
+const HEX_DIGITS: &[u8; 16] = b"0123456789ABCDEF";
 
 /// Private adapter reads the public immutable values without cloning or
 /// reconstructing the per-operation limits instance.
@@ -487,6 +488,57 @@ pub(super) fn encode_for_execute(
         #[cfg(test)]
         drop_observer,
     })
+}
+
+/// Renders an already decoded response item for explicit caller inspection.
+///
+/// This function has no transport permit and is never used to construct a
+/// request. Every intermediate body remains zeroizing-owned.
+pub(super) fn render_for_inspection(
+    item: &Item,
+    limits: &CodecLimits,
+    encoding: WireEncoding,
+) -> Result<Zeroizing<String>, EncodeError> {
+    let mut rendered = Zeroizing::new(String::new());
+    match encoding {
+        WireEncoding::Ttlv => {
+            #[cfg(test)]
+            let observer = tests::EncodingObserver::default();
+            let owner = encode_item_inner(
+                item,
+                limits,
+                #[cfg(test)]
+                &observer,
+                #[cfg(test)]
+                None,
+                #[cfg(test)]
+                None,
+            )?;
+            rendered
+                .try_reserve_exact(owner.as_bytes().len().saturating_mul(2))
+                .map_err(EncodeError::AllocationFailed)?;
+            for byte in owner.as_bytes() {
+                rendered.push(char::from(HEX_DIGITS[usize::from(byte >> 4)]));
+                rendered.push(char::from(HEX_DIGITS[usize::from(byte & 0x0F)]));
+            }
+        }
+        WireEncoding::Json | WireEncoding::Xml => {
+            let bytes = match encoding {
+                WireEncoding::Json => crate::json_encoding::encode(item, limits),
+                WireEncoding::Xml => crate::xml_codec::encode(item, limits),
+                _ => return Err(EncodeError::UnsupportedValueType),
+            }
+            .map_err(EncodeError::WireCodec)?;
+            let text = std::str::from_utf8(bytes.as_slice())
+                .map_err(|_| EncodeError::UnsupportedValueType)?;
+            rendered
+                .try_reserve_exact(text.len())
+                .map_err(EncodeError::AllocationFailed)?;
+            rendered.push_str(text);
+        }
+        _ => return Err(EncodeError::UnsupportedValueType),
+    }
+    Ok(rendered)
 }
 
 #[cfg(any(test, feature = "test-support"))]

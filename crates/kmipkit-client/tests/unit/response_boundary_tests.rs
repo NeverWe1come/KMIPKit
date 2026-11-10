@@ -10,6 +10,7 @@
 //! `KMIPKIT-REQ-SPEC-9.12-001-002`, `-001-003`, and ADR-0014.
 
 use std::cell::Cell;
+use std::fmt::Write as _;
 use std::rc::Rc;
 
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
@@ -17,7 +18,7 @@ use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::execute::{
     Client, ClientBatch, ClientBatchItem, ClientRequest, LimitsIdentityObserver,
-    request_message_for_test,
+    ResponseEncodingError, request_message_for_test,
 };
 use crate::execute_test_support::{ResponseItemFixture, response_bytes};
 const RESPONSE_DEBUG_SENTINEL: &[u8] = b"KMIP_RESPONSE_DEBUG_SENTINEL";
@@ -129,10 +130,11 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
     let response = response_bytes((2, 1), &[fixture]);
     let mut expected_ttlv = response.clone();
     expected_ttlv[..3].copy_from_slice(&[0x42, 0x00, 0x7B]);
-    let expected_ttlv = expected_ttlv
-        .iter()
-        .map(|byte| format!("{byte:02X}"))
-        .collect::<String>();
+    let mut expected_ttlv_hex = String::new();
+    for byte in &expected_ttlv {
+        write!(&mut expected_ttlv_hex, "{byte:02X}")
+            .expect("writing fixture hex to String cannot fail");
+    }
     let limits = CodecLimits::defaults();
     let transport = ExactLimitTransport {
         response,
@@ -156,13 +158,25 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
         .xml(&limits)
         .expect("retained response can render as KMIP XML");
 
-    assert_eq!(ttlv.as_str(), expected_ttlv);
+    assert_eq!(ttlv.as_str(), expected_ttlv_hex);
     assert!(json.contains("ResponseMessage"));
     assert!(xml.contains("ResponseMessage"));
     assert!(json.contains("FixtureVendor"));
     assert!(xml.contains("FixtureVendor"));
     assert!(json.find("ResponseHeader").expect("header") < json.find("BatchItem").expect("batch"));
     assert!(xml.find("ResponseHeader").expect("header") < xml.find("BatchItem").expect("batch"));
+
+    let restrictive_limits = CodecLimits::new(
+        32,
+        CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
+        CodecLimits::DEFAULT_MAX_ELEMENTS,
+    )
+    .expect("fixture limits are supported");
+    let Err(error) = item.xml(&restrictive_limits) else {
+        panic!("small output limit must reject the rendered document");
+    };
+    assert_eq!(error, ResponseEncodingError::LimitExceeded);
+    assert!(!error.to_string().contains("FixtureVendor"));
 }
 
 #[test]

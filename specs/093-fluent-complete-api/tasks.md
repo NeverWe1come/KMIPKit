@@ -11,8 +11,10 @@ Dependent work branches from the unmerged parent head while review is pending.
 - [x] C002 Record corrected scope, direction, response truth, expert insertion,
   encoding, and secret boundaries in the specification and ADR.
 - [x] C003 Define the eight dependent delivery slices and PR workflow.
-- [ ] C004 Run documentation, catalog, diff and CI checks on this exact head.
-- [ ] C005 Remove `[WIP]` and mark ready after all CI jobs succeed.
+- [x] C004 Run documentation, catalog, diff and CI checks on this exact head;
+  repository and CI validation passed for PR #175.
+- [x] C005 Remove `[WIP]` and mark ready after all CI jobs succeed; PR #175 is
+  ready for human review while downstream implementation continues.
 
 ## Catalog and code generation PR
 
@@ -26,7 +28,7 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## Response and expert request PRs
 
-- [ ] R001 Fail a test that transcodes one retained response tree to TTLV hex,
+- [x] R001 Fail a test that transcodes one retained response tree to TTLV hex,
   JSON and XML while preserving unknown values, order, status and ownership.
 - [ ] R002 Implement shared checked transcoding and typed batch-result
   conversion; verify secret-safe diagnostics and foreign copy contracts.

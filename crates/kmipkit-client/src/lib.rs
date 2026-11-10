@@ -354,6 +354,7 @@ pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, Kmip30OperationResponse, PendingOutcome,
+    ResponseEncodingError,
 };
 pub use fluent::{
     CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentBuildError,

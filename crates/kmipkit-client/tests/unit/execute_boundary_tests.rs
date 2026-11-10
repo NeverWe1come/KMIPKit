@@ -866,6 +866,9 @@ struct BoundaryAudit {
     permit_calls: usize,
     writer_calls: usize,
     codec_dispatch_calls: Vec<String>,
+    execution_ttlv_writer_calls: usize,
+    inspection_ttlv_writer_calls: usize,
+    inspection_codec_dispatch_calls: Vec<String>,
     misplaced_permit_calls: usize,
     misplaced_writer_calls: usize,
     misplaced_exchange_calls: usize,
@@ -904,6 +907,31 @@ impl BoundaryAudit {
                 if root == "crate"
                     && matches!(codec.as_str(), "json_encoding" | "xml_codec")
                     && function == "encode")
+    }
+
+    fn is_inspection_codec_dispatch_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("render_for_inspection")
+            && self.current_impl_type.is_none()
+            && matches!(segments,
+                [root, codec, function]
+                if root == "crate"
+                    && matches!(codec.as_str(), "json_encoding" | "xml_codec")
+                    && function == "encode")
+    }
+
+    fn is_inspection_ttlv_writer_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("render_for_inspection")
+            && self.current_impl_type.is_none()
+            && matches!(segments, [function] if function == "encode_item_inner")
+    }
+
+    fn is_execution_ttlv_writer_call(&self, segments: &[String]) -> bool {
+        self.is_source_root(Path::new("wire_encoder.rs"))
+            && self.current_function.as_deref() == Some("encode_for_execute")
+            && self.current_impl_type.is_none()
+            && matches!(segments, [function] if function == "encode_item_inner")
     }
 
     fn is_source_root(&self, source_path: &Path) -> bool {
@@ -1376,6 +1404,20 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             if self.is_codec_dispatch_call(&segments) {
                 self.codec_dispatch_calls.push(segments[1].clone());
                 self.record_repeatable_sensitive_call();
+            } else if self.is_inspection_codec_dispatch_call(&segments) {
+                self.inspection_codec_dispatch_calls
+                    .push(segments[1].clone());
+                self.record_repeatable_sensitive_call();
+            } else if is_inspection_ttlv_writer_target(&segments) {
+                if self.is_inspection_ttlv_writer_call(&segments) {
+                    self.inspection_ttlv_writer_calls += 1;
+                    self.record_repeatable_sensitive_call();
+                } else if self.is_execution_ttlv_writer_call(&segments) {
+                    self.execution_ttlv_writer_calls += 1;
+                    self.record_repeatable_sensitive_call();
+                } else {
+                    self.reject("TTLV inspection writer called outside its canonical renderer");
+                }
             } else if is_writer_target(&segments) {
                 self.writer_calls += 1;
                 self.record_repeatable_sensitive_call();
@@ -2953,6 +2995,12 @@ fn is_writer_target(segments: &[String]) -> bool {
     )
 }
 
+fn is_inspection_ttlv_writer_target(segments: &[String]) -> bool {
+    segments
+        .last()
+        .is_some_and(|segment| segment == "encode_item_inner")
+}
+
 fn is_writer_call(segments: &[String]) -> bool {
     matches!(
         segments,
@@ -3756,6 +3804,21 @@ fn production_source_inventory_is_complete_and_execute_owns_the_only_writer_perm
     assert_eq!(audit.misplaced_permit_calls, 0);
     assert_eq!(audit.misplaced_writer_calls, 0);
     assert_eq!(audit.codec_dispatch_calls.len(), 2);
+    assert_eq!(audit.inspection_ttlv_writer_calls, 1);
+    assert_eq!(audit.execution_ttlv_writer_calls, 1);
+    assert_eq!(audit.inspection_codec_dispatch_calls.len(), 2);
+    assert!(
+        audit
+            .inspection_codec_dispatch_calls
+            .iter()
+            .any(|codec| codec == "json_encoding")
+    );
+    assert!(
+        audit
+            .inspection_codec_dispatch_calls
+            .iter()
+            .any(|codec| codec == "xml_codec")
+    );
     assert!(
         audit
             .codec_dispatch_calls
@@ -3807,6 +3870,42 @@ fn text_codec_dispatch_exception_is_limited_to_the_permitted_writer_scope() {
             );
         }
     }
+}
+
+#[test]
+fn response_inspection_codec_dispatch_is_limited_to_its_private_renderer() {
+    for codec in ["json_encoding", "xml_codec"] {
+        let source =
+            format!("fn render_for_inspection() {{ crate::{codec}::encode(item, limits); }}");
+        let parsed = syn::parse_file(&source).expect("inspection dispatch fixture parses");
+        let mut accepted = BoundaryAudit::default();
+        accepted.visit_source_file(&parsed, Path::new("wire_encoder.rs"));
+        assert!(!accepted.is_rejected());
+        assert_eq!(accepted.inspection_codec_dispatch_calls, [codec]);
+
+        let mut wrong_file = BoundaryAudit::default();
+        wrong_file.visit_source_file(&parsed, Path::new("execute.rs"));
+        assert!(wrong_file.is_rejected());
+
+        let wrong_function = source.replace("render_for_inspection", "other");
+        let parsed = syn::parse_file(&wrong_function).expect("wrong-scope fixture parses");
+        let mut rejected = BoundaryAudit::default();
+        rejected.visit_source_file(&parsed, Path::new("wire_encoder.rs"));
+        assert!(rejected.is_rejected());
+    }
+
+    let ttlv = syn::parse_file("fn render_for_inspection() { encode_item_inner(item, limits); }")
+        .expect("TTLV inspection fixture parses");
+    let mut accepted = BoundaryAudit::default();
+    accepted.visit_source_file(&ttlv, Path::new("wire_encoder.rs"));
+    assert!(!accepted.is_rejected());
+    assert_eq!(accepted.inspection_ttlv_writer_calls, 1);
+
+    let wrong_ttlv = syn::parse_file("fn other() { encode_item_inner(item, limits); }")
+        .expect("wrong TTLV inspection fixture parses");
+    let mut rejected = BoundaryAudit::default();
+    rejected.visit_source_file(&wrong_ttlv, Path::new("wire_encoder.rs"));
+    assert!(rejected.is_rejected());
 }
 
 #[test]
