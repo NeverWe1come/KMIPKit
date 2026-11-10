@@ -32,18 +32,13 @@ class ValidatorContractTests(unittest.TestCase):
 
     def test_python_driver_advertises_only_live_typed_recipes(self):
         catalog, _ = load_catalog(CATALOG)
-        cases = {
-            case["operation"]: case
-            for case in catalog["test_cases"]
-            if case["execution"]["mode"] == "server_exchange"
-        }
         by_id = {case["case_id"]: case for case in catalog["test_cases"]}
-        self.assertTrue(PythonKmipDriver.supports(cases["Query"], "typed-protocol"))
-        self.assertTrue(PythonKmipDriver.supports(cases["Ping"], "typed-protocol"))
+        self.assertTrue(PythonKmipDriver.supports(by_id["test-op-query"], "typed-protocol"))
+        self.assertTrue(PythonKmipDriver.supports(by_id["test-op-ping"], "typed-protocol"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-s2c-query"], "typed-protocol"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-enum-cryptographic-algorithm"], "typed-protocol"))
-        self.assertFalse(PythonKmipDriver.supports(cases["Query"], "high-level"))
-        self.assertFalse(PythonKmipDriver.supports(cases["Create"], "typed-protocol"))
+        self.assertFalse(PythonKmipDriver.supports(by_id["test-op-query"], "high-level"))
+        self.assertFalse(PythonKmipDriver.supports(by_id["test-op-create"], "typed-protocol"))
 
     def test_mutating_cases_are_policy_restricted_without_both_opt_ins(self):
         connection, connection_bytes = load_connection(CONNECTION)
@@ -64,6 +59,28 @@ class ValidatorContractTests(unittest.TestCase):
         self.assertTrue(mutations)
         self.assertTrue(all(indexed[case["case_id"]]["status"] == "policy_restricted" for case in mutations))
         self.assertFalse(any(item["status"] == "passed" for item in results))
+
+    def test_local_enum_and_bitmask_catalog_rows_run_through_installed_ttlv_api(self):
+        connection, connection_bytes = load_connection(CONNECTION)
+        catalog, catalog_bytes = load_catalog(CATALOG)
+        artifact = {"library_commit": "52a2be180340e5da3166401a52f652dfd368ad37", "artifact_sha256": "a" * 64}
+        results = _run(
+            connection,
+            connection_bytes,
+            catalog,
+            catalog_bytes,
+            artifact,
+            None,
+            enable_mutations=False,
+        )
+        local_ids = {
+            case["case_id"]
+            for case in applicable_cases(catalog, "2.1")
+            if case["execution"]["mode"] == "local_model"
+        }
+        indexed = {item["case_id"]: item for item in results}
+        self.assertEqual(67, len(local_ids))
+        self.assertTrue(all(indexed[case_id]["status"] == "passed" for case_id in local_ids))
 
     def test_result_report_matches_shared_schema_and_writes_all_formats(self):
         connection, connection_bytes = load_connection(CONNECTION)
