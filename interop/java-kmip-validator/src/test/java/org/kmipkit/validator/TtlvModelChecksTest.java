@@ -10,6 +10,8 @@ class TtlvModelChecksTest {
     void preservesUnknownEnumerationValuesAndBitmaskBits() {
         assertEquals(0xf0000001L, TtlvModelChecks.roundTripEnumeration(0xf0000001L));
         assertEquals(0x80000001, TtlvModelChecks.roundTripIntegerMask(0x80000001));
+        assertEquals(0xf0000001L, TtlvModelChecks.decodeEnumeration(0xf0000001L));
+        assertEquals(0x80000001, TtlvModelChecks.decodeIntegerMask(0x80000001));
     }
 
     @Test
