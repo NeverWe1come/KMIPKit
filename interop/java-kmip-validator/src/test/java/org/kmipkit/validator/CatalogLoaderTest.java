@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,8 +22,13 @@ class CatalogLoaderTest {
         assertEquals(catalog.cases().size(), catalog.cases().stream().map(c -> c.caseId()).distinct().count());
         assertTrue(catalog.cases().stream().allMatch(c -> !c.normativeRefs().isEmpty()));
         assertTrue(catalog.cases().stream().allMatch(c -> !c.execution().protocolVersions().isEmpty()));
+        assertTrue(catalog.cases().stream().allMatch(c ->
+                catalog.targetVersions().containsAll(c.execution().protocolVersions())));
         assertTrue(catalog.cases().stream().allMatch(c -> !c.execution().steps().isEmpty()));
         assertTrue(catalog.cases().stream().allMatch(c -> !c.execution().assertions().isEmpty()));
+        assertTrue(catalog.cases().stream().allMatch(c ->
+                !"not_applicable".equals(c.execution().status())
+                        || !c.execution().notApplicableReason().isBlank()));
     }
 
     @Test
