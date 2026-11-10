@@ -12,13 +12,13 @@ ROOT = SHARED.parents[1]
 
 
 class RouteCapabilitiesTests(unittest.TestCase):
-    def setUp(self):
-        self.assertTrue((SHARED / 'coverage/route-capabilities.json').is_file(),
-                        'the public construction route capability source is missing')
+    @classmethod
+    def setUpClass(cls):
         spec = importlib.util.spec_from_file_location('route_capabilities', SHARED / 'tools/route_capabilities.py')
-        self.assertIsNotNone(spec)
-        self.module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(self.module)
+        cls.module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.module)
+
+    def setUp(self):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
     def test_normative_inventory_requires_local_construct_and_decode_in_every_language(self):
@@ -29,6 +29,36 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertTrue(all(r['mode'] == 'local' for r in routes))
             self.assertTrue(all(r['combinations'] == [{'encoding': 'TTLV', 'transport': None}]
                                 for r in routes))
+
+    def test_local_typed_model_routes_cover_objects_attributes_and_enum_wrappers(self):
+        symbols = {r['public_api_symbol']: r for r in self.data['routes']}
+        required = {
+            'rust': ['kmipkit_protocol::Certificate::try_new', 'kmipkit_protocol::ObjectType::from_raw'],
+            'c': ['kmipkit_managed_object_from_fields', 'kmipkit_typed_attribute_from_value'],
+            'java': ['org.kmipkit.ttlv.ManagedObject.fromFields', 'org.kmipkit.ttlv.TypedAttribute.create'],
+            'python': ['kmipkit.managed_objects.ManagedObject.from_fields', 'kmipkit.typed_attributes.TypedAttribute.create']}
+        for language, names in required.items():
+            for name in names:
+                self.assertIn(name, symbols)
+                route = symbols[name]
+                self.assertEqual(language, route['language'])
+                self.assertEqual('local', route['mode'])
+                self.assertEqual('typed-protocol', route['api_level'])
+                self.assertTrue(route['normative_target_ids'])
+
+    def test_typed_attribute_specializations_have_exact_normative_targets(self):
+        routes = [r for r in self.data['routes'] if r['language'] == 'rust'
+                  and 'Attribute::<' in r['public_api_symbol']]
+        self.assertTrue(routes)
+        self.assertTrue(any('KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE' in r['normative_target_ids'] for r in routes))
+
+    def test_every_named_enum_and_mask_target_has_an_exact_public_value_symbol(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target_ids = {t['target_id'] for t in catalog['normative_targets']
+                      if t['kind'] in {'enumeration_value', 'bitmask_value'}}
+        for language in ('rust', 'c', 'java', 'python'):
+            values = {v['target_id'] for v in self.data.get('value_symbols', []) if v['language'] == language}
+            self.assertEqual(target_ids, values)
 
     def test_checked_in_manifest_validates_against_public_api(self):
         self.module.validate(self.data, ROOT)
