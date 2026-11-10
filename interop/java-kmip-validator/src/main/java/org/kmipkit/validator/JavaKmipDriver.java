@@ -100,8 +100,8 @@ public final class JavaKmipDriver implements AutoCloseable {
                 }
             }
         } catch (Exception exception) {
-            return CaseOutcome.failed("KMIP client exchange failed; diagnostic text was suppressed.",
-                    elapsedMillis(start));
+            return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
+                    + "); remote diagnostic text was suppressed.", elapsedMillis(start));
         }
     }
 
@@ -122,7 +122,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static ClientBatchItem createRequest(String operation) {
-        return switch (operation) {
+        ClientBatchItem request = switch (operation) {
             case "Discover Versions" -> ClientBatchItem.discoverVersions();
             case "Ping" -> ClientBatchItem.ping();
             case "Query" -> ClientBatchItem.query(null, null);
@@ -130,6 +130,8 @@ public final class JavaKmipDriver implements AutoCloseable {
             case "Get Attribute List" -> ClientBatchItem.getAttributeList();
             default -> null;
         };
+        return request == null ? null : request.withUniqueBatchItemId(
+                "item-0".getBytes(StandardCharsets.US_ASCII));
     }
 
     private static TransportConfiguration buildTransport(ConnectionConfig connection) {
