@@ -80,6 +80,9 @@ def _section_for_title(index: dict[str, str], title: str, section_family: str) -
 def _source_element(test_case: dict, elements: list[dict]) -> dict | None:
     category = test_case["category"]
     requires = test_case.get("requires", {})
+    target_id = requires.get("normative_target_id")
+    if isinstance(target_id, str):
+        return next((element for element in elements if element.get("element_id") == target_id), None)
     if category == "attributes":
         kind, name = "attribute", requires.get("attribute")
     elif category == "managed_objects":
@@ -100,7 +103,10 @@ def _element_sections(element: dict, indexes: dict[str, dict[str, str]]) -> dict
     source_ref = next((ref for ref in refs if ref.get("source_id") == "KMIPKIT-SRC-spec"), None)
     if source_ref is None:
         return {}
-    section21 = str(source_ref["section"])
+    return _section_versions(str(source_ref["section"]), indexes)
+
+
+def _section_versions(section21: str, indexes: dict[str, dict[str, str]]) -> dict[str, str]:
     title = indexes["2.1"].get(section21)
     if title is None:
         return {}
@@ -121,8 +127,12 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
     req = test_case.get("requires", {})
     source_element = _source_element(test_case, elements)
     section_by_version = _element_sections(source_element, indexes) if source_element else {}
+    if not section_by_version and re.fullmatch(r"\d+(?:\.\d+)*", str(test_case.get("oasis_section", ""))):
+        section_by_version = _section_versions(str(test_case["oasis_section"]), indexes)
     if category == "version_boundaries":
         versions = ["2.0"]
+    elif req.get("target_protocol_versions"):
+        versions = req["target_protocol_versions"]
     else:
         versions = [version for version in ("2.0", "2.1") if version in section_by_version]
     if not versions:
@@ -132,6 +142,28 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
         mode = "local_model"
         steps = ["construct_known_value", "construct_unknown_value", "ttlv_roundtrip"]
         assertions = ["known_value_preserved", "unknown_value_preserved"]
+        mutation = "read_only"
+    elif category == "normative_inventory":
+        mode = "local_model"
+        target_kind = req["target_kind"]
+        if target_kind in {"enumeration_value", "bitmask_value", "tag", "tag_range"}:
+            allocation = req.get("allocation", "assigned")
+            steps = ["construct_exact_or_boundary_wire_value", "encode_ttlv", "decode_ttlv"]
+            assertions = [
+                "wire_value_preserved" if allocation == "assigned" else "allocation_behavior_is_explicit",
+                "normalized_tree_matches_typed_route",
+            ]
+        elif target_kind == "data_type":
+            steps = ["construct_valid_boundary_values", "encode_ttlv", "decode_ttlv", "reject_malformed_encoding"]
+            assertions = ["all_values_roundtrip", "malformed_value_rejected_without_panic"]
+        else:
+            steps = ["construct_required_and_optional_branches", "encode_ttlv", "decode_ttlv"]
+            assertions = ["field_shape_matches_normative_source", "normalized_tree_matches_typed_route"]
+        mutation = "read_only"
+    elif category == "version_boundaries":
+        mode = "local_model"
+        steps = ["construct_request_with_unsupported_version", "invoke_public_route", "count_transport_calls"]
+        assertions = ["version_rejected_before_send", "transport_call_count_is_zero"]
         mutation = "read_only"
     elif category == "negative_and_boundary" and req.get("expected_status"):
         mode = "server_exchange"
@@ -168,6 +200,154 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
     return test_case
 
 
+NORMATIVE_TARGET_KINDS = {
+    "operation", "object_type", "attribute", "tag", "enumeration_value",
+    "bitmask_value", "data_type", "message_field", "structure_member",
+    "operation_structure", "object_structure", "attribute_structure", "credential",
+}
+
+
+def normative_inventory(elements: list[dict], indexes: dict[str, dict[str, str]], repository_root: Path) -> tuple[list[dict], list[dict]]:
+    """Return individual source-backed targets and their executable local cases."""
+    source_elements = [
+        element for element in elements
+        if element.get("kind") in NORMATIVE_TARGET_KINDS
+        and (
+            element.get("scope_state") in {"client_1_0", "client_1_1"}
+            or (element.get("kind") == "tag" and element.get("allocation") == "reserved")
+        )
+    ]
+    source_elements.sort(key=lambda element: element["element_id"])
+    by_id = {element["element_id"]: element for element in elements}
+
+    versioned_values = json.loads(
+        (repository_root / "specification/catalog/kmip-versioned-values.json").read_text(encoding="utf-8")
+    )
+    kmip21_values = {
+        (group["name"], value["name"], value["wire_value"].lower().removeprefix("0x"))
+        for group in versioned_values["versions"]["v2_1"]
+        for value in group["values"]
+    }
+    delta_path = repository_root / "interop/shared/catalog/kmip-2.1-enum-deltas.json"
+    deltas = json.loads(delta_path.read_text(encoding="utf-8"))
+    delta_source = deltas.get("source", {})
+    expected_delta_source, expected_delta_hash = OASIS_SOURCES["2.1"]
+    if deltas.get("format_version") != 1 or delta_source.get("path") != expected_delta_source or delta_source.get("sha256") != expected_delta_hash:
+        raise ValueError("KMIP 2.1 enum-delta inventory does not match the pinned OASIS source")
+    source_bytes = (repository_root / expected_delta_source).read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != expected_delta_hash:
+        raise ValueError("Pinned KMIP 2.1 source digest mismatch for enum-delta inventory")
+    for group in deltas.get("deltas", []):
+        for value in group.get("values", []):
+            kmip21_values.add((
+                group["enumeration"],
+                value["name"],
+                value["wire_value"].lower().removeprefix("0x"),
+            ))
+    targets: list[dict] = []
+    local_cases: list[dict] = []
+    for element in source_elements:
+        source_refs = [
+            {"section": ref["section"]}
+            for ref in element.get("source_refs", [])
+            if ref.get("source_id") == "KMIPKIT-SRC-spec"
+        ]
+        parent_ids = element.get("parent_element_ids", [])
+        parent = by_id.get(parent_ids[0]) if parent_ids else None
+        parent_name = parent.get("name") if parent else None
+        wire_value = str(element.get("wire_value", "")).lower().removeprefix("0x")
+        is_kmip21_value = (
+            element["kind"] == "enumeration_value"
+            and (parent_name, element["name"], wire_value) in kmip21_values
+        )
+        section_versions = _element_sections(element, indexes)
+        versions = (
+            ["2.1"] if is_kmip21_value
+            else [version for version in ("2.0", "2.1") if version in section_versions]
+        )
+        if not versions:
+            raise ValueError(f"No pinned OASIS section for normative target {element['element_id']}")
+
+        target = {
+            "target_id": element["element_id"],
+            "kind": element["kind"],
+            "name": element["name"],
+            "protocol_versions": versions,
+            "source_refs": source_refs,
+        }
+        for key in ("wire_value", "allocation", "source_encoding", "source_requiredness"):
+            if key in element:
+                target[key] = element[key]
+        if parent_ids:
+            target["parent_element_ids"] = parent_ids
+        targets.append(target)
+
+        kind = element["kind"]
+        if kind in {"operation", "object_type", "attribute"}:
+            continue
+        case_id = f"test-norm-{kind.replace('_', '-')}-{element['element_id'].removeprefix('KMIPKIT-ELEM-').lower()}"
+        case = {
+            "case_id": case_id,
+            "category": "normative_inventory",
+            "operation": parent_name if kind in {"enumeration_value", "bitmask_value"} else "TTLV Roundtrip",
+            "description": f"Exercise {element['name']} ({kind}) using its exact normative identity and TTLV representation.",
+            "requires": {
+                "normative_target_id": element["element_id"],
+                "target_kind": kind,
+                "target_protocol_versions": versions,
+            },
+            "isolation_recipe": {
+                "unique_name_prefix": f"kmipkit-norm-{element['element_id'].lower()}",
+                "setup_steps": [],
+                "target_step": f"Construct and roundtrip {element['name']}",
+                "teardown_steps": [],
+            },
+        }
+        for source_key in ("wire_value", "allocation", "source_encoding", "source_requiredness"):
+            if source_key in element:
+                case["requires"][source_key] = element[source_key]
+        local_cases.append(case)
+
+    canonical = json.loads((repository_root / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+    for tag_range in canonical.get("tag_ranges", []):
+        section_refs = [ref for ref in tag_range.get("source_refs", []) if ref.get("source_id") == "KMIPKIT-SRC-spec"]
+        section = section_refs[0]["section"] if section_refs else None
+        if section is None:
+            raise ValueError(f"No pinned OASIS section for tag range {tag_range['range_id']}")
+        target = {
+            "target_id": tag_range["range_id"],
+            "kind": "tag_range",
+            "name": tag_range["value_range"],
+            "protocol_versions": [version for version in ("2.0", "2.1") if version in _section_versions(section, indexes)],
+            "source_refs": [{"section": section}],
+            "allocation": tag_range["allocation"],
+            "wire_value": tag_range["value_range"],
+        }
+        targets.append(target)
+        local_cases.append({
+            "case_id": f"test-norm-tag-range-{tag_range['range_id'].lower()}",
+            "category": "normative_inventory",
+            "operation": "TTLV Roundtrip",
+            "oasis_section": section,
+            "description": f"Exercise the {tag_range['allocation']} KMIP Tag range at its boundaries and adjacent values.",
+            "requires": {
+                "normative_target_id": tag_range["range_id"],
+                "target_kind": "tag_range",
+                "target_protocol_versions": target["protocol_versions"],
+                "allocation": tag_range["allocation"],
+                "wire_value": tag_range["value_range"],
+            },
+            "isolation_recipe": {
+                "unique_name_prefix": f"kmipkit-norm-{tag_range['range_id'].lower()}",
+                "setup_steps": [],
+                "target_step": f"Construct {tag_range['allocation']} Tag range boundary values",
+                "teardown_steps": [],
+            },
+        })
+
+    return targets, local_cases
+
+
 def generate_catalog(normative_catalog_path: Path) -> dict:
     with open(normative_catalog_path, "r", encoding="utf-8") as f:  # NOSONAR
         catalog = json.load(f)
@@ -181,7 +361,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         el for el in elements
         if el.get("kind") == "operation"
         and el.get("direction") == "client_to_server"
-        and el.get("scope_state") == "client_1_0"
+        and el.get("scope_state") in {"client_1_0", "client_1_1"}
     ]
     c2s_ops.sort(key=lambda x: x["name"])
     operation_sections = [
@@ -260,7 +440,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
     crypto_ops = {"Encrypt", "Decrypt", "Sign", "Signature Verify", "MAC", "MAC Verify", "Hash", "RNG Retrieve", "RNG Seed"}
     for op in c2s_ops:
         name = op["name"]
-        if name in session_ops or name in crypto_ops:
+        if name in session_ops:
             continue
         case_id = f"test-op-{name.lower().replace(' ', '-')}"
         sec = op.get("source_refs", [{}])[0].get("section", "6.1")
@@ -317,10 +497,18 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
     for obj in managed_objects:
         obj_name = obj["name"]
         case_id = f"test-obj-{obj_name.lower().replace(' ', '-')}"
+        object_creation_operation = {
+            "Private Key": "Create Key Pair",
+            "Public Key": "Create Key Pair",
+            "Split Key": "Create Split Key",
+        }
         test_cases.append({
             "case_id": case_id,
             "category": "managed_objects",
-            "operation": "Register" if obj_name in {"Certificate", "Certificate Request", "PGP Key", "Opaque Object", "Secret Data"} else "Create",
+            "operation": object_creation_operation.get(
+                obj_name,
+                "Register" if obj_name in {"Certificate", "Certificate Request", "PGP Key", "Opaque Object", "Secret Data"} else "Create",
+            ),
             "oasis_section": "§2",
             "description": f"Validate {obj_name} object construction, encoding roundtrip, and cleanup.",
             "requires": {
@@ -350,7 +538,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             },
             "isolation_recipe": {
                 "unique_name_prefix": f"kmipkit-attr-{attr_name.lower().replace(' ', '-')}",
-                "setup_steps": ["Create unique SymmetricKey with attribute"],
+                "setup_steps": ["Create an object permitted by the attribute policy"],
                 "target_step": f"GetAttributes for {attr_name}",
                 "teardown_steps": ["Destroy object"],
                 "normalized_fields": ["UniqueIdentifier", "TimeStamp"]
@@ -588,6 +776,27 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             },
         })
 
+    normative_targets, normative_cases = normative_inventory(elements, section_indexes, repository_root)
+    test_cases.extend(normative_cases)
+    for target in normative_targets:
+        kind = target["kind"]
+        if kind not in {"operation", "object_type", "attribute"}:
+            continue
+        if kind == "operation":
+            element = next(item for item in elements if item["element_id"] == target["target_id"])
+            if element.get("direction") == "server_to_client":
+                candidates = [case for case in test_cases if case["category"] == "server_initiated_operations" and case["operation"] == target["name"]]
+            else:
+                candidates = [case for case in test_cases if case["category"] in {"protocol_and_session", "object_lifecycle"} and case["operation"] == target["name"]]
+        elif kind == "object_type":
+            candidates = [case for case in test_cases if case["category"] == "managed_objects" and case["requires"].get("object_type") == target["name"]]
+        else:
+            candidates = [case for case in test_cases if case["category"] == "attributes" and case["requires"].get("attribute") == target["name"]]
+        if len(candidates) != 1:
+            raise ValueError(f"Expected exactly one executable case for normative target {target['target_id']}; found {len(candidates)}")
+        candidates[0]["requires"]["normative_target_id"] = target["target_id"]
+        candidates[0]["requires"]["target_protocol_versions"] = target["protocol_versions"]
+
     test_cases = [add_execution_contract(case, elements, section_indexes) for case in test_cases]
 
     catalog_output = {
@@ -607,8 +816,10 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "attributes_covered": len(attributes),
             "enumerations_covered": len(enumerations),
             "bitmasks_covered": len(bitmasks),
+            "normative_targets": len(normative_targets),
             "total_cases": len(test_cases)
         },
+        "normative_targets": normative_targets,
         "test_cases": test_cases
     }
 

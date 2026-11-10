@@ -1,0 +1,38 @@
+{
+  "format_version": 1,
+  "source": {
+    "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+    "sha256": "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf"
+  },
+  "deltas": [
+    {
+      "enumeration": "Processing Stage",
+      "section": "11.40",
+      "table": "472",
+      "values": [
+        {"name": "Submitted", "wire_value": "00000001"},
+        {"name": "In Process", "wire_value": "00000002"},
+        {"name": "Completed", "wire_value": "00000003"}
+      ]
+    },
+    {
+      "enumeration": "Result Reason",
+      "section": "11.46",
+      "table": "479",
+      "values": [
+        {"name": "Unknown Object Group", "wire_value": "0000004A"},
+        {"name": "Constraint Violation", "wire_value": "0000004B"},
+        {"name": "Duplicate Process Request", "wire_value": "0000004C"}
+      ]
+    },
+    {
+      "enumeration": "Rotate Name Type",
+      "section": "11.51",
+      "table": "482",
+      "values": [
+        {"name": "Uninterpreted Text String", "wire_value": "00000001"},
+        {"name": "URI", "wire_value": "00000002"}
+      ]
+    }
+  ]
+}

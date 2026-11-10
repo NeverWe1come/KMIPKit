@@ -37,11 +37,11 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertEqual(6, sum(case["category"] == "version_boundaries" for case in catalog["test_cases"]))
         source_operations = {
             element["name"] for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
-            if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") == "client_1_0"
+            if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") in {"client_1_0", "client_1_1"}
         }
         catalog_operations = {
             case["operation"] for case in catalog["test_cases"]
-            if case["category"] not in {"version_boundaries", "server_initiated_operations"}
+            if case["category"] not in {"version_boundaries", "server_initiated_operations", "normative_inventory"}
         }
         self.assertEqual(source_operations, catalog_operations)
 

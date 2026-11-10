@@ -92,10 +92,11 @@ class InteropSharedTests(unittest.TestCase):
             catalog = json.load(f)
 
         stats = catalog.get("statistics", {})
-        self.assertEqual(56, stats.get("operations_covered"))
+        self.assertEqual(57, stats.get("operations_covered"))
         self.assertEqual(9, stats.get("managed_objects_covered"))
         self.assertEqual(63, stats.get("attributes_covered"))
         self.assertEqual(64, stats.get("enumerations_covered"))
+        self.assertEqual(1681, stats.get("normative_targets"))
         self.assertGreaterEqual(stats.get("total_cases", 0), 200)
 
         categories = {tc.get("category") for tc in catalog.get("test_cases", [])}
@@ -105,6 +106,7 @@ class InteropSharedTests(unittest.TestCase):
         self.assertIn("attributes", categories)
         self.assertIn("cryptography_and_rng", categories)
         self.assertIn("enums_and_bitmasks", categories)
+        self.assertIn("normative_inventory", categories)
         self.assertIn("batch_workflows", categories)
         self.assertIn("multipart_crypto", categories)
         self.assertIn("asynchronous_workflows", categories)

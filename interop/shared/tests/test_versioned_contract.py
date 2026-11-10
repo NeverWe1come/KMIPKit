@@ -134,7 +134,7 @@ class VersionedContractTests(unittest.TestCase):
 
     def test_every_operation_case_has_oasis_backed_version_and_section(self) -> None:
         elements = self.normative["elements"]
-        cases = [c for c in self.catalog["test_cases"] if c["category"] != "version_boundaries"]
+        cases = [c for c in self.catalog["test_cases"] if c["category"] not in {"version_boundaries", "normative_inventory"}]
         version_by_case = {}
         for case in cases:
             operation = case["operation"]

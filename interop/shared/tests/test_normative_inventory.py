@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import unittest
 from pathlib import Path
+
+from tools.normative_catalog.attribute_policy_source import _SourceParser
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -26,15 +29,18 @@ class NormativeInventoryTests(unittest.TestCase):
         expected_ids = {
             element["element_id"] for element in self.source["elements"]
             if element.get("kind") in expected_kinds
-            and element.get("scope_state") in {"client_1_0", "client_1_1"}
-            and element.get("allocation", "assigned") == "assigned"
+            and (
+                element.get("scope_state") in {"client_1_0", "client_1_1"}
+                or (element.get("kind") == "tag" and element.get("allocation") == "reserved")
+            )
         }
+        expected_ids.update(item["range_id"] for item in self.source["tag_ranges"])
         target_ids = [target["target_id"] for target in self.targets]
         self.assertEqual(len(target_ids), len(set(target_ids)), "normative target IDs must be unique")
         self.assertEqual(expected_ids, set(target_ids))
         for target in self.targets:
             with self.subTest(target=target["target_id"]):
-                self.assertIn(target["kind"], expected_kinds)
+                self.assertIn(target["kind"], expected_kinds | {"tag_range"})
                 self.assertIn(target["protocol_versions"], (["2.0"], ["2.1"], ["2.0", "2.1"]))
                 self.assertTrue(target["source_refs"])
 
@@ -43,9 +49,15 @@ class NormativeInventoryTests(unittest.TestCase):
         for target in self.targets:
             targets_by_kind.setdefault(target["kind"], []).append(target)
 
-        self.assertEqual(644, sum(target["kind"] == "enumeration_value" for target in self.targets))
-        self.assertEqual(33, sum(target["kind"] == "bitmask_value" for target in self.targets))
-        self.assertEqual(354, sum(target["kind"] == "tag" for target in self.targets))
+        self.assertEqual(644, sum(target["kind"] == "enumeration_value" and target.get("allocation") == "assigned" for target in self.targets))
+        self.assertEqual(19, sum(target["kind"] == "enumeration_value" and target.get("allocation") == "reserved" for target in self.targets))
+        self.assertEqual(60, sum(target["kind"] == "enumeration_value" and target.get("allocation") == "extension" for target in self.targets))
+        self.assertEqual(33, sum(target["kind"] == "bitmask_value" and target.get("allocation") == "assigned" for target in self.targets))
+        self.assertEqual(8, sum(target["kind"] == "bitmask_value" and target.get("allocation") == "reserved" for target in self.targets))
+        self.assertEqual(3, sum(target["kind"] == "bitmask_value" and target.get("allocation") == "extension" for target in self.targets))
+        self.assertEqual(354, sum(target["kind"] == "tag" and target.get("allocation") == "assigned" for target in self.targets))
+        self.assertEqual(20, sum(target["kind"] == "tag" and target.get("allocation") == "reserved" for target in self.targets))
+        self.assertEqual(5, sum(target["kind"] == "tag_range" for target in self.targets))
         self.assertEqual(11, sum(target["kind"] == "data_type" for target in self.targets))
         for target in targets_by_kind["enumeration_value"] + targets_by_kind["bitmask_value"] + targets_by_kind["tag"]:
             with self.subTest(target=target["target_id"]):
@@ -62,7 +74,7 @@ class NormativeInventoryTests(unittest.TestCase):
         actual = {
             (parent_names[target["parent_element_ids"][0]], target["name"], target["wire_value"])
             for target in self.targets
-            if target["kind"] == "enumeration_value" and target["protocol_versions"] == ["2.1"]
+            if target["kind"] == "enumeration_value" and target.get("allocation") == "assigned" and target["protocol_versions"] == ["2.1"]
         }
         expected = {
             ("Operation", "Get Constraints", "00000038"),
@@ -81,6 +93,22 @@ class NormativeInventoryTests(unittest.TestCase):
             ("Rotate Name Type", "URI", "00000002"),
         }
         self.assertEqual(expected, actual)
+
+        delta_path = ROOT / "interop/shared/catalog/kmip-2.1-enum-deltas.json"
+        deltas = json.loads(delta_path.read_text(encoding="utf-8"))
+        source_path = ROOT / deltas["source"]["path"]
+        source_bytes = source_path.read_bytes()
+        self.assertEqual(deltas["source"]["sha256"], hashlib.sha256(source_bytes).hexdigest())
+        parser = _SourceParser()
+        parser.feed(source_bytes.decode("cp1252"))
+        for group in deltas["deltas"]:
+            table_caption = f"Table {group['table']}:"
+            matching_tables = [table for table in parser.tables if any(caption.startswith(table_caption) for caption in table["captions"])]
+            self.assertEqual(1, len(matching_tables), group["enumeration"])
+            source_values = {(row[0], row[1].upper()) for row in matching_tables[0]["rows"] if len(row) >= 2}
+            for value in group["values"]:
+                with self.subTest(enumeration=group["enumeration"], value=value["name"]):
+                    self.assertIn((value["name"], value["wire_value"]), source_values)
 
     def test_every_target_has_one_case_per_applicable_version(self) -> None:
         cases_by_target: dict[str, list[dict]] = {}
