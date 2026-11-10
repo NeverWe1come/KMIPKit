@@ -3,7 +3,7 @@
 **Branch**: `feature/KMIPKIT-0086-interop-java-live`  
 **Status**: Approved for implementation by explicit authorization of the interoperability plan  
 **Identifier**: KMIPKIT-0086  
-**Base**: release commit `9692057c9ade474fb0c4e0b7130539da368eb794`
+**Base**: release commit `e437b95e48c43493dfca3adccfb1ceb67addda7b`
 
 ## Scope
 
