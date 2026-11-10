@@ -52,8 +52,13 @@ version, catalog digest, exact library commit and installed library digest.
 The capability profile is informational; it never suppresses a probe.
 
 The pinned release artifact preserves the configured KMIP version. Controlled
-TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log and Login
-under KMIP 2.1, and Locate, Query and Log under KMIP 2.0. The public C
+TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login and
+the ordered Create/Get Attributes/Destroy lifecycle under KMIP 2.1. Under KMIP
+2.0 they exercise Locate, Query, Log and the same lifecycle recipe. The
+lifecycle probe requests a generated AES-128 key, checks the returned
+Cryptographic Algorithm and Cryptographic Length attributes against the
+created object, and enables batch continuation so cleanup still runs after a
+failed operation. The public C
 Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
 a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
 API limitation. The public C Login builder only supports KMIP 2.1, so its

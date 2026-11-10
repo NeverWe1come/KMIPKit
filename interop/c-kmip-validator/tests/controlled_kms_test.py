@@ -69,21 +69,23 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
         elif operation == 1:
             payload_value = enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
-            attributes = (
-                tlv(0x420008, 1, tlv(0x42000A, 7, b"Cryptographic Algorithm")
-                    + enumeration(0x42000B, 3))
-                + tlv(0x420008, 1, tlv(0x42000A, 7, b"Cryptographic Length")
-                      + integer(0x42000B, 128))
-            )
+            attributes = enumeration(0x420028, 3) + integer(0x42002A, 128)
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(0x420125, 1, attributes)
         elif operation == 20:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        unique_batch_item_id = {
+            1: b"interop-create",
+            11: b"interop-attributes",
+            20: b"interop-destroy",
+        }.get(operation)
+        item_fields = integer(0x42005C, operation, 5)
+        if unique_batch_item_id is not None:
+            item_fields += tlv(0x420093, 8, unique_batch_item_id)
+        item_fields += integer(0x42007F, 0, 5) + tlv(0x42007C, 1, payload_value)
         batch_items.append(tlv(
             0x42000F,
             1,
-            integer(0x42005C, operation, 5)
-            + integer(0x42007F, 0, 5)
-            + tlv(0x42007C, 1, payload_value),
+            item_fields,
         ))
     return tlv(0x42007B, 1, header + b"".join(batch_items))
 
@@ -212,6 +214,12 @@ def main() -> int:
                             ) for offset in offsets)
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
+                            if operations == (1, 11, 20) and any(
+                                    tlv(0x420093, 8, item_id) not in request
+                                    for item_id in (b"interop-create", b"interop-attributes", b"interop-destroy")):
+                                raise AssertionError("lifecycle batch omitted a unique batch item ID")
+                            if operations == (1, 11, 20) and enumeration(0x42000E, 1) not in request:
+                                raise AssertionError("lifecycle batch must continue to Destroy after a failed item")
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
                                     raise AssertionError("Locate request omitted its required Attributes structure")
@@ -285,7 +293,16 @@ def main() -> int:
         )
         thread.join(timeout=10)
         if server_errors:
-            raise AssertionError("controlled TLS peer failed") from server_errors[0]
+            partial_result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
+            failing_cases = [
+                {"case_id": case.get("case_id"), "diagnostic": case.get("diagnostic")}
+                for case in partial_result.get("cases", []) if case.get("status") == "failed"
+            ]
+            raise AssertionError(
+                f"controlled TLS peer failed; validator exit={run.returncode}; "
+                f"batches={handled_batches!r}; cases={failing_cases!r}; "
+                f"stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
+            ) from server_errors[0]
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
                 or (1, 11, 20) not in handled_batches):
             raise AssertionError(
