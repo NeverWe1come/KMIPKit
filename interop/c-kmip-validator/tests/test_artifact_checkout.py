@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import re
 import subprocess
 import unittest
@@ -9,6 +10,79 @@ WORKFLOW = ROOT / ".github/workflows/interop-c.yml"
 
 
 class ArtifactCheckoutContractTests(unittest.TestCase):
+    def test_every_catalog_enum_and_bitmask_has_a_typed_probe(self):
+        catalog = json.loads(
+            (ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        live_driver = (ROOT / "interop/c-kmip-validator/src/live_driver.c").read_text(
+            encoding="utf-8"
+        )
+        enum_types = {
+            case["requires"]["enum_type"]
+            for case in catalog["test_cases"]
+            if "enum_type" in case["requires"]
+        }
+        bitmask_types = {
+            case["requires"]["bitmask_type"]
+            for case in catalog["test_cases"]
+            if "bitmask_type" in case["requires"]
+        }
+        elements = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )["elements"]
+        tag_values = {
+            element["name"]: int(element["wire_value"], 16)
+            for element in elements
+            if element["kind"] == "tag"
+        }
+        enum_probes = {}
+        for name, hexadecimal_tag, zero_tag, helper in re.findall(
+            r'\{"([^\"]+)",\s*(?:UINT32_C\(0x([0-9A-Fa-f]+)\)|(0)),\s*(KMIPKIT_ENUMERATION_\w+_name|NULL)\}',
+            live_driver,
+        ):
+            enum_probes[name] = (int(hexadecimal_tag, 16) if hexadecimal_tag else int(zero_tag), helper)
+        bitmask_probes = {
+            name: (int(tag, 16), known_mask)
+            for name, tag, known_mask in re.findall(
+                r'\{"([^\"]+)",\s*UINT32_C\(0x([0-9A-Fa-f]+)\),\s*(KMIPKIT_BITMASK_\w+_KNOWN_MASK)',
+                live_driver,
+            )
+        }
+        enum_fallbacks = {
+            name: int(raw_value, 16)
+            for name, raw_value in re.findall(
+                r'\{"([^\"]+)",\s*UINT32_C\(0x([0-9A-Fa-f]+)\)\},',
+                live_driver.split("KMIP_ENUM_FALLBACK_PROBES", 1)[-1].split("};", 1)[0],
+            )
+        }
+
+        self.assertSetEqual(enum_types, set(enum_probes))
+        for name, (wire_tag, helper) in enum_probes.items():
+            if name == "Item Type":
+                self.assertEqual((wire_tag, helper), (0, "NULL"))
+                continue
+            normalized = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").upper()
+            self.assertEqual(wire_tag, tag_values[name], name)
+            self.assertEqual(helper, f"KMIPKIT_ENUMERATION_{normalized}_name", name)
+
+        self.assertSetEqual(bitmask_types, set(bitmask_probes))
+        for name, (wire_tag, known_mask) in bitmask_probes.items():
+            normalized = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").upper()
+            self.assertEqual(wire_tag, tag_values[name], name)
+            self.assertEqual(known_mask, f"KMIPKIT_BITMASK_{normalized}_KNOWN_MASK", name)
+
+        self.assertDictEqual(
+            enum_fallbacks,
+            {
+                "Opaque Data Type": 0x80000000,
+                "PKCS#11 Function": 1,
+                "PKCS#11 Return Code": 0,
+                "Tag": 0x420001,
+            },
+        )
+
     def test_ci_checkout_includes_the_pinned_release_commit_history(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         marker = "      - name: Checkout repository\n"
