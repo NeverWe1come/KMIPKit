@@ -1,58 +1,52 @@
 # KMIPKit
 
-KMIPKit is a security focused, open source client library for **OASIS KMIP
-2.1**. Its core is written in Rust and exposed through a stable C ABI so that
-the same implementation can serve multiple language ecosystems.
+KMIPKit is an open source KMIP client with a Rust core, a stable C ABI, and
+Java and Python adapters. The `release/1.0.0` branch targets KMIP 2.1 by
+default, with bounded, version-gated support for KMIP 2.0 and KMIP 3.0. Its
+approved 1.0 scope covers TTLV, JSON, and XML; TLS 1.3 mutual authentication;
+raw TLS and HTTPS/HTTP 1.1; client and approved server-to-client operations;
+and equivalent Rust, C, Java, and Python capabilities.
 
-The repository is currently in its private design and foundation phase. No
-production ready release exists yet.
+**Current implementation and release evidence:** see the dated
+[project status](docs/project-status.md). Integrated code does not itself
+establish profile conformance, external interoperability, or release readiness.
 
-## Planned 1.0 scope
+## Workspace
 
-- Complete KMIP 2.1 client initiated operations using TTLV, JSON, or XML,
-  with TTLV as the default.
-- Raw TLS and HTTPS transports, both with TLS 1.3 and mutual TLS.
-- Synchronous Rust client and KMIP protocol asynchronous operations.
-- High level, typed protocol, and generic TTLV APIs.
-- Rust, C, Java, and Python support with functional parity.
-- Traceability from every applicable normative requirement to code and tests.
-- Generic support for vendor extensions and a future extension SDK.
+The Cargo workspace contains eight crates covering the TTLV model, KMIP
+protocol, transport, client, Rust facade, C ABI, shared test support, and
+standalone test server. The independent cloud KMS proxy is under `proxy/` with
+its own workspace and dependency boundary. See the
+[architecture overview](docs/architecture/overview.md) and
+[Rust workspace guide](docs/development/rust-workspace.md).
 
-Server initiated operations are planned for 1.1. JSON and XML codecs, transport
-integration, and the public selector are specified separately by
-KMIPKIT-0055, KMIPKIT-0056, and KMIPKIT-0057.
+Inspect and compile the Rust workspace with:
 
-## Rust workspace
-
-The repository contains a Cargo workspace with seven crates. See the
-[Rust workspace guide](docs/development/rust-workspace.md) for the PowerShell
-commands and local development workflow.
-
-To inspect and compile the workspace:
-
-```powershell
+```sh
 cargo metadata --format-version 1 --no-deps
 cargo check --workspace --all-targets --all-features
 ```
 
-The crates are structural scaffolding at this stage; KMIP operations and
-transport behavior are implemented through approved specifications.
-
 ## Documentation
 
-Start with [the documentation index](docs/README.md). AI agents and
-contributors must read [AGENTS.md](AGENTS.md) before making changes.
+Start with the [documentation index](docs/README.md). Contributors and AI
+agents must read [AGENTS.md](AGENTS.md), the approved constitution, and the
+feature specification before implementation.
 
 ## Español
 
-KMIPKit será una biblioteca cliente Open Source para OASIS KMIP 2.1. Tendrá
-un núcleo en Rust, una ABI C estable y adaptadores idiomáticos para varios
-lenguajes. La versión 1.0 cubrirá todas las operaciones iniciadas por el
-cliente mediante TTLV, JSON o XML (TTLV por defecto) y ofrecerá APIs de alto
-nivel, tipada y TTLV genérica.
+KMIPKit es una biblioteca cliente KMIP de código abierto, con núcleo Rust,
+ABI C estable y adaptadores para Java y Python. La rama `release/1.0.0` usa
+KMIP 2.1 por defecto y ofrece soporte acotado y validado por versión para KMIP
+2.0 y KMIP 3.0. El alcance aprobado incluye TTLV, JSON y XML; TLS 1.3 con
+autenticación mutua; conexiones TLS directas y HTTPS/HTTP 1.1; operaciones de
+cliente y las operaciones servidor-cliente aprobadas; y capacidades
+equivalentes en Rust, C, Java y Python.
 
-Consulta [el índice de documentación](docs/README.md) para conocer el diseño,
-la metodología y el roadmap.
+Consulta el [estado del proyecto](docs/project-status.md) para ver qué está
+integrado y qué evidencias de lanzamiento siguen pendientes, y el
+[índice de documentación](docs/README.md) para el diseño, la guía de uso y el
+roadmap.
 
 ## License
 

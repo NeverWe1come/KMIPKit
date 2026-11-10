@@ -1,17 +1,22 @@
 # Ejecución tipada del cliente
 
-Esta guía describe la base de ejecución tipada en Rust introducida por
-KMIPKIT-0007 y sus APIs de operación en Rust: Discover Versions, Create, Create
-Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
-Get Attributes, Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive, Destroy,
-Recover, Encrypt, Decrypt, Query y Ping. Para ejemplos de Encrypt y Decrypt de
-una parte y multipart controlado por el llamador, consulta la
-[guía de Encrypt y Decrypt](cifrado-descifrado.md). Para el comportamiento de
-ciclo de vida, consulta la
-[guía de operaciones de ciclo de vida](operaciones-ciclo-vida.md); para Query
-y Ping, consulta la [guía de Query y Ping](operaciones-query-ping.md). Para
-configurar una conexión de producción, consulta la [guía de transportes TLS y
-HTTPS](transportes-produccion.md).
+Esta guía comenzó describiendo la primera etapa de ejecución Rust introducida
+por KMIPKIT-0007. Su lista de operaciones y ejemplos son puntos de entrada
+históricos; no son el inventario completo de la API actual. La rama de release
+incluye ahora 56 mapeos de operaciones iniciadas por el cliente, la ruta
+independiente Set Endpoint Role y las APIs aprobadas de escucha y despacho
+servidor-cliente de KMIPKIT-0066. Consulta el [estado del
+proyecto](../../project-status.md), el [estado de paquetes y manifiesto
+](paquetes-de-idiomas.md) y la [matriz de interoperabilidad con
+servidores](../../development/kmip-interoperability.md) para distinguir la
+implementación de sus evidencias.
+
+Esta página se centra en ejemplos de ejecución Rust. El alcance aprobado de
+1.0 también incluye TTLV, JSON y XML; el cliente síncrono y los resultados
+asíncronos del protocolo siguen bajo control del llamador. KMIP 2.1 es la
+versión predeterminada, con soporte KMIP 2.0 y una superficie acotada del
+borrador KMIP 3.0 validada por catálogo; los detalles dependen de cada versión
+y no implican conformidad general.
 
 Esta guía describe la superficie de la API Rust de `kmipkit-client`. Un modelo
 o accesor de Rust no establece la disponibilidad de una operación en los
@@ -29,8 +34,10 @@ cliente Rust admite peticiones explícitas del cliente al servidor para Discover
 Versions, Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
 Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
 Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query y Ping.
-Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a
-OASIS KMIP Specification v2.1 §6.1.16, Tablas 211–213. Get Attributes y Get
+Con la configuración predeterminada, Discover Versions anuncia KMIP 2.1.
+La API multiversión puede anunciar un conjunto configurado explícitamente;
+consulta KMIPKIT-0069 y ADR-0022. Cada respuesta sigue sujeta a las
+comprobaciones de versión efectiva y al comportamiento del servidor. Get Attributes y Get
 Attribute List usan sus modelos tipados de petición y respuesta de
 §§6.1.20–6.1.21. La API no admite valores TTLV genéricos `Item` o `Structure`,
 bytes de mensajes codificados ni hooks de
@@ -59,20 +66,14 @@ loopback con TLS 1.3/mTLS. Esto comprueba la ejecución del cliente y la ruta de
 resultado tipado; el respondedor no es una implementación de servidor KMIP ni
 aporta evidencia de interoperabilidad.
 
-La API tipada de operaciones KMIP 1.0 sigue limitada a KMIP 2.1 conforme a la
-decisión de producto registrada para
-[`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md); esto no afirma
-compatibilidad retroactiva entre versiones principales conforme a KMIP §9.16.
-Por separado, KMIPKit ofrece rutas optativas para las operaciones del Working
-Draft de KMIP 3.0 Create Group, Obliterate, Create User, Create Credential,
-Deactivate, Encapsulate y Decapsulate. Aceptan y conservan payloads TTLV
-genéricos ordenados por el llamador; no ofrecen constructores tipados por
-operación ni validación de esquema. Selecciona explícitamente la versión del
-protocolo mediante `ClientConfiguration::with_protocol_version`; el valor
-predeterminado sigue siendo KMIP 2.1. La capacidad `kmip30_draft_routes` solo
-indica que existe la API y no afirma conformidad de perfil ni certificación.
-Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para el alcance de
-las operaciones tipadas de 1.0.
+KMIP 2.1 sigue siendo la versión predeterminada. KMIP 2.0 y la superficie
+catalogada del borrador/estándar KMIP 3.0 se seleccionan explícitamente y se
+validan antes del envío según KMIPKIT-0069–0071 y ADR-0022. La biblioteca
+cliente no admite KMIP 1.x. Las APIs de KMIP 3.0 se limitan a los modelos y
+rutas aprobados por versión; su presencia no afirma conformidad general con
+3.0, compatibilidad con perfiles ni certificación. Las especificaciones y el
+ADR-0002 iniciales, limitados a KMIP 2.1, han sido sustituidos en alcance por
+decisiones aprobadas posteriores.
 
 ## Métodos directos y opciones por intercambio
 

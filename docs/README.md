@@ -1,82 +1,114 @@
 # KMIPKit documentation index
 
-This directory contains the validated design and operating rules for the
-project. It describes intended behavior; implementation claims require code,
-tests, and the conformance matrix.
+Use this index to move from the approved product scope to implementation,
+release evidence, and language guides. An implementation statement requires
+source code and tests; a conformance or release statement also requires its
+separate evidence gate.
 
-## Required reading for an AI agent
+## Current context
 
-1. [`../AGENTS.md`](../AGENTS.md)
-2. [The Spec Kit constitution](../.specify/memory/constitution.md)
-3. [`design/project-definition.md`](design/project-definition.md)
-4. [`compliance/document-hierarchy.md`](compliance/document-hierarchy.md)
-5. The approved Spec Kit specification for the assigned task
-6. The relevant architecture documents and accepted ADRs
-7. [`development/workflow.md`](development/workflow.md)
-8. [`development/testing.md`](development/testing.md)
+- [Project status snapshot](project-status.md)
+- [Approved project definition](design/project-definition.md)
+- [Roadmap](roadmap.md)
+- [OASIS source hierarchy](compliance/document-hierarchy.md)
+- [Normative inventory coverage report](../specification/catalog/coverage-report.md)
+- [KMIP server interoperability matrix](development/kmip-interoperability.md)
 
-## Design
+## Required reading for contributors and AI agents
+
+1. [Agent rules](../AGENTS.md)
+2. [Spec Kit constitution](../.specify/memory/constitution.md)
+3. [Project definition](design/project-definition.md)
+4. [OASIS document hierarchy](compliance/document-hierarchy.md)
+5. The approved specification and plan for the assigned feature
+6. Relevant accepted [architecture decision records](adr/README.md)
+7. [Development workflow](development/workflow.md)
+8. [Testing strategy](development/testing.md)
+
+## Design and architecture
 
 - [Project definition](design/project-definition.md)
-- [Legacy KMIP version compatibility research](design/kmip-legacy-version-feasibility.md)
-- [Roadmap](roadmap.md)
+- [System architecture overview](architecture/overview.md)
+- [Public API architecture](architecture/public-api.md)
+- [C ABI and language bindings](architecture/ffi-and-bindings.md)
+- [Transport and security](architecture/transport-security.md)
+- [Vendor extension model](architecture/extensions.md)
+- [Legacy KMIP version feasibility research](design/kmip-legacy-version-feasibility.md)
+- [All accepted and superseded decisions](adr/README.md)
 
 ## User guides
 
-- [Java and Python packages (English)](user-guide/en/language-packages.md)
-- [Paquetes para Java y Python (Español)](user-guide/es/paquetes-de-idiomas.md)
-- [Interop, Log and Validate (English)](user-guide/en/diagnostics-and-interop.md)
-- [Interop, Log y Validate (Español)](user-guide/es/diagnostico-e-interop.md)
+### English
 
-- [Typed client execution (English)](user-guide/en/client-execution.md)
-- [Typed client execution (Español)](user-guide/es/ejecucion-cliente.md)
-- [Query and Ping (English)](user-guide/en/query-ping.md)
-- [Operaciones Query y Ping (Español)](user-guide/es/operaciones-query-ping.md)
-- [Managed-object lifecycle operations (English)](user-guide/en/lifecycle-operations.md)
-- [Operaciones de ciclo de vida de objetos (Español)](user-guide/es/operaciones-ciclo-vida.md)
-- [Lifecycle and certificate operations (English)](user-guide/en/lifecycle-and-certificates.md)
-- [Operaciones de ciclo de vida y certificados (Español)](user-guide/es/operaciones-ciclo-vida-y-certificados.md)
-- [Credential sessions (English)](user-guide/en/credential-sessions.md)
-- [Sesiones de credenciales (Español)](user-guide/es/sesiones-credenciales.md)
-- [Inspecting KMIP messages (English)](user-guide/en/message-model.md)
-- [Inspeccionar mensajes KMIP (Español)](user-guide/es/modelo-mensaje.md)
-- [Key derivation and transfer (English)](user-guide/en/key-derivation-and-transfer.md)
-- [Derivación y transferencia de claves (Español)](user-guide/es/derivacion-y-transferencia-de-claves.md)
-- [Policy and usage controls (English)](user-guide/en/policy-controls.md)
-- [Controles de política y uso (Español)](user-guide/es/controles-de-uso.md)
+- [Client execution](user-guide/en/client-execution.md)
+- [Message model](user-guide/en/message-model.md)
+- [Typed bindings and response data](user-guide/en/typed-bindings-and-response-data.md)
+- [Server-to-client operations and role changes](user-guide/en/server-to-client-operations.md)
+- [Attribute operations](user-guide/en/attribute-operations.md)
+- [Managed objects and key material](user-guide/en/managed-objects-and-key-material.md)
+- [Object retrieval](user-guide/en/object-retrieval.md)
+- [Lifecycle operations](user-guide/en/lifecycle-operations.md)
+- [Lifecycle and certificates](user-guide/en/lifecycle-and-certificates.md)
+- [Cryptographic operations](user-guide/en/cryptographic-operations.md)
+- [Encrypt and decrypt](user-guide/en/encrypt-decrypt.md)
+- [Key derivation and transfer](user-guide/en/key-derivation-and-transfer.md)
+- [Query and Ping](user-guide/en/query-ping.md)
+- [Credential sessions](user-guide/en/credential-sessions.md)
+- [Policy controls](user-guide/en/policy-controls.md)
+- [Vendor extensions](user-guide/en/vendor-extensions.md)
+- [Production transports](user-guide/en/production-transports.md)
+- [Profile conformance](user-guide/en/profile-conformance.md)
+- [Diagnostics and interoperability](user-guide/en/diagnostics-and-interop.md)
+- [Language packages](user-guide/en/language-packages.md)
 
-## Architecture
+### Español
 
-- [System overview](architecture/overview.md)
-- [Public API](architecture/public-api.md)
-- [C ABI and language bindings](architecture/ffi-and-bindings.md)
-- [Transport and security](architecture/transport-security.md)
-- [Vendor extensions](architecture/extensions.md)
+- [Ejecución del cliente](user-guide/es/ejecucion-cliente.md)
+- [Modelo de mensaje](user-guide/es/modelo-mensaje.md)
+- [Enlaces tipados y validación de respuestas](user-guide/es/enlaces-tipados-validacion-respuestas.md)
+- [Operaciones servidor-cliente y cambios de rol](user-guide/es/operaciones-servidor-cliente.md)
+- [Operaciones de atributos](user-guide/es/attribute-operations.md)
+- [Objetos gestionados y material de claves](user-guide/es/objetos-gestionados-y-material-de-clave.md)
+- [Recuperación de objetos](user-guide/es/object-retrieval.md)
+- [Operaciones del ciclo de vida](user-guide/es/operaciones-ciclo-vida.md)
+- [Ciclo de vida y certificados](user-guide/es/operaciones-ciclo-vida-y-certificados.md)
+- [Operaciones criptográficas](user-guide/es/operaciones-criptograficas.md)
+- [Cifrado y descifrado](user-guide/es/cifrado-descifrado.md)
+- [Derivación y transferencia de claves](user-guide/es/derivacion-y-transferencia-de-claves.md)
+- [Operaciones Query y Ping](user-guide/es/operaciones-query-ping.md)
+- [Sesiones de credenciales](user-guide/es/sesiones-credenciales.md)
+- [Controles de uso](user-guide/es/controles-de-uso.md)
+- [Extensiones de fabricante](user-guide/es/extensiones-de-fabricante.md)
+- [Transportes de producción](user-guide/es/transportes-produccion.md)
+- [Conformidad de perfiles](user-guide/es/profile-conformance.md)
+- [Diagnóstico e interoperabilidad](user-guide/es/diagnostico-e-interop.md)
+- [Paquetes de lenguajes](user-guide/es/paquetes-de-idiomas.md)
 
-## Development
+## Development and operations
 
 - [Agent and specification workflow](development/workflow.md)
-- [Rust workspace and PowerShell commands](development/rust-workspace.md)
-- [Testing strategy](development/testing.md)
-- [KMIP server interoperability matrix](development/kmip-interoperability.md)
-- [Coding standards](development/coding-standards.md)
-- [Git, versioning, and releases](development/git-and-releases.md)
+- [Rust workspace and local commands](development/rust-workspace.md)
+- [Testing and coverage strategy](development/testing.md)
+- [Git, versioning, and release gates](development/git-and-releases.md)
+- [API manifest](development/api-manifest.md)
+- [KMIP interoperability evidence](development/kmip-interoperability.md)
+- [Transport performance baseline](development/transport-performance.md)
+- [Dependency policy](../SECURITY.md) and [dependency review](security/dependency-policy.md)
+- [AI context-loading guide](ai/context-loading.md)
+- [AI review checklist](ai/review-checklist.md)
 
-## Compliance
+## Compliance and source material
 
+- [Conformance and traceability strategy](compliance/conformance.md)
 - [OASIS document hierarchy](compliance/document-hierarchy.md)
-- [Conformance and traceability](compliance/conformance.md)
-- [Pinned OASIS sources](../specification/oasis/kmip-2.1/README.md)
+- [Pinned KMIP 2.1 sources](../specification/oasis/kmip-2.1/README.md)
+- [Normative catalog](../specification/catalog/README.md)
+- [Profile targets and readiness](../specification/catalog/profile-targets.json)
 
 ## Security
 
-- [Repository threat model](security/threat-model.md)
+- [Threat model](security/threat-model.md)
 - [Vulnerability reporting policy](../SECURITY.md)
-
-## Architecture decisions
-
-See the [ADR index](adr/README.md). Accepted ADRs record why a decision was
-made. New ADRs supersede old decisions rather than rewriting history.
 
 ## Spec Kit ownership
 
