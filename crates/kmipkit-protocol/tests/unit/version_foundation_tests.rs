@@ -115,26 +115,40 @@ fn test_version_gate_validates_operations_and_spans() {
 
 #[test]
 fn test_version_gate_validates_tags() {
-    let rotate_attr = 0x0042_014A; // Rotate Automatic (2.1)
+    let session_tag_range = 0x0042_0149..=0x0042_0152;
+    let kmip_2_1_tag_range = 0x0042_0168..=0x0042_0172;
     let pqc_attr = 0x0042_01C2; // NIST Security Category (3.0)
     let unknown_tag = 0x0042_9999;
 
-    assert!(VersionGate::tag_span(rotate_attr).is_some());
+    // KMIP 2.0 §11.54, Table 446 assigns Ticket through Defaults Information.
+    // These include the tags used by Login, Logout and Delegated Login.
+    for tag in session_tag_range {
+        assert_eq!(VersionGate::tag_span(tag), None, "tag 0x{tag:08X}");
+        assert!(VersionGate::validate_tag(ProtocolVersion::V2_0, tag).is_ok());
+        assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, tag).is_ok());
+    }
+
+    // KMIP 2.1 §11.56 assigns every tag in this Constraints/Rotate range.
+    for tag in kmip_2_1_tag_range {
+        assert_eq!(
+            VersionGate::tag_span(tag),
+            Some(VersionSpan::since(ProtocolVersion::V2_1)),
+            "tag 0x{tag:08X}"
+        );
+        assert_eq!(
+            VersionGate::validate_tag(ProtocolVersion::V2_0, tag).unwrap_err(),
+            VersionGateError::AttributeNotSupportedInVersion {
+                tag,
+                negotiated: ProtocolVersion::V2_0,
+                introduced: ProtocolVersion::V2_1,
+            }
+        );
+        assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, tag).is_ok());
+    }
     assert!(VersionGate::tag_span(pqc_attr).is_some());
     assert_eq!(VersionGate::tag_span(unknown_tag), None);
 
-    // KMIP 2.0 rejects Rotate Automatic
-    assert_eq!(
-        VersionGate::validate_tag(ProtocolVersion::V2_0, rotate_attr).unwrap_err(),
-        VersionGateError::AttributeNotSupportedInVersion {
-            tag: rotate_attr,
-            negotiated: ProtocolVersion::V2_0,
-            introduced: ProtocolVersion::V2_1,
-        }
-    );
-
-    // KMIP 2.1 accepts Rotate Automatic, rejects PQC attribute
-    assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, rotate_attr).is_ok());
+    // KMIP 2.1 accepts the 2.1-only tags and rejects the 3.0 PQC attribute.
     assert_eq!(
         VersionGate::validate_tag(ProtocolVersion::V2_1, pqc_attr).unwrap_err(),
         VersionGateError::AttributeNotSupportedInVersion {
@@ -149,7 +163,7 @@ fn test_version_gate_validates_tags() {
 
     // Uncatalogued version is rejected
     assert_eq!(
-        VersionGate::validate_tag(ProtocolVersion::from_raw(1, 2), rotate_attr).unwrap_err(),
+        VersionGate::validate_tag(ProtocolVersion::from_raw(1, 2), unknown_tag).unwrap_err(),
         VersionGateError::UnsupportedProtocolVersion(ProtocolVersion::from_raw(1, 2))
     );
 }

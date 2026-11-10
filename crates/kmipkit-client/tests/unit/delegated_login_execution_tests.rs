@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::DelegatedLoginRequest;
+use kmipkit_protocol::{DelegatedLoginRequest, ProtocolVersion};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
@@ -14,7 +14,10 @@ use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 use kmipkit_ttlv::{Structure, Value, ValueView};
 use zeroize::Zeroizing;
 
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, asynchronous_response_bytes_with_version, test_item,
+    test_structure,
+};
 use crate::{
     Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
@@ -27,7 +30,9 @@ const PERMISSION_DENIED: u32 = 0x0000_000C;
 const TICKET: u32 = 0x0042_0149;
 const TICKET_TYPE: u32 = 0x0042_014A;
 const TICKET_VALUE: u32 = 0x0042_014B;
-const RIGHT: u32 = 0x0042_014E;
+const RIGHTS: u32 = 0x0042_014D;
+const REQUEST_COUNT: u32 = 0x0042_014C;
+const RIGHT: u32 = 0x0042_0150;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 const SECRET_SENTINEL: &[u8] = b"delegated-login-ticket-secret";
 
@@ -156,6 +161,49 @@ fn delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket() {
     assert_eq!(state.borrow().requests.len(), 1);
     let debug = format!("{result:?}");
     assert!(!debug.contains("delegated-login-ticket-secret"));
+}
+
+#[test]
+fn delegated_login_kmip_20_rights_tags_pass_version_gate() {
+    // KMIP 2.0 §§7.28–7.29 assign Right (0x420150) within Rights.
+    let rights = test_structure([test_item(RIGHT, Value::structure(Structure::new()))]);
+    let request =
+        ClientRequest::delegated_login(DelegatedLoginRequest::new(rights).with_request_count(1));
+    let response = asynchronous_response_bytes_with_version(
+        ProtocolVersion::V2_0,
+        DELEGATED_LOGIN,
+        SUCCESS,
+        None,
+        None,
+        Some(ticket_payload()),
+    );
+    let (mut client, state) = client(vec![response]);
+
+    let result = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request))
+                .with_protocol_version(ProtocolVersion::V2_0),
+            &CodecLimits::defaults(),
+        )
+        .expect("KMIP 2.0 Delegated Login and Ticket response pass version validation");
+
+    assert_eq!(
+        result
+            .items
+            .first()
+            .expect("one response item")
+            .outcome()
+            .result()
+            .status()
+            .raw(),
+        SUCCESS
+    );
+    let state = state.borrow();
+    assert_eq!(state.calls, 1);
+    let request = state.requests.first().expect("request reached transport");
+    assert!(request_contains_tag(request, RIGHTS));
+    assert!(request_contains_tag(request, RIGHT));
+    assert!(request_contains_tag(request, REQUEST_COUNT));
 }
 
 #[test]

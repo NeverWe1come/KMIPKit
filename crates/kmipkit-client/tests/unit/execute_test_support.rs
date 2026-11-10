@@ -3,6 +3,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use kmipkit_protocol::ProtocolVersion;
 use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -223,6 +224,28 @@ pub(crate) fn asynchronous_response_bytes(
     )
 }
 
+pub(crate) fn asynchronous_response_bytes_with_version(
+    protocol_version: ProtocolVersion,
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    correlation_value: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
+    one_item_response_bytes_with_version(
+        protocol_version,
+        ResponseFields {
+            operation,
+            status,
+            reason,
+            result_message: None,
+            unique_batch_item_id: None,
+            asynchronous_correlation_value: correlation_value,
+            payload,
+        },
+    )
+}
+
 pub(crate) fn asynchronous_response_with_batch_id_bytes(
     operation: u32,
     status: u32,
@@ -251,38 +274,72 @@ pub(crate) fn one_item_response_bytes(
     asynchronous_correlation_value: Option<&[u8]>,
     payload: Option<Structure>,
 ) -> Vec<u8> {
+    one_item_response_bytes_with_version(
+        ProtocolVersion::V2_1,
+        ResponseFields {
+            operation,
+            status,
+            reason,
+            result_message,
+            unique_batch_item_id,
+            asynchronous_correlation_value,
+            payload,
+        },
+    )
+}
+
+struct ResponseFields<'a> {
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&'a str>,
+    unique_batch_item_id: Option<&'a [u8]>,
+    asynchronous_correlation_value: Option<&'a [u8]>,
+    payload: Option<Structure>,
+}
+
+fn one_item_response_bytes_with_version(
+    protocol_version: ProtocolVersion,
+    fields: ResponseFields<'_>,
+) -> Vec<u8> {
     let response_version = structure([
-        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
-        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        item(
+            PROTOCOL_VERSION_MAJOR,
+            Value::integer(protocol_version.major()),
+        ),
+        item(
+            PROTOCOL_VERSION_MINOR,
+            Value::integer(protocol_version.minor()),
+        ),
     ]);
     let header = structure([
         item(PROTOCOL_VERSION, Value::structure(response_version)),
         item(TIME_STAMP, Value::date_time(1)),
         item(BATCH_COUNT, Value::integer(1)),
     ]);
-    let mut fields = vec![item(OPERATION, Value::enumeration(operation))];
-    if let Some(id) = unique_batch_item_id {
-        fields.push(item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id.to_vec())));
+    let mut item_fields = vec![item(OPERATION, Value::enumeration(fields.operation))];
+    if let Some(id) = fields.unique_batch_item_id {
+        item_fields.push(item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id.to_vec())));
     }
-    fields.push(item(RESULT_STATUS, Value::enumeration(status)));
-    if let Some(reason) = reason {
-        fields.push(item(RESULT_REASON, Value::enumeration(reason)));
+    item_fields.push(item(RESULT_STATUS, Value::enumeration(fields.status)));
+    if let Some(reason) = fields.reason {
+        item_fields.push(item(RESULT_REASON, Value::enumeration(reason)));
     }
-    if let Some(message) = result_message {
-        fields.push(item(RESULT_MESSAGE, Value::text_string(message.to_owned())));
+    if let Some(message) = fields.result_message {
+        item_fields.push(item(RESULT_MESSAGE, Value::text_string(message.to_owned())));
     }
-    if let Some(correlation) = asynchronous_correlation_value {
-        fields.push(item(
+    if let Some(correlation) = fields.asynchronous_correlation_value {
+        item_fields.push(item(
             ASYNCHRONOUS_CORRELATION_VALUE,
             Value::byte_string(correlation.to_vec()),
         ));
     }
-    if let Some(payload) = payload {
-        fields.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
+    if let Some(payload) = fields.payload {
+        item_fields.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
     }
     let tree = structure([
         item(RESPONSE_HEADER, Value::structure(header)),
-        item(BATCH_ITEM, Value::structure(structure(fields))),
+        item(BATCH_ITEM, Value::structure(structure(item_fields))),
     ]);
     encode_message_for_test(tree, &CodecLimits::defaults())
         .expect("one-item test response is encodable")

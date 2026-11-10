@@ -29,7 +29,7 @@ fn test_cosmian_kms_profile_characteristics() {
 }
 
 #[test]
-fn test_thales_ciphertrust_profile_characteristics_and_20_support() {
+fn test_thales_ciphertrust_profile_characteristics_and_kmip20_exclusion() {
     let profile: JsonValue =
         serde_json::from_str(THALES_PROFILE).expect("valid Thales JSON profile");
     assert_eq!(profile["server"]["vendor"], "Thales");
@@ -38,14 +38,10 @@ fn test_thales_ciphertrust_profile_characteristics_and_20_support() {
     let versions = profile["server"]["kmip_versions"]
         .as_array()
         .expect("kmip_versions is an array");
-    assert!(
-        versions.iter().any(|v| v == "2.0"),
-        "Thales CipherTrust profile must advertise KMIP 2.0 support"
-    );
-    assert!(
-        versions.iter().any(|v| v == "2.1"),
-        "Thales CipherTrust profile must advertise KMIP 2.1 support"
-    );
+    assert!(versions.iter().any(|v| v == "1.4"));
+    assert!(!versions.iter().any(|v| v == "2.0"));
+    assert!(!versions.iter().any(|v| v == "2.1"));
+    assert_eq!(profile["interop_eligibility"]["state"], "excluded");
 }
 
 #[test]
