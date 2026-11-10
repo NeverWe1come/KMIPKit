@@ -69,10 +69,32 @@ This CI artifact is distinct from the retained local wheel; byte-identical
 wheel reproducibility is not claimed. Every artifact's report uses its own
 verified digest.
 
-The evidence-only follow-up commit is subject to a fresh CI cycle and must
-pass before this PR is marked ready for review. The final follow-up SHA and
-its check results are recorded in the closeout report and PR description to
-avoid an endless sequence of self-referential evidence commits.
+Evidence-only follow-up `287df0acb61e283536b1cbce48586603c4cd6e87`
+started a fresh CI cycle. Its green checks, if achieved, do not complete
+exhaustive validator coverage or authorize marking this PR ready.
+
+## Maintainer coverage clarification and incomplete acceptance
+
+After that evidence update, the maintainer explicitly required all four
+validators to cover every applicable operation/case exhaustively through all
+available public construction routes, attributes, generic TTLV, encodings and
+transports. Successful CI with pending coverage does not satisfy that
+acceptance criterion. This clarification is stricter than the original
+specification's allowance for truthful documented API gaps.
+
+T008 remains incomplete and PR #173 remains WIP/draft. The current offline
+plan still reports 73 documented public-API gaps per protocol version. The
+existing recipe-construction checks, selected high-level routes, local TTLV
+checks and controlled exchanges do not establish exhaustive coverage through
+every available public route or the full encoding/transport matrix. Missing
+public API support and untested construction paths must be resolved and
+verified before this validator can be accepted as complete. The successful
+implementation-head CI above establishes only the exercised checks.
+
+This closeout records the current implementation and its limits; it does not
+claim that the expanded exhaustive coverage has been implemented. The exact
+latest evidence-only head and check results are recorded in the closeout
+report and PR description.
 
 ## Remaining limitations
 
