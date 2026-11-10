@@ -112,8 +112,21 @@ library correctness not_checked. The pre-active Encrypt negative accepts only
 Invalid Field (7) or Cryptographic Failure (10), as specified by its catalog.
 
 The complete catalog is also executed through both high-level and typed APIs
-in each version, comparing normalized per-case outcomes. Markdown is checked
-for the same case/outcome and for server-text redaction. Reproduce the 90 percent
+in each version, comparing case ID, classification, library/server outcome and
+canonical numeric KMIP Result Status/Reason. The controlled peer also captures
+and compares the ordered normalized TTLV trees for every outgoing request and
+response, including setup, target and cleanup exchanges. Tags, types and public
+numeric/boolean scalars remain comparable. Timestamps are omitted; identifiers,
+names and batch IDs use stable aliases preserving resource relationships.
+Credential Value, Key Material and Attribute Value subtrees, and all remaining
+text, byte strings and big integers, are redacted. Thus secret values and
+cryptographic output bytes are outside this structural parity check. Trees and
+alias keys exist only in test-process memory and never enter reports, artifacts
+or failure diagnostics. The five incoming operations have separate two-version
+listener tests rather than a high-level/typed outgoing comparison. Seven unit
+regressions detect changed requests, responses or KMIP codes and check redaction
+and resource-reference preservation. Markdown is checked for the same
+case/outcome and for server-text redaction. Reproduce the 90 percent
 line-coverage gate with Rust 1.94 llvm-tools, cargo-llvm-cov 0.9.1 and:
 
 ```sh

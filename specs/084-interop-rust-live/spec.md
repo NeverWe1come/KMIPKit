@@ -37,7 +37,7 @@ are authoritative for each individual case and remain unchanged.
 | KMIPKIT-0084-FR-003 | The consumer SHALL dispatch each applicable shared case or report an explicit referenced non-applicability; incomplete execution SHALL remain not_run, never success. |
 | KMIPKIT-0084-FR-004 | Each run SHALL require a dedicated test environment, and mutations SHALL additionally require explicit enablement. Requests SHALL NOT be retried. |
 | KMIPKIT-0084-FR-005 | Results SHALL satisfy schema 2.0 and separate library correctness, server compatibility, policy restrictions, non-run and parity. No credentials, keys, bodies, or untrusted error text may be reported. |
-| KMIPKIT-0084-FR-006 | High-level and typed APIs SHALL be compared using deterministic request payloads and normalized response metadata. Generic TTLV construction/navigation SHALL be exercised locally; generic outbound construction unavailability SHALL be recorded without blaming the server. |
+| KMIPKIT-0084-FR-006 | High-level and typed APIs SHALL be compared across the full controlled catalog using canonical numeric Result Status/Reason and normalized deterministic request/response TTLV trees. Secret values and volatile timestamps SHALL be excluded; trees SHALL remain ephemeral test data outside reports and diagnostics. Generic TTLV construction/navigation SHALL be exercised locally; generic outbound construction unavailability SHALL be recorded without blaming the server. |
 | KMIPKIT-0084-FR-007 | Rust 1.94 CI SHALL run formatting, Clippy, unit/integration and deterministic local TLS/controlled-response tests with the installed artifact. No live vendor compatibility claim is authorized. |
 
 ## Safety and limits

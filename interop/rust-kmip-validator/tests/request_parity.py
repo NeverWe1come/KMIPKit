@@ -1,4 +1,4 @@
-"""In-memory redacted request/result signatures; never emit KMIP bodies."""
+"""In-memory redacted request/response signatures; never emit KMIP bodies."""
 import json
 from pathlib import Path
 

@@ -7,7 +7,7 @@
 | KMIPKIT-0084-FR-003 | catalog dispatch | exhaustive shared case classification tests |
 | KMIPKIT-0084-FR-004 | policy guard and single exchange | mutation denial, dedicated-environment and no-retry tests |
 | KMIPKIT-0084-FR-005 | schema 2.0 report writer | JSON-schema, controlled rejection/redaction tests |
-| KMIPKIT-0084-FR-006 | request adapters and local model verifier | high/typed equivalence and generic TTLV tests |
+| KMIPKIT-0084-FR-006 | request adapters and local model verifier | full-catalog high/typed request/response trees, numeric KMIP codes, privacy/difference regressions and generic TTLV tests |
 | KMIPKIT-0084-FR-007 | isolated Rust workflow | Rust 1.94 full validator checks and loopback evidence |
 
 ## Catalog execution evidence
@@ -30,7 +30,13 @@ normative input. CI regenerates and requires no diff. Generated files are never
 manually edited.
 
 KMIPKIT-0084-FR-006 also verifies the complete case inventory through high-level
-and typed APIs in both versions and compares normalized case outcomes.
+and typed APIs in both versions and compares case outcomes, canonical numeric
+KMIP Result Status/Reason and every captured outgoing request/response tree.
+`tests/request_parity.py` preserves ordered tags/types/public scalars and stable
+resource aliases, omits timestamps and redacts secret containers/text/bytes/big
+integers. Trees remain in memory; reports contain no payload. Seven focused
+regressions prove changed request/response scalars or result codes differ and
+verify normalization/privacy. Incoming cases use separate two-version tests.
 KMIPKIT-0084-FR-007 uses `tools/check_coverage.py` for the >=90 percent line gate,
 including real subprocess CLI and controlled TLS tests. The generated lookup
 table is the only exclusion, justified by exhaustive behavioral/regeneration

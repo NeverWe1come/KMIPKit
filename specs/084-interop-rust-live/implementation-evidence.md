@@ -69,3 +69,23 @@ suite, and enforces >=90 percent line coverage. A fresh run measures 90.41%
 (1819/2012 lines). The sole exclusion is the generated local-case table; its
 regeneration and all 67 model cases are tested. CI pins cargo-llvm-cov 0.9.1 and
 the Rust 1.94 llvm-tools component and runs this same script.
+
+## Complete structural request/response parity
+
+Review exposed an outcome-only comparison. Signed Red `2335a8c05` fails on
+changed deterministic requests and omitted KMIP Status/Reason; Green `54ae862c1`
+compares the peer's actual request trees and canonical numeric result codes.
+Red `f72799703` exposes omitted response payloads; Green `2e7654f89` additionally
+compares every response tree. The 19-test Python suite passes (12 integration,
+seven focused parity/privacy tests). Both catalog versions and API routes
+compare complete ordered exchange sequences, including setup and teardown.
+
+Only deterministic structure and public numeric/boolean values are compared.
+Time Stamp is omitted. Resource identifiers, names and batch IDs become stable
+aliases preserving relationships; Credential Value, Key Material, Attribute
+Value, remaining text, byte strings and big integers are redacted. Secret and
+cryptographic output values are outside this structural comparison. Normalized
+trees and raw alias keys remain ephemeral memory and are never written to
+reports/artifacts or displayed by the matrix assertion. Incoming operations
+retain their separate two-version listener verification. These comparisons do
+not establish live vendor compatibility or cross-language parity.
