@@ -4,6 +4,117 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int response_ttlv_path_integer_matches(
+        kmipkit_ttlv_structure_view_t *view,
+        const uint32_t *path,
+        uint64_t path_length,
+        int32_t expected_integer) {
+    uint64_t count = 0;
+    if (view == NULL || path == NULL || path_length == 0 ||
+            kmipkit_ttlv_structure_view_item_count(view, &count) != 0) {
+        return 0;
+    }
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *item = NULL;
+        kmipkit_tag_t *tag = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        kmipkit_ttlv_structure_view_t *nested = NULL;
+        uint32_t actual_tag = 0;
+        uint8_t item_type = 0;
+        int32_t actual_integer = 0;
+        int matched = 0;
+        if (kmipkit_ttlv_structure_view_item_at(view, index, &item) != 0 || item == NULL ||
+                kmipkit_ttlv_item_view_tag(item, &tag) != 0 || tag == NULL ||
+                kmipkit_ttlv_tag_value(tag, &actual_tag) != 0 || actual_tag != path[0] ||
+                kmipkit_ttlv_item_view_value(item, &value) != 0 || value == NULL) {
+            goto item_cleanup;
+        }
+        if (path_length == UINT64_C(1)) {
+            matched = kmipkit_ttlv_item_view_type(item, &item_type) == 0 &&
+                    item_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER &&
+                    kmipkit_ttlv_value_view_integer(value, &actual_integer) == 0 &&
+                    actual_integer == expected_integer;
+        } else if (kmipkit_ttlv_value_view_type(value, &item_type) == 0 &&
+                item_type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE &&
+                kmipkit_ttlv_value_view_structure(value, &nested) == 0 && nested != NULL) {
+            matched = response_ttlv_path_integer_matches(
+                    nested, path + 1, path_length - UINT64_C(1), expected_integer);
+        }
+item_cleanup:
+        kmipkit_ttlv_structure_view_release(nested);
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item);
+        if (matched) return 1;
+    }
+    return 0;
+}
+
+int32_t kmipkit_client_abi_consumer_response_ttlv_handles(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t expected_payload_present,
+        uint64_t expected_payload_item_count,
+        const uint32_t *expected_integer_path,
+        uint64_t expected_integer_path_length,
+        int32_t expected_integer) {
+    uint8_t payload_present = 0;
+    uint8_t header_present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_t *header = NULL;
+    kmipkit_ttlv_structure_view_t *payload_view = NULL;
+    kmipkit_ttlv_structure_view_t *header_view = NULL;
+    uint64_t payload_item_count = UINT64_MAX;
+    uint64_t header_item_count = 0;
+    int32_t result = 1;
+
+    if (item == NULL || expected_payload_present > 1 ||
+            (expected_integer_path_length != 0 && expected_integer_path == NULL) ||
+            kmipkit_client_batch_item_response_raw_ttlv(
+                    item, &payload_present, &payload) != 0 ||
+            kmipkit_client_batch_item_response_header_ttlv(
+                    item, &header_present, &header) != 0 ||
+            payload_present != expected_payload_present ||
+            header_present != 1 || header == NULL ||
+            ((payload_present == 1) != (payload != NULL))) {
+        goto cleanup;
+    }
+
+    /* The caller transferred this result handle; the returned structures must outlive it. */
+    kmipkit_client_batch_item_response_release(item);
+    item = NULL;
+
+    if (payload != NULL) {
+        if (kmipkit_ttlv_structure_view(payload, &payload_view) != 0 ||
+                kmipkit_ttlv_structure_view_item_count(
+                        payload_view, &payload_item_count) != 0 ||
+                payload_item_count != expected_payload_item_count) {
+            goto cleanup;
+        }
+        if (expected_integer_path_length != 0 &&
+                !response_ttlv_path_integer_matches(
+                        payload_view, expected_integer_path,
+                        expected_integer_path_length, expected_integer)) {
+            goto cleanup;
+        }
+    } else if (expected_payload_item_count != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_structure_view(header, &header_view) != 0 ||
+            kmipkit_ttlv_structure_view_item_count(header_view, &header_item_count) != 0 ||
+            header_item_count == 0) {
+        goto cleanup;
+    }
+    result = 0;
+
+cleanup:
+    if (item != NULL) kmipkit_client_batch_item_response_release(item);
+    if (payload_view != NULL) kmipkit_ttlv_structure_view_release(payload_view);
+    if (header_view != NULL) kmipkit_ttlv_structure_view_release(header_view);
+    if (payload != NULL) kmipkit_ttlv_structure_release(payload);
+    if (header != NULL) kmipkit_ttlv_structure_release(header);
+    return result;
+}
+
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
 int kmipkit_client_abi_c_consumer_batch_item_readback(void) {
@@ -7665,6 +7776,31 @@ int kmipkit_client_abi_c_consumer_async_output_errors_clear(void) {
         return 0;
     }
 
+    typedef int32_t (*typed_response_reader_fn)(
+            kmipkit_client_async_operation_outcome_t *, uint8_t *,
+            kmipkit_client_async_operation_response_v1_t *);
+    const typed_response_reader_fn typed_readers[] = {
+        kmipkit_client_async_operation_outcome_cancel_response_v1,
+        kmipkit_client_async_operation_outcome_poll_response_v1,
+        kmipkit_client_async_operation_outcome_process_response_v1,
+        kmipkit_client_async_operation_outcome_query_async_requests_response_v1};
+    for (size_t index = 0; index < sizeof(typed_readers) / sizeof(typed_readers[0]); ++index) {
+        kmipkit_client_async_operation_response_v1_t response = {0};
+        present = UINT8_C(9);
+        response.struct_size = UINT32_C(9);
+        if (typed_readers[index](0, &present, &response) != T076_ERROR_INVALID_INPUT ||
+                present != 0 || response.struct_size != 0 || response.abi_version != 0) {
+            return 0;
+        }
+    }
+
+    kmipkit_client_async_operation_response_v1_t overlapping_response = {0};
+    if (kmipkit_client_async_operation_outcome_cancel_response_v1(
+            0, (uint8_t *)&overlapping_response, &overlapping_response) !=
+            T076_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+
     kmipkit_client_async_operation_outcome_release(0);
     return 1;
 }
@@ -10706,4 +10842,93 @@ cleanup:
     kmipkit_request_message_release(message);
     kmipkit_ttlv_structure_release(request);
     return result;
+}
+
+int kmipkit_client_abi_c_consumer_reads_async_response_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint32_t expected_operation,
+        uint32_t expected_result_status,
+        uint32_t expected_is_pending,
+        uint32_t expected_has_cancellation_result,
+        uint32_t expected_cancellation_result,
+        const uint8_t *expected_correlation,
+        uint64_t expected_correlation_length,
+        uint32_t expected_has_payload,
+        uint64_t expected_payload_member_count) {
+    typedef int32_t (*reader_fn)(
+            kmipkit_client_async_operation_outcome_t *, uint8_t *,
+            kmipkit_client_async_operation_response_v1_t *);
+    const uint32_t operations[] = {UINT32_C(0x19), UINT32_C(0x1a),
+            UINT32_C(0x3a), UINT32_C(0x39)};
+    const reader_fn readers[] = {
+        kmipkit_client_async_operation_outcome_cancel_response_v1,
+        kmipkit_client_async_operation_outcome_poll_response_v1,
+        kmipkit_client_async_operation_outcome_process_response_v1,
+        kmipkit_client_async_operation_outcome_query_async_requests_response_v1};
+    size_t selected = sizeof(operations) / sizeof(operations[0]);
+    kmipkit_client_async_operation_response_v1_t response = {0};
+    uint8_t present = UINT8_MAX;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    uint8_t payload_present = UINT8_MAX;
+    int result = 0;
+    int failure_stage = 1;
+
+    if (outcome == NULL || expected_correlation_length > UINT64_C(16777216) ||
+            (expected_correlation_length != 0 && expected_correlation == NULL) ||
+            expected_is_pending > 1 || expected_has_cancellation_result > 1 ||
+            expected_has_payload > 1) {
+        return 0;
+    }
+    for (size_t index = 0; index < sizeof(operations) / sizeof(operations[0]); ++index) {
+        if (operations[index] == expected_operation) selected = index;
+    }
+    if (selected == sizeof(operations) / sizeof(operations[0]) ||
+            readers[selected](outcome, &present, &response) != 0 || present != 1 ||
+            response.struct_size != sizeof(response) || response.abi_version != 1 ||
+            response.operation != expected_operation ||
+            response.result_status != expected_result_status ||
+            response.is_pending != expected_is_pending ||
+            response.has_cancellation_result != expected_has_cancellation_result ||
+            response.cancellation_result != expected_cancellation_result ||
+            response.has_asynchronous_correlation_value !=
+                    (expected_correlation_length != 0 || expected_correlation != NULL) ||
+            response.has_response_payload != expected_has_payload ||
+            response.response_payload_member_count != expected_payload_member_count ||
+            response.reserved != 0 ||
+            response.asynchronous_correlation_value.length != expected_correlation_length ||
+            (expected_correlation_length == 0 &&
+                    response.asynchronous_correlation_value.data != NULL) ||
+            (expected_correlation_length != 0 &&
+                    (response.asynchronous_correlation_value.data == NULL ||
+                            memcmp(response.asynchronous_correlation_value.data,
+                                    expected_correlation,
+                                    (size_t)expected_correlation_length) != 0))) {
+        failure_stage = 2;
+        goto cleanup;
+    }
+
+    if (kmipkit_client_async_operation_outcome_response_payload_ttlv(
+                outcome, &payload_present, &payload) != 0 ||
+            payload_present != expected_has_payload ||
+            ((payload_present == 0) != (payload == NULL))) {
+        failure_stage = 3;
+        goto cleanup;
+    }
+
+    for (size_t index = 0; index < sizeof(operations) / sizeof(operations[0]); ++index) {
+        if (index == selected) continue;
+        kmipkit_client_async_operation_response_v1_t mismatch = {0};
+        uint8_t mismatch_present = UINT8_MAX;
+        if (readers[index](outcome, &mismatch_present, &mismatch) != 0 ||
+                mismatch_present != 0 || mismatch.struct_size != 0 ||
+                mismatch.abi_version != 0) {
+            failure_stage = 4 + (int)index;
+            goto cleanup;
+        }
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(payload);
+    return result == 1 ? 1 : -failure_stage;
 }

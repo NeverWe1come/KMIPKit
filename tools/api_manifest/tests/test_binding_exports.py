@@ -1062,6 +1062,14 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.add("registerRequestWithProtectionStorageMasks")
+        response_ttlv_bridge_members = {
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRawTtlv",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHeaderTtlv",
+        }
+        native_members.update(
+            member.removeprefix("org.kmipkit.NativeExtensionRegistry.")
+            for member in response_ttlv_bridge_members
+        )
         wire_encoding_bridge_members = {
             "org.kmipkit.NativeExtensionRegistry.clientConfigurationWireEncoding",
             "org.kmipkit.NativeExtensionRegistry.clientConfigurationWithWireEncoding",
@@ -1107,7 +1115,8 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertTrue(
                 "KMIPKIT-0043-FR-021" in evidence
                 or combined_approved_references
-                or multi_encoding_bridge,
+                or multi_encoding_bridge
+                or key[1] in response_ttlv_bridge_members,
                 evidence,
             )
             bridge_owner = {
@@ -1135,6 +1144,11 @@ class BindingExportAuditTests(unittest.TestCase):
                     self.assertIn("KMIPKIT-0057-FR-001", evidence)
                     self.assertIn("KMIPKIT-0057-FR-005", evidence)
                     self.assertIn("raw-handle JNI bridge plumbing", exclusion["reason"])
+                elif key[1] in response_ttlv_bridge_members:
+                    self.assertIn("KMIPKIT-0052-FR-007", evidence)
+                    if key[1].endswith("clientBatchItemResponseHeaderTtlv"):
+                        self.assertIn("KMIPKIT-0052-FR-006", evidence)
+                    self.assertIn("raw-handle JNI plumbing", exclusion["reason"])
                 elif key[1] == "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11WithExtensions":
                     self.assertIn("KMIPKIT-0040-FR-002/004", evidence)
                     self.assertIn("KMIPKIT-0043-FR-008", evidence)
@@ -1165,7 +1179,11 @@ class BindingExportAuditTests(unittest.TestCase):
                     self.assertIn("KMIPKIT-0043-FR-021", evidence)
                 elif not combined_approved_references:
                     self.assertIn("KMIPKIT-0043-FR-008", evidence)
-                if "ffi-and-bindings.md" not in evidence and not combined_approved_references:
+                if (
+                    "ffi-and-bindings.md" not in evidence
+                    and not combined_approved_references
+                    and key[1] not in response_ttlv_bridge_members
+                ):
                     self.assertTrue(
                         any(task_id in evidence for task_id in ("T035", "T037", "T039"))
                         or "Reviewed against KMIPKIT-0043-FR-008/010/021/022" in evidence

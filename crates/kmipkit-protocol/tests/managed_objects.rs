@@ -426,6 +426,22 @@ fn typed_object_accessors_and_raw_views_cover_all_managed_object_models() {
     let symmetric = SymmetricKey::try_new(key_block()).expect("Symmetric Key");
     assert!(symmetric.with_raw(|view| view.children().len()).is_ok());
 
+    for object in [
+        ManagedObject::PgpKey(pgp),
+        ManagedObject::PrivateKey(private),
+        ManagedObject::PublicKey(public),
+        ManagedObject::SecretData(secret),
+        ManagedObject::SplitKey(split),
+        ManagedObject::SymmetricKey(symmetric),
+    ] {
+        assert!(
+            object
+                .key_block()
+                .expect("key object has a Key Block")
+                .is_ok()
+        );
+    }
+
     let typed = ManagedObject::try_from_item(ObjectType::from_raw(1), certificate.into_item())
         .expect("typed dispatch");
     assert_eq!(typed.object_type().raw(), 1);

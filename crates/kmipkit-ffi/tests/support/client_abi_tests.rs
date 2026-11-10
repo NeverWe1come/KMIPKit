@@ -6297,6 +6297,18 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_reads_async_response_v1(
+        outcome: *mut kmipkit_client_async_operation_outcome_t,
+        expected_operation: u32,
+        expected_result_status: u32,
+        expected_is_pending: u32,
+        expected_has_cancellation_result: u32,
+        expected_cancellation_result: u32,
+        expected_correlation: *const u8,
+        expected_correlation_length: u64,
+        expected_has_payload: u32,
+        expected_payload_member_count: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_rng_retrieve_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_data: *const u8,

@@ -14,6 +14,13 @@ import org.kmipkit.ttlv.TtlvStructure;
 public final class AsyncOperationOutcome implements AutoCloseable {
     private final NativeHandle handle;
 
+    private static native long[] readCancelResponseV1(long outcome);
+    private static native long[] readPollResponseV1(long outcome);
+    private static native long[] readProcessResponseV1(long outcome);
+    private static native long[] readQueryAsyncRequestsResponseV1(long outcome);
+    private static native boolean withCancelResponseCorrelationValueV1(
+            long outcome, Consumer<ByteBuffer> callback);
+
     AsyncOperationOutcome(long nativeHandle) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.CLIENT_ASYNC_OPERATION_OUTCOME);
     }
@@ -75,12 +82,89 @@ public final class AsyncOperationOutcome implements AutoCloseable {
         return TtlvStructure.fromNative(structure, null);
     }
 
-    /** Returns a caller-owned generic TTLV copy of a successful operation response payload. */
+    /** Returns a caller-owned generic TTLV copy of the response payload when present. */
     public Optional<TtlvStructure> responsePayloadTtlv() {
         NativeExtensionRegistry.ensureLoaded();
         long payload = handle.withValue(
                 NativeExtensionRegistry::clientAsyncOperationOutcomeResponsePayloadTtlv);
         return payload == 0 ? Optional.empty() : Optional.of(TtlvStructure.fromNative(payload, null));
+    }
+
+    /** Returns the typed Cancel response when this outcome contains a valid Cancel result. */
+    public Optional<AsyncCancelResponse> cancelResponse() {
+        return readResponse(0x19, NativeReader.CANCEL)
+                .map(values -> new AsyncCancelResponse(this, values));
+    }
+
+    /** Returns the typed Poll response when this outcome contains a valid Poll result. */
+    public Optional<AsyncPollResponse> pollResponse() {
+        return readResponse(0x1a, NativeReader.POLL)
+                .map(values -> new AsyncPollResponse(this, values));
+    }
+
+    /** Returns the typed Process response when this outcome contains a valid Process result. */
+    public Optional<AsyncProcessResponse> processResponse() {
+        return readResponse(0x3a, NativeReader.PROCESS)
+                .map(values -> new AsyncProcessResponse(this, values));
+    }
+
+    /** Returns the typed Query Asynchronous Requests status with a generic payload view. */
+    public Optional<AsyncQueryAsyncRequestsResponse> queryAsyncRequestsResponse() {
+        return readResponse(0x39, NativeReader.QUERY_ASYNC_REQUESTS)
+                .map(values -> new AsyncQueryAsyncRequestsResponse(this, values));
+    }
+
+    private Optional<long[]> readResponse(long expectedOperation, NativeReader reader) {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] values = handle.withValue(reader.read);
+        if (values == null) {
+            return Optional.empty();
+        }
+        validateTypedResponseValues(values, expectedOperation);
+        return Optional.of(values);
+    }
+
+    static void validateTypedResponseValues(long[] values, long expectedOperation) {
+        if (values.length != 8 || values[0] != 1 || values[1] != expectedOperation
+                || values[2] < 0 || values[2] > 0xffff_ffffL
+                || values[3] < 0 || values[3] > 1
+                || values[4] < 0 || values[4] > 1
+                || values[5] < 0 || values[5] > 0xffff_ffffL
+                || values[6] < 0 || values[6] > 1
+                || values[7] < 0
+                || (values[4] == 0 && values[5] != 0)
+                || (values[6] == 0 && values[7] != 0)) {
+            throw new InvalidInputException("native asynchronous typed response is invalid");
+        }
+    }
+
+    private enum NativeReader {
+        CANCEL(AsyncOperationOutcome::readCancelResponseV1),
+        POLL(AsyncOperationOutcome::readPollResponseV1),
+        PROCESS(AsyncOperationOutcome::readProcessResponseV1),
+        QUERY_ASYNC_REQUESTS(AsyncOperationOutcome::readQueryAsyncRequestsResponseV1);
+
+        private final java.util.function.LongFunction<long[]> read;
+
+        NativeReader(java.util.function.LongFunction<long[]> read) {
+            this.read = read;
+        }
+    }
+
+    boolean withCancelCorrelationValue(Consumer<ByteBuffer> callback) {
+        requireCorrelationCallback(callback);
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(value -> withCancelResponseCorrelationValueV1(value, callback));
+    }
+
+    static void requireCorrelationCallback(Consumer<ByteBuffer> callback) {
+        if (callback == null) {
+            throw new InvalidInputException("asynchronous correlation callback is invalid");
+        }
+    }
+
+    void ensureOpen() {
+        handle.get();
     }
 
     @Override

@@ -158,6 +158,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "server_generated_creation"
             | "typed_message_model"
             | "public_binding_surface"
+            | "response_ttlv_navigation"
             | "server_to_client_operations"
             | "endpoint_role_inversion"
     ))

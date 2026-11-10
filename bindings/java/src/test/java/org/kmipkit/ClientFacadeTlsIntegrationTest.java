@@ -52,6 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.AsyncOperationOutcome;
+import org.kmipkit.extensions.AsyncPollResponse;
 import org.kmipkit.extensions.BatchOutcomeKind;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
@@ -734,6 +735,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] queryId = "query-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] logoutId = "logout-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] request;
+        TtlvStructure retainedQueryRaw;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
                 ClientConfiguration extensions = ClientConfiguration.create(registry);
@@ -746,7 +748,7 @@ final class ClientFacadeTlsIntegrationTest {
                 ClientBatch batch = ClientBatch.create()) {
             batch.add(ClientBatchItem.ping().withUniqueBatchItemId(pingId));
             batch.add(ClientBatchItem.query(
-                            new int[] {1, 2, 1}, new String[] {"group-b", "group-a"})
+                            new int[] {1, 2, 1, 3}, new String[] {"group-b", "group-a"})
                     .withUniqueBatchItemId(queryId));
             try (TtlvStructure ticket = logoutTicket()) {
                 batch.add(ClientBatchItem.logout(ticket).withUniqueBatchItemId(logoutId));
@@ -770,18 +772,56 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0x18, queryResult.operation());
                 assertEquals(0x2e, logoutResult.operation());
                 assertEquals(Boolean.TRUE, logoutResult.logoutResponse().orElseThrow());
+                retainedQueryRaw = queryResult.raw().orElseThrow();
+                try (TtlvStructure responseHeader = queryResult.responseHeaderTtlv();
+                        TtlvStructureView headerView = responseHeader.view()) {
+                    assertTrue(headerView.itemCount() > 0);
+                }
                 try (TtlvStructure queryPayload = queryResult.queryResponse().orElseThrow();
                         TtlvStructureView payloadView = queryPayload.view();
-                        TtlvItemView masksItem = payloadView.itemAt(0);
+                        TtlvItemView masksItem = payloadView.itemAt(1);
                         Tag masksTag = masksItem.tag()) {
-                    assertEquals(1, payloadView.itemCount());
+                    assertEquals(2, payloadView.itemCount());
                     assertEquals(0x42015f, masksTag.raw());
                     assertEquals(TtlvItemType.Structure, masksItem.itemType());
                     try (TtlvValueView masksValue = masksItem.value();
                             TtlvStructureView masks = masksValue.structure()) {
-                        assertEquals(0, masks.itemCount());
+                        assertEquals(1, masks.itemCount());
+                        try (TtlvItemView vendorItem = masks.itemAt(0);
+                                Tag vendorTag = vendorItem.tag();
+                                TtlvValueView vendorValue = vendorItem.value();
+                                TtlvStructureView vendor = vendorValue.structure();
+                                TtlvItemView vendorValueItem = vendor.itemAt(0);
+                                Tag vendorValueTag = vendorValueItem.tag();
+                                TtlvValueView vendorValueView = vendorValueItem.value()) {
+                            assertEquals(0x540001, vendorTag.raw());
+                            assertEquals(0x540002, vendorValueTag.raw());
+                            assertEquals(0x1234, vendorValueView.integer());
+                        }
                     }
                 }
+                try (TtlvStructure queryPayload = queryResult.raw().orElseThrow();
+                        TtlvStructureView queryPayloadView = queryPayload.view();
+                        TtlvItemView serverInformationItem = queryPayloadView.itemAt(0);
+                        Tag serverInformationTag = serverInformationItem.tag();
+                        TtlvValueView serverInformationValue = serverInformationItem.value();
+                        TtlvStructureView serverInformation = serverInformationValue.structure();
+                        TtlvItemView vendorItem = serverInformation.itemAt(0);
+                        Tag vendorTag = vendorItem.tag();
+                        TtlvValueView vendorValue = vendorItem.value();
+                        TtlvStructureView vendor = vendorValue.structure();
+                        TtlvItemView nestedVendorItem = vendor.itemAt(0);
+                        Tag nestedVendorTag = nestedVendorItem.tag();
+                        TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                    assertEquals(0x420088, serverInformationTag.raw());
+                    assertEquals(0x540001, vendorTag.raw());
+                    assertEquals(0x540002, nestedVendorTag.raw());
+                    assertEquals(0x1234, nestedVendorValue.integer());
+                }
+            }
+            try (retainedQueryRaw; TtlvStructureView detachedView = retainedQueryRaw.view()) {
+                assertEquals(2, detachedView.itemCount(),
+                        "the copied raw payload survives closing its response owner");
             }
             request = peer.get(15, TimeUnit.SECONDS);
         } finally {
@@ -2126,8 +2166,33 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals("get-response-secret-id",
                             getResponse.uniqueIdentifier().orElseThrow().text());
                     assertTagOrder(getObject, 0x42008f);
-                    assertTrue(containsByteString(getObject, 0x420045,
+                    assertTrue(containsByteString(getObject, 0x420043,
                             "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                    assertFalse(getResponse.toString().contains("KMIPKit-get-response-sentinel"));
+                    try (TtlvItemView anyObjectItem = getObject.itemAt(0);
+                            Tag anyObjectTag = anyObjectItem.tag();
+                            TtlvValueView anyObjectValue = anyObjectItem.value();
+                            TtlvStructureView managedObject = anyObjectValue.structure()) {
+                        assertEquals(0x42008f, anyObjectTag.raw());
+                        assertTagOrder(managedObject, 0x420040);
+                        try (TtlvItemView keyBlockItem = managedObject.itemAt(0);
+                                Tag keyBlockTag = keyBlockItem.tag();
+                                TtlvValueView keyBlockValue = keyBlockItem.value();
+                                TtlvStructureView keyBlock = keyBlockValue.structure();
+                                TtlvItemView vendorExtensionItem = keyBlock.itemAt(2);
+                                Tag vendorExtensionTag = vendorExtensionItem.tag();
+                                TtlvValueView vendorExtensionValue = vendorExtensionItem.value();
+                                TtlvStructureView vendorExtension = vendorExtensionValue.structure();
+                                TtlvItemView nestedVendorItem = vendorExtension.itemAt(0);
+                                Tag nestedVendorTag = nestedVendorItem.tag();
+                                TtlvValueView nestedVendorValue = nestedVendorItem.value()) {
+                            assertEquals(0x420040, keyBlockTag.raw());
+                            assertTagOrder(keyBlock, 0x420042, 0x420045, 0x540001);
+                            assertEquals(0x540001, vendorExtensionTag.raw());
+                            assertEquals(0x540002, nestedVendorTag.raw());
+                            assertEquals(0x1234, nestedVendorValue.integer());
+                        }
+                    }
                     assertFalse(getResponse.toString().contains("get-response-secret-id"));
                 }
                 ClientBatchItemResult.LocateResponse locateResponse =
@@ -3593,14 +3658,17 @@ final class ClientFacadeTlsIntegrationTest {
             requests.add(serveOneResponse(listener,
                     singleAsyncResponseMessage(0x19, 0, null, cancelPayload)));
             requests.add(serveOneResponse(listener,
-                    singleAsyncResponseMessage(0x3a, 0, null, emptyPayload)));
+                    singleAsyncResponseMessage(0x3a, 2, correlation, emptyPayload)));
             requests.add(serveOneResponse(listener,
-                    singleAsyncResponseMessage(0x39, 0, null, emptyPayload)));
+                    singleAsyncResponseMessage(0x39, 2, queryCorrelation, emptyPayload)));
+            requests.add(serveOneResponse(listener,
+                    singleAsyncResponseMessage(0x19, 1, null, null)));
             return requests;
         });
         Thread peerThread = new Thread(peer, "kmipkit-java-default-async-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
+        AsyncPollResponse[] retainedPoll = new AsyncPollResponse[1];
 
         List<byte[]> requests;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
@@ -3620,20 +3688,85 @@ final class ClientFacadeTlsIntegrationTest {
                     correlation, CodecLimits.defaults())) {
                 assertEquals(0x1a, outcome.metadataV1().operation());
                 assertTrue(outcome.metadataV1().outcomeKind().isPending());
+                var typed = outcome.pollResponse().orElseThrow();
+                retainedPoll[0] = typed;
+                assertTrue(typed.isPending());
+                assertEquals(0x1a, typed.result().operation());
+                assertTrue(typed.withAsynchronousCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(correlation, observed);
+                }));
+                assertTrue(typed.raw().isEmpty());
+                assertTrue(outcome.cancelResponse().isEmpty());
+                assertTrue(outcome.processResponse().isEmpty());
+                assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
+            assertThrows(InvalidInputException.class, retainedPoll[0]::isPending);
             try (AsyncOperationOutcome outcome = client.executeCancel(
                     correlation, CodecLimits.defaults())) {
                 assertEquals(0x19, outcome.metadataV1().operation());
                 assertEquals(1, outcome.metadataV1().cancellationResult().orElseThrow());
+                var typed = outcome.cancelResponse().orElseThrow();
+                assertEquals(0x19, typed.result().operation());
+                assertEquals(1, typed.cancellationResult().orElseThrow());
+                assertTrue(typed.withEchoedCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(correlation, observed);
+                }));
+                try (TtlvStructure payload = typed.raw().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(2, view.itemCount());
+                }
+                assertTrue(outcome.pollResponse().isEmpty());
+                assertTrue(outcome.processResponse().isEmpty());
+                assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeProcess(
-                    correlation, CodecLimits.defaults(), OptionalLong.empty())) {
+                    correlation, CodecLimits.defaults(), OptionalLong.of(1))) {
                 assertEquals(0x3a, outcome.metadataV1().operation());
+                var typed = outcome.processResponse().orElseThrow();
+                assertTrue(typed.isPending());
+                assertEquals(0, typed.payloadMemberCount().orElseThrow());
+                assertTrue(typed.withAsynchronousCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(correlation, observed);
+                }));
+                try (TtlvStructure payload = typed.raw().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(0, view.itemCount());
+                }
+                assertTrue(outcome.cancelResponse().isEmpty());
+                assertTrue(outcome.pollResponse().isEmpty());
+                assertTrue(outcome.queryAsyncRequestsResponse().isEmpty());
             }
             try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequests(
                     CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
                     OptionalLong.of(2))) {
                 assertEquals(0x39, outcome.metadataV1().operation());
+                var typed = outcome.queryAsyncRequestsResponse().orElseThrow();
+                assertEquals(0x39, typed.result().operation());
+                assertTrue(typed.isPending());
+                assertTrue(typed.withAsynchronousCorrelationValue(value -> {
+                    byte[] observed = new byte[value.remaining()];
+                    value.get(observed);
+                    assertArrayEquals(queryCorrelation, observed);
+                }));
+                try (TtlvStructure payload = typed.raw().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(0, view.itemCount());
+                }
+                assertTrue(outcome.pollResponse().isEmpty());
+                assertTrue(outcome.cancelResponse().isEmpty());
+                assertTrue(outcome.processResponse().isEmpty());
+            }
+            try (AsyncOperationOutcome outcome = client.executeCancel(
+                    correlation, CodecLimits.defaults())) {
+                var typed = outcome.cancelResponse().orElseThrow();
+                assertTrue(typed.cancellationResult().isEmpty());
+                assertFalse(typed.withEchoedCorrelationValue(value -> {}));
             }
             requests = peer.get(24, TimeUnit.SECONDS);
         } finally {
@@ -3646,6 +3779,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(requests.get(3), item(0x420006, 8, queryCorrelation));
         assertContains(requests.get(3), enumeration(0x42005c, (int) 0xdead_beefL));
         assertContains(requests.get(3), enumeration(0x420007, 2));
+        assertContains(requests.get(4), enumeration(0x42005c, 0x19));
         assertTrue(peer.isDone());
     }
 
@@ -5934,7 +6068,10 @@ final class ClientFacadeTlsIntegrationTest {
                 enumeration(0x42007f, 1), enumeration(0x42007e, 5));
         byte[] getObject = structure(0x42008f,
                 structure(0x420040,
-                        item(0x420045, 8, "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII))));
+                        enumeration(0x420042, 1),
+                        structure(0x420045,
+                                item(0x420043, 8, "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII))),
+                        structure(0x540001, item(0x540002, 2, integer(0x1234)))));
         byte[] getPayload = structure(0x42007c,
                 enumeration(0x420057, 2),
                 item(0x420094, 7, "get-response-secret-id".getBytes(StandardCharsets.UTF_8)),
@@ -6002,7 +6139,11 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, pingId),
                 enumeration(0x42007f, 0),
                 structure(0x42007c), responseExtension);
-        byte[] queryPayload = structure(0x42007c, structure(0x42015f));
+        byte[] queryPayload = structure(0x42007c,
+                structure(0x420088,
+                        structure(0x540001, item(0x540002, 2, integer(0x1234)))),
+                structure(0x42015f,
+                        structure(0x540001, item(0x540002, 2, integer(0x1234)))));
         byte[] queryItem = structure(0x42000f,
                 enumeration(0x42005c, 0x18),
                 item(0x420093, 8, queryId),
@@ -6390,6 +6531,7 @@ final class ClientFacadeTlsIntegrationTest {
         List<byte[]> fields = new ArrayList<>();
         fields.add(enumeration(0x42005c, operation));
         fields.add(enumeration(0x42007f, status));
+        if (status == 1) fields.add(enumeration(0x42007e, 5));
         if (correlation != null) fields.add(item(0x420006, 8, correlation));
         if (payload != null) fields.add(payload);
         return structure(0x42007b, header, structure(0x42000f, fields.toArray(byte[][]::new)));

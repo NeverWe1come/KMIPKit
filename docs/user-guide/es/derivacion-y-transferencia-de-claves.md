@@ -182,6 +182,14 @@ tipo wire, y Attributes y Any Object permanecen como TTLV genérico. En C, Java
 y Python, Any Object es una Structure de un elemento cuyo hijo conserva la
 etiqueta original del elemento polimórfico y el orden.
 
+En Rust, `ExportResponse::managed_object()` y `ExportResponse::key_block()`
+permiten obtener copias tipadas; la respuesta Get ofrece los mismos métodos.
+Devuelven ausencia si el resultado no contiene objeto o si este no define un
+Key Block. El TTLV genérico de la respuesta original sigue disponible y las
+copias tipadas conservan los hijos desconocidos y de fabricante. KMIPKit pone
+a cero sus copias al liberarlas; esa garantía no cubre las copias que cree el
+llamador.
+
 Cierra las copias de respuesta propiedad del llamador al terminar. KMIPKit pone
 a cero la memoria que posee, pero los runtimes de Java y Python pueden conservar
 copias externas fuera de ese control. No formatees, registres ni incluyas los

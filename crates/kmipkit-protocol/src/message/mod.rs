@@ -215,6 +215,26 @@ impl ResponseMessage {
     ) -> Option<R> {
         with_root_item_structure(&self.tree, index, callback)
     }
+
+    pub(in crate::message) fn root_item_structure(
+        &self,
+        index: usize,
+    ) -> Option<StructureView<'_>> {
+        let tree = self.tree.view();
+        tree.children().get(index)?.as_structure()
+    }
+
+    pub(in crate::message) fn response_payload_structure(
+        &self,
+        batch_index: usize,
+    ) -> Option<StructureView<'_>> {
+        let batch = self.root_item_structure(batch_index)?;
+        let payload = batch
+            .children()
+            .iter()
+            .find(|child| child.tag().raw() == 0x0042_007C)?;
+        payload.as_structure()
+    }
 }
 
 impl fmt::Debug for ResponseMessage {

@@ -982,6 +982,8 @@ impl BoundaryAudit {
             is_exact_error_validation_source(error_root_scope, impl_type, signature);
         let batch_response_iterator =
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
+        let raw_response_accessor =
+            is_exact_raw_response_accessor(execute_root_scope, impl_type, signature);
         let registry_value_validation = is_exact_registry_value_validation(
             self.is_source_root(Path::new("extension_registry.rs")),
             impl_type,
@@ -1032,6 +1034,7 @@ impl BoundaryAudit {
         let mut output_finder = PublicTypeFinder::default();
         if !batch_response_iterator
             && !registry_generic_accessor
+            && !raw_response_accessor
             && let syn::ReturnType::Type(_, output) = &signature.output
         {
             output_finder.visit_type(output);
@@ -2458,6 +2461,122 @@ fn exact_iterator_item_type(arguments: &syn::PathArguments) -> bool {
             if reference.lifetime.is_none()
                 && reference.mutability.is_none()
                 && is_plain_type_path(&reference.elem, "ClientBatchItemResponse"))
+}
+
+fn is_exact_raw_response_accessor(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let approved_owner_and_name = matches!(
+        (impl_type, signature.ident.to_string().as_str()),
+        (
+            Some("ClientBatchItemResponse" | "ClientOperationOutcome"),
+            "raw"
+        ) | (
+            Some("ClientBatchItemResponse" | "ClientBatchResponse"),
+            "response_header_raw"
+        )
+    );
+    if !execute_root_scope
+        || !approved_owner_and_name
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 1
+        || !matches!(signature.inputs.first(), Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.as_ref().is_some_and(|(_, lifetime)| lifetime.is_none())
+                && receiver.mutability.is_none()
+                && receiver.colon_token.is_none()
+                && receiver.attrs.is_empty())
+    {
+        return false;
+    }
+
+    matches!(&signature.output, syn::ReturnType::Type(_, output)
+        if is_borrowed_structure_option(output))
+}
+
+fn is_borrowed_structure_option(ty: &Type) -> bool {
+    let Type::Path(option) = ty else {
+        return false;
+    };
+    if option.qself.is_some()
+        || option.path.leading_colon.is_some()
+        || option.path.segments.len() != 1
+        || option.path.segments[0].ident != "Option"
+    {
+        return false;
+    }
+    let syn::PathArguments::AngleBracketed(arguments) = &option.path.segments[0].arguments else {
+        return false;
+    };
+    let Some(syn::GenericArgument::Type(Type::Path(view))) = arguments.args.first() else {
+        return false;
+    };
+    if arguments.args.len() != 1
+        || view.qself.is_some()
+        || view.path.leading_colon.is_some()
+        || view.path.segments.len() != 1
+        || view.path.segments[0].ident != "StructureView"
+    {
+        return false;
+    }
+    let syn::PathArguments::AngleBracketed(view_arguments) = &view.path.segments[0].arguments
+    else {
+        return false;
+    };
+    view_arguments.args.len() == 1
+        && matches!(view_arguments.args.first(),
+            Some(syn::GenericArgument::Lifetime(lifetime)) if lifetime.ident == "_")
+}
+
+#[test]
+fn raw_response_type_boundary_exception_is_limited_to_approved_accessors() {
+    let raw_signature =
+        syn::parse_str::<syn::Signature>("fn raw(&self) -> Option<StructureView<'_>>")
+            .expect("the approved borrowed raw signature is valid Rust");
+    let header_signature = syn::parse_str::<syn::Signature>(
+        "fn response_header_raw(&self) -> Option<StructureView<'_>>",
+    )
+    .expect("the approved response header signature is valid Rust");
+
+    assert!(is_exact_raw_response_accessor(
+        true,
+        Some("ClientBatchItemResponse"),
+        &raw_signature
+    ));
+    assert!(is_exact_raw_response_accessor(
+        true,
+        Some("ClientOperationOutcome"),
+        &raw_signature
+    ));
+    assert!(is_exact_raw_response_accessor(
+        true,
+        Some("ClientBatchResponse"),
+        &header_signature
+    ));
+    assert!(!is_exact_raw_response_accessor(
+        true,
+        Some("UnrelatedPublicType"),
+        &raw_signature
+    ));
+    assert!(!is_exact_raw_response_accessor(
+        false,
+        Some("ClientBatchItemResponse"),
+        &raw_signature
+    ));
+    let owned_bytes_signature = syn::parse_str::<syn::Signature>("fn raw(&self) -> Vec<u8>")
+        .expect("the negative fixture signature is valid Rust");
+    assert!(!is_exact_raw_response_accessor(
+        true,
+        Some("ClientBatchItemResponse"),
+        &owned_bytes_signature
+    ));
 }
 
 fn supported_derive(attribute: &Attribute) -> bool {

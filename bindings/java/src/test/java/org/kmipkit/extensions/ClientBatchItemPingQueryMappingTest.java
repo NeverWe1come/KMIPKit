@@ -204,8 +204,41 @@ final class ClientBatchItemPingQueryMappingTest {
     }
 
     @Test
+    void rejectsMissingNativeResponseHeaderAndRawPayloadStructures() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.requireResponseHeaderTtlv(0));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseOptionalRawTtlv(
+                        new Object[] {new long[] {1}, new long[] {0}}));
+    }
+
+    @Test
     void queryResponseRejectsPresentPayloadWithoutTtlvHandle() {
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseQueryResponse(
                 new Object[] {new long[] {1}, new long[] {0}}));
+    }
+
+    @Test
+    void rawResponsePayloadTransfersAnOwnedStructureAndPreservesAbsence() {
+        TtlvStructure payload = TtlvStructure.create();
+        long payloadHandle = payload.nativeHandleOwner().transfer();
+        TtlvStructure response = ClientBatchItemResult.parseOptionalRawTtlv(
+                new Object[] {new long[] {1}, new long[] {payloadHandle}}).orElseThrow();
+        try (response) {
+            assertEquals(0, response.view().itemCount());
+        }
+        assertTrue(ClientBatchItemResult.parseOptionalRawTtlv(
+                new Object[] {new long[] {0}, new long[] {0}}).isEmpty());
+        ResponseTtlvTestSupport.assertReleased(payloadHandle);
+    }
+
+    @Test
+    void malformedRawResponsePresenceClosesTheUntransferredStructure() {
+        TtlvStructure payload = TtlvStructure.create();
+        long payloadHandle = payload.nativeHandleOwner().transfer();
+        assertThrows(InvalidInputException.class, () ->
+                ClientBatchItemResult.parseOptionalRawTtlv(
+                        new Object[] {new long[] {0}, new long[] {payloadHandle}}));
+        ResponseTtlvTestSupport.assertReleased(payloadHandle);
     }
 }

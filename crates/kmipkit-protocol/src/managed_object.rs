@@ -727,6 +727,51 @@ impl ManagedObject {
         }
     }
 
+    /// Returns an owned typed Key Block for objects that define one.
+    ///
+    /// The returned model is an explicit, zeroizing copy of this object's Key
+    /// Block. Unknown children and their source order are retained. Objects
+    /// without a KMIP Key Block return `None`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error if the retained Key Block cannot be copied or
+    /// no longer satisfies the Key Block schema.
+    #[must_use]
+    pub fn key_block(&self) -> Option<Result<KeyBlock, ManagedObjectError>> {
+        let object = match self {
+            Self::PgpKey(value) => Some(&value.item),
+            Self::PrivateKey(value) => Some(&value.item),
+            Self::PublicKey(value) => Some(&value.item),
+            Self::SecretData(value) => Some(&value.item),
+            Self::SplitKey(value) => Some(&value.item),
+            Self::SymmetricKey(value) => Some(&value.item),
+            Self::Certificate(_)
+            | Self::CertificateRequest(_)
+            | Self::PasswordCredential(_)
+            | Self::DeviceCredential(_)
+            | Self::OneTimePasswordCredential(_)
+            | Self::HashedPasswordCredential(_)
+            | Self::OpaqueObject(_)
+            | Self::Unknown { .. } => None,
+        }?;
+
+        Some((|| {
+            let key_block = object.with_value(|value| {
+                let ValueView::Structure(structure) = value else {
+                    return Err(ManagedObjectError::InvalidStructure); // COVERAGE-EXCLUDE: typed managed-object constructors retain validated Structure Items.
+                };
+                let field = structure
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == KEY_BLOCK)
+                    .ok_or(ManagedObjectError::MissingRequiredField)?; // COVERAGE-EXCLUDE: each key-bearing object's required-field schema includes Key Block.
+                field.try_clone().map_err(ManagedObjectError::from) // COVERAGE-EXCLUDE: cloning a validated bounded item cannot exceed its original TTLV limits.
+            })?;
+            KeyBlock::try_from_item(key_block) // COVERAGE-EXCLUDE: ManagedObject construction validated this exact Key Block item.
+        })())
+    }
+
     /// Consumes the wrapper into the direct object-specific TTLV Item.
     #[must_use]
     pub fn into_item(self) -> Item {

@@ -246,6 +246,64 @@ fn valid_successful_payload() -> Structure {
     ])
 }
 
+#[test]
+fn get_response_exposes_typed_managed_object_and_key_block() {
+    let message = response_message(SUCCESS, None, None, Some(valid_successful_payload()));
+    let response = decode_get(&message).expect("valid Get response");
+
+    let managed_object = response
+        .managed_object()
+        .expect("successful Get has an object")
+        .expect("the symmetric key is a valid managed object");
+    assert!(matches!(
+        managed_object,
+        crate::ManagedObject::SymmetricKey(_)
+    ));
+
+    let key_block = response
+        .key_block()
+        .expect("symmetric key has a Key Block")
+        .expect("the retained Key Block is valid");
+    let has_nested_vendor_extension = key_block
+        .with_raw(|structure| {
+            structure
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == TEST_EXTENSION_TAG)
+        })
+        .expect("typed Key Block remains navigable");
+    assert!(has_nested_vendor_extension);
+
+    let debug = format!("{managed_object:?}");
+    assert!(!debug.contains("[0, 128, 255, 1]"));
+
+    let malformed_object = item(SYMMETRIC_KEY_TAG, Value::structure(structure([])));
+    let malformed_payload = successful_payload([
+        object_type_item(Value::enumeration(SYMMETRIC_KEY_OBJECT_TYPE)),
+        unique_identifier_item(Value::text_string(OBJECT_IDENTIFIER.to_owned())),
+        malformed_object,
+    ]);
+    let malformed_response = decode_get(&response_message(
+        SUCCESS,
+        None,
+        None,
+        Some(malformed_payload),
+    ))
+    .expect("generic Get parser retains an object for typed validation");
+    assert!(
+        malformed_response
+            .managed_object()
+            .expect("success response includes the object")
+            .is_err()
+    );
+    assert!(
+        malformed_response
+            .key_block()
+            .expect("success response includes the object")
+            .is_err()
+    );
+}
+
 fn malformed_success(payload: Structure) -> Result<GetResponse, GetError> {
     let message = response_message(SUCCESS, None, None, Some(payload));
     decode_get(&message)
@@ -702,6 +760,11 @@ fn successful_table_221_response_preserves_unknown_object_type_and_allocated_ven
         response.object().map(item_snapshot) == Some(item_snapshot(&vendor_object())),
         "opaque vendor object differs"
     );
+    assert!(matches!(
+        response.managed_object(),
+        Some(Ok(crate::ManagedObject::Unknown { .. }))
+    ));
+    assert!(response.key_block().is_none());
 }
 
 #[test]
@@ -727,6 +790,8 @@ fn failed_table_222_response_preserves_result_message_and_omits_success_fields()
     assert!(response.object_type().is_none());
     assert!(response.unique_identifier().is_none());
     assert!(response.object().is_none());
+    assert!(response.managed_object().is_none());
+    assert!(response.key_block().is_none());
 }
 
 #[test]

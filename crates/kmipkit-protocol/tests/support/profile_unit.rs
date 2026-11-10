@@ -5749,7 +5749,15 @@ fn profile_maps_optional_failure_response_payload_and_message_extensions_for_cli
                 RuleTestKind::OptionalCapabilityUsable,
             ),
             (
-                "crates/kmipkit-protocol/tests/message_accessors.rs::response_batch_and_extension_accessors_preserve_all_result_shapes",
+                "crates/kmipkit-protocol/tests/message_accessors.rs::failure_response_payload_raw_is_absent",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_accessors.rs::success_response_payload_raw_preserves_empty_structure_and_extensions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_accessors.rs::pending_response_payload_raw_preserves_empty_shape_and_correlation",
                 RuleTestKind::OptionalCapabilityUsable,
             ),
         ],

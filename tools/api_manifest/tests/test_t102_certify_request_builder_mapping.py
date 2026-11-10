@@ -156,7 +156,8 @@ BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
-DECLARATIONS_SHA256 = "9dd20ddf38f06f47d976219d0a46c6ccc77e079524c9f091af1dae765cdac49e"
+# The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
+DECLARATIONS_SHA256 = "302d4f30782ce9792336c3a2fcd9ea15c28aa20a4bfeb1260f17af0b8a8f8490"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
@@ -437,8 +438,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
-        # The 930 0051 validation declarations, including 902 blocked candidates,
-        # and predecessor stack additions
+        # The 930 blocked 0051 validation rows and predecessor stack additions
         # remain inside the exact non-target fingerprint and
         # cannot acquire four-language parity through snapshot normalization.
         for capability, count in (
