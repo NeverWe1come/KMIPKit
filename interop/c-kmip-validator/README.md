@@ -56,7 +56,8 @@ TLS fixtures exercise Discover Versions, Ping, Locate, Query and Log under
 KMIP 2.1, and Locate, Query and Log under KMIP 2.0. The public C
 Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
 a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
-API limitation. The public C API also does not expose a high-level client API or
-a generic TTLV request dispatch path; the consumer records those route limits
-as library/API gaps. Live runs require a dedicated test KMS, valid mutual-TLS
-credentials and explicit opt-in for mutations.
+API limitation. The public C API exposes generic TTLV constructors, inspectors,
+and a decoder, but it has no generic TTLV encoder and no generic TTLV request dispatch.
+It also exposes no high-level client API. The consumer records those route
+limits as library/API gaps. Live runs require a dedicated test KMS, valid
+mutual-TLS credentials and explicit opt-in for mutations.
