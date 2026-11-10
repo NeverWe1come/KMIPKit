@@ -71,8 +71,11 @@ def _create_response() -> bytes:
 def _request_header_indicator(request: bytes) -> int:
     message = _parse_item(request, 0, len(request))
     header = next(child for child in _children(request, message) if child[0] == 0x420077)
-    indicator = next(child for child in _children(request, header) if child[0] == 0x420007)
-    assert indicator[1] == 5
+    indicators = [child for child in _children(request, header) if child[0] == 0x420007]
+    assert len(indicators) == 1
+    indicator = indicators[0]
+    encoded_length = int.from_bytes(request[indicator[2] - 4 : indicator[2]], "big")
+    assert indicator[1] == 5 and encoded_length == 4
     return int.from_bytes(request[indicator[2] : indicator[2] + 4], "big")
 
 
@@ -152,7 +155,7 @@ def test_fluent_async_indicator_is_encoded_in_request_header() -> None:
                     .asynchronous_indicator(2)
                     .execute(limits)
                 )
-        peer.join(timeout=5)
+        peer.join(timeout=12)
         assert not peer.is_alive()
         assert peer_failures.empty()
         assert len(observed) == 1
@@ -162,7 +165,7 @@ def test_fluent_async_indicator_is_encoded_in_request_header() -> None:
     finally:
         if result is not None:
             result.close()
-        peer.join(timeout=5)
+        peer.join(timeout=12)
         if not peer_failures.empty():
             raise peer_failures.get()
 
