@@ -195,6 +195,8 @@ def validate(data, root=ROOT):
     for limitation in data['unavailable']:
         if (limitation['language'], limitation.get('public_api_symbol')) in constructors:
             raise ValueError('public constructor cannot be unavailable')
+    if data['unavailable'] != canonical['unavailable']:
+        raise ValueError('unavailable capabilities differ from public source evidence')
     return data
 
 
@@ -205,6 +207,7 @@ def validate_artifact_identity(data, provenance):
 
 def validate_installed_symbols(data, language, symbols):
     required = {r['public_api_symbol'] for r in data['routes'] if r['language'] == language}
+    required.update(r['public_api_symbol'] for r in data['execution_routes'] if r['language'] == language)
     missing = required - set(symbols)
     if missing:
         raise ValueError('installed artifact is missing public symbols: ' + repr(sorted(missing)))

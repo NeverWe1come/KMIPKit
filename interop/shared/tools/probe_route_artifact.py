@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
-import sys
+import tarfile
 
 from route_capabilities import ROOT, validate, validate_artifact_identity, validate_installed_symbols
 
@@ -30,6 +30,7 @@ def verify_digest(path, expected):
 def probe(data, language, artifact, provenance, *, python=None, build_dir=None):
     validate_artifact_identity(data, provenance)
     symbols = {r['public_api_symbol'] for r in data['routes'] if r['language'] == language}
+    symbols.update(r['public_api_symbol'] for r in data['execution_routes'] if r['language'] == language)
     if language == 'c':
         for name, digest in provenance['files'].items():
             verify_digest(artifact / name, digest)
@@ -40,11 +41,15 @@ def probe(data, language, artifact, provenance, *, python=None, build_dir=None):
         verify_digest(artifact, provenance['artifact_sha256'])
         if python is None:
             raise ValueError('the installed wheel Python interpreter is required')
-        script = '''import importlib,json,sys
+        script = '''import importlib,json,sys,zipfile
 from pathlib import Path
 from importlib.metadata import distribution
 info=json.loads(distribution('kmipkit').read_text('direct_url.json'))
 assert info['archive_info']['hashes']['sha256']==sys.argv[1], 'installed wheel identity mismatch'
+with zipfile.ZipFile(sys.argv[2]) as wheel:
+    for name in wheel.namelist():
+        if name.startswith('kmipkit/') and not name.endswith('/'):
+            assert distribution('kmipkit').locate_file(name).read_bytes()==wheel.read(name), 'installed wheel file mismatch'
 found=[]
 for symbol in json.load(sys.stdin):
     parts=symbol.split('.')
@@ -58,7 +63,7 @@ for symbol in json.load(sys.stdin):
         break
 print(json.dumps(found))
 '''
-        result = subprocess.run([str(python), '-I', '-c', script, provenance['artifact_sha256']],
+        result = subprocess.run([str(python), '-I', '-c', script, provenance['artifact_sha256'], str(artifact)],
             input=json.dumps(sorted(symbols)), capture_output=True, text=True, check=True)
         found = set(json.loads(result.stdout))
         digest = provenance['artifact_sha256']
@@ -78,6 +83,13 @@ print(json.dumps(found))
         verify_digest(bundle, provenance['artifact_sha256'])
         if (artifact / 'library-commit').read_text().strip() != data['library_commit']:
             raise ValueError('installed Rust artifact commit mismatch')
+        for package in sorted((artifact / 'packages').glob('*.crate')):
+            with tarfile.open(package) as archive:
+                for member in archive.getmembers():
+                    if member.isfile():
+                        installed_file = artifact / 'crates' / member.name
+                        if installed_file.read_bytes() != archive.extractfile(member).read():
+                            raise ValueError('installed Rust package file mismatch')
         if build_dir is None:
             raise ValueError('Rust consumer build directory is required')
         build_dir.mkdir(parents=True, exist_ok=True)
