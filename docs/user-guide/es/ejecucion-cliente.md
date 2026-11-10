@@ -75,6 +75,69 @@ rutas aprobados por versión; su presencia no afirma conformidad general con
 ADR-0002 iniciales, limitados a KMIP 2.1, han sido sustituidos en alcance por
 decisiones aprobadas posteriores.
 
+## Ciclo fluido de una clave
+
+KMIPKIT-0091 añade un recorrido orientado a tareas para el ciclo habitual de
+una clave simétrica. Construye peticiones tipadas existentes y mantiene
+explícitos el algoritmo, el tamaño de clave y la política de uso. Los presets
+AES solo fijan el algoritmo y la longitud en bits; el llamador elige las
+operaciones permitidas. Create devuelve el Unique Identifier tipado del
+servidor, que después se pasa a Get y Destroy:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn ciclo_fluido_clave(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+let created = client
+    .request()
+    .create_symmetric_key()
+    .aes_256()
+    .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+    .name("application-key")
+    .execute(&limits)?;
+let identifier = created.outcome().create_response()
+    .and_then(|response| response.unique_identifier())
+    .expect("Create correcto devuelve un Unique Identifier").clone();
+let key = client.request().get(identifier.clone()).execute(&limits)?;
+let destroyed = client.request().destroy(identifier).execute(&limits)?;
+let _ = (key, destroyed);
+Ok(())
+}
+
+fn main() {}
+```
+
+El mismo flujo con ámbito está disponible en Java
+(`client.request().createSymmetricKey()`), Python
+(`client.request().create_symmetric_key()`) y C. Los builders de Java y Python
+exponen `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`, `name()` y
+`execute()`, seguidos por `get(id)` y `destroy(id)`. Los métodos directos del
+cliente también ofrecen `createSymmetricKey`, `getById` y `destroyById` en
+Java, y `create_symmetric_key`, `get_by_id` y `destroy_by_id` en Python.
+
+C ofrece las funciones directas para una operación
+`kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1` y
+`kmipkit_client_destroy_by_id_v1`, además de un builder opaco de clave
+simétrica para atributos expertos. Para configurar raw TLS/mTLS de forma
+compacta, `kmipkit_client_create_mtls_v1` acepta spans de certificados y clave;
+si no se indica un límite, usa 8 MiB para la petición. Lee los spans de
+certificados durante la construcción y el cliente devuelto es dueño de su
+configuración de transporte. Las llamadas directas devuelven los códigos de
+estado y handles tipados propiedad del llamador. Get recibe el identificador
+devuelto por Create; los bindings no lo inventan localmente.
+
+Cada lenguaje tiene un recorrido TLS 1.3/mTLS limitado a loopback que envía
+Create, Get y Destroy a un peer controlado, lee el identificador de Create y lo
+usa en las peticiones siguientes. Esto comprueba la ruta del cliente y el
+intercambio tipado contra el fixture, no la interoperabilidad con un KMS
+externo. Pending sigue siendo un resultado explícito; el cliente no ejecuta
+Poll ni reintenta automáticamente.
+
 ## Métodos directos y opciones por intercambio
 
 `Client` ofrece un método directo tipado para cada una de las 56 operaciones

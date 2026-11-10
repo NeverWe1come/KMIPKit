@@ -66,8 +66,8 @@ mod wire_codec_common;
 mod xml_codec;
 
 mod error;
-pub mod fluent;
 pub mod extension_registry;
+pub mod fluent;
 
 #[cfg(test)]
 #[path = "../tests/fixtures/extensions/extension_fixtures.generated.rs"]
@@ -350,14 +350,14 @@ mod transport_contract_tests;
 mod profile_preflight_tests;
 
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory, ClientErrorResponseTtlv};
-pub use fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentBuildError,
-    GetBuilder, RequestBuilder,
-};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, Kmip30OperationResponse, PendingOutcome,
+};
+pub use fluent::{
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentBuildError,
+    GetBuilder, RequestBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,

@@ -33,6 +33,66 @@ int kmipkit_public_client_surface_probe(void) {
     return status == 4 && response == NULL ? 0 : 4;
 }
 
+int kmipkit_public_fluent_builder_probe(void) {
+    static const uint8_t name[] = "primary encryption key";
+    kmipkit_symmetric_key_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = UINT32_C(0);
+    int32_t status;
+
+    status = kmipkit_symmetric_key_builder_create(&builder);
+    if (status != INT32_C(0) || builder == NULL) {
+        return 1;
+    }
+    if (kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_usage_mask(
+            builder,
+            (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                      KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_name(
+            builder, name, (uint64_t)(sizeof(name) - 1)) != INT32_C(0)) {
+        kmipkit_symmetric_key_builder_release(builder);
+        return 2;
+    }
+    status = kmipkit_symmetric_key_builder_build_batch_item(builder, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CREATE) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_symmetric_key_builder_release(builder);
+        return 3;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_symmetric_key_builder_release(builder);
+
+    /* A larger struct_size is forward-compatible; null client fails before network I/O. */
+    kmipkit_symmetric_key_request_v1_t request = {0};
+    kmipkit_client_batch_response_t *response = NULL;
+    request.struct_size = (uint32_t)sizeof(request) + UINT32_C(8);
+    request.abi_version = UINT32_C(1);
+    request.cryptographic_algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+    request.cryptographic_length = INT32_C(256);
+    request.cryptographic_usage_mask =
+        (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                  KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT);
+    status = kmipkit_client_create_symmetric_key_v1(NULL, &request, NULL, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        kmipkit_client_batch_response_release(response);
+        return 4;
+    }
+
+    request.struct_size = (uint32_t)sizeof(request) - UINT32_C(1);
+    response = NULL;
+    status = kmipkit_client_create_symmetric_key_v1(NULL, &request, NULL, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        kmipkit_client_batch_response_release(response);
+        return 5;
+    }
+    return 0;
+}
+
 int kmipkit_public_client_execute_json_override(
     uint16_t port,
     const uint8_t *leaf_certificate,
@@ -157,5 +217,174 @@ cleanup:
     kmipkit_client_configuration_release(configuration);
     kmipkit_transport_config_release(transport_configuration);
 #undef REQUIRE_C_API
+    return result;
+}
+
+int kmipkit_public_fluent_lifecycle_probe(
+    uint16_t port,
+    const uint8_t *leaf_certificate,
+    uint64_t leaf_certificate_length,
+    const uint8_t *intermediate_certificate,
+    uint64_t intermediate_certificate_length,
+    const uint8_t *private_key,
+    uint64_t private_key_length,
+    const uint8_t *trust_root,
+    uint64_t trust_root_length) {
+    static const uint8_t endpoint[] = "127.0.0.1";
+    static const uint8_t server_name[] = "server.kmipkit.test";
+    static const uint8_t expected_identifier[] = "fluent-key-42";
+    kmipkit_extension_registry_limits_v1_t registry_limits = {0};
+    kmipkit_client_extension_registry_t *registry = NULL;
+    kmipkit_client_configuration_t *configuration = NULL;
+    kmipkit_client_t *client = NULL;
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_client_batch_response_t *create_response = NULL;
+    kmipkit_client_batch_item_response_t *create_item = NULL;
+    kmipkit_client_batch_response_t *get_response = NULL;
+    kmipkit_client_batch_item_response_t *get_item = NULL;
+    kmipkit_client_batch_response_t *destroy_response = NULL;
+    kmipkit_client_batch_item_response_t *destroy_item = NULL;
+    kmipkit_ttlv_structure_t *get_object = NULL;
+    kmipkit_byte_span_v1_t client_certificates[2] = {{0}};
+    kmipkit_byte_span_v1_t trust_certificates[1] = {{0}};
+    kmipkit_mtls_client_config_v1_t tls = {0};
+    kmipkit_symmetric_key_request_v1_t request = {0};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t create_present = 0;
+    uint32_t create_object_type = 0;
+    uint8_t get_present = 0;
+    uint8_t get_payload_present = 0;
+    uint32_t get_object_type = 0;
+    uint8_t destroy_present = 0;
+    int32_t result = 1;
+
+#define REQUIRE_LIFECYCLE_C_API(call, error_code) \
+    do { \
+        if ((call) != INT32_C(0)) { \
+            result = (error_code); \
+            goto lifecycle_cleanup; \
+        } \
+    } while (0)
+
+    if (port == 0 || leaf_certificate == NULL || leaf_certificate_length == 0 ||
+        intermediate_certificate == NULL || intermediate_certificate_length == 0 ||
+        private_key == NULL || private_key_length == 0 || trust_root == NULL ||
+        trust_root_length == 0) {
+        goto lifecycle_cleanup;
+    }
+
+    registry_limits.struct_size = (uint32_t)sizeof(registry_limits);
+    registry_limits.abi_version = UINT32_C(1);
+    REQUIRE_LIFECYCLE_C_API(
+        kmipkit_extension_registry_limits_v1_default_values(&registry_limits), 2);
+    REQUIRE_LIFECYCLE_C_API(
+        kmipkit_client_extension_registry_create_v1(
+            NULL, UINT64_C(0), &registry_limits, &registry), 3);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_configuration_create(registry, &configuration), 4);
+    registry = NULL;
+
+    client_certificates[0].data = leaf_certificate;
+    client_certificates[0].length = leaf_certificate_length;
+    client_certificates[1].data = intermediate_certificate;
+    client_certificates[1].length = intermediate_certificate_length;
+    trust_certificates[0].data = trust_root;
+    trust_certificates[0].length = trust_root_length;
+
+    tls.struct_size = (uint32_t)sizeof(tls);
+    tls.abi_version = UINT32_C(1);
+    tls.endpoint_host.data = endpoint;
+    tls.endpoint_host.length = (uint64_t)(sizeof(endpoint) - 1);
+    tls.endpoint_port = port;
+    tls.tls_server_name.data = server_name;
+    tls.tls_server_name.length = (uint64_t)(sizeof(server_name) - 1);
+    tls.client_certificates = client_certificates;
+    tls.client_certificate_count = UINT64_C(2);
+    tls.client_private_key.data = private_key;
+    tls.client_private_key.length = private_key_length;
+    tls.trust_certificates = trust_certificates;
+    tls.trust_certificate_count = UINT64_C(1);
+    tls.max_request_bytes = UINT64_C(1048576);
+    tls.abi_version = UINT32_C(2);
+    if (kmipkit_client_create_mtls_v1(configuration, &tls, &client) !=
+            KMIPKIT_ERROR_INVALID_INPUT || client != NULL) {
+        result = 21;
+        goto lifecycle_cleanup;
+    }
+    tls.abi_version = UINT32_C(1);
+    tls.struct_size -= UINT32_C(1);
+    if (kmipkit_client_create_mtls_v1(configuration, &tls, &client) !=
+            KMIPKIT_ERROR_INVALID_INPUT || client != NULL) {
+        result = 22;
+        goto lifecycle_cleanup;
+    }
+    tls.struct_size = (uint32_t)sizeof(tls);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_create_mtls_v1(configuration, &tls, &client), 6);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_codec_limits_defaults(&limits), 7);
+
+    request.struct_size = (uint32_t)sizeof(request);
+    request.abi_version = UINT32_C(1);
+    request.cryptographic_algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+    request.cryptographic_length = INT32_C(256);
+    request.cryptographic_usage_mask = (int32_t)(
+        KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+        KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT);
+    request.name_present = UINT8_C(1);
+    request.name.data = expected_identifier;
+    request.name.length = (uint64_t)(sizeof(expected_identifier) - 1);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_create_symmetric_key_v1(
+        client, &request, limits, &create_response), 8);
+    if (create_response == NULL) {
+        result = 9;
+        goto lifecycle_cleanup;
+    }
+    REQUIRE_LIFECYCLE_C_API(
+        kmipkit_client_batch_response_item_at(create_response, UINT64_C(0), &create_item), 10);
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_create(
+        create_item, &create_present, &create_object_type, &identifier), 11);
+    if (create_present != UINT8_C(1) ||
+        create_object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+        identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        identifier.text_length != (uint64_t)(sizeof(expected_identifier) - 1) ||
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) != 0) {
+        result = 12;
+        goto lifecycle_cleanup;
+    }
+
+    REQUIRE_LIFECYCLE_C_API(
+        kmipkit_client_get_by_id_v1(client, &identifier, limits, &get_response), 13);
+    REQUIRE_LIFECYCLE_C_API(
+        kmipkit_client_batch_response_item_at(get_response, UINT64_C(0), &get_item), 14);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_get(
+        get_item, &get_present, &get_payload_present, &get_object_type, &identifier,
+        &get_object), 15);
+    if (get_present != UINT8_C(1) || get_payload_present != UINT8_C(1) ||
+        get_object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY || get_object == NULL) {
+        result = 16;
+        goto lifecycle_cleanup;
+    }
+
+    REQUIRE_LIFECYCLE_C_API(
+        kmipkit_client_destroy_by_id_v1(client, &identifier, limits, &destroy_response), 17);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
+        destroy_response, UINT64_C(0), &destroy_item), 18);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_destroy(
+        destroy_item, &destroy_present, &identifier), 19);
+    result = destroy_present == UINT8_C(1) ? 0 : 20;
+
+lifecycle_cleanup:
+    kmipkit_ttlv_structure_release(get_object);
+    kmipkit_client_batch_item_response_release(destroy_item);
+    kmipkit_client_batch_response_release(destroy_response);
+    kmipkit_client_batch_item_response_release(get_item);
+    kmipkit_client_batch_response_release(get_response);
+    kmipkit_client_batch_item_response_release(create_item);
+    kmipkit_client_batch_response_release(create_response);
+    kmipkit_client_release(client);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_client_configuration_release(configuration);
+    kmipkit_client_extension_registry_release(registry);
+#undef REQUIRE_LIFECYCLE_C_API
     return result;
 }

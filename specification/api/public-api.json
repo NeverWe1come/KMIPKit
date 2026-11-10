@@ -373,6 +373,22 @@
     "KMIPKIT-0057-FR-003",
     "KMIPKIT-0057-FR-004",
     "KMIPKIT-0057-FR-005",
+    "KMIPKIT-0091-FR-001",
+    "KMIPKIT-0091-FR-002",
+    "KMIPKIT-0091-FR-003",
+    "KMIPKIT-0091-FR-004",
+    "KMIPKIT-0091-FR-005",
+    "KMIPKIT-0091-FR-006",
+    "KMIPKIT-0091-FR-007",
+    "KMIPKIT-0091-FR-008",
+    "KMIPKIT-0091-FR-009",
+    "KMIPKIT-0091-FR-010",
+    "KMIPKIT-0091-FR-011",
+    "KMIPKIT-0091-FR-012",
+    "KMIPKIT-0091-FR-013",
+    "KMIPKIT-0091-FR-014",
+    "KMIPKIT-0091-FR-015",
+    "KMIPKIT-0091-FR-016",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -5153,6 +5169,209 @@
             "value": 4
           }
         ]
+      }
+    },
+    {
+      "id": "MtlsClientConfigV1",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi",
+        "name": "kmipkit_mtls_client_config_v1_t",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_mtls_client_config_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "endpoint_host",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "endpoint_port",
+            "type": "uint16_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint16_t"
+          },
+          {
+            "name": "tls_server_name",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "client_certificates",
+            "type": "const kmipkit_byte_span_v1_t *"
+          },
+          {
+            "name": "client_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "client_private_key",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "trust_certificates",
+            "type": "const kmipkit_byte_span_v1_t *"
+          },
+          {
+            "name": "trust_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "uint64_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "TransportConfiguration"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "TransportConfig"
+      }
+    },
+    {
+      "id": "SymmetricKeyBuilder",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-001",
+        "KMIPKIT-0091-FR-002",
+        "KMIPKIT-0091-FR-003",
+        "KMIPKIT-0091-FR-004",
+        "KMIPKIT-0091-FR-005",
+        "KMIPKIT-0091-FR-006",
+        "KMIPKIT-0091-FR-007",
+        "KMIPKIT-0091-FR-008",
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-010",
+        "KMIPKIT-0091-FR-011",
+        "KMIPKIT-0091-FR-012",
+        "KMIPKIT-0091-FR-013",
+        "KMIPKIT-0091-FR-014",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent",
+        "name": "CreateSymmetricKeyBuilder",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_symmetric_key_builder_t",
+        "kind": "opaque-handle",
+        "handleKind": "symmetric_key_builder",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_symmetric_key_builder_release"
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "name": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "SymmetricKeyBuilder"
+      }
+    },
+    {
+      "id": "SymmetricKeyRequestV1",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-001",
+        "KMIPKIT-0091-FR-002",
+        "KMIPKIT-0091-FR-003",
+        "KMIPKIT-0091-FR-004",
+        "KMIPKIT-0091-FR-005",
+        "KMIPKIT-0091-FR-006",
+        "KMIPKIT-0091-FR-007",
+        "KMIPKIT-0091-FR-008",
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-010",
+        "KMIPKIT-0091-FR-011",
+        "KMIPKIT-0091-FR-012",
+        "KMIPKIT-0091-FR-013",
+        "KMIPKIT-0091-FR-014",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi",
+        "name": "kmipkit_symmetric_key_request_v1_t",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_symmetric_key_request_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cryptographic_algorithm",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cryptographic_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "cryptographic_usage_mask",
+            "type": "int32_t"
+          },
+          {
+            "name": "name_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "reserved_0",
+            "type": "uint8_t"
+          },
+          {
+            "name": "reserved_1",
+            "type": "uint8_t"
+          },
+          {
+            "name": "reserved_2",
+            "type": "uint8_t"
+          },
+          {
+            "name": "name",
+            "type": "kmipkit_byte_span_v1_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "name": "SymmetricKeyRequest"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "SymmetricKeyRequest"
       }
     }
   ],
@@ -52807,6 +53026,1668 @@
         "returnType": "ClientBatchItem"
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "client_create_mtls_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi",
+        "name": "kmipkit_client_create_mtls_v1",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "transport",
+            "type": "TransportConfig"
+          }
+        ],
+        "returnType": "Result<Client, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_create_mtls_v1",
+        "parameters": [
+          {
+            "name": "configuration",
+            "kind": "handle",
+            "type": "kmipkit_client_configuration_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "input",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_mtls_client_config_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "out_client",
+            "kind": "output",
+            "type": "kmipkit_client_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false,
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "create",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "transport",
+            "type": "TransportConfiguration"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "KmipClient"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.create",
+        "parameters": [
+          {
+            "name": "configuration",
+            "type": "ClientConfiguration"
+          },
+          {
+            "name": "transport",
+            "type": "TransportConfig"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "Client",
+        "cffiSymbol": "kmipkit_client_create"
+      }
+    },
+    {
+      "id": "client_create_symmetric_key_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "create_symmetric_key",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_create_symmetric_key_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "request",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_symmetric_key_request_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "createSymmetricKey",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "SymmetricKeyRequest"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.create_symmetric_key",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "SymmetricKeyRequest"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_create_symmetric_key_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_create_symmetric_key_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "create_symmetric_key_with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_create_symmetric_key_with_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "request",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_symmetric_key_request_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "createSymmetricKey",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "SymmetricKeyRequest"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.create_symmetric_key_with_options",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "SymmetricKeyRequest"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_create_symmetric_key_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_destroy_by_id_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "destroy_by_id",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_destroy_by_id_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "destroyById",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.destroy_by_id",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_destroy_by_id_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_destroy_by_id_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "destroy_by_id_with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_destroy_by_id_with_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "destroyById",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.destroy_by_id_with_options",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_destroy_by_id_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_get_by_id_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "get_by_id",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_get_by_id_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "getById",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.get_by_id",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_get_by_id_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_get_by_id_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "get_by_id_with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_get_by_id_with_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.client",
+        "class": "KmipClient",
+        "method": "getById",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.get_by_id_with_options",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_get_by_id_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_add_attribute_item",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "add_attribute_item",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_add_attribute_item",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "attributeItem",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "TtlvItem"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.add_attribute_item",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ttlv.Item"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_add_attribute_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_add_catalogued_attribute",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "add_catalogued_attribute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_add_catalogued_attribute",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "tag",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_value_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "cataloguedAttribute",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "Tag"
+          },
+          {
+            "name": "value",
+            "type": "TtlvValue"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.add_catalogued_attribute",
+        "parameters": [
+          {
+            "name": "tag",
+            "type": "int"
+          },
+          {
+            "name": "value",
+            "type": "ttlv.Value"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_add_catalogued_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_add_vendor_attribute",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "add_vendor_attribute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_add_vendor_attribute",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "vendor_data",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "byteLengthParameter": "vendor_length",
+            "byteLengthType": "uint64_t",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "maxBytes": 16777216
+          },
+          {
+            "name": "vendor_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "name_data",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "byteLengthParameter": "name_length",
+            "byteLengthType": "uint64_t",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "maxBytes": 16777216
+          },
+          {
+            "name": "name_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "attribute_value",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "vendorAttribute",
+        "parameters": [
+          {
+            "name": "vendor",
+            "type": "String"
+          },
+          {
+            "name": "attributeName",
+            "type": "String"
+          },
+          {
+            "name": "value",
+            "type": "TtlvItem"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.add_vendor_attribute",
+        "parameters": [
+          {
+            "name": "vendor_identification",
+            "type": "str"
+          },
+          {
+            "name": "name",
+            "type": "str"
+          },
+          {
+            "name": "value",
+            "type": "ttlv.Item"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_add_vendor_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_build_batch_item",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "build_batch_item",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchItem"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_build_batch_item",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "toBatchItem",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.build_batch_item",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_build_batch_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_create",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "create",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_create",
+        "parameters": [
+          {
+            "name": "out_builder",
+            "kind": "output",
+            "type": "kmipkit_symmetric_key_builder_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "create",
+        "parameters": [],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.create",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_create",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_execute_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_execute_v1",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.execute",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_execute_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_execute_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "execute_with_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_execute_with_options_v1",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.execute_with_options",
+        "parameters": [
+          {
+            "name": "client",
+            "type": "Client"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_execute_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_set_algorithm",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "set_algorithm",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_set_algorithm",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "algorithm",
+            "kind": "scalar",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "algorithm",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "type": "long"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.set_algorithm",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_set_algorithm",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_set_length",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "set_length",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_set_length",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "length",
+            "kind": "scalar",
+            "type": "int32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "length",
+        "parameters": [
+          {
+            "name": "length",
+            "type": "int"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.set_length",
+        "parameters": [
+          {
+            "name": "length",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_set_length",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_set_name",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "set_name",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_set_name",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "name_data",
+            "kind": "byte-span",
+            "type": "const uint8_t *",
+            "encoding": "utf-8",
+            "byteLengthParameter": "name_length",
+            "byteLengthType": "uint64_t",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "nulTerminatedScan": false,
+            "maxBytes": 16777216
+          },
+          {
+            "name": "name_length",
+            "kind": "scalar",
+            "type": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "name",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.set_name",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "str"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_set_name",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "symmetric_key_builder_set_usage_mask",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+        "name": "set_usage_mask",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "void"
+      },
+      "c": {
+        "symbol": "kmipkit_symmetric_key_builder_set_usage_mask",
+        "parameters": [
+          {
+            "name": "builder",
+            "kind": "handle",
+            "type": "kmipkit_symmetric_key_builder_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "usage_mask",
+            "kind": "scalar",
+            "type": "int32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "SymmetricKeyBuilder",
+        "method": "usageMask",
+        "parameters": [
+          {
+            "name": "usageMask",
+            "type": "int"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SymmetricKeyBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "SymmetricKeyBuilder.set_usage_mask",
+        "parameters": [
+          {
+            "name": "usage_mask",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_symmetric_key_builder_set_usage_mask",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "void"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
     }
   ],
   "errorCategories": [
@@ -707951,6 +709832,1103 @@
         "java": "wipe-owned-copy-on-close",
         "python": "wipe-owned-copy-on-close"
       }
+    },
+    {
+      "declarationId": "client_create_mtls_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create_mtls_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_mtls_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "client_create_symmetric_key_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create_symmetric_key_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_symmetric_key_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "client_create_symmetric_key_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create_symmetric_key_with_options_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_symmetric_key_with_options_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "client_destroy_by_id_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_destroy_by_id_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "client_destroy_by_id_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_destroy_by_id_with_options_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_with_options_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "client_get_by_id_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_get_by_id_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "client_get_by_id_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_get_by_id_with_options_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_with_options_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "MtlsClientConfigV1:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_mtls_client_config_v1_t",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-abi_version-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.abi_version",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.abi_version"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-client_certificate_count-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.client_certificate_count",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.client_certificate_count"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-client_certificates-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.client_certificates",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.client_certificates"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-client_private_key-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.client_private_key",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.client_private_key"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-endpoint_host-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.endpoint_host",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.endpoint_host"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-endpoint_port-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.endpoint_port",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.endpoint_port"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-max_request_bytes-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.max_request_bytes",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.max_request_bytes"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-reserved-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.reserved",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.reserved"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-struct_size-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.struct_size",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.struct_size"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-tls_server_name-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.tls_server_name",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.tls_server_name"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-trust_certificate_count-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.trust_certificate_count",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.trust_certificate_count"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-trust_certificates-mtls-config",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_mtls_client_config_v1_t.trust_certificates",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_mtls_client_config_v1_t.trust_certificates"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_add_attribute_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_add_attribute_item",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_add_catalogued_attribute:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_add_catalogued_attribute",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_catalogued_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_add_vendor_attribute:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_add_vendor_attribute",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_build_batch_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_build_batch_item",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_build_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_create",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_create"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_execute_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_execute_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_execute_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_execute_with_options_v1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_with_options_v1"
+        }
+      }
+    },
+    {
+      "declarationId": "SymmetricKeyBuilder:c-release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_release",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_release"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "symmetric_key_builder_set_algorithm:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_set_algorithm",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_set_length:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_set_length",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_length"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_set_name:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_set_name",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_name"
+        }
+      }
+    },
+    {
+      "declarationId": "symmetric_key_builder_set_usage_mask:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_symmetric_key_builder_set_usage_mask",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "SymmetricKeyBuilder:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_symmetric_key_builder_t",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_t"
+        }
+      }
+    },
+    {
+      "declarationId": "SymmetricKeyRequestV1:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_symmetric_key_request_v1_t",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-abi_version-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.abi_version",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.abi_version"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-cryptographic_algorithm-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-cryptographic_length-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.cryptographic_length",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_length"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-cryptographic_usage_mask-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.cryptographic_usage_mask",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-name-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.name",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.name"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-name_present-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.name_present",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.name_present"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-reserved_0-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.reserved_0",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.reserved_0"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-reserved_1-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.reserved_1",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.reserved_1"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-reserved_2-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.reserved_2",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.reserved_2"
+        }
+      }
+    },
+    {
+      "declarationId": "c-field-struct_size-fluent-request",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_symmetric_key_request_v1_t.struct_size",
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.struct_size"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -986380,6 +989358,71 @@
           "kmipkit.extensions.client_batch_item_decapsulate",
           "kmipkit.extensions.client_batch_item_encapsulate",
           "kmipkit.extensions.client_batch_item_obliterate"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_dx_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0091",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_client_create_mtls_v1",
+          "kmipkit_client_create_symmetric_key_v1",
+          "kmipkit_client_create_symmetric_key_with_options_v1",
+          "kmipkit_client_destroy_by_id_v1",
+          "kmipkit_client_destroy_by_id_with_options_v1",
+          "kmipkit_client_get_by_id_v1",
+          "kmipkit_client_get_by_id_with_options_v1",
+          "kmipkit_mtls_client_config_v1_t",
+          "kmipkit_mtls_client_config_v1_t.abi_version",
+          "kmipkit_mtls_client_config_v1_t.client_certificate_count",
+          "kmipkit_mtls_client_config_v1_t.client_certificates",
+          "kmipkit_mtls_client_config_v1_t.client_private_key",
+          "kmipkit_mtls_client_config_v1_t.endpoint_host",
+          "kmipkit_mtls_client_config_v1_t.endpoint_port",
+          "kmipkit_mtls_client_config_v1_t.max_request_bytes",
+          "kmipkit_mtls_client_config_v1_t.reserved",
+          "kmipkit_mtls_client_config_v1_t.struct_size",
+          "kmipkit_mtls_client_config_v1_t.tls_server_name",
+          "kmipkit_mtls_client_config_v1_t.trust_certificate_count",
+          "kmipkit_mtls_client_config_v1_t.trust_certificates",
+          "kmipkit_symmetric_key_builder_add_attribute_item",
+          "kmipkit_symmetric_key_builder_add_catalogued_attribute",
+          "kmipkit_symmetric_key_builder_add_vendor_attribute",
+          "kmipkit_symmetric_key_builder_build_batch_item",
+          "kmipkit_symmetric_key_builder_create",
+          "kmipkit_symmetric_key_builder_execute_v1",
+          "kmipkit_symmetric_key_builder_execute_with_options_v1",
+          "kmipkit_symmetric_key_builder_release",
+          "kmipkit_symmetric_key_builder_set_algorithm",
+          "kmipkit_symmetric_key_builder_set_length",
+          "kmipkit_symmetric_key_builder_set_name",
+          "kmipkit_symmetric_key_builder_set_usage_mask",
+          "kmipkit_symmetric_key_builder_t",
+          "kmipkit_symmetric_key_request_v1_t",
+          "kmipkit_symmetric_key_request_v1_t.abi_version",
+          "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm",
+          "kmipkit_symmetric_key_request_v1_t.cryptographic_length",
+          "kmipkit_symmetric_key_request_v1_t.cryptographic_usage_mask",
+          "kmipkit_symmetric_key_request_v1_t.name",
+          "kmipkit_symmetric_key_request_v1_t.name_present",
+          "kmipkit_symmetric_key_request_v1_t.reserved_0",
+          "kmipkit_symmetric_key_request_v1_t.reserved_1",
+          "kmipkit_symmetric_key_request_v1_t.reserved_2",
+          "kmipkit_symmetric_key_request_v1_t.struct_size"
         ]
       }
     }

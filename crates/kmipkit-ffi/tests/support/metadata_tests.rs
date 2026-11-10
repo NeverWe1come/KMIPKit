@@ -469,6 +469,7 @@ fn source_c_exports() -> Vec<(String, bool)> {
         include_str!("../../src/extension_registry/managed_objects.rs"),
         include_str!("../../src/extension_registry/request_validation.rs"),
         include_str!("../../src/extension_registry/typed_attributes.rs"),
+        include_str!("../../src/extension_registry/client_abi/fluent.rs"),
     ];
     assert_managed_object_helpers_are_guarded(sources[4]);
     let mut exports: Vec<(String, bool)> = sources

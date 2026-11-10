@@ -80,6 +80,198 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 unsafe extern "C" {
     fn kmipkit_public_client_surface_probe() -> i32;
+    fn kmipkit_public_fluent_builder_probe() -> i32;
+    fn kmipkit_public_fluent_lifecycle_probe(
+        port: u16,
+        leaf_certificate: *const u8,
+        leaf_certificate_length: u64,
+        intermediate_certificate: *const u8,
+        intermediate_certificate_length: u64,
+        private_key: *const u8,
+        private_key_length: u64,
+        trust_root: *const u8,
+        trust_root_length: u64,
+    ) -> i32;
+}
+
+#[test]
+fn public_c_fluent_builder_constructs_a_typed_create_item_and_checks_versioned_input() {
+    // SAFETY: The compiled C consumer owns and releases every temporary ABI handle.
+    let status = unsafe { kmipkit_public_fluent_builder_probe() };
+    assert_eq!(
+        status, 0,
+        "public fluent C declarations and ABI calls must agree"
+    );
+}
+
+#[test]
+fn public_c_fluent_client_completes_create_get_destroy_over_mutual_tls() {
+    const LIFECYCLE_ID: &[u8] = b"fluent-key-42";
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let identity = pki.client_identity();
+    let certificates = identity.certificate_chain_der();
+    let private_key = zeroize::Zeroizing::new(identity.private_key_der().to_vec());
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TLS port is available");
+    let port = listener
+        .local_addr()
+        .expect("the TLS peer has an address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("the TLS fixture accepts with a bounded wait");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || -> io::Result<()> {
+        let deadline = Instant::now() + Duration::from_secs(3);
+        for expected_operation in [1_u32, 10, 20] {
+            let (stream, _) = loop {
+                match listener.accept() {
+                    Ok(accepted) => break accepted,
+                    Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                        if Instant::now() >= deadline {
+                            return Err(io::Error::new(
+                                io::ErrorKind::TimedOut,
+                                "the C fluent lifecycle did not send all three requests",
+                            ));
+                        }
+                        thread::sleep(Duration::from_millis(5));
+                    }
+                    Err(error) => return Err(error),
+                }
+            };
+            stream.set_nonblocking(false)?;
+            stream.set_read_timeout(Some(Duration::from_secs(5)))?;
+            stream.set_write_timeout(Some(Duration::from_secs(5)))?;
+            let connection = ServerConnection::new(Arc::clone(&server_config))
+                .expect("the mutual-TLS server configuration is valid");
+            let mut tls = StreamOwned::new(connection, stream);
+            let request = read_ttlv_frame(&mut tls)?;
+            assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID);
+            tls.write_all(&fluent_lifecycle_response(expected_operation))?;
+            tls.flush()?;
+            let _ = tls.get_ref().shutdown(Shutdown::Both);
+        }
+        Ok(())
+    });
+
+    // SAFETY: all input spans point into live PKI-owned buffers and are borrowed only during this
+    // synchronous call. The C helper owns and releases every ABI handle it creates.
+    let status = unsafe {
+        kmipkit_public_fluent_lifecycle_probe(
+            port,
+            certificates[0].as_ptr(),
+            u64::try_from(certificates[0].len()).expect("leaf certificate length fits"),
+            certificates[1].as_ptr(),
+            u64::try_from(certificates[1].len()).expect("intermediate certificate length fits"),
+            private_key.as_ptr(),
+            u64::try_from(private_key.len()).expect("private key length fits"),
+            pki.authority_certificate_der().as_ptr(),
+            u64::try_from(pki.authority_certificate_der().len())
+                .expect("trust certificate length fits"),
+        )
+    };
+    let peer_result = peer.join().expect("the local TLS peer thread completes");
+    assert_eq!(
+        status, 0,
+        "C completes the fluent key lifecycle against TLS; peer result: {peer_result:?}"
+    );
+    peer_result.expect("the TLS fixture received typed Create, Get, and Destroy requests");
+}
+
+fn assert_fluent_lifecycle_request(encoded: &[u8], operation: u32, identifier: &[u8]) {
+    let request = decode_test_request(encoded).expect("the request is valid TTLV");
+    request.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the C client sends a Request Message structure");
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_000F)
+            .expect("the one-operation request contains a Batch Item");
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                panic!("the Batch Item is a structure");
+            };
+            let children = batch_item.children();
+            assert!(children.iter().any(|item| {
+                item.tag().raw() == 0x0042_005C
+                    && item.with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == operation))
+            }));
+            if operation != 1 {
+                let payload = children
+                    .iter()
+                    .find(|item| item.tag().raw() == 0x0042_0079)
+                    .expect("Get and Destroy carry a Request Payload");
+                payload.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("the Request Payload is a structure");
+                    };
+                    assert!(payload.children().iter().any(|item| {
+                        item.tag().raw() == 0x0042_0094
+                            && item.with_value(|value| matches!(value, ValueView::TextString(actual) if actual.as_bytes() == identifier))
+                    }));
+                });
+            }
+        });
+    });
+}
+
+fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = match operation {
+        1 => structure(
+            0x0042_007C,
+            [
+                enumeration(0x0042_0057, 2),
+                ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
+            ],
+        ),
+        10 => {
+            let key_block = structure(
+                0x0042_0040,
+                [
+                    enumeration(0x0042_0042, 1),
+                    structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
+                    enumeration(0x0042_0028, 3),
+                    integer(0x0042_002A, 256),
+                ],
+            );
+            structure(
+                0x0042_007C,
+                [
+                    enumeration(0x0042_0057, 2),
+                    ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
+                    structure(0x0042_008F, [key_block]),
+                ],
+            )
+        }
+        20 => structure(
+            0x0042_007C,
+            [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
+        ),
+        _ => unreachable!("the lifecycle fixture only handles Create, Get, and Destroy"),
+    };
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, operation),
+            enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007B, [header, item])
 }
 
 unsafe extern "C" {

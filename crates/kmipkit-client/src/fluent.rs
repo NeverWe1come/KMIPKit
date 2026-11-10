@@ -90,6 +90,8 @@ pub enum FluentBuildError {
     InvalidRequest,
     /// A local TTLV value could not be copied into the fluent request.
     InvalidTtlvValue,
+    /// A detached builder cannot execute until it is attached to a client.
+    MissingClientForExecution,
 }
 
 impl fmt::Display for FluentBuildError {
@@ -110,6 +112,9 @@ impl fmt::Display for FluentBuildError {
             }
             Self::InvalidRequest => "fluent request failed typed request validation",
             Self::InvalidTtlvValue => "fluent TTLV value could not be represented",
+            Self::MissingClientForExecution => {
+                "detached fluent builder has no client for execution"
+            }
         })
     }
 }
@@ -129,15 +134,15 @@ impl<'a> RequestBuilder<'a> {
     /// Begins constructing a Create Symmetric Key request.
     #[must_use]
     pub fn create_symmetric_key(self) -> CreateSymmetricKeyBuilder<'a> {
-        CreateSymmetricKeyBuilder::new(self.client)
+        CreateSymmetricKeyBuilder::new(Some(self.client))
     }
 
     /// Begins constructing a typed Get request for an explicit identifier.
     #[must_use]
-    pub fn get(self, unique_identifier: impl Into<UniqueIdentifier>) -> GetBuilder<'a> {
+    pub fn get(self, unique_identifier: UniqueIdentifier) -> GetBuilder<'a> {
         GetBuilder {
             client: self.client,
-            request: GetRequest::new().with_unique_identifier(unique_identifier.into()),
+            request: GetRequest::new().with_unique_identifier(unique_identifier),
             options: None,
             asynchronous_indicator: None,
         }
@@ -145,10 +150,10 @@ impl<'a> RequestBuilder<'a> {
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
     #[must_use]
-    pub fn destroy(self, unique_identifier: impl Into<UniqueIdentifier>) -> DestroyBuilder<'a> {
+    pub fn destroy(self, unique_identifier: UniqueIdentifier) -> DestroyBuilder<'a> {
         DestroyBuilder {
             client: self.client,
-            request: DestroyRequest::new(Some(unique_identifier.into())),
+            request: DestroyRequest::new(Some(unique_identifier)),
             options: None,
             asynchronous_indicator: None,
         }
@@ -157,7 +162,7 @@ impl<'a> RequestBuilder<'a> {
 
 /// A Create Symmetric Key builder that returns the existing typed request.
 pub struct CreateSymmetricKeyBuilder<'a> {
-    client: &'a mut Client,
+    client: Option<&'a mut Client>,
     algorithm: Option<CryptographicAlgorithm>,
     length: Option<i32>,
     usage_mask: Option<CryptographicUsageMask>,
@@ -169,7 +174,7 @@ pub struct CreateSymmetricKeyBuilder<'a> {
 }
 
 impl<'a> CreateSymmetricKeyBuilder<'a> {
-    fn new(client: &'a mut Client) -> Self {
+    fn new(client: Option<&'a mut Client>) -> Self {
         Self {
             client,
             algorithm: None,
@@ -181,6 +186,16 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Creates a reusable request builder without binding it to a client.
+    ///
+    /// This form can prepare typed requests and batch items for a later
+    /// exchange. Use [`Self::build_request`] or [`Self::to_batch_item`] to
+    /// materialize the request.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
     }
 
     /// Selects an explicit KMIP Cryptographic Algorithm value.
@@ -242,8 +257,8 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
 
     /// Adds the common KMIP Name attribute using Uninterpreted Text String.
     #[must_use]
-    pub fn name(mut self, name: impl Into<String>) -> Self {
-        self.name = Some(name.into());
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = Some(name.to_owned());
         self
     }
 
@@ -265,9 +280,9 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     #[must_use]
     pub fn vendor_attribute(
         mut self,
-        vendor_identification: impl Into<String>,
-        attribute_name: impl Into<String>,
-        attribute_value: Item,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
     ) -> Self {
         let value = match attribute_value.with_value(clone_value) {
             Ok(value) => value,
@@ -281,13 +296,13 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
             fields
                 .try_push(item(
                     VENDOR_IDENTIFICATION_TAG,
-                    Value::text_string(vendor_identification.into()),
+                    Value::text_string(vendor_identification.to_owned()),
                 )?)
                 .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
             fields
                 .try_push(item(
                     ATTRIBUTE_NAME_TAG,
-                    Value::text_string(attribute_name.into()),
+                    Value::text_string(attribute_name.to_owned()),
                 )?)
                 .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
             fields
@@ -322,30 +337,61 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     }
 
     /// Builds the existing typed Create request without sending it.
-    pub fn build(mut self) -> Result<CreateRequest, FluentBuildError> {
-        self.build_request()
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when required cryptographic properties or
+    /// previously supplied attributes are invalid.
+    pub fn build(self) -> Result<CreateRequest, FluentBuildError> {
+        self.build_request_inner()
+    }
+
+    /// Builds a request without consuming the builder's accumulated inputs.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when required cryptographic properties or
+    /// previously supplied attributes are invalid.
+    pub fn build_request(&self) -> Result<CreateRequest, FluentBuildError> {
+        self.build_request_inner()
     }
 
     /// Converts the request to an existing typed batch item.
-    pub fn to_batch_item(mut self) -> Result<ClientBatchItem, FluentBuildError> {
-        self.build_request()
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when request construction fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request_inner()
             .map(|request| ClientBatchItem::new(ClientRequest::Create(request)))
     }
 
     /// Executes one typed Create exchange and returns its existing response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClientError`] when local request validation fails or the
+    /// configured client exchange fails.
     pub fn execute(
-        mut self,
+        self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(|error| {
+        let request = self.build_request_inner().map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
                 RequestDeliveryState::NotSent,
                 error,
             )
         })?;
+        let Some(client) = self.client else {
+            return Err(ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                FluentBuildError::MissingClientForExecution,
+            ));
+        };
         let options = self.options.unwrap_or_default();
-        self.client.execute_one_typed_request_with_async_indicator(
+        client.execute_one_typed_request_with_async_indicator(
             ClientRequest::Create(request),
             self.asynchronous_indicator,
             limits,
@@ -353,8 +399,8 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         )
     }
 
-    fn build_request(&mut self) -> Result<CreateRequest, FluentBuildError> {
-        if let Some(error) = self.attribute_error.take() {
+    fn build_request_inner(&self) -> Result<CreateRequest, FluentBuildError> {
+        if let Some(error) = self.attribute_error {
             return Err(error);
         }
         let algorithm = self
@@ -386,21 +432,25 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
                     .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
             )
             .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
-        if let Some(name) = self.name.take() {
+        if let Some(name) = &self.name {
             attributes
                 .try_push_typed(
-                    Attribute::<typed::Name>::new(name_attribute(name)?)
+                    Attribute::<typed::Name>::new(name_attribute(name.clone())?)
                         .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
                 )
                 .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
         }
-        for item in std::mem::replace(&mut self.attributes, AttributeSet::new()).into_items() {
+        for item in self.attributes.as_items() {
             attributes
-                .try_push(item)
+                .try_push(
+                    item.try_clone()
+                        .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+                )
                 .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
         }
 
-        let request = CreateRequest::new(ObjectType::from_raw(SYMMETRIC_KEY_OBJECT_TYPE), attributes);
+        let request =
+            CreateRequest::new(ObjectType::from_raw(SYMMETRIC_KEY_OBJECT_TYPE), attributes);
         if !request.validate().is_valid() {
             return Err(FluentBuildError::InvalidRequest);
         }
@@ -430,7 +480,7 @@ pub struct GetBuilder<'a> {
     asynchronous_indicator: Option<u32>,
 }
 
-impl<'a> GetBuilder<'a> {
+impl GetBuilder<'_> {
     /// Sets exchange-local options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
@@ -458,6 +508,11 @@ impl<'a> GetBuilder<'a> {
     }
 
     /// Executes one typed Get exchange and returns its existing response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClientError`] when request validation, transport, or response
+    /// decoding fails.
     pub fn execute(
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
@@ -480,7 +535,7 @@ pub struct DestroyBuilder<'a> {
     asynchronous_indicator: Option<u32>,
 }
 
-impl<'a> DestroyBuilder<'a> {
+impl DestroyBuilder<'_> {
     /// Sets exchange-local options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
@@ -508,6 +563,11 @@ impl<'a> DestroyBuilder<'a> {
     }
 
     /// Executes one typed Destroy exchange and returns its existing response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClientError`] when request validation, transport, or response
+    /// decoding fails.
     pub fn execute(
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
