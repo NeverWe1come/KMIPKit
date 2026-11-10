@@ -36,7 +36,13 @@ class ConnectionConfigTest {
     void mutationsRequireConfigurationAndCommandLineOptIn() throws Exception {
         var connection = ConnectionConfig.load(EXAMPLE);
         assertThrows(IllegalArgumentException.class, () -> connection.requireLiveExecution(true));
-        assertThrows(IllegalArgumentException.class, () -> connection.requireLiveExecution(false, true));
-        assertDoesNotThrow(() -> connection.requireLiveExecution(true, true));
+        String example = Files.readString(EXAMPLE).replace("\"allow_mutations\": false",
+                "\"allow_mutations\": true");
+        Path enabled = Path.of("build/mutations-enabled-connection.json");
+        Files.writeString(enabled, example);
+        var mutationConnection = ConnectionConfig.load(enabled);
+        assertThrows(IllegalArgumentException.class, () -> mutationConnection.requireLiveExecution(true));
+        assertThrows(IllegalArgumentException.class, () -> mutationConnection.requireLiveExecution(true, false));
+        assertDoesNotThrow(() -> mutationConnection.requireLiveExecution(true, true));
     }
 }
