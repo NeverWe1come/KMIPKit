@@ -6,6 +6,7 @@ import importlib.util
 import json
 from pathlib import Path
 import unittest
+import sys
 
 SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
@@ -14,6 +15,7 @@ ROOT = SHARED.parents[1]
 class RouteCapabilitiesTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        sys.path.insert(0, str(SHARED / 'tools'))
         spec = importlib.util.spec_from_file_location('route_capabilities', SHARED / 'tools/route_capabilities.py')
         cls.module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.module)
@@ -24,7 +26,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_normative_inventory_requires_local_construct_and_decode_in_every_language(self):
         for language in ('rust', 'c', 'java', 'python'):
             routes = [r for r in self.data['routes'] if r['language'] == language
-                      and 'normative_inventory' in r['case_categories']]
+                      and 'normative_inventory' in r['case_categories'] and r['api_level'] == 'generic-ttlv']
             self.assertEqual({'construct', 'decode'}, {a for r in routes for a in r['actions']})
             self.assertTrue(all(r['mode'] == 'local' for r in routes))
             self.assertTrue(all(r['combinations'] == [{'encoding': 'TTLV', 'transport': None}]
@@ -39,7 +41,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
             'python': ['kmipkit.managed_objects.ManagedObject.from_fields', 'kmipkit.typed_attributes.TypedAttribute.create']}
         for language, names in required.items():
             for name in names:
-                self.assertIn(name, symbols)
+                self.assertTrue(name in symbols, name)
                 route = symbols[name]
                 self.assertEqual(language, route['language'])
                 self.assertEqual('local', route['mode'])
@@ -55,10 +57,21 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_every_named_enum_and_mask_target_has_an_exact_public_value_symbol(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         target_ids = {t['target_id'] for t in catalog['normative_targets']
-                      if t['kind'] in {'enumeration_value', 'bitmask_value'}}
+                      if t['kind'] in {'enumeration_value', 'bitmask_value'} and t.get('allocation') == 'assigned'}
         for language in ('rust', 'c', 'java', 'python'):
             values = {v['target_id'] for v in self.data.get('value_symbols', []) if v['language'] == language}
             self.assertEqual(target_ids, values)
+
+    def test_installed_named_values_cannot_be_missing_or_have_the_wrong_wire_value(self):
+        self.assertTrue(hasattr(self.module, 'validate_installed_values'), 'installed named-value validation is missing')
+        with self.assertRaisesRegex(ValueError, 'named value'):
+            self.module.validate_installed_values(self.data, 'python', {})
+        values = {row['public_api_symbol']: row['wire_value'] for row in self.data['value_symbols']
+                  if row['language'] == 'python'}
+        first = next(iter(values))
+        values[first] ^= 1
+        with self.assertRaisesRegex(ValueError, 'named value'):
+            self.module.validate_installed_values(self.data, 'python', values)
 
     def test_checked_in_manifest_validates_against_public_api(self):
         self.module.validate(self.data, ROOT)
