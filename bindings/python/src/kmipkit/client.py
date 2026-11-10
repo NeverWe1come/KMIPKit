@@ -3243,9 +3243,12 @@ class Client(_ClientHandle):
     ) -> BatchResult:
         """Get one object by its typed Unique Identifier."""
         from .fluent import _execute_direct
-        from ._client_ffi import lib as _lib
 
-        fn = _lib.kmipkit_client_get_by_id_with_options_v1 if options else _lib.kmipkit_client_get_by_id_v1
+        fn = (
+            lib.kmipkit_client_get_by_id_with_options_v1
+            if options
+            else lib.kmipkit_client_get_by_id_v1
+        )
         return _execute_direct(self, fn, unique_identifier, limits, options)
 
     def destroy_by_id(
@@ -3254,9 +3257,12 @@ class Client(_ClientHandle):
     ) -> BatchResult:
         """Destroy one object by its typed Unique Identifier."""
         from .fluent import _execute_direct
-        from ._client_ffi import lib as _lib
 
-        fn = _lib.kmipkit_client_destroy_by_id_with_options_v1 if options else _lib.kmipkit_client_destroy_by_id_v1
+        fn = (
+            lib.kmipkit_client_destroy_by_id_with_options_v1
+            if options
+            else lib.kmipkit_client_destroy_by_id_v1
+        )
         return _execute_direct(self, fn, unique_identifier, limits, options)
 
     @classmethod
