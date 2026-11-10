@@ -16,6 +16,7 @@ from _test_support import (
     start_tls13_mtls_peer,
 )
 from kmipkit import client, errors, extensions, fluent, ttlv
+from kmipkit.typed_attributes import StandardAttribute
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
@@ -412,6 +413,103 @@ def test_fluent_create_get_destroy_uses_server_created_identifier() -> None:
         peer.join(timeout=12)
         if not peer_failures.empty():
             raise peer_failures.get()
+
+
+def test_direct_client_helpers_create_get_and_destroy_with_exchange_options() -> None:
+    port, observations, peer_failures, peer = _start_lifecycle_peer((1, 10, 20))
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    results: list[client.BatchResult] = []
+    identifier = extensions.UniqueIdentifier.text_string("fluent-created-id")
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                results.append(kmip_client.create_symmetric_key(
+                    limits,
+                    algorithm=3,
+                    length=256,
+                    usage_mask=12,
+                    name="direct-key",
+                    options=client.RequestOptions(),
+                ))
+                results.append(kmip_client.get_by_id(
+                    identifier, limits, options=client.RequestOptions()
+                ))
+                results.append(kmip_client.destroy_by_id(
+                    identifier, limits, options=client.RequestOptions()
+                ))
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [result.items[0].operation for result in results] == [1, 10, 20]
+        assert [operation for operation, _ in observations] == [1, 10, 20]
+    finally:
+        for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_symmetric_builder_validates_catalogued_and_explicit_attributes() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        with ttlv.ttlv_value_text_string(b"fluently managed", limits) as description:
+            with fluent.SymmetricKeyBuilder() as builder:
+                builder.aes_256().usage_mask(12).name("expert-key")
+                builder.add_attribute(StandardAttribute.DESCRIPTION, description)
+                for tag_value, text in ((0x4200FE, b"expert"), (0x42005C, b"vendor-value")):
+                    raw = ttlv.raw_tag_from_raw(tag_value)
+                    try:
+                        tag = ttlv.raw_tag_try_checked(raw)
+                        try:
+                            value = ttlv.ttlv_value_text_string(text, limits)
+                            item = ttlv.ttlv_item_create(tag, value, limits)
+                            try:
+                                builder.add_attribute_item(item)
+                                if tag_value == 0x42005C:
+                                    builder.add_vendor_attribute("Vendor_Name.1", "region", item)
+                            finally:
+                                item.close()
+                        finally:
+                            tag.close()
+                    finally:
+                        raw.close()
+                with builder.build() as item:
+                    assert item.operation == 1
+
+
+def test_fluent_builder_and_operation_reject_invalid_options_and_closed_handles() -> None:
+    builder = fluent.SymmetricKeyBuilder()
+    with builder:
+        with pytest.raises(errors.KmipKitError):
+            builder.name(None)  # type: ignore[arg-type]
+        with pytest.raises(errors.KmipKitError):
+            builder.with_options(object())  # type: ignore[arg-type]
+        with pytest.raises(errors.KmipKitError):
+            builder.add_attribute("description", object())  # type: ignore[arg-type]
+        with pytest.raises(errors.KmipKitError):
+            builder.add_attribute_item(object())  # type: ignore[arg-type]
+        with pytest.raises(errors.KmipKitError):
+            builder.add_vendor_attribute("vendor", "name", object())  # type: ignore[arg-type]
+        with pytest.raises(errors.KmipKitError):
+            builder.asynchronous_indicator(0x1_0000_0000)
+        with pytest.raises(errors.KmipKitError):
+            builder.execute(object())  # type: ignore[arg-type]
+    with pytest.raises(RuntimeError, match="closed"):
+        builder.build()
+
+    operation = fluent.Operation(
+        object(), "destroy", extensions.UniqueIdentifier.integer(-17)
+    )
+    assert operation.with_options(client.RequestOptions()) is operation
+    record, owner = fluent._identifier(extensions.UniqueIdentifier.enumeration(9))
+    assert owner is None
+    assert record.enumeration_value == 9
+    assert record.kind == int(extensions.UniqueIdentifierKind.ENUMERATION)
 
 
 def test_legacy_extensions_remain_available() -> None:

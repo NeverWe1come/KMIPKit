@@ -93,6 +93,168 @@ int kmipkit_public_fluent_builder_probe(void) {
     return 0;
 }
 
+int kmipkit_public_fluent_validation_probe(void) {
+    static const uint8_t description[] = "managed without TTLV tags";
+    static const uint8_t unknown_value[] = "expert value";
+    static const uint8_t invalid_utf8[] = {UINT8_C(0xff)};
+    static const uint8_t vendor[] = "Vendor_Name.1";
+    static const uint8_t vendor_name[] = "region";
+    static const uint8_t identifier_text[] = "fluent-id";
+    kmipkit_symmetric_key_builder_t *builder = NULL;
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_value_t *wrong_value = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    kmipkit_raw_tag_t *raw_vendor_tag = NULL;
+    kmipkit_tag_t *vendor_tag = NULL;
+    kmipkit_ttlv_value_t *vendor_value = NULL;
+    kmipkit_ttlv_item_t *vendor_item = NULL;
+    kmipkit_client_batch_item_t *built_item = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_symmetric_key_request_v1_t request = {0};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_request_options_v1_t options = {0};
+    uint32_t operation = 0;
+    int32_t result = 1;
+
+    if (kmipkit_symmetric_key_builder_set_algorithm(NULL, 3) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_symmetric_key_builder_set_length(NULL, 256) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_symmetric_key_builder_set_usage_mask(NULL, 12) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_symmetric_key_builder_set_name(NULL, description, sizeof(description) - 1) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_symmetric_key_builder_create(&builder) != 0 || builder == NULL) {
+        result = 11;
+        goto cleanup;
+    }
+    if (kmipkit_symmetric_key_builder_build_batch_item(builder, &built_item) !=
+            KMIPKIT_ERROR_INVALID_INPUT || built_item != NULL) {
+        result = 121;
+        goto cleanup;
+    }
+    if (kmipkit_codec_limits_defaults(&limits) != 0 || limits == NULL) {
+        result = 122;
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_value_text_string(limits, description, sizeof(description) - 1, &value) != 0) {
+        result = 123;
+        goto cleanup;
+    }
+    if (kmipkit_symmetric_key_builder_add_catalogued_attribute(
+            builder, UINT32_C(0x4200fc), value) != 0) {
+        result = 124;
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_value_integer(1, &wrong_value) != 0) {
+        result = 125;
+        goto cleanup;
+    }
+    if (kmipkit_symmetric_key_builder_add_catalogued_attribute(
+            builder, UINT32_C(0x4200fc), wrong_value) !=
+        KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH) {
+        result = 126;
+        goto cleanup;
+    }
+    kmipkit_ttlv_value_release(wrong_value);
+    wrong_value = NULL;
+    if (
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200fe), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_value_text_string(limits, unknown_value, sizeof(unknown_value) - 1, &wrong_value) != 0 ||
+        kmipkit_ttlv_item_create(tag, wrong_value, limits, &item) != 0) {
+        result = 13;
+        goto cleanup;
+    }
+    wrong_value = NULL; /* The successful Item constructor consumes its Value. */
+    if (kmipkit_symmetric_key_builder_add_attribute_item(builder, item) != 0 ||
+        kmipkit_symmetric_key_builder_add_vendor_attribute(
+            builder, vendor, sizeof(vendor) - 1, vendor_name, sizeof(vendor_name) - 1, item) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x540001), &raw_vendor_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_vendor_tag, &vendor_tag) != 0 ||
+        kmipkit_ttlv_value_text_string(limits, unknown_value, sizeof(unknown_value) - 1,
+                                       &vendor_value) != 0 ||
+        kmipkit_ttlv_item_create(vendor_tag, vendor_value, limits, &vendor_item) != 0) {
+        result = 14;
+        goto cleanup;
+    }
+    vendor_value = NULL;
+    if (kmipkit_symmetric_key_builder_add_attribute_item(builder, vendor_item) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_symmetric_key_builder_set_name(builder, invalid_utf8, sizeof(invalid_utf8)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != 0 ||
+        kmipkit_symmetric_key_builder_set_length(builder, 256) != 0 ||
+        kmipkit_symmetric_key_builder_set_usage_mask(
+            builder, KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT) != 0 ||
+        kmipkit_symmetric_key_builder_build_batch_item(builder, &built_item) != 0 ||
+        built_item == NULL ||
+        kmipkit_client_batch_item_operation(built_item, &operation) != 0 ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CREATE) {
+        result = 15;
+        goto cleanup;
+    }
+
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    if (kmipkit_symmetric_key_builder_execute_v1(builder, NULL, limits, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT || response != NULL ||
+        kmipkit_symmetric_key_builder_execute_with_options_v1(
+            builder, NULL, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL) {
+        result = 16;
+        goto cleanup;
+    }
+    request.struct_size = (uint32_t)sizeof(request);
+    request.abi_version = UINT32_C(1);
+    request.cryptographic_algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+    request.cryptographic_length = INT32_C(256);
+    request.cryptographic_usage_mask = KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT;
+    if (kmipkit_client_create_symmetric_key_v1(NULL, &request, limits, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_create_symmetric_key_with_options_v1(
+            NULL, &request, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT) {
+        result = 17;
+        goto cleanup;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = sizeof(identifier_text) - 1;
+    if (kmipkit_client_get_by_id_v1(NULL, &identifier, limits, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_get_by_id_with_options_v1(
+            NULL, &identifier, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_destroy_by_id_v1(NULL, &identifier, limits, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_destroy_by_id_with_options_v1(
+            NULL, &identifier, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT) {
+        result = 18;
+        goto cleanup;
+    }
+    options.abi_version = UINT32_C(2);
+    result = kmipkit_client_get_by_id_with_options_v1(
+        NULL, &identifier, limits, &options, &response) == KMIPKIT_ERROR_INVALID_INPUT ? 0 : 2;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_item_release(built_item);
+    kmipkit_ttlv_item_release(vendor_item);
+    kmipkit_ttlv_value_release(vendor_value);
+    kmipkit_tag_release(vendor_tag);
+    kmipkit_raw_tag_release(raw_vendor_tag);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_ttlv_value_release(wrong_value);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_symmetric_key_builder_release(builder);
+    return result;
+}
+
 int kmipkit_public_client_execute_json_override(
     uint16_t port,
     const uint8_t *leaf_certificate,
@@ -249,6 +411,7 @@ int kmipkit_public_fluent_lifecycle_probe(
     kmipkit_byte_span_v1_t trust_certificates[1] = {{0}};
     kmipkit_mtls_client_config_v1_t tls = {0};
     kmipkit_symmetric_key_request_v1_t request = {0};
+    kmipkit_request_options_v1_t request_options = {0};
     kmipkit_unique_identifier_v1_t identifier = {0};
     uint8_t create_present = 0;
     uint32_t create_object_type = 0;
@@ -303,7 +466,7 @@ int kmipkit_public_fluent_lifecycle_probe(
     tls.client_private_key.length = private_key_length;
     tls.trust_certificates = trust_certificates;
     tls.trust_certificate_count = UINT64_C(1);
-    tls.max_request_bytes = UINT64_C(1048576);
+    tls.max_request_bytes = UINT64_C(0);
     tls.abi_version = UINT32_C(2);
     if (kmipkit_client_create_mtls_v1(configuration, &tls, &client) !=
             KMIPKIT_ERROR_INVALID_INPUT || client != NULL) {
@@ -331,6 +494,8 @@ int kmipkit_public_fluent_lifecycle_probe(
     request.name_present = UINT8_C(1);
     request.name.data = expected_identifier;
     request.name.length = (uint64_t)(sizeof(expected_identifier) - 1);
+    request_options.struct_size = (uint32_t)sizeof(request_options);
+    request_options.abi_version = UINT32_C(1);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_create_symmetric_key_v1(
         client, &request, limits, &create_response), 8);
     if (create_response == NULL) {
@@ -352,8 +517,8 @@ int kmipkit_public_fluent_lifecycle_probe(
         goto lifecycle_cleanup;
     }
 
-    REQUIRE_LIFECYCLE_C_API(
-        kmipkit_client_get_by_id_v1(client, &identifier, limits, &get_response), 13);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_get_by_id_with_options_v1(
+        client, &identifier, limits, &request_options, &get_response), 13);
     REQUIRE_LIFECYCLE_C_API(
         kmipkit_client_batch_response_item_at(get_response, UINT64_C(0), &get_item), 14);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_get(
@@ -365,8 +530,8 @@ int kmipkit_public_fluent_lifecycle_probe(
         goto lifecycle_cleanup;
     }
 
-    REQUIRE_LIFECYCLE_C_API(
-        kmipkit_client_destroy_by_id_v1(client, &identifier, limits, &destroy_response), 17);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_destroy_by_id_with_options_v1(
+        client, &identifier, limits, &request_options, &destroy_response), 17);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
         destroy_response, UINT64_C(0), &destroy_item), 18);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_destroy(

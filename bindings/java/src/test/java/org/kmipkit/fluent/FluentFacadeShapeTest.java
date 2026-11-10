@@ -4,8 +4,30 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ClientOperationException;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.client.SymmetricKeyRequest;
+import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientConfiguration;
+import org.kmipkit.extensions.ClientExtensionRegistry;
+import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.RequestOptions;
+import org.kmipkit.extensions.TransportConfiguration;
+import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
 
@@ -72,5 +94,104 @@ final class FluentFacadeShapeTest {
             builder.close();
             assertThrows(InvalidInputException.class, builder::build);
         }
+    }
+
+    @Test
+    void builderAcceptsCataloguedUnknownAndVendorAttributes() {
+        CodecLimits limits = CodecLimits.defaults();
+        try (RawTag descriptionRaw = RawTag.fromRaw(StandardAttribute.DESCRIPTION.tag());
+                Tag descriptionTag = descriptionRaw.checked();
+                TtlvValue description = TtlvValue.TextString(
+                        "managed without TTLV tags".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+                RawTag expertRaw = RawTag.fromRaw(0x4200fe);
+                Tag expertTag = expertRaw.checked();
+                TtlvValue expertValue = TtlvValue.TextString(
+                        "expert value".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+                TtlvItem expertItem = TtlvItem.create(expertTag, expertValue, limits);
+                SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
+            builder.aes256()
+                    .usageMask((int) (CryptographicUsageMask.ENCRYPT | CryptographicUsageMask.DECRYPT))
+                    .cataloguedAttribute(descriptionTag, description)
+                    .attributeItem(expertItem)
+                    .vendorAttribute("Vendor_Name.1", "region", expertItem)
+                    .withOptions(RequestOptions.defaults())
+                    .asynchronousIndicator(1);
+            try (ClientBatchItem item = builder.build()) {
+                assertEquals(1, item.operation());
+            }
+            try (TtlvValue wrongValue = TtlvValue.Integer(1)) {
+                assertThrows(InvalidInputException.class,
+                        () -> builder.cataloguedAttribute(descriptionTag, wrongValue));
+            }
+            assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(-1));
+            assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(0x1_0000_0000L));
+        }
+    }
+
+    @Test
+    void facadeConveniencesBuildAndExecuteTypedCreateGetAndDestroy() throws Exception {
+        int unusedPort;
+        try (ServerSocket reservation = new ServerSocket(0)) {
+            unusedPort = reservation.getLocalPort();
+        }
+        byte[] clientCertificate = fixture("client-cert.pem");
+        byte[] clientPrivateKey = fixture("client-key.pem");
+        byte[] serverCertificate = fixture("server-cert.pem");
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", unusedPort)
+                        .clientIdentityPem(new byte[][] {clientCertificate}, clientPrivateKey)
+                        .trustCertificatesPem(new byte[][] {serverCertificate})
+                        .build();
+                KmipClient client = KmipClient.create(configuration, transport)) {
+            CodecLimits limits = CodecLimits.defaults();
+            UniqueIdentifier id = UniqueIdentifier.textString("fluent-id");
+            try (ClientBatchItem create = client.request().createSymmetricKey().aes256()
+                            .usageMask((int) CryptographicUsageMask.ENCRYPT).build();
+                    ClientBatchItem get = client.request().get(id).build();
+                    ClientBatchItem destroy = client.request().destroy(id).build()) {
+                assertEquals(1, create.operation());
+                assertEquals(10, get.operation());
+                assertEquals(20, destroy.operation());
+            }
+            assertThrows(ClientOperationException.class, () -> client.createSymmetricKey(
+                    SymmetricKeyRequest.named(3, 256, (int) CryptographicUsageMask.ENCRYPT, "named"), limits));
+            assertThrows(ClientOperationException.class, () -> client.createSymmetricKey(
+                    SymmetricKeyRequest.unnamed(3, 256, (int) CryptographicUsageMask.ENCRYPT), limits,
+                    RequestOptions.defaults()));
+            assertThrows(ClientOperationException.class, () -> client.getById(id, limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.getById(id, limits, RequestOptions.defaults()));
+            assertThrows(ClientOperationException.class, () -> client.destroyById(id, limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.destroyById(id, limits, RequestOptions.defaults()));
+            assertThrows(InvalidInputException.class, () -> client.createSymmetricKey(null, limits));
+            assertThrows(InvalidInputException.class, () -> client.getById(null, limits));
+            assertThrows(InvalidInputException.class, () -> client.destroyById(id, null));
+
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions());
+                assertThrows(ClientOperationException.class, () -> client.execute(batch, limits));
+            }
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions());
+                assertThrows(ClientOperationException.class,
+                        () -> client.executeWithOptions(batch, limits, RequestOptions.defaults()));
+            }
+        }
+    }
+
+    private static byte[] fixture(String filename) throws IOException {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null) {
+            Path candidate = directory.resolve(
+                    Path.of("bindings", "python", "tests", "fixtures", "login-mtls", filename));
+            if (Files.isRegularFile(candidate)) return Files.readAllBytes(candidate);
+            directory = directory.getParent();
+        }
+        throw new IOException("shared mTLS fixture not found: " + filename);
     }
 }
