@@ -176,6 +176,23 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.module.validate_installed_symbols(self.data, 'python', set())
 
 
+class ModelApplicabilityTests(unittest.TestCase):
+    def test_operation_scope_also_filters_descendant_payload_type_variants(self):
+        sys.path.insert(0, str(SHARED / 'tools'))
+        from route_models import target_ids
+        targets = []
+        for operation in ('activate', 'destroy'):
+            field_id = operation + '-identifier'
+            targets.append({'target_id': field_id, 'kind': 'operation_payload_field',
+                'name': 'Unique Identifier', 'operation_id': operation, 'role': 'request'})
+            targets.append({'target_id': field_id + '-text', 'kind': 'operation_payload_type_variant',
+                'name': 'Unique Identifier as Text String', 'operation_id': operation,
+                'role': 'request', 'parent_element_ids': [field_id]})
+        self.assertEqual(['activate-identifier', 'activate-identifier-text'],
+            target_ids(targets, ['Unique Identifier'], operation_id='activate'))
+        self.assertEqual([], target_ids(targets, ['Unique Identifier']))
+
+
 class ManifestSerializationTests(unittest.TestCase):
     def test_generated_records_are_complete_json_before_atomic_replacement(self):
         sys.path.insert(0, str(SHARED / 'tools'))
