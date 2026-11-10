@@ -28,3 +28,10 @@ Each immutable catalog row supplies its exact OASIS document and section.
 `tools/generate_local_cases.py` regenerates consumer dispatch from reviewed
 normative input. CI regenerates and requires no diff. Generated files are never
 manually edited.
+
+KMIPKIT-0084-FR-006 also verifies the complete case inventory through high-level
+and typed APIs in both versions and compares normalized case outcomes.
+KMIPKIT-0084-FR-007 uses `tools/check_coverage.py` for the >=90 percent line gate,
+including real subprocess CLI and controlled TLS tests. The generated lookup
+table is the only exclusion, justified by exhaustive behavioral/regeneration
+checks rather than handwritten branch coverage.

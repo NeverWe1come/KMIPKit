@@ -97,7 +97,7 @@ Separate tests execute all five incoming operations and both version probes.
 CI uploads only redacted results and package provenance.
 
 The full controlled inventory and all five incoming operations are verified in
-both 2.0 and 2.1. Eleven Python integration tests cover the matrix and rejection
+both 2.0 and 2.1. Twelve Python integration tests cover the matrix and rejection
 classifications. In 2.0, Ping, Process, Query Asynchronous Requests and Set
 Defaults are non-applicable under the exact 2.0 §§6.1/11.36 inventories, despite
 the shared catalog's broader version lists. Login, Logout and Delegated Login
@@ -110,3 +110,17 @@ the 107/92/8 split. Authentication failure is failed/unknown, Feature Not
 Supported is unsupported, and a malformed server response is failed with
 library correctness not_checked. The pre-active Encrypt negative accepts only
 Invalid Field (7) or Cryptographic Failure (10), as specified by its catalog.
+
+The complete catalog is also executed through both high-level and typed APIs
+in each version, comparing normalized per-case outcomes. Markdown is checked
+for the same case/outcome and for server-text redaction. Reproduce the 90 percent
+line-coverage gate with Rust 1.94 llvm-tools, cargo-llvm-cov 0.9.1 and:
+
+```sh
+python3 interop/rust-kmip-validator/tools/check_coverage.py
+```
+
+The script isolates compilation/profiles, runs the Rust and controlled subprocess
+suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
+it is a generated data-dispatch table verified by regeneration and all 67 local
+model cases. Fresh measured handwritten coverage is 90.41% (1819/2012 lines).

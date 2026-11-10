@@ -58,3 +58,14 @@ incorrect Ticket/Rights tag restriction for Login/Logout/Delegated Login, which
 are defined in OASIS 2.0 §§6.1.12, 6.1.29, 6.1.30, 7.29 and 7.33. These record
 library correctness failed and server compatibility unknown. No shared input
 or pinned library source is modified.
+
+## Full API matrix and coverage gate
+
+Both 207-row inventories now execute through **both** high-level and typed APIs
+and compare normalized outcomes per version. Twelve integration tests include
+Markdown identity/outcome/redaction checks. `tools/check_coverage.py` instruments
+an isolated target, runs Rust tests plus the real subprocess/controlled-peer
+suite, and enforces >=90 percent line coverage. A fresh run measures 90.41%
+(1819/2012 lines). The sole exclusion is the generated local-case table; its
+regeneration and all 67 model cases are tested. CI pins cargo-llvm-cov 0.9.1 and
+the Rust 1.94 llvm-tools component and runs this same script.

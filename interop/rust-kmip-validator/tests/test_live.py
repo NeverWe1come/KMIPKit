@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 import jsonschema
 
 ROOT = Path(__file__).resolve().parents[3]
-VALIDATOR = ROOT / "interop/rust-kmip-validator/target/debug/rust-kmip-validator"
+VALIDATOR = Path(os.environ.get("KMIPKIT_VALIDATOR_BIN", ROOT / "interop/rust-kmip-validator/target/debug/rust-kmip-validator"))
 SERVER = Path(os.environ.get("KMIPKIT_TEST_SERVER", ROOT / "interop/.local/rust-test-server/harness/target/debug/kmipkit-interop-local-server"))
 CATALOG = json.loads((ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
 SCHEMA = json.loads((ROOT / "interop/shared/schemas/validation-results.schema.json").read_text())
@@ -187,7 +187,7 @@ class LiveContract(unittest.TestCase):
         (work / "connection.json").write_text(json.dumps(config, sort_keys=True))
         (work / "catalog.json").write_text(json.dumps({**CATALOG, "test_cases": cases}))
         (work / "profile.json").write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled-fixture", "version": "offline-1"}, "operations": {}}))
-        args = [str(VALIDATOR), "run", "--connection", str(work / "connection.json"), "--catalog", str(work / "catalog.json"), "--capabilities", str(work / "profile.json"), "--output", str(work / "results.json"), *extra]
+        args = [str(VALIDATOR), "run", "--connection", str(work / "connection.json"), "--catalog", str(work / "catalog.json"), "--capabilities", str(work / "profile.json"), "--output", str(work / "results.json"), "--markdown", str(work / "results.md"), *extra]
         process = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True)
         report = json.loads((work / "results.json").read_text()) if (work / "results.json").exists() else None
         if report is not None:
@@ -250,6 +250,18 @@ class LiveContract(unittest.TestCase):
 
 
 
+
+    def test_markdown_preserves_case_outcome_and_redacts_server_text(self):
+        before = set(self.directory.rglob("results.md"))
+        with ControlledPeer(self.pki, lambda tree: response(0x18, message="secret-markdown-sentinel")) as peer:
+            self.command(self.connection(peer.port), self.rows("test-op-query"))
+        created = set(self.directory.rglob("results.md")) - before
+        self.assertEqual(len(created), 1)
+        rendered = created.pop().read_text()
+        self.assertIn("test-op-query", rendered)
+        self.assertIn("server_unsupported", rendered)
+        self.assertNotIn("secret-markdown-sentinel", rendered)
+
     def test_malformed_response_does_not_blame_the_library(self):
         malformed = ttlv(0x42007b, 1, [ttlv(0x42007d, 7, "secret-malformed-sentinel")])
         with ControlledPeer(self.pki, lambda tree: malformed) as peer:
@@ -290,10 +302,17 @@ class LiveContract(unittest.TestCase):
 
     def test_every_outgoing_catalog_row_reaches_its_recipe_or_an_explicit_library_gap(self):
         for version in ("2.0", "2.1"):
-            with self.subTest(version=version):
-                self.catalog_scenario(version)
+            baseline = None
+            for api in ("typed-protocol", "high-level"):
+                with self.subTest(version=version, api=api):
+                    report = self.catalog_scenario(version, api)
+                    normalized = [(c["case_id"], c["status"], c["library_correctness"], c["server_compatibility"]) for c in report["cases"]]
+                    if baseline is None:
+                        baseline = normalized
+                    else:
+                        self.assertEqual(normalized, baseline)
 
-    def catalog_scenario(self, version):
+    def catalog_scenario(self, version, api="typed-protocol"):
         elements = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
         operations = {int(e["wire_value"], 16): e["name"] for e in elements if e["kind"] == "enumeration_value" and e["parent_element_ids"] == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"] and e.get("allocation") == "assigned"}
         cipher = (ROOT / "interop/rust-kmip-validator/tests/fixtures/aes256-cbc.bin").read_bytes()
@@ -363,7 +382,7 @@ class LiveContract(unittest.TestCase):
         cases = CATALOG["test_cases"]
         environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or version not in c["execution"]["protocol_versions"] or version == "2.0" and c["operation"] in {"Ping", "Process", "Query Asynchronous Requests", "Set Defaults"}}
         with ControlledPeer(self.pki, answer) as peer:
-            _, report = self.command(self.connection(peer.port, version=version, mutations=True), cases)
+            _, report = self.command(self.connection(peer.port, version=version, api=api, mutations=True), cases)
             gaps = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "not_run" and c["case_id"] not in environment_non_runs and "library_api_unavailable:" not in c["diagnostic"] and "library_preflight_rejection:" not in c["diagnostic"]]
             self.assertEqual(gaps, [])
             failures = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "failed"]
@@ -384,7 +403,8 @@ class LiveContract(unittest.TestCase):
             if evidence:
                 output = Path(evidence)
                 output.mkdir(parents=True, exist_ok=True)
-                (output / f"rust-controlled-{version}.json").write_text(json.dumps(report, indent=2) + "\n")
+                (output / f"rust-controlled-{version}-{api}.json").write_text(json.dumps(report, indent=2) + "\n")
+            return report
 
     def test_incoming_operations_use_public_listener_and_dispatcher(self):
         for version in ("2.0", "2.1"):

@@ -34,7 +34,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust 1.94
-        run: rustup toolchain install 1.94 --profile minimal --component rustfmt --component clippy
+        run: rustup toolchain install 1.94 --profile minimal --component rustfmt --component clippy --component llvm-tools
 
       - name: Build and install immutable release packages
         run: python3 interop/rust-kmip-validator/tools/install_artifact.py
@@ -71,6 +71,12 @@ jobs:
           KMIPKIT_EVIDENCE_DIR: interop/rust-kmip-validator/results
         run: interop/.local/rust-ci-venv/bin/python -m unittest discover -s interop/rust-kmip-validator/tests -p test_live.py -v
 
+      - name: Install pinned Rust coverage tool
+        run: cargo +1.94 install cargo-llvm-cov --version 0.9.1 --locked
+
+      - name: Enforce 90 percent handwritten consumer line coverage
+        run: interop/.local/rust-ci-venv/bin/python interop/rust-kmip-validator/tools/check_coverage.py
+
       - name: Confirm package integrity after consumer checks
         run: python3 interop/rust-kmip-validator/tools/verify_artifact.py
 
@@ -82,4 +88,5 @@ jobs:
           path: |
             interop/rust-kmip-validator/results/*.json
             interop/.local/rust-live/provenance.json
+            interop/rust-kmip-validator/target/coverage.json
           if-no-files-found: error
