@@ -63,7 +63,9 @@ recipes except Get Constraints, which is available starting in KMIP 2.1. The
 it; because no KMIP response exists, server compatibility is reported as
 unknown. The attribute catalog also sends Get Attributes requests selecting
 `Cryptographic Algorithm` and `Cryptographic Length` by their KMIP tags and
-checks the returned AES and 128-bit values in both protocol versions. Activate
+checks the returned AES and 128-bit values in both protocol versions. The
+`Symmetric Key` object catalog variant also runs Create followed by Destroy
+against an isolated object. Activate
 moves the isolated key out of Pre-Active before revocation; Check verifies the
 returned object identifier, then revokes the isolated object before Destroy.
 Revoke verifies its returned identifier before Destroy. Destroy verifies its

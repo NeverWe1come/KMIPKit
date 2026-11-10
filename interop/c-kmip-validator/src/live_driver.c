@@ -1183,7 +1183,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
-    bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0;
+    bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0 ||
+        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
     bool destroy_workflow = strcmp(test_case->case_id, "test-op-destroy") == 0;
