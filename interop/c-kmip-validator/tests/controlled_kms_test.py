@@ -31,7 +31,8 @@ def enumeration(tag: int, value: int) -> bytes:
 
 
 def response(operations: tuple[int, ...], protocol_minor: int,
-             selected_attribute_tag: int = 0) -> bytes:
+             selected_attribute_tag: int = 0,
+             created_object_type: int = 2) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -85,7 +86,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-login-ticket"),
             )
         elif operation == 1:
-            payload_value = enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1")
+            payload_value = enumeration(0x420057, created_object_type) + \
+                tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
             if selected_attribute_tag == 0x420028:
                 attributes = enumeration(0x420028, 3)
@@ -316,10 +318,15 @@ def main() -> int:
                                 raise AssertionError("lifecycle batch omitted a unique batch item ID")
                             if lifecycle_target and enumeration(0x42000E, 1) not in request:
                                 raise AssertionError("lifecycle batch must continue to Destroy after a failed item")
-                            if lifecycle_target and (
-                                    enumeration(0x420028, 3) not in request
-                                    or integer(0x42002A, 128) not in request):
-                                raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
+                            private_key_create = enumeration(0x420057, 4) in request
+                            if lifecycle_target:
+                                expected_algorithm = 4 if private_key_create else 3
+                                expected_length = 2048 if private_key_create else 128
+                                if enumeration(0x420028, expected_algorithm) not in request or \
+                                        integer(0x42002A, expected_length) not in request:
+                                    raise AssertionError(
+                                        "lifecycle Create omitted the expected key algorithm or length"
+                                    )
                             selected_attribute_tag = next((tag for tag in (0x420028, 0x42002A)
                                                            if enumeration(0x42013B, tag) in request), 0)
                             prior_attribute_requests = sum(1 for prior in handled_batches
@@ -350,7 +357,9 @@ def main() -> int:
                             if tlv(0x420099, 7, b"interop-user") not in request or \
                                     tlv(0x4200A1, 7, b"interop-password") not in request:
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            stream.sendall(response(operations, protocol_minor, selected_attribute_tag))
+                            stream.sendall(response(
+                                operations, protocol_minor, selected_attribute_tag,
+                                4 if private_key_create else 2))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)

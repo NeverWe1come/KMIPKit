@@ -115,14 +115,15 @@ static bool structure_into_value(kmip_live_client_t *client,
     return status == 0;
 }
 
-static bool create_symmetric_key_attributes(kmip_live_client_t *client,
-                                            kmipkit_ttlv_structure_t **out_attributes) {
+static bool create_cryptographic_key_attributes(kmip_live_client_t *client,
+                                               uint32_t algorithm,
+                                               int32_t length,
+                                               kmipkit_ttlv_structure_t **out_attributes) {
     int32_t status = kmipkit_ttlv_structure_create(out_attributes);
     kmipkit_ttlv_value_t *value = NULL;
-    bool valid = status == 0 && kmipkit_ttlv_value_enumeration(
-        KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, &value) == 0 &&
+    bool valid = status == 0 && kmipkit_ttlv_value_enumeration(algorithm, &value) == 0 &&
         append_ttlv_value(client, out_attributes, UINT32_C(0x420028), &value) &&
-        kmipkit_ttlv_value_integer(128, &value) == 0 &&
+        kmipkit_ttlv_value_integer(length, &value) == 0 &&
         append_ttlv_value(client, out_attributes, UINT32_C(0x42002A), &value);
     if (value) kmipkit_ttlv_value_release(value);
     if (!valid && *out_attributes) {
@@ -130,6 +131,18 @@ static bool create_symmetric_key_attributes(kmip_live_client_t *client,
         *out_attributes = NULL;
     }
     return valid;
+}
+
+static bool create_symmetric_key_attributes(kmip_live_client_t *client,
+                                            kmipkit_ttlv_structure_t **out_attributes) {
+    return create_cryptographic_key_attributes(
+        client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, out_attributes);
+}
+
+static bool create_private_key_attributes(kmip_live_client_t *client,
+                                          kmipkit_ttlv_structure_t **out_attributes) {
+    return create_cryptographic_key_attributes(
+        client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048, out_attributes);
 }
 
 static bool item_view_has_tag(kmipkit_ttlv_item_view_t *item,
@@ -1183,8 +1196,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
+    bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0 ||
-        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0;
+        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || private_key_workflow;
+    uint32_t requested_object_type = private_key_workflow ?
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY :
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
     bool destroy_workflow = strcmp(test_case->case_id, "test-op-destroy") == 0;
@@ -1259,13 +1276,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
             .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
         };
-        request_construction_step = "symmetric key Attributes";
-        status = create_symmetric_key_attributes(client, &request_attributes) ? 0 : -1;
+        request_construction_step = private_key_workflow ? "private key Attributes" :
+            "symmetric key Attributes";
+        status = (private_key_workflow ?
+            create_private_key_attributes(client, &request_attributes) :
+            create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
         if (status == 0) {
-            request_construction_step = "Create Symmetric Key";
+            request_construction_step = private_key_workflow ? "Create Private Key" :
+                "Create Symmetric Key";
             kmipkit_client_batch_item_t **create_item = create_workflow ? &item : &setup_item;
             status = kmipkit_client_batch_item_create(
-                KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, request_attributes, NULL, create_item);
+                requested_object_type, request_attributes, NULL, create_item);
             if (status == 0 && !request_item_is_valid(
                     *create_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -1534,11 +1555,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      failure->result_status, failure->result_reason);
             goto cleanup;
         }
-        uint32_t created_object_type = 0;
+        uint32_t response_object_type = 0;
         status = kmipkit_client_batch_item_response_create(
-            setup_response_item, &created_identifier_present, &created_object_type, &created_identifier);
+            setup_response_item, &created_identifier_present, &response_object_type, &created_identifier);
         if (status != 0 || !created_identifier_present ||
-            created_object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+            response_object_type != requested_object_type ||
             created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
             created_identifier.text_length == 0 || !created_identifier.text_data) {
             outcome.library_failed = status != 0;
