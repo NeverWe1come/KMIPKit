@@ -471,7 +471,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     } else if (strcmp(test_case->operation, "Locate") == 0) {
         status = kmipkit_ttlv_structure_create(&request_attributes);
         if (status == 0) {
-            status = kmipkit_client_batch_item_locate(1, 1, 0, 0, 0, 0, 0, 0,
+            status = kmipkit_client_batch_item_locate(1, 3, 0, 0, 0, 0, 0, 0,
                                                       request_attributes, &item);
         }
     } else if (strcmp(test_case->operation, "Query") == 0) {
@@ -623,24 +623,37 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             response_item, &present, &payload_present, &located_items_present,
             &located_items, &identifier_count);
         bool valid_response = status == 0 && present && payload_present;
+        if (!valid_response) {
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not read the typed Locate payload (status=%d present=%u payload=%u)",
+                     status, present, payload_present);
+        }
         if (valid_response && located_items_present && located_items < 0) {
             valid_response = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "server returned a negative Located Items value");
         }
         for (uint64_t index = 0; valid_response && index < identifier_count; ++index) {
-            kmipkit_unique_identifier_v1_t identifier = {0};
+            kmipkit_unique_identifier_v1_t identifier = {
+                .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+                .abi_version = 1
+            };
             status = kmipkit_client_batch_item_response_locate_unique_identifier_at(
                 response_item, index, &identifier);
-            valid_response = status == 0;
+            bool valid_identifier = identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ||
+                identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ||
+                (identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+                 (identifier.text_length == 0 || identifier.text_data != NULL));
+            valid_response = status == 0 && valid_identifier;
+            if (!valid_response) {
+                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                         "KMIPKit could not read Locate identifier %llu (status=%d kind=%u)",
+                         (unsigned long long)index, status, (unsigned int)identifier.kind);
+            }
         }
         if (!valid_response) {
             outcome.success = false;
             outcome.library_failed = status != 0;
-            if (outcome.result_reason[0] == '\0') {
-                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                         "KMIPKit did not expose a valid typed Locate response");
-            }
         }
     } else if (strcmp(test_case->operation, "Query") == 0) {
         uint8_t present = 0;
