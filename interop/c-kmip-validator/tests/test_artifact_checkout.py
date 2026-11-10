@@ -91,6 +91,12 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
 
         self.assertIn("fetch-depth: 0", checkout_step)
 
+    def test_c_readme_states_generic_ttlv_encoder_and_dispatch_limits(self):
+        readme = (ROOT / "interop/c-kmip-validator/README.md").read_text(encoding="utf-8")
+
+        self.assertIn("no generic TTLV encoder", readme)
+        self.assertIn("no generic TTLV request dispatch", readme)
+
     def test_pinned_c_artifact_is_consistent_and_in_release_history(self):
         support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
             encoding="utf-8"
