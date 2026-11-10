@@ -1,10 +1,28 @@
 #include "c_validator.h"
+#include "kmipkit.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
 int main(void) {
     printf("Running C validator unit tests...\n");
+
+    // 0. Confirm the shared release catalog is consumed in full.
+    kmip_test_case_t catalog[KMIP_MAX_CASES];
+    size_t catalog_count = 0;
+    assert(kmip_load_catalog("../shared/catalog/kmipkit-1.0-test-catalog.json",
+                             catalog, &catalog_count));
+    assert(catalog_count == 218);
+    assert(strcmp(catalog[catalog_count - 1].case_id,
+                  "test-v20-reject-set-defaults") == 0);
+
+    // 0a. Resolve a typed request builder through the installed public C ABI.
+    kmipkit_client_batch_item_t *public_item = NULL;
+    uint32_t operation = 0;
+    assert(kmipkit_client_batch_item_discover_versions(&public_item) == 0);
+    assert(kmipkit_client_batch_item_operation(public_item, &operation) == 0);
+    assert(operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
+    kmipkit_client_batch_item_release(public_item);
 
     // 1. Test attempt context uniqueness
     kmip_attempt_context_t ctx1, ctx2;
