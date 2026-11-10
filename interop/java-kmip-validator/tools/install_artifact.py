@@ -53,6 +53,19 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
+    """Resolve the consumer's pin file and reject traversal and symlink escapes."""
+    root = project_root.resolve(strict=True)
+    resolved = pin_file.resolve(strict=True)
+    try:
+        resolved.relative_to(root)
+    except ValueError as error:
+        raise ValueError("--pin-file must resolve inside the Java validator project") from error
+    if not resolved.is_file():
+        raise ValueError("--pin-file must identify a regular file")
+    return resolved
+
+
 def extract_git_archive(repository: Path, commit: str, destination: Path) -> None:
     archive = subprocess.run(
         ["git", "-C", str(repository), "archive", "--format=tar", commit],
@@ -140,7 +153,9 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, required=True)
     args = parser.parse_args()
     try:
-        pin = json.loads(args.pin_file.read_text(encoding="utf-8"))
+        project_root = Path(__file__).resolve().parents[1]
+        pin_path = resolve_pin_file(args.pin_file, project_root)
+        pin = json.loads(pin_path.read_text(encoding="utf-8"))
         result = install(args.repository.resolve(), pin["commit"], pin["release_ref"],
                          args.maven_repository.resolve(), args.manifest.resolve())
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:

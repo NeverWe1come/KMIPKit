@@ -14,8 +14,11 @@ SPEC.loader.exec_module(INSTALL_ARTIFACT)
 class InstallArtifactPathTests(unittest.TestCase):
     def test_pin_file_must_be_inside_consumer_project(self):
         project = Path(__file__).parents[1]
-        with self.assertRaises(ValueError):
-            INSTALL_ARTIFACT.resolve_pin_file(project.parent / "outside.json", project)
+        with tempfile.TemporaryDirectory() as temporary:
+            outside = Path(temporary) / "outside.json"
+            outside.write_text("{}", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                INSTALL_ARTIFACT.resolve_pin_file(outside, project)
 
     def test_pin_file_symlink_cannot_escape_consumer_project(self):
         with tempfile.TemporaryDirectory() as temporary:
