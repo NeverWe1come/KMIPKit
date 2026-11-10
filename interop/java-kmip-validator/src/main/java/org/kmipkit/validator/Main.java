@@ -131,8 +131,8 @@ public final class Main {
                         artifact.libraryCommit(), artifact.artifactSha256()), summary, evidence);
         MatrixReporter.writeReports(report, options.pathOr("--output-dir", Path.of("results").toString()));
         out.println("KMIPKit correctness: " + summary.passed() + " passed, " + summary.failed() + " failed");
-        out.println("Server compatibility: " + summary.unsupported() + " unsupported, "
-                + summary.policyRestricted() + " policy restricted");
+        out.println("Server compatibility observed: " + summary.unsupported() + " unsupported");
+        out.println("Policy restrictions: " + summary.policyRestricted() + " cases withheld or rejected by policy");
         out.println("Coverage pending: " + summary.notRun() + " cases not run");
         out.println("Sanitized reports written to " + options.pathOr("--output-dir", Path.of("results").toString()));
         return summary.failed() == 0 ? 0 : 1;
@@ -155,9 +155,9 @@ public final class Main {
             try {
                 connection.requireLiveExecution(true, enableMutations);
             } catch (IllegalArgumentException rejected) {
-                return new JavaKmipDriver.CaseOutcome("policy_restricted", "not_checked", "policy_restricted",
+                return new JavaKmipDriver.CaseOutcome("policy_restricted", "not_checked", "unknown",
                         "not_compared", elapsedMillis(start), null, null,
-                        "State-changing operation requires configuration and --enable-mutations.");
+                        "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
             }
         }
         if (!"typed-protocol".equals(connection.apiLevel())) {
