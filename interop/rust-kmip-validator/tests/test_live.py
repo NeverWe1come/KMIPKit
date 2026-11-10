@@ -205,7 +205,7 @@ class LiveContract(unittest.TestCase):
         self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
-        for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
+        for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
             with self.subTest(reason=reason), ControlledPeer(self.pki, lambda tree: response(0x18, reason=reason, message="secret-response-sentinel")) as peer:
                 _, report = self.command(self.connection(peer.port), self.rows("test-op-query"))
                 case = report["cases"][0]
@@ -249,6 +249,34 @@ class LiveContract(unittest.TestCase):
         self.assertEqual(len(set(normalized)), 1)
 
 
+
+    def test_malformed_response_does_not_blame_the_library(self):
+        malformed = ttlv(0x42007b, 1, [ttlv(0x42007d, 7, "secret-malformed-sentinel")])
+        with ControlledPeer(self.pki, lambda tree: malformed) as peer:
+            process, report = self.command(self.connection(peer.port), self.rows("test-op-query"))
+            case = report["cases"][0]
+            self.assertEqual(process.returncode, 1)
+            self.assertEqual(case["status"], "failed")
+            self.assertEqual(case["library_correctness"], "not_checked")
+            self.assertEqual(case["server_compatibility"], "unknown")
+            self.assertIn("ResponseStarted", case["diagnostic"])
+            self.assertNotIn("secret-malformed-sentinel", json.dumps(report))
+
+    def test_preactive_encrypt_accepts_only_the_catalog_rejection_reasons(self):
+        for reason, expected in ((7, "passed"), (10, "passed"), (0x43, "failed")):
+            with self.subTest(reason=reason):
+                def answer(tree):
+                    operation = find(tree, 0x42005c)
+                    if operation == 0x1f:
+                        return response(operation, reason=reason)
+                    payload = [ttlv(0x420094, 7, "owned-preactive")]
+                    if operation == 1:
+                        payload.insert(0, ttlv(0x420057, 5, 2))
+                    return response(operation, status=0, reason=None, payload=payload)
+                with ControlledPeer(self.pki, answer) as peer:
+                    _, report = self.command(self.connection(peer.port, mutations=True), self.rows("test-neg-encrypt-preactive-key"))
+                    self.assertEqual(report["cases"][0]["status"], expected)
+
     def test_request_equivalence_between_high_level_and_typed_apis(self):
         payloads = []
         for api in ("high-level", "typed-protocol"):
@@ -261,6 +289,11 @@ class LiveContract(unittest.TestCase):
         self.assertEqual(payloads, [expected, expected])
 
     def test_every_outgoing_catalog_row_reaches_its_recipe_or_an_explicit_library_gap(self):
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                self.catalog_scenario(version)
+
+    def catalog_scenario(self, version):
         elements = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
         operations = {int(e["wire_value"], 16): e["name"] for e in elements if e["kind"] == "enumeration_value" and e["parent_element_ids"] == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"] and e.get("allocation") == "assigned"}
         cipher = (ROOT / "interop/rust-kmip-validator/tests/fixtures/aes256-cbc.bin").read_bytes()
@@ -328,9 +361,9 @@ class LiveContract(unittest.TestCase):
             header = ttlv(0x42007a, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)]), ttlv(0x420092, 9, 1794268800), ttlv(0x42000d, 2, len(results))])
             return ttlv(0x42007b, 1, [header, *results])
         cases = CATALOG["test_cases"]
-        environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or "2.1" not in c["execution"]["protocol_versions"]}
+        environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or version not in c["execution"]["protocol_versions"]}
         with ControlledPeer(self.pki, answer) as peer:
-            _, report = self.command(self.connection(peer.port, mutations=True), cases)
+            _, report = self.command(self.connection(peer.port, version=version, mutations=True), cases)
             gaps = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "not_run" and c["case_id"] not in environment_non_runs and "library_api_unavailable:" not in c["diagnostic"] and "library_preflight_rejection:" not in c["diagnostic"]]
             self.assertEqual(gaps, [])
             failures = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "failed"]
@@ -344,8 +377,13 @@ class LiveContract(unittest.TestCase):
                 (output / "rust-controlled.json").write_text(json.dumps(report, indent=2) + "\n")
 
     def test_incoming_operations_use_public_listener_and_dispatcher(self):
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                self.incoming_scenario(version)
+
+    def incoming_scenario(self, version):
         cases = [c for c in CATALOG["test_cases"] if c["requires"].get("workflow_type") == "server_to_client"]
-        work = self.directory / "incoming-ready"
+        work = self.directory / f"incoming-ready-{version}"
         payloads = [[], [ttlv(0x420094, 7, "owned-fixture")], [ttlv(0x420094, 7, "owned-fixture"), ttlv(0x420070, 5, 1), ttlv(0x42005b, 1, [ttlv(0x420059, 5, 1), ttlv(0x42005a, 8, b"fixture")])], [ttlv(0x420074, 5, 1)], [ttlv(0x420151, 5, 1)]]
         operations = [0x1e, 0x1b, 0x1c, 0x18, 0x32]
         errors = []
@@ -362,7 +400,7 @@ class LiveContract(unittest.TestCase):
                 for operation, payload in zip(operations, payloads):
                     with socket.create_connection((host, int(port)), timeout=5) as raw:
                         with context.wrap_socket(raw, server_hostname="localhost") as channel:
-                            channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, 1)]), ttlv(0x42000d, 2, 1)]), ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
+                            channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, int(version[-1]))]), ttlv(0x42000d, 2, 1)]), ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
                             reply = parse(receive(channel))
                             if find(reply, 0x42005c) != operation or find(reply, 0x42007f) != 0:
                                 raise AssertionError(f"incoming response contract mismatch: expected operation={operation}, observed operation={find(reply, 0x42005c)}, status={find(reply, 0x42007f)}")
@@ -370,7 +408,7 @@ class LiveContract(unittest.TestCase):
                 errors.append(str(error))
         thread = threading.Thread(target=send)
         thread.start()
-        _, report = self.command(self.connection(), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
+        _, report = self.command(self.connection(version=version), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
         thread.join(timeout=10)
         self.assertFalse(errors, errors)
         self.assertEqual(report["summary"]["passed"], 5, report["cases"])
