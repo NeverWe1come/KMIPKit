@@ -26,6 +26,18 @@ class JavaRouteInventoryTest {
         assertEquals(JavaRouteInventory.Status.PAYLOAD_ONLY, inventory.get("Cancel").status());
         assertEquals(JavaRouteInventory.Status.NO_PUBLIC_ROUTE, inventory.get("Set Endpoint Role").status());
 
+        var clientQuery = catalog.cases().stream()
+                .filter(testCase -> testCase.caseId().equals("test-op-query"))
+                .findFirst().orElseThrow();
+        var serverQuery = catalog.cases().stream()
+                .filter(testCase -> testCase.caseId().equals("test-s2c-query"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
+                JavaRouteInventory.routeFor(clientQuery).status());
+        assertEquals(JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE,
+                JavaRouteInventory.routeFor(serverQuery).status());
+        assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
+
         for (var route : inventory.values()) {
             assertFalse(route.reason().isBlank(), route.operation());
             assertTrue(route.status() != JavaRouteInventory.Status.UNCLASSIFIED, route.operation());
