@@ -5,36 +5,81 @@ on:
     paths:
       - 'interop/rust-kmip-validator/**'
       - 'interop/shared/**'
+      - 'specs/084-interop-rust-live/**'
       - '.github/workflows/interop-rust.yml'
   push:
     branches:
       - release/1.0.0
+      - feature/KMIPKIT-0084-interop-rust-live
     paths:
       - 'interop/rust-kmip-validator/**'
       - 'interop/shared/**'
+      - 'specs/084-interop-rust-live/**'
       - '.github/workflows/interop-rust.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   validate-rust:
-    name: Rust KMIP 2.1 Validator Build and Test
+    name: Rust 1.94 installed-package interoperability consumer
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Checkout repository
+      - name: Checkout repository and pinned release history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Install Rust toolchain
-        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal --component rustfmt --component clippy
+
+      - name: Build and install immutable release packages
+        run: python3 interop/rust-kmip-validator/tools/install_artifact.py
+
+      - name: Verify installed bytes and package provenance
+        run: python3 interop/rust-kmip-validator/tools/verify_artifact.py
 
       - name: Check code formatting
-        run: cargo fmt --manifest-path interop/rust-kmip-validator/Cargo.toml --check
+        run: cargo +1.94 fmt --manifest-path interop/rust-kmip-validator/Cargo.toml --check
+
+      - name: Check generated consumer dispatch
+        run: |
+          python3 interop/rust-kmip-validator/tools/generate_local_cases.py
+          git diff --exit-code -- interop/rust-kmip-validator/src/local_cases_generated.rs
 
       - name: Lint with Clippy
-        run: cargo clippy --manifest-path interop/rust-kmip-validator/Cargo.toml --all-targets -- -D warnings
+        run: cargo +1.94 clippy --locked --manifest-path interop/rust-kmip-validator/Cargo.toml --all-targets --all-features -- -D warnings
 
-      - name: Run unit and integration tests
-        run: cargo test --manifest-path interop/rust-kmip-validator/Cargo.toml
+      - name: Run Rust tests and build the consumer
+        run: |
+          cargo +1.94 test --locked --manifest-path interop/rust-kmip-validator/Cargo.toml --all-features
+          cargo +1.94 build --locked --manifest-path interop/rust-kmip-validator/Cargo.toml
+
+      - name: Build isolated local test-server harness from pinned release
+        run: python3 interop/rust-kmip-validator/tools/build_test_server.py
+
+      - name: Create isolated fixture-test environment
+        run: |
+          python3 -m venv interop/.local/rust-ci-venv
+          interop/.local/rust-ci-venv/bin/python -m pip install 'jsonschema==4.19.2'
+
+      - name: Run controlled mTLS catalog, incoming, safety and parity checks
+        env:
+          KMIPKIT_EVIDENCE_DIR: interop/rust-kmip-validator/results
+        run: interop/.local/rust-ci-venv/bin/python -m unittest discover -s interop/rust-kmip-validator/tests -p test_live.py -v
+
+      - name: Confirm package integrity after consumer checks
+        run: python3 interop/rust-kmip-validator/tools/verify_artifact.py
+
+      - name: Upload redacted controlled evidence and provenance
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: rust-interop-controlled-evidence
+          path: |
+            interop/rust-kmip-validator/results/*.json
+            interop/.local/rust-live/provenance.json
+          if-no-files-found: error

@@ -12,18 +12,18 @@ from the pinned release commit. Targets are KMIP 2.0 and 2.1; vendor extensions,
 KMIP 1.x/3.0 and vendor certification are excluded. Shared catalog references
 are authoritative for each individual case and remain unchanged.
 
-- OASIS KMIP Specification Version 2.1, OS, 2022-12-15,
+- OASIS KMIP Specification Version 2.1, OS, 2020-12-14,
   `https://docs.oasis-open.org/kmip/spec/v2.1/os/kmip-spec-v2.1-os.html`:
-  §2 (TTLV), §§3–5 (objects, attributes, templates), §6.1 (client operations),
-  §6.2.1–§6.2.5 (server operations), §7 (messages), §11 (enumerations),
+  §10.1 (TTLV), §§2–5 (objects, key material and attributes), §6.1 (client operations),
+  §6.2.1–§6.2.5 (server operations), §§8–9 (messages and header fields), §11 (enumerations),
   §12 (bit masks). Operation-specific exact sections come from each catalog row.
-- OASIS KMIP Specification Version 2.0, OS, 2019-05-30,
+- OASIS KMIP Specification Version 2.0, OS, 2019-10-31,
   `https://docs.oasis-open.org/kmip/spec/v2.0/os/kmip-spec-v2.0-os.html`:
-  §§2–7, §11 and §12, subject to the catalog version gates.
-- OASIS KMIP Profiles Version 2.1, OS, 2022-12-15,
+  §§2–10, §11 and §12, subject to the catalog version gates.
+- OASIS KMIP Profiles Version 2.1, OS, 2020-12-14,
   `https://docs.oasis-open.org/kmip/profiles/v2.1/os/kmip-profiles-v2.1-os.html`:
-  §5.3.1 (HTTPS), §6 (JSON), §7 (XML), applicable transport clauses.
-- OASIS KMIP Profiles Version 2.0, OS, 2019-05-30,
+  §5.3.1 (HTTPS), §5.5.1 (JSON), §5.4.1 (XML), applicable transport clauses.
+- OASIS KMIP Profiles Version 2.0, OS, 2019-10-31,
   `https://docs.oasis-open.org/kmip/profiles/v2.0/os/kmip-profiles-v2.0-os.html`:
   corresponding selected transport and encoding clauses.
 - KMIPKIT-0083, ADR-0017, ADR-0021 and ADR-0022.
