@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/interop/route-capabilities.schema.json",
+  "title": "KMIPKit installed public construction route capabilities",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "library_commit",
+    "public_api_manifest",
+    "routes",
+    "execution_routes",
+    "unavailable"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "library_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "public_api_manifest": {
+      "const": "specification/api/public-api.json"
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_id",
+          "language",
+          "api_level",
+          "mode",
+          "public_api_symbol",
+          "operation_ids",
+          "case_categories",
+          "protocol_versions",
+          "combinations",
+          "actions",
+          "source_paths",
+          "artifact_commit",
+          "execution_route_id",
+          "artifact_verification"
+        ],
+        "properties": {
+          "route_id": {
+            "type": "string",
+            "pattern": "^(rust|c|java|python)\\.(typed-protocol|generic-ttlv|high-level)\\.[a-z0-9_.-]+$"
+          },
+          "language": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "api_level": {
+            "enum": [
+              "high-level",
+              "typed-protocol",
+              "generic-ttlv"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "network",
+              "local"
+            ]
+          },
+          "public_api_symbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "case_categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "protocol_versions": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "2.0",
+                "2.1"
+              ]
+            }
+          },
+          "combinations": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "encoding",
+                "transport"
+              ],
+              "properties": {
+                "encoding": {
+                  "enum": [
+                    "TTLV",
+                    "JSON",
+                    "XML"
+                  ]
+                },
+                "transport": {
+                  "enum": [
+                    "raw_tls",
+                    "https",
+                    null
+                  ]
+                }
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "construct",
+                "decode",
+                "encode",
+                "send"
+              ]
+            }
+          },
+          "source_paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "artifact_commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "execution_route_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "artifact_verification": {
+            "const": "required"
+          }
+        }
+      }
+    },
+    "execution_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "execution_route_id",
+          "language",
+          "public_api_symbol",
+          "source_paths"
+        ],
+        "properties": {
+          "execution_route_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "language": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "public_api_symbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "unavailable": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "language",
+          "capability",
+          "reason",
+          "source_paths"
+        ],
+        "properties": {
+          "language": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "capability": {
+            "enum": [
+              "high-level-constructor",
+              "generic-encode",
+              "generic-send",
+              "constructor"
+            ]
+          },
+          "public_api_symbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}
