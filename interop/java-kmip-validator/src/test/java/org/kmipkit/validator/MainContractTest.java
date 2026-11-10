@@ -37,8 +37,8 @@ class MainContractTest {
         JsonNode report = new ObjectMapper().readTree(output.resolve("results.json").toFile());
         assertEquals(212, report.path("summary").path("total").asInt());
         assertEquals(67, report.path("summary").path("passed").asInt());
-        assertEquals(132, report.path("summary").path("policy_restricted").asInt());
-        assertEquals(13, report.path("summary").path("not_run").asInt());
+        assertEquals(0, report.path("summary").path("policy_restricted").asInt());
+        assertEquals(145, report.path("summary").path("not_run").asInt());
         for (JsonNode result : report.path("cases")) {
             if ("policy_restricted".equals(result.path("status").asText())) {
                 assertEquals("unknown", result.path("server_compatibility").asText());
@@ -86,6 +86,53 @@ class MainContractTest {
         assertEquals("not_run", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
         assertTrue(result.path("diagnostic").asText().contains("server-initiated"));
+    }
+
+    @Test
+    void planDoesNotCountObjectLifecycleCasesWithoutCompleteRecipesAsExecutable() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        var selected = mapper.createArrayNode();
+        for (String caseId : new String[] {"test-op-get-attribute-list", "test-op-get-constraints"}) {
+            catalog.path("test_cases").forEach(testCase -> {
+                if (caseId.equals(testCase.path("case_id").asText())) selected.add(testCase.deepCopy());
+            });
+        }
+        catalog.set("test_cases", selected);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", selected.size());
+        Path catalogFile = temporaryDirectory.resolve("pending-object-recipes.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+
+        String plan = assertCommandOutput(0, "plan", "--connection", connection("2.1", "typed-protocol").toString(),
+                "--catalog", catalogFile.toString());
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
+        assertTrue(plan.contains("Public typed constructors awaiting catalog recipes: 2"));
+    }
+
+    @Test
+    void pendingMutatingCaseIsReportedAsCoveragePendingBeforeLocalMutationPolicy() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        JsonNode getAttributeList = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "test-op-get-attribute-list".equals(testCase.path("case_id").asText()))
+                .findFirst().orElseThrow();
+        catalog.set("test_cases", mapper.createArrayNode().add(getAttributeList.deepCopy()));
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+        Path catalogFile = temporaryDirectory.resolve("pending-mutating-case.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+        Path output = temporaryDirectory.resolve("pending-mutating-report");
+
+        assertCommand(0, "run", "--connection", connection("2.1", "typed-protocol").toString(),
+                "--catalog", catalogFile.toString(), "--artifact-manifest",
+                Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
+                "--output-dir", output.toString());
+
+        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals("not_run", result.path("status").asText());
+        assertEquals("unknown", result.path("server_compatibility").asText());
+        assertTrue(result.path("diagnostic").asText().contains("isolated object fixture"));
     }
 
     private Path connection() throws Exception {

@@ -23,6 +23,8 @@ class JavaRouteInventoryTest {
         assertEquals(59, inventory.size());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Query").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attributes").status());
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attribute List").status());
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Constraints").status());
         assertEquals(JavaRouteInventory.Status.PAYLOAD_ONLY, inventory.get("Cancel").status());
         assertEquals(JavaRouteInventory.Status.NO_PUBLIC_ROUTE, inventory.get("Set Endpoint Role").status());
 
@@ -37,6 +39,15 @@ class JavaRouteInventoryTest {
         assertEquals(JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE,
                 JavaRouteInventory.routeFor(serverQuery).status());
         assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
+
+        for (String caseId : Set.of("test-op-get-attribute-list", "test-op-get-constraints")) {
+            var statefulCase = catalog.cases().stream()
+                    .filter(testCase -> testCase.caseId().equals(caseId))
+                    .findFirst().orElseThrow();
+            assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING,
+                    JavaRouteInventory.routeFor(statefulCase).status(), caseId);
+            assertTrue(JavaRouteInventory.routeFor(statefulCase).reason().contains("fixture"), caseId);
+        }
 
         for (var route : inventory.values()) {
             assertFalse(route.reason().isBlank(), route.operation());
