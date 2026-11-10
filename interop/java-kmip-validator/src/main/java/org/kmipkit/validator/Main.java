@@ -56,17 +56,22 @@ public final class Main {
     private static int plan(Arguments options, PrintStream out) throws Exception {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
+        Map<String, JavaRouteInventory.Route> routes = JavaRouteInventory.classify(catalog);
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
-        long typed = applicable.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode())
-                && "typed-protocol".equals(connection.apiLevel())).count();
+        long typed = countCases(applicable, routes, JavaRouteInventory.Status.EXECUTABLE_TYPED);
+        long recipePending = countCases(applicable, routes, JavaRouteInventory.Status.TYPED_API_PENDING);
+        long payloadOnly = countCases(applicable, routes, JavaRouteInventory.Status.PAYLOAD_ONLY);
+        long apiUnavailable = countCases(applicable, routes, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
         long mutation = applicable.stream().filter(testCase -> "mutating".equals(testCase.execution().mutation())).count();
         out.println("KMIPKit Java interoperability plan");
         out.println("Server ID: " + connection.serverId());
         out.println("Protocol: KMIP " + connection.protocolVersion());
         out.println("Applicable cases: " + applicable.size());
         out.println("Local TTLV model cases: " + local);
-        out.println("Server exchanges with a Java typed route: " + typed);
+        out.println("Server exchanges with an executable Java typed route: " + typed);
+        out.println("Public typed constructors awaiting catalog recipes: " + recipePending);
+        out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
         out.println("Capability profiles are hypotheses and do not filter cases.");
         return 0;
@@ -75,6 +80,7 @@ public final class Main {
     private static int preflight(Arguments options, PrintStream out) throws Exception {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
+        JavaRouteInventory.classify(catalog);
         ArtifactProvenance artifact = loadArtifact(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
         long applicable = applicableCases(catalog, connection.protocolVersion()).size();
@@ -90,6 +96,7 @@ public final class Main {
     private static int run(Arguments options, PrintStream out) throws Exception {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
+        Map<String, JavaRouteInventory.Route> routes = JavaRouteInventory.classify(catalog);
         ArtifactProvenance artifact = loadArtifact(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
@@ -98,7 +105,7 @@ public final class Main {
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
-                        && hasTypedRoute(testCase.operation())
+                        && routes.get(testCase.operation()).status() == JavaRouteInventory.Status.EXECUTABLE_TYPED
                         && "typed-protocol".equals(connection.apiLevel())
                         && !"2.0".equals(connection.protocolVersion()));
         JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
@@ -161,9 +168,12 @@ public final class Main {
                     "The pinned release artifact does not yet preserve Java KMIP 2.0 client configuration.",
                     elapsedMillis(start));
         }
-        if (driver == null || !hasTypedRoute(testCase.operation())) {
-            return JavaKmipDriver.CaseOutcome.notRun(
-                    "The public Java typed API does not expose a request route for this catalog operation.",
+        if (!hasTypedRoute(testCase.operation())) {
+            return JavaKmipDriver.CaseOutcome.notRun(JavaRouteInventory.routeFor(testCase.operation()).reason(),
+                    elapsedMillis(start));
+        }
+        if (driver == null) {
+            return JavaKmipDriver.CaseOutcome.notRun("No Java typed client was initialized for this run.",
                     elapsedMillis(start));
         }
         return driver.execute(testCase);
@@ -204,8 +214,13 @@ public final class Main {
     }
 
     private static boolean hasTypedRoute(String operation) {
-        return Set.of("Discover Versions", "Ping", "Query", "Get Constraints", "Get Attribute List")
-                .contains(operation);
+        return JavaRouteInventory.routeFor(operation).status() == JavaRouteInventory.Status.EXECUTABLE_TYPED;
+    }
+
+    private static long countCases(List<CatalogLoader.CatalogCase> cases,
+            Map<String, JavaRouteInventory.Route> routes, JavaRouteInventory.Status status) {
+        return cases.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
+                .filter(testCase -> routes.get(testCase.operation()).status() == status).count();
     }
 
     private static double elapsedMillis(long start) {
