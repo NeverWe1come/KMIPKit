@@ -188,10 +188,10 @@ def main() -> int:
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
     expected_operations = (
-        (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20,
+        (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 18, 19, 20, 8, 24, 44)
         if protocol_version == "2.0"
-        else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20,
+        else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
               1, 18, 19, 20, 8, 24, 30, 44, 45, 59)
     )
     expected_cases = (
@@ -199,12 +199,13 @@ def main() -> int:
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
               "test-op-locate", "test-op-login", "test-op-get", "test-op-get-attributes",
-              "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate")
+              "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
+              "test-op-revoke")
     )
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
-            "test-op-create", "test-op-activate"
+            "test-op-create", "test-op-activate", "test-op-revoke"
         )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
@@ -256,6 +257,7 @@ def main() -> int:
                             create_lifecycle = operations == (1, 20)
                             check_lifecycle = operations == (1, 9, 19, 20)
                             activate_lifecycle = operations == (1, 18, 19, 20)
+                            revoke_lifecycle = operations == (1, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -264,6 +266,8 @@ def main() -> int:
                                 lifecycle_target = {9: b"interop-check"}
                             if activate_lifecycle:
                                 lifecycle_target = {18: b"interop-activate"}
+                            if revoke_lifecycle:
+                                lifecycle_target = {19: b"interop-revoke"}
                             if create_lifecycle:
                                 lifecycle_target = {1: b"interop-create"}
                             lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
@@ -280,7 +284,7 @@ def main() -> int:
                                 raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
-                            if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 10, 20)) and request.count(
+                            if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20), (1, 10, 20)) and request.count(
                                     enumeration(0x420094, 1)) < (3 if (check_lifecycle or activate_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
                             if 8 in operations:
@@ -413,11 +417,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 79,
+            "passed": 80,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 133,
+            "not_run": 132,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -426,11 +430,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 74,
+            "passed": 75,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 129,
+            "not_run": 128,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
