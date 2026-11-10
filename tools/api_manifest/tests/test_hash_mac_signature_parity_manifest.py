@@ -37,6 +37,36 @@ VERIFIED_RESPONSE_VALUE_EXPORTS = {
     "kmipkit::protocol::SignatureVerifyResponse::validity_indicator",
     "kmipkit_protocol::SignatureVerifyResponse::validity_indicator",
 }
+# T053 promotes these Rust and Java declaration routes when reconciling the
+# complete five-operation surface after its four-language evidence review.
+T053_VERIFIED_OPERATION_IDENTITIES: set[tuple[str, str]] = {
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse"),
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse"),
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.macVerifyResponse"),
+    ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.signatureVerifyResponse"),
+    ("rust-kmipkit", "kmipkit::Client::hash_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::mac_verify_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::mac_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::sign_with_options"),
+    ("rust-kmipkit", "kmipkit::Client::signature_verify_with_options"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::MacVerify"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::MacVerify::0"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::SignatureVerify"),
+    ("rust-kmipkit", "kmipkit::ClientBatchOutcome::SignatureVerify::0"),
+    ("rust-kmipkit", "kmipkit::ClientOperation::MacVerify"),
+    ("rust-kmipkit", "kmipkit::ClientOperation::SignatureVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::hash_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::mac_verify_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::mac_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::sign_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::Client::signature_verify_with_options"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::MacVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::MacVerify::0"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::SignatureVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::SignatureVerify::0"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientOperation::MacVerify"),
+    ("rust-kmipkit-client", "kmipkit_client::ClientOperation::SignatureVerify"),
+}
 NORMATIVE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-6.1.32-001",
     "KMIPKIT-REQ-SPEC-6.1.33-001-001",
@@ -152,6 +182,27 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
         }
 
+    def test_t053_verified_crypto_routes_are_explicitly_enumerated(self) -> None:
+        operation_declaration_ids = {
+            declaration_id
+            for operation in self.operations.values()
+            for declaration_ids in operation["declarations"].values()
+            for declaration_id in declaration_ids
+        }
+        actual_t053_identities = {
+            (declaration["packageId"], declaration["exportName"])
+            for declaration_id in operation_declaration_ids
+            if (declaration := self.declarations[declaration_id])["declarationState"] == "verified"
+            and not (
+                declaration_id.startswith("T101:")
+                or (declaration["packageId"], declaration["exportName"])
+                in T101_VERIFIED_IDENTITIES
+                or declaration["exportName"].endswith("Response::with_ttlv")
+                or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
+            )
+        }
+        self.assertEqual(T053_VERIFIED_OPERATION_IDENTITIES, actual_t053_identities)
+
     def test_five_operations_have_approved_four_language_mappings(self) -> None:
         self.assertEqual(set(OPERATIONS), set(self.operations))
 
@@ -162,7 +213,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                 self.assertEqual(name, operation["name"])
                 self.assertEqual(section, operation["section"])
                 self.assertEqual("client_1_0", operation["scope"])
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("KMIPKIT-0021", operation["featureSpecId"])
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("KMIPKIT-0021", operation["ownerDependency"]["specId"])
@@ -186,6 +237,11 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                                 declaration["exportName"],
                             )
                             in T101_VERIFIED_IDENTITIES
+                            or (
+                                declaration["packageId"],
+                                declaration["exportName"],
+                            )
+                            in T053_VERIFIED_OPERATION_IDENTITIES
                             or declaration["exportName"].endswith("Response::with_ttlv")
                             or declaration["exportName"] in VERIFIED_RESPONSE_VALUE_EXPORTS
                             else "declared"
@@ -217,7 +273,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
         self.assertEqual(set(OPERATIONS), set(generated_operations))
         for operation_id in OPERATIONS:
             with self.subTest(operation=operation_id):
-                self.assertEqual("declared", generated_operations[operation_id]["apiState"])
+                self.assertEqual("verified", generated_operations[operation_id]["apiState"])
                 self.assertEqual(LANGUAGES, set(generated_operations[operation_id]["declarations"]))
 
     def test_generated_parity_inventory_contains_t033_and_t101_functions(self) -> None:

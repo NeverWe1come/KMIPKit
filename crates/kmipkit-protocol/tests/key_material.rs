@@ -99,6 +99,30 @@ fn key_material_rejects_malformed_known_transparent_structures() {
 }
 
 #[test]
+fn oasis_table_461_ec_formats_use_hexadecimal_values() {
+    // KMIP 2.1 §11.25, Table 461 assigns 0x14 and 0x15 to transparent EC
+    // private and public keys. Empty known EC structures must be schema-checked.
+    let empty_private = Item::new(tag(0x0042_0043), Value::structure(Structure::new()))
+        .expect("valid empty Key Material structure");
+    assert!(KeyMaterial::try_from_item(empty_private, KeyFormatType::from_raw(0x14)).is_err());
+
+    let empty_public = Item::new(tag(0x0042_0043), Value::structure(Structure::new()))
+        .expect("valid empty Key Material structure");
+    assert!(KeyMaterial::try_from_item(empty_public, KeyFormatType::from_raw(0x15)).is_err());
+
+    // Decimal 14 and 15 are 0x0E and 0x0F, reserved values. They remain open
+    // generic formats and must not be dispatched to either EC schema.
+    for reserved in [14, 15] {
+        let generic = Item::new(tag(0x0042_0043), Value::structure(Structure::new()))
+            .expect("valid generic Key Material structure");
+        assert!(
+            KeyMaterial::try_from_item(generic, KeyFormatType::from_raw(reserved)).is_ok(),
+            "reserved raw format {reserved} must retain generic Structure handling"
+        );
+    }
+}
+
+#[test]
 fn transparent_rsa_private_reader_requires_a_source_defined_private_component_set() {
     let modulus =
         Item::new(tag(0x0042_0052), Value::big_integer(vec![0x11])).expect("valid Modulus");

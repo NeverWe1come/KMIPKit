@@ -392,6 +392,11 @@ class T094VendorExtensionRegistryParityTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row.get("candidateSpecId") == OWNER_SPEC
             and row.get("exportName", "").startswith("<")
+            # Root facade aliases added by 0053 are accounted for by its own
+            # generated route audit, not by the original 0012 candidate set.
+            and not row.get("exportName", "").startswith(
+                ("<kmipkit::protocol::extension::", "<kmipkit::client_config::")
+            )
         ]
         actual = {(row.get("packageId"), row.get("exportName")) for row in exclusions}
         self.assertEqual(expected, actual)
@@ -418,6 +423,7 @@ class T094VendorExtensionRegistryParityTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row.get("candidateSpecId") == OWNER_SPEC
             and not row.get("exportName", "").startswith("<")
+            and row.get("packageId") != "rust-kmipkit"
         ]
         actual = {(row.get("packageId"), row.get("exportName")) for row in exclusions}
         self.assertEqual(EXPECTED_NONTRAIT_EXCLUSIONS, actual)

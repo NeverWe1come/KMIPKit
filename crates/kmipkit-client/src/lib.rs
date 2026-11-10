@@ -86,6 +86,20 @@ mod extension_execution_tests;
 
 mod execute;
 
+/// Internal verification hooks enabled only for repository test consumers.
+#[cfg(feature = "test-support")]
+#[doc(hidden)]
+pub mod test_support {
+    use crate::ClientBatchItem;
+    use kmipkit_protocol::ProtocolError;
+
+    /// Encodes a request Batch Item with the production writer and reads back
+    /// its wire Operation Enumeration. The encoded body is zeroized on drop.
+    pub fn encoded_batch_item_operation(item: ClientBatchItem) -> Result<u32, ProtocolError> {
+        crate::execute::encoded_batch_item_operation_for_test(item)
+    }
+}
+
 #[cfg(test)]
 #[path = "../tests/unit/profile_fixture_replay_tests.rs"]
 mod profile_fixture_replay_tests;

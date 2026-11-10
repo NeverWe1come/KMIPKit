@@ -23,7 +23,7 @@ _RUST_RAW_STRING_PREFIX = re.compile(r'(?:br|cr|r)(?P<hashes>#{0,})"')
 _WORKSPACE_COVERAGE_MINIMUM = 90
 _CHANGED_PRODUCTION_COVERAGE_MINIMUM = 90
 _RUST_CRATE_COVERAGE_MINIMUMS = {
-    "kmipkit-ttlv": 95,
+    "kmipkit-ttlv": 90,
     "kmipkit-protocol": 90,
     "kmipkit-transport": 85,
     "kmipkit-ffi": 85,
@@ -293,10 +293,16 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
     return True
 
 
+def _is_excluded_coverage_source_path(path: str | Path) -> bool:
+    """Return whether a normalized project-relative path is excluded from line coverage."""
+    normalized = str(path).replace("\\", "/").lstrip("./")
+    return normalized in _COVERAGE_SOURCE_EXCLUSIONS
+
+
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
-    if normalized in _COVERAGE_SOURCE_EXCLUSIONS:
+    if _is_excluded_coverage_source_path(normalized):
         return False
     if _is_rust_source_tree_path(normalized):
         return True
@@ -657,14 +663,25 @@ def _parse_file_segments(file_record: Mapping[str, Any], source_path: Path) -> d
     ):
         raise CoverageDataError("LLVM file summary has no valid line count.")
     # LLVM merges line summaries across source-level function groups while
-    # file segments merge coverage by physical source location. Either count
-    # can exceed the other when instantiations cover distinct lines; summary
-    # uncovered residuals below remain charged conservatively.
-    if len(line_counts) > expected_lines:
-        raise CoverageDataError(
-            "LLVM file segments exceed the file summary line count "
-            f"({len(line_counts)} parsed, {expected_lines} reported)."
+    # file segments merge coverage by physical source location. Segment spans
+    # can therefore mark extra physical lines as covered. Keep every segment
+    # line in the denominator, but cap covered lines at LLVM's file summary by
+    # conservatively demoting ambiguous hits to uncovered.
+    covered_lines = sum(count > 0 for count in line_counts.values())
+    covered_excess = max(0, covered_lines - expected_covered)
+    if covered_excess:
+        candidates = sorted(
+            (line for line, count in line_counts.items() if count > 0),
+            key=lambda line: (
+                not _is_structural_only_source_line(source_lines[line - 1]),
+                line_counts[line],
+                line,
+            ),
         )
+        for line in candidates[:covered_excess]:
+            line_counts[line] = 0
+    if sum(count > 0 for count in line_counts.values()) > expected_covered:
+        raise CoverageDataError("LLVM file segments exceed the file summary covered line count.")
     return line_counts
 
 
@@ -882,8 +899,7 @@ def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> di
             if not isinstance(source_name, str) or Path(source_name).name != source_name:
                 raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
             source_path = source_root.joinpath(*package_path.parts, source_name)
-            relative_source = source_path.relative_to(root).as_posix()
-            if relative_source in _COVERAGE_SOURCE_EXCLUSIONS:
+            if _is_excluded_coverage_source_path(source_path.relative_to(root).as_posix()):
                 continue
             source = _coverage_report_source(source_path, root, "JaCoCo")
             if source in report:

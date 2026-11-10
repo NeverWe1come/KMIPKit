@@ -159,9 +159,7 @@ T076_SYMBOLS = {
 }
 T076_BLOCKED: set[str] = set()
 T076_EXCLUDED = {
-    "kmipkit_client_batch_item_response_metadata_v1",
     "kmipkit_client_batch_item_response_release",
-    "kmipkit_transport_config_create_v1",
     "kmipkit_transport_config_release",
 }
 T076_READY = T076_SYMBOLS - T076_BLOCKED - T076_EXCLUDED
@@ -379,7 +377,7 @@ class T076ClientMappingTests(unittest.TestCase):
     def test_all_28_t076_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
         c_rows = [
             row
-            for row in self.declarations
+            for row in self.manifest["publicDeclarations"]
             if row["packageId"] == "c-kmipkit" and row["exportName"] in T076_SYMBOLS
         ]
         exclusions = [
@@ -717,7 +715,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 "kmipkit_transport_config_v1_t.revocation_lists",
             }.issubset(production["mappings"]["c"])
         )
-        self.assertNotIn("kmipkit_transport_config_create_v1", production["mappings"]["c"])
+        self.assertIn("kmipkit_transport_config_create_v1", production["mappings"]["c"])
         self.assertNotIn("kmipkit_transport_input_v1_t.encoding", production["mappings"]["c"])
         self.assertNotIn("kmipkit_transport_input_v1_t.source_kind", production["mappings"]["c"])
 
@@ -1213,7 +1211,12 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn('#include "kmipkit.h"', consumer)
 
         for export_name in T076_READY:
-            declaration = next(row for row in self.declarations if row["exportName"] == export_name and row["packageId"] == "c-kmipkit")
+            declaration = next(
+                row
+                for row in self.manifest["publicDeclarations"]
+                if row["exportName"] == export_name
+                and row["packageId"] == "c-kmipkit"
+            )
             if declaration["kind"] == "type":
                 self.assertIn(f"typedef struct {export_name} {export_name};", header)
             else:
@@ -1232,11 +1235,12 @@ class T076ClientMappingTests(unittest.TestCase):
                 continue
             self.assertIn(f"{export_name}(", header)
 
-    def test_c_metadata_exclusion_matches_facade_result_values(self) -> None:
-        exclusion = next(
+    def test_c_metadata_declaration_matches_facade_result_values(self) -> None:
+        declaration = next(
             row
-            for row in self.manifest["approvedExclusions"]
-            if row["exportName"] == "kmipkit_client_batch_item_response_metadata_v1"
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"] == "kmipkit_client_batch_item_response_metadata_v1"
         )
         carrier = next(
             row
@@ -1267,6 +1271,15 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertRegex(rust, re.compile(r"pub\s+const\s+fn\s+result\s*\("))
         self.assertRegex(result_model, re.compile(r"pub\s+const\s+fn\s+status\s*\("))
         self.assertRegex(result_model, re.compile(r"pub\s+const\s+fn\s+reason\s*\("))
+        self.assertEqual("c-symbol", declaration["kind"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual("client_batch_model", declaration["capabilityId"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual("KMIPKIT-0053", declaration["candidateSpecId"])
+        self.assertEqual(
+            {"rust", "c", "java", "python"},
+            set(declaration["languageMappings"]),
+        )
         self.assertIn("pub enum ClientBatchOutcome", rust)
         self.assertIn(
             "kmipkit_client_batch_item_response_metadata_v1(",
@@ -3163,13 +3176,20 @@ class T076ClientMappingTests(unittest.TestCase):
         )
         for language in ("rust", "c", "java", "python"):
             self.assertTrue(capability["mappings"][language])
-        exclusion = next(
+        declaration = next(
             row
-            for row in self.manifest["approvedExclusions"]
-            if row["exportName"] == "kmipkit_transport_config_create_v1"
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and row["exportName"] == "kmipkit_transport_config_create_v1"
         )
         self.assertEqual(
-            "kmipkit_transport_config_create_v1", exclusion["cFunction"]["symbol"]
+            "verified", declaration["declarationState"]
+        )
+        self.assertEqual("production_transport", declaration["capabilityId"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(
+            "kmipkit_transport_config_create_v1",
+            declaration["languageMappings"]["c"]["name"],
         )
         java = (ROOT / "bindings" / "java" / "src" / "main" / "java" / "org" / "kmipkit" / "extensions" / "TransportConfiguration.java").read_text(encoding="utf-8")
         python = (ROOT / "bindings" / "python" / "src" / "kmipkit" / "client.py").read_text(encoding="utf-8")
@@ -4467,7 +4487,7 @@ class T076ClientMappingTests(unittest.TestCase):
             with self.subTest(operation=name):
                 operation = operations[name]
                 self.assertEqual(operation_id, operation["operationId"])
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("KMIPKIT-0009", operation["featureSpecId"])
                 self.assertEqual(

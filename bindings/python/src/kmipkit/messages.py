@@ -240,9 +240,7 @@ def _materialize_value(value_view: ttlv.TtlvValueView) -> object:
         length = ttlv.ttlv_value_view_byte_length(value_view)
         if length > _MAX_MESSAGE_BYTES:
             errors.raise_for_status(6)
-        raw = bytes(
-            ttlv.ttlv_value_view_byte_at(value_view, index) for index in range(length)
-        )
+        raw = ttlv.ttlv_value_view_bytes(value_view)
         if value_type == ttlv.ItemType.TextString:
             try:
                 return raw.decode("utf-8")

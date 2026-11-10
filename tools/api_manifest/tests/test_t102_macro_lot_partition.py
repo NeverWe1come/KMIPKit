@@ -7,7 +7,12 @@ import unittest
 from pathlib import Path
 
 from tools.api_manifest.tests.pre_send_validation_routes import validation_stack_routes
-from tools.api_manifest.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
+from tools.api_manifest.tests.t102_manifest_totals import (
+    T102_APPROVED_EXCLUSIONS,
+    T102_BLOCKED_CANDIDATES,
+    T102_KMIP30_DRAFT_ROUTE_DECLARATIONS,
+    T102_PUBLIC_DECLARATIONS,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -93,6 +98,32 @@ class T102MacroLotPartitionTests(unittest.TestCase):
         for item in lot2:
             name = item["exportName"]
             self.assertFalse(" as " in name or "Error" in name, name)
+
+    def test_shared_t102_snapshot_matches_final_manifest_state(self) -> None:
+        blocked = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("declarationState") == "blocked"
+            and row.get("candidateSpecId") == "KMIPKIT-0043"
+        ]
+
+        self.assertEqual(0, len(blocked))
+        self.assertEqual(0, T102_BLOCKED_CANDIDATES)
+        self.assertEqual(
+            T102_KMIP30_DRAFT_ROUTE_DECLARATIONS,
+            sum(
+                "KMIPKIT-0053-FR-018" in row.get("requirementIds", [])
+                for row in self.manifest["publicDeclarations"]
+            ),
+        )
+        self.assertEqual(
+            T102_PUBLIC_DECLARATIONS,
+            len(self.manifest["publicDeclarations"]),
+        )
+        self.assertEqual(
+            T102_APPROVED_EXCLUSIONS,
+            len(self.manifest["approvedExclusions"]),
+        )
 
     def test_macro_lot_two_reconciles_every_exact_candidate(self) -> None:
         lot2 = self.partition["macroLots"]["2"]["declarations"]

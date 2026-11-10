@@ -25,7 +25,9 @@ EXPECTED_CHILD_EXPORTS = {
     "kmipkit_client::extension_registry::RegisteredExtensionValue",
     "kmipkit_client::extension_registry::ClientConfiguration::extension_registry",
     "kmipkit_client::extension_registry::ClientConfiguration::new",
+    "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
     "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
+    "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version",
     "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
     "kmipkit_client::extension_registry::client_extension_registry",
     "kmipkit_client::extension_registry::definition_at",
@@ -78,12 +80,20 @@ class ClientExtensionRegistryNamespaceTests(unittest.TestCase):
             "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
             "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
         }
+        protocol_version_exports = {
+            "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
+            "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version",
+        }
         for export_name, declaration in children.items():
             with self.subTest(export=export_name):
                 expected_capability = (
                     "wire_encoding_selection"
                     if export_name in wire_encoding_exports
-                    else "vendor_extension_registry"
+                    else (
+                        "kmip_protocol_version_selection"
+                        if export_name in protocol_version_exports
+                        else "vendor_extension_registry"
+                    )
                 )
                 self.assertEqual(expected_capability, declaration["capabilityId"])
                 self.assertEqual("declared", declaration["declarationState"])

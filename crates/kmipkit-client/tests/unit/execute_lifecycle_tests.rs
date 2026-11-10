@@ -332,9 +332,10 @@ fn typed_request_preflight_uses_borrowed_protocol_validation() {
 }
 
 #[test]
-fn deferred_endpoint_role_is_not_rejected_by_the_1_0_preflight() {
+fn deferred_set_endpoint_role_preserves_open_values_in_validation_report() {
     // KMIP 2.1 §6.1.54, Table 331 defines Endpoint Role as a required
-    // Enumeration. KMIPKIT-0051-FR-012 defers Set Endpoint Role to 1.1.
+    // Enumeration; KMIPKIT-0051 scopes pre-send rules to the 56 client_1_0
+    // operations, while this operation is deferred to 1.1.
     let request = ClientRequest::SetEndpointRole(SetEndpointRoleRequest::new(
         EndpointRole::from_raw(0x8000_1234),
     ));
@@ -1303,4 +1304,32 @@ fn pending_correlation_owner_zeroizes_before_release() {
     drop(result);
 
     assert_eq!(pending_observer.result(), Some(true));
+}
+
+#[test]
+fn calling_typed_validation_report_does_not_change_valid_request_wire_bytes() {
+    fn execute_and_capture(validate_first: bool) -> Vec<u8> {
+        let item = ClientBatchItem::new(ClientRequest::discover_versions());
+        if validate_first {
+            let report = item.request().validation_report();
+            assert!(report.is_valid());
+            assert_eq!(report.issues().len(), 0);
+        }
+        let batch = ClientBatch::new(item);
+        let (mut client, _, captured) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+                response: response_bytes((2, 1), &[ResponseItemFixture::success(None)]),
+                request_write_chunks: Vec::new(),
+            });
+        client
+            .execute(batch, &CodecLimits::defaults())
+            .expect("Discover Versions remains a valid request after local inspection");
+        captured
+            .borrow()
+            .as_deref()
+            .expect("fake transport captured the request bytes")
+            .clone()
+    }
+
+    assert_eq!(execute_and_capture(true), execute_and_capture(false));
 }

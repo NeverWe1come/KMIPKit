@@ -568,6 +568,36 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
 
     assert!(!response.is_empty_payload());
     assert_eq!(response.response_fields().len(), 17);
+    assert_eq!(response.response_field_count(), 17);
+    let first = response
+        .response_field(0)
+        .expect("field index zero is present");
+    assert_eq!(first.kind(), crate::QueryResponseFieldKind::Enumeration);
+    assert_eq!(first.raw_enumeration(), Some(0x8000_0042));
+    let text_field = response
+        .response_field(3)
+        .expect("Vendor Identification is indexed in wire order");
+    assert_eq!(text_field.kind(), crate::QueryResponseFieldKind::TextString);
+    assert_eq!(text_field.raw_enumeration(), None);
+    assert_eq!(
+        response
+            .response_field(4)
+            .expect("Server Information is indexed in wire order")
+            .kind(),
+        crate::QueryResponseFieldKind::Structure
+    );
+    assert_eq!(
+        response
+            .response_field(16)
+            .expect("unknown TTLV remains indexed in wire order")
+            .kind(),
+        crate::QueryResponseFieldKind::Unknown
+    );
+    assert_eq!(crate::QueryResponseFieldKind::Enumeration as u8, 1);
+    assert_eq!(crate::QueryResponseFieldKind::TextString as u8, 2);
+    assert_eq!(crate::QueryResponseFieldKind::Structure as u8, 3);
+    assert_eq!(crate::QueryResponseFieldKind::Unknown as u8, 4);
+    assert!(response.response_field(17).is_none());
     assert_eq!(
         response
             .response_fields()

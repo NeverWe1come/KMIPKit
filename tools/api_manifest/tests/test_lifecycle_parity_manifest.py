@@ -11,9 +11,10 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OWNER_SPEC = "specs/018-managed-object-lifecycle/spec.md"
+OWNER_APPROVAL = "specs/018-managed-object-lifecycle/approval-record.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 LANGUAGE_PACKAGES = {
-    "rust": {"rust-kmipkit-client", "rust-kmipkit-protocol"},
+    "rust": {"rust-kmipkit", "rust-kmipkit-client", "rust-kmipkit-protocol"},
     "c": {"c-kmipkit"},
     "java": {"java-kmipkit"},
     "python": {"python-kmipkit"},
@@ -136,6 +137,18 @@ OPERATIONS = {
         },
     },
 }
+SHARED_OPERATION_ERROR_EXPORTS = {
+    f"kmipkit_protocol::{operation['name']}Error{suffix}"
+    for operation in OPERATIONS.values()
+    for suffix in (
+        "",
+        "::MalformedSuccessPayload",
+        "::InvalidOperationResult",
+        "::InvalidOperationResult::0",
+        "::MissingResultStatus",
+        "::UnexpectedOperation",
+    )
+}
 OWNER_REQUIREMENTS = {
     f"KMIPKIT-0018-FR-{index:03}"
     for index in range(1, 11)
@@ -224,12 +237,15 @@ class LifecycleParityManifestTests(unittest.TestCase):
                 approval = operation["approvalEvidence"]
                 self.assertEqual(OWNER_SPEC, approval["path"])
                 self.assertEqual("Approved", approval["status"])
-                self.assertIn("Status**: Draft", approval["evidence"])
+                self.assertEqual(
+                    "**Status**: Approved for implementation; independent review remains pending",
+                    approval["evidence"],
+                )
                 approval_record = (
                     ROOT / "specs/043-public-api-bindings/implementation-evidence.md"
                 ).read_text(encoding="utf-8")
                 self.assertIn("PR #65", approval_record)
-                self.assertIn("Draft for independent human review", approval["evidence"])
+                self.assertIn("current owner status", approval_record)
                 self.assertEqual(LANGUAGES, set(operation["declarations"]))
                 self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
                 operation_evidence = OPERATION_PARITY_EVIDENCE[expected["name"]]
@@ -251,18 +267,30 @@ class LifecycleParityManifestTests(unittest.TestCase):
                     self.assertTrue(declaration_ids, f"{expected['name']} has no {language} declarations")
                     for declaration_id in declaration_ids:
                         declaration = self.declarations[declaration_id]
-                        self.assertEqual(operation_id, declaration["capabilityId"])
+                        self.assertIn(
+                            declaration["capabilityId"],
+                            {operation_id, "client_execution"},
+                        )
                         self.assertIn(
                             declaration["packageId"], LANGUAGE_PACKAGES[language]
                         )
                         self.assertEqual("verified", declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])
                         self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                        self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                        self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                        self.assertIn(
-                            "Status**: Draft", declaration["approvalSource"]["evidence"]
+                        approval_source = declaration["approvalSource"]
+                        expected_approval_path = (
+                            "specs/007-client-execution/spec.md"
+                            if declaration["exportName"] in SHARED_OPERATION_ERROR_EXPORTS
+                            else OWNER_APPROVAL
                         )
+                        self.assertEqual(expected_approval_path, approval_source["path"])
+                        self.assertEqual("Approved", approval_source["status"])
+                        expected_approval_evidence = (
+                            "merge of correction PR #39"
+                            if expected_approval_path == "specs/007-client-execution/spec.md"
+                            else "Approved for implementation and T098 manifest reconciliation only"
+                        )
+                        self.assertIn(expected_approval_evidence, approval_source["evidence"])
                         actual[language].add(
                             declaration["languageMappings"][language]["name"]
                         )

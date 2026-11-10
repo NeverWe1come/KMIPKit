@@ -126,6 +126,7 @@ class T102MixedTraitBatchTests(unittest.TestCase):
             for row in self.manifest.get("approvedExclusions", [])
             if row.get("packageId") == package
             and row.get("exportName", "").startswith(prefix)
+            and row.get("candidateSpecId") != "KMIPKIT-0053"
         }
 
         with self.subTest(package=package, prefix=prefix, check="compiler inventory"):

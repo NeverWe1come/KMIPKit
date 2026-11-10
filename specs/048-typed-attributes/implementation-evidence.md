@@ -115,22 +115,21 @@ Red/Green/Refactor and verification evidence in this file.
 
 ## Remaining controls and limitations
 
-A broader API parity test previously failed because it assumed each operation
-had exactly two public declarations. Review also confirmed that four
-`DecryptRequest` helper declarations were incorrectly attributed to Encrypt
-and linked to KMIP 2.1 §6.1.17 instead of §6.1.11. This stack now corrects the
-four manifest rows and the test selects declarations by their language route
-name while accepting additional valid routes.
+Local verification for this specification was performed on Windows. The
+broader `test_encrypt_decrypt_parity_manifest` failure described in the
+original review was resolved downstream in KMIPKIT-0053: the test now selects
+canonical declarations by ID, and the four DecryptRequest helper routes are
+attributed to Decrypt with §6.1.11 requirements. The updated five-test module
+passes. Cross-platform and remote-CI results remain outside this local
+evidence; hosted CI is currently ignored under the maintainer's billing
+instruction. This feature remains stacked and is not merged into
+`release/1.0.0`.
 
-The correction follows distinct TDD commits: Red `d3c5cfa79` added the
-regression test and failed for all four incorrectly attributed declarations;
-Green `7cafcaa02` corrected the reviewed manifest input and regenerated the
-public parity outputs; Refactor `5d942198c` extracted route selection into a
-small test helper. The full focused module
-`python -B -m unittest -v tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest`
-passes all five tests. The API generator `--check` verified all 12 outputs,
-the C export audit matched 1,701/1,701 declarations, and `git diff --check`
-passed.
+The correction's separate TDD commits are Red `d3c5cfa79`, Green `7cafcaa02`,
+and Refactor `5d942198c`. The Green commit changes the reviewed manifest input
+and regenerates parity outputs; the Refactor extracts declaration selection
+by public route name. KMIPKIT-0053 inherits the same test, manifest mapping,
+and generated fixtures through the approved PR stack.
 
 Remote CI remains unavailable under the maintainer's billing-related
 instruction, and full platform/adapter coverage remains outside this local

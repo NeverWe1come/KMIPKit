@@ -1,10 +1,11 @@
 # Objetos gestionados y material de clave
 
-KMIPKit proporciona modelos Rust para las nueve estructuras de objetos
-gestionados de KMIP 2.1. Los builders emiten los campos conocidos en el orden
-de las tablas OASIS. El Item Structure específico del objeto se pasa
-directamente a Register o Import; la Enumeration `Object Type` es un valor
-separado.
+El núcleo de KMIPKit proporciona modelos para las nueve estructuras de objetos
+gestionados de KMIP 2.1. Los builders Rust emiten los campos conocidos en el
+orden de las tablas OASIS. C, Java y Python también ofrecen vistas tipadas de
+los objetos y estructuras de clave sobre el modelo TTLV compartido. El Item
+Structure específico del objeto se pasa directamente a Register o Import; la
+Enumeration `Object Type` es un valor separado.
 
 ## Material de clave en claro
 
@@ -96,6 +97,30 @@ let object = ManagedObject::unknown(ObjectType::from_raw(0x8000_0001), extension
 assert_eq!(object.object_type().raw(), 0x8000_0001);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+### Acceso desde C, Java y Python
+
+Los wrappers extranjeros copian y validan el `Item` TTLV de origen; no lo
+consumen. Cada resultado es un handle propio y debe liberarse. Sus vistas TTLV
+permiten recorrer los campos en el orden original y llegar a tags de fabricante
+anidados, sin convertirlos a una representación conocida.
+
+| Estructura | C | Java | Python |
+|---|---|---|---|
+| Objeto gestionado | `kmipkit_managed_object_from_item` | `ManagedObject.fromItem` | `ManagedObject.from_item` |
+| Key Block | `kmipkit_key_block_from_item` | `KeyBlock.fromItem` | `KeyBlock.from_item` |
+| Key Value | `kmipkit_key_value_from_item` | `KeyValue.fromItem` | `KeyValue.from_item` |
+| Key Material | `kmipkit_key_material_from_item` | `KeyMaterial.fromItem` | `KeyMaterial.from_item` |
+| Key Wrapping Data | `kmipkit_key_wrapping_data_from_item` | `KeyWrappingData.fromItem` | `KeyWrappingData.from_item` |
+
+En C, libera cada handle con su función `*_release`; los punteros de una vista
+prestada dejan de ser válidos al liberar el propietario. Los wrappers Java
+implementan `AutoCloseable`; los Python admiten `with` y `close()`. Si copias
+bytes de material secreto a un `byte[]` de Java o a un `bytes` de Python, esa
+copia queda fuera de la garantía de puesta a cero de KMIPKit. Java permite
+sobrescribir su array; Python no ofrece borrado determinista de `bytes`.
+Mantén los datos como vistas prestadas cuando sea posible y no los registres en
+logs ni en diagnósticos.
 
 ## Vida útil de los secretos
 

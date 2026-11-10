@@ -850,6 +850,22 @@ class PublicApiParityTests(unittest.TestCase):
                     "attribute_request_get_attributes_attribute_reference_count",
                     "attribute_request_get_attributes_attribute_reference_at",
                     "attribute_request_get_attribute_list_unique_identifier",
+                    # Managed-object builders are implemented in Java as
+                    # local typed wrappers over their owned TTLV fields.
+                    "managed_object_from_fields",
+                    "key_block_from_fields",
+                    "key_value_from_fields",
+                    "key_material_from_fields",
+                    "key_wrapping_data_from_fields",
+                    "certificate_from_fields",
+                    "symmetric_key_from_fields",
+                    "public_key_from_fields",
+                    "private_key_from_fields",
+                    "split_key_from_fields",
+                    "secret_data_from_fields",
+                    "opaque_object_from_fields",
+                    "pgp_key_from_fields",
+                    "certificate_request_from_fields",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":

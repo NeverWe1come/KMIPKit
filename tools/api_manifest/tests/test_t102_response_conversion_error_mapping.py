@@ -261,6 +261,13 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             and isinstance(type_record.get("c"), dict)
             and isinstance(type_record["c"].get("releaseFunction"), str)
         }
+        c_release_functions.update(
+            ("c-kmipkit", function["c"]["symbol"])
+            for function in manifest.get("functions", [])
+            if isinstance(function, dict)
+            and isinstance(function.get("c"), dict)
+            and isinstance(function["c"].get("symbol"), str)
+        )
         generate._validate_ready_mapping_targets(
             manifest["publicDeclarations"],
             package_languages,
@@ -268,21 +275,27 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
             exclusions=manifest["approvedExclusions"],
         )
 
-        metadata_exclusions = [
-            item for item in manifest["approvedExclusions"]
-            if item.get("packageId") == "c-kmipkit"
-            and item.get("cFunction", {}).get("symbol")
-            == "kmipkit_client_batch_item_response_metadata_v1"
+        metadata_target = (
+            "c-kmipkit",
+            "kmipkit_client_batch_item_response_metadata_v1",
+        )
+        metadata_declarations = [
+            item for item in manifest["publicDeclarations"]
+            if (item.get("packageId"), item.get("exportName")) == metadata_target
         ]
-        self.assertEqual(1, len(metadata_exclusions))
+        self.assertEqual(1, len(metadata_declarations))
+        self.assertEqual("verified", metadata_declarations[0]["declarationState"])
         without_metadata_target = [
-            item for item in manifest["approvedExclusions"]
-            if item is not metadata_exclusions[0]
+            item for item in manifest["publicDeclarations"]
+            if item is not metadata_declarations[0]
         ]
+        without_metadata_function = c_release_functions - {metadata_target}
         with self.assertRaisesRegex(generate.ManifestError, "not an exact listed export"):
             generate._validate_ready_mapping_targets(
-                manifest["publicDeclarations"], package_languages, c_release_functions,
-                exclusions=without_metadata_target,
+                without_metadata_target,
+                package_languages,
+                without_metadata_function,
+                exclusions=manifest["approvedExclusions"],
             )
 
         for language, mapping in EXPECTED_MAPPING.items():
@@ -298,7 +311,9 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                     "normalized client protocol error mapping",
                 ):
                     generate._validate_ready_mapping_targets(
-                        mapped_manifest, package_languages, c_release_functions,
+                        mapped_manifest,
+                        package_languages,
+                        c_release_functions,
                         exclusions=manifest["approvedExclusions"],
                     )
 

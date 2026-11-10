@@ -143,8 +143,9 @@ pub(crate) fn validate_key_material_item(
         11 => TransparentRsaPublicKey::validate_item(item),
         12 => TransparentDhPrivateKey::validate_item(item),
         13 => TransparentDhPublicKey::validate_item(item),
-        14 => TransparentEcPrivateKey::validate_item(item),
-        15 => TransparentEcPublicKey::validate_item(item),
+        // KMIP 2.1 §11.25, Table 461 encodes these Enumeration values in hex.
+        0x14 => TransparentEcPrivateKey::validate_item(item),
+        0x15 => TransparentEcPublicKey::validate_item(item),
         _ => Ok(()),
     }
 }

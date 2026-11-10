@@ -119,7 +119,8 @@ impl std::error::Error for RuntimeMetadataError {}
 /// capability identifiers return `Ok(false)`. Identifiers longer than 128 UTF-8
 /// bytes return [`RuntimeMetadataError::ResourceLimit`], matching the fixed-width
 /// binding boundary. This local query does not send a KMIP request and therefore
-/// has no request-delivery state.
+/// has no request-delivery state. The opt-in `kmip30_draft_routes` capability
+/// reports route availability and does not assert KMIP 3.0 conformance.
 ///
 /// # Errors
 ///
@@ -136,6 +137,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_asynchronous_operations"
             | "client_batch_model"
             | "client_execution"
+            | "client_operation_identity"
             | "wire_encoding_selection"
             | "client_profile_readiness"
             | "client_profile_validation"
@@ -147,9 +149,13 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "ffi_runtime_metadata"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
+            | "kmip30_draft_routes"
+            | "kmip_protocol_version_selection"
             | "named_protocol_values"
             | "nonce_ttlv_parity"
             | "production_transport"
+            | "request_message_authentication"
+            | "request_validation"
             | "ttlv_wire_codec"
             | "usage_allocation_guard"
             | "vendor_extension_registry"
@@ -159,6 +165,10 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "typed_message_model"
             | "public_binding_surface"
             | "response_ttlv_navigation"
+            | "typed_async_response_readers"
+            | "typed_cryptographic_parameters"
+            | "typed_managed_objects_and_key_material"
+            | "typed_object_attributes"
             | "server_to_client_operations"
             | "endpoint_role_inversion"
     ))
@@ -168,9 +178,9 @@ pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientListener,
     ClientListenerConnection, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, IncomingServerBatch, PendingOutcome, RequestOptions, RoleReversedSession,
-    ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload, ServerRequestItemView,
-    UsageAllocationContext, UsageAllocationContextError,
+    ClientRequest, ClientResponseView, IncomingServerBatch, PendingOutcome, RequestOptions,
+    RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload,
+    ServerRequestItemView, UsageAllocationContext, UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{
     CancelRequest, CodecContext, DelegatedLoginError, DelegatedLoginRequest,

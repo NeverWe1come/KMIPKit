@@ -52,6 +52,11 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
     native.lib = FakeLibrary()
     sys.modules[native.__name__] = native
 
+    client_native = types.ModuleType(f"{package_name}._client_ffi")
+    client_native.ffi = native.ffi
+    client_native.lib = native.lib
+    sys.modules[client_native.__name__] = client_native
+
     errors_spec = importlib.util.spec_from_file_location(
         f"{package_name}.errors", PACKAGE_PATH / "errors.py"
     )

@@ -968,6 +968,8 @@ impl BoundaryAudit {
     fn check_public_signature(&mut self, signature: &syn::Signature, impl_type: Option<&str>) {
         let mut finder = PublicTypeFinder::default();
         let execute_root_scope = self.is_execute_root_scope();
+        let kmip30_draft_route =
+            is_exact_kmip30_draft_route(execute_root_scope, impl_type, signature);
         let error_root_scope = self.is_source_root(Path::new("error.rs"));
         let unique_id_setter =
             is_exact_unique_batch_id_setter(execute_root_scope, impl_type, signature);
@@ -1016,11 +1018,12 @@ impl BoundaryAudit {
         }
         for (index, argument) in signature.inputs.iter().enumerate() {
             if let syn::FnArg::Typed(argument) = argument {
-                if (unique_id_setter
-                    || extension_view_callback
-                    || error_response_ttlv_callback
-                    || async_outcome_callback)
-                    && index == 1
+                if kmip30_draft_route && index == 0
+                    || (unique_id_setter
+                        || extension_view_callback
+                        || error_response_ttlv_callback
+                        || async_outcome_callback)
+                        && index == 1
                     || batch_from_items && index == 0
                     || registry_value_validation && index == 2
                     || registry_inspect && index == 2
@@ -1184,15 +1187,19 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             return;
         }
         if matches!(enumeration.vis, syn::Visibility::Public(_)) {
-            for field in enumeration
-                .variants
-                .iter()
-                .flat_map(|variant| variant.fields.iter())
-            {
-                let mut finder = PublicTypeFinder::default();
-                finder.visit_type(&field.ty);
-                if finder.has_forbidden_type() {
-                    self.reject("public enum variant exposes forbidden input");
+            for variant in &enumeration.variants {
+                if is_exact_kmip30_draft_variant(enumeration, variant) {
+                    continue;
+                }
+                for field in &variant.fields {
+                    let mut finder = PublicTypeFinder::default();
+                    finder.visit_type(&field.ty);
+                    if finder.has_forbidden_type() {
+                        self.reject(format!(
+                            "public enum variant {}::{} exposes forbidden input",
+                            enumeration.ident, variant.ident
+                        ));
+                    }
                 }
             }
         }
@@ -1629,6 +1636,93 @@ fn is_generic_ttlv_path(path: &syn::Path) -> bool {
     // Dependency renames and crate aliases change the qualifier, so the public
     // boundary must reject these generic model names regardless of path prefix.
     GENERIC_TTLV_TYPES.contains(&name.as_str())
+}
+
+/// Allows generic TTLV only for the explicitly version-gated KMIP 3.0 draft
+/// client routes. Every other request constructor remains subject to the
+/// default prohibition, and the operation identity stays closed in the enum.
+fn is_exact_kmip30_draft_route(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    const ROUTES: &[&str] = &[
+        "create_group_draft",
+        "obliterate_draft",
+        "create_user_draft",
+        "create_credential_draft",
+        "deactivate_draft",
+        "encapsulate_draft",
+        "decapsulate_draft",
+    ];
+    if !execute_root_scope
+        || impl_type != Some("ClientBatchItem")
+        || !ROUTES.contains(&signature.ident.to_string().as_str())
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 1
+    {
+        return false;
+    }
+    let payload_is_structure = matches!(
+        signature.inputs.first(),
+        Some(syn::FnArg::Typed(argument))
+            if matches!(argument.pat.as_ref(), syn::Pat::Ident(pattern)
+                if pattern.ident == "payload"
+                    && pattern.by_ref.is_none()
+                    && pattern.mutability.is_none()
+                    && pattern.subpat.is_none()
+                    && pattern.attrs.is_empty())
+                && argument.attrs.is_empty()
+                && is_plain_type_path(&argument.ty, "Structure")
+    );
+    payload_is_structure && is_plain_type_path_from_return(&signature.output, "Self")
+}
+
+fn is_plain_type_path_from_return(output: &syn::ReturnType, expected: &str) -> bool {
+    matches!(output, syn::ReturnType::Type(_, ty) if is_plain_type_path(ty, expected))
+}
+
+fn is_exact_kmip30_draft_variant(enumeration: &syn::ItemEnum, variant: &syn::Variant) -> bool {
+    if enumeration.ident != "ClientRequest"
+        || variant.ident != "Kmip30Draft"
+        || variant
+            .attrs
+            .iter()
+            .any(|attribute| !attribute.path().is_ident("doc"))
+    {
+        return false;
+    }
+    let syn::Fields::Named(fields) = &variant.fields else {
+        return false;
+    };
+    if fields.named.len() != 2 {
+        return false;
+    }
+    let mut operation = false;
+    let mut payload = false;
+    for field in &fields.named {
+        if field
+            .attrs
+            .iter()
+            .any(|attribute| !attribute.path().is_ident("doc"))
+        {
+            return false;
+        }
+        match field.ident.as_ref().map(ToString::to_string).as_deref() {
+            Some("operation") => {
+                operation = is_plain_type_path(&field.ty, "Kmip30DraftOperation");
+            }
+            Some("payload") => payload = is_plain_type_path(&field.ty, "Structure"),
+            _ => return false,
+        }
+    }
+    operation && payload
 }
 
 fn is_exact_extension_view_callback(
@@ -3295,7 +3389,16 @@ fn module_base(file: &Path) -> PathBuf {
 fn is_test_cfg(attributes: &[Attribute]) -> bool {
     attributes.iter().any(|attribute| {
         attribute.path().is_ident("cfg")
-            && matches!(&attribute.meta, Meta::List(list) if list.tokens.to_string() == "test")
+            && matches!(
+                &attribute.meta,
+                Meta::List(list)
+                    if matches!(
+                        list.tokens.to_string().as_str(),
+                        "test"
+                            | "feature = \"test-support\""
+                            | "any (test , feature = \"test-support\")"
+                    )
+            )
     })
 }
 
@@ -3307,6 +3410,8 @@ fn supported_cfg(attribute: &Attribute) -> bool {
                 list.tokens.to_string().as_str(),
                 "test"
                     | "not (test)"
+                    | "feature = \"test-support\""
+                    | "any (test , feature = \"test-support\")"
                     | "kmipkit_pkcs11_candidate_test"
                     | "not (kmipkit_pkcs11_candidate_test)"
             )
@@ -3424,6 +3529,46 @@ fn crate_doc_includes_allow_only_the_two_checked_in_user_guides() {
     assert!(
         audit.is_rejected(),
         "the documentation exception must not whitelist runtime macros"
+    );
+}
+
+#[test]
+fn test_support_cfg_hooks_are_excluded_from_production_source_audit() {
+    let source_path = Path::new("lib.rs");
+    let test_support = syn::parse_file(
+        r#"#[cfg(feature = "test-support")]
+        pub fn encode_test_probe() {}"#,
+    )
+    .expect("the test-support hook parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&test_support, source_path);
+    assert!(
+        !audit.is_rejected(),
+        "an explicitly test-support-gated writer probe is outside production"
+    );
+
+    let test_support_or_test = syn::parse_file(
+        r#"#[cfg(any(test, feature = "test-support"))]
+        pub fn encode_test_probe() {}"#,
+    )
+    .expect("the test-or-test-support hook parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&test_support_or_test, Path::new("wire_encoder.rs"));
+    assert!(
+        !audit.is_rejected(),
+        "a hook compiled only for unit or test-support builds is outside production"
+    );
+
+    let unknown_feature = syn::parse_file(
+        r#"#[cfg(feature = "unreviewed-feature")]
+        pub fn encode_test_probe() {}"#,
+    )
+    .expect("the unknown feature hook parses");
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&unknown_feature, source_path);
+    assert!(
+        audit.is_rejected(),
+        "the audit must continue rejecting unknown feature-gated writer hooks"
     );
 }
 

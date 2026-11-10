@@ -227,11 +227,24 @@ class T095TransportParityManifestTests(unittest.TestCase):
     def test_no_kmipkit_0013_candidate_declarations_remain(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declarations = manifest["publicDeclarations"]
-        candidates = [row for row in declarations if row.get("candidateSpecId") == OWNER_SPEC]
+        candidates = [
+            row for row in declarations
+            if row.get("candidateSpecId") == OWNER_SPEC
+            and not (
+                row.get("packageId") == "rust-kmipkit"
+                and row.get("exportName", "").startswith("kmipkit::transport_config::")
+            )
+        ]
         exclusions = [
             row
             for row in manifest["approvedExclusions"]
             if row.get("candidateSpecId") == OWNER_SPEC
+            and not (
+                row.get("packageId") == "rust-kmipkit"
+                and row.get("exportName", "").startswith(
+                    ("kmipkit::transport_config::", "<kmipkit::transport_config::")
+                )
+            )
         ]
         functional_rows = {
             row["exportName"]: row

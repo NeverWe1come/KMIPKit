@@ -849,6 +849,48 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         prefix = ".".join(part for part in (source_module, source_name) if part)
         return ".".join([prefix, *parts[1:]])
 
+    def imported_enum_class(
+        module: str, name: str
+    ) -> tuple[str, list[tuple[str, str, int]]] | None:
+        current = (module, name)
+        visited: set[tuple[str, str]] = set()
+        while current not in visited:
+            visited.add(current)
+            class_record = classes.get(f"{current[0]}.{current[1]}")
+            if class_record is not None:
+                source_module, source_name, bases, members = class_record
+                if any(
+                    class_path(base, source_module)
+                    in {"enum.Enum", "enum.IntEnum", "enum.Flag", "enum.IntFlag"}
+                    for base in bases
+                ):
+                    return f"{source_module}.{source_name}", members
+                return None
+            target = imported.get(current)
+            if target is None or not target[1]:
+                return None
+            current = target
+        return None
+
+    def imported_dataclass_class(
+        module: str, name: str
+    ) -> tuple[str, list[tuple[str, str, int]]] | None:
+        current = (module, name)
+        visited: set[tuple[str, str]] = set()
+        while current not in visited:
+            visited.add(current)
+            class_record = classes.get(f"{current[0]}.{current[1]}")
+            if class_record is not None:
+                source_module, source_name, _, members = class_record
+                if any(member == "__dataclass_fields__" for member, _, _ in members):
+                    return f"{source_module}.{source_name}", members
+                return None
+            target = imported.get(current)
+            if target is None or not target[1]:
+                return None
+            current = target
+        return None
+
     for qualified, (module, name, bases, direct_members) in sorted(classes.items()):
         if module not in public_modules or name.startswith("_"):
             continue
@@ -900,6 +942,24 @@ def inventory_python_sources(sources: dict[str, str], package: str = "python-kmi
         if target_kind == "module" and not source_name and export_name == source_module:
             continue
         records.append(_record(package, export_name, target_kind, module))
+        enum_class = imported_enum_class(module, name)
+        if enum_class is not None:
+            source_class, members = enum_class
+            records.extend(
+                _record(package, f"{export_name}.{member}", kind, f"inherited:{source_class}:{line}")
+                for member, kind, line in members
+            )
+        else:
+            dataclass_class = imported_dataclass_class(module, name)
+            if dataclass_class is not None:
+                source_class, members = dataclass_class
+                for member, kind, line in members:
+                    record = _record(package, f"{export_name}.{member}", kind,
+                                     f"inherited:{source_class}:{line}")
+                    signature = generated_signatures.get(f"{source_class}.{member}")
+                    if signature is not None:
+                        record["signature"] = signature
+                    records.append(record)
     return _report(records, issues)
 
 
@@ -1086,16 +1146,9 @@ def build_c_binary_exports(root: Path) -> list[str]:
 
 
 def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = None) -> dict[str, Any]:
-    c_header = (root / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
-    helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
-    if helper_include in c_header:
-        helper_path = root / "bindings/c/include/kmipkit_named_value_helpers_generated.h"
-        if not helper_path.is_file():
-            raise ValueError("generated C named-value helper header is missing")
-        c_header = expand_named_value_helper_header(
-            c_header,
-            helper_path.read_text(encoding="utf-8"),
-        )
+    c_header = expand_local_c_header_includes(
+        root, root / "bindings/c/include/kmipkit.h"
+    )
     native_exports = read_native_exports(binary) if binary is not None else build_c_binary_exports(root)
     c_exclusions = [row for row in manifest.get("approvedExclusions", [])
                     if row.get("packageId") == "c-kmipkit"]
@@ -1113,6 +1166,44 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
         blocked_exports=blocked_c_exports,
     )
     return compare(c, manifest, "c-kmipkit")
+
+
+def expand_local_c_header_includes(root: Path, header_path: Path) -> str:
+    """Expand quoted headers below the published C include directory."""
+    include_root = (root / "bindings/c/include").resolve()
+    include_pattern = re.compile(r'^\s*#\s*include\s+"([^"]+)"\s*$', re.M)
+
+    def expand(path: Path, stack: frozenset[Path]) -> str:
+        resolved = path.resolve()
+        if not resolved.is_relative_to(include_root):
+            raise ValueError("public C header includes a file outside its include directory")
+        if resolved in stack:
+            raise ValueError("public C header include cycle detected")
+        if not resolved.is_file():
+            raise ValueError(f"quoted C header include is missing: {resolved.name}")
+        source = resolved.read_text(encoding="utf-8")
+        source_lines = source.splitlines()
+        cleaned_lines = re.sub(
+            r"/\*.*?\*/|//[^\n]*",
+            lambda match: re.sub(r"[^\n]", " ", match.group(0)),
+            source,
+            flags=re.S,
+        ).splitlines()
+        guard = _complete_include_guard(cleaned_lines)
+        if guard is not None:
+            significant = [
+                index for index, line in enumerate(cleaned_lines) if line.strip()
+            ]
+            for index in (significant[0], significant[1], significant[-1]):
+                source_lines[index] = ""
+            source = "\n".join(source_lines)
+        next_stack = stack | {resolved}
+        return include_pattern.sub(
+            lambda match: expand(resolved.parent / match.group(1), next_stack),
+            source,
+        )
+
+    return expand(header_path, frozenset())
 
 
 def resolve_java_compile_classpath(root: Path) -> str:

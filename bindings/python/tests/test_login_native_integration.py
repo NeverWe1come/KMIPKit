@@ -75,6 +75,13 @@ def _ping_query_response_message() -> bytes:
     )
     query_payload = _ttlv_structure(
         0x42007C,
+        _ttlv_item(0x42005C, 5, struct.pack(">I", 0x3B)),
+        _ttlv_item(0x420003, 7, b"namespace-a"),
+        _ttlv_item(0x00541234, 7, b"vendor-extension"),
+        _ttlv_item(0x42005C, 5, struct.pack(">I", 0xF1234567)),
+        _ttlv_item(0x420003, 7, b"namespace-b"),
+        _ttlv_structure(0x420088,
+            _ttlv_item(0x00540001, 7, b"server-extension")),
         _ttlv_structure(0x42015F),
     )
     query_item = _ttlv_structure(
@@ -244,6 +251,7 @@ def test_ping_and_query_round_trip_through_native_cffi_over_tls_13() -> None:
     configuration = extensions.create_client_configuration(registry)
     result = None
     query_response = None
+    typed_query_response = None
     try:
         with configuration, client.Client.create(configuration, transport) as kmip_client:
             with ttlv.codec_limits_defaults() as limits:
@@ -282,12 +290,34 @@ def test_ping_and_query_round_trip_through_native_cffi_over_tls_13() -> None:
         query_response = query_result.query_response
         assert query_response is not None
         with ttlv.ttlv_structure_view(query_response) as view:
-            assert ttlv.ttlv_structure_view_item_count(view) == 1
+            assert ttlv.ttlv_structure_view_item_count(view) == 7
             with ttlv.ttlv_structure_view_item_at(view, 0) as item:
                 with ttlv.ttlv_item_view_tag(item) as tag:
-                    assert ttlv.tag_value(tag) == 0x42015F
-                assert ttlv.ttlv_item_view_type(item) is ttlv.ItemType.Structure
+                    assert ttlv.tag_value(tag) == 0x42005C
+                assert ttlv.ttlv_item_view_type(item) is ttlv.ItemType.Enumeration
+        typed_query_response = query_result.typed_query_response()
+        assert typed_query_response is not None
+        assert typed_query_response.field_count == 7
+        assert typed_query_response.operations == (0x3B, 0xF1234567)
+        assert typed_query_response.application_namespaces == (
+            "namespace-a", "namespace-b"
+        )
+        assert typed_query_response.unknown_field_tags == (0x00541234,)
+        unknown = typed_query_response.field_at(2)
+        assert unknown.kind is client.QueryFieldKind.UNKNOWN
+        with unknown.item() as unknown_item:
+            with ttlv.ttlv_item_view_tag(unknown_item) as tag:
+                assert ttlv.tag_value(tag) == 0x00541234
+        assert typed_query_response.field_at(3).enumeration == 0xF1234567
+        server_information = typed_query_response.server_informations
+        assert len(server_information) == 1
+        for item in server_information:
+            item.close()
+        with typed_query_response.raw_view() as raw:
+            assert ttlv.ttlv_structure_view_item_count(raw) == 7
     finally:
+        if typed_query_response is not None:
+            typed_query_response.close()
         if query_response is not None:
             query_response.close()
         if result is not None:

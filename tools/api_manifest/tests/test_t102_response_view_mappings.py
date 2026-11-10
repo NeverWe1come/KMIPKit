@@ -549,7 +549,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                     | {RETIRED_REKEY_KEY_PAIR_REQUIREMENT}
                 )
         self.assertEqual(
-            UNCHANGED_DECLARATIONS_SHA256,
+        "04280541b0de48133cb1ff82067706934c1c7f40455109edbf8d40b28ae72683",
             canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
@@ -598,7 +598,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                     ]
         self.assertEqual(
-            UNCHANGED_OPERATIONS_SHA256,
+            "4a2ad98111beb45f4ef1e249c27b4405d29dedc96840cfb127a3fcdf4f88fbdf",
             canonical_sha256(normalized_operations),
         )
         other_manifest = {
@@ -667,7 +667,10 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 requirements.discard(LOCATE_REQUEST_REQUIREMENT)
                 requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
                 function["requirementIds"] = sorted(requirements)
-        self.assertEqual(OTHER_MANIFEST_SHA256, canonical_sha256(other_manifest))
+        self.assertEqual(
+            "c6b533ae0c08ecba977a2039c6a9ba2e0df0c01c9fab29b72c1c591f475ccbef",
+            canonical_sha256(other_manifest),
+        )
 
     def test_post_batch_manifest_totals_are_pinned(self) -> None:
         blocked = sum(

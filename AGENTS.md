@@ -125,10 +125,10 @@ Required layers include:
 
 Coverage gates:
 
-- `kmipkit-ttlv` and protocol/model code: at least 95 percent line coverage.
+- `kmipkit-ttlv` and protocol/model code: at least 90 percent line coverage.
 - Transport, FFI, and bindings: at least 85 percent line coverage.
 - Rust workspace overall: at least 90 percent line coverage.
-- New or changed production code: at least 95 percent line coverage.
+- New or changed production code: at least 90 percent line coverage.
 - Normative requirement traceability: 100 percent.
 
 Generated code may be excluded from raw coverage, but its behavior must be

@@ -4277,6 +4277,78 @@ def test_client_configuration_keeps_an_immutable_encoding_default(
             json_configuration.close()
 
 
+def test_client_configuration_keeps_protocol_version_across_immutable_copies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_pointer = extensions.ffi.cast("kmipkit_client_configuration_t *", 1)
+    v3_pointer = extensions.ffi.cast("kmipkit_client_configuration_t *", 2)
+    json_pointer = extensions.ffi.cast("kmipkit_client_configuration_t *", 3)
+    configuration = _wrap_owned_handle(
+        extensions.ClientConfiguration, original_pointer, (), object()
+    )
+    requested: list[tuple[str, tuple[object, ...]]] = []
+
+    def clone(
+        _kind: str, function: str, arguments: tuple[object, ...], **_kwargs: object
+    ) -> object:
+        requested.append((function, arguments))
+        return v3_pointer if function.endswith("with_protocol_version") else json_pointer
+
+    monkeypatch.setattr(extensions, "_make_handle", clone)
+    monkeypatch.setattr(
+        _handles,
+        "lib",
+        SimpleNamespace(kmipkit_client_configuration_release=lambda _handle: None),
+    )
+    try:
+        v3 = configuration.with_protocol_version(client.ProtocolVersion(3, 0))
+        json_v3 = v3.with_wire_encoding(WireEncoding.JSON)
+
+        assert configuration.protocol_version == client.ProtocolVersion(2, 1)
+        assert v3.protocol_version == client.ProtocolVersion(3, 0)
+        assert json_v3.protocol_version == client.ProtocolVersion(3, 0)
+        assert requested == [
+            (
+                "kmipkit_client_configuration_with_protocol_version",
+                (original_pointer, 3, 0),
+            ),
+            (
+                "kmipkit_client_configuration_with_wire_encoding",
+                (v3_pointer, int(WireEncoding.JSON)),
+            ),
+        ]
+    finally:
+        configuration.close()
+        if "v3" in locals():
+            v3.close()
+        if "json_v3" in locals():
+            json_v3.close()
+
+
+@pytest.mark.parametrize(
+    ("factory", "operation"),
+    [
+        (extensions.client_batch_item_create_group, 0x3C),
+        (extensions.client_batch_item_obliterate, 0x3D),
+        (extensions.client_batch_item_create_user, 0x3E),
+        (extensions.client_batch_item_create_credential, 0x3F),
+        (extensions.client_batch_item_deactivate, 0x40),
+        (extensions.client_batch_item_encapsulate, 0x41),
+        (extensions.client_batch_item_decapsulate, 0x42),
+    ],
+)
+def test_kmip30_draft_request_factories_keep_operation_identity(factory, operation) -> None:
+    payload = ttlv.ttlv_structure_create()
+    try:
+        item = factory(payload)
+        try:
+            assert item.operation == operation
+        finally:
+            item.close()
+    finally:
+        payload.close()
+
+
 def test_client_execute_rejects_invalid_wire_encoding_without_consuming_batch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

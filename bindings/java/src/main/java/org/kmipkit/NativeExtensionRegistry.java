@@ -9,6 +9,8 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.TypedAttribute;
 
 /**
  * Internal JNI bridge for the KMIPKit registry API.
@@ -88,6 +90,8 @@ public final class NativeExtensionRegistry {
     public static final int GET_ATTRIBUTE_LIST_REQUEST = 66;
     public static final int ATTRIBUTE_SET = 67;
     public static final int HASHED_PASSWORD_TIMESTAMP_SEQUENCE = 68;
+    public static final int CRYPTOGRAPHIC_PARAMETERS = 69;
+    public static final int VALIDATION_REPORT = 70;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -150,6 +154,18 @@ public final class NativeExtensionRegistry {
 
     public static native int authenticationCreate(long[] credentials, long[] outAuthentication);
     public static native int authenticationFromTtlv(long structure, long[] outAuthentication);
+    public static native long cryptographicParametersFromFields(
+            boolean[] present, long[] values, byte[] pSource);
+    public static native long cryptographicParametersFromTtlv(long structure);
+    public static native long cryptographicParametersIntoTtlv(long parameters);
+    public static native byte[] cryptographicParametersReadFields(
+            long parameters, boolean[] present, long[] values);
+
+    public static native long validationStructure(long structure, String schema);
+    public static native long validationRequest(long batchItem);
+    public static native boolean validationReportIsValid(long report);
+    public static native long validationReportIssueCount(long report);
+    public static native String[] validationReportIssueAt(long report, long index);
     public static native long authenticationCredentialCount(long authentication);
     public static native long authenticationCredentialAt(long authentication, long index);
     public static native long authenticationTtlvView(long authentication);
@@ -220,6 +236,8 @@ public final class NativeExtensionRegistry {
     public static native long extensionDefinitionValidate(long definition, long value, long[] codecLimits);
     public static native long clientConfigurationCreate(long registry);
     public static native long clientConfigurationWithWireEncoding(long configuration, int encoding);
+    public static native long clientConfigurationWithProtocolVersion(
+            long configuration, int major, int minor);
     public static native int clientConfigurationWireEncoding(long configuration);
     public static native long clientConfigurationExtensionRegistry(long configuration);
     public static native long clientExtensionRegistryCreate(long[] definitions, long[] limits);
@@ -233,11 +251,19 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemOperation(long item);
     public static native long clientBatchItemPing();
     public static native long clientBatchItemQuery(int[] functions, @Nullable byte[][] objectGroups);
     public static native long clientBatchItemQueryWithLimits(
             int[] functions, @Nullable byte[][] objectGroups, long[] codecLimits);
     public static native long clientBatchItemCreate(long objectType, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemCreateGroup(long payload);
+    public static native long clientBatchItemObliterate(long payload);
+    public static native long clientBatchItemCreateUser(long payload);
+    public static native long clientBatchItemCreateCredential(long payload);
+    public static native long clientBatchItemDeactivate(long payload);
+    public static native long clientBatchItemEncapsulate(long payload);
+    public static native long clientBatchItemDecapsulate(long payload);
     public static native long clientBatchItemCreateKeyPair(long commonAttributes, long privateKeyAttributes,
             long publicKeyAttributes, long commonProtectionStorageMasks,
             long privateProtectionStorageMasks, long publicProtectionStorageMasks);
@@ -406,7 +432,30 @@ public final class NativeExtensionRegistry {
     public static native long attributeRequestToTtlvPayload(int operation, long request);
     public static native long clientBatchItemFromAttributeRequest(int operation, long request);
     public static native long attributeSetTryNew(long items);
+    public static native long typedAttributeFromItem(int expectedTag, long item);
+    public static native long typedAttributeFromValue(int expectedTag, long value);
+    public static native long typedAttributeValue(int expectedTag, long item);
+    public static native long managedObjectFromItem(int objectType, long item);
+    public static native long managedObjectFromFields(int objectType, long[] fields);
+    public static native long keyBlockFromItem(long item);
+    public static native long keyBlockFromFields(long[] fields);
+    public static native long keyValueFromItem(int formatRaw, long item);
+    public static native long keyValueFromFields(int formatRaw, long[] fields);
+    public static native long keyMaterialFromItem(int formatRaw, long item);
+    public static native long keyMaterialFromFields(int formatRaw, long[] fields);
+    public static native long keyWrappingDataFromItem(long item);
+    public static native long keyWrappingDataFromFields(long[] fields);
+    public static native long managedValueFieldRead(
+            int ownerKind, int contextRaw, long item, int fieldTag, int readKind,
+            byte[] outBytes, long[] outByteLength);
+    public static native long managedValueFieldItemRead(
+            int ownerKind, int contextRaw, long item, int fieldTag);
     public static native void attributeSetTryPush(long attributes, long item);
+    public static native void attributeSetTryPushTyped(
+            long attributes, int expectedTag, long item);
+    public static native long attributeSetTypedCount(long attributes, int expectedTag);
+    public static native TypedAttribute attributeSetTypedAt(
+            long attributes, StandardAttribute attribute, long occurrence);
     public static native long attributeSetAsItems(long attributes);
     public static native long attributeSetLen(long attributes);
     public static native boolean attributeSetIsEmpty(long attributes);
@@ -439,6 +488,7 @@ public final class NativeExtensionRegistry {
     public static native void clientBatchAddItem(long batch, long item);
     public static native long clientBatchItemAt(long batch, long index);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
+    public static native void clientBatchSetAuthentication(long batch, long authentication);
     public static native void clientBatchSetRequestTimestamp(long batch, long timestamp);
     public static native java.util.OptionalLong clientBatchRequestTimestamp(long batch);
     public static native void clientBatchSetOrderOption(long batch, boolean enabled);
@@ -540,6 +590,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseValidate(long itemResponse);
     public static native long[] clientBatchItemResponsePing(long itemResponse);
     public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
+    public static native long[] clientBatchItemResponseQueryFieldCount(long itemResponse);
+    public static native long[] clientBatchItemResponseQueryFieldAt(long itemResponse, long index);
     public static native Object[] clientBatchItemResponseRawTtlv(long itemResponse);
     public static native long clientBatchItemResponseHeaderTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);
@@ -611,6 +663,7 @@ public final class NativeExtensionRegistry {
     public static native long ttlvValueViewDateTimeExtended(long valueView);
     public static native long ttlvValueViewByteLength(long valueView);
     public static native short ttlvValueViewByteAt(long valueView, long index);
+    public static native byte[] ttlvValueViewBytes(long valueView);
     public static native long ttlvStructureViewItemCount(long structureView);
     public static native long[] requestMessageFromTtlv(long structure);
     public static native long requestMessageTtlv(long message);

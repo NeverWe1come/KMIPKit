@@ -847,7 +847,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             )
         )
 
-    def test_approved_async_operations_are_declared_but_not_conformance_claims(self) -> None:
+    def test_approved_async_operations_are_verified_without_profile_conformance_claims(self) -> None:
         manifest = self._release_manifest()
         asynchronous_names = {
             "Cancel",
@@ -864,11 +864,14 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         self.assertEqual(asynchronous_names, set(operations))
         owner_spec = (ROOT / ASYNC_OWNER_SPEC_PATH).read_text(encoding="utf-8")
         approval_record = ROOT / "specs" / "009-asynchronous-operations" / "approval-record.md"
+        approval_text = approval_record.read_text(encoding="utf-8")
         self.assertIn("**Status**: Approved for implementation", owner_spec)
-        self.assertTrue(approval_record.is_file())
+        self.assertIn("MUST NOT claim profile support", owner_spec)
+        self.assertIn("No formal conformance claim is made", owner_spec)
+        self.assertIn("profile support, or formal conformance", approval_text)
         for operation in operations.values():
             with self.subTest(operation=operation["name"]):
-                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("verified", operation["apiState"])
                 self.assertEqual("KMIPKIT-0009", operation["featureSpecId"])
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("Approved", operation["approvalEvidence"]["status"])

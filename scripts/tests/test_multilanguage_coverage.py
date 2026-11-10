@@ -117,22 +117,19 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ffi coverage 0/1.*85%"):
                 GATE._evaluate_coverage(root, reports, "", ffi_c_consumer_report=ffi_c_consumer_report)
 
-    def test_ttlv_and_protocol_scopes_reject_below_their_temporary_thresholds(self) -> None:
+    def test_ttlv_and_protocol_scopes_reject_below_90_percent(self) -> None:
         self.require_gate()
-        for crate_name, covered, threshold in (
-            ("kmipkit-ttlv", 18, 95),
-            ("kmipkit-protocol", 17, 90),
-        ):
+        for crate_name in ("kmipkit-ttlv", "kmipkit-protocol"):
             with self.subTest(crate=crate_name), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 relative = f"crates/{crate_name}/src/lib.rs"
                 source = root / relative
                 source.parent.mkdir(parents=True)
                 source.write_text("".join(f"pub fn item_{line}() {{}}\n" for line in range(1, 21)), encoding="utf-8")
-                report = {relative: {line: int(line <= covered) for line in range(1, 21)}}
+                report = {relative: {line: int(line <= 17) for line in range(1, 21)}}
                 with self.assertRaisesRegex(
                     GATE.CoverageDataError,
-                    f"{crate_name} coverage {covered}/20 is below {threshold}%",
+                    f"{crate_name} coverage 17/20 is below 90%",
                 ):
                     GATE._evaluate_coverage(
                         root,
@@ -140,31 +137,23 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                         "",
                     )
 
-    def test_ttlv_and_protocol_scopes_accept_exactly_their_temporary_thresholds(self) -> None:
+    def test_ttlv_and_protocol_scopes_accept_exactly_90_percent(self) -> None:
         self.require_gate()
-        for crate_name, covered, threshold in (
-            ("kmipkit-ttlv", 19, 95),
-            ("kmipkit-protocol", 18, 90),
-        ):
+        for crate_name in ("kmipkit-ttlv", "kmipkit-protocol"):
             with self.subTest(crate=crate_name), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 relative = f"crates/{crate_name}/src/lib.rs"
                 source = root / relative
                 source.parent.mkdir(parents=True)
                 source.write_text("".join(f"pub fn item_{line}() {{}}\n" for line in range(1, 21)), encoding="utf-8")
-                report = {relative: {line: int(line <= covered) for line in range(1, 21)}}
+                report = {relative: {line: int(line <= 18) for line in range(1, 21)}}
                 results = GATE._evaluate_coverage(
                     root,
                     {platform: report for platform in ("ubuntu", "windows", "macos")},
                     "",
                 )
 
-                self.assertTrue(
-                    any(
-                        result.startswith(f"{crate_name} coverage: {covered}/20 ({threshold:.2f}%)")
-                        for result in results
-                    )
-                )
+                self.assertTrue(any(result.startswith(f"{crate_name} coverage: 18/20 (90.00%)") for result in results))
 
     def test_jacoco_parser_maps_production_source_lines(self) -> None:
         self.require_gate()
@@ -207,20 +196,24 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             parsed,
         )
 
-    def test_jacoco_parser_ignores_catalog_generated_named_value_table(self) -> None:
+    def test_jacoco_parser_ignores_catalog_generated_named_value_sources(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            protocol_root = root / "bindings/java/src/main/java/org/kmipkit/protocol"
-            protocol_root.mkdir(parents=True)
-            protocol_root.joinpath("KmipValues.java").write_text(
+            source_root = root / "bindings/java/src/main/java/org/kmipkit/protocol"
+            source_root.mkdir(parents=True)
+            source_root.joinpath("CryptographicParameters.java").write_text(
+                "class CryptographicParameters {}\n", encoding="utf-8"
+            )
+            source_root.joinpath("KmipValues.java").write_text(
                 "class KmipValues {}\n", encoding="utf-8"
             )
-            protocol_root.joinpath("ProtocolValues.java").write_text(
+            source_root.joinpath("ProtocolValues.java").write_text(
                 "class ProtocolValues {}\n", encoding="utf-8"
             )
             report = """<?xml version="1.0"?>
             <report name="KMIPKit"><package name="org/kmipkit/protocol">
+              <sourcefile name="CryptographicParameters.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
               <sourcefile name="KmipValues.java"><line nr="1" mi="0" ci="1" mb="0" cb="0"/></sourcefile>
               <sourcefile name="ProtocolValues.java"><line nr="1" mi="1" ci="0" mb="0" cb="0"/></sourcefile>
             </package></report>"""
@@ -228,7 +221,14 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             parsed = GATE.parse_jacoco_report(report, root)
 
         self.assertEqual(
-            {"bindings/java/src/main/java/org/kmipkit/protocol/ProtocolValues.java": {1: 0}},
+            {
+                "bindings/java/src/main/java/org/kmipkit/protocol/CryptographicParameters.java": {
+                    1: 1
+                },
+                "bindings/java/src/main/java/org/kmipkit/protocol/ProtocolValues.java": {
+                    1: 0
+                },
+            },
             parsed,
         )
 
@@ -324,7 +324,11 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             parsed["Java adapters"],
             "Java coverage should union independently covered Linux and Windows lines",
         )
-        self.assertTrue(any(result.startswith("Changed production coverage: 19/20 (95.00%)") for result in results))
+        self.assertTrue(any(
+            result.startswith("Changed production coverage: 19/20 (95.00%)")
+            and result.endswith("(90% minimum).")
+            for result in results
+        ))
 
     def test_adapter_loader_requires_both_platform_jacoco_reports(self) -> None:
         self.require_gate()
@@ -597,24 +601,24 @@ class MultiLanguageCoverageTests(unittest.TestCase):
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            rust_reports, adapter_reports, source_paths = self._write_gate_workspace(root, line_count=20)
+            rust_reports, adapter_reports, source_paths = self._write_gate_workspace(root, line_count=100)
             relative = source_paths["Python adapters"]
             source = root / relative
-            source.write_text("".join(f"value_{line} = {line}\n" for line in range(1, 21)), encoding="utf-8")
-            adapter_reports["Python adapters"] = {relative: {line: int(line <= 17) for line in range(1, 21)}}
+            source.write_text("".join(f"value_{line} = {line}\n" for line in range(1, 101)), encoding="utf-8")
+            adapter_reports["Python adapters"] = {relative: {line: int(line <= 89) for line in range(1, 101)}}
             diff = "\n".join(
                 (
                     f"diff --git a/{relative} b/{relative}",
                     "--- /dev/null",
                     f"+++ b/{relative}",
-                    "@@ -0,0 +1,20 @@",
-                    *(f"+value_{line} = {line}" for line in range(1, 21)),
+                    "@@ -0,0 +1,100 @@",
+                    *(f"+value_{line} = {line}" for line in range(1, 101)),
                 )
             )
 
             with self.assertRaisesRegex(
                 GATE.CoverageDataError,
-                "Changed production code coverage 17/20 is below 90%",
+                "Changed production code coverage 89/100 is below 90%",
             ):
                 GATE._evaluate_coverage(
                     root,
@@ -626,7 +630,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
 
             with self.assertRaisesRegex(
                 GATE.CoverageDataError,
-                "Changed production code coverage 17/20 is below 90%",
+                "Changed production code coverage 89/100 is below 90%",
             ):
                 GATE._evaluate_coverage(root, rust_reports, diff, adapter_reports)
 
@@ -853,6 +857,26 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertRegex(jacoco_version or "", r"^\d+\.\d+\.\d+$", "JaCoCo version must be pinned")
         java_configuration = ET.tostring(jacoco, encoding="unicode")
         self.assertIn("0.85", java_configuration, "Java line coverage must enforce the 85% package gate")
+        coverage_check = jacoco.find(
+            ".//m:execution[m:id='coverage-check']/m:configuration",
+            namespace,
+        )
+        self.assertIsNotNone(coverage_check, "the Maven coverage check must have an explicit JaCoCo configuration")
+        jacoco_exclusions = {
+            element.text
+            for element in coverage_check.findall("m:excludes/m:exclude", namespace)
+        }
+        self.assertIn(
+            "org/kmipkit/protocol/KmipValues*",
+            jacoco_exclusions,
+            "Maven must match the repository coverage gate's exact generated named-value exclusion",
+        )
+        self.assertFalse(
+            GATE.is_coverage_source_path(
+                "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java"
+            ),
+            "the generated Java named-value table must remain excluded only by its exact source path",
+        )
 
         pyproject_path = REPOSITORY_ROOT / "bindings/python/pyproject.toml"
         import re

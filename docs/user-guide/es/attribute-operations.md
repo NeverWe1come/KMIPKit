@@ -123,6 +123,64 @@ fn build_attribute_payloads() -> Result<(), Box<dyn std::error::Error>> {
 
 `AttributeSet::try_push_typed` y `AttributeSet::typed` construyen y leen atributos estándar sin comparar manualmente tags raw. Los valores Enumeration siguen siendo `u32` abiertos: se conservan incluso si esta versión no los conoce. La ruta de `Item` genérico sigue disponible para extensiones de fabricante. Ambas rutas conservan el orden y las instancias repetidas; la validación de cada operación sigue aplicando las reglas de cardinalidad definidas por la fuente. Adjustment Type admite Increment, Decrement y Negate, además del rango de extensiones KMIP; los valores Reserved se rechazan en peticiones tipadas de salida.
 
+Las fachadas C, Java y Python incluyen los nombres de los 62 atributos
+estándar directos del catálogo. Sus wrappers `TypedAttribute` validan y copian
+un `Item` TTLV existente con respecto al atributo elegido; no sustituyen el
+acceso genérico ni infieren un valor. En C se usa
+`kmipkit_typed_attribute_from_item`; Java usa
+`TypedAttribute.fromItem(StandardAttribute, TtlvItem)` y Python,
+`TypedAttribute.from_item(StandardAttribute, TtlvItem)`. Los wrappers Java y
+Python son propietarios y cerrables; C devuelve un handle que se libera con
+`kmipkit_ttlv_item_release`.
+
+```java
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TypedAttribute;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvValue;
+
+final class TypedAttributeExample {
+    public static void main(String[] args) {
+        try (CodecLimits limits = CodecLimits.defaults()) {
+            try (RawTag raw = RawTag.fromRaw(0x00420001);
+                    Tag tag = raw.checked();
+                    TtlvValue date = TtlvValue.DateTime(1_700_000_000L);
+                    TtlvItem source = TtlvItem.create(tag, date, limits);
+                    TypedAttribute attribute = TypedAttribute.fromItem(
+                            StandardAttribute.ACTIVATION_DATE, source);
+                    TtlvItem copy = attribute.asItem()) {
+                if (attribute.attribute() != StandardAttribute.ACTIVATION_DATE) {
+                    throw new AssertionError("attribute identity changed");
+                }
+            }
+        }
+    }
+}
+```
+
+```python
+from kmipkit import ttlv
+from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
+
+with ttlv.codec_limits_defaults() as limits:
+    with ttlv.raw_tag_from_raw(0x0042_0001) as raw:
+        with ttlv.raw_tag_try_checked(raw) as tag:
+            with ttlv.ttlv_value_date_time(1_700_000_000) as value:
+                with ttlv.ttlv_item_create(tag, value, limits) as source:
+                    with TypedAttribute.from_item(
+                        StandardAttribute.ACTIVATION_DATE, source
+                    ) as attribute:
+                        assert attribute.attribute is StandardAttribute.ACTIVATION_DATE
+```
+
+Para el ABI C, el consumidor crea el `Item` genérico con el codec TTLV y luego
+valida/copia el atributo con la firma `kmipkit_typed_attribute_from_item(
+expected_tag, item, &out_item)`. Al terminar, libera ambas copias por separado;
+la conversión no consume el `Item` fuente.
+
 KMIP 2.1 §4 recomienda que las distintas instancias de un mismo atributo tengan valores diferentes. El llamador elige esos valores; KMIPKit los conserva tal como se proporcionan y no los reescribe ni elimina duplicados.
 
 Los modelos de respuesta exponen el `KmipOperationResult` del servidor, incluidos Result Status, Result Reason opcional y Result Message opcional. Los accesores de payload satisfactorio exponen Unique Identifier y, en las lecturas, los atributos o referencias devueltos. KMIPKit no aplica localmente Adjust Attribute ni mantiene una copia local de los atributos del servidor.

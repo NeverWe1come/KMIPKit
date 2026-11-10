@@ -106,7 +106,13 @@ class T102LifecycleRequestTraitExclusionTests(unittest.TestCase):
                 self.assertEqual((len(observed_direct), len(observed_conditional)), (6, 5))
             declarations = {(row["packageId"], row["exportName"]) for row in self.manifest["publicDeclarations"] if row.get("packageId") == "rust-kmipkit-protocol" and row.get("exportName", "").startswith(prefix)
             and not is_pre_send_validation_trait(row)}
-            exclusions = {(row["packageId"], row["exportName"]): row for row in self.manifest.get("approvedExclusions", []) if row.get("packageId") == "rust-kmipkit-protocol" and row.get("exportName", "").startswith(prefix)}
+            exclusions = {
+                (row["packageId"], row["exportName"]): row
+                for row in self.manifest.get("approvedExclusions", [])
+                if row.get("packageId") == "rust-kmipkit-protocol"
+                and row.get("exportName", "").startswith(prefix)
+                and not is_pre_send_validation_trait(row)
+            }
             with self.subTest(type=name, manifest=True):
                 self.assertEqual(declarations, set())
                 self.assertEqual(set(exclusions), pairs)
@@ -125,7 +131,7 @@ class T102LifecycleRequestTraitExclusionTests(unittest.TestCase):
                     if "caption_note" in details:
                         self.assertIn(details["caption_note"], evidence)
         self.assertEqual(len(expected_all), 66)
-        actual = {(row["packageId"], row["exportName"]) for row in self.manifest.get("approvedExclusions", []) if row.get("packageId") == "rust-kmipkit-protocol" and any(row.get("exportName", "").startswith(f"<kmipkit_protocol::{name} as ") for name in TYPES)}
+        actual = {(row["packageId"], row["exportName"]) for row in self.manifest.get("approvedExclusions", []) if row.get("packageId") == "rust-kmipkit-protocol" and row.get("candidateSpecId") != "KMIPKIT-0053" and any(row.get("exportName", "").startswith(f"<kmipkit_protocol::{name} as ") for name in TYPES)}
         self.assertEqual(actual, expected_all)
 
     def test_functional_states_and_root_facades_are_unchanged(self) -> None:

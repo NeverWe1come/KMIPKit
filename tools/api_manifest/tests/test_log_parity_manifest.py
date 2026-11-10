@@ -23,7 +23,13 @@ DIRECT_API_REQUIREMENTS = {
     "KMIPKIT-0050-FR-010",
     "KMIPKIT-0050-FR-011",
 }
-VERIFIED_DECLARATION_REQUIREMENTS = OPERATION_REQUIREMENTS | DIRECT_API_REQUIREMENTS
+FACADE_PARITY_REQUIREMENTS = {
+    "KMIPKIT-0053-FR-008",
+    "KMIPKIT-0053-FR-012",
+}
+VERIFIED_DECLARATION_REQUIREMENTS = (
+    OPERATION_REQUIREMENTS | DIRECT_API_REQUIREMENTS | FACADE_PARITY_REQUIREMENTS
+)
 TRACEABILITY_IDS = {
     "KMIPKIT-028-T250-MESSAGE",
     "KMIPKIT-028-T251-EMPTY",
@@ -93,6 +99,7 @@ ALLOWED_LOG_DECLARATION_MAPPINGS = {
         "kmipkit::ClientRequest::Log",
         "kmipkit::ClientRequest::Log::0",
         "kmipkit::ClientRequest::log",
+        "kmipkit::ClientResponseView<'a>::log",
         "kmipkit_client::Client::log",
         "kmipkit_client::Client::log_with_options",
         "kmipkit_client::ClientBatchOutcome::Log",

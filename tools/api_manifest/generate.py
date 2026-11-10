@@ -10,6 +10,7 @@ Runtime code uses only the Python standard library.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -26,14 +27,21 @@ from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+try:
+    from .kmip30_draft_api import DraftApiManifestError, validate_kmip30_draft_api
+except ImportError:  # Direct execution as ``python tools/api_manifest/generate.py``.
+    from kmip30_draft_api import DraftApiManifestError, validate_kmip30_draft_api
+
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-# Public API parity records include exact declarations in all four languages;
-# keep parsing bounded while leaving room for the complete generated inventory.
-MAX_MANIFEST_BYTES = 44 * 1024 * 1024
+# Public API parity records include exact declarations in all four languages.
+# 56 MiB covers the full inventory's indented test serialization with bounded
+# headroom while retaining a strict upper bound on manifest input allocation.
+MAX_MANIFEST_BYTES = 56 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
+MAX_DRAFT_API_CATALOG_BYTES = 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
 _AUTHORIZATION_ONLY_STATUS_PATTERN = re.compile(
     r"\bautonomous\b"
@@ -1266,6 +1274,23 @@ def _validate_public_declaration_approval(
         owner_spec_id = operation.get("featureSpecId")
         owner_adr_id = None
 
+    declaration_spec_id = declaration.get("candidateSpecId")
+    if declaration_spec_id is not None:
+        if (
+            owner_adr_id is not None
+            or not isinstance(declaration_spec_id, str)
+            or re.fullmatch(r"KMIPKIT-[0-9]{4}", declaration_spec_id) is None
+            or not any(
+                isinstance(requirement, str)
+                and requirement.startswith(f"{declaration_spec_id}-FR-")
+                for requirement in declaration.get("requirementIds", [])
+            )
+        ):
+            raise ManifestError(
+                "capability expansion approval needs an exact feature and its traced requirements"
+            )
+        owner_spec_id = declaration_spec_id
+
     if owner_adr_id is not None:
         if parity_scope != "rust-only-adr":
             raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
@@ -1284,12 +1309,46 @@ def _validate_public_declaration_approval(
 
 
 def _validate_approved_exclusions(
-    exclusions: list[dict[str, Any]], package_languages: dict[Any, Any], root: Path
+    exclusions: list[dict[str, Any]],
+    package_languages: dict[Any, Any],
+    root: Path,
+    declarations: list[dict[str, Any]],
 ) -> None:
+    declarations_by_id = {
+        declaration.get("declarationId"): declaration
+        for declaration in declarations
+        if isinstance(declaration, dict)
+    }
     for exclusion in exclusions:
         if not isinstance(exclusion, dict):
             raise ManifestError("manifest approved exclusion is malformed")
         _validate_approval_source(exclusion.get("approvalSource"), root)
+        if exclusion.get("candidateSpecId") != "KMIPKIT-0053":
+            continue
+
+        artifact_kind = exclusion.get("artifactKind")
+        if artifact_kind is not None:
+            counterpart_ids = exclusion.get("counterpartDeclarationIds")
+            if not isinstance(counterpart_ids, list) or not counterpart_ids:
+                raise ManifestError("KMIPKIT-0053 type-system exclusions need exact counterparts")
+            capability_id = exclusion.get("capabilityId")
+            for counterpart_id in counterpart_ids:
+                counterpart = declarations_by_id.get(counterpart_id)
+                if (
+                    counterpart is None
+                    or counterpart.get("declarationState") != "verified"
+                    or counterpart.get("capabilityId") != capability_id
+                    or counterpart.get("parityScope") != "four-language"
+                ):
+                    raise ManifestError(
+                        "KMIPKIT-0053 type-system exclusions need verified counterparts "
+                        "for the same four-language capability"
+                    )
+        elif not all(
+            isinstance(exclusion.get(key), str) and exclusion[key].strip()
+            for key in ("reason", "evidence")
+        ):
+            raise ManifestError("KMIPKIT-0053 exact route exclusions need a reason and evidence")
 
 
 def _validate_unique_public_export_identities(
@@ -1410,25 +1469,26 @@ def _validate_v2_readiness(
         requirements,
         root,
     )
-    c_release_functions = {
+    c_public_functions = {
+        ("c-kmipkit", function["c"]["symbol"])
+        for function in manifest.get("functions", [])
+        if isinstance(function, dict)
+        and isinstance(function.get("c"), dict)
+        and isinstance(function["c"].get("symbol"), str)
+    } | {
         ("c-kmipkit", c_api["releaseFunction"])
         for type_record in manifest.get("types", [])
         if isinstance(type_record, dict)
         and isinstance((c_api := type_record.get("c")), dict)
         and isinstance(c_api.get("releaseFunction"), str)
     }
-    _validate_ready_mapping_targets(
-        declarations,
-        package_languages,
-        c_release_functions,
-        exclusions=exclusions,
-    )
+    _validate_ready_mapping_targets(declarations, package_languages, c_public_functions)
     _validate_capability_mapping_inventories(
         capabilities, declarations, package_languages
     )
     _validate_internal_c_type_visibility(manifest)
     _validate_signature_type_readiness(manifest, declarations)
-    _validate_approved_exclusions(exclusions, package_languages, root)
+    _validate_approved_exclusions(exclusions, package_languages, root, declarations)
     if require_complete and not package_languages:
         raise ManifestError("release manifest contains no public packages")
 
@@ -1436,7 +1496,7 @@ def _validate_v2_readiness(
 def _validate_ready_mapping_targets(
     declarations: list[dict[str, Any]],
     package_languages: dict[Any, Any],
-    c_release_functions: set[tuple[str, str]],
+    c_public_functions: set[tuple[str, str]],
     *,
     exclusions: list[dict[str, Any]] | None = None,
 ) -> None:
@@ -1467,6 +1527,7 @@ def _validate_ready_mapping_targets(
             "secret-buffer-wipe",
             "normalized-client-protocol-error",
             "normalized-client-protocol-error-outcome",
+            "standard-attribute-tag-value",
         }:
             raise ManifestError("public declaration uses unknown mapping semantics")
         lifecycle_by_language = declaration.get("lifecycleSemanticsByLanguage")
@@ -1484,6 +1545,8 @@ def _validate_ready_mapping_targets(
                 "secret response lifecycle mapping must describe each language's ownership boundary"
             )
         mappings = declaration.get("languageMappings", {})
+        if mapping_semantics == "standard-attribute-tag-value":
+            _validate_standard_attribute_tag_mapping(declaration, mappings)
         if mapping_semantics == "normalized-client-protocol-error":
             expected_mapping = {
                 "rust": {
@@ -1549,12 +1612,7 @@ def _validate_ready_mapping_targets(
             if (
                 target is None
                 and language == "c"
-                and mapping_semantics in {
-                    "native-handle-release",
-                    "native-handle-release-managed-java-value",
-                    "secret-buffer-wipe",
-                }
-                and (mapping.get("packageId"), mapping.get("name")) in c_release_functions
+                and (mapping.get("packageId"), mapping.get("name")) in c_public_functions
             ):
                 target = {
                     "packageId": mapping["packageId"],
@@ -1597,6 +1655,163 @@ def _validate_ready_mapping_targets(
                     raise ManifestError(
                         "lifecycle mapping targets the wrong cleanup operation"
                     )
+
+
+def _validate_standard_attribute_tag_mapping(
+    declaration: dict[str, Any], mappings: dict[str, Any]
+) -> None:
+    """Pin C standard-attribute tag values to their exact idiomatic foreign routes."""
+    c_name = mappings.get("c", {}).get("name", "")
+    prefix = "KMIPKIT_STANDARD_ATTRIBUTE_"
+    if not c_name.startswith(prefix):
+        raise ManifestError("standard attribute tag mapping must use a named C tag macro")
+    tag_name = c_name.removeprefix(prefix)
+    if tag_name == "TAG":
+        expected_mapping = {
+            "rust": {
+                "packageId": "rust-kmipkit",
+                "name": "kmipkit::protocol::AttributeDefinition::TAG",
+            },
+            "c": {"packageId": "c-kmipkit", "name": c_name},
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.ttlv.StandardAttribute.tag",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.StandardAttribute.tag",
+            },
+        }
+        value_metadata_valid = (
+            "cValue" not in declaration and "cValueType" not in declaration
+        )
+    else:
+        rust_marker = "".join(part.title() for part in tag_name.split("_"))
+        expected_mapping = {
+            "rust": {
+                "packageId": "rust-kmipkit",
+                "name": f"kmipkit::protocol::attribute::typed::{rust_marker}",
+            },
+            "c": {"packageId": "c-kmipkit", "name": c_name},
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": f"org.kmipkit.ttlv.StandardAttribute.{tag_name}",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": f"kmipkit.typed_attributes.StandardAttribute.{tag_name}",
+            },
+        }
+        value_metadata_valid = (
+            isinstance(declaration.get("cValue"), int)
+            and declaration.get("cValueType") == "uint32_t"
+        )
+    if (
+        declaration.get("kind") != "macro"
+        or declaration.get("capabilityId") != "typed_object_attributes"
+        or declaration.get("parityScope") != "four-language"
+        or not tag_name
+        or mappings != expected_mapping
+        or not value_metadata_valid
+    ):
+        raise ManifestError(
+            "standard attribute tag mapping must use the exact typed four-language routes"
+        )
+
+
+def _validate_standard_attribute_catalog_values(
+    manifest: dict[str, Any], catalog: dict[str, Any]
+) -> None:
+    """Require C tag metadata to match the assigned tags in the normative catalog."""
+    elements = catalog.get("elements")
+    if not isinstance(elements, list):
+        raise ManifestError("normative catalog has no element list")
+
+    tag_values: dict[str, tuple[int, bool]] = {}
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "tag":
+            continue
+        element_id = element.get("element_id")
+        wire_value = str(element.get("wire_value", ""))
+        if (
+            not isinstance(element_id, str)
+            or re.fullmatch(r"(?:0x)?[0-9A-Fa-f]{6}", wire_value) is None
+            or element.get("allocation") not in {"assigned", "reserved"}
+        ):
+            raise ManifestError("normative catalog contains an invalid tag record")
+        tag_values[element_id] = (
+            int(wire_value.removeprefix("0x").removeprefix("0X"), 16),
+            element["allocation"] == "assigned",
+        )
+
+    expected: dict[str, int] = {}
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "attribute":
+            continue
+        element_id = element.get("element_id")
+        if not isinstance(element_id, str):
+            raise ManifestError("normative catalog contains an invalid attribute identity")
+        if element.get("scope_state") not in {None, "client_1_0"}:
+            continue
+        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES":
+            continue
+        if not element.get("source_encoding"):
+            raise ManifestError("normative direct attribute has no source encoding")
+
+        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE":
+            tag = 0x0042_0008
+            if not any(value == tag and assigned for value, assigned in tag_values.values()):
+                raise ManifestError("Vendor Attribute tag is not assigned in the catalog")
+        else:
+            parents = element.get("parent_element_ids")
+            if not isinstance(parents, list) or len(parents) != 1:
+                raise ManifestError("normative direct attribute has an invalid tag parent")
+            parent_tag = tag_values.get(parents[0])
+            if parent_tag is None or not parent_tag[1]:
+                raise ManifestError("normative direct attribute tag is not assigned")
+            tag = parent_tag[0]
+
+        suffix = element_id.removeprefix("KMIPKIT-ELEM-ATTRIBUTE-")
+        words = re.findall(r"[A-Za-z]+|[0-9]+", suffix)
+        if not words:
+            raise ManifestError("normative direct attribute has an invalid identity")
+        marker = "".join(
+            word if word.isdigit() else word[0].upper() + word[1:].lower()
+            for word in words
+        )
+        if not marker[0].isalpha():
+            marker = "Attribute" + marker
+        constant = re.sub(r"(?<!^)(?=[A-Z])", "_", marker).upper()
+        c_name = f"KMIPKIT_STANDARD_ATTRIBUTE_{constant}"
+        if c_name in expected:
+            raise ManifestError("normative catalog duplicates a standard attribute C tag")
+        expected[c_name] = tag
+
+    actual: dict[str, Any] = {}
+    for declaration in manifest.get("publicDeclarations", []):
+        if not isinstance(declaration, dict):
+            continue
+        c_name = declaration.get("languageMappings", {}).get("c", {}).get("name")
+        if c_name == "KMIPKIT_STANDARD_ATTRIBUTE_TAG":
+            continue
+        if isinstance(c_name, str) and c_name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_"):
+            actual[c_name] = declaration.get("cValue")
+    has_ready_attribute_capability = any(
+        isinstance(capability, dict)
+        and capability.get("capabilityId") == "typed_object_attributes"
+        and capability.get("capabilityState") in {"declared", "verified"}
+        for capability in manifest.get("capabilities", [])
+    )
+    if not actual and not has_ready_attribute_capability:
+        return
+    if actual and not has_ready_attribute_capability:
+        raise ManifestError(
+            "standard attribute declarations require the typed-object-attributes capability"
+        )
+    if actual != expected:
+        raise ManifestError(
+            "standard attribute value does not match the normative catalog"
+        )
 
 
 def _validate_capability_mapping_inventories(
@@ -1737,6 +1952,7 @@ def _validate_v2_manifest(
 ) -> None:
     """Validate v2 schema, normative catalog, references, and readiness together."""
     _validate_schema(manifest, schema)
+    _validate_standard_attribute_catalog_values(manifest, catalog)
     _validate_operation_inventory(manifest, catalog)
     _validate_references(manifest)
     if require_complete:
@@ -2042,24 +2258,8 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for exclusion in manifest.get("approvedExclusions", [])
         if exclusion.get("cFunction") is not None
     ]
-    canonical_c_functions = [function["c"] for function in manifest["functions"]]
-    canonical_c_symbols = [function["symbol"] for function in canonical_c_functions]
-    if len(canonical_c_symbols) != len(set(canonical_c_symbols)):
-        raise ManifestError("manifest contains duplicate canonical C function symbols")
-    c_functions_by_symbol = {
-        function["symbol"]: function for function in canonical_c_functions
-    }
-    excluded_only_symbols: list[str] = []
-    for excluded_function in excluded_c_functions:
-        symbol = excluded_function["symbol"]
-        existing = c_functions_by_symbol.get(symbol)
-        if existing is None:
-            excluded_only_symbols.append(symbol)
-            continue
-        comparable_fields = ("symbol", "parameters", "returnType", "errorCategories")
-        if any(existing.get(field) != excluded_function.get(field) for field in comparable_fields):
-            raise ManifestError("C-only exclusion conflicts with its canonical function signature")
-    c_symbols = [*c_functions_by_symbol, *excluded_only_symbols]
+    c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
+    c_symbols.extend(function["symbol"] for function in excluded_c_functions)
     release_symbols = [
         record["c"]["releaseFunction"]
         for record in manifest["types"]
@@ -2137,8 +2337,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         if record["c"]["kind"] == "fixed-width-value" and record["c"].get("fields")
     }
     c_record_names.update(
-        (layout["name"], {"c": layout})
-        for layout in approved_c_layouts
+        (layout["name"], {"c": layout}) for layout in approved_c_layouts
     )
     c_only_exports = {
         record["exportName"]
@@ -2148,35 +2347,14 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     if not c_abi_constant_names <= c_only_exports:
         raise ManifestError("C ABI record constants must be recorded as C-only exports")
     for constant in c_abi_record_constants:
-        record_name, field_name = constant["field"].split(".", maxsplit=1)
+        record_name, separator, field_name = constant["field"].partition(".")
         record = c_record_names.get(record_name)
-        field = None if record is None else next(
+        field = None if not separator or record is None else next(
             (item for item in record["c"]["fields"] if item["name"] == field_name),
             None,
         )
         if field is None or field["type"] != "uint32_t":
             raise ManifestError("C ABI record constant must identify a uint32_t record field")
-    c_record_field_type_names = set(c_handle_names) | set(c_record_names) | {
-        record["c"]["name"]
-        for record in manifest["types"]
-        if record["c"]["kind"] in {"enum", "fixed-width-value"}
-    }
-    for record in c_record_names.values():
-        fields = record["c"]["fields"]
-        field_names = [field["name"] for field in fields]
-        if len(set(field_names)) != len(field_names):
-            raise ManifestError("C record field names must be unique")
-        for field in fields:
-            field_type = field["type"]
-            match = re.fullmatch(
-                r"(const )?(uint8_t|uint16_t|uint32_t|uint64_t|int32_t|int64_t|kmipkit_[a-z0-9_]+_t)( \*)?",
-                field_type,
-            )
-            if match is None:
-                raise ManifestError("C record field type is not a supported fixed-width field")
-            base_name = field_type.removeprefix("const ").removesuffix(" *")
-            if base_name.startswith("kmipkit_") and base_name not in c_record_field_type_names:
-                raise ManifestError("C record field references an unknown manifest type")
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -2315,15 +2493,6 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         ),
                         None,
                     )
-                    if element_layout is None:
-                        element_layout = next(
-                            (
-                                layout
-                                for layout in approved_c_layouts
-                                if layout["name"] == element_type
-                            ),
-                            None,
-                        )
                     if not (
                         element_layout is not None
                         and element_layout.get("kind") == "fixed-width-value"
@@ -2868,21 +3037,20 @@ def render_c_header(
     manifest: dict[str, Any], *, include_blocked: bool = False, header_guard: str = "KMIPKIT_H"
 ) -> str:
     ready_c_exports = None if include_blocked else _ready_c_export_names(manifest)
-    excluded_c_function_symbols = {
-        exclusion["cFunction"]["symbol"]
-        for exclusion in manifest.get("approvedExclusions", [])
-        if isinstance(exclusion.get("cFunction"), dict)
-    }
     lines = [
         "/* @generated by tools/api_manifest/generate.py; do not edit. */",
         f"#ifndef {header_guard}",
         f"#define {header_guard}",
         "#include <stdint.h>",
+    ]
+    if manifest.get("formatVersion") == 2 and not include_blocked:
+        lines.append('#include "kmipkit_standard_attributes_generated.h"')
+    lines.extend([
         "#ifdef __cplusplus",
         'extern "C" {',
         "#endif",
         "",
-    ]
+    ])
     declared_c_fields = {
         declaration["exportName"]
         for declaration in manifest.get("publicDeclarations", [])
@@ -2933,6 +3101,16 @@ def render_c_header(
         name = declaration["exportName"]
         if ready_c_exports is not None and name not in ready_c_exports:
             continue
+        if (
+            not include_blocked
+            and manifest.get("formatVersion") == 2
+            and name.startswith("KMIPKIT_STANDARD_ATTRIBUTE_")
+        ):
+            # The focused normative-catalog generator owns these named tag
+            # constants. The public header includes its generated header, so
+            # emitting the same macros here would trigger C macro redefinition
+            # warnings (and fail MSVC builds that treat warnings as errors).
+            continue
         c_value = declaration["cValue"]
         c_type = declaration["cValueType"]
         maximum_c_value = {
@@ -2965,9 +3143,7 @@ def render_c_header(
         lines.append(
             f"/* C ABI record input for {constant['field']}: {constant['meaning']}. */"
         )
-        lines.append(
-            f"#define {constant['name']} ((uint32_t){constant['value']})"
-        )
+        lines.append(f"#define {constant['name']} ((uint32_t){constant['value']})")
     if manifest.get("cAbiRecordConstants"):
         lines.append("")
 
@@ -3060,7 +3236,6 @@ def render_c_header(
                 or c_type["releaseFunction"] in ready_c_exports
             )
         ):
-            lines.append(f"/* Releases the library-owned {c_type['name']} handle. */")
             lines.append(f"void {c_type['releaseFunction']}({c_type['name']} *handle);")
     for error in manifest["errorCategories"]:
         if (
@@ -3076,8 +3251,6 @@ def render_c_header(
             ready_c_exports is not None
             and function["c"]["symbol"] not in ready_c_exports
         ):
-            continue
-        if function["c"]["symbol"] in excluded_c_function_symbols:
             continue
         c_documentation = function["c"].get("documentation", [])
         if c_documentation:
@@ -3398,11 +3571,19 @@ def _java_string_literal(value: str) -> str:
 
 
 def render_public_java_parity(projection: dict[str, Any]) -> str:
-    parity_data = _dump_json(projection)
-    chunks = [
-        parity_data[index : index + 12_000]
-        for index in range(0, len(parity_data), 12_000)
-    ] or [""]
+    chunks: list[str] = ["{"]
+    entries = list(projection.items())
+    for entry_index, (key, value) in enumerate(entries):
+        if entry_index:
+            chunks.append(",")
+        chunks.extend([_dump_json(key), ":"])
+        if isinstance(value, list):
+            chunks.append("[")
+            chunks.extend(_stable_json_array_chunks(value))
+            chunks.append("]")
+        else:
+            chunks.extend(_split_json_text(_dump_json(value)))
+    chunks.append("}")
     lines = [
         "// @generated by tools/api_manifest/generate.py; do not edit.",
         "package org.kmipkit.generated;",
@@ -3420,6 +3601,51 @@ def render_public_java_parity(projection: dict[str, Any]) -> str:
         "",
     ])
     return "\n".join(lines)
+
+
+def _split_json_text(value: str, *, max_chars: int = 8_000) -> list[str]:
+    """Keep every Java modified UTF-8 constant safely below its class-file bound."""
+    return [value[index : index + max_chars] for index in range(0, len(value), max_chars)] or [""]
+
+
+def _stable_json_array_chunks(values: list[Any], *, max_chars: int = 8_000) -> list[str]:
+    """Serialize arrays at stable record boundaries so one insertion stays local."""
+    chunks: list[str] = []
+    current = ""
+    for value in values:
+        encoded = _dump_json(value)
+        stable_key = _parity_record_key(value)
+        digest = hashlib.sha256(stable_key.encode("utf-8")).digest()
+        should_split = bool(current) and (
+            (digest[0] & 0x0F) == 0 or len(current) + len(encoded) + 1 > max_chars
+        )
+        if should_split:
+            chunks.append(current)
+            current = ""
+        if current:
+            current += ","
+        current += encoded
+        if len(current) > max_chars:
+            # Large individual records are split only inside their own stable boundary.
+            chunks.extend(_split_json_text(current, max_chars=max_chars))
+            current = ""
+    if current:
+        chunks.append(current)
+    return chunks or [""]
+
+
+def _parity_record_key(value: Any) -> str:
+    """Return an identity stable across neighboring record insertions."""
+    if isinstance(value, dict):
+        for key in ("declarationId", "id", "operationId", "capabilityId"):
+            identifier = value.get(key)
+            if isinstance(identifier, str) and identifier:
+                return f"{key}:{identifier}"
+        package_id = value.get("packageId")
+        export_name = value.get("exportName")
+        if isinstance(package_id, str) and isinstance(export_name, str):
+            return f"{package_id}:{export_name}"
+    return _dump_json(value)
 
 
 def render_public_python_api(projection: dict[str, Any]) -> str:
@@ -3444,14 +3670,7 @@ def render_java_api(manifest: dict[str, Any]) -> str:
             "class": function["java"]["class"],
             "method": function["java"]["method"],
             "returnType": function["java"]["returnType"],
-            "parameters": [
-                {
-                    key: parameter[key]
-                    for key in ("name", "type", "nullable")
-                    if key in parameter
-                }
-                for parameter in function["java"]["parameters"]
-            ],
+            "parameters": function["java"]["parameters"],
             "requirementIds": function["requirementIds"],
             "errorCategories": function["java"]["errorCategories"],
         }
@@ -3636,6 +3855,24 @@ def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int
             _validate_v2_manifest(
                 manifest, schema, catalog, root, require_complete=require_complete
             )
+            has_draft_routes = any(
+                isinstance(capability, dict)
+                and capability.get("capabilityId") == "kmip30_draft_routes"
+                for capability in manifest.get("capabilities", [])
+            )
+            draft_catalog_path = root / "specification/api/kmip-3.0-draft-api.json"
+            if has_draft_routes or draft_catalog_path.exists():
+                draft_catalog = _load_json(
+                    root,
+                    "specification/api/kmip-3.0-draft-api.json",
+                    MAX_DRAFT_API_CATALOG_BYTES,
+                )
+                if not isinstance(draft_catalog, dict):
+                    raise ManifestError("KMIP 3.0 draft API catalog root must be an object")
+                try:
+                    validate_kmip30_draft_api(draft_catalog, manifest, root)
+                except DraftApiManifestError as error:
+                    raise ManifestError("KMIP 3.0 draft API catalog validation failed") from error
         else:
             if require_complete:
                 raise ManifestError("release validation requires a v2 public API manifest")

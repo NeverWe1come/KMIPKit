@@ -56,6 +56,12 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(nativeHandle, List.of());
     }
 
+    /** Returns the KMIP 2.1 Operation Enumeration selected by this request. */
+    public long operation() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(NativeExtensionRegistry::clientBatchItemOperation);
+    }
+
     /** Creates the supported Discover Versions request batch item. */
     public static ClientBatchItem discoverVersions() {
         NativeExtensionRegistry.ensureLoaded();
@@ -236,6 +242,50 @@ public final class ClientBatchItem implements AutoCloseable {
         requireU32(objectType, "Object Type");
         long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCreate(
                 objectType, attributes.handle(), handleOrNull(protectionStorageMasks)));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Create Group route from ordered generic TTLV. */
+    public static ClientBatchItem createGroup(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemCreateGroup);
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Obliterate route from ordered generic TTLV. */
+    public static ClientBatchItem obliterate(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemObliterate);
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Create User route from ordered generic TTLV. */
+    public static ClientBatchItem createUser(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemCreateUser);
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Create Credential route from ordered generic TTLV. */
+    public static ClientBatchItem createCredential(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemCreateCredential);
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Deactivate route from ordered generic TTLV. */
+    public static ClientBatchItem deactivate(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemDeactivate);
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Encapsulate route from ordered generic TTLV. */
+    public static ClientBatchItem encapsulate(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemEncapsulate);
+    }
+
+    /** Creates an opt-in KMIP 3.0 draft Decapsulate route from ordered generic TTLV. */
+    public static ClientBatchItem decapsulate(TtlvStructure payload) {
+        return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemDecapsulate);
+    }
+
+    private static ClientBatchItem kmip30Draft(
+            TtlvStructure payload,
+            java.util.function.ToLongFunction<Long> constructor) {
+        requireStructure(payload, "KMIP 3.0 draft Request Payload");
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() -> constructor.applyAsLong(payload.handle()));
         return new ClientBatchItem(value, List.of());
     }
 
@@ -1617,6 +1667,14 @@ public final class ClientBatchItem implements AutoCloseable {
         return handle.withValue(value ->
                 NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(value, index));
     }
+
+    /** Returns the shared Rust validation report for this typed request. */
+    public ValidationReport validationReport() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(value -> ValidationReport.fromNativeHandle(
+                NativeExtensionRegistry.validationRequest(value)));
+    }
+
     @Override
     public void close() {
         handle.close();

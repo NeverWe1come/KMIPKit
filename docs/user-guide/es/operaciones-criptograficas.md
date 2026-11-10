@@ -38,6 +38,82 @@ limpia su copia al liberarla. El acceso por callback solo presta los bytes
 durante la vida del callback. Las copias que cree la aplicación quedan fuera
 de esa garantía. La salida `Debug` solo incluye metadatos.
 
+El mismo modelo está disponible en C, Java y Python. C usa un registro ABI
+versionado con indicadores de presencia explícitos; Java y Python proporcionan
+builders con setters idiomáticos. Los valores Enumeration siguen siendo
+abiertos y sus lectores devuelven el número raw, incluso si es futuro o de
+fabricante.
+
+```c
+#include <stdint.h>
+#include "kmipkit.h"
+
+int leer_parametros(void) {
+    kmipkit_cryptographic_parameters_fields_v1_t fields = {0};
+    kmipkit_cryptographic_parameters_fields_v1_t readback = {0};
+    kmipkit_cryptographic_parameters_t *parameters = 0;
+    int32_t status = 0;
+
+    fields.struct_size = (uint32_t)sizeof(fields);
+    fields.abi_version = 1;
+    fields.cryptographic_algorithm_present = 1;
+    fields.cryptographic_algorithm = UINT32_C(0xe1230001);
+    readback.struct_size = (uint32_t)sizeof(readback);
+    readback.abi_version = 1;
+
+    status = kmipkit_cryptographic_parameters_from_fields_v1(&fields, &parameters);
+    if (status == 0) {
+        status = kmipkit_cryptographic_parameters_read_fields_v1(parameters, &readback);
+    }
+    if (status == 0 &&
+        (readback.cryptographic_algorithm_present != 1 ||
+         readback.cryptographic_algorithm != UINT32_C(0xe1230001))) {
+        status = 1;
+    }
+    kmipkit_cryptographic_parameters_release(parameters);
+    return status;
+}
+```
+
+```java
+import org.kmipkit.protocol.CryptographicParameters;
+
+final class ParametersExample {
+    public static void main(String[] args) {
+        try (var parameters = CryptographicParameters.builder()
+                .cryptographicAlgorithm(0xe1230001L)
+                .build()) {
+            if (parameters.cryptographicAlgorithm().orElseThrow() != 0xe1230001L) {
+                throw new AssertionError("Enumeration raw value changed");
+            }
+        }
+    }
+}
+```
+
+```python
+from kmipkit.cryptographic_parameters import CryptographicParameters
+
+with CryptographicParameters.builder() as builder:
+    with builder.cryptographic_algorithm(0xE123_0001).build() as parameters:
+        assert parameters.cryptographic_algorithm() == 0xE123_0001
+```
+
+Para incluir estos parámetros en Encrypt o Decrypt, conviértelos a una
+estructura TTLV: Java y Python ofrecen `intoTtlv()` y `into_ttlv()`; C usa
+`kmipkit_cryptographic_parameters_into_ttlv`. Estas conversiones consumen el
+handle tipado. Los constructores de elementos de operación C, Java y Python
+reciben actualmente una estructura TTLV genérica para este campo.
+
+En Java, `pSource()` devuelve un `byte[]` independiente propiedad del llamador;
+borra esa copia cuando ya no la necesites. En Python, `p_source()` devuelve un
+`bytes` inmutable que el runtime no puede poner a cero de forma determinista.
+KMIPKit limpia las copias que conserva en sus handles al cerrarlos, pero esa
+garantía no alcanza las copias externas ni el buffer original del llamador.
+En C, el puntero `p_source` de la salida es prestado y solo es válido mientras
+siga vivo el handle `CryptographicParameters`; cópialo antes de liberar el
+handle si debes conservarlo.
+
 ## Construir y enviar peticiones
 
 Elige las claves y los parámetros criptográficos según la política de la

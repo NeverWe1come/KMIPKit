@@ -66,6 +66,7 @@ mod logout;
 mod mac;
 mod mac_verify;
 mod managed_object;
+mod managed_value_reader;
 mod message;
 mod modify_attribute;
 mod multipart;
@@ -222,6 +223,7 @@ pub use managed_object::{
     Certificate, CertificateRequest, ManagedObject, ManagedObjectError, OpaqueObject, PgpKey,
     PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
 };
+pub use managed_value_reader::{ManagedFieldValue, ManagedValueKind, ManagedValueReader};
 pub use message::{
     MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
@@ -240,7 +242,10 @@ pub use profile::{
     ProfileReadinessBlocker, ProfileTransport, ProfileValidationContext, ProfileValidationError,
     ProfileValidationErrorCode, ProfileValidationResult, ProfileValidationSelection,
 };
-pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
+pub use query::{
+    QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField,
+    QueryResponseFieldKind,
+};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};

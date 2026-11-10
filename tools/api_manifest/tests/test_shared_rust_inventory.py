@@ -80,6 +80,33 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
 
+    def test_direct_maintainer_approval_record_authorizes_approved_implementation_scope(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner(
+            "KMIPKIT-0053",
+            REPO_ROOT,
+            "specs/053-api-parity-facade/approval-record.md",
+        )
+
+        self.assertIn("KMIPKIT-0053-FR-001", owner_requirements)
+        self.assertIn("KMIPKIT-0053-FR-013", owner_requirements)
+
+    def test_declaration_approval_source_must_match_one_of_its_requirement_owners(self) -> None:
+        altered = json.loads(json.dumps(self.manifest))
+        declaration = next(
+            row
+            for row in altered["publicDeclarations"]
+            if row.get("exportName") == "kmipkit::ClientResponseView"
+        )
+        declaration["approvalSource"]["path"] = (
+            "specs/019-cryptographic-operations/spec.md"
+        )
+
+        with self.assertRaisesRegex(
+            AUDIT.InventoryError,
+            "approval source is not backed by its requirements",
+        ):
+            AUDIT.build_inventory(altered, self.rust_report, REPO_ROOT)
+
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
             "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
@@ -115,7 +142,7 @@ class SharedRustInventoryTests(unittest.TestCase):
             any(row["capabilityId"] in operation_ids for row in inventory["mappedDeclarations"])
         )
 
-    def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
+    def test_current_inventory_links_mapped_rust_declarations_to_approved_capability_and_route_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
@@ -144,16 +171,17 @@ class SharedRustInventoryTests(unittest.TestCase):
         for declaration in inventory["mappedDeclarations"]:
             self.assertTrue(declaration["requirementIds"])
             if declaration["ownerSpecId"] is not None:
-                self.assertTrue(declaration["ownerRequirementIds"])
+                self.assertTrue(declaration["capabilityOwnerRequirementIds"])
                 self.assertTrue(
                     set(declaration["ownerRequirementIds"]) <= set(declaration["requirementIds"])
                 )
             else:
                 self.assertEqual(declaration["ownerAdrId"], "ADR-0014")
                 self.assertFalse(declaration["ownerRequirementIds"])
+                self.assertFalse(declaration["capabilityOwnerRequirementIds"])
                 self.assertIn("KMIPKIT-0043-FR-020", declaration["requirementIds"])
 
-    def test_candidate_declarations_remain_blocked_and_approved_async_operations_are_declared(self) -> None:
+    def test_candidate_declarations_remain_blocked_and_approved_async_operations_are_verified(self) -> None:
         for record in self.manifest["publicDeclarations"]:
             if record.get("candidateSpecId") in {"KMIPKIT-0009", "KMIPKIT-0010"}:
                 self.assertEqual(record["declarationState"], "blocked")
@@ -169,7 +197,7 @@ class SharedRustInventoryTests(unittest.TestCase):
             dependency = operation.get("ownerDependency", {})
             if dependency.get("specId") == "KMIPKIT-0009":
                 self.assertEqual(dependency.get("state"), "approved")
-                self.assertEqual(operation["apiState"], "declared")
+                self.assertEqual(operation["apiState"], "verified")
                 self.assertNotIn("blockedReason", operation)
             elif dependency.get("state") == "candidate" and dependency.get("specId") == "KMIPKIT-0010":
                 self.assertEqual(operation["apiState"], "blocked")

@@ -53,12 +53,26 @@ tipada y presta el valor de correlación opaco mediante
 `asynchronous_correlation_value()`. KMIPKit no ejecuta Poll ni reintenta
 automáticamente.
 
-KMIPKit 1.0 se limita a KMIP 2.1. Esta parte emite y acepta únicamente la
-versión de protocolo 2.1 conforme a la decisión de producto registrada para
+Los consumidores de paquetes de los cuatro lenguajes ejecutan Ping mediante
+sus APIs de cliente configuradas y un respondedor de prueba local limitado a
+loopback con TLS 1.3/mTLS. Esto comprueba la ejecución del cliente y la ruta del
+resultado tipado; el respondedor no es una implementación de servidor KMIP ni
+aporta evidencia de interoperabilidad.
+
+La API tipada de operaciones KMIP 1.0 sigue limitada a KMIP 2.1 conforme a la
+decisión de producto registrada para
 [`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md); esto no afirma
 compatibilidad retroactiva entre versiones principales conforme a KMIP §9.16.
-Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para conocer el
-alcance de la versión.
+Por separado, KMIPKit ofrece rutas optativas para las operaciones del Working
+Draft de KMIP 3.0 Create Group, Obliterate, Create User, Create Credential,
+Deactivate, Encapsulate y Decapsulate. Aceptan y conservan payloads TTLV
+genéricos ordenados por el llamador; no ofrecen constructores tipados por
+operación ni validación de esquema. Selecciona explícitamente la versión del
+protocolo mediante `ClientConfiguration::with_protocol_version`; el valor
+predeterminado sigue siendo KMIP 2.1. La capacidad `kmip30_draft_routes` solo
+indica que existe la API y no afirma conformidad de perfil ni certificación.
+Consulta [ADR-0002](../../adr/0002-kmip-21-release-scope.md) para el alcance de
+las operaciones tipadas de 1.0.
 
 ## Métodos directos y opciones por intercambio
 
@@ -111,6 +125,21 @@ fn main() {}
 es un valor KMIP de la cabecera Request proporcionado por el llamador; la
 segunda autentica la conexión TLS. KMIPKit no conserva credenciales KMIP en
 `Client`.
+
+Las fachadas de C, Java y Python adjuntan Authentication al mismo nivel de
+lote; el valor se codifica una vez en Request Header y aplica a todos los
+Batch Items de ese mensaje, conforme a KMIP v2.1 §8.2, Tabla 395. Las llamadas
+directas de `Client` no aceptan ni guardan Authentication global.
+
+| Lenguaje | Adjuntar al lote | Propiedad tras éxito |
+|---|---|---|
+| C | `kmipkit_client_batch_set_authentication(batch, authentication)` | El handle se consume; libéralo solo si la llamada falla. |
+| Java | `batch.setAuthentication(authentication)` | El valor se consume; cierra el lote después de ejecutarlo. |
+| Python | `batch.set_authentication(authentication)` | El valor se consume; cierra el lote después de ejecutarlo. |
+
+La transferencia al lote es transaccional: un fallo de validación conserva la
+propiedad original en el llamador. Authentication no configura TLS ni altera
+los siguientes mensajes enviados por el mismo cliente.
 
 ## Operaciones de creación en el servidor
 
@@ -303,10 +332,6 @@ secretos solo cuando haga falta y no los registres en logs.
 descarta el padding, así que la API no promete reproducir byte por byte la
 respuesta de red.
 
-`raw()` expone el árbol TTLV decodificado, no los bytes recibidos por la red. El
-decoder descarta el padding, por lo que la API no promete reproducir una
-respuesta byte por byte.
-
 `Client::new` construye un cliente de producción a partir de una configuración
 inmutable del cliente y un `TransportConfig` validado. Acepta TTLV, JSON o
 XML sobre TLS directo y HTTPS/HTTP 1.1; no acepta transportes implementados por
@@ -320,9 +345,11 @@ formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 
 KMIPKIT-0008 proporciona valores tipados de Credential y Authentication que
 conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
-contiene una o más Credential en el orden indicado por el llamador. En este
-incremento son modelos solo en memoria; el payload de petición no incluye
-datos de Authentication o Credential.
+contiene una o más Credential en el orden indicado por el llamador. El cliente
+puede adjuntar ese valor a un `ClientBatch`; se codifica en el Request Header
+del mensaje enviado. Los modelos Credential no se adjuntan por separado: se
+incluyen dentro de Authentication. El objeto `Client` no conserva esas
+credenciales para peticiones posteriores.
 
 Una Credential tipada Hashed Password requiere la marca de tiempo y los bytes
 hash proporcionados por el llamador. Hashing Algorithm es opcional. Si se
@@ -346,10 +373,7 @@ Los constructores síncronos y asíncronos de la cabecera Request emiten
 `Attestation Capable Indicator = True` porque la API de Rust puede construir
 una Credential Attestation. Esto anuncia únicamente capacidad de construcción:
 no genera ni verifica evidencia de atestación, no envía una Credential ni predice si el
-servidor la aceptará. No existe una opción para cambiarlo en cada petición. El
-El indicador solo anuncia capacidad de construcción de la API. No envía una
-Credential, no genera ni verifica evidencia y no predice si el servidor la
-aceptará.
+servidor la aceptará. No existe una opción para cambiarlo en cada petición.
 
 KMIPKit no registra el contenido de las Credential; Debug, Display y los
 diagnósticos de validación también lo redactan. `SecretText` y `SecretBytes`
@@ -502,6 +526,48 @@ let report = request.validation_report();
 assert!(report.is_valid());
 ```
 
+Las otras fachadas consultan el mismo informe Rust antes del envío:
+
+```c
+int32_t validar_item(kmipkit_client_batch_item_t *item) {
+    kmipkit_validation_report_t *report = 0;
+    uint8_t is_valid = 0;
+    int32_t status = kmipkit_client_batch_item_validation_report(item, &report);
+    if (status == 0) {
+        status = kmipkit_validation_report_is_valid(report, &is_valid);
+    }
+    if (status == 0 && is_valid == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    kmipkit_validation_report_release(report);
+    return status;
+}
+```
+
+```java
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ValidationReport;
+
+final class ValidationExample {
+    public static void main(String[] args) {
+        try (ClientBatchItem item = ClientBatchItem.ping();
+                ValidationReport report = ValidationReport.validateRequest(item)) {
+            if (!report.isValid()) {
+                throw new IllegalArgumentException("request is not valid");
+            }
+        }
+    }
+}
+```
+
+```python
+from kmipkit import extensions, validation
+
+with extensions.client_batch_item_ping() as item:
+    with validation.validate_request(item) as report:
+        assert report.is_valid
+```
+
 El informe contiene códigos estables, rutas de campos, gravedad y la
 referencia exacta a OASIS o a una política de KMIPKit. Nunca incluye valores
 de la petición. El validador toma prestada la petición y no codifica ni copia
@@ -522,6 +588,14 @@ validar directamente la estructura correspondiente. Un informe local válido
 no predice las capacidades,
 autorizaciones, estado del objeto ni políticas del servidor, y tampoco
 afirma conformidad con un perfil.
+
+Para una Structure TTLV genérica, Java usa
+`ValidationReport.validateStructure(structure, schema)`; Python usa
+`validation.validate_structure(structure, schema=...)`; C usa
+`kmipkit_ttlv_structure_validation_report_v1` con el identificador de esquema
+UTF-8 explícito. Pasa, por ejemplo, `RequestPayload/Create` o
+`Nested/KeyBlock`. Si omites el esquema, se valida solo la estructura genérica;
+no se adivina la operación ni el tipo a partir de sus tags.
 
 ## Errores, estado de entrega y redacción
 

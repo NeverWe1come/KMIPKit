@@ -63,8 +63,8 @@ threshold waiver still active; T085 owns threshold restoration.
 
 ## T039 owner approval evidence
 
-- **Merged owner approval evidence**: `KMIPKIT-0018` is approved for implementation by specification PR #65, MERGED into `release/1.0.0` on `2026-10-09`; the PR body gates implementation on approval and merge. The checked-in owner status remains `Status: Draft for independent human review`.
-- PR #65 is the approval evidence for implementation. The stale checked-in status in `specs/018-managed-object-lifecycle/spec.md` was not changed. This record does not claim formal acceptance, complete OASIS conformance, interoperability, profile support, or certification.
+- **Merged owner approval evidence**: specification PR #65 was merged into `release/1.0.0` on `2026-10-09`, and its PR body gates implementation on approval and merge. On `2026-11-05`, the maintainer also directly approved implementation and T098 manifest reconciliation; the current owner status is `Approved for implementation; independent review remains pending`, recorded in `specs/018-managed-object-lifecycle/approval-record.md`.
+- PR #65 remains part of the implementation-approval history, and the direct maintainer decision governs the current T098 inventory reconciliation. This record does not claim formal acceptance, complete OASIS conformance, interoperability, profile support, or certification.
 - T039 maps Activate, Archive, Destroy, and Recover as specified in the owner contract and OASIS KMIP 2.1 §§6.1.1, 6.1.4, 6.1.15, and 6.1.42. Request identifiers remain optional; successful response identifiers are exposed; common result, delivery, and Pending correlation metadata use the existing shared response path. No response-TTLV accessor or automatic follow-up behavior is added.
 
 ## T039 — Activate, Archive, Destroy, and Recover mappings

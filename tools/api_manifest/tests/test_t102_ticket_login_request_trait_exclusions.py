@@ -186,6 +186,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
             exclusions = {
                 (x["packageId"], x["exportName"]): x for x in self.manifest["approvedExclusions"]
                 if x.get("packageId") == PACKAGE and x.get("exportName", "").startswith(prefix)
+                and x.get("candidateSpecId") != "KMIPKIT-0053"
             }
             with self.subTest(type_name=type_name, source="manifest"):
                 self.assertEqual(declarations, set())
@@ -211,6 +212,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
         all_target_exclusions = {
             (x["packageId"], x["exportName"]) for x in self.manifest["approvedExclusions"]
             if x.get("packageId") == PACKAGE
+            and x.get("candidateSpecId") != "KMIPKIT-0053"
             and any(x.get("exportName", "").startswith(f"<kmipkit_protocol::{name} as ") for name in DIRECT)
         }
         self.assertEqual(all_target_exclusions, all_pairs)
@@ -238,6 +240,7 @@ class T102TicketLoginRequestTraitExclusionTests(unittest.TestCase):
                 x["exportName"] for x in self.manifest["approvedExclusions"]
                 if x.get("packageId") == "rust-kmipkit"
                 and x.get("exportName", "").startswith(f"<{root} as ")
+                and x.get("candidateSpecId") != "KMIPKIT-0053"
             }
             with self.subTest(type_name=name):
                 self.assertEqual(protocol_states, expected_protocol)

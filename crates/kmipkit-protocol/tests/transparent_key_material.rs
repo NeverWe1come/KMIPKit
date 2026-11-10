@@ -327,13 +327,13 @@ fn every_transparent_reader_round_trips_and_redacts_key_bytes() {
     );
     round_trip!(
         TransparentEcPrivateKey::try_new(1, vec![2]).expect("EC private key"),
-        14,
+        0x14,
         TransparentEcPrivateKey,
         "read EC private key"
     );
     round_trip!(
         TransparentEcPublicKey::try_new(1, vec![3]).expect("EC public key"),
-        15,
+        0x15,
         TransparentEcPublicKey,
         "read EC public key"
     );

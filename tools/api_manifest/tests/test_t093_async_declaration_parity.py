@@ -229,6 +229,9 @@ class T093AsyncDeclarationParityTests(unittest.TestCase):
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("candidateSpecId") == OWNER_SPEC
+            # The 0053 protocol namespace aliases are audited separately. Keep
+            # this set scoped to the original 0009 declarations.
+            and not row.get("exportName", "").startswith("<kmipkit::protocol::")
         ]
         actual = {(row.get("packageId"), row.get("exportName")) for row in exclusions}
         self.assertEqual(expected, actual, "each exact async Rust trait artifact needs one owner exclusion")

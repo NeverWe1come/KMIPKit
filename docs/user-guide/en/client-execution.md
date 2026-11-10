@@ -50,11 +50,23 @@ Pending, its `PendingOutcome` retains that typed response and lends the opaque c
 `asynchronous_correlation_value()`. KMIPKit does not poll or retry
 automatically.
 
-KMIPKit 1.0 is scoped to KMIP 2.1. This slice emits and accepts Protocol
-Version 2.1 only under the product decision recorded for
-[`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md); this is not a
-claim that the implementation provides KMIP §9.16 same-major backward
-compatibility. See [ADR-0002](../../adr/0002-kmip-21-release-scope.md) for the release
+The four-language package consumers execute Ping through their configured
+client APIs against a loopback-only TLS 1.3/mTLS fixture responder. This checks
+the client execution and typed-result path; the fixture is not a KMIP server
+implementation and does not provide interoperability evidence.
+
+The typed KMIP 1.0 operation API remains scoped to KMIP 2.1 under the product
+decision recorded for [`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md);
+this is not a claim that the implementation provides KMIP §9.16 same-major
+backward compatibility. Separately, KMIPKit exposes opt-in routes for the
+KMIP 3.0 Working Draft operations Create Group, Obliterate, Create User, Create
+Credential, Deactivate, Encapsulate, and Decapsulate. Those routes accept and
+preserve caller-supplied ordered generic TTLV payloads; they do not provide
+operation-specific typed payload builders or schema validation. Select the
+protocol version explicitly with `ClientConfiguration::with_protocol_version`;
+the default remains KMIP 2.1. The `kmip30_draft_routes` capability reports API
+availability only and does not claim profile conformance or certification. See
+[ADR-0002](../../adr/0002-kmip-21-release-scope.md) for the 1.0 typed-operation
 scope.
 
 ## Direct operation methods and per-exchange options

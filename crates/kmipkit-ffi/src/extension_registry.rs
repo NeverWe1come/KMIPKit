@@ -27,6 +27,25 @@ mod ffi_pointer_safety_tests;
 #[path = "../tests/support/profile_readiness_abi_tests.rs"]
 mod profile_readiness_abi_tests;
 
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/typed_attribute_0053_tests.rs"]
+mod typed_attribute_0053_tests;
+
+#[cfg(test)]
+#[path = "../tests/support/api_parity_0053_tests.rs"]
+mod api_parity_0053_tests;
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/managed_object_0053_tests.rs"]
+mod managed_object_0053_tests;
+#[cfg(test)]
+#[path = "../tests/support/parameters_auth_0053_tests.rs"]
+mod parameters_auth_0053_tests;
+#[cfg(test)]
+#[path = "../tests/support/request_validation_0053_tests.rs"]
+mod request_validation_0053_tests;
+
+mod typed_attributes_catalog_generated;
+
 use crate::{
     kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
     kmipkit_attestation_credential_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
@@ -38,8 +57,9 @@ use crate::{
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
     kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
-    kmipkit_credential_view_t, kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
-    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_credential_view_t, kmipkit_cryptographic_parameters_fields_v1_t,
+    kmipkit_cryptographic_parameters_t, kmipkit_delete_attribute_request_t,
+    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -64,6 +84,7 @@ use crate::{
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
+    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -80,23 +101,30 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DeleteAttributeRequest, DerivationMethod, DerivationParameters,
     DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest,
     GetAttributesRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
-    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OpaqueObjectContext, OperationData, PollRequest, ProcessRequest,
-    ProtocolError, ProtocolErrorKind, QueryAsyncRequestsRequest, QueryFunction, QueryRequest,
-    ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, ResponseMessage, ResultStatus, RevocationReason, RevokeRequest,
-    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest,
-    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
+    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyBlock, KeyCompressionType,
+    KeyFormatType, KeyMaterial, KeyValue, KeyWrapType, KeyWrappingData, LocateRequest, LogRequest,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ManagedObject,
+    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OpaqueObjectContext, OperationData, PollRequest, ProcessRequest, ProtocolError,
+    ProtocolErrorKind, QueryAsyncRequestsRequest, QueryFunction, QueryRequest,
+    QueryResponseFieldKind, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, ResponseMessage, ResultStatus, RevocationReason,
+    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
+    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
+    UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
-    CredentialValidationErrorKind, CredentialValue, DeviceCredential, HashedPasswordCredential,
+    CredentialValidationErrorKind, CredentialValue, CryptographicParameters,
+    CryptographicParametersBuilder, DeviceCredential, HashedPasswordCredential,
     HashedPasswordTimestampSequence, Nonce, UsernameAndPasswordCredential,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
+use kmipkit_protocol::{
+    NestedStructureSchema, RequestPayloadSchema, ValidationIssue, ValidationReport,
+    ValidationSchema, ValidationSeverity, ValidationSourceRef, validate_structure,
+};
 use kmipkit_protocol::{
     ProfileObjectState, ProfileReadiness, ProfileTransport, ProfileValidationContext,
     ProfileValidationError, ProfileValidationResult, ProfileValidationSelection,
@@ -160,6 +188,9 @@ mod registry_preflight_tests;
 #[path = "../tests/support/test_handle_helpers.rs"]
 mod test_handle_helpers;
 #[cfg(test)]
+#[path = "../tests/support/ttlv_value_view_copy_tests.rs"]
+mod ttlv_value_view_copy_tests;
+#[cfg(test)]
 #[path = "../tests/support/validate_abi_tests.rs"]
 mod validate_abi_tests;
 
@@ -202,6 +233,8 @@ const MESSAGE_VALIDATION_ERROR_UNKNOWN: u32 = 255;
 const ERROR_TRANSPORT: i32 = 9;
 const ERROR_SERVER_RESULT: i32 = 10;
 const ERROR_SHARED_OWNER: i32 = 11;
+const ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH: i32 = 12;
+const ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH: i32 = 13;
 const ERROR_CATEGORY_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CATEGORY_PROTOCOL: u32 = 2;
@@ -312,7 +345,10 @@ thread_local! {
 fn ffi_error_metadata(status: i32) -> (u32, u32) {
     match status {
         ERROR_PROTOCOL => (ERROR_CATEGORY_PROTOCOL, ERROR_CAUSE_PROTOCOL_OTHER),
-        ERROR_INVALID_INPUT | ERROR_INVALID_IDENTITY => {
+        ERROR_INVALID_INPUT
+        | ERROR_INVALID_IDENTITY
+        | ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH
+        | ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH => {
             (ERROR_CATEGORY_VALIDATION, ERROR_CAUSE_INVALID_INPUT)
         }
         ERROR_COMPATIBILITY_MISMATCH
@@ -513,6 +549,8 @@ enum Kind {
     Credential,
     CredentialValue,
     Authentication,
+    CryptographicParameters,
+    ValidationReport,
     CredentialView,
     AttestationCredential,
     DeviceCredential,
@@ -566,6 +604,8 @@ enum HandleValue {
     Credential(Credential),
     CredentialValue(CredentialValue),
     Authentication(Authentication),
+    CryptographicParameters(CryptographicParameters),
+    ValidationReport(ValidationReportSnapshot),
     CredentialView {
         authentication: Arc<Handle>,
         index: usize,
@@ -626,6 +666,61 @@ enum HandleValue {
     SplitKeyReference(SplitKeyReference),
 }
 
+struct ValidationReportSnapshot {
+    is_valid: bool,
+    issues: Vec<ValidationIssueSnapshot>,
+}
+
+struct ValidationIssueSnapshot {
+    code: Vec<u8>,
+    path: Vec<u8>,
+    severity: u32,
+    source_kind: u32,
+    source_identifier: Vec<u8>,
+    source_reference: Vec<u8>,
+}
+
+impl ValidationReportSnapshot {
+    fn from_report(report: &ValidationReport) -> Self {
+        let issues = report
+            .issues()
+            .iter()
+            .map(ValidationIssueSnapshot::from_issue)
+            .collect();
+        Self {
+            is_valid: report.is_valid(),
+            issues,
+        }
+    }
+}
+
+impl ValidationIssueSnapshot {
+    fn from_issue(issue: &ValidationIssue) -> Self {
+        let (source_kind, source_identifier, source_reference) = match issue.source() {
+            ValidationSourceRef::Oasis {
+                document,
+                reference,
+            } => (1, document, reference),
+            ValidationSourceRef::ProjectRule(identifier) => (2, identifier, ""),
+            _ => (0, "", ""),
+        };
+        let severity = match issue.severity() {
+            ValidationSeverity::Error => 1,
+            ValidationSeverity::Warning => 2,
+            ValidationSeverity::Info => 3,
+            _ => 0,
+        };
+        Self {
+            code: issue.code().as_str().as_bytes().to_vec(),
+            path: issue.path().to_string().into_bytes(),
+            severity,
+            source_kind,
+            source_identifier: source_identifier.as_bytes().to_vec(),
+            source_reference: source_reference.as_bytes().to_vec(),
+        }
+    }
+}
+
 enum MessageExtensionOwner {
     Request(Arc<RequestMessage>),
     Response(Arc<ResponseMessage>),
@@ -638,6 +733,7 @@ struct Handle {
 
 struct ClientBatchBuilder {
     items: Vec<ClientBatchItem>,
+    authentication: Option<Authentication>,
     request_time_stamp: Option<i64>,
     batch_order_option: Option<bool>,
     batch_error_continuation_values: Vec<u32>,
@@ -652,6 +748,7 @@ struct ClientBatchItemReadback {
 }
 
 struct ClientBatchItemMetadataSnapshot {
+    operation: u32,
     unique_batch_item_id: Option<Vec<u8>>,
     extensions: Vec<(extension::ExtensionIdentity, bool)>,
 }
@@ -671,6 +768,7 @@ impl ClientBatchBuilder {
     fn new() -> Self {
         Self {
             items: Vec::new(),
+            authentication: None,
             request_time_stamp: None,
             batch_order_option: None,
             batch_error_continuation_values: Vec::new(),
@@ -681,6 +779,9 @@ impl ClientBatchBuilder {
 
     fn into_batch(self) -> ClientBatch {
         let mut batch = ClientBatch::from_items(self.items);
+        if let Some(authentication) = self.authentication {
+            batch = batch.with_authentication(authentication);
+        }
         if let Some(time_stamp) = self.request_time_stamp {
             batch = batch.with_request_time_stamp(time_stamp);
         }
@@ -3216,6 +3317,11 @@ macro_rules! read_handle {
 #[allow(unsafe_code)]
 pub(super) mod client_abi;
 
+mod cryptographic_parameters;
+mod managed_objects;
+mod request_validation;
+mod typed_attributes;
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_extension_identity_create(
     vendor_identifier_data: *const u8,
@@ -3972,11 +4078,58 @@ pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
         let configured = client_extension::ClientConfiguration::from_shared_registry(
             configuration.shared_extension_registry(),
         )
-        .with_wire_encoding(encoding);
+        .with_wire_encoding(encoding)
+        .with_protocol_version(configuration.protocol_version());
         *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configured)
         ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_with_protocol_version(
+    configuration: *mut kmipkit_client_configuration_t,
+    major: i32,
+    minor: i32,
+    out_configuration: *mut *mut kmipkit_client_configuration_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_configuration);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let configured = client_extension::ClientConfiguration::from_shared_registry(
+            configuration.shared_extension_registry(),
+        )
+        .with_wire_encoding(configuration.wire_encoding())
+        .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(major, minor));
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_protocol_version(
+    configuration: *mut kmipkit_client_configuration_t,
+    out_major: *mut i32,
+    out_minor: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_major = scalar_out!(out_major);
+        let out_minor = scalar_out!(out_minor);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let version = configuration.protocol_version();
+        *out_major = version.major();
+        *out_minor = version.minor();
         SUCCESS
     })
 }
@@ -6837,6 +6990,78 @@ pub extern "C" fn kmipkit_client_batch_item_create(
         SUCCESS
     })
 }
+
+fn kmip30_draft_batch_item_handle(
+    constructor: fn(Structure) -> ClientBatchItem,
+    payload: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<*mut kmipkit_client_batch_item_t> {
+    let payload = copy_required_structure_handle(payload)?;
+    try_make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(constructor(payload))),
+    )
+}
+
+macro_rules! kmip30_draft_batch_item_constructor {
+    ($name:ident, $method:ident, $label:literal) => {
+        #[doc = concat!(
+                                    "Creates an opt-in KMIP 3.0 Working Draft ",
+                                    $label,
+                                    " request from an ordered generic Request Payload Structure. " ,
+                                    "This does not validate the operation-specific payload schema."
+                                )]
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(
+            payload: *mut kmipkit_ttlv_structure_t,
+            out_item: *mut *mut kmipkit_client_batch_item_t,
+        ) -> i32 {
+            ffi_entrypoint(|| {
+                let out = out_slot!(out_item);
+                *out = try_ffi!(kmip30_draft_batch_item_handle(
+                    ClientBatchItem::$method,
+                    payload,
+                ));
+                SUCCESS
+            })
+        }
+    };
+}
+
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_create_group,
+    create_group_draft,
+    "Create Group"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_obliterate,
+    obliterate_draft,
+    "Obliterate"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_create_user,
+    create_user_draft,
+    "Create User"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_create_credential,
+    create_credential_draft,
+    "Create Credential"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_deactivate,
+    deactivate_draft,
+    "Deactivate"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_encapsulate,
+    encapsulate_draft,
+    "Encapsulate"
+);
+kmip30_draft_batch_item_constructor!(
+    kmipkit_client_batch_item_decapsulate,
+    decapsulate_draft,
+    "Decapsulate"
+);
 
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_create_key_pair(
@@ -10411,6 +10636,53 @@ pub extern "C" fn kmipkit_ttlv_value_view_byte_length(
             ValueView::TextString(text) => u64::try_from(text.len()).ok(),
             _ => None,
         }));
+        SUCCESS
+    })
+}
+
+/// Copies all bytes from a `BigInteger`, `ByteString`, or `TextString` value view.
+///
+/// `capacity` must be at least the byte length reported by
+/// `kmipkit_ttlv_value_view_byte_length`. A null buffer is accepted only when
+/// the value is empty. On any error, this function leaves the buffer untouched.
+/// `TextString` bytes are copied as their original UTF-8 encoding; `ByteString` and
+/// `BigInteger` bytes are copied unchanged. For a non-empty value, the caller
+/// must provide `capacity` writable bytes that do not overlap the value's
+/// backing storage.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_value_view_copy_bytes(
+    view: *mut kmipkit_ttlv_value_view_t,
+    buffer: *mut u8,
+    capacity: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let view = read_handle!(view, ValueView);
+        let HandleValue::ValueView(value) = &view.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let length = try_ffi!(extract_value(value, |value| match value {
+            ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) =>
+                u64::try_from(bytes.len()).ok(),
+            ValueView::TextString(text) => u64::try_from(text.len()).ok(),
+            _ => None,
+        }));
+        if capacity < length || (length != 0 && buffer.is_null()) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if length != 0 {
+            try_ffi!(value.with_value(|value| {
+                let bytes = match value {
+                    ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) => bytes,
+                    ValueView::TextString(text) => text.as_bytes(),
+                    _ => return Err(ERROR_INVALID_INPUT),
+                };
+                // SAFETY: For non-empty values, the C contract requires `buffer` to point to
+                // `capacity` writable bytes that do not overlap the retained TTLV value. The
+                // required byte length was checked against `capacity` before this copy.
+                unsafe { ptr::copy_nonoverlapping(bytes.as_ptr(), buffer, bytes.len()) };
+                Ok(())
+            }));
+        }
         SUCCESS
     })
 }

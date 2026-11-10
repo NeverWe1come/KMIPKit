@@ -240,7 +240,22 @@ class T036ProfileMappingTests(unittest.TestCase):
             "specs/010-profile-conformance/spec.md",
             capability["approvalEvidence"]["path"],
         )
-        self.assertEqual(RUST_MAPPINGS, set(capability["mappings"]["rust"]))
+        rust_mappings = set(capability["mappings"]["rust"])
+        self.assertLessEqual(RUST_MAPPINGS, rust_mappings)
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        for export_name in rust_mappings - RUST_MAPPINGS:
+            with self.subTest(export=export_name):
+                declaration = declarations.get(export_name)
+                self.assertIsNotNone(declaration)
+                assert declaration is not None
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "specs/010-profile-conformance/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0010-FR-", " ".join(declaration["requirementIds"]))
         self.assertTrue(C_MAPPINGS <= set(capability["mappings"]["c"]))
         selection_type = next(
             row for row in self.manifest["types"]

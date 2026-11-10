@@ -1,9 +1,12 @@
 # Managed objects and key material
 
-KMIPKit provides Rust models for the nine KMIP 2.1 managed-object structures.
-Builders emit known fields in the order defined by the corresponding OASIS
-tables. The resulting object-specific Structure Item is passed directly to
-Register or Import; the `Object Type` Enumeration remains a separate value.
+KMIPKit provides typed Rust models and C, Java, and Python wrappers for the
+nine KMIP 2.1 managed-object structures. Rust builders emit known fields in
+the order defined by the corresponding OASIS tables. The resulting
+object-specific Structure Item is passed directly to Register or Import; the
+`Object Type` Enumeration remains a separate value. The language-specific
+wrapper names and ownership rules are summarized in [Typed bindings,
+validation, and response data](typed-bindings-and-response-data.md).
 
 ## Plaintext key material
 

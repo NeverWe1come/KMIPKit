@@ -14,6 +14,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("client_operation_identity"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("ffi_runtime_metadata"),
         Ok(true)
     );
@@ -50,6 +54,10 @@ fn capability_query_matches_manifest_ready_capabilities() {
         Ok(true)
     );
     assert_eq!(
+        kmipkit::capability_is_available("typed_async_response_readers"),
+        Ok(true)
+    );
+    assert_eq!(
         kmipkit::capability_is_available("credential_ttlv_parity"),
         Ok(true)
     );
@@ -80,6 +88,22 @@ fn capability_query_matches_manifest_ready_capabilities() {
     assert_eq!(
         kmipkit::capability_is_available("unknown_capability"),
         Ok(false)
+    );
+}
+
+#[test]
+fn capability_query_reports_the_opt_in_kmip30_draft_routes() {
+    assert_eq!(
+        kmipkit::capability_is_available("kmip30_draft_routes"),
+        Ok(true)
+    );
+}
+
+#[test]
+fn capability_query_reports_protocol_version_selection() {
+    assert_eq!(
+        kmipkit::capability_is_available("kmip_protocol_version_selection"),
+        Ok(true)
     );
 }
 

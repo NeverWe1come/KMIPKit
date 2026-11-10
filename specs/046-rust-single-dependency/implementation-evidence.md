@@ -28,11 +28,12 @@ Passed:
 - `cargo check --locked --manifest-path tests/fixtures/rust-single-dependency/Cargo.toml --offline`
 - `python scripts/test_user_guide_examples.py` (20 Rust examples compiled)
 - `python tools/api_manifest/generate.py --check` (12 generated outputs verified)
-- `python tools/api_manifest/audit_rust_exports.py --repo-root . --check --report <temporary-report>` (17,441 observed paths; 4,331 matched; 13,110 exact exclusions; zero missing, mismatched, or unobserved paths)
+- `python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` (153 tests passed; 1,268.438 seconds)
+- `python tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json` (23,918 observed paths; 6,942 matched; 16,976 exact exclusions; zero missing, mismatched, or unobserved paths)
 - Reconciler and manifest-limit unit tests (8 passed), the facade metadata projection, generated-fixture setup, malformed-input behavior, and legacy registry projection tests (4 passed)
 - Duplicate C parameter validation passed; the symlink test was skipped because Windows denied symlink creation (WinError 1314)
 
-The first full run of `test_generate.py` (86 tests) exposed stale assumptions in the legacy registry projection and generated-evidence fixture. Those issues were corrected and their affected tests passed when rerun. The complete module has not yet been rerun after those corrections, so T006 remains open. The symlink-specific test cannot exercise its target behavior on this Windows account.
+The first full run of `test_generate.py` (86 tests) exposed stale assumptions in the legacy registry projection and generated-evidence fixture. Those issues were corrected and their affected tests passed when rerun. The complete API manifest v2 module initially exposed missing exact inventory fixtures, stale expectations that all 56 operations were verified, an outdated Rust export report, and C-header parsing that omitted included generated headers. These fixtures and projections were synchronized with the current manifest and official audit output; the complete module then passed all 153 tests. A final `tools/api_manifest/generate.py --check` confirmed all 12 generated outputs remain current. The symlink-specific test cannot exercise its target behavior on this Windows account.
 
 ## Limitations
 

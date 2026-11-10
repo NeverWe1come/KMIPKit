@@ -13,12 +13,10 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "specs/019-cryptographic-operations/spec.md"
 BASE_CANDIDATE_COUNT = 165
 BASE_CANDIDATE_SHA256 = "8622dae80e3772bab0af270c14d70c6c4ef658f73a73f059c0d4a7eb9d2ba470"
-OWNER_IDENTITY_COUNT = 229
-OWNER_IDENTITY_SHA256 = "9ea6a5e0e3ce1c9c37859a2d9232289fbf5c02c1398b5f8d6b6b99438a3535b3"
-OWNER_MAPPING_COUNT = 95
-OWNER_EXCLUSION_COUNT = 134
+T099_IDENTITY_COUNT = 287
+T099_IDENTITY_SHA256 = "71b55aef4d54db242fc29b2f00f159982c79f8735e804420fe38611102b3e517"
 T099_MAPPING_COUNT = 43
-T099_EXCLUSION_COUNT = 122
+T099_EXCLUSION_COUNT = 244
 SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",
@@ -175,8 +173,20 @@ def _expected_mapped_exports() -> set[str]:
     return mapped
 
 
+def _operation_for_export(export_name: str) -> str:
+    for operation in OPERATION_TARGETS:
+        if (
+            f"{operation}Request" in export_name
+            or f"{operation}Response" in export_name
+            or f"::{operation}" in export_name
+            or f"::{operation.lower()}" in export_name
+        ):
+            return operation
+    raise AssertionError(f"unrecognized cryptographic operation export: {export_name}")
+
+
 def _expected_targets(export_name: str) -> tuple[str, dict[str, str], str]:
-    operation = "Encrypt" if "Encrypt" in export_name or "encrypt" in export_name else "Decrypt"
+    operation = _operation_for_export(export_name)
     details = OPERATION_TARGETS[operation]
     if export_name.startswith("kmipkit_protocol::"):
         if export_name.endswith("Response::result"):
@@ -200,7 +210,7 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
-    def test_base_candidate_and_full_owner_identities_are_pinned(self) -> None:
+    def test_t099_candidate_and_owner_identities_are_pinned(self) -> None:
         candidates = [
             row
             for row in self.manifest["publicDeclarations"]
@@ -210,15 +220,17 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
             row
             for row in self.manifest["publicDeclarations"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and row["exportName"] in _expected_mapped_exports()
         ]
         excluded = [
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and "T099" in row.get("evidence", "")
         ]
         identities = mapped + excluded + candidates
-        self.assertEqual(OWNER_IDENTITY_COUNT, len(identities))
-        self.assertEqual(OWNER_IDENTITY_SHA256, _identity_hash(identities))
+        self.assertEqual(T099_IDENTITY_COUNT, len(identities))
+        self.assertEqual(T099_IDENTITY_SHA256, _identity_hash(identities))
         if candidates:
             self.assertEqual(BASE_CANDIDATE_COUNT, len(candidates))
             self.assertEqual(BASE_CANDIDATE_SHA256, _identity_hash(candidates))
@@ -238,19 +250,17 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
             row
             for row in self.manifest["publicDeclarations"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and row["exportName"] in _expected_mapped_exports()
         ]
         excluded = [
             row
             for row in self.manifest["approvedExclusions"]
             if row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and "T099" in row.get("evidence", "")
         ]
-        t099_excluded = [row for row in excluded if "T099" in row.get("evidence", "")]
-        self.assertEqual(OWNER_MAPPING_COUNT, len(mapped))
-        self.assertEqual(OWNER_EXCLUSION_COUNT, len(excluded))
-        t099_mapped = [row for row in mapped if row["exportName"] in _expected_mapped_exports()]
-        self.assertEqual(T099_MAPPING_COUNT, len(t099_mapped))
-        self.assertEqual(T099_EXCLUSION_COUNT, len(t099_excluded))
-        self.assertEqual(_expected_mapped_exports(), {row["exportName"] for row in t099_mapped})
+        self.assertEqual(T099_MAPPING_COUNT, len(mapped))
+        self.assertEqual(T099_EXCLUSION_COUNT, len(excluded))
+        self.assertEqual(_expected_mapped_exports(), {row["exportName"] for row in mapped})
 
     def test_t099_mappings_reuse_the_exact_four_language_operation_facades(self) -> None:
         mapped = [
@@ -289,7 +299,7 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
                 requirements = set(row["requirementIds"])
                 self.assertTrue(SHARED_REQUIREMENTS <= requirements)
                 self.assertTrue(OWNER_REQUIREMENTS <= requirements)
-                operation = "Encrypt" if "Encrypt" in row["exportName"] or "encrypt" in row["exportName"] else "Decrypt"
+                operation = _operation_for_export(row["exportName"])
                 self.assertTrue(OPERATION_NORMATIVE_REQUIREMENTS[operation] <= requirements)
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
                 for evidence in PARITY_EVIDENCE:
@@ -364,10 +374,10 @@ class T099CryptoDeclarationMappingTests(unittest.TestCase):
             and not any(error in row["exportName"] for error in ("EncryptError", "DecryptError"))
             and not row["exportName"].startswith("<")
         ]
-        self.assertEqual(92, len(traits))
-        self.assertEqual(18, len(errors))
-        self.assertEqual(4, len(parsers))
-        self.assertEqual(8, len(request_helpers))
+        self.assertEqual(184, len(traits))
+        self.assertEqual(36, len(errors))
+        self.assertEqual(8, len(parsers))
+        self.assertEqual(16, len(request_helpers))
 
 
 if __name__ == "__main__":

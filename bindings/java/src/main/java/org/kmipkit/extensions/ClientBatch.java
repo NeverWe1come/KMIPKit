@@ -4,6 +4,7 @@ import java.util.OptionalLong;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
+import org.kmipkit.credentials.Authentication;
 import org.kmipkit.internal.NativeHandle;
 
 /** One ordered, single-use collection of typed request batch items. */
@@ -41,6 +42,27 @@ public final class ClientBatch implements AutoCloseable {
             itemCount++;
             return null;
         });
+        return this;
+    }
+
+    /**
+     * Attaches caller-owned Authentication to this Request Message.
+     *
+     * <p>The batch consumes the value on success; it is encoded once in the Request Header and
+     * applies to every Batch Item. It is never stored in the Client configuration.</p>
+     */
+    public ClientBatch setAuthentication(Authentication authentication) {
+        if (authentication == null) {
+            throw new InvalidInputException("client batch authentication is invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        NativeHandle.withValues(
+                new NativeHandle[] {handle, authentication.nativeHandleOwner()},
+                values -> {
+                    NativeExtensionRegistry.clientBatchSetAuthentication(values[0], values[1]);
+                    authentication.nativeHandleOwner().transfer();
+                    return null;
+                });
         return this;
     }
 

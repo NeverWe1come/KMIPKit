@@ -244,6 +244,13 @@ class RecertifyParityManifestTests(unittest.TestCase):
             self.assertTrue(declaration_ids, f"Re-certify has no {language} declarations")
             for declaration_id in declaration_ids:
                 declaration = self.declarations[declaration_id]
+                # KMIPKIT-0053 adds `kmipkit::protocol` aliases for the existing
+                # operation types. This regression pins the original KMIPKIT-0036
+                # mapping slice; the facade aliases are audited by T0053.
+                if declaration.get("approvalSource", {}).get("path") != OWNER_SPEC:
+                    continue
+                if declaration.get("exportName", "").startswith("kmipkit::protocol::"):
+                    continue
                 self.assertIn(declaration["capabilityId"], {OPERATION_ID, "client_execution"})
                 self.assertEqual("verified", declaration["declarationState"])
                 required_evidence = (
@@ -277,6 +284,8 @@ class RecertifyParityManifestTests(unittest.TestCase):
         operation_declarations = [
             row for row in self.manifest["publicDeclarations"]
             if row.get("capabilityId") == OPERATION_ID
+            and row.get("approvalSource", {}).get("path") == OWNER_SPEC
+            and not row.get("exportName", "").startswith("kmipkit::protocol::")
         ]
         declarations_by_id = {row["declarationId"]: row for row in operation_declarations}
         self.assertEqual(51, len(operation_declarations))

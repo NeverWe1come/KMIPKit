@@ -53,6 +53,24 @@ fn batch() -> ClientBatch {
     ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
 }
 
+#[test]
+fn encoded_batch_item_operation_reader_rejects_malformed_headers_and_values() {
+    let mut bytes = [0_u8; 20];
+    bytes[8..16].copy_from_slice(&[0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04]);
+    bytes[16..20].copy_from_slice(&7_u32.to_be_bytes());
+
+    assert_eq!(
+        super::decode_batch_item_operation(&bytes).expect("valid Enumeration is four bytes"),
+        7
+    );
+
+    let mut unexpected_header = bytes;
+    unexpected_header[11] = 0x04;
+    assert!(super::decode_batch_item_operation(&unexpected_header).is_err());
+    assert!(super::decode_batch_item_operation(&bytes[..16]).is_err());
+    assert!(super::decode_operation_enumeration(&[0x00, 0x00, 0x07]).is_err());
+}
+
 fn decode_request(bytes: &[u8], encoding: WireEncoding, limits: &CodecLimits) -> Item {
     match encoding {
         WireEncoding::Ttlv => decode_with_limits(bytes, limits).expect("TTLV request decodes"),

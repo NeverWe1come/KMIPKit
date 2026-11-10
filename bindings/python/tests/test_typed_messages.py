@@ -851,7 +851,7 @@ def test_materialize_value_copies_byte_backed_ttlv_types(
 ) -> None:
     monkeypatch.setattr(ttlv, "ttlv_value_view_type", lambda _view: item_type)
     monkeypatch.setattr(ttlv, "ttlv_value_view_byte_length", lambda _view: len(data))
-    monkeypatch.setattr(ttlv, "ttlv_value_view_byte_at", lambda _view, index: data[index])
+    monkeypatch.setattr(ttlv, "ttlv_value_view_bytes", lambda _view: data)
 
     assert messages._materialize_value(object()) == expected
 
@@ -869,7 +869,7 @@ def test_materialize_value_rejects_oversized_and_invalid_utf8_text(
 
     monkeypatch.setattr(ttlv, "ttlv_value_view_type", lambda _view: ttlv.ItemType.TextString)
     monkeypatch.setattr(ttlv, "ttlv_value_view_byte_length", lambda _view: 1)
-    monkeypatch.setattr(ttlv, "ttlv_value_view_byte_at", lambda _view, _index: 0xFF)
+    monkeypatch.setattr(ttlv, "ttlv_value_view_bytes", lambda _view: b"\xff")
     with pytest.raises(messages.errors.InvalidInputError):
         messages._materialize_value(value_view)
 

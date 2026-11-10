@@ -286,6 +286,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Python 3.12
@@ -399,6 +400,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_0053_operation_binding_matrix tools.api_manifest.tests.test_0053_validation_routes tools.api_manifest.tests.test_0053_kmip30_draft_api_catalog tools.api_manifest.tests.test_t102_macro_lot_partition -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/api_manifest/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/extension_fixtures/generate.py --check
@@ -496,7 +499,7 @@ jobs:
       - name: Build the C consumer and example
         id: build-the-c-consumer-and-example
         run: |
-          cargo build --locked -p kmipkit-ffi
+          cargo build --locked -p kmipkit-ffi --features coverage-c-consumer
 
       - name: Audit the built C ABI export allowlist
         id: audit-the-built-c-abi-export-allowlist
