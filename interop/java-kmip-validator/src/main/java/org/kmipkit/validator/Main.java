@@ -104,8 +104,7 @@ public final class Main {
         JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
         try {
             for (CatalogLoader.CatalogCase testCase : applicable) {
-                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection,
-                        artifact.libraryCommit(), enableMutations, driver);
+                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver);
                 evidence.add(new RunReport.CaseEvidence(testCase.caseId(), outcome.status(),
                         outcome.libraryCorrectness(), outcome.serverCompatibility(), outcome.parity(),
                         outcome.durationMs(), outcome.resultStatusCode(), outcome.resultReasonCode(),
@@ -132,8 +131,7 @@ public final class Main {
     }
 
     private static JavaKmipDriver.CaseOutcome executeCase(CatalogLoader.CatalogCase testCase,
-            ConnectionConfig connection, String libraryCommit, boolean enableMutations,
-            JavaKmipDriver driver) {
+            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver) {
         long start = System.nanoTime();
         if ("not_applicable".equals(testCase.execution().status())) {
             return JavaKmipDriver.CaseOutcome.notRun("Catalog case is not applicable: "

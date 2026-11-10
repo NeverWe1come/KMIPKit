@@ -15,7 +15,7 @@ public final class TtlvModelChecks {
     private TtlvModelChecks() { }
 
     /** Constructs and reads one raw-preserving enumeration, including an unassigned value. */
-    public static long roundTripEnumeration(long value) {
+    public static long constructAndReadEnumeration(long value) {
         try (RawTag rawTag = RawTag.fromRaw(0x420001);
                 Tag tag = rawTag.checked();
                 TtlvValue ttlvValue = TtlvValue.Enumeration(value);
@@ -27,7 +27,7 @@ public final class TtlvModelChecks {
     }
 
     /** Constructs and reads an integer used as a KMIP bitmask, preserving unknown bits. */
-    public static int roundTripIntegerMask(int value) {
+    public static int constructAndReadIntegerMask(int value) {
         try (RawTag rawTag = RawTag.fromRaw(0x420002);
                 Tag tag = rawTag.checked();
                 TtlvValue ttlvValue = TtlvValue.Integer(value);
@@ -55,7 +55,7 @@ public final class TtlvModelChecks {
     }
 
     /** Builds a generic structure and verifies that item insertion order is preserved. */
-    public static int[] roundTripTagOrder() {
+    public static int[] constructAndReadTagOrder() {
         TtlvStructure structure = TtlvStructure.create();
         structure = appendEnumeration(structure, 0x420001, 0xf0000001L);
         structure = appendEnumeration(structure, 0x420002, 0x80000002L);
@@ -71,12 +71,12 @@ public final class TtlvModelChecks {
     public static ModelCheck verifyLocalCase(CatalogLoader.CatalogCase testCase) {
         var requirements = testCase.requires();
         if (requirements.hasNonNull("enum_type")) {
-            long constructed = roundTripEnumeration(0xf0000001L);
+            long constructed = constructAndReadEnumeration(0xf0000001L);
             long decoded = decodeEnumeration(0xf0000001L);
             return new ModelCheck(constructed == decoded, "generic enumeration construction and decoding");
         }
         if (requirements.hasNonNull("bitmask_type")) {
-            int constructed = roundTripIntegerMask(0x80000001);
+            int constructed = constructAndReadIntegerMask(0x80000001);
             int decoded = decodeIntegerMask(0x80000001);
             return new ModelCheck(constructed == decoded, "generic integer mask construction and decoding");
         }
