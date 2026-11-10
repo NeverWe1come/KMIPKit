@@ -42,6 +42,22 @@ EXPECTED_0053_PARITY_BRIDGE_MEMBERS = frozenset(
 )
 
 
+EXPECTED_0091_FLUENT_BRIDGE_MEMBERS = frozenset(
+    {
+        "SYMMETRIC_KEY_BUILDER",
+        "symmetricKeyBuilderAddAttributeItem",
+        "symmetricKeyBuilderAddCataloguedAttribute",
+        "symmetricKeyBuilderAddVendorAttribute",
+        "symmetricKeyBuilderBuildBatchItem",
+        "symmetricKeyBuilderCreate",
+        "symmetricKeyBuilderSetAlgorithm",
+        "symmetricKeyBuilderSetLength",
+        "symmetricKeyBuilderSetName",
+        "symmetricKeyBuilderSetUsageMask",
+    }
+)
+
+
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
 SPEC = importlib.util.spec_from_file_location("audit_binding_exports", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
@@ -1154,6 +1170,7 @@ class BindingExportAuditTests(unittest.TestCase):
         )
         native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
         native_members.update(EXPECTED_0053_PARITY_BRIDGE_MEMBERS)
+        native_members.update(EXPECTED_0091_FLUENT_BRIDGE_MEMBERS)
         native_members.update(
             export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
             for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
@@ -1216,6 +1233,17 @@ class BindingExportAuditTests(unittest.TestCase):
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
+            if exclusion.get("candidateSpecId") == "KMIPKIT-0091":
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/091-fluent-dx-foundation/spec.md",
+                )
+                self.assertIn(
+                    "specs/091-fluent-dx-foundation/spec.md",
+                    exclusion["evidencePaths"],
+                )
+                self.assertIn("JNI members only dispatch builder operations", evidence)
+                continue
             if exclusion.get("candidateSpecId") == "KMIPKIT-0053":
                 self.assertEqual(
                     exclusion["approvalSource"]["path"],
