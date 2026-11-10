@@ -1,9 +1,9 @@
 # Feature Specification: KMIP 2.0 Session Tag Version Eligibility (KMIPKIT-0089)
 
-**Feature Branch**: `feature/KMIPKIT-0089-kmip20-session-tags`  
-**Base**: `release/1.0.0` at `fdafef8a3`  
-**Status**: Draft for maintainer review; implementation authorized by the task owner  
-**Scope owner**: `kmipkit-protocol::VersionGate`
+- **Feature Branch**: `feature/KMIPKIT-0089-kmip20-session-tags`
+- **Base**: `release/1.0.0` at `fdafef8a3`
+- **Status**: Draft for maintainer review; implementation authorized by the task owner
+- **Scope owner**: `kmipkit-protocol::VersionGate`
 
 ## 1. Purpose
 
