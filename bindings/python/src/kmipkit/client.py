@@ -3221,6 +3221,8 @@ class Client(_ClientHandle):
             errors.raise_for_status(4)
         if options is not None and not isinstance(options, RequestOptions):
             errors.raise_for_status(4)
+        if name is not None and not isinstance(name, str):
+            errors.raise_for_status(4)
         raw_name = name.encode("utf-8") if name is not None else b""
         owner = ffi.new("uint8_t[]", raw_name) if raw_name else ffi.NULL
         request = ffi.new("kmipkit_symmetric_key_request_v1_t *")
