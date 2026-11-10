@@ -38,7 +38,47 @@ class ValidatorContractTests(unittest.TestCase):
         self.assertFalse(PythonKmipDriver.supports(by_id["test-s2c-query"], "typed-protocol"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-enum-cryptographic-algorithm"], "typed-protocol"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-op-query"], "high-level"))
-        self.assertFalse(PythonKmipDriver.supports(by_id["test-op-create"], "typed-protocol"))
+        self.assertTrue(PythonKmipDriver.supports(by_id["test-op-create"], "typed-protocol"))
+
+    def test_python_driver_exercises_the_public_high_level_attribute_requests(self):
+        from kmipkit import extensions
+
+        catalog, _ = load_catalog(CATALOG)
+        by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+        driver = object.__new__(PythonKmipDriver)
+        driver._extensions = extensions
+        driver._api_level = "high-level"
+        identifier = extensions.UniqueIdentifier.text_string("dedicated-fixture")
+        for case_id in (
+            "test-op-add-attribute",
+            "test-op-adjust-attribute",
+            "test-op-delete-attribute",
+            "test-op-get-attributes",
+            "test-op-get-attribute-list",
+            "test-op-modify-attribute",
+            "test-op-set-attribute",
+            "test-attr-comment",
+        ):
+            with self.subTest(case_id=case_id):
+                self.assertTrue(PythonKmipDriver.supports(by_id[case_id], "high-level"))
+                item = driver._build_high_level_item(by_id[case_id], identifier, name="dedicated-fixture")
+                self.assertIsInstance(item, extensions.ClientBatchItem)
+                with item.validation_report() as report:
+                    self.assertTrue(report.is_valid)
+                item.close()
+
+    def test_python_driver_advertises_catalogued_async_client_routes(self):
+        catalog, _ = load_catalog(CATALOG)
+        by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+        for case_id in (
+            "test-op-poll",
+            "test-op-process",
+            "test-op-cancel",
+            "test-op-query-asynchronous-requests",
+            "test-async-lifecycle-poll",
+        ):
+            with self.subTest(case_id=case_id):
+                self.assertTrue(PythonKmipDriver.supports(by_id[case_id], "typed-protocol"))
 
     def test_python_driver_has_a_recipe_for_each_synchronous_catalog_operation(self):
         catalog, _ = load_catalog(CATALOG)
@@ -53,16 +93,66 @@ class ValidatorContractTests(unittest.TestCase):
             "test-obj-symmetric-key",
             "test-attr-comment",
             "test-crypto-encrypt-aes-256-cbc",
+            "test-op-derive-key",
+            "test-op-join-split-key",
         ):
             with self.subTest(case_id=case_id):
                 self.assertTrue(PythonKmipDriver.supports(by_id[case_id], "typed-protocol"))
+
+    def test_every_advertised_case_has_a_public_request_recipe_or_special_runner(self):
+        from kmipkit import extensions
+
+        catalog, _ = load_catalog(CATALOG)
+        driver = object.__new__(PythonKmipDriver)
+        driver._extensions = extensions
+        identifier = extensions.UniqueIdentifier.text_string("dedicated-fixture")
+        advertised = [
+            case
+            for case in catalog["test_cases"]
+            if PythonKmipDriver.supports(case, "typed-protocol")
+        ]
+        self.assertGreater(len(advertised), 100)
+        for case in advertised:
+            if case["operation"] in {"Logout", "Poll", "Process", "Cancel", "Query Asynchronous Requests"} or case["requires"].get("workflow_type") == "async_poll":
+                continue  # These routes require a server-issued Ticket or async correlation.
+            with self.subTest(case_id=case["case_id"]):
+                item = driver._build_item(case, identifier, name="dedicated-fixture")
+                self.assertIsInstance(item, extensions.ClientBatchItem)
+                with item.validation_report() as report:
+                    self.assertTrue(report.is_valid)
+                item.close()
 
     def test_python_mutation_gate_includes_required_setup_and_cleanup(self):
         catalog, _ = load_catalog(CATALOG)
         by_id = {case["case_id"]: case for case in catalog["test_cases"]}
         self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-op-get"]))
         self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-attr-comment"]))
+        self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-op-poll"]))
         self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-op-ping"]) is False)
+
+    def test_public_typed_recipes_construct_real_batch_items_without_network(self):
+        from kmipkit import extensions
+
+        catalog, _ = load_catalog(CATALOG)
+        by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+        driver = object.__new__(PythonKmipDriver)
+        driver._extensions = extensions
+        identifier = extensions.UniqueIdentifier.text_string("dedicated-fixture")
+        for case_id in (
+            "test-op-create",
+            "test-op-destroy",
+            "test-op-locate",
+            "test-attr-comment",
+            "test-crypto-encrypt-aes-256-cbc",
+            "test-op-re-provision",
+            "test-obj-certificate",
+            "test-op-derive-key",
+            "test-op-join-split-key",
+        ):
+            with self.subTest(case_id=case_id):
+                item = driver._build_item(by_id[case_id], identifier, name="dedicated-fixture")
+                self.assertIsInstance(item, extensions.ClientBatchItem)
+                item.close()
 
     def test_mutating_cases_are_policy_restricted_without_both_opt_ins(self):
         connection, connection_bytes = load_connection(CONNECTION)
@@ -107,8 +197,7 @@ class ValidatorContractTests(unittest.TestCase):
         self.assertEqual(67, len(local_ids))
         self.assertTrue(all(indexed[case_id]["status"] in {"passed", "not_run"} for case_id in local_ids))
         pending = [indexed[case_id] for case_id in local_ids if indexed[case_id]["status"] == "not_run"]
-        self.assertEqual(4, len(pending))
-        self.assertTrue(all("enum value map is unavailable" in case["diagnostic"] for case in pending))
+        self.assertEqual([], pending)
 
     def test_result_report_matches_shared_schema_and_writes_all_formats(self):
         connection, connection_bytes = load_connection(CONNECTION)
@@ -139,6 +228,30 @@ class ValidatorContractTests(unittest.TestCase):
         planned = json.loads(output.getvalue())
         self.assertFalse(planned["network_attempted"])
         self.assertGreater(len(planned["cases"]), 0)
+
+    def test_plan_documents_each_route_that_the_pinned_python_api_cannot_emit(self):
+        connection, _ = load_connection(CONNECTION)
+        catalog, catalog_bytes = load_catalog(CATALOG)
+        plan = _plan(connection, catalog, catalog_bytes)
+        missing = [case for case in plan["cases"] if not case["route_available"]]
+        self.assertTrue(missing)
+        self.assertTrue(all(case["status"] == "not_run_documented_api_gap" for case in missing))
+        self.assertTrue(all(case["limitation"] for case in missing))
+
+    def test_typed_plan_names_the_known_server_role_batch_and_multipart_api_gaps(self):
+        connection, _ = load_connection(CONNECTION)
+        connection["api_level"] = "typed-protocol"
+        catalog, catalog_bytes = load_catalog(CATALOG)
+        plan = _plan(connection, catalog, catalog_bytes)
+        by_id = {case["case_id"]: case for case in plan["cases"]}
+        for case_id, phrase in (
+            ("test-s2c-query", "server-initiated"),
+            ("test-batch-create-activate-destroy", "ID Placeholder"),
+            ("test-multipart-encrypt-aes-cbc", "multipart Init"),
+        ):
+            with self.subTest(case_id=case_id):
+                self.assertFalse(by_id[case_id]["route_available"])
+                self.assertIn(phrase, by_id[case_id]["limitation"])
 
     def test_equivalence_verifier_and_cleanup_guard(self):
         same = NormalizedResponse(status="Success", object_type="SymmetricKey")

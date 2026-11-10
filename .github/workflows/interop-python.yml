@@ -1,20 +1,31 @@
 name: Interop Python Validator
 
 on:
-  push:
-    branches:
-      - master
-      - 'release/**'
-      - 'feature/**'
-    paths:
-      - 'interop/python-kmip-validator/**'
-      - 'interop/shared/**'
-      - '.github/workflows/interop-python.yml'
   pull_request:
     paths:
       - 'interop/python-kmip-validator/**'
       - 'interop/shared/**'
+      - 'bindings/python/**'
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - '.github/workflows/interop-python.yml'
+  push:
+    branches:
+      - release/1.0.0
+      - 'feature/KMIPKIT-0087-interop-python-live'
+    paths:
+      - 'interop/python-kmip-validator/**'
+      - 'interop/shared/**'
+      - 'bindings/python/**'
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/interop-python.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   changes:
@@ -37,7 +48,7 @@ jobs:
             exit 0
           fi
           files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if grep -Eq '^interop/python-kmip-validator/' <<< "$files"; then
+          if grep -Eq '^(interop/python-kmip-validator/|bindings/python/|crates/|Cargo\.toml$|Cargo\.lock$)' <<< "$files"; then
             echo "affected=true" >> "$GITHUB_OUTPUT"
           else
             echo "affected=false" >> "$GITHUB_OUTPUT"
@@ -46,33 +57,102 @@ jobs:
   validate-python:
     needs: changes
     if: github.event_name != 'pull_request' || needs.changes.outputs.affected == 'true'
-    name: Build & Validate Python Project
+    name: Python 3.12 installed-package interoperability consumer
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: interop/python-kmip-validator
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+      - name: Checkout repository and pinned release history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # actions/setup-python v5.0.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
-      - name: Run Unit Tests
-        run: |
-          PYTHONPATH=src python3 -m unittest discover -s tests -p "test_*.py" -v
+      - name: Install pinned wheel build and report dependencies
+        run: python -m pip install --only-binary ':all:' maturin==1.9.4 cffi==2.0.0 jsonschema==4.23.0
 
-      - name: Validate Against Cosmian Profile
-        run: |
-          PYTHONPATH=src python3 -m kmipkit_validator run \
-            --capabilities ../shared/profiles/cosmian-kms.json \
-            --output-dir ./results
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal
 
-      - name: Verify Output Reports Generated
+      - name: Build and install wheel from the exact release commit
+        run: python interop/python-kmip-validator/tools/install_artifact.py
+
+      - name: Verify package installation and wheel provenance
+        run: python interop/python-kmip-validator/tools/verify_artifact.py
+
+      - name: Verify offline preflight with local TLS fixture files
+        working-directory: interop/python-kmip-validator
+        env:
+          PYTHONPATH: src
         run: |
-          test -f results/results.json
-          test -f results/report.md
-          test -f results/report.html
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source = json.loads(Path('../shared/profiles/connection.example.json').read_text())
+          fixture = Path('../../bindings/python/tests/fixtures/login-mtls').resolve()
+          source['api_level'] = 'typed-protocol'
+          source.pop('authentication', None)
+          source['tls']['ca_cert_path'] = str(fixture / 'server-cert.pem')
+          source['tls']['client_cert_path'] = str(fixture / 'client-cert.pem')
+          source['tls']['client_key_path'] = str(fixture / 'client-key.pem')
+          Path('build/connection-preflight.json').write_text(json.dumps(source))
+          PY
+          python -m kmipkit_validator preflight --connection build/connection-preflight.json > build/preflight.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('build/preflight.json').read_text())
+          assert report['ready'] is True
+          assert report['network_attempted'] is False
+          assert report['artifact_verified'] is True
+          PY
+
+      - name: Run Python consumer contract tests
+        working-directory: interop/python-kmip-validator
+        env:
+          PYTHONPATH: src
+        run: python -B -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Verify offline KMIP 2.1 plan
+        working-directory: interop/python-kmip-validator
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m kmipkit_validator plan \
+            --connection ../shared/profiles/connection.example.json \
+            --catalog ../shared/catalog/kmipkit-1.0-test-catalog.json > build/plan-v2.1.json
+
+      - name: Verify offline KMIP 2.0 plan
+        working-directory: interop/python-kmip-validator
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source = json.loads(Path('../shared/profiles/connection.example.json').read_text())
+          source['protocol_version'] = '2.0'
+          Path('build/connection-v2.0.json').write_text(json.dumps(source))
+          PY
+          python -m kmipkit_validator plan \
+            --connection build/connection-v2.0.json \
+            --catalog ../shared/catalog/kmipkit-1.0-test-catalog.json > build/plan-v2.0.json
+
+      - name: Validate offline plans against catalog contract
+        working-directory: interop/python-kmip-validator
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = json.loads(Path('../shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+          for version in ('2.0', '2.1'):
+              plan = json.loads(Path(f'build/plan-v{version}.json').read_text())
+              expected = [case for case in catalog['test_cases'] if version in case['execution']['protocol_versions']]
+              assert plan['network_attempted'] is False
+              assert len(plan['cases']) == len(expected)
+              assert {case['case_id'] for case in plan['cases']} == {case['case_id'] for case in expected}
+          PY

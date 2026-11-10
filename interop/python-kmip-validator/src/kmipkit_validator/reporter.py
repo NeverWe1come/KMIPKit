@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from html import escape
 from pathlib import Path
 from .models import CaseStatus, ValidationSummary
 
@@ -130,3 +131,57 @@ th {{ background: #f1f5f9; font-weight: 600; }}
         cls.render_markdown(summary, output_dir / "report.md")
         cls.render_html(summary, output_dir / "report.html")
         cls.render_json(summary, output_dir / "results.json")
+
+
+def write_interop_reports(report: dict, output_dir: Path) -> None:
+    """Write the shared schema-2.0 evidence in JSON, Markdown and HTML."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "results.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    summary = report["summary"]
+    lines = [
+        "# KMIPKit Python interoperability evidence",
+        "",
+        f"- Server: `{report['server']['id']}` ({report['server']['product']} {report['server']['version']})",
+        f"- Protocol: KMIP {report['protocol_version']}",
+        f"- Library commit: `{report['execution']['library_commit']}`",
+        f"- Artifact SHA-256: `{report['execution']['artifact_sha256']}`",
+        "",
+        "| Outcome | Count |",
+        "|---|---:|",
+    ]
+    for name in ("total", "passed", "failed", "unsupported", "policy_restricted", "not_run"):
+        lines.append(f"| {name.replace('_', ' ').title()} | {summary[name]} |")
+    lines.extend(["", "| Case | Status | KMIPKit | Server | Parity |", "|---|---|---|---|---|"])
+    for case in report["cases"]:
+        lines.append(
+            f"| `{case['case_id']}` | {case['status']} | {case['library_correctness']} | "
+            f"{case['server_compatibility']} | {case['parity']} |"
+        )
+    (output_dir / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    rows = "".join(
+        "<tr>"
+        f"<td><code>{escape(case['case_id'])}</code></td>"
+        f"<td>{escape(case['status'])}</td>"
+        f"<td>{escape(case['library_correctness'])}</td>"
+        f"<td>{escape(case['server_compatibility'])}</td>"
+        f"<td>{escape(case['parity'])}</td>"
+        "</tr>"
+        for case in report["cases"]
+    )
+    table = "".join(
+        f"<tr><th>{escape(name.replace('_', ' ').title())}</th><td>{summary[name]}</td></tr>"
+        for name in ("total", "passed", "failed", "unsupported", "policy_restricted", "not_run")
+    )
+    html = (
+        "<!doctype html><html lang='en'><meta charset='utf-8'><title>KMIPKit interoperability evidence</title>"
+        "<h1>KMIPKit Python interoperability evidence</h1>"
+        f"<p>Server {escape(report['server']['id'])}; KMIP {escape(report['protocol_version'])}; "
+        f"library {escape(report['execution']['library_commit'])}</p>"
+        f"<table><thead><tr><th>Outcome</th><th>Count</th></tr></thead><tbody>{table}</tbody></table>"
+        "<table><thead><tr><th>Case</th><th>Status</th><th>KMIPKit</th><th>Server</th><th>Parity</th></tr></thead>"
+        f"<tbody>{rows}</tbody></table></html>\n"
+    )
+    (output_dir / "report.html").write_text(html, encoding="utf-8")
