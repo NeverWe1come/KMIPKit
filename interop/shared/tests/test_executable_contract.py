@@ -20,6 +20,7 @@ class ExecutableContractTests(unittest.TestCase):
         case_ids = [case["case_id"] for case in catalog["test_cases"]]
         self.assertEqual(len(case_ids), len(set(case_ids)))
         self.assertEqual(5, catalog["statistics"]["server_to_client_operations_covered"])
+        versions_by_operation = {}
         for case in catalog["test_cases"]:
             with self.subTest(case_id=case["case_id"]):
                 self.assertTrue(case["normative_refs"])
@@ -29,6 +30,11 @@ class ExecutableContractTests(unittest.TestCase):
                 self.assertTrue(execution["assertions"])
                 self.assertTrue(execution["protocol_versions"])
                 self.assertTrue(execution["mutation"] in {"read_only", "mutating"})
+                if case["category"] != "version_boundaries":
+                    versions_by_operation.setdefault(case["operation"], execution["protocol_versions"])
+        self.assertEqual(["2.0", "2.1"], versions_by_operation["Export"])
+        self.assertEqual(["2.0", "2.1"], versions_by_operation["Import"])
+        self.assertEqual(2, sum(case["category"] == "version_boundaries" for case in catalog["test_cases"]))
 
     def test_catalog_and_result_schemas_validate_generated_evidence(self) -> None:
         try:
