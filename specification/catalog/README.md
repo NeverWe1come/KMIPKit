@@ -122,3 +122,11 @@ records its edition, section, table, and explicitly assigned entries. Reserved
 numbers and wildcard extension allocations are intentionally absent. This
 supplement does not change the scope or content of the comprehensive KMIP 2.1
 inventory above, and does not claim full KMIP 3.0 protocol support.
+
+[`kmip-versioned-tags.json`](kmip-versioned-tags.json) records all 60 exact
+KMIP 3.0 tag assignments from §11.58, Table 605. The 20 link assignments also
+retain their §4.35 definition references. The `generate_ttlv_tags.py` tool
+verifies the pinned source checksum and merges these explicit assignments into
+the supported-version tag-allocation union. The union allows construction and
+decoding of assigned tags; it does not establish that a tag is valid for the
+effective protocol version or that the feature is otherwise supported.

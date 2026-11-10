@@ -7,6 +7,12 @@ use std::fmt::{self, Debug, Display};
 
 use kmipkit_ttlv::{Item, ModelError, StructureView, Value, ValueView};
 
+pub use crate::typed_attributes::typed;
+pub use crate::typed_attributes::{
+    Attribute, AttributeDefinition, AttributeValueError, AttributeView, UniqueIdentifierValue,
+    UniqueIdentifierView,
+};
+
 use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 
 const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
@@ -144,29 +150,6 @@ pub struct CurrentAttribute {
     item: Item,
 }
 
-impl CurrentAttribute {
-    /// Wraps one direct generic TTLV Item as a Current Attribute.
-    #[must_use]
-    pub fn new(item: Item) -> Self {
-        Self { item }
-    }
-
-    /// Borrows the exact direct attribute Item supplied to [`Self::new`].
-    #[must_use]
-    pub const fn item(&self) -> &Item {
-        &self.item
-    }
-}
-
-impl Debug for CurrentAttribute {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("CurrentAttribute")
-            .field("item", &"[REDACTED]")
-            .finish()
-    }
-}
-
 /// One direct object-attribute Item supplied as a new attribute value.
 ///
 /// OASIS KMIP v2.1 §5.7, Table 163 defines New Attribute as a Structure
@@ -176,28 +159,53 @@ pub struct NewAttribute {
     item: Item,
 }
 
-impl NewAttribute {
-    /// Wraps one direct generic TTLV Item as a New Attribute.
-    #[must_use]
-    pub fn new(item: Item) -> Self {
-        Self { item }
-    }
+macro_rules! impl_attribute_wrapper {
+    ($wrapper:ident) => {
+        impl $wrapper {
+            /// Wraps one direct generic TTLV Item.
+            #[must_use]
+            pub fn new(item: Item) -> Self {
+                Self { item }
+            }
 
-    /// Borrows the exact direct attribute Item supplied to [`Self::new`].
-    #[must_use]
-    pub const fn item(&self) -> &Item {
-        &self.item
-    }
+            /// Wraps one typed attribute in this operation-specific wrapper.
+            #[must_use]
+            pub fn from_typed<D: AttributeDefinition>(attribute: Attribute<D>) -> Self {
+                Self::new(attribute.into_item())
+            }
+
+            /// Reads the wrapped Item through a catalogued typed view.
+            ///
+            /// # Errors
+            ///
+            /// Returns a redacted [`AttributeValueError`] when the generic Item does
+            /// not match the selected attribute marker.
+            pub fn typed<D: AttributeDefinition>(
+                &self,
+            ) -> Result<AttributeView<'_, D>, AttributeValueError> {
+                AttributeView::try_from_item(&self.item)
+            }
+
+            /// Borrows the exact direct attribute Item stored by this wrapper.
+            #[must_use]
+            pub const fn item(&self) -> &Item {
+                &self.item
+            }
+        }
+
+        impl Debug for $wrapper {
+            fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter
+                    .debug_struct(stringify!($wrapper))
+                    .field("item", &"[REDACTED]")
+                    .finish()
+            }
+        }
+    };
 }
 
-impl Debug for NewAttribute {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("NewAttribute")
-            .field("item", &"[REDACTED]")
-            .finish()
-    }
-}
+impl_attribute_wrapper!(CurrentAttribute);
+impl_attribute_wrapper!(NewAttribute);
 
 /// Copies one generic TTLV Item without changing its tag or value.
 ///
@@ -366,6 +374,36 @@ impl AttributeSet {
         }
         self.items.push(item);
         Ok(())
+    }
+
+    /// Appends one catalogued typed attribute, preserving wire order and repeats.
+    ///
+    /// # Errors
+    ///
+    /// Returns a protocol error if normal generic attribute insertion rejects
+    /// the resulting Item.
+    pub fn try_push_typed<D: AttributeDefinition>(
+        &mut self,
+        attribute: Attribute<D>,
+    ) -> Result<(), ProtocolError> {
+        self.try_push(attribute.into_item()).map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })
+    }
+
+    /// Iterates over every instance of one catalogued attribute in wire order.
+    ///
+    /// Repeated items are retained even when an operation later rejects their
+    /// cardinality. `AttributeSet` validates recognized TTLV types on insertion.
+    pub fn typed<D: AttributeDefinition>(&self) -> impl Iterator<Item = AttributeView<'_, D>> {
+        self.items
+            .iter()
+            .filter(|item| item.tag().raw() == D::TAG)
+            .map(AttributeView::from_catalogued_item)
     }
 
     /// Checks source-defined attribute multiplicity when interpreting an

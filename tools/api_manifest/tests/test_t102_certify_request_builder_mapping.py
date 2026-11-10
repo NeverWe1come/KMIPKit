@@ -153,8 +153,9 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-# The non-target snapshot includes subsequent approved T102 manifest slices.
-DECLARATIONS_SHA256 = "3d846a7381813e44c6122e73ea85640944af24d3dec7f1278d0f96153c76010e"
+# The non-target snapshot includes the updated 0047 inventory and 0048 slices.
+# Current approved declaration baseline after 0047/0048 stack synchronization.
+DECLARATIONS_SHA256 = "d578394c398d90255d38bbd976d87bd74bafa043e3dd7ba966b4cc741cf431b5"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 

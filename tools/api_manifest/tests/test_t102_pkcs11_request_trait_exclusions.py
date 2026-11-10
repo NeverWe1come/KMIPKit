@@ -288,7 +288,7 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
     def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
         # KMIPKIT-0047 adds 143 exact versioned value declarations to the
         # checked-in API inventory; keep the aggregate snapshot current.
-        self.assertEqual(T102_PUBLIC_DECLARATIONS, 11_731)
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, 12_017)
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"
