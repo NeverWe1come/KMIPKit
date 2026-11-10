@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 import tempfile
 
-PIN = "9692057c9ade474fb0c4e0b7130539da368eb794"
+PIN = "52a2be180340e5da3166401a52f652dfd368ad37"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/c-live"
 BUNDLE = LOCAL / f"kmipkit-c-1.0.0-{PIN[:12]}.tar.gz"

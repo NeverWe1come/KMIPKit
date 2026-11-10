@@ -15,7 +15,7 @@ if(NOT KMIPKIT_C_INSTALL_DIR)
 endif()
 get_filename_component(KMIPKIT_C_INSTALL_DIR_ABSOLUTE "${KMIPKIT_C_INSTALL_DIR}"
     ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-set(KMIPKIT_LIBRARY_COMMIT "9692057c9ade474fb0c4e0b7130539da368eb794")
+set(KMIPKIT_LIBRARY_COMMIT "52a2be180340e5da3166401a52f652dfd368ad37")
 find_library(KMIPKIT_FFI_LIBRARY
     NAMES kmipkit_ffi
     PATHS "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib"
@@ -104,6 +104,16 @@ if(Python3_Interpreter_FOUND AND OPENSSL_EXECUTABLE)
             "${CMAKE_CURRENT_SOURCE_DIR}/../.."
     )
     set_tests_properties(c_validator_controlled_tls_peer PROPERTIES TIMEOUT 60)
+    add_test(
+        NAME c_validator_controlled_tls_peer_kmip20
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/controlled_kms_test.py"
+            "$<TARGET_FILE:kmip_validator_c>"
+            "${OPENSSL_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+            "2.0"
+    )
+    set_tests_properties(c_validator_controlled_tls_peer_kmip20 PROPERTIES TIMEOUT 60)
     add_test(
         NAME c_validator_offline_generic_route
         COMMAND "${Python3_EXECUTABLE}"

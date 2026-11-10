@@ -26,8 +26,9 @@ def integer(tag: int, value: int, item_type: int = 2) -> bytes:
     return tlv(tag, item_type, struct.pack(">i", value))
 
 
-def response(operation: int) -> bytes:
-    version = tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 1))
+def response(operation: int, protocol_minor: int) -> bytes:
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
         0x42007A,
         1,
@@ -117,6 +118,16 @@ def certificate_files(openssl: str, directory: Path) -> tuple[Path, Path, Path, 
 
 def main() -> int:
     binary, openssl, repository = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
+    protocol_version = sys.argv[4] if len(sys.argv) > 4 else "2.1"
+    if protocol_version not in ("2.0", "2.1"):
+        raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
+    protocol_minor = int(protocol_version.split(".")[1])
+    expected_operations = (24, 30, 59) if protocol_version == "2.0" else (24, 30, 44, 59)
+    expected_cases = (
+        ("test-op-discover-versions", "test-op-query", "test-op-log")
+        if protocol_version == "2.0"
+        else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log")
+    )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
@@ -135,15 +146,16 @@ def main() -> int:
         context.verify_mode = ssl.CERT_REQUIRED
         server_errors: list[BaseException] = []
         handled = 0
+        handled_operations: list[int] = []
 
         def serve() -> None:
             nonlocal handled
             try:
-                while handled < 4:
+                while handled < len(expected_operations):
                     accepted, _ = server.accept()
                     with context.wrap_socket(accepted, server_side=True) as stream:
                         stream.settimeout(10)
-                        while handled < 4:
+                        while handled < len(expected_operations):
                             request = read_message(stream)
                             if request is None:
                                 break
@@ -152,13 +164,19 @@ def main() -> int:
                             if offset < 0:
                                 raise AssertionError("request has no KMIP Operation field")
                             operation = int.from_bytes(request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big")
-                            if operation not in (24, 30, 44, 59):
+                            if operation not in expected_operations:
                                 raise AssertionError("unexpected operation reached controlled peer")
+                            if integer(0x42006A, 2) not in request or \
+                                    integer(0x42006B, protocol_minor) not in request:
+                                raise AssertionError(
+                                    "request header did not preserve the configured KMIP version"
+                                )
                             if tlv(0x420099, 7, b"interop-user") not in request or \
                                     tlv(0x4200A1, 7, b"interop-password") not in request:
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            stream.sendall(response(operation))
+                            stream.sendall(response(operation, protocol_minor))
                             handled += 1
+                            handled_operations.append(operation)
             except BaseException as error:  # surfaced in the main test thread below
                 server_errors.append(error)
             finally:
@@ -172,7 +190,7 @@ def main() -> int:
             "server_product": "KMIPKit controlled TLS test peer",
             "server_version": "fixture-1",
             "server_configuration_fingerprint": hashlib.sha256(b"controlled-c-peer-v1").hexdigest(),
-            "protocol_version": "2.1",
+            "protocol_version": protocol_version,
             "transport": "raw_tls",
             "encoding": "TTLV",
             "api_level": "typed-protocol",
@@ -215,8 +233,11 @@ def main() -> int:
         thread.join(timeout=10)
         if server_errors:
             raise AssertionError("controlled TLS peer failed") from server_errors[0]
-        if handled != 4:
-            raise AssertionError(f"controlled peer observed {handled} request(s), expected four")
+        if handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations):
+            raise AssertionError(
+                f"controlled peer observed operations {handled_operations!r}, "
+                f"expected {expected_operations!r}"
+            )
         result = json.loads(result_path.read_text(encoding="utf-8"))
         try:
             import jsonschema
@@ -225,12 +246,11 @@ def main() -> int:
         if jsonschema is not None:
             schema = json.loads((shared / "schemas/validation-results.schema.json").read_text(encoding="utf-8"))
             jsonschema.validate(result, schema)
-        if result["schema_version"] != "2.0" or result["protocol_version"] != "2.1":
+        if result["schema_version"] != "2.0" or result["protocol_version"] != protocol_version:
             raise AssertionError("C result metadata does not match the shared evidence schema")
         if result["server"]["id"] != "controlled-c-peer":
             raise AssertionError("C result identifies the wrong test server")
         statuses = {case["case_id"]: case["status"] for case in result["cases"]}
-        expected_cases = ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log")
         if any(statuses.get(case_id) != "passed" for case_id in expected_cases):
             details = {case["case_id"]: case.get("diagnostic", "") for case in result["cases"]
                        if case["case_id"] in expected_cases}
@@ -253,7 +273,7 @@ def main() -> int:
             "policy_restricted": 132,
             "not_run": 9,
         }
-        if result["summary"] != expected_summary:
+        if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
                 f"controlled run must execute only the mapped recipes and classify all other cases: "
                 f"{result['summary']!r}"
