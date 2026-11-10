@@ -20,7 +20,7 @@ vendor interoperability.
   by generated cases. Pinned source:
   `specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html`.
 - OASIS KMIP Specification Version 2.1, OS (2022-12-15), especially §6.1,
-  §6.2, §11.36 Operation Enumeration, §§11.63–11.64 Validation enumerations,
+  §6.2, §11.36 Operation Enumeration, §§11.61–11.62 Validation enumerations,
   and the version-specific sections cited by generated cases. Pinned source:
   `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html`.
 - KMIPKIT-0083, ADR-0021 and ADR-0022; `AGENTS.md` §§5–6, 8 and 10.
@@ -54,8 +54,8 @@ enumeration value: Get Constraints, Ping, Process, Query Asynchronous Requests,
 Set Constraints, and Set Defaults. KMIP 2.0 has 50 in-scope client operation
 headings; the other 50 are shared with KMIP 2.1. Vendor Attribute is defined
 in KMIP 2.0 §4.53 and KMIP 2.1 §4.60. Validation Authority Type and Validation
-Type are defined in KMIP 2.1 §§11.63–11.64 and have no KMIP 2.0 enumeration
-sections. These are source-audit inputs; the generator's output and tests are
+Type are also defined in KMIP 2.0 §§11.61–11.62 and in KMIP 2.1 §§11.63–11.64.
+These are source-audit inputs; the generator's output and tests are
 the authoritative implementation evidence.
 
 ## 5. Acceptance

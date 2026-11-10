@@ -53,9 +53,9 @@
 
 ### Task 1: executable source inventory and schema expectations
 
-1. Add failing tests for the six 2.1-only operations, versioned refs, the
-   Vendor Attribute section remap, two 2.1-only Validation enumerations, and
-   the negative Encrypt result-reason set.
+1. Add failing tests for the six 2.1-only operations, every operation row's
+   versioned references, Vendor Attribute and validation enumeration section
+   remaps, negative reason allowlists, and aggregator evidence boundaries.
 2. Run the focused tests and confirm the current generated catalog fails those
    assertions.
 3. Add schema fields for `requires.expected_result_reasons` and

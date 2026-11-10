@@ -34,6 +34,10 @@ Copy `shared/profiles/connection.example.json` and set the protocol version,
 endpoint, transport, encoding, and API level. TLS certificate and key paths
 must point to files readable by the test process. KMIP username and password
 are read from the named environment variables, never from the JSON file.
+Set `server_configuration_fingerprint` to a stable 64-character lowercase
+SHA-256 identifier for the deployed server configuration. Reuse it across
+client protocol, transport, encoding, API, and language variants; change it
+when the server software version or server-side configuration changes.
 Keep `environment.kind` set to `dedicated_test` and retain its explicit
 confirmation. Mutating cases remain disabled until
 `execution_policy.allow_mutations` is set to `true`; the validators must reject
@@ -42,11 +46,13 @@ production key manager.
 
 Build artifacts from one exact `release/1.0.0` commit and install each
 language's artifact into an isolated consumer environment. Keep the commit and
-artifact SHA-256 with every result. Compare language results only when server,
-protocol version, configuration fingerprint, catalog, and library artifact
-match. Compare normalized KMIP semantics across API levels, transports, and
-encodings; byte equality applies only to deterministic requests using the same
-encoding.
+artifact SHA-256 with every result. The matrix groups evidence by server
+configuration and KMIP version. It requires matching server identity/version,
+configuration fingerprint, catalog hash, and KMIPKit source commit for
+comparability; package artifact hashes may differ by language. Every run stays
+visible with its transport, encoding, API level, and language. Compare
+normalized KMIP semantics across those routes; byte equality applies only to
+deterministic requests using the same encoding.
 
 Server results remain evidence for the exact product version, server
 configuration, protocol version, transport, encoding, and executed case. A

@@ -18,7 +18,7 @@
     "attributes_covered": 63,
     "enumerations_covered": 64,
     "bitmasks_covered": 3,
-    "total_cases": 207
+    "total_cases": 218
   },
   "test_cases": [
     {
@@ -41,6 +41,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.12"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.12"
@@ -84,6 +88,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.16"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.16"
         }
@@ -125,6 +133,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.25"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.26"
@@ -168,6 +180,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.28"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.29"
         }
@@ -210,6 +226,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.29"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.30"
         }
@@ -251,6 +271,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.30"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.31"
@@ -301,7 +325,6 @@
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -335,6 +358,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.37"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.40"
@@ -388,8 +415,130 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.1"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-add-attribute",
+      "category": "object_lifecycle",
+      "operation": "Add Attribute",
+      "oasis_section": "6.1.2",
+      "description": "Execute Add Attribute operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Add Attribute",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-add-attribute",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Add Attribute",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.2"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-adjust-attribute",
+      "category": "object_lifecycle",
+      "operation": "Adjust Attribute",
+      "oasis_section": "6.1.3",
+      "description": "Execute Adjust Attribute operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Adjust Attribute",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-adjust-attribute",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Adjust Attribute",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.3"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.3"
         }
       ],
       "execution": {
@@ -442,6 +591,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.4"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.4"
@@ -498,6 +651,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.5"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.5"
         }
@@ -552,6 +709,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.6"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.6"
@@ -608,6 +769,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.7"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.7"
         }
@@ -659,6 +824,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.8"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.8"
@@ -712,6 +881,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.9"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.9"
         }
@@ -764,8 +937,71 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.10"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.10"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-delete-attribute",
+      "category": "object_lifecycle",
+      "operation": "Delete Attribute",
+      "oasis_section": "6.1.13",
+      "description": "Execute Delete Attribute operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Delete Attribute",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-delete-attribute",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Delete Attribute",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.13"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.13"
         }
       ],
       "execution": {
@@ -818,6 +1054,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.14"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.14"
@@ -874,6 +1114,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.15"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.15"
         }
@@ -928,6 +1172,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.18"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.18"
@@ -984,8 +1232,130 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.19"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.19"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-get-attribute-list",
+      "category": "object_lifecycle",
+      "operation": "Get Attribute List",
+      "oasis_section": "6.1.21",
+      "description": "Execute Get Attribute List operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Get Attribute List",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-get-attribute-list",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Get Attribute List",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.21"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.21"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-get-attributes",
+      "category": "object_lifecycle",
+      "operation": "Get Attributes",
+      "oasis_section": "6.1.20",
+      "description": "Execute Get Attributes operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Get Attributes",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-get-attributes",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Get Attributes",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.20"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.20"
         }
       ],
       "execution": {
@@ -1093,6 +1463,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.22"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.23"
         }
@@ -1144,6 +1518,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.24"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.25"
@@ -1200,6 +1578,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.26"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.27"
         }
@@ -1250,8 +1632,71 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.27"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.28"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-modify-attribute",
+      "category": "object_lifecycle",
+      "operation": "Modify Attribute",
+      "oasis_section": "6.1.34",
+      "description": "Execute Modify Attribute operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Modify Attribute",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-modify-attribute",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Modify Attribute",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.33"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.34"
         }
       ],
       "execution": {
@@ -1304,6 +1749,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.34"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.35"
@@ -1360,6 +1809,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.35"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.37"
         }
@@ -1414,6 +1867,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.36"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.38"
@@ -1477,7 +1934,6 @@
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -1532,7 +1988,6 @@
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -1579,6 +2034,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.44"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.48"
@@ -1635,6 +2094,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.41"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.45"
         }
@@ -1689,6 +2152,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.42"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.46"
@@ -1745,6 +2212,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.43"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.47"
         }
@@ -1800,6 +2271,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.38"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.42"
         }
@@ -1851,6 +2326,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.39"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.43"
@@ -1907,8 +2386,71 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.40"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.44"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-op-set-attribute",
+      "category": "object_lifecycle",
+      "operation": "Set Attribute",
+      "oasis_section": "6.1.51",
+      "description": "Execute Set Attribute operation ensuring state isolation and equivalence across API levels.",
+      "requires": {
+        "operation": "Set Attribute",
+        "requires_async": false
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-set-attribute",
+        "setup_steps": [
+          "Create unique SymmetricKey"
+        ],
+        "target_step": "Execute Set Attribute",
+        "teardown_steps": [
+          "Revoke SymmetricKey",
+          "Destroy SymmetricKey"
+        ],
+        "normalized_fields": [
+          "TimeStamp",
+          "UniqueIdentifier",
+          "InitialDate",
+          "ActivationDate",
+          "LastChangeDate",
+          "DestroyDate"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.47"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.51"
         }
       ],
       "execution": {
@@ -2023,7 +2565,6 @@
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -2070,6 +2611,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.51"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.57"
@@ -2123,6 +2668,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.2.1"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.2.1"
         }
@@ -2171,6 +2720,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.2.2"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.2.2"
@@ -2221,6 +2774,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.2.3"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.2.3"
         }
@@ -2269,6 +2826,10 @@
         ]
       },
       "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.2.4"
+        },
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.2.4"
@@ -2319,6 +2880,10 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.2.5"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.2.5"
         }
@@ -2363,8 +2928,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2410,8 +2979,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2457,8 +3030,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2504,8 +3081,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2551,8 +3132,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2598,8 +3183,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2645,8 +3234,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2692,8 +3285,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2739,8 +3336,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "2"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -2788,8 +3389,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.1"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.1"
         }
       ],
       "execution": {
@@ -2837,8 +3442,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.2"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.2"
         }
       ],
       "execution": {
@@ -2886,8 +3495,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.3"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.3"
         }
       ],
       "execution": {
@@ -2935,8 +3548,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.4"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.4"
         }
       ],
       "execution": {
@@ -2984,8 +3601,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.5"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.5"
         }
       ],
       "execution": {
@@ -3033,8 +3654,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.6"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.6"
         }
       ],
       "execution": {
@@ -3082,8 +3707,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.8"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.8"
         }
       ],
       "execution": {
@@ -3131,8 +3760,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.7"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.7"
         }
       ],
       "execution": {
@@ -3180,8 +3813,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.9"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.9"
         }
       ],
       "execution": {
@@ -3229,8 +3866,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.10"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.10"
         }
       ],
       "execution": {
@@ -3278,8 +3919,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.11"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.11"
         }
       ],
       "execution": {
@@ -3327,8 +3972,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.12"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.12"
         }
       ],
       "execution": {
@@ -3376,8 +4025,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.13"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.13"
         }
       ],
       "execution": {
@@ -3425,8 +4078,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.14"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.14"
         }
       ],
       "execution": {
@@ -3474,8 +4131,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.15"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.15"
         }
       ],
       "execution": {
@@ -3523,8 +4184,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.16"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.16"
         }
       ],
       "execution": {
@@ -3572,8 +4237,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.17"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.17"
         }
       ],
       "execution": {
@@ -3621,8 +4290,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.18"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.18"
         }
       ],
       "execution": {
@@ -3670,8 +4343,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.19"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.19"
         }
       ],
       "execution": {
@@ -3719,8 +4396,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.20"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.20"
         }
       ],
       "execution": {
@@ -3768,8 +4449,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.21"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.21"
         }
       ],
       "execution": {
@@ -3817,8 +4502,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.22"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.22"
         }
       ],
       "execution": {
@@ -3866,8 +4555,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.23"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.23"
         }
       ],
       "execution": {
@@ -3915,8 +4608,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.24"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.24"
         }
       ],
       "execution": {
@@ -3964,8 +4661,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.25"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.25"
         }
       ],
       "execution": {
@@ -4013,8 +4714,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.26"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.26"
         }
       ],
       "execution": {
@@ -4062,8 +4767,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.27"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.27"
         }
       ],
       "execution": {
@@ -4111,8 +4820,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.28"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.28"
         }
       ],
       "execution": {
@@ -4160,8 +4873,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.29"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.29"
         }
       ],
       "execution": {
@@ -4209,8 +4926,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.30"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.30"
         }
       ],
       "execution": {
@@ -4258,8 +4979,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.31"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.31"
         }
       ],
       "execution": {
@@ -4307,8 +5032,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.34"
         }
       ],
       "execution": {
@@ -4356,8 +5085,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.32"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.32"
         }
       ],
       "execution": {
@@ -4405,8 +5138,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.33"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.33"
         }
       ],
       "execution": {
@@ -4454,8 +5191,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.35"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.35"
         }
       ],
       "execution": {
@@ -4503,8 +5244,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.36"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.36"
         }
       ],
       "execution": {
@@ -4552,8 +5297,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.37"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.37"
         }
       ],
       "execution": {
@@ -4601,8 +5350,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.38"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.38"
         }
       ],
       "execution": {
@@ -4650,8 +5403,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.39"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.39"
         }
       ],
       "execution": {
@@ -4699,8 +5456,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.40"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.40"
         }
       ],
       "execution": {
@@ -4748,8 +5509,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.41"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.41"
         }
       ],
       "execution": {
@@ -4797,8 +5562,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.42"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.42"
         }
       ],
       "execution": {
@@ -4846,8 +5615,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.43"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.43"
         }
       ],
       "execution": {
@@ -4895,8 +5668,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.44"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.44"
         }
       ],
       "execution": {
@@ -4944,8 +5721,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.45"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.45"
         }
       ],
       "execution": {
@@ -4993,8 +5774,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.46"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.46"
         }
       ],
       "execution": {
@@ -5042,8 +5827,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.47"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.47"
         }
       ],
       "execution": {
@@ -5092,13 +5881,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.48"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5141,13 +5929,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.49"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5190,13 +5977,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.50"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5239,13 +6025,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.51"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5288,13 +6073,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.52"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5337,13 +6121,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.53"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5386,13 +6169,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.54"
         }
       ],
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -5434,8 +6216,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.48"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.55"
         }
       ],
       "execution": {
@@ -5483,8 +6269,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.49"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.56"
         }
       ],
       "execution": {
@@ -5532,8 +6322,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.50"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.57"
         }
       ],
       "execution": {
@@ -5581,8 +6375,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.51"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.58"
         }
       ],
       "execution": {
@@ -5630,8 +6428,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.52"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.59"
         }
       ],
       "execution": {
@@ -5679,8 +6481,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.53"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.60"
         }
       ],
       "execution": {
@@ -5728,8 +6534,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.54"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.61"
         }
       ],
       "execution": {
@@ -5777,8 +6587,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.55"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.62"
         }
       ],
       "execution": {
@@ -5826,8 +6640,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.56"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "4"
+          "section": "4.63"
         }
       ],
       "execution": {
@@ -5878,8 +6696,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.17"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.17"
         }
       ],
       "execution": {
@@ -5930,8 +6752,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.11"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.11"
         }
       ],
       "execution": {
@@ -5982,8 +6808,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.49"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.55"
         }
       ],
       "execution": {
@@ -6034,8 +6864,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.50"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.56"
         }
       ],
       "execution": {
@@ -6086,8 +6920,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.49"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.55"
         }
       ],
       "execution": {
@@ -6138,8 +6976,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.50"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.56"
         }
       ],
       "execution": {
@@ -6190,8 +7032,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.31"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.32"
         }
       ],
       "execution": {
@@ -6242,8 +7088,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.32"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.33"
         }
       ],
       "execution": {
@@ -6290,8 +7140,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.23"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.24"
         }
       ],
       "execution": {
@@ -6338,8 +7192,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.45"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.49"
         }
       ],
       "execution": {
@@ -6386,8 +7244,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.46"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.50"
         }
       ],
       "execution": {
@@ -6431,8 +7293,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.1"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.1"
         }
       ],
       "execution": {
@@ -6475,8 +7341,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.2"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.2"
         }
       ],
       "execution": {
@@ -6519,8 +7389,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.3"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.3"
         }
       ],
       "execution": {
@@ -6563,8 +7437,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.4"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.4"
         }
       ],
       "execution": {
@@ -6607,8 +7485,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.5"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.5"
         }
       ],
       "execution": {
@@ -6651,8 +7533,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.6"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.6"
         }
       ],
       "execution": {
@@ -6695,8 +7581,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.7"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.7"
         }
       ],
       "execution": {
@@ -6739,8 +7629,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.8"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.8"
         }
       ],
       "execution": {
@@ -6783,8 +7677,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.9"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.9"
         }
       ],
       "execution": {
@@ -6827,8 +7725,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.10"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.10"
         }
       ],
       "execution": {
@@ -6871,8 +7773,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.11"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.11"
         }
       ],
       "execution": {
@@ -6915,8 +7821,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.12"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.12"
         }
       ],
       "execution": {
@@ -6959,8 +7869,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.17"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.17"
         }
       ],
       "execution": {
@@ -7003,8 +7917,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.13"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.13"
         }
       ],
       "execution": {
@@ -7047,8 +7965,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.14"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.14"
         }
       ],
       "execution": {
@@ -7091,8 +8013,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.15"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.15"
         }
       ],
       "execution": {
@@ -7135,8 +8061,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.16"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.16"
         }
       ],
       "execution": {
@@ -7179,8 +8109,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.18"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.18"
         }
       ],
       "execution": {
@@ -7223,8 +8157,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.19"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.19"
         }
       ],
       "execution": {
@@ -7267,8 +8205,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.20"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.20"
         }
       ],
       "execution": {
@@ -7311,8 +8253,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.21"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.21"
         }
       ],
       "execution": {
@@ -7355,8 +8301,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.22"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.22"
         }
       ],
       "execution": {
@@ -7399,8 +8349,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.23"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.23"
         }
       ],
       "execution": {
@@ -7443,8 +8397,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.24"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.24"
         }
       ],
       "execution": {
@@ -7487,8 +8445,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.25"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.25"
         }
       ],
       "execution": {
@@ -7531,8 +8493,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.26"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.26"
         }
       ],
       "execution": {
@@ -7575,8 +8541,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.27"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.27"
         }
       ],
       "execution": {
@@ -7619,8 +8589,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.29"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.29"
         }
       ],
       "execution": {
@@ -7663,8 +8637,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.28"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.28"
         }
       ],
       "execution": {
@@ -7707,8 +8685,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.30"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.30"
         }
       ],
       "execution": {
@@ -7751,8 +8733,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.32"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.32"
         }
       ],
       "execution": {
@@ -7795,8 +8781,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.31"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.31"
         }
       ],
       "execution": {
@@ -7839,8 +8829,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.33"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.33"
         }
       ],
       "execution": {
@@ -7883,8 +8877,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.34"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.34"
         }
       ],
       "execution": {
@@ -7927,8 +8925,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.35"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.35"
         }
       ],
       "execution": {
@@ -7971,8 +8973,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.36"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.36"
         }
       ],
       "execution": {
@@ -8015,8 +9021,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.38"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.38"
         }
       ],
       "execution": {
@@ -8059,8 +9069,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.39"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.39"
         }
       ],
       "execution": {
@@ -8103,8 +9117,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.37"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.37"
         }
       ],
       "execution": {
@@ -8148,13 +9166,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.40"
         }
       ],
       "execution": {
         "mode": "local_model",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -8191,8 +9208,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.40"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.41"
         }
       ],
       "execution": {
@@ -8235,8 +9256,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.41"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.42"
         }
       ],
       "execution": {
@@ -8279,8 +9304,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.42"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.43"
         }
       ],
       "execution": {
@@ -8323,8 +9352,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.43"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.44"
         }
       ],
       "execution": {
@@ -8367,8 +9400,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.48"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.49"
         }
       ],
       "execution": {
@@ -8411,8 +9448,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.49"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.50"
         }
       ],
       "execution": {
@@ -8455,8 +9496,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.44"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.45"
         }
       ],
       "execution": {
@@ -8499,8 +9544,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.45"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.46"
         }
       ],
       "execution": {
@@ -8543,8 +9592,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.46"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.47"
         }
       ],
       "execution": {
@@ -8587,8 +9640,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.47"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.48"
         }
       ],
       "execution": {
@@ -8632,13 +9689,12 @@
       "normative_refs": [
         {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.51"
         }
       ],
       "execution": {
         "mode": "local_model",
         "protocol_versions": [
-          "2.0",
           "2.1"
         ],
         "steps": [
@@ -8675,8 +9731,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.50"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.52"
         }
       ],
       "execution": {
@@ -8719,8 +9779,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.51"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.53"
         }
       ],
       "execution": {
@@ -8763,8 +9827,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.52"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.54"
         }
       ],
       "execution": {
@@ -8807,8 +9875,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.53"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.55"
         }
       ],
       "execution": {
@@ -8851,8 +9923,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.54"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.56"
         }
       ],
       "execution": {
@@ -8895,8 +9971,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.55"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.57"
         }
       ],
       "execution": {
@@ -8939,8 +10019,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.56"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.58"
         }
       ],
       "execution": {
@@ -8983,8 +10067,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.57"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.59"
         }
       ],
       "execution": {
@@ -9027,8 +10115,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.58"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.60"
         }
       ],
       "execution": {
@@ -9071,8 +10163,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.61"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.63"
         }
       ],
       "execution": {
@@ -9115,8 +10211,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.62"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.64"
         }
       ],
       "execution": {
@@ -9159,8 +10259,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.59"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.61"
         }
       ],
       "execution": {
@@ -9203,8 +10307,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "11.60"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "11.62"
         }
       ],
       "execution": {
@@ -9247,8 +10355,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.1"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "12.1"
         }
       ],
       "execution": {
@@ -9291,8 +10403,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.2"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "12.2"
         }
       ],
       "execution": {
@@ -9335,8 +10451,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "12.3"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "9.1"
+          "section": "12.3"
         }
       ],
       "execution": {
@@ -9385,8 +10505,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.8"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "5.1"
+          "section": "6.1.8"
         }
       ],
       "execution": {
@@ -9436,8 +10560,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.8"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "5.1"
+          "section": "6.1.8"
         }
       ],
       "execution": {
@@ -9490,8 +10618,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.17"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.17"
         }
       ],
       "execution": {
@@ -9544,8 +10676,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.11"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.11"
         }
       ],
       "execution": {
@@ -9598,8 +10734,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.49"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.55"
         }
       ],
       "execution": {
@@ -9648,8 +10788,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.23"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1"
+          "section": "6.1.24"
         }
       ],
       "execution": {
@@ -9698,8 +10842,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.8"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1.18"
+          "section": "6.1.8"
         }
       ],
       "execution": {
@@ -9730,7 +10878,11 @@
       "description": "Verify server rejects Encrypt on Pre-Active SymmetricKey with CryptographicFailure or InvalidField.",
       "requires": {
         "operation": "Encrypt",
-        "expected_status": "OperationFailed"
+        "expected_status": "OperationFailed",
+        "expected_result_reasons": [
+          7,
+          10
+        ]
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-neg-test-neg-encrypt-preactive-key",
@@ -9748,8 +10900,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.17"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "3"
+          "section": "6.1.17"
         }
       ],
       "execution": {
@@ -9797,8 +10953,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.33"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "3"
+          "section": "6.1.34"
         }
       ],
       "execution": {
@@ -9828,7 +10988,10 @@
       "description": "Verify server enforces KMIP §3 lifecycle rules when attempting Destroy on Active object without prior Revocation.",
       "requires": {
         "operation": "Destroy",
-        "expected_status": "OperationFailed"
+        "expected_status": "OperationFailed",
+        "expected_result_reasons": [
+          67
+        ]
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-neg-test-neg-destroy-active-without-revoke",
@@ -9846,8 +11009,12 @@
       },
       "normative_refs": [
         {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.15"
+        },
+        {
           "document": "OASIS KMIP 2.1 Specification",
-          "section": "3"
+          "section": "6.1.15"
         }
       ],
       "execution": {
@@ -9895,7 +11062,142 @@
         },
         {
           "document": "OASIS KMIP 2.0 Specification",
-          "section": "6"
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-v20-reject-ping",
+      "category": "version_boundaries",
+      "operation": "Ping",
+      "oasis_section": "6.1.36",
+      "description": "Reject KMIP 2.1-only Ping before sending under KMIP 2.0.",
+      "requires": {
+        "operation": "Ping",
+        "expected_status": "NotSent"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-v20-ping",
+        "setup_steps": [],
+        "target_step": "Attempt Ping under KMIP 2.0",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "RequestDeliveryState"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.36"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-v20-reject-process",
+      "category": "version_boundaries",
+      "operation": "Process",
+      "oasis_section": "6.1.39",
+      "description": "Reject KMIP 2.1-only Process before sending under KMIP 2.0.",
+      "requires": {
+        "operation": "Process",
+        "expected_status": "NotSent"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-v20-process",
+        "setup_steps": [],
+        "target_step": "Attempt Process under KMIP 2.0",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "RequestDeliveryState"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.39"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-v20-reject-query-asynchronous-requests",
+      "category": "version_boundaries",
+      "operation": "Query Asynchronous Requests",
+      "oasis_section": "6.1.41",
+      "description": "Reject KMIP 2.1-only Query Asynchronous Requests before sending under KMIP 2.0.",
+      "requires": {
+        "operation": "Query Asynchronous Requests",
+        "expected_status": "NotSent"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-v20-query-asynchronous-requests",
+        "setup_steps": [],
+        "target_step": "Attempt Query Asynchronous Requests under KMIP 2.0",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "RequestDeliveryState"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.41"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1"
         }
       ],
       "execution": {
@@ -9940,7 +11242,52 @@
         },
         {
           "document": "OASIS KMIP 2.0 Specification",
-          "section": "6"
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-v20-reject-set-defaults",
+      "category": "version_boundaries",
+      "operation": "Set Defaults",
+      "oasis_section": "6.1.53",
+      "description": "Reject KMIP 2.1-only Set Defaults before sending under KMIP 2.0.",
+      "requires": {
+        "operation": "Set Defaults",
+        "expected_status": "NotSent"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-v20-set-defaults",
+        "setup_steps": [],
+        "target_step": "Attempt Set Defaults under KMIP 2.0",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "RequestDeliveryState"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.53"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1"
         }
       ],
       "execution": {
