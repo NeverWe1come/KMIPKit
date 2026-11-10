@@ -61,7 +61,9 @@ List/Destroy and Create/Get Constraints/Revoke/Destroy lifecycles under KMIP
 recipes except Get Constraints, which is available starting in KMIP 2.1. The
 2.0 catalog case verifies that KMIPKit rejects Get Constraints before sending
 it; because no KMIP response exists, server compatibility is reported as
-unknown. Activate
+unknown. The attribute catalog also sends a Get Attributes request selecting
+`Cryptographic Algorithm` by its KMIP tag and checks the returned AES value in
+both protocol versions. Activate
 moves the isolated key out of Pre-Active before revocation; Check verifies the
 returned object identifier, then revokes the isolated object before Destroy.
 Revoke verifies its returned identifier before Destroy. Destroy verifies its

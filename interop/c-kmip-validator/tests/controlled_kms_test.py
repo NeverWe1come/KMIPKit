@@ -30,7 +30,8 @@ def enumeration(tag: int, value: int) -> bytes:
     return tlv(tag, 5, struct.pack(">I", value))
 
 
-def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
+def response(operations: tuple[int, ...], protocol_minor: int,
+             selected_cryptographic_algorithm: bool = False) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -86,7 +87,9 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
         elif operation == 1:
             payload_value = enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
-            attributes = enumeration(0x420028, 3) + integer(0x42002A, 128)
+            attributes = enumeration(0x420028, 3)
+            if not selected_cryptographic_algorithm:
+                attributes += integer(0x42002A, 128)
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(0x420125, 1, attributes)
         elif operation == 12:
             payload_value = (
@@ -311,6 +314,12 @@ def main() -> int:
                                     enumeration(0x420028, 3) not in request
                                     or integer(0x42002A, 128) not in request):
                                 raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
+                            selected_attribute = enumeration(0x42013B, 0x420028) in request
+                            if operations == (1, 11, 20) and any(
+                                    prior == (1, 11, 20) for prior in handled_batches) and not selected_attribute:
+                                raise AssertionError(
+                                    "attribute-specific Get Attributes omitted the Cryptographic Algorithm reference"
+                                )
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
@@ -331,7 +340,7 @@ def main() -> int:
                             if tlv(0x420099, 7, b"interop-user") not in request or \
                                     tlv(0x4200A1, 7, b"interop-password") not in request:
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            stream.sendall(response(operations, protocol_minor))
+                            stream.sendall(response(operations, protocol_minor, selected_attribute))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
