@@ -246,7 +246,7 @@ class VersionedContractTests(unittest.TestCase):
                 self.assertEqual(["2.0"], case["execution"]["protocol_versions"])
                 self.assertIn({"document": "OASIS KMIP 2.0 Specification", "section": "6.1"}, case["normative_refs"])
 
-    def test_connection_contract_requires_stable_server_configuration_fingerprint(self) -> None:
+    def test_connection_contract_requires_server_identity_and_stable_configuration_fingerprint(self) -> None:
         try:
             import jsonschema
         except ImportError:
@@ -254,13 +254,18 @@ class VersionedContractTests(unittest.TestCase):
         schema = json.loads((ROOT / "interop/shared/schemas/server-connection.schema.json").read_text(encoding="utf-8"))
         config = json.loads((ROOT / "interop/shared/profiles/connection.example.json").read_text(encoding="utf-8"))
         jsonschema.validate(config, schema)
-        for value in (None, "not-a-fingerprint"):
+        for field, value in (
+            ("server_configuration_fingerprint", None),
+            ("server_configuration_fingerprint", "not-a-fingerprint"),
+            ("server_product", None),
+            ("server_version", None),
+        ):
             invalid = json.loads(json.dumps(config))
             if value is None:
-                invalid.pop("server_configuration_fingerprint")
+                invalid.pop(field)
             else:
-                invalid["server_configuration_fingerprint"] = value
-            with self.subTest(value=value), self.assertRaises(jsonschema.ValidationError):
+                invalid[field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(jsonschema.ValidationError):
                 jsonschema.validate(invalid, schema)
 
     def test_workflow_runs_the_contract_checks_for_this_feature_branch(self) -> None:

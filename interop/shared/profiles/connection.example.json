@@ -1,5 +1,8 @@
 {
   "server_id": "example-kms",
+  "server_vendor": "",
+  "server_product": "Example KMIP test server",
+  "server_version": "not deployed",
   "server_configuration_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "server_product": "Unspecified KMIP server",
   "server_version": "not-recorded",

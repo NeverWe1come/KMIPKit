@@ -29,6 +29,7 @@ como indisponibilidad de ruta pública y no como incompatibilidad del servidor.
 | KMIPKIT-0085-FR-005 | Los resultados cumplirán el esquema compartido 2.0, separarán corrección de biblioteca, compatibilidad observada, política y no ejecutados y no contendrán secretos, cuerpos KMIP ni texto remoto. |
 | KMIPKIT-0085-FR-006 | Pruebas locales verificarán construcción tipada, TTLV genérico, batch ordenado, decodificación de respuestas y árboles normalizados efímeros; bytes exactos se exigirán solo para entradas deterministas con la misma codificación. |
 | KMIPKIT-0085-FR-007 | CI compilará el consumidor externo con C11, instalará la biblioteca C desde el commit pinneado y ejecutará la suite contra TLS/respuestas controladas. No afirmará compatibilidad con un fabricante. |
+| KMIPKIT-0085-FR-008 | La autenticación Username/Password opcional leerá nombres de variables de entorno, construirá credenciales con la API de secretos zeroizing y rechazará credenciales ausentes antes de abrir una conexión; ningún informe ni diagnóstico expondrá sus valores. |
 
 ## Seguridad y límites
 

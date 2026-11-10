@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+"""Exercise the installed C client against a local KMIP TTLV/TLS peer."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+from pathlib import Path
+import socket
+import ssl
+import struct
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+
+
+def tlv(tag: int, item_type: int, value: bytes) -> bytes:
+    header = tag.to_bytes(3, "big") + bytes([item_type]) + len(value).to_bytes(4, "big")
+    return header + value + bytes((-len(value)) % 8)
+
+
+def integer(tag: int, value: int, item_type: int = 2) -> bytes:
+    return tlv(tag, item_type, struct.pack(">i", value))
+
+
+def response(operation: int) -> bytes:
+    version = tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 1))
+    header = tlv(
+        0x42007A,
+        1,
+        version + tlv(0x420092, 9, struct.pack(">q", int(time.time()))) + integer(0x42000D, 1),
+    )
+    payload_value = b""
+    if operation == 30:
+        payload_value = tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 1))
+    elif operation == 24:
+        payload_value = (
+            integer(0x42005C, 59, 5)
+            + tlv(0x42015F, 1, b"")
+        )
+    batch_item = tlv(
+        0x42000F,
+        1,
+        integer(0x42005C, operation, 5)
+        + integer(0x42007F, 0, 5)
+        + tlv(0x42007C, 1, payload_value),
+    )
+    return tlv(0x42007B, 1, header + batch_item)
+
+
+def read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
+    chunks = bytearray()
+    while len(chunks) < length:
+        part = stream.recv(length - len(chunks))
+        if not part:
+            raise EOFError("peer closed before the complete TTLV message arrived")
+        chunks.extend(part)
+    return bytes(chunks)
+
+
+def read_message(stream: ssl.SSLSocket) -> bytes | None:
+    try:
+        header = read_exact(stream, 8)
+    except EOFError:
+        return None
+    body_length = int.from_bytes(header[4:8], "big")
+    body = read_exact(stream, ((body_length + 7) // 8) * 8)
+    return header + body
+
+
+def certificate_files(openssl: str, directory: Path) -> tuple[Path, Path, Path, Path, Path]:
+    ca_key = directory / "ca-key.pem"
+    ca_cert = directory / "ca-cert.pem"
+    subprocess.run(
+        [openssl, "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-sha256", "-days", "2",
+         "-subj", "/CN=KMIPKit interop test CA", "-keyout", str(ca_key), "-out", str(ca_cert)],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    server_ext = directory / "server-ext.cnf"
+    client_ext = directory / "client-ext.cnf"
+    server_ext.write_text(
+        "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n"
+        "extendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n",
+        encoding="ascii",
+    )
+    client_ext.write_text(
+        "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n"
+        "extendedKeyUsage=clientAuth\n",
+        encoding="ascii",
+    )
+    for name, ext in (("server", server_ext), ("client", client_ext)):
+        key = directory / f"{name}-key.pem"
+        csr = directory / f"{name}.csr"
+        cert = directory / f"{name}-cert.pem"
+        subprocess.run(
+            [openssl, "req", "-new", "-newkey", "rsa:2048", "-nodes", "-sha256",
+             "-subj", f"/CN=KMIPKit {name}", "-keyout", str(key), "-out", str(csr)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            [openssl, "x509", "-req", "-in", str(csr), "-CA", str(ca_cert), "-CAkey", str(ca_key),
+             "-CAcreateserial", "-out", str(cert), "-days", "2", "-sha256", "-extfile", str(ext)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    return (ca_cert, directory / "server-cert.pem", directory / "server-key.pem",
+            directory / "client-cert.pem", directory / "client-key.pem")
+
+
+def main() -> int:
+    binary, openssl, repository = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
+    shared = repository / "interop/shared"
+    catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
+    with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
+        directory = Path(raw_directory)
+        ca_cert, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind(("127.0.0.1", 0))
+        server.listen(4)
+        server.settimeout(10)
+        port = server.getsockname()[1]
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.load_cert_chain(str(server_cert), str(server_key))
+        context.load_verify_locations(str(ca_cert))
+        context.verify_mode = ssl.CERT_REQUIRED
+        server_errors: list[BaseException] = []
+        handled = 0
+
+        def serve() -> None:
+            nonlocal handled
+            try:
+                while handled < 4:
+                    accepted, _ = server.accept()
+                    with context.wrap_socket(accepted, server_side=True) as stream:
+                        stream.settimeout(10)
+                        while handled < 4:
+                            request = read_message(stream)
+                            if request is None:
+                                break
+                            operation_marker = bytes.fromhex("42005c0500000004")
+                            offset = request.find(operation_marker)
+                            if offset < 0:
+                                raise AssertionError("request has no KMIP Operation field")
+                            operation = int.from_bytes(request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big")
+                            if operation not in (24, 30, 44, 59):
+                                raise AssertionError("unexpected operation reached controlled peer")
+                            if tlv(0x420099, 7, b"interop-user") not in request or \
+                                    tlv(0x4200A1, 7, b"interop-password") not in request:
+                                raise AssertionError("request is missing configured KMIP credentials")
+                            stream.sendall(response(operation))
+                            handled += 1
+            except BaseException as error:  # surfaced in the main test thread below
+                server_errors.append(error)
+            finally:
+                server.close()
+
+        thread = threading.Thread(target=serve, daemon=True)
+        thread.start()
+        connection = {
+            "server_id": "controlled-c-peer",
+            "server_vendor": "",
+            "server_product": "KMIPKit controlled TLS test peer",
+            "server_version": "fixture-1",
+            "server_configuration_fingerprint": hashlib.sha256(b"controlled-c-peer-v1").hexdigest(),
+            "protocol_version": "2.1",
+            "transport": "raw_tls",
+            "encoding": "TTLV",
+            "api_level": "typed-protocol",
+            "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": port}},
+            "tls": {
+                "ca_cert_path": str(ca_cert),
+                "client_cert_path": str(client_cert),
+                "client_key_path": str(client_key),
+                "server_name_override": "localhost",
+            },
+            "authentication": {
+                "username_password": {
+                    "username_env": "KMIPKIT_INTEROP_TEST_USERNAME",
+                    "password_env": "KMIPKIT_INTEROP_TEST_PASSWORD",
+                }
+            },
+            "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
+            "execution_policy": {"probe_unsupported": True, "allow_mutations": False},
+        }
+        connection_path = directory / "connection.json"
+        connection_path.write_text(json.dumps(connection), encoding="utf-8")
+        result_path = directory / "validation-results.json"
+        markdown_path = directory / "validation-results.md"
+        html_path = directory / "validation-results.html"
+        run = subprocess.run(
+            [str(binary), "run", "--connection", str(connection_path), "--catalog", str(catalog),
+             "--output", str(result_path), "--output-markdown", str(markdown_path),
+             "--output-html", str(html_path)],
+            cwd=repository,
+            capture_output=True,
+            text=True,
+            env={
+                **os.environ,
+                "KMIPKIT_INTEROP_TEST_USERNAME": "interop-user",
+                "KMIPKIT_INTEROP_TEST_PASSWORD": "interop-password",
+            },
+            timeout=30,
+            check=False,
+        )
+        thread.join(timeout=10)
+        if server_errors:
+            raise AssertionError("controlled TLS peer failed") from server_errors[0]
+        if handled != 4:
+            raise AssertionError(f"controlled peer observed {handled} request(s), expected four")
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        try:
+            import jsonschema
+        except ImportError:
+            jsonschema = None
+        if jsonschema is not None:
+            schema = json.loads((shared / "schemas/validation-results.schema.json").read_text(encoding="utf-8"))
+            jsonschema.validate(result, schema)
+        if result["schema_version"] != "2.0" or result["protocol_version"] != "2.1":
+            raise AssertionError("C result metadata does not match the shared evidence schema")
+        if result["server"]["id"] != "controlled-c-peer":
+            raise AssertionError("C result identifies the wrong test server")
+        statuses = {case["case_id"]: case["status"] for case in result["cases"]}
+        expected_cases = ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log")
+        if any(statuses.get(case_id) != "passed" for case_id in expected_cases):
+            details = {case["case_id"]: case.get("diagnostic", "") for case in result["cases"]
+                       if case["case_id"] in expected_cases}
+            raise AssertionError(f"controlled operation response checks failed: {details!r}")
+        if run.returncode != 0:
+            raise AssertionError(
+                f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "
+                f"summary={run.stdout[:1800]!r}"
+            )
+        correctness = {case["case_id"]: case["library_correctness"] for case in result["cases"]}
+        if any(correctness.get(case_id) != "passed" for case_id in expected_cases):
+            raise AssertionError("successful exchanges must report the client library as validated")
+        if result["summary"]["policy_restricted"] == 0 or result["summary"]["not_run"] == 0:
+            raise AssertionError("report must distinguish policy-restricted and uncovered cases")
+        if not markdown_path.is_file() or not html_path.is_file():
+            raise AssertionError("requested human-readable reports were not written")
+        secret_values = (b"interop-user", b"interop-password")
+        for report_path in (result_path, markdown_path, html_path):
+            report_bytes = report_path.read_bytes()
+            if any(secret in report_bytes for secret in secret_values):
+                raise AssertionError("a report contains configured authentication material")
+        if any(secret.decode("ascii") in run.stdout or secret.decode("ascii") in run.stderr
+               for secret in secret_values):
+            raise AssertionError("console output contains configured authentication material")
+        missing_auth_environment = os.environ.copy()
+        missing_auth_environment.pop("KMIPKIT_INTEROP_TEST_USERNAME", None)
+        missing_auth_environment.pop("KMIPKIT_INTEROP_TEST_PASSWORD", None)
+        missing_auth = subprocess.run(
+            [str(binary), "run", "--connection", str(connection_path), "--catalog", str(catalog),
+             "--output", str(directory / "missing-auth-results.json")],
+            cwd=repository,
+            capture_output=True,
+            text=True,
+            env=missing_auth_environment,
+            timeout=10,
+            check=False,
+        )
+        if missing_auth.returncode != 2 or "environment variables are unavailable" not in missing_auth.stderr:
+            raise AssertionError("missing authentication variables must stop before any network exchange")
+        if any(secret.decode("ascii") in missing_auth.stdout or secret.decode("ascii") in missing_auth.stderr
+               for secret in secret_values):
+            raise AssertionError("credential diagnostics exposed authentication material")
+        preflight_without_auth = subprocess.run(
+            [str(binary), "preflight", "--connection", str(connection_path)],
+            cwd=repository,
+            capture_output=True,
+            text=True,
+            env=missing_auth_environment,
+            timeout=10,
+            check=False,
+        )
+        if preflight_without_auth.returncode != 2 or \
+                "environment variables are unavailable" not in preflight_without_auth.stderr:
+            raise AssertionError("preflight must detect missing authentication without opening a socket")
+        for case in result["cases"]:
+            if case["status"] in ("not_run", "policy_restricted") and not case.get("diagnostic"):
+                raise AssertionError("unexecuted cases must include a sanitized reason")
+        if run.stderr:
+            print(run.stderr, file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

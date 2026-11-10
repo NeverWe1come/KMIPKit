@@ -1,7 +1,8 @@
 # Plan de implementación
 
 1. Reemplazar el contrato mock por configuración compartida, `plan`,
-   `preflight`, informes saneados y guardas de entorno/política.
+   `preflight`, informes saneados, autenticación desde variables de entorno y
+   guardas de entorno/política.
 2. Crear un instalador reproducible que compile la biblioteca FFI y copie el
    header público desde un archivo limpio del commit de release fijado.
 3. Implementar adaptadores C sobre la API tipada pública y pruebas TTLV
