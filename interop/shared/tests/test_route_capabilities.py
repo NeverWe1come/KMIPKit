@@ -93,6 +93,11 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_regeneration_matches_checked_in_capabilities(self):
         self.assertEqual(self.data, self.module.build_manifest(ROOT, self.data['library_commit']))
 
+    def test_artifact_probe_requires_the_public_sender(self):
+        symbols = {r['public_api_symbol'] for r in self.data['routes'] if r['language'] == 'python'}
+        with self.assertRaisesRegex(ValueError, 'installed artifact.*missing'):
+            self.module.validate_installed_symbols(self.data, 'python', symbols)
+
     def test_artifact_probe_rejects_wrong_commit(self):
         with self.assertRaisesRegex(ValueError, 'artifact commit'):
             self.module.validate_artifact_identity(self.data, {'library_commit': 'a' * 40})
