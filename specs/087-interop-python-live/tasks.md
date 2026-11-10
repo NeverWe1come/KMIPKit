@@ -7,4 +7,4 @@
 - [x] T005 Replace mock execution with public-package request recipes and explicit documented API-gap classification.
 - [x] T006 Add controlled TLS fixtures and deterministic request/response assertions.
 - [x] T007 Update CI to Python 3.12 and run artifact, unit, schema and fixture checks.
-- [ ] T008 Record final CI results, limitations and commands; open/update the WIP draft PR.
+- [x] T008 Record final CI results, limitations and commands; open/update the WIP draft PR.
