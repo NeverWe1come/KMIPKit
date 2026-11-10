@@ -79,6 +79,7 @@ final class FluentFacadeShapeTest {
             assertThrows(InvalidInputException.class, builder::build);
             assertThrows(InvalidInputException.class,
                     () -> builder.aes256().build());
+            assertThrows(InvalidInputException.class, () -> builder.algorithm(-1));
             assertThrows(InvalidInputException.class, () -> builder.name(null));
             assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
             assertThrows(InvalidInputException.class, () -> new OperationBuilder(null, null, false));
@@ -116,6 +117,8 @@ final class FluentFacadeShapeTest {
                     .vendorAttribute("Vendor_Name.1", "region", expertItem)
                     .withOptions(RequestOptions.defaults())
                     .asynchronousIndicator(1);
+            assertThrows(InvalidInputException.class,
+                    () -> builder.vendorAttribute(null, "region", expertItem));
             try (ClientBatchItem item = builder.build()) {
                 assertEquals(1, item.operation());
             }
@@ -152,10 +155,12 @@ final class FluentFacadeShapeTest {
             try (ClientBatchItem create = client.request().createSymmetricKey().aes256()
                             .usageMask((int) CryptographicUsageMask.ENCRYPT).build();
                     ClientBatchItem get = client.request().get(id).build();
-                    ClientBatchItem destroy = client.request().destroy(id).build()) {
+                    ClientBatchItem destroy = client.request().destroy(id).build();
+                    ClientBatchItem getCopy = client.request().get(id).toBatchItem()) {
                 assertEquals(1, create.operation());
                 assertEquals(10, get.operation());
                 assertEquals(20, destroy.operation());
+                assertEquals(10, getCopy.operation());
             }
             assertThrows(ClientOperationException.class, () -> client.createSymmetricKey(
                     SymmetricKeyRequest.named(3, 256, (int) CryptographicUsageMask.ENCRYPT, "named"), limits));
@@ -169,8 +174,28 @@ final class FluentFacadeShapeTest {
             assertThrows(ClientOperationException.class,
                     () -> client.destroyById(id, limits, RequestOptions.defaults()));
             assertThrows(InvalidInputException.class, () -> client.createSymmetricKey(null, limits));
+            assertThrows(InvalidInputException.class,
+                    () -> client.createSymmetricKey(null, limits, RequestOptions.defaults()));
             assertThrows(InvalidInputException.class, () -> client.getById(null, limits));
             assertThrows(InvalidInputException.class, () -> client.destroyById(id, null));
+            assertThrows(InvalidInputException.class, () -> client.destroyById(null, limits));
+
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().createSymmetricKey().aes256()
+                            .usageMask((int) CryptographicUsageMask.ENCRYPT).execute(limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().createSymmetricKey().aes256()
+                            .usageMask((int) CryptographicUsageMask.ENCRYPT)
+                            .withOptions(RequestOptions.defaults()).execute(limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().get(id).asynchronousIndicator(1).execute(limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().destroy(id).withOptions(RequestOptions.defaults())
+                            .asynchronousIndicator(1).execute(limits));
+            assertThrows(InvalidInputException.class,
+                    () -> client.request().get(id).asynchronousIndicator(-1));
+            assertThrows(InvalidInputException.class,
+                    () -> client.request().destroy(id).asynchronousIndicator(0x1_0000_0000L));
 
             try (ClientBatch batch = ClientBatch.create()) {
                 batch.add(ClientBatchItem.discoverVersions());
