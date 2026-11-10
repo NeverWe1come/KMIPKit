@@ -139,8 +139,8 @@ static bool create_symmetric_key_attributes(kmip_live_client_t *client,
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, out_attributes);
 }
 
-static bool create_private_key_attributes(kmip_live_client_t *client,
-                                          kmipkit_ttlv_structure_t **out_attributes) {
+static bool create_rsa_key_attributes(kmip_live_client_t *client,
+                                      kmipkit_ttlv_structure_t **out_attributes) {
     return create_cryptographic_key_attributes(
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048, out_attributes);
 }
@@ -1197,10 +1197,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;
+    bool public_key_workflow = strcmp(test_case->case_id, "test-obj-public-key") == 0;
+    bool rsa_key_workflow = private_key_workflow || public_key_workflow;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0 ||
-        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || private_key_workflow;
+        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || rsa_key_workflow;
     uint32_t requested_object_type = private_key_workflow ?
-        KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY :
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY : public_key_workflow ?
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_PUBLIC_KEY :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
@@ -1276,13 +1279,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
             .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
         };
-        request_construction_step = private_key_workflow ? "private key Attributes" :
+        request_construction_step = rsa_key_workflow ? "RSA key Attributes" :
             "symmetric key Attributes";
-        status = (private_key_workflow ?
-            create_private_key_attributes(client, &request_attributes) :
+        status = (rsa_key_workflow ?
+            create_rsa_key_attributes(client, &request_attributes) :
             create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
         if (status == 0) {
-            request_construction_step = private_key_workflow ? "Create Private Key" :
+            request_construction_step = rsa_key_workflow ? "Create RSA Key" :
                 "Create Symmetric Key";
             kmipkit_client_batch_item_t **create_item = create_workflow ? &item : &setup_item;
             status = kmipkit_client_batch_item_create(

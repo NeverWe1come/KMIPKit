@@ -319,9 +319,10 @@ def main() -> int:
                             if lifecycle_target and enumeration(0x42000E, 1) not in request:
                                 raise AssertionError("lifecycle batch must continue to Destroy after a failed item")
                             private_key_create = enumeration(0x420057, 4) in request
+                            public_key_create = enumeration(0x420057, 3) in request
                             if lifecycle_target:
-                                expected_algorithm = 4 if private_key_create else 3
-                                expected_length = 2048 if private_key_create else 128
+                                expected_algorithm = 4 if private_key_create or public_key_create else 3
+                                expected_length = 2048 if private_key_create or public_key_create else 128
                                 if enumeration(0x420028, expected_algorithm) not in request or \
                                         integer(0x42002A, expected_length) not in request:
                                     raise AssertionError(
@@ -359,7 +360,7 @@ def main() -> int:
                                 raise AssertionError("request is missing configured KMIP credentials")
                             stream.sendall(response(
                                 operations, protocol_minor, selected_attribute_tag,
-                                4 if private_key_create else 2))
+                                4 if private_key_create else 3 if public_key_create else 2))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)

@@ -65,8 +65,8 @@ unknown. The attribute catalog also sends Get Attributes requests selecting
 `Cryptographic Algorithm` and `Cryptographic Length` by their KMIP tags and
 checks the returned AES and 128-bit values in both protocol versions. The
 `Symmetric Key` object catalog variant also runs Create followed by Destroy
-against an isolated object; the `Private Key` variant creates an RSA-2048 key
-and validates the typed Private Key response before cleanup. Activate
+against an isolated object; the `Private Key` and `Public Key` variants create
+RSA-2048 objects and validate the respective typed responses before cleanup. Activate
 moves the isolated key out of Pre-Active before revocation; Check verifies the
 returned object identifier, then revokes the isolated object before Destroy.
 Revoke verifies its returned identifier before Destroy. Destroy verifies its
