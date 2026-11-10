@@ -44,6 +44,8 @@ def response(operation: int, protocol_minor: int) -> bytes:
         query_operations = (24, 30, 44) if protocol_minor == 0 else (24, 30, 44, 59)
         payload_value = b"".join(integer(0x42005C, value, 5) for value in query_operations)
         payload_value += tlv(0x42015F, 1, b"")
+    elif operation == 8:
+        payload_value = integer(0x4200D5, 0) if protocol_minor == 1 else b""
     batch_item = tlv(
         0x42000F,
         1,
@@ -124,11 +126,11 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
-    expected_operations = (24, 44) if protocol_version == "2.0" else (24, 30, 44, 59)
+    expected_operations = (8, 24, 44) if protocol_version == "2.0" else (8, 24, 30, 44, 59)
     expected_cases = (
-        ("test-op-query", "test-op-log")
+        ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
-        else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log")
+        else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log", "test-op-locate")
     )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
@@ -170,6 +172,8 @@ def main() -> int:
                                 raise AssertionError(
                                     f"unexpected operation {operation} reached controlled peer for {protocol_version}"
                                 )
+                            if operation == 8 and bytes.fromhex("4201250100000000") not in request:
+                                raise AssertionError("Locate request omitted its required Attributes structure")
                             if integer(0x42006A, 2) not in request or \
                                     integer(0x42006B, protocol_minor) not in request:
                                 raise AssertionError(
@@ -212,7 +216,7 @@ def main() -> int:
                 }
             },
             "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
-            "execution_policy": {"probe_unsupported": True, "allow_mutations": False},
+            "execution_policy": {"probe_unsupported": True, "allow_mutations": True},
         }
         connection_path = directory / "connection.json"
         connection_path.write_text(json.dumps(connection), encoding="utf-8")
@@ -221,6 +225,7 @@ def main() -> int:
         html_path = directory / "validation-results.html"
         run = subprocess.run(
             [str(binary), "run", "--connection", str(connection_path), "--catalog", str(catalog),
+             "--allow-mutations",
              "--output", str(result_path), "--output-markdown", str(markdown_path),
              "--output-html", str(html_path)],
             cwd=repository,
@@ -274,15 +279,15 @@ def main() -> int:
         correctness = {case["case_id"]: case["library_correctness"] for case in result["cases"]}
         if any(correctness.get(case_id) != "passed" for case_id in expected_cases):
             raise AssertionError("successful exchanges must report the client library as validated")
-        if result["summary"]["policy_restricted"] == 0 or result["summary"]["not_run"] == 0:
-            raise AssertionError("report must distinguish policy-restricted and uncovered cases")
+        if result["summary"]["policy_restricted"] != 0 or result["summary"]["not_run"] == 0:
+            raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 71,
+            "passed": 72,
             "failed": 0,
             "unsupported": 0,
-            "policy_restricted": 132,
-            "not_run": 9,
+            "policy_restricted": 0,
+            "not_run": 140,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -291,11 +296,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 67,
+            "passed": 68,
             "failed": 0,
             "unsupported": 0,
-            "policy_restricted": 120,
-            "not_run": 16,
+            "policy_restricted": 0,
+            "not_run": 135,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
