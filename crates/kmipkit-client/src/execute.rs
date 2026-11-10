@@ -6855,6 +6855,20 @@ impl Client {
         )
     }
 
+    pub(crate) fn execute_one_typed_request_with_async_indicator(
+        &mut self,
+        request: ClientRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        self.execute_one_typed_batch(batch, limits, options)
+    }
+
     fn execute_one_typed_batch(
         &mut self,
         batch: ClientBatch,
