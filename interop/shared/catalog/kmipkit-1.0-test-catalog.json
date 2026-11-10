@@ -1,13 +1,24 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "catalog_source": "specification/catalog/kmip-2.1.json",
+  "target_versions": [
+    "2.0",
+    "2.1"
+  ],
+  "capability_policy": "probe_all_applicable",
+  "execution_policy": {
+    "requires_dedicated_test_environment": true,
+    "mutating_cases_require_explicit_enablement": true,
+    "never_retry_requests": true
+  },
   "statistics": {
     "operations_covered": 56,
+    "server_to_client_operations_covered": 5,
     "managed_objects_covered": 9,
     "attributes_covered": 63,
     "enumerations_covered": 64,
     "bitmasks_covered": 3,
-    "total_cases": 200
+    "total_cases": 207
   },
   "test_cases": [
     {
@@ -28,6 +39,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.12"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -48,6 +81,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.16"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -68,6 +123,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.26"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -88,6 +165,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.29"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -108,6 +207,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.30"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -128,6 +249,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.31"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -148,6 +291,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.36"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -168,6 +333,28 @@
           "TimeStamp",
           "UniqueIdentifier"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.40"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -198,6 +385,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -228,6 +440,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -258,6 +495,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.5"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -288,6 +550,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.6"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -318,6 +605,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.7"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -345,6 +657,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.8"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -372,6 +709,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.9"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -399,6 +761,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.10"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -429,6 +816,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.14"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -459,6 +871,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.15"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -489,6 +926,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.18"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -519,6 +981,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.19"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -549,6 +1036,30 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.22"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -579,6 +1090,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.23"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -606,6 +1142,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.25"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -636,6 +1197,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.27"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -661,6 +1247,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.28"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -691,6 +1302,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.35"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -721,6 +1357,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.37"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -751,6 +1412,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.38"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -781,6 +1467,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.39"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -811,6 +1522,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.41"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -841,6 +1577,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.48"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -871,6 +1632,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.45"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -901,6 +1687,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.46"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -931,6 +1742,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.47"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -961,6 +1797,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.42"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -988,6 +1849,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.43"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1018,6 +1904,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.44"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1048,6 +1959,30 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.52"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1078,6 +2013,31 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.53"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1108,6 +2068,276 @@
           "LastChangeDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.57"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-s2c-discover-versions",
+      "category": "server_initiated_operations",
+      "operation": "Discover Versions",
+      "oasis_section": "6.2.1",
+      "description": "Accept, validate, and respond to server-initiated Discover Versions requests.",
+      "requires": {
+        "operation": "Discover Versions",
+        "workflow_type": "server_to_client"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-s2c-discover-versions",
+        "setup_steps": [
+          "Start client listener"
+        ],
+        "target_step": "Deliver server-initiated Discover Versions",
+        "teardown_steps": [
+          "Stop client listener"
+        ],
+        "normalized_fields": [
+          "ProtocolVersion",
+          "Operation",
+          "ResultStatus",
+          "ResultReason"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.2.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-s2c-notify",
+      "category": "server_initiated_operations",
+      "operation": "Notify",
+      "oasis_section": "6.2.2",
+      "description": "Accept, validate, and respond to server-initiated Notify requests.",
+      "requires": {
+        "operation": "Notify",
+        "workflow_type": "server_to_client"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-s2c-notify",
+        "setup_steps": [
+          "Start client listener"
+        ],
+        "target_step": "Deliver server-initiated Notify",
+        "teardown_steps": [
+          "Stop client listener"
+        ],
+        "normalized_fields": [
+          "ProtocolVersion",
+          "Operation",
+          "ResultStatus",
+          "ResultReason"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.2.2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-s2c-put",
+      "category": "server_initiated_operations",
+      "operation": "Put",
+      "oasis_section": "6.2.3",
+      "description": "Accept, validate, and respond to server-initiated Put requests.",
+      "requires": {
+        "operation": "Put",
+        "workflow_type": "server_to_client"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-s2c-put",
+        "setup_steps": [
+          "Start client listener"
+        ],
+        "target_step": "Deliver server-initiated Put",
+        "teardown_steps": [
+          "Stop client listener"
+        ],
+        "normalized_fields": [
+          "ProtocolVersion",
+          "Operation",
+          "ResultStatus",
+          "ResultReason"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.2.3"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-s2c-query",
+      "category": "server_initiated_operations",
+      "operation": "Query",
+      "oasis_section": "6.2.4",
+      "description": "Accept, validate, and respond to server-initiated Query requests.",
+      "requires": {
+        "operation": "Query",
+        "workflow_type": "server_to_client"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-s2c-query",
+        "setup_steps": [
+          "Start client listener"
+        ],
+        "target_step": "Deliver server-initiated Query",
+        "teardown_steps": [
+          "Stop client listener"
+        ],
+        "normalized_fields": [
+          "ProtocolVersion",
+          "Operation",
+          "ResultStatus",
+          "ResultReason"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.2.4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-s2c-set-endpoint-role",
+      "category": "server_initiated_operations",
+      "operation": "Set Endpoint Role",
+      "oasis_section": "6.2.5",
+      "description": "Accept, validate, and respond to server-initiated Set Endpoint Role requests.",
+      "requires": {
+        "operation": "Set Endpoint Role",
+        "workflow_type": "server_to_client"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-s2c-set-endpoint-role",
+        "setup_steps": [
+          "Start client listener"
+        ],
+        "target_step": "Deliver server-initiated Set Endpoint Role",
+        "teardown_steps": [
+          "Stop client listener"
+        ],
+        "normalized_fields": [
+          "ProtocolVersion",
+          "Operation",
+          "ResultStatus",
+          "ResultReason"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.2.5"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -1130,6 +2360,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1152,6 +2407,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1174,6 +2454,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1196,6 +2501,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1218,6 +2548,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1240,6 +2595,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1262,6 +2642,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1284,6 +2689,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1306,6 +2736,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "2"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1330,6 +2785,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1354,6 +2834,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1378,6 +2883,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1402,6 +2932,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1426,6 +2981,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1450,6 +3030,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1474,6 +3079,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1498,6 +3128,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1522,6 +3177,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1546,6 +3226,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1570,6 +3275,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1594,6 +3324,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1618,6 +3373,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1642,6 +3422,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1666,6 +3471,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1690,6 +3520,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1714,6 +3569,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1738,6 +3618,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1762,6 +3667,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1786,6 +3716,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1810,6 +3765,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1834,6 +3814,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1858,6 +3863,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1882,6 +3912,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1906,6 +3961,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1930,6 +4010,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1954,6 +4059,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -1978,6 +4108,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2002,6 +4157,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2026,6 +4206,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2050,6 +4255,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2074,6 +4304,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2098,6 +4353,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2122,6 +4402,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2146,6 +4451,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2170,6 +4500,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2194,6 +4549,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2218,6 +4598,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2242,6 +4647,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2266,6 +4696,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2290,6 +4745,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2314,6 +4794,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2338,6 +4843,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2362,6 +4892,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2386,6 +4941,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2410,6 +4990,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2434,6 +5039,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2458,6 +5088,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2482,6 +5137,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2506,6 +5186,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2530,6 +5235,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2554,6 +5284,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2578,6 +5333,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2602,6 +5382,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2626,6 +5431,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2650,6 +5480,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2674,6 +5529,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2698,6 +5578,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2722,6 +5627,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2746,6 +5676,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2770,6 +5725,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2794,6 +5774,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2818,6 +5823,31 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2845,6 +5875,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2872,6 +5927,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2899,6 +5979,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2926,6 +6031,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2953,6 +6083,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -2980,6 +6135,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -3007,6 +6187,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -3034,6 +6239,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -3057,6 +6287,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -3080,6 +6335,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -3103,6 +6383,31 @@
           "TimeStamp",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -3123,6 +6428,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3143,6 +6472,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3163,6 +6516,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3183,6 +6560,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3203,6 +6604,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3223,6 +6648,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3243,6 +6692,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3263,6 +6736,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3283,6 +6780,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3303,6 +6824,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3323,6 +6868,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3343,6 +6912,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3363,6 +6956,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3383,6 +7000,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3403,6 +7044,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3423,6 +7088,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3443,6 +7132,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3463,6 +7176,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3483,6 +7220,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3503,6 +7264,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3523,6 +7308,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3543,6 +7352,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3563,6 +7396,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3583,6 +7440,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3603,6 +7484,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3623,6 +7528,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3643,6 +7572,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3663,6 +7616,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3683,6 +7660,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3703,6 +7704,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3723,6 +7748,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3743,6 +7792,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3763,6 +7836,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3783,6 +7880,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3803,6 +7924,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3823,6 +7968,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3843,6 +8012,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3863,6 +8056,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3883,6 +8100,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3903,6 +8144,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3923,6 +8188,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3943,6 +8232,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3963,6 +8276,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -3983,6 +8320,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4003,6 +8364,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4023,6 +8408,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4043,6 +8452,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4063,6 +8496,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4083,6 +8540,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4103,6 +8584,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4123,6 +8628,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4143,6 +8672,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4163,6 +8716,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4183,6 +8760,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4203,6 +8804,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4223,6 +8848,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4243,6 +8892,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4263,6 +8936,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4283,6 +8980,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4303,6 +9024,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4323,6 +9068,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4343,6 +9112,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4363,6 +9156,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4383,6 +9200,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4403,6 +9244,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4423,6 +9288,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4443,6 +9332,30 @@
         "normalized_fields": [
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "9.1"
+        }
+      ],
+      "execution": {
+        "mode": "local_model",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "construct_known_value",
+          "construct_unknown_value",
+          "ttlv_roundtrip"
+        ],
+        "assertions": [
+          "known_value_preserved",
+          "unknown_value_preserved"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     },
     {
@@ -4469,6 +9382,31 @@
           "ActivationDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "5.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4495,6 +9433,31 @@
           "ActivationDate",
           "DestroyDate"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "5.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4524,6 +9487,31 @@
           "CorrelationValue",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4553,6 +9541,31 @@
           "CorrelationValue",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4582,6 +9595,31 @@
           "CorrelationValue",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4607,6 +9645,31 @@
           "CorrelationValue",
           "IVCounterNonce"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4632,6 +9695,31 @@
           "TimeStamp",
           "AsynchronousCorrelationValue"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.18"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response",
+          "cleanup_fixture"
+        ],
+        "assertions": [
+          "response_matches_operation_contract",
+          "state_effect_matches_expectation"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4657,6 +9745,30 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "3"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "result_status_matches_expected",
+          "delivery_state_recorded"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4682,6 +9794,30 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "3"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "result_status_matches_expected",
+          "delivery_state_recorded"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
       }
     },
     {
@@ -4707,6 +9843,120 @@
           "UniqueIdentifier",
           "TimeStamp"
         ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "3"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0",
+          "2.1"
+        ],
+        "steps": [
+          "prepare_isolated_fixture",
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "result_status_matches_expected",
+          "delivery_state_recorded"
+        ],
+        "mutation": "mutating",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-v20-reject-get-constraints",
+      "category": "version_boundaries",
+      "operation": "Get Constraints",
+      "oasis_section": "6.1.22",
+      "description": "Reject KMIP 2.1-only Get Constraints before sending under KMIP 2.0.",
+      "requires": {
+        "operation": "Get Constraints",
+        "expected_status": "NotSent"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-v20-get-constraints",
+        "setup_steps": [],
+        "target_step": "Attempt Get Constraints under KMIP 2.0",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "RequestDeliveryState"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.22"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
+      }
+    },
+    {
+      "case_id": "test-v20-reject-set-constraints",
+      "category": "version_boundaries",
+      "operation": "Set Constraints",
+      "oasis_section": "6.1.52",
+      "description": "Reject KMIP 2.1-only Set Constraints before sending under KMIP 2.0.",
+      "requires": {
+        "operation": "Set Constraints",
+        "expected_status": "NotSent"
+      },
+      "isolation_recipe": {
+        "unique_name_prefix": "kmipkit-v20-set-constraints",
+        "setup_steps": [],
+        "target_step": "Attempt Set Constraints under KMIP 2.0",
+        "teardown_steps": [],
+        "normalized_fields": [
+          "RequestDeliveryState"
+        ]
+      },
+      "normative_refs": [
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.52"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "6"
+        }
+      ],
+      "execution": {
+        "mode": "server_exchange",
+        "protocol_versions": [
+          "2.0"
+        ],
+        "steps": [
+          "execute_operation",
+          "verify_response"
+        ],
+        "assertions": [
+          "response_matches_operation_contract"
+        ],
+        "mutation": "read_only",
+        "status": "planned"
       }
     }
   ]

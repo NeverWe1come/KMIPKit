@@ -24,6 +24,7 @@ def parse_result_file(file_path: Path) -> dict | None:
 
 def aggregate_results(result_files: list[Path]) -> dict:
     data_by_server_lang = {}  # (server_id, language) -> dict of case_id -> case_res
+    evidence_by_server = defaultdict(list)
 
     all_servers = set()
     all_languages = set()
@@ -34,13 +35,27 @@ def aggregate_results(result_files: list[Path]) -> dict:
         payload = parse_result_file(rf)
         if not payload:
             continue
-        server_id = payload.get("server_identifier", "unknown_server")
+        server_metadata = payload.get("server", {})
+        server_id = payload.get("server_identifier") or server_metadata.get("id", "unknown_server")
         lang = payload.get("language", "unknown_lang")
         all_servers.add(server_id)
         all_languages.add(lang)
 
+        execution = payload.get("execution", {})
+        evidence = (
+            payload.get("protocol_version"),
+            payload.get("catalog_sha256"),
+            server_metadata.get("configuration_fingerprint"),
+            server_metadata.get("version"),
+            execution.get("library_commit"),
+            execution.get("transport"),
+            execution.get("encoding"),
+            execution.get("api_level"),
+        )
+        evidence_by_server[server_id].append(evidence)
+
         case_map = {}
-        for c in payload.get("cases", []):
+        for c in payload.get("cases", payload.get("results", [])):
             cid = c.get("case_id")
             if not cid:
                 continue
@@ -51,11 +66,51 @@ def aggregate_results(result_files: list[Path]) -> dict:
                     "category": c.get("category", ""),
                     "description": c.get("description", "")
                 }
+            status = c.get("status")
+            case_map[cid] = {
+                **c,
+                "status": {
+                    "passed": "PASSED",
+                    "failed": "FAILED",
+                    "server_unsupported": "UNSUPPORTED_BY_SERVER",
+                    "policy_restricted": "POLICY_RESTRICTED",
+                    "not_run": "NOT_RUN",
+                }.get(status, status),
+            }
         data_by_server_lang[(server_id, lang)] = case_map
 
     # 1. Build Parity Matrix per Server
     parity_by_server = {}
+    comparability_by_server = {}
+    evidence_summary_by_server = {}
     for server_id in sorted(all_servers):
+        evidence = evidence_by_server[server_id]
+        evidence_complete = all(all(part is not None for part in item) for item in evidence)
+        if not evidence_complete:
+            comparability_by_server[server_id] = "UNVERIFIED"
+        elif len(set(evidence)) == 1:
+            comparability_by_server[server_id] = "COMPARABLE"
+        else:
+            comparability_by_server[server_id] = "INCOMPARABLE"
+        evidence_summary = {
+            "library_correctness": defaultdict(int),
+            "server_compatibility": defaultdict(int),
+            "cross_language_parity": defaultdict(int),
+            "not_executed": 0,
+        }
+        for (candidate_server, _language), case_map in data_by_server_lang.items():
+            if candidate_server != server_id:
+                continue
+            for case in case_map.values():
+                evidence_summary["library_correctness"][case.get("library_correctness", "not_checked")] += 1
+                evidence_summary["server_compatibility"][case.get("server_compatibility", "unknown")] += 1
+                evidence_summary["cross_language_parity"][case.get("parity", "not_compared")] += 1
+                if case.get("status") == "NOT_RUN":
+                    evidence_summary["not_executed"] += 1
+        evidence_summary_by_server[server_id] = {
+            key: (dict(value) if isinstance(value, defaultdict) else value)
+            for key, value in evidence_summary.items()
+        }
         rows = []
         for cid in sorted(all_cases):
             row = {
@@ -86,7 +141,9 @@ def aggregate_results(result_files: list[Path]) -> dict:
         "servers": sorted(list(all_servers)),
         "languages": sorted(list(all_languages)),
         "total_cases": len(all_cases),
-        "parity_by_server": parity_by_server
+        "parity_by_server": parity_by_server,
+        "comparability_by_server": comparability_by_server,
+        "evidence_summary_by_server": evidence_summary_by_server,
     }
 
 
@@ -99,6 +156,12 @@ def generate_markdown(aggregated: dict) -> str:
 
     for s_id, rows in aggregated["parity_by_server"].items():
         md.append(f"## Server: `{s_id}`\n")
+        md.append(f"Evidence comparability: **{aggregated['comparability_by_server'][s_id]}**")
+        summary = aggregated["evidence_summary_by_server"][s_id]
+        md.append(f"Library correctness: `{summary['library_correctness']}`")
+        md.append(f"Server compatibility: `{summary['server_compatibility']}`")
+        md.append(f"Cross-language parity: `{summary['cross_language_parity']}`")
+        md.append(f"Cases not executed: **{summary['not_executed']}**\n")
         langs = aggregated["languages"]
         header = ["Test Case", "Category"] + [l.capitalize() for l in langs] + ["Parity Status"]
         md.append("| " + " | ".join(header) + " |")
@@ -368,7 +431,11 @@ def generate_html(aggregated: dict) -> str:
 
     # Tables by Server
     for s_id, rows in aggregated["parity_by_server"].items():
+        comparability = aggregated.get("comparability_by_server", {}).get(s_id, "UNVERIFIED")
+        evidence_summary = aggregated.get("evidence_summary_by_server", {}).get(s_id, {})
+        evidence_text = html.escape(json.dumps(evidence_summary, sort_keys=True))
         out.append(f"  <h2 style=\"margin: 20px 0 12px; font-size: 18px;\">Server: <code>{html.escape(s_id)}</code></h2>")
+        out.append(f"  <p>Evidence comparability: <strong>{html.escape(comparability)}</strong> | Evidence summary: <code>{evidence_text}</code></p>")
         out.append("  <div class=\"table-container\">")
         out.append("    <table>")
         out.append("      <thead><tr>")

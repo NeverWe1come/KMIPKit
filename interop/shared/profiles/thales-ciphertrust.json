@@ -5,7 +5,11 @@
     "vendor": "Thales",
     "product": "CipherTrust Manager",
     "version": "2.14",
-    "kmip_versions": ["2.1", "2.0", "1.4"]
+    "kmip_versions": ["1.4"]
+  },
+  "interop_eligibility": {
+    "state": "excluded",
+    "reason": "The current Thales KMIP reference documents KMIP 1.4. Reconfirm a specific product edition and configuration before treating it as a KMIP 2.0 or 2.1 target."
   },
   "transports": {
     "raw_tls": {

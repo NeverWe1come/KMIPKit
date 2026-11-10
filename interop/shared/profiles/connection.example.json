@@ -1,6 +1,10 @@
 {
   "server_id": "example-kms",
-  "description": "Example connection configuration for a local or remote KMIP 2.1 Server",
+  "description": "Example connection configuration for a dedicated KMIP 2.0 or 2.1 test server",
+  "protocol_version": "2.1",
+  "transport": "raw_tls",
+  "encoding": "TTLV",
+  "api_level": "high-level",
   "endpoints": {
     "raw_tls": {
       "host": "127.0.0.1",
@@ -20,14 +24,19 @@
   },
   "authentication": {
     "username_password": {
-      "username": "kmip_user",
-      "password": "kmip_password"
+      "username_env": "KMIPKIT_USERNAME",
+      "password_env": "KMIPKIT_PASSWORD"
     }
   },
+  "environment": {
+    "kind": "dedicated_test",
+    "dedicated_test_environment_confirmed": true
+  },
   "execution_policy": {
-    "probe_unsupported": false,
-    "encodings": ["TTLV", "JSON", "XML"],
-    "api_levels": ["level1", "level2", "level3"],
+    "probe_unsupported": true,
+    "allow_mutations": false,
+    "encodings": ["TTLV"],
+    "api_levels": ["high-level", "typed-protocol", "generic-ttlv"],
     "cleanup_on_failure": true
   }
 }

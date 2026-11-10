@@ -1,63 +1,106 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kmipkit.org/schemas/test-catalog.schema.json",
-  "title": "KMIP 2.1 Test Catalog Schema",
+  "title": "Versioned KMIP 2.0 and 2.1 Executable Test Catalog",
   "type": "object",
-  "required": ["version", "statistics", "test_cases"],
+  "required": ["version", "target_versions", "capability_policy", "execution_policy", "statistics", "test_cases"],
   "properties": {
     "version": { "type": "string" },
     "catalog_source": { "type": "string" },
+    "target_versions": {
+      "type": "array",
+      "items": { "enum": ["2.0", "2.1"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "capability_policy": { "const": "probe_all_applicable" },
+    "execution_policy": {
+      "type": "object",
+      "required": ["requires_dedicated_test_environment", "mutating_cases_require_explicit_enablement", "never_retry_requests"],
+      "properties": {
+        "requires_dedicated_test_environment": { "const": true },
+        "mutating_cases_require_explicit_enablement": { "const": true },
+        "never_retry_requests": { "const": true }
+      },
+      "additionalProperties": false
+    },
     "statistics": {
       "type": "object",
-      "required": ["operations_covered", "managed_objects_covered", "attributes_covered", "total_cases"],
+      "required": ["operations_covered", "server_to_client_operations_covered", "managed_objects_covered", "attributes_covered", "total_cases"],
       "properties": {
-        "operations_covered": { "type": "integer" },
-        "managed_objects_covered": { "type": "integer" },
-        "attributes_covered": { "type": "integer" },
-        "total_cases": { "type": "integer" }
+        "operations_covered": { "type": "integer", "minimum": 0 },
+        "server_to_client_operations_covered": { "type": "integer", "minimum": 0 },
+        "managed_objects_covered": { "type": "integer", "minimum": 0 },
+        "attributes_covered": { "type": "integer", "minimum": 0 },
+        "enumerations_covered": { "type": "integer", "minimum": 0 },
+        "bitmasks_covered": { "type": "integer", "minimum": 0 },
+        "total_cases": { "type": "integer", "minimum": 1 }
       }
     },
     "test_cases": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["case_id", "category", "operation", "requires", "isolation_recipe"],
+        "required": ["case_id", "category", "operation", "requires", "isolation_recipe", "normative_refs", "execution"],
         "properties": {
-          "case_id": { "type": "string" },
-          "category": { "type": "string" },
-          "operation": { "type": "string" },
-          "oasis_section": { "type": "string" },
+          "case_id": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
+          "operation": { "type": "string", "minLength": 1 },
+          "oasis_section": { "type": "string", "minLength": 1 },
           "description": { "type": "string" },
-          "requires": {
-            "type": "object",
-            "properties": {
-              "operation": { "type": "string" },
-              "object_type": { "type": "string" },
-              "algorithm": { "type": "string" },
-              "key_length": { "type": "integer" },
-              "curve": { "type": "string" },
-              "attribute": { "type": "string" },
-              "attribute_op": { "type": "string" },
-              "requires_async": { "type": "boolean" },
-              "enum_type": { "type": "string" },
-              "bitmask_type": { "type": "string" },
-              "workflow_type": { "type": "string" },
-              "vector_ref": { "type": "string" },
-              "expected_status": { "type": "string" }
+          "normative_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["document", "section"],
+              "properties": {
+                "document": { "enum": ["OASIS KMIP 2.0 Specification", "OASIS KMIP 2.1 Specification"] },
+                "section": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" }
+              },
+              "additionalProperties": false
             }
           },
+          "requires": { "type": "object" },
           "isolation_recipe": {
             "type": "object",
-            "required": ["unique_name_prefix", "teardown_steps"],
+            "required": ["unique_name_prefix", "setup_steps", "target_step", "teardown_steps"],
             "properties": {
               "unique_name_prefix": { "type": "string" },
               "setup_steps": { "type": "array", "items": { "type": "string" } },
               "target_step": { "type": "string" },
               "teardown_steps": { "type": "array", "items": { "type": "string" } },
               "normalized_fields": { "type": "array", "items": { "type": "string" } }
-            }
+            },
+            "additionalProperties": true
+          },
+          "execution": {
+            "type": "object",
+            "required": ["mode", "protocol_versions", "steps", "assertions", "mutation", "status"],
+            "properties": {
+              "mode": { "enum": ["server_exchange", "local_model"] },
+              "protocol_versions": {
+                "type": "array",
+                "items": { "enum": ["2.0", "2.1"] },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "steps": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+              "assertions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+              "mutation": { "enum": ["read_only", "mutating"] },
+              "status": { "enum": ["planned", "implemented", "not_applicable"] },
+              "not_applicable_reason": { "type": "string", "minLength": 1 }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "status": { "const": "not_applicable" } } },
+                "then": { "required": ["not_applicable_reason"] }
+              }
+            ],
+            "additionalProperties": false
           }
-        }
+        },
+        "additionalProperties": true
       }
     }
   }

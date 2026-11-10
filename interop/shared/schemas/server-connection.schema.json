@@ -3,7 +3,7 @@
   "$id": "https://kmipkit.org/schemas/server-connection.schema.json",
   "title": "KMIP Server Connection Configuration",
   "type": "object",
-  "required": ["server_id", "endpoints"],
+  "required": ["server_id", "protocol_version", "transport", "encoding", "api_level", "endpoints", "environment", "execution_policy"],
   "properties": {
     "server_id": {
       "type": "string",
@@ -12,6 +12,10 @@
     "description": {
       "type": "string"
     },
+    "protocol_version": { "enum": ["2.0", "2.1"] },
+    "transport": { "enum": ["raw_tls", "https"] },
+    "encoding": { "enum": ["TTLV", "JSON", "XML"] },
+    "api_level": { "enum": ["high-level", "typed-protocol", "generic-ttlv"] },
     "endpoints": {
       "type": "object",
       "properties": {
@@ -48,28 +52,52 @@
       "properties": {
         "username_password": {
           "type": "object",
-          "required": ["username", "password"],
+          "required": ["username_env", "password_env"],
           "properties": {
-            "username": { "type": "string" },
-            "password": { "type": "string" }
-          }
+            "username_env": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" },
+            "password_env": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" }
+          },
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": ["kind", "dedicated_test_environment_confirmed"],
+      "properties": {
+        "kind": { "const": "dedicated_test" },
+        "dedicated_test_environment_confirmed": { "const": true }
+      },
+      "additionalProperties": false
     },
     "execution_policy": {
       "type": "object",
+      "required": ["probe_unsupported", "allow_mutations"],
       "properties": {
-        "probe_unsupported": { "type": "boolean", "default": false },
+        "probe_unsupported": { "type": "boolean", "default": true },
+        "allow_mutations": { "type": "boolean", "default": false },
         "encodings": {
           "type": "array",
           "items": { "type": "string", "enum": ["TTLV", "JSON", "XML"] }
         },
         "api_levels": {
           "type": "array",
-          "items": { "type": "string", "enum": ["level1", "level2", "level3"] }
+          "items": { "type": "string", "enum": ["high-level", "typed-protocol", "generic-ttlv"] }
         },
         "cleanup_on_failure": { "type": "boolean", "default": true }
-      }
+      },
+      "additionalProperties": false
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "transport": { "const": "raw_tls" } } },
+      "then": { "properties": { "endpoints": { "required": ["raw_tls"] } } }
+    },
+    {
+      "if": { "properties": { "transport": { "const": "https" } } },
+      "then": { "properties": { "endpoints": { "required": ["https"] } } }
+    }
+  ]
 }
