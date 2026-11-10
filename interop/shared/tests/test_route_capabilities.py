@@ -73,6 +73,12 @@ class RouteCapabilitiesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'named value'):
             self.module.validate_installed_values(self.data, 'python', values)
 
+    def test_generic_value_constructors_have_distinct_data_type_routes(self):
+        symbols = {r['public_api_symbol'] for r in self.data['routes']}
+        for symbol in ('kmipkit_ttlv::Value::enumeration', 'kmipkit_ttlv_value_enumeration',
+                       'org.kmipkit.ttlv.TtlvValue.Enumeration', 'kmipkit.ttlv.ttlv_value_enumeration'):
+            self.assertTrue(symbol in symbols, symbol)
+
     def test_checked_in_manifest_validates_against_public_api(self):
         self.module.validate(self.data, ROOT)
         self.assertEqual({'rust', 'c', 'java', 'python'}, {r['language'] for r in self.data['routes']})
