@@ -81,6 +81,7 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 unsafe extern "C" {
     fn kmipkit_public_client_surface_probe() -> i32;
     fn kmipkit_public_fluent_builder_probe() -> i32;
+    fn kmipkit_public_fluent_validation_probe() -> i32;
     fn kmipkit_public_fluent_lifecycle_probe(
         port: u16,
         leaf_certificate: *const u8,
@@ -101,6 +102,16 @@ fn public_c_fluent_builder_constructs_a_typed_create_item_and_checks_versioned_i
     assert_eq!(
         status, 0,
         "public fluent C declarations and ABI calls must agree"
+    );
+}
+
+#[test]
+fn public_c_fluent_builder_covers_expert_attributes_options_and_validation() {
+    // SAFETY: The compiled C consumer owns and releases every temporary ABI handle.
+    let status = unsafe { kmipkit_public_fluent_validation_probe() };
+    assert_eq!(
+        status, 0,
+        "public fluent C expert paths and validation must agree"
     );
 }
 

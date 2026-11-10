@@ -1,6 +1,7 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
+use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
@@ -358,4 +359,103 @@ fn invalid_fluent_create_execution_keeps_not_sent_delivery_state() {
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
     assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn every_key_preset_builds_a_typed_request_and_batch_item() {
+    for (builder, expected_algorithm, expected_length) in [
+        (
+            CreateSymmetricKeyBuilder::detached().aes_128(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            128,
+        ),
+        (
+            CreateSymmetricKeyBuilder::detached().aes_192(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            192,
+        ),
+        (
+            CreateSymmetricKeyBuilder::detached().hmac_sha256_256(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::HMAC_SHA256,
+            256,
+        ),
+    ] {
+        let request = builder
+            .usage_mask(CryptographicUsageMask::MAC_GENERATE)
+            .build_request()
+            .expect("presets fill only algorithm and length");
+        let attributes = request.attributes().as_items();
+        assert_eq!(read_enumeration(&attributes[0]), Some(expected_algorithm));
+        assert_eq!(read_integer(&attributes[1]), Some(expected_length));
+    }
+
+    let item = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .to_batch_item()
+        .expect("a valid fluent request converts to a batch item");
+    assert_eq!(item.operation(), 1);
+
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .get(UniqueIdentifier::from("key-42"))
+            .to_batch_item()
+            .operation(),
+        10
+    );
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .destroy(UniqueIdentifier::from("key-42"))
+            .to_batch_item()
+            .operation(),
+        20
+    );
+}
+
+#[test]
+fn create_get_and_destroy_execute_with_exchange_options() {
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(1, 0, None),
+        request_write_chunks: Vec::new(),
+    });
+    let create = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .with_options(RequestOptions::default())
+        .execute(&CodecLimits::defaults())
+        .expect("Create accepts exchange-local options");
+    assert_eq!(create.outcome().operation(), ClientOperation::Create);
+
+    let mut client = failed_request_client();
+    let get = client
+        .request()
+        .get(UniqueIdentifier::from("key-42"))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(0)
+        .execute(&CodecLimits::defaults());
+    assert_eq!(
+        get.expect_err("Get reaches the scripted transport")
+            .delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+
+    let mut client = failed_request_client();
+    let destroy = client
+        .request()
+        .destroy(UniqueIdentifier::from("key-42"))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults());
+    assert_eq!(
+        destroy
+            .expect_err("Destroy reaches the scripted transport")
+            .delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
 }
