@@ -44,5 +44,14 @@ def test_builder_context_manager_releases_native_handle() -> None:
         builder.name("too-late")
 
 
+def test_asynchronous_indicator_is_batch_level_and_not_a_request_option() -> None:
+    with fluent.SymmetricKeyBuilder() as builder:
+        builder.asynchronous_indicator(1)
+        assert builder._asynchronous_indicator == 1
+        assert builder._options is None
+        with pytest.raises(errors.KmipKitError):
+            builder.asynchronous_indicator(True)
+
+
 def test_legacy_extensions_remain_available() -> None:
     assert extensions.UniqueIdentifier.text_string("key-1").text == "key-1"
