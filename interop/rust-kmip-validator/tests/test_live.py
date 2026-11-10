@@ -143,7 +143,7 @@ class ControlledPeer:
                         channel.sendall(reply)
         except Exception as error:
             if not self.stop.is_set():
-                self.errors.append(str(error))
+                self.errors.append(type(error).__name__)
 
     def __enter__(self):
         self.thread.start()
