@@ -3200,6 +3200,63 @@ class Client(_ClientHandle):
 
     _release_name = "kmipkit_client_release"
 
+    def request(self) -> Any:
+        """Return the task-oriented fluent namespace for this client."""
+        from .fluent import Request
+
+        return Request(self)
+
+    def create_symmetric_key(
+        self,
+        limits: ttlv.CodecLimits,
+        *,
+        algorithm: int,
+        length: int,
+        usage_mask: int,
+        name: str | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Create one symmetric key with explicitly selected cryptographic policy."""
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        if options is not None and not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        raw_name = name.encode("utf-8") if name is not None else b""
+        owner = ffi.new("uint8_t[]", raw_name) if raw_name else ffi.NULL
+        request = ffi.new("kmipkit_symmetric_key_request_v1_t *")
+        request.struct_size = ffi.sizeof("kmipkit_symmetric_key_request_v1_t")
+        request.abi_version = 1
+        request.cryptographic_algorithm = int(algorithm)
+        request.cryptographic_length = int(length)
+        request.cryptographic_usage_mask = int(usage_mask)
+        request.name_present = int(name is not None)
+        request.name.data, request.name.length = owner, len(raw_name)
+        from . import fluent
+
+        return fluent._execute_direct_create(self, request, limits, options)
+
+    def get_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Get one object by its typed Unique Identifier."""
+        from .fluent import _execute_direct
+        from ._client_ffi import lib as _lib
+
+        fn = _lib.kmipkit_client_get_by_id_with_options_v1 if options else _lib.kmipkit_client_get_by_id_v1
+        return _execute_direct(self, fn, unique_identifier, limits, options)
+
+    def destroy_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Destroy one object by its typed Unique Identifier."""
+        from .fluent import _execute_direct
+        from ._client_ffi import lib as _lib
+
+        fn = _lib.kmipkit_client_destroy_by_id_with_options_v1 if options else _lib.kmipkit_client_destroy_by_id_v1
+        return _execute_direct(self, fn, unique_identifier, limits, options)
+
     @classmethod
     def create(
         cls,

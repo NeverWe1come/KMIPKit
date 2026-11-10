@@ -26,6 +26,7 @@ ffi.cdef(
     typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;
+    typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
     typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
@@ -202,13 +203,6 @@ ffi.cdef(
         const uint8_t *data;
         uint64_t length;
     } kmipkit_byte_span_v1_t;
-
-    typedef struct {
-        uint32_t source_kind;
-        uint32_t encoding;
-        kmipkit_byte_span_v1_t data;
-    } kmipkit_transport_input_v1_t;
-
     typedef struct {
         uint32_t kind;
         uint32_t reserved;
@@ -216,7 +210,6 @@ ffi.cdef(
         uint32_t nanoseconds;
         uint32_t reserved2;
     } kmipkit_timeout_limit_v1_t;
-
     typedef struct {
         uint32_t struct_size;
         uint32_t abi_version;
@@ -225,6 +218,69 @@ ffi.cdef(
         kmipkit_timeout_limit_v1_t read_timeout;
         kmipkit_timeout_limit_v1_t total_timeout;
     } kmipkit_request_options_v1_t;
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t kind;
+        uint32_t reserved;
+        const uint8_t *text_data;
+        uint64_t text_length;
+        uint32_t enumeration_value;
+        int32_t integer_value;
+    } kmipkit_unique_identifier_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t cryptographic_algorithm;
+        int32_t cryptographic_length;
+        int32_t cryptographic_usage_mask;
+        uint8_t name_present;
+        uint8_t reserved_0;
+        uint8_t reserved_1;
+        uint8_t reserved_2;
+        kmipkit_byte_span_v1_t name;
+    } kmipkit_symmetric_key_request_v1_t;
+
+    int32_t kmipkit_client_create_symmetric_key_v1(
+        kmipkit_client_t *, const kmipkit_symmetric_key_request_v1_t *,
+        kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_create_symmetric_key_with_options_v1(
+        kmipkit_client_t *, const kmipkit_symmetric_key_request_v1_t *,
+        kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *,
+        kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_get_by_id_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_get_by_id_with_options_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *,
+        kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_destroy_by_id_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_destroy_by_id_with_options_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *,
+        kmipkit_client_batch_response_t **);
+    int32_t kmipkit_symmetric_key_builder_create(kmipkit_symmetric_key_builder_t **);
+    int32_t kmipkit_symmetric_key_builder_set_algorithm(kmipkit_symmetric_key_builder_t *, uint32_t);
+    int32_t kmipkit_symmetric_key_builder_set_length(kmipkit_symmetric_key_builder_t *, int32_t);
+    int32_t kmipkit_symmetric_key_builder_set_usage_mask(kmipkit_symmetric_key_builder_t *, int32_t);
+    int32_t kmipkit_symmetric_key_builder_set_name(kmipkit_symmetric_key_builder_t *, const uint8_t *, uint64_t);
+    int32_t kmipkit_symmetric_key_builder_add_catalogued_attribute(kmipkit_symmetric_key_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_symmetric_key_builder_add_attribute_item(kmipkit_symmetric_key_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_symmetric_key_builder_add_vendor_attribute(kmipkit_symmetric_key_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_symmetric_key_builder_build_batch_item(kmipkit_symmetric_key_builder_t *, kmipkit_client_batch_item_t **);
+    int32_t kmipkit_symmetric_key_builder_execute_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_symmetric_key_builder_execute_with_options_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
+    void kmipkit_symmetric_key_builder_release(kmipkit_symmetric_key_builder_t *);
+
+    typedef struct {
+        uint32_t source_kind;
+        uint32_t encoding;
+        kmipkit_byte_span_v1_t data;
+    } kmipkit_transport_input_v1_t;
 
     typedef struct {
         uint32_t struct_size;
@@ -385,17 +441,6 @@ ffi.cdef(
         const uint8_t *result_message_data;
         uint64_t result_message_length;
     } kmipkit_client_batch_item_metadata_v2_t;
-
-    typedef struct {
-        uint32_t struct_size;
-        uint32_t abi_version;
-        uint32_t kind;
-        uint32_t reserved;
-        const uint8_t *text_data;
-        uint64_t text_length;
-        uint32_t enumeration_value;
-        int32_t integer_value;
-    } kmipkit_unique_identifier_v1_t;
 
     typedef struct {
         uint32_t struct_size;
