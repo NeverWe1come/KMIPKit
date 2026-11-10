@@ -91,6 +91,11 @@ find_package(Python3 COMPONENTS Interpreter QUIET)
 find_program(OPENSSL_EXECUTABLE openssl)
 if(Python3_Interpreter_FOUND AND OPENSSL_EXECUTABLE)
     add_test(
+        NAME c_validator_artifact_checkout_history
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_artifact_checkout.py"
+    )
+    add_test(
         NAME c_validator_controlled_tls_peer
         COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/controlled_kms_test.py"
