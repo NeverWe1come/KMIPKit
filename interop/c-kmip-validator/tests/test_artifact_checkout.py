@@ -50,13 +50,12 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
                 live_driver,
             )
         }
-        enum_fallbacks = {
-            name: int(raw_value, 16)
-            for name, raw_value in re.findall(
-                r'\{"([^\"]+)",\s*UINT32_C\(0x([0-9A-Fa-f]+)\)\},',
-                live_driver.split("KMIP_ENUM_FALLBACK_PROBES", 1)[-1].split("};", 1)[0],
-            )
-        }
+        enum_fallbacks = {}
+        for name, hexadecimal_value, decimal_value in re.findall(
+            r'\{"([^\"]+)",\s*UINT32_C\((?:0x([0-9A-Fa-f]+)|([0-9]+))\)\},?',
+            live_driver.split("KMIP_ENUM_FALLBACK_PROBES", 1)[-1].split("};", 1)[0],
+        ):
+            enum_fallbacks[name] = int(hexadecimal_value, 16) if hexadecimal_value else int(decimal_value)
 
         self.assertSetEqual(enum_types, set(enum_probes))
         for name, (wire_tag, helper) in enum_probes.items():

@@ -336,7 +336,137 @@ static kmip_execution_outcome_t outcome_not_run(const char *reason) {
     return outcome;
 }
 
-static bool roundtrip_scalar_for_inspection(bool enumeration, int32_t raw_value) {
+typedef const char *(*kmip_enumeration_name_fn)(uint32_t);
+typedef uint32_t (*kmip_bitmask_split_fn)(uint32_t);
+
+typedef struct {
+    const char *name;
+    uint32_t tag;
+    kmip_enumeration_name_fn name_for_value;
+} kmip_enum_probe_t;
+
+static const kmip_enum_probe_t KMIP_ENUM_PROBES[] = {
+    {"Adjustment Type", UINT32_C(0x420158), KMIPKIT_ENUMERATION_ADJUSTMENT_TYPE_name},
+    {"Alternative Name Type", UINT32_C(0x4200C1), KMIPKIT_ENUMERATION_ALTERNATIVE_NAME_TYPE_name},
+    {"Asynchronous Indicator", UINT32_C(0x420007), KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_name},
+    {"Attestation Type", UINT32_C(0x4200C7), KMIPKIT_ENUMERATION_ATTESTATION_TYPE_name},
+    {"Batch Error Continuation Option", UINT32_C(0x42000E), KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_name},
+    {"Block Cipher Mode", UINT32_C(0x420011), KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_name},
+    {"Cancellation Result", UINT32_C(0x420012), KMIPKIT_ENUMERATION_CANCELLATION_RESULT_name},
+    {"Certificate Request Type", UINT32_C(0x420019), KMIPKIT_ENUMERATION_CERTIFICATE_REQUEST_TYPE_name},
+    {"Certificate Type", UINT32_C(0x42001D), KMIPKIT_ENUMERATION_CERTIFICATE_TYPE_name},
+    {"Client Registration Method", UINT32_C(0x4200F6), KMIPKIT_ENUMERATION_CLIENT_REGISTRATION_METHOD_name},
+    {"Credential Type", UINT32_C(0x420024), KMIPKIT_ENUMERATION_CREDENTIAL_TYPE_name},
+    {"Cryptographic Algorithm", UINT32_C(0x420028), KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_name},
+    {"DRBG Algorithm", UINT32_C(0x4200DB), KMIPKIT_ENUMERATION_DRBG_ALGORITHM_name},
+    {"Data", UINT32_C(0x4200C2), KMIPKIT_ENUMERATION_DATA_name},
+    {"Derivation Method", UINT32_C(0x420031), KMIPKIT_ENUMERATION_DERIVATION_METHOD_name},
+    {"Destroy Action", UINT32_C(0x4200F3), KMIPKIT_ENUMERATION_DESTROY_ACTION_name},
+    {"Digital Signature Algorithm", UINT32_C(0x4200AE), KMIPKIT_ENUMERATION_DIGITAL_SIGNATURE_ALGORITHM_name},
+    {"Encoding Option", UINT32_C(0x4200A3), KMIPKIT_ENUMERATION_ENCODING_OPTION_name},
+    {"Endpoint Role", UINT32_C(0x420151), KMIPKIT_ENUMERATION_ENDPOINT_ROLE_name},
+    {"FIPS186 Variation", UINT32_C(0x4200DC), KMIPKIT_ENUMERATION_FIPS186_VARIATION_name},
+    {"Hashing Algorithm", UINT32_C(0x420038), KMIPKIT_ENUMERATION_HASHING_ALGORITHM_name},
+    {"Interop Function", UINT32_C(0x420160), KMIPKIT_ENUMERATION_INTEROP_FUNCTION_name},
+    {"Item Type", 0, NULL},
+    {"Key Compression Type", UINT32_C(0x420041), KMIPKIT_ENUMERATION_KEY_COMPRESSION_TYPE_name},
+    {"Key Format Type", UINT32_C(0x420042), KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_name},
+    {"Key Role Type", UINT32_C(0x420083), KMIPKIT_ENUMERATION_KEY_ROLE_TYPE_name},
+    {"Key Value Location Type", UINT32_C(0x4200BA), KMIPKIT_ENUMERATION_KEY_VALUE_LOCATION_TYPE_name},
+    {"Key Wrap Type", UINT32_C(0x4200F8), KMIPKIT_ENUMERATION_KEY_WRAP_TYPE_name},
+    {"Link Type", UINT32_C(0x42004B), KMIPKIT_ENUMERATION_LINK_TYPE_name},
+    {"Mask Generator", UINT32_C(0x420101), KMIPKIT_ENUMERATION_MASK_GENERATOR_name},
+    {"NIST Key Type", UINT32_C(0x42013A), KMIPKIT_ENUMERATION_NIST_KEY_TYPE_name},
+    {"Name Type", UINT32_C(0x420054), KMIPKIT_ENUMERATION_NAME_TYPE_name},
+    {"Object Group Member", UINT32_C(0x4200AC), KMIPKIT_ENUMERATION_OBJECT_GROUP_MEMBER_name},
+    {"Object Type", UINT32_C(0x420057), KMIPKIT_ENUMERATION_OBJECT_TYPE_name},
+    {"Opaque Data Type", UINT32_C(0x420059), KMIPKIT_ENUMERATION_OPAQUE_DATA_TYPE_name},
+    {"Operation", UINT32_C(0x42005C), KMIPKIT_ENUMERATION_OPERATION_name},
+    {"PKCS#11 Function", UINT32_C(0x42015A), KMIPKIT_ENUMERATION_PKCS_11_FUNCTION_name},
+    {"PKCS#11 Return Code", UINT32_C(0x42015D), KMIPKIT_ENUMERATION_PKCS_11_RETURN_CODE_name},
+    {"Padding Method", UINT32_C(0x42005F), KMIPKIT_ENUMERATION_PADDING_METHOD_name},
+    {"Processing Stage", UINT32_C(0x420175), KMIPKIT_ENUMERATION_PROCESSING_STAGE_name},
+    {"Profile Name", UINT32_C(0x4200EC), KMIPKIT_ENUMERATION_PROFILE_NAME_name},
+    {"Protection Level", UINT32_C(0x420145), KMIPKIT_ENUMERATION_PROTECTION_LEVEL_name},
+    {"Put Function", UINT32_C(0x420070), KMIPKIT_ENUMERATION_PUT_FUNCTION_name},
+    {"Query Function", UINT32_C(0x420074), KMIPKIT_ENUMERATION_QUERY_FUNCTION_name},
+    {"RNG Algorithm", UINT32_C(0x4200DA), KMIPKIT_ENUMERATION_RNG_ALGORITHM_name},
+    {"RNG Mode", UINT32_C(0x4200F5), KMIPKIT_ENUMERATION_RNG_MODE_name},
+    {"Recommended Curve", UINT32_C(0x420075), KMIPKIT_ENUMERATION_RECOMMENDED_CURVE_name},
+    {"Result Reason", UINT32_C(0x42007E), KMIPKIT_ENUMERATION_RESULT_REASON_name},
+    {"Result Status", UINT32_C(0x42007F), KMIPKIT_ENUMERATION_RESULT_STATUS_name},
+    {"Revocation Reason Code", UINT32_C(0x420082), KMIPKIT_ENUMERATION_REVOCATION_REASON_CODE_name},
+    {"Rotate Name Type", UINT32_C(0x420171), KMIPKIT_ENUMERATION_ROTATE_NAME_TYPE_name},
+    {"Secret Data Type", UINT32_C(0x420086), KMIPKIT_ENUMERATION_SECRET_DATA_TYPE_name},
+    {"Shredding Algorithm", UINT32_C(0x4200F4), KMIPKIT_ENUMERATION_SHREDDING_ALGORITHM_name},
+    {"Split Key Method", UINT32_C(0x42008A), KMIPKIT_ENUMERATION_SPLIT_KEY_METHOD_name},
+    {"State", UINT32_C(0x42008D), KMIPKIT_ENUMERATION_STATE_name},
+    {"Tag", UINT32_C(0x420138), KMIPKIT_ENUMERATION_TAG_name},
+    {"Ticket Type", UINT32_C(0x42014A), KMIPKIT_ENUMERATION_TICKET_TYPE_name},
+    {"Unique Identifier", UINT32_C(0x420094), KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_name},
+    {"Unwrap Mode", UINT32_C(0x4200F2), KMIPKIT_ENUMERATION_UNWRAP_MODE_name},
+    {"Usage Limits Unit", UINT32_C(0x420098), KMIPKIT_ENUMERATION_USAGE_LIMITS_UNIT_name},
+    {"Validation Authority Type", UINT32_C(0x4200E0), KMIPKIT_ENUMERATION_VALIDATION_AUTHORITY_TYPE_name},
+    {"Validation Type", UINT32_C(0x4200E5), KMIPKIT_ENUMERATION_VALIDATION_TYPE_name},
+    {"Validity Indicator", UINT32_C(0x42009B), KMIPKIT_ENUMERATION_VALIDITY_INDICATOR_name},
+    {"Wrapping Method", UINT32_C(0x42009E), KMIPKIT_ENUMERATION_WRAPPING_METHOD_name}
+};
+
+typedef struct {
+    const char *name;
+    uint32_t raw_value;
+} kmip_enum_fallback_probe_t;
+
+/* These standard value forms have no assigned name in the installed C helper. */
+static const kmip_enum_fallback_probe_t KMIP_ENUM_FALLBACK_PROBES[] = {
+    {"Opaque Data Type", UINT32_C(0x80000000)}, /* OASIS KMIP 2.1 §11.35 */
+    {"PKCS#11 Function", UINT32_C(1)}, /* OASIS KMIP 2.1 §11.38: one-based offset */
+    {"PKCS#11 Return Code", UINT32_C(0)}, /* OASIS KMIP 2.1 §11.39: CK_RV value */
+    {"Tag", UINT32_C(0x420001)} /* OASIS KMIP 2.1 §11.56: assigned KMIP tag */
+};
+
+typedef struct {
+    const char *name;
+    uint32_t tag;
+    uint32_t known_mask;
+    kmip_bitmask_split_fn known_bits;
+    kmip_bitmask_split_fn unknown_bits;
+} kmip_bitmask_probe_t;
+
+static const kmip_bitmask_probe_t KMIP_BITMASK_PROBES[] = {
+    {"Cryptographic Usage Mask", UINT32_C(0x42002C), KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_KNOWN_MASK,
+     KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_known_bits, KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_unknown_bits},
+    {"Protection Storage Mask", UINT32_C(0x42015E), KMIPKIT_BITMASK_PROTECTION_STORAGE_MASK_KNOWN_MASK,
+     KMIPKIT_BITMASK_PROTECTION_STORAGE_MASK_known_bits, KMIPKIT_BITMASK_PROTECTION_STORAGE_MASK_unknown_bits},
+    {"Storage Status Mask", UINT32_C(0x42008E), KMIPKIT_BITMASK_STORAGE_STATUS_MASK_KNOWN_MASK,
+     KMIPKIT_BITMASK_STORAGE_STATUS_MASK_known_bits, KMIPKIT_BITMASK_STORAGE_STATUS_MASK_unknown_bits}
+};
+
+static const kmip_enum_probe_t *find_enum_probe(const char *name) {
+    for (size_t index = 0; index < sizeof(KMIP_ENUM_PROBES) / sizeof(KMIP_ENUM_PROBES[0]); ++index) {
+        if (strcmp(name, KMIP_ENUM_PROBES[index].name) == 0) return &KMIP_ENUM_PROBES[index];
+    }
+    return NULL;
+}
+
+static const kmip_enum_fallback_probe_t *find_enum_fallback_probe(const char *name) {
+    for (size_t index = 0; index < sizeof(KMIP_ENUM_FALLBACK_PROBES) /
+                            sizeof(KMIP_ENUM_FALLBACK_PROBES[0]); ++index) {
+        if (strcmp(name, KMIP_ENUM_FALLBACK_PROBES[index].name) == 0)
+            return &KMIP_ENUM_FALLBACK_PROBES[index];
+    }
+    return NULL;
+}
+
+static const kmip_bitmask_probe_t *find_bitmask_probe(const char *name) {
+    for (size_t index = 0; index < sizeof(KMIP_BITMASK_PROBES) / sizeof(KMIP_BITMASK_PROBES[0]); ++index) {
+        if (strcmp(name, KMIP_BITMASK_PROBES[index].name) == 0) return &KMIP_BITMASK_PROBES[index];
+    }
+    return NULL;
+}
+
+static bool roundtrip_scalar_for_inspection(bool enumeration, uint32_t tag_code,
+                                            int64_t raw_value) {
     kmipkit_raw_tag_t *raw_tag = NULL;
     kmipkit_tag_t *tag = NULL;
     kmipkit_ttlv_value_t *value = NULL;
@@ -353,12 +483,12 @@ static bool roundtrip_scalar_for_inspection(bool enumeration, int32_t raw_value)
     uint8_t item_type = 0;
     bool valid = false;
     int32_t status = kmipkit_codec_limits_defaults(&limits);
-    if (status == 0) status = kmipkit_ttlv_raw_tag_create(UINT32_C(0x420057), &raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(tag_code, &raw_tag);
     if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
     if (status == 0) {
         status = enumeration
             ? kmipkit_ttlv_value_enumeration((uint32_t)raw_value, &value)
-            : kmipkit_ttlv_value_integer(raw_value, &value);
+            : kmipkit_ttlv_value_integer((int32_t)raw_value, &value);
     }
     if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, &item);
     if (status == 0) {
@@ -385,7 +515,7 @@ static bool roundtrip_scalar_for_inspection(bool enumeration, int32_t raw_value)
     } else if (status == 0) {
         status = kmipkit_ttlv_value_view_integer(value_view, &actual_integer);
         valid = status == 0 && item_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER &&
-                actual_integer == raw_value;
+                (int64_t)actual_integer == raw_value;
     }
     if (value_view) kmipkit_ttlv_value_view_release(value_view);
     if (item_view) kmipkit_ttlv_item_view_release(item_view);
@@ -400,24 +530,195 @@ static bool roundtrip_scalar_for_inspection(bool enumeration, int32_t raw_value)
     return valid;
 }
 
-static kmip_execution_outcome_t execute_local_model_case(const kmip_test_case_t *test_case) {
-    if (test_case->enum_type[0]) {
-        if (roundtrip_scalar_for_inspection(true, 1) &&
-            roundtrip_scalar_for_inspection(true, INT32_MAX)) {
-            return (kmip_execution_outcome_t){
-                .executed = true, .success = true, .library_validated = true
-            };
-        }
-    } else if (test_case->bitmask_type[0]) {
-        if (roundtrip_scalar_for_inspection(false, 1) &&
-            roundtrip_scalar_for_inspection(false, INT32_MIN)) {
-            return (kmip_execution_outcome_t){
-                .executed = true, .success = true, .library_validated = true
-            };
+static bool roundtrip_ttlv_item_type(uint32_t expected_type) {
+    static const uint8_t bigint_bytes[] = {UINT8_C(1)};
+    static const uint8_t byte_string[] = {UINT8_C(0xA5)};
+    static const uint8_t text_string[] = {'i', 't', 'e', 'm'};
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    kmipkit_ttlv_structure_t *nested_structure = NULL;
+    kmipkit_ttlv_structure_t *structure = NULL;
+    kmipkit_ttlv_structure_t *updated_structure = NULL;
+    kmipkit_ttlv_structure_view_t *structure_view = NULL;
+    kmipkit_ttlv_item_view_t *item_view = NULL;
+    kmipkit_codec_limits_t *limits = NULL;
+    uint64_t item_count = 0;
+    uint8_t actual_type = 0;
+    int32_t status = kmipkit_codec_limits_defaults(&limits);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(UINT32_C(0x420057), &raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
+
+    if (status == 0) {
+        switch (expected_type) {
+            case KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE:
+                status = kmipkit_ttlv_structure_create(&nested_structure);
+                if (status == 0)
+                    status = kmipkit_ttlv_value_structure(nested_structure, limits, &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_INTEGER:
+                status = kmipkit_ttlv_value_integer(-7, &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER:
+                status = kmipkit_ttlv_value_long_integer(INT64_C(-7000000001), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER:
+                status = kmipkit_ttlv_value_big_integer(
+                    limits, bigint_bytes, sizeof(bigint_bytes), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION:
+                status = kmipkit_ttlv_value_enumeration(UINT32_C(0xF1234567), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN:
+                status = kmipkit_ttlv_value_boolean(1, &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING:
+                status = kmipkit_ttlv_value_text_string(
+                    limits, text_string, sizeof(text_string), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING:
+                status = kmipkit_ttlv_value_byte_string(
+                    limits, byte_string, sizeof(byte_string), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME:
+                status = kmipkit_ttlv_value_date_time(INT64_C(1700000000), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_INTERVAL:
+                status = kmipkit_ttlv_value_interval(UINT32_C(60), &value);
+                break;
+            case KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED:
+                status = kmipkit_ttlv_value_date_time_extended(INT64_C(1700000000), &value);
+                break;
+            default:
+                status = -1;
+                break;
         }
     }
-    return outcome_not_run(
-        "generic enum and bitmask construction/read routes do not cover this local case shape");
+    if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, &item);
+    if (status == 0) {
+        value = NULL;
+        status = kmipkit_ttlv_structure_create(&structure);
+    }
+    if (status == 0)
+        status = kmipkit_ttlv_structure_with_item(structure, item, limits, &updated_structure);
+    if (status == 0) {
+        structure = updated_structure;
+        updated_structure = NULL;
+        item = NULL;
+        status = kmipkit_ttlv_structure_view(structure, &structure_view);
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(structure_view, &item_count);
+    if (status == 0 && item_count == 1)
+        status = kmipkit_ttlv_structure_view_item_at(structure_view, 0, &item_view);
+    if (status == 0) status = kmipkit_ttlv_item_view_type(item_view, &actual_type);
+
+    bool valid = status == 0 && item_count == 1 && actual_type == expected_type;
+    if (item_view) kmipkit_ttlv_item_view_release(item_view);
+    if (structure_view) kmipkit_ttlv_structure_view_release(structure_view);
+    if (updated_structure) kmipkit_ttlv_structure_release(updated_structure);
+    if (structure) kmipkit_ttlv_structure_release(structure);
+    if (item) kmipkit_ttlv_item_release(item);
+    if (nested_structure) kmipkit_ttlv_structure_release(nested_structure);
+    if (value) kmipkit_ttlv_value_release(value);
+    if (tag) kmipkit_tag_release(tag);
+    if (raw_tag) kmipkit_raw_tag_release(raw_tag);
+    if (limits) kmipkit_codec_limits_release(limits);
+    return valid;
+}
+
+static bool roundtrip_all_ttlv_item_types(void) {
+    static const uint32_t item_types[] = {
+        KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE,
+        KMIPKIT_TTLV_ITEM_TYPE_INTEGER,
+        KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER,
+        KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER,
+        KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+        KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN,
+        KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING,
+        KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME,
+        KMIPKIT_TTLV_ITEM_TYPE_INTERVAL,
+        KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED
+    };
+    for (size_t index = 0; index < sizeof(item_types) / sizeof(item_types[0]); ++index) {
+        if (!KMIPKIT_ENUMERATION_ITEM_TYPE_name(item_types[index]) ||
+            !roundtrip_ttlv_item_type(item_types[index])) return false;
+    }
+    return true;
+}
+
+static kmip_execution_outcome_t local_model_failure(const char *message,
+                                                    const char *type_name) {
+    kmip_execution_outcome_t outcome = { .executed = true, .library_failed = true };
+    snprintf(outcome.result_reason, sizeof(outcome.result_reason), "%s: %s",
+             message, type_name);
+    return outcome;
+}
+
+static kmip_execution_outcome_t local_model_success(void) {
+    return (kmip_execution_outcome_t){
+        .executed = true, .success = true, .library_validated = true
+    };
+}
+
+static kmip_execution_outcome_t execute_local_model_case(const kmip_test_case_t *test_case) {
+    if (test_case->enum_type[0]) {
+        if (strcmp(test_case->enum_type, "Item Type") == 0) {
+            return roundtrip_all_ttlv_item_types()
+                ? local_model_success()
+                : local_model_failure("generic TTLV item-type roundtrip failed", test_case->enum_type);
+        }
+        const kmip_enum_probe_t *probe = find_enum_probe(test_case->enum_type);
+        if (!probe || !probe->name_for_value || probe->tag == 0) {
+            return outcome_not_run(
+                "no standard field tag and named-value helper are mapped for this KMIP enumeration");
+        }
+        uint32_t known_value = 0;
+        bool found_known_value = false;
+        for (uint32_t candidate = 0; candidate <= UINT16_MAX; ++candidate) {
+            if (probe->name_for_value(candidate)) {
+                known_value = candidate;
+                found_known_value = true;
+                break;
+            }
+        }
+        if (!found_known_value) {
+            const kmip_enum_fallback_probe_t *fallback =
+                find_enum_fallback_probe(test_case->enum_type);
+            if (!fallback) {
+                return outcome_not_run(
+                    "the installed C named-value helper exposes no assigned value and no normative fallback is mapped");
+            }
+            known_value = fallback->raw_value;
+        }
+        if (!roundtrip_scalar_for_inspection(true, probe->tag, known_value) ||
+            !roundtrip_scalar_for_inspection(true, probe->tag, UINT32_MAX)) {
+            return local_model_failure("KMIP Enumeration roundtrip failed", test_case->enum_type);
+        }
+        return local_model_success();
+    }
+    if (test_case->bitmask_type[0]) {
+        const kmip_bitmask_probe_t *probe = find_bitmask_probe(test_case->bitmask_type);
+        if (!probe || !probe->known_bits || !probe->unknown_bits || probe->tag == 0) {
+            return outcome_not_run("no standard tag and bit-preservation helpers are mapped for this KMIP mask");
+        }
+        uint32_t unknown_bit = UINT32_C(0x80000000);
+        while (unknown_bit != 0 && (probe->known_mask & unknown_bit) != 0) unknown_bit >>= 1;
+        uint32_t combined_mask = probe->known_mask | unknown_bit;
+        int64_t unknown_as_integer = unknown_bit == UINT32_C(0x80000000)
+            ? INT32_MIN : (int64_t)unknown_bit;
+        if (unknown_bit == 0 ||
+            probe->known_bits(combined_mask) != probe->known_mask ||
+            probe->unknown_bits(combined_mask) != unknown_bit ||
+            !roundtrip_scalar_for_inspection(false, probe->tag, probe->known_mask) ||
+            !roundtrip_scalar_for_inspection(false, probe->tag, unknown_as_integer)) {
+            return local_model_failure("KMIP bitmask construction or roundtrip failed",
+                                       test_case->bitmask_type);
+        }
+        return local_model_success();
+    }
+    return outcome_not_run("local model catalog case has no enum or bitmask discriminator");
 }
 
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
