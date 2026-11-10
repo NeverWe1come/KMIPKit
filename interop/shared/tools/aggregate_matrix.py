@@ -43,6 +43,18 @@ def _enum_key(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value.casefold())
 
 
+def _numeric_enum_code(value: object) -> int | None:
+    if isinstance(value, int):
+        return value
+    text = str(value).strip()
+    if re.fullmatch(r"[0-9a-fA-F]{8}", text):
+        return int(text, 16)
+    try:
+        return int(text, 0) if text.lower().startswith("0x") else int(text, 10)
+    except ValueError:
+        return None
+
+
 def _load_enum_codes() -> dict[str, dict[str, int]]:
     source_path = Path(__file__).resolve().parents[3] / "specification" / "catalog" / "kmip-2.1.json"
     try:
@@ -64,7 +76,9 @@ def _load_enum_codes() -> dict[str, dict[str, int]]:
         for enum_name in RESULT_ENUMS.values():
             if enum_ids.get(enum_name) not in element.get("parent_element_ids", []):
                 continue
-            codes[enum_name][_enum_key(element["name"])] = int(wire_value, 16)
+            code = _numeric_enum_code(wire_value)
+            if code is not None:
+                codes[enum_name][_enum_key(element["name"])] = code
     for enum_name, aliases in RESULT_ENUM_ALIASES.items():
         codes[enum_name].update(aliases)
     return codes
@@ -73,16 +87,10 @@ def _load_enum_codes() -> dict[str, dict[str, int]]:
 def _normalize_enum_code(value: object, enum_name: str, enum_codes: dict[str, dict[str, int]]) -> int | str | None:
     if value is None:
         return None
-    if isinstance(value, int):
-        return value
-    text = str(value).strip()
-    if re.fullmatch(r"[0-9a-fA-F]{8}", text):
-        return int(text, 16)
-    try:
-        return int(text, 0) if text.lower().startswith("0x") else int(text, 10)
-    except ValueError:
-        pass
-    key = _enum_key(text)
+    code = _numeric_enum_code(value)
+    if code is not None:
+        return code
+    key = _enum_key(str(value))
     known_code = enum_codes.get(enum_name, {}).get(key)
     return known_code if known_code is not None else f"unmapped:{key}"
 
