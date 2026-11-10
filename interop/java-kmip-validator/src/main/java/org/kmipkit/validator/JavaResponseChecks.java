@@ -11,4 +11,8 @@ final class JavaResponseChecks {
     static boolean advertisesRequestedVersion(List<ProtocolVersion> advertised, ProtocolVersion requested) {
         return advertised != null && requested != null && advertised.contains(requested);
     }
+
+    static boolean queryAdvertisesOperations(List<Long> operations) {
+        return operations != null && !operations.isEmpty();
+    }
 }

@@ -110,8 +110,9 @@ public final class JavaKmipDriver implements AutoCloseable {
             case "Query" -> {
                 var payload = result.typedQueryResponse();
                 if (payload.isEmpty()) yield false;
-                payload.orElseThrow().close();
-                yield true;
+                try (var query = payload.orElseThrow()) {
+                    yield JavaResponseChecks.queryAdvertisesOperations(query.operations());
+                }
             }
             case "Get Constraints" -> {
                 var payload = result.getConstraintsResponse();

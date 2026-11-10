@@ -107,11 +107,11 @@ class ControlledTlsPeerTest {
             listener.close();
         }
         byte[] request = peer.get(15, TimeUnit.SECONDS);
-        assertEquals("passed", outcome.status(), outcome.toString());
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x5c, 0x05, 0, 0, 0, 4, 0, 0, 0, 0x18}),
                 "The controlled peer must receive the typed Query operation.");
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4, 0, 0, 0, 1}),
                 "The Query request must include a non-empty Query Function.");
+        assertEquals("passed", outcome.status(), outcome.toString());
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
@@ -216,7 +216,10 @@ class ControlledTlsPeerTest {
         byte[] responseItem = structure(0x42000f,
                 item(0x42005c, 5, intBytes(0x18)),
                 item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
-                item(0x42007f, 5, intBytes(0)), structure(0x42007c));
+                item(0x42007f, 5, intBytes(0)),
+                structure(0x42007c,
+                        item(0x42005c, 5, intBytes(0x3b)),
+                        structure(0x42015f)));
         return structure(0x42007b, header, responseItem);
     }
 
