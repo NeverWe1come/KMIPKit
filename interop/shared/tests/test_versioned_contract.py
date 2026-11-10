@@ -340,6 +340,50 @@ class VersionedContractTests(unittest.TestCase):
                 with self.subTest(separate=field):
                     self.assertEqual(2, len(matrix["matrices"]))
 
+    def test_aggregator_does_not_claim_parity_for_incompatible_or_unverified_evidence(self) -> None:
+        first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
+        second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="failed", configuration_fingerprint="f" * 64)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = [write_result(root, "first", first), write_result(root, "second", second)]
+            matrix = aggregate_results(paths)
+            row = matrix["matrices"][0]["cases"][0]
+            self.assertEqual("INCOMPARABLE", matrix["matrices"][0]["comparability"])
+            self.assertEqual("NOT_COMPARABLE", row["status"])
+
+            second["server"]["configuration_fingerprint"] = first["server"]["configuration_fingerprint"]
+            second["server"].pop("version")
+            write_result(root, "second", second)
+            matrix = aggregate_results(paths)
+            row = matrix["matrices"][0]["cases"][0]
+            self.assertEqual("UNVERIFIED", matrix["matrices"][0]["comparability"])
+            self.assertEqual("UNVERIFIED", row["status"])
+
+    def test_aggregator_compares_parity_reasons_and_library_correctness(self) -> None:
+        first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="failed")
+        second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="failed")
+        first["cases"][0].update({
+            "result_status": "OperationFailed", "result_reason": "InvalidField",
+            "library_correctness": "passed", "parity": "matched",
+        })
+        second["cases"][0].update({
+            "result_status": "OperationFailed", "result_reason": "CryptographicFailure",
+            "library_correctness": "failed", "parity": "mismatched",
+        })
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = aggregate_results([
+                write_result(root, "first", first), write_result(root, "second", second),
+            ])
+        row = matrix["matrices"][0]["cases"][0]
+        self.assertEqual("COMPARABLE", matrix["matrices"][0]["comparability"])
+        self.assertEqual("PARITY_MISMATCH", row["status"])
+        self.assertEqual({"result_reason", "library_correctness", "parity"}, set(row["difference_dimensions"]))
+        markdown = generate_markdown(matrix)
+        html_output = html.unescape(generate_html(matrix))
+        for label in ("InvalidField", "CryptographicFailure", "library:passed", "library:failed", "parity:mismatched"):
+            self.assertIn(label, markdown + html_output)
+
 
 if __name__ == "__main__":
     unittest.main()
