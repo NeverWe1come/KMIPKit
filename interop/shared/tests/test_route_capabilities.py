@@ -72,6 +72,27 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.data['routes'].append(route)
         self.reject(self.data, 'same constructor')
 
+    def test_unknown_route_id_is_rejected(self):
+        self.data['routes'][0]['route_id'] += '.invented'
+        self.reject(self.data, 'unknown route_id')
+
+    def test_constructor_cannot_claim_another_operation(self):
+        route = next(r for r in self.data['routes'] if r['mode'] == 'network')
+        route['operation_ids'] = ['KMIPKIT-ELEM-OP-C2S-NONEXISTENT']
+        self.reject(self.data, 'operation mapping')
+
+    def test_missing_supported_pair_is_rejected(self):
+        route = next(r for r in self.data['routes'] if r['mode'] == 'network')
+        route['combinations'].pop()
+        self.reject(self.data, 'supported encoding/transport')
+
+    def test_missing_execution_route_is_rejected(self):
+        self.data['execution_routes'].pop()
+        self.reject(self.data, 'execution route')
+
+    def test_regeneration_matches_checked_in_capabilities(self):
+        self.assertEqual(self.data, self.module.build_manifest(ROOT, self.data['library_commit']))
+
     def test_artifact_probe_rejects_wrong_commit(self):
         with self.assertRaisesRegex(ValueError, 'artifact commit'):
             self.module.validate_artifact_identity(self.data, {'library_commit': 'a' * 40})
