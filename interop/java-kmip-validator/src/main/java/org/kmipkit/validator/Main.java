@@ -142,7 +142,7 @@ public final class Main {
         if ("local_model".equals(testCase.execution().mode())) {
             TtlvModelChecks.ModelCheck model = TtlvModelChecks.verifyLocalCase(testCase);
             return model.passed()
-                    ? JavaKmipDriver.CaseOutcome.passed(elapsedMillis(start), null, null)
+                    ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
                     : JavaKmipDriver.CaseOutcome.failed("Local TTLV model assertion failed.", elapsedMillis(start));
         }
         if ("mutating".equals(testCase.execution().mutation())) {

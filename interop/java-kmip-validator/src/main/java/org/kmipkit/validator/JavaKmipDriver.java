@@ -229,6 +229,11 @@ public final class JavaKmipDriver implements AutoCloseable {
                     status, reason, null);
         }
 
+        static CaseOutcome localModelPassed(double elapsed) {
+            return new CaseOutcome("passed", "passed", "unknown", "not_compared", elapsed,
+                    null, null, null);
+        }
+
         static CaseOutcome failed(String diagnostic, double elapsed) {
             return failed(diagnostic, elapsed, null, null);
         }
