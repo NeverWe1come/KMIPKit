@@ -176,7 +176,12 @@ def _start_lifecycle_peer(
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
                     if expected_asynchronous_indicator is not None:
-                        assert _request_header_indicator(request) == expected_asynchronous_indicator
+                        actual_indicator = _request_header_indicator(request)
+                        if actual_indicator != expected_asynchronous_indicator:
+                            raise AssertionError(
+                                "expected asynchronous indicator "
+                                f"{expected_asynchronous_indicator}, got {actual_indicator}"
+                            )
                     operation, request_identifier = _request_operation_and_identifier(request)
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
