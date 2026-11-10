@@ -428,6 +428,22 @@ static bool revoke_response_matches_created_key(
         same_text_identifier(created_identifier, &response_identifier);
 }
 
+static bool activate_response_matches_created_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_unique_identifier_v1_t response_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    int32_t status = kmipkit_client_batch_item_response_activate(
+        response_item, &present, &response_identifier);
+    *out_status = status;
+    return status == 0 && present &&
+        same_text_identifier(created_identifier, &response_identifier);
+}
+
 static bool create_authentication(kmip_live_client_t *client,
                                   kmipkit_authentication_t **out_authentication) {
     const char *username = getenv(client->username_env);
@@ -1083,13 +1099,18 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0;
-    bool object_lifecycle_workflow = create_workflow || check_workflow || get_workflow ||
+    bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
+    bool revoking_lifecycle_workflow = check_workflow || activate_workflow;
+    bool object_lifecycle_workflow = create_workflow || revoking_lifecycle_workflow || get_workflow ||
         get_attributes_workflow || get_attribute_list_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow) {
         return outcome_not_run("Create variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Check") == 0 && !check_workflow) {
         return outcome_not_run("Check variations are not yet mapped to isolated C fixtures");
+    }
+    if (strcmp(test_case->operation, "Activate") == 0 && !activate_workflow) {
+        return outcome_not_run("Activate variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get") == 0 && !get_workflow) {
         return outcome_not_run("object-specific Get recipes are not yet mapped to isolated C fixtures");
@@ -1155,6 +1176,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (check_workflow) {
                 status = kmipkit_client_batch_item_check(
                     &placeholder, 0, 0, 0, 0, 0, 0, &item);
+            } else if (activate_workflow) {
+                status = kmipkit_client_batch_item_activate(&placeholder, &item);
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
@@ -1167,7 +1190,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         }
-        if (status == 0 && check_workflow) {
+        if (status == 0 && revoking_lifecycle_workflow) {
             request_construction_step = "Revoke cleanup using ID Placeholder";
             status = kmipkit_revocation_reason_create(
                 KMIPKIT_ENUMERATION_REVOCATION_REASON_CODE_CESSATION_OF_OPERATION,
@@ -1202,8 +1225,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = set_batch_item_id(&setup_item, "interop-create");
                 if (status == 0) status = set_batch_item_id(
                     &item, check_workflow ? "interop-check" :
+                           activate_workflow ? "interop-activate" :
                            get_workflow ? "interop-get" : "interop-attributes");
-                if (status == 0 && check_workflow) {
+                if (status == 0 && revoking_lifecycle_workflow) {
                     status = set_batch_item_id(&revoke_item, "interop-revoke");
                 }
             }
@@ -1259,7 +1283,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
-        if (status == 0 && check_workflow) {
+        if (status == 0 && revoking_lifecycle_workflow) {
             status = kmipkit_client_batch_add_item(batch, &revoke_item);
         }
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
@@ -1306,7 +1330,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
     uint64_t expected_response_count = create_workflow ? 2 :
-        check_workflow ? 4 : object_lifecycle_workflow ? 3 : 1;
+        revoking_lifecycle_workflow ? 4 : object_lifecycle_workflow ? 3 : 1;
     if (status != 0 || response_count != expected_response_count) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
@@ -1327,16 +1351,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .abi_version = 2
         };
         status = kmipkit_client_batch_response_item_at(response, 0, &setup_response_item);
-        if (status == 0 && check_workflow) {
+        if (status == 0 && revoking_lifecycle_workflow) {
             status = kmipkit_client_batch_response_item_at(response, 2, &revoke_response_item);
         }
         if (status == 0) status = kmipkit_client_batch_response_item_at(
-            response, create_workflow ? 1 : check_workflow ? 3 : 2, &cleanup_response_item);
+            response, create_workflow ? 1 : revoking_lifecycle_workflow ? 3 : 2, &cleanup_response_item);
         if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
             setup_response_item, &setup_metadata);
         if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
             cleanup_response_item, &cleanup_metadata);
-        if (status == 0 && check_workflow) {
+        if (status == 0 && revoking_lifecycle_workflow) {
             status = kmipkit_client_batch_item_response_metadata_v2(
                 revoke_response_item, &revoke_metadata);
         }
@@ -1347,12 +1371,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         if (setup_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
-            (check_workflow && revoke_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) ||
+            (revoking_lifecycle_workflow && revoke_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) ||
             cleanup_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
             const kmipkit_client_batch_item_metadata_v2_t *failure =
                 setup_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS
                     ? &setup_metadata :
-                check_workflow && revoke_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS
+                revoking_lifecycle_workflow && revoke_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS
                     ? &revoke_metadata : &cleanup_metadata;
             outcome.library_validated = true;
             outcome.has_result_status_code = true;
@@ -1388,7 +1412,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit did not confirm cleanup of the isolated test object");
             goto cleanup;
         }
-        if (check_workflow && !revoke_response_matches_created_key(
+        if (revoking_lifecycle_workflow && !revoke_response_matches_created_key(
                 revoke_response_item, &created_identifier, &status)) {
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
@@ -1567,6 +1591,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Query response omitted Operation enumeration fields");
+        }
+    } else if (activate_workflow) {
+        if (!activate_response_matches_created_key(response_item, &created_identifier, &status)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Activate did not return the created object's identifier");
+            goto cleanup;
         }
     } else if (check_workflow) {
         if (!check_response_matches_created_key(response_item, &created_identifier, &status)) {
