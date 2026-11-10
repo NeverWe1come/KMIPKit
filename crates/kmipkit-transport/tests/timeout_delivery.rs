@@ -220,7 +220,7 @@ async fn finalized_exchange_rejects_later_flush_io() {
     assert_eq!(error.kind(), io::ErrorKind::Interrupted);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn positive_read_progress_restarts_only_the_read_deadline() {
     let inner = ScriptIo::manual();
     let progress = inner.clone();
@@ -229,17 +229,19 @@ async fn positive_read_progress_restarts_only_the_read_deadline() {
         inner,
         Some(Duration::from_millis(500)),
         Some(Duration::from_secs(1)),
-        Some(Instant::now() + Duration::from_secs(3)),
+        None,
         control.clone(),
     );
     let read = tokio::spawn(async move {
         let mut bytes = [0; 3];
         read_exact(&mut io, &mut bytes).await.map(|()| bytes)
     });
+    tokio::task::yield_now().await;
 
     for byte in [7, 8, 9] {
-        tokio::time::sleep(Duration::from_millis(200)).await;
+        tokio::time::advance(Duration::from_millis(200)).await;
         progress.release_read(vec![byte]);
+        tokio::task::yield_now().await;
     }
 
     assert_eq!(
