@@ -71,11 +71,18 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
         elif operation == 11:
             attributes = enumeration(0x420028, 3) + integer(0x42002A, 128)
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(0x420125, 1, attributes)
+        elif operation == 12:
+            payload_value = (
+                tlv(0x420094, 7, b"fixture-key-1")
+                + enumeration(0x42013B, 0x420028)
+                + enumeration(0x42013B, 0x42002A)
+            )
         elif operation == 20:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         unique_batch_item_id = {
             1: b"interop-create",
             11: b"interop-attributes",
+            12: b"interop-attributes",
             20: b"interop-destroy",
         }.get(operation)
         item_fields = integer(0x42005C, operation, 5)
@@ -160,15 +167,15 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
-    expected_operations = (1, 8, 11, 20, 24, 44) if protocol_version == "2.0" else (1, 8, 11, 20, 24, 30, 44, 45, 59)
+    expected_operations = (1, 8, 11, 12, 20, 24, 44) if protocol_version == "2.0" else (1, 8, 11, 12, 20, 24, 30, 44, 45, 59)
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
-              "test-op-locate", "test-op-login", "test-op-get-attributes")
+              "test-op-locate", "test-op-login", "test-op-get-attributes", "test-op-get-attribute-list")
     )
     if protocol_version == "2.0":
-        expected_cases += ("test-op-get-attributes",)
+        expected_cases += ("test-op-get-attributes", "test-op-get-attribute-list")
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
@@ -214,11 +221,11 @@ def main() -> int:
                             ) for offset in offsets)
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
-                            if operations == (1, 11, 20) and any(
+                            if operations in ((1, 11, 20), (1, 12, 20)) and any(
                                     tlv(0x420093, 8, item_id) not in request
                                     for item_id in (b"interop-create", b"interop-attributes", b"interop-destroy")):
                                 raise AssertionError("lifecycle batch omitted a unique batch item ID")
-                            if operations == (1, 11, 20) and enumeration(0x42000E, 1) not in request:
+                            if operations in ((1, 11, 20), (1, 12, 20)) and enumeration(0x42000E, 1) not in request:
                                 raise AssertionError("lifecycle batch must continue to Destroy after a failed item")
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
@@ -304,7 +311,8 @@ def main() -> int:
                 f"stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
             ) from server_errors[0]
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
-                or (1, 11, 20) not in handled_batches):
+                or (1, 11, 20) not in handled_batches
+                or (1, 12, 20) not in handled_batches):
             raise AssertionError(
                 f"controlled peer observed batches {handled_batches!r}, "
                 f"expected {expected_operations!r}"
@@ -348,11 +356,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 74,
+            "passed": 75,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 138,
+            "not_run": 137,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -361,11 +369,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 69,
+            "passed": 70,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 134,
+            "not_run": 133,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
