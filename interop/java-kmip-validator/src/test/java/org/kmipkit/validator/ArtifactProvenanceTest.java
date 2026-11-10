@@ -3,6 +3,7 @@ package org.kmipkit.validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
+import org.kmipkit.extensions.ClientBatchItem;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +31,18 @@ class ArtifactProvenanceTest {
 
         Files.write(jar, new byte[] {4, 3, 2, 1});
         assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, COMMIT));
+    }
+
+    @Test
+    void executesPublicApiFromTheInstalledJar() throws Exception {
+        Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
+        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        Path loadedJar = Path.of(ClientBatchItem.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                .toAbsolutePath().normalize();
+        assertEquals(provenance.artifactPath(), loadedJar);
+        try (ClientBatchItem ping = ClientBatchItem.ping()) {
+            assertEquals(0, ping.extensionCount());
+        }
     }
 
     private static Path writeManifest(Path directory, Path jar, String commit) throws Exception {
