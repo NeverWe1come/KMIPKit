@@ -28,6 +28,7 @@ class JavaRouteInventoryTest {
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attributes").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attribute List").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Constraints").status());
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Create").status());
         assertEquals(JavaRouteInventory.Status.PAYLOAD_ONLY, inventory.get("Cancel").status());
         assertEquals(JavaRouteInventory.Status.NO_PUBLIC_ROUTE, inventory.get("Set Endpoint Role").status());
 

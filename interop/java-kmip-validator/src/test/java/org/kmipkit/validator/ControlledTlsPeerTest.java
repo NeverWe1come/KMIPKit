@@ -28,6 +28,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
     private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
+    private static final String CREATED_OBJECT_ID = "controlled-create-object-id";
 
     @TempDir
     Path temporaryDirectory;
@@ -153,8 +156,63 @@ class ControlledTlsPeerTest {
         assertEquals("passed", outcome.status(), outcome.toString());
     }
 
+    @Test
+    void typedCreateUsesAnIsolatedNameAndDestroysTheCreatedObject() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        X509Certificate serverCertificate = certificate(serverCertificatePem);
+        X509Certificate clientCertificate = certificate(clientCertificatePem);
+        SSLServerSocket listener = listener(serverCertificate, privateKey(serverPrivateKeyPem), clientCertificate);
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveCreateCleanup(listener));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-create-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("create-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true));
+        var connection = ConnectionConfig.load(connectionFile);
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream()
+                .filter(value -> value.caseId().equals("test-op-create"))
+                .findFirst().orElseThrow();
+
+        JavaKmipDriver.CaseOutcome outcome;
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
+            outcome = driver.execute(testCase);
+        } finally {
+            listener.close();
+        }
+        assertEquals("passed", outcome.status(), outcome.toString());
+        List<byte[]> requests = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(2, requests.size());
+        assertTrue(contains(requests.get(0), new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4, 0, 0, 0, 1}),
+                "The controlled peer must receive Create before cleanup.");
+        assertTrue(contains(requests.get(0), new byte[] {0x42, 0x00, 0x53, 1}),
+                "The Create request must include an isolated Name attribute.");
+        assertTrue(contains(requests.get(0), "kmipkit-create-".getBytes(StandardCharsets.UTF_8)),
+                "The Create Name must use the catalog's unique prefix.");
+        assertTrue(contains(requests.get(0), item(0x420054, 5, intBytes(1))),
+                "The Create Name must include the Name Type enumeration.");
+        assertTrue(contains(requests.get(0), item(0x420028, 5, intBytes(3))),
+                "The isolated object must request AES.");
+        assertTrue(contains(requests.get(0), item(0x42002a, 2, intBytes(256))),
+                "The isolated object must request a 256-bit key.");
+        assertTrue(contains(requests.get(1), new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4, 0, 0, 0, 0x14}),
+                "The created object must be destroyed in a separate exchange.");
+        assertTrue(contains(requests.get(1), item(0x420094, 7,
+                CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
+    }
+
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
                                   byte[] clientPrivateKey) throws Exception {
+        return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey, false);
+    }
+
+    private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
+                                  byte[] clientPrivateKey, boolean allowMutations) throws Exception {
         Path serverCert = temporaryDirectory.resolve("server-cert.pem");
         Path clientCert = temporaryDirectory.resolve("client-cert.pem");
         Path clientKey = temporaryDirectory.resolve("client-key.pem");
@@ -179,7 +237,7 @@ class ControlledTlsPeerTest {
         tls.put("read_timeout_seconds", 5);
         root.putObject("environment").put("kind", "dedicated_test")
                 .put("dedicated_test_environment_confirmed", true);
-        root.putObject("execution_policy").put("allow_mutations", false);
+        root.putObject("execution_policy").put("allow_mutations", allowMutations);
         return new ObjectMapper().writeValueAsString(root);
     }
 
@@ -271,6 +329,57 @@ class ControlledTlsPeerTest {
                 item(0x42005c, 5, intBytes(0x2c)),
                 item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
                 item(0x42007f, 5, intBytes(0)), structure(0x42007c));
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static List<byte[]> serveCreateCleanup(SSLServerSocket listener) throws Exception {
+        var requests = new ArrayList<byte[]>();
+        for (int exchange = 0; exchange < 2; exchange++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = readTtlv(socket.getInputStream());
+                requests.add(request);
+                byte[] operation = new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4,
+                        0, 0, 0, (byte) (exchange == 0 ? 1 : 0x14)};
+                if (!contains(request, operation)) {
+                    throw new AssertionError("The controlled create recipe sent an unexpected operation.");
+                }
+                byte[] response = exchange == 0 ? createResponse() : destroyResponse();
+                socket.getOutputStream().write(response);
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(requests);
+    }
+
+    private static byte[] createResponse() throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420057, 5, intBytes(2)),
+                item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(1)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] destroyResponse() throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x14)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
         return structure(0x42007b, header, responseItem);
     }
 

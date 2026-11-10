@@ -136,6 +136,31 @@ class MainContractTest {
         assertTrue(result.path("diagnostic").asText().contains("isolated object fixture"));
     }
 
+    @Test
+    void executableCreateIsWithheldWithoutBothMutationOptIns() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        JsonNode create = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "test-op-create".equals(testCase.path("case_id").asText()))
+                .findFirst().orElseThrow();
+        catalog.set("test_cases", mapper.createArrayNode().add(create.deepCopy()));
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+        Path catalogFile = temporaryDirectory.resolve("create-mutation-case.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+        Path output = temporaryDirectory.resolve("create-mutation-report");
+
+        assertCommand(0, "run", "--connection", connection("2.1", "typed-protocol").toString(),
+                "--catalog", catalogFile.toString(), "--artifact-manifest",
+                Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
+                "--output-dir", output.toString());
+
+        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals("policy_restricted", result.path("status").asText());
+        assertEquals("unknown", result.path("server_compatibility").asText());
+        assertTrue(result.path("diagnostic").asText().contains("--enable-mutations"));
+    }
+
     private Path connection() throws Exception {
         return connection("2.1", "high-level");
     }
