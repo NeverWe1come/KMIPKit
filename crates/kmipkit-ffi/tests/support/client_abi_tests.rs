@@ -3714,6 +3714,237 @@ fn receive_ttlv_frame(stream: &mut impl Read) -> io::Result<()> {
     Ok(())
 }
 
+fn receive_ttlv_frame_bytes(stream: &mut impl Read) -> io::Result<Vec<u8>> {
+    let mut header = [0_u8; 8];
+    stream.read_exact(&mut header)?;
+    let length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
+    if length > MAX_TEST_TTLV_BODY_BYTES {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "oversized test TTLV body",
+        ));
+    }
+    let padded_length = length
+        .checked_add(7)
+        .map(|padded| padded / 8 * 8)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "TTLV padding overflow"))?;
+    let mut frame = header.to_vec();
+    frame.resize(8 + padded_length, 0);
+    stream.read_exact(&mut frame[8..])?;
+    Ok(frame)
+}
+
+fn find_ttlv_integer(bytes: &[u8], expected_tag: u32) -> Option<i32> {
+    let mut offset = 0;
+    while offset + 8 <= bytes.len() {
+        let tag = u32::from_be_bytes([0, bytes[offset], bytes[offset + 1], bytes[offset + 2]]);
+        let item_type = bytes[offset + 3];
+        let length = u32::from_be_bytes([
+            bytes[offset + 4],
+            bytes[offset + 5],
+            bytes[offset + 6],
+            bytes[offset + 7],
+        ]) as usize;
+        let padded_length = length.checked_add(7)? / 8 * 8;
+        let value_start = offset + 8;
+        let value_end = value_start.checked_add(length)?;
+        let item_end = value_start.checked_add(padded_length)?;
+        if item_end > bytes.len() || value_end > item_end {
+            return None;
+        }
+        if tag == expected_tag && item_type == 2 && length == 4 {
+            return Some(i32::from_be_bytes(
+                bytes[value_start..value_end].try_into().ok()?,
+            ));
+        }
+        if item_type == 1 {
+            if let Some(found) = find_ttlv_integer(&bytes[value_start..value_end], expected_tag) {
+                return Some(found);
+            }
+        }
+        offset = item_end;
+    }
+    None
+}
+
+fn response_header(version_minor: i32) -> Vec<u8> {
+    ttlv_structure(
+        0x0042_007a,
+        [
+            ttlv_structure(
+                0x0042_0069,
+                [
+                    ttlv_integer(0x0042_006a, 2),
+                    ttlv_integer(0x0042_006b, version_minor),
+                ],
+            ),
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    )
+}
+
+#[test]
+fn ffi_client_preserves_configured_kmip_20_protocol_version_on_the_wire() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let listener = TcpListener::bind(("127.0.0.1", 0)).expect("loopback binds");
+    let port = listener
+        .local_addr()
+        .expect("loopback has an address")
+        .port();
+    let server_config = tls13_mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener.accept().expect("client connects");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("peer read timeout is set");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("peer write timeout is set");
+        let connection = ServerConnection::new(server_config).expect("TLS connection builds");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = receive_ttlv_frame_bytes(&mut tls).expect("request frame is bounded");
+        assert_eq!(find_ttlv_integer(&request, 0x0042_006a), Some(2));
+        assert_eq!(
+            find_ttlv_integer(&request, 0x0042_006b),
+            Some(0),
+            "the selected KMIP 2.0 version must survive client construction"
+        );
+        let response = ttlv_structure(
+            0x0042_007b,
+            [
+                response_header(0),
+                ttlv_structure(
+                    0x0042_000f,
+                    [
+                        ttlv_enumeration(0x0042_005c, 30),
+                        ttlv_enumeration(0x0042_007f, 0),
+                        ttlv_structure(
+                            0x0042_007c,
+                            [ttlv_structure(
+                                0x0042_0069,
+                                [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                            )],
+                        ),
+                    ],
+                ),
+            ],
+        );
+        tls.write_all(&response)
+            .expect("success response is written");
+    });
+
+    let identity = pki.client_identity();
+    let certificates = identity
+        .certificate_chain_der()
+        .into_iter()
+        .map(|certificate| input(INPUT_MEMORY, ENCODING_DER, certificate))
+        .collect::<Vec<_>>();
+    let key = input(INPUT_MEMORY, ENCODING_DER, identity.private_key_der());
+    let roots = [input(
+        INPUT_MEMORY,
+        ENCODING_DER,
+        pki.authority_certificate_der(),
+    )];
+    let transport_config = configuration(
+        TRANSPORT_ENDPOINT_RAW_TLS,
+        TRANSPORT_TRUST_CERTIFICATES,
+        TRANSPORT_FLAG_TLS_SERVER_NAME,
+        b"127.0.0.1",
+        port,
+        &certificates,
+        key,
+        &roots,
+        &[],
+        b"server.kmipkit.test",
+        b"",
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+    );
+    let mut registry_limits = kmipkit_extension_registry_limits_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_extension_registry_limits_v1_t>())
+            .expect("limits struct size fits ABI field"),
+        abi_version: 1,
+        max_definitions: 0,
+        max_schema_nodes: 0,
+        max_child_rules_per_structure: 0,
+        max_text_bytes_per_field: 0,
+        max_registry_text_bytes: 0,
+        max_discriminator_scalar_bytes: 0,
+        max_total_discriminator_scalar_bytes: 0,
+        max_constraint_members_per_rule: 0,
+        max_total_constraint_members: 0,
+        max_payload_index_records: 0,
+        max_lookup_comparisons: 0,
+        max_depth: 0,
+    };
+    assert_eq!(
+        kmipkit_extension_registry_limits_v1_default_values(&mut registry_limits),
+        SUCCESS
+    );
+    let mut registry = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_extension_registry_create_v1(
+            ptr::null_mut(),
+            0,
+            &registry_limits,
+            &mut registry
+        ),
+        SUCCESS
+    );
+    let mut default_configuration = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_create(registry, &mut default_configuration),
+        SUCCESS
+    );
+    let mut configuration_v20 = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_configuration_with_protocol_version(
+            default_configuration,
+            2,
+            0,
+            &mut configuration_v20
+        ),
+        SUCCESS
+    );
+    let mut transport = ptr::null_mut();
+    assert_eq!(
+        kmipkit_transport_config_create_v1(&transport_config, &mut transport),
+        SUCCESS
+    );
+    let mut client = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_create(configuration_v20, &mut transport, &mut client),
+        SUCCESS
+    );
+    let mut batch = ptr::null_mut();
+    let mut item = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_create(&mut batch), SUCCESS);
+    assert_eq!(
+        kmipkit_client_batch_item_discover_versions(&mut item),
+        SUCCESS
+    );
+    assert_eq!(kmipkit_client_batch_add_item(batch, &mut item), SUCCESS);
+    let mut limits = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&mut limits), SUCCESS);
+    let mut response = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_execute(client, &mut batch, limits, &mut response),
+        SUCCESS
+    );
+    peer.join()
+        .expect("peer confirms the emitted protocol version");
+    kmipkit_client_batch_response_release(response);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_client_release(client);
+    kmipkit_client_configuration_release(configuration_v20);
+    kmipkit_client_configuration_release(default_configuration);
+}
+
 #[test]
 fn test_peer_rejects_oversized_request_before_body_allocation() {
     let mut stream = std::io::Cursor::new([0_u8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff]);
