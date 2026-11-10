@@ -280,6 +280,7 @@ class VersionedContractTests(unittest.TestCase):
                 "case_id": "test-ping", "status": "not_run", "library_correctness": "not_checked",
                 "server_compatibility": "unknown", "parity": "not_compared",
             })
+            payloads[0]["summary"]["raw_response_body"] = "secret body in malformed summary"
             paths = [write_result(root, value["run_id"], value) for value in payloads]
             matrix = aggregate_results(paths)
 
@@ -304,6 +305,7 @@ class VersionedContractTests(unittest.TestCase):
         self.assertNotIn("secret request bytes", json_output)
         self.assertNotIn("secret response bytes", json_output)
         self.assertNotIn("private key material", json_output)
+        self.assertNotIn("secret body in malformed summary", json_output)
 
     def test_aggregator_requires_matching_base_evidence_but_ignores_route_differences(self) -> None:
         baseline = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")

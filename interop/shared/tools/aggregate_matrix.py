@@ -11,6 +11,20 @@ from collections import defaultdict
 from pathlib import Path
 
 
+RESULT_STATUS_NAMES = {
+    "passed": "PASSED",
+    "failed": "FAILED",
+    "server_unsupported": "UNSUPPORTED_BY_SERVER",
+    "policy_restricted": "POLICY_RESTRICTED",
+    "not_run": "NOT_RUN",
+}
+CASE_RESULT_FIELDS = (
+    "library_correctness", "server_compatibility", "parity", "duration_ms",
+    "result_status", "result_reason",
+)
+SUMMARY_FIELDS = ("total", "passed", "failed", "unsupported", "policy_restricted", "not_run")
+
+
 def parse_result_file(file_path: Path) -> dict | None:
     p = file_path.resolve()
     if not p.exists():
@@ -20,6 +34,41 @@ def parse_result_file(file_path: Path) -> dict | None:
             return json.load(f)
     except Exception:
         return None
+
+
+def _case_for_report(case: dict) -> dict:
+    """Keep result fields useful for comparison and omit free-form diagnostics/bodies."""
+    safe_result = {field: case[field] for field in CASE_RESULT_FIELDS if field in case}
+    safe_result["case_id"] = case["case_id"]
+    safe_result["status"] = RESULT_STATUS_NAMES.get(case.get("status"), case.get("status", "NOT_RUN"))
+    return safe_result
+
+
+def _summary_for_report(summary: dict) -> dict:
+    return {field: summary[field] for field in SUMMARY_FIELDS if field in summary}
+
+
+def _evidence_signature(run: dict) -> tuple:
+    server = run["server"]
+    return (
+        server["id"], server["version"], server["configuration_fingerprint"],
+        run["catalog_sha256"], run["execution"]["library_commit"],
+    )
+
+
+def _case_result_for_run(run: dict, case_id: str) -> dict:
+    case = run["cases"].get(case_id)
+    return {
+        "run_id": run["run_id"],
+        "language": run["language"],
+        "transport": run["execution"]["transport"],
+        "encoding": run["execution"]["encoding"],
+        "api_level": run["execution"]["api_level"],
+        "status": case.get("status", "NOT_RUN") if case else "NOT_RUN",
+        "library_correctness": case.get("library_correctness", "not_checked") if case else "not_checked",
+        "server_compatibility": case.get("server_compatibility", "unknown") if case else "unknown",
+        "parity": case.get("parity", "not_compared") if case else "not_compared",
+    }
 
 
 def aggregate_results(result_files: list[Path]) -> dict:
@@ -38,12 +87,6 @@ def aggregate_results(result_files: list[Path]) -> dict:
         }
     except (OSError, ValueError, KeyError):
         case_metadata = {}
-    status_names = {
-        "passed": "PASSED", "failed": "FAILED",
-        "server_unsupported": "UNSUPPORTED_BY_SERVER",
-        "policy_restricted": "POLICY_RESTRICTED", "not_run": "NOT_RUN",
-    }
-
     for file_path in result_files:
         payload = parse_result_file(file_path)
         if not payload:
@@ -62,16 +105,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
             if not case_id:
                 continue
             all_cases.add(case_id)
-            case_status = status_names.get(case.get("status"), case.get("status", "NOT_RUN"))
-            safe_fields = (
-                "library_correctness", "server_compatibility",
-                "parity", "duration_ms", "result_status", "result_reason",
-            )
-            run_cases[case_id] = {
-                **{key: case[key] for key in safe_fields if key in case},
-                "case_id": case_id,
-                "status": case_status,
-            }
+            run_cases[case_id] = _case_for_report(case)
         run = {
             "run_id": run_id,
             "language": language,
@@ -89,7 +123,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
                 "library_commit": execution.get("library_commit"),
                 "artifact_sha256": execution.get("artifact_sha256"),
             },
-            "summary": payload.get("summary", {}),
+            "summary": _summary_for_report(payload.get("summary", {})),
             "cases": run_cases,
         }
         groups[(server_id, version)].append(run)
@@ -103,14 +137,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
             run_key_counts[run["run_id"]] += 1
             count = run_key_counts[run["run_id"]]
             run["result_key"] = run["run_id"] if count == 1 else f"{run['run_id']}#{count}"
-        evidence = {
-            (
-                run["server"]["id"], run["server"]["version"],
-                run["server"]["configuration_fingerprint"], run["catalog_sha256"],
-                run["execution"]["library_commit"],
-            )
-            for run in runs
-        }
+        evidence = {_evidence_signature(run) for run in runs}
         fields_complete = all(all(value is not None for value in item) for item in evidence)
         comparability = "UNVERIFIED" if not fields_complete else ("COMPARABLE" if len(evidence) == 1 else "INCOMPARABLE")
         rows = []
@@ -126,18 +153,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
             }
             observed_statuses = set()
             for run in runs:
-                case = run["cases"].get(case_id)
-                result = {
-                    "run_id": run["run_id"],
-                    "language": run["language"],
-                    "transport": run["execution"]["transport"],
-                    "encoding": run["execution"]["encoding"],
-                    "api_level": run["execution"]["api_level"],
-                    "status": case.get("status", "NOT_RUN") if case else "NOT_RUN",
-                    "library_correctness": case.get("library_correctness", "not_checked") if case else "not_checked",
-                    "server_compatibility": case.get("server_compatibility", "unknown") if case else "unknown",
-                    "parity": case.get("parity", "not_compared") if case else "not_compared",
-                }
+                result = _case_result_for_run(run, case_id)
                 row["results"][run["result_key"]] = result
                 if result["status"] != "NOT_RUN":
                     observed_statuses.add(result["status"])
