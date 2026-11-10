@@ -49,6 +49,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         if operations == (1, 20, 19, 20) and item_index >= 2:
             result_status = 1
             result_reason = 55
+        if operations == (1, 18, 20, 19, 20) and item_index == 2:
+            result_status = 1
+            result_reason = 67
         if operation == 30:
             payload_value = tlv(
             0x420069, 1,
@@ -215,11 +218,12 @@ def main() -> int:
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
-         1, 18, 19, 20, 8, 24, 44, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20)
+         1, 18, 19, 20, 8, 24, 44, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
+         1, 18, 20, 19, 20)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
               1, 20, 19, 20, 1, 18, 19, 20, 1, 56, 19, 20, 8, 24, 30, 44, 45, 59, 1, 11, 20,
-              1, 11, 20, 1, 20, 1, 20, 1, 20)
+              1, 11, 20, 1, 20, 1, 20, 1, 20, 1, 18, 20, 19, 20)
     )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
@@ -231,6 +235,7 @@ def main() -> int:
               "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
               "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key")
     )
+    expected_cases += ("test-neg-destroy-active-without-revoke",)
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
@@ -291,6 +296,7 @@ def main() -> int:
                             activate_lifecycle = operations == (1, 18, 19, 20)
                             revoke_lifecycle = operations == (1, 19, 20)
                             destroy_lifecycle = operations == (1, 20, 19, 20)
+                            illegal_destroy_lifecycle = operations == (1, 18, 20, 19, 20)
                             get_constraints_lifecycle = operations == (1, 56, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
@@ -304,6 +310,8 @@ def main() -> int:
                                 lifecycle_target = {19: b"interop-revoke"}
                             if destroy_lifecycle:
                                 lifecycle_target = {20: b"interop-destroy-target"}
+                            if illegal_destroy_lifecycle:
+                                lifecycle_target = {20: b"interop-destroy-active-target"}
                             if get_constraints_lifecycle:
                                 lifecycle_target = {56: b"interop-get-constraints"}
                             if create_lifecycle:
@@ -345,6 +353,10 @@ def main() -> int:
                                     enumeration(0x420094, 1)) < (
                                         3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
+                            if illegal_destroy_lifecycle and request.count(enumeration(0x420094, 1)) < 4:
+                                raise AssertionError(
+                                    "illegal Destroy lifecycle must target and clean the same created object"
+                                )
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
                                     raise AssertionError("Locate request omitted its required Attributes structure")
@@ -487,11 +499,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 87,
+            "passed": 88,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 125,
+            "not_run": 124,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -500,11 +512,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 82,
+            "passed": 83,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 121,
+            "not_run": 120,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
