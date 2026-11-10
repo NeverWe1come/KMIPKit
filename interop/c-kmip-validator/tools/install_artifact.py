@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Build and install the public C ABI from the exact interop release commit."""
-import hashlib
 import io
 import json
 import os
@@ -10,19 +9,7 @@ import subprocess
 import tarfile
 import tempfile
 
-PIN = "52a2be180340e5da3166401a52f652dfd368ad37"
-ROOT = Path(__file__).resolve().parents[3]
-LOCAL = ROOT / "interop/.local/c-live"
-BUNDLE = LOCAL / f"kmipkit-c-1.0.0-{PIN[:12]}.tar.gz"
-INSTALL = LOCAL / "install" / PIN
-
-
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+from artifact_support import BUNDLE, INSTALL, LOCAL, PIN, ROOT, sha256, verify_installed_artifact
 
 
 def build() -> None:
@@ -73,15 +60,7 @@ def install() -> None:
     INSTALL.mkdir(parents=True, exist_ok=True)
     with tarfile.open(BUNDLE) as source:
         source.extractall(INSTALL, filter="data")
-    installed = INSTALL / "provenance.json"
-    data = json.loads(installed.read_text())
-    if data.get("library_commit") != PIN:
-        raise SystemExit("installed C artifact has the wrong release identity")
-    if (INSTALL / "library-commit").read_text().strip() != PIN:
-        raise SystemExit("C package release identity mismatch")
-    for name, expected in data["files"].items():
-        if sha256(INSTALL / name) != expected:
-            raise SystemExit(f"C package file digest mismatch: {name}")
+    data = verify_installed_artifact()
     print(json.dumps({
         "library_commit": PIN,
         "artifact_sha256": sha256(BUNDLE),
