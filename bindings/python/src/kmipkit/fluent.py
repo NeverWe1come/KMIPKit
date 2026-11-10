@@ -141,6 +141,7 @@ class SymmetricKeyBuilder:
         self._algorithm = self._length = self._usage_mask = None
         self._name: str | None = None
         self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
 
     def _set(self, native_function: Any, value: int) -> SymmetricKeyBuilder:
         self._ensure_open()
