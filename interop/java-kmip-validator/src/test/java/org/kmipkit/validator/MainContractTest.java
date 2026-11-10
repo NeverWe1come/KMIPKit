@@ -89,12 +89,13 @@ class MainContractTest {
     }
 
     @Test
-    void planDoesNotCountObjectLifecycleCasesWithoutCompleteRecipesAsExecutable() throws Exception {
+    void planDoesNotCountCasesWithoutCompleteRecipesOrMutationSafetyAsExecutable() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
         var selected = mapper.createArrayNode();
-        for (String caseId : new String[] {"test-op-get-attribute-list", "test-op-get-constraints"}) {
+        for (String caseId : new String[] {
+                "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints"}) {
             catalog.path("test_cases").forEach(testCase -> {
                 if (caseId.equals(testCase.path("case_id").asText())) selected.add(testCase.deepCopy());
             });
@@ -107,7 +108,7 @@ class MainContractTest {
         String plan = assertCommandOutput(0, "plan", "--connection", connection("2.1", "typed-protocol").toString(),
                 "--catalog", catalogFile.toString());
         assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
-        assertTrue(plan.contains("Public typed constructors awaiting catalog recipes: 2"));
+        assertTrue(plan.contains("Public typed constructors awaiting catalog recipes: 3"));
     }
 
     @Test

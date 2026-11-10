@@ -22,7 +22,9 @@ class JavaRouteInventoryTest {
         assertEquals(catalogOperations, inventory.keySet());
         assertEquals(59, inventory.size());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Query").status());
-        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Log").status());
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Log").status());
+        assertTrue(inventory.get("Log").reason().contains("server log"));
+        assertTrue(inventory.get("Log").reason().contains("mutation"));
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attributes").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attribute List").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Constraints").status());
@@ -41,13 +43,15 @@ class JavaRouteInventoryTest {
                 JavaRouteInventory.routeFor(serverQuery).status());
         assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
 
-        for (String caseId : Set.of("test-op-get-attribute-list", "test-op-get-constraints")) {
+        for (String caseId : Set.of(
+                "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints")) {
             var statefulCase = catalog.cases().stream()
                     .filter(testCase -> testCase.caseId().equals(caseId))
                     .findFirst().orElseThrow();
             assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING,
                     JavaRouteInventory.routeFor(statefulCase).status(), caseId);
-            assertTrue(JavaRouteInventory.routeFor(statefulCase).reason().contains("fixture"), caseId);
+            String expectedReason = "test-op-log".equals(caseId) ? "mutation opt-in" : "fixture";
+            assertTrue(JavaRouteInventory.routeFor(statefulCase).reason().contains(expectedReason), caseId);
         }
 
         for (var route : inventory.values()) {
