@@ -3,11 +3,16 @@
   "$id": "https://kmipkit.org/schemas/server-connection.schema.json",
   "title": "KMIP Server Connection Configuration",
   "type": "object",
-  "required": ["server_id", "protocol_version", "transport", "encoding", "api_level", "endpoints", "environment", "execution_policy"],
+  "required": ["server_id", "server_configuration_fingerprint", "protocol_version", "transport", "encoding", "api_level", "endpoints", "environment", "execution_policy"],
   "properties": {
     "server_id": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "server_configuration_fingerprint": {
+      "type": "string",
+      "description": "Stable SHA-256 fingerprint of one deployed server configuration, independent of client transport, encoding, API level, and protocol version.",
+      "pattern": "^[a-f0-9]{64}$"
     },
     "description": {
       "type": "string"

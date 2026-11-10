@@ -6,9 +6,25 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
+
+
+RESULT_STATUS_NAMES = {
+    "passed": "PASSED",
+    "failed": "FAILED",
+    "server_unsupported": "UNSUPPORTED_BY_SERVER",
+    "policy_restricted": "POLICY_RESTRICTED",
+    "not_run": "NOT_RUN",
+}
+CASE_RESULT_FIELDS = (
+    "library_correctness", "server_compatibility", "parity", "duration_ms",
+)
+SUMMARY_FIELDS = ("total", "passed", "failed", "unsupported", "policy_restricted", "not_run")
+RESULT_ENUMS = {"result_status": "Result Status", "result_reason": "Result Reason"}
+RESULT_ENUM_ALIASES = {"Result Status": {"operationsucceeded": 0}}
 
 
 def parse_result_file(file_path: Path) -> dict | None:
@@ -22,468 +38,377 @@ def parse_result_file(file_path: Path) -> dict | None:
         return None
 
 
-def aggregate_results(result_files: list[Path]) -> dict:
-    data_by_server_lang = {}  # (server_id, language) -> dict of case_id -> case_res
-    evidence_by_server = defaultdict(list)
+def _enum_key(value: str) -> str:
+    value = value.strip().rsplit("::", 1)[-1].rsplit(".", 1)[-1]
+    return re.sub(r"[^a-z0-9]", "", value.casefold())
 
+
+def _numeric_enum_code(value: object) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    text = str(value).strip()
+    if re.fullmatch(r"[0-9a-fA-F]{8}", text):
+        return int(text, 16)
+    try:
+        return int(text, 0) if text.lower().startswith("0x") else int(text, 10)
+    except ValueError:
+        return None
+
+
+def _load_enum_codes() -> dict[str, dict[str, int]]:
+    source_path = Path(__file__).resolve().parents[3] / "specification" / "catalog" / "kmip-2.1.json"
+    try:
+        catalog = json.loads(source_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {enum_name: {} for enum_name in RESULT_ENUMS.values()}
+    enum_ids = {
+        element["name"]: element["element_id"]
+        for element in catalog.get("elements", [])
+        if element.get("kind") == "enumeration" and element.get("name") in RESULT_ENUMS.values()
+    }
+    codes = {enum_name: {} for enum_name in RESULT_ENUMS.values()}
+    for element in catalog.get("elements", []):
+        if element.get("kind") != "enumeration_value" or not isinstance(element.get("wire_value"), str):
+            continue
+        wire_value = element["wire_value"]
+        if not re.fullmatch(r"[0-9a-fA-F]{8}", wire_value):
+            continue
+        for enum_name in RESULT_ENUMS.values():
+            if enum_ids.get(enum_name) not in element.get("parent_element_ids", []):
+                continue
+            code = _numeric_enum_code(wire_value)
+            if code is not None:
+                codes[enum_name][_enum_key(element["name"])] = code
+    for enum_name, aliases in RESULT_ENUM_ALIASES.items():
+        codes[enum_name].update(aliases)
+    return codes
+
+
+def _normalize_enum_code(value: object, enum_name: str, enum_codes: dict[str, dict[str, int]]) -> int | str | None:
+    if value is None:
+        return None
+    code = _numeric_enum_code(value)
+    if code is not None:
+        return code
+    key = _enum_key(str(value))
+    known_code = enum_codes.get(enum_name, {}).get(key)
+    return known_code if known_code is not None else f"unmapped:{key}"
+
+
+def _case_for_report(case: dict, enum_codes: dict[str, dict[str, int]]) -> dict:
+    """Keep result fields useful for comparison and omit free-form diagnostics/bodies."""
+    safe_result = {field: case[field] for field in CASE_RESULT_FIELDS if field in case}
+    safe_result["case_id"] = case["case_id"]
+    safe_result["status"] = RESULT_STATUS_NAMES.get(case.get("status"), case.get("status", "NOT_RUN"))
+    for field, enum_name in RESULT_ENUMS.items():
+        raw_value = case.get(f"{field}_code", case.get(field))
+        if raw_value is not None:
+            safe_result[f"{field}_code"] = _normalize_enum_code(raw_value, enum_name, enum_codes)
+    return safe_result
+
+
+def _summary_for_report(summary: dict) -> dict:
+    return {field: summary[field] for field in SUMMARY_FIELDS if field in summary}
+
+
+def _evidence_signature(run: dict) -> tuple:
+    server = run["server"]
+    return (
+        server["id"], server["version"], server["configuration_fingerprint"],
+        run["catalog_sha256"], run["execution"]["library_commit"],
+    )
+
+
+def _case_result_for_run(run: dict, case_id: str) -> dict:
+    case = run["cases"].get(case_id)
+    return {
+        "run_id": run["run_id"],
+        "language": run["language"],
+        "transport": run["execution"]["transport"],
+        "encoding": run["execution"]["encoding"],
+        "api_level": run["execution"]["api_level"],
+        "status": case.get("status", "NOT_RUN") if case else "NOT_RUN",
+        "library_correctness": case.get("library_correctness", "not_checked") if case else "not_checked",
+        "server_compatibility": case.get("server_compatibility", "unknown") if case else "unknown",
+        "parity": case.get("parity", "not_compared") if case else "not_compared",
+        "result_status_code": case.get("result_status_code") if case else None,
+        "result_reason_code": case.get("result_reason_code") if case else None,
+    }
+
+
+def _difference_dimensions(results: list[dict]) -> list[str]:
+    compared_fields = (
+        ("status", "status"),
+        ("result_status_code", "result_status"),
+        ("result_reason_code", "result_reason"),
+        ("library_correctness", "library_correctness"),
+        ("server_compatibility", "server_compatibility"),
+        ("parity", "parity"),
+    )
+    return [
+        dimension for field, dimension in compared_fields
+        if len({result.get(field) for result in results}) > 1
+    ]
+
+
+def aggregate_results(result_files: list[Path]) -> dict:
+    groups = defaultdict(list)
+    cases_by_group = defaultdict(set)
+    all_cases = set()
     all_servers = set()
     all_languages = set()
-    all_cases = set()
-    case_meta = {}
-
-    for rf in result_files:
-        payload = parse_result_file(rf)
+    case_metadata = {}
+    enum_codes = _load_enum_codes()
+    catalog_path = Path(__file__).resolve().parents[1] / "catalog" / "kmipkit-1.0-test-catalog.json"
+    try:
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        case_metadata = {
+            case["case_id"]: {"category": case.get("category", ""), "description": case.get("description", "")}
+            for case in catalog.get("test_cases", [])
+        }
+    except (OSError, ValueError, KeyError):
+        case_metadata = {}
+    for file_path in result_files:
+        payload = parse_result_file(file_path)
         if not payload:
             continue
-        server_metadata = payload.get("server", {})
-        server_id = payload.get("server_identifier") or server_metadata.get("id", "unknown_server")
-        lang = payload.get("language", "unknown_lang")
-        all_servers.add(server_id)
-        all_languages.add(lang)
-
+        server = payload.get("server", {})
+        server_id = payload.get("server_identifier") or server.get("id", "unknown_server")
+        version = payload.get("protocol_version") or "unknown"
+        language = payload.get("language", "unknown_lang")
         execution = payload.get("execution", {})
-        evidence = (
-            payload.get("protocol_version"),
-            payload.get("catalog_sha256"),
-            server_metadata.get("configuration_fingerprint"),
-            server_metadata.get("version"),
-            execution.get("library_commit"),
-            execution.get("transport"),
-            execution.get("encoding"),
-            execution.get("api_level"),
-        )
-        evidence_by_server[server_id].append(evidence)
-
-        case_map = {}
-        for c in payload.get("cases", payload.get("results", [])):
-            cid = c.get("case_id")
-            if not cid:
+        run_id = payload.get("run_id") or file_path.stem
+        all_servers.add(server_id)
+        all_languages.add(language)
+        run_cases = {}
+        for case in payload.get("cases", payload.get("results", [])):
+            case_id = case.get("case_id")
+            if not case_id:
                 continue
-            all_cases.add(cid)
-            case_map[cid] = c
-            if cid not in case_meta:
-                case_meta[cid] = {
-                    "category": c.get("category", ""),
-                    "description": c.get("description", "")
-                }
-            status = c.get("status")
-            case_map[cid] = {
-                **c,
-                "status": {
-                    "passed": "PASSED",
-                    "failed": "FAILED",
-                    "server_unsupported": "UNSUPPORTED_BY_SERVER",
-                    "policy_restricted": "POLICY_RESTRICTED",
-                    "not_run": "NOT_RUN",
-                }.get(status, status),
-            }
-        data_by_server_lang[(server_id, lang)] = case_map
+            all_cases.add(case_id)
+            run_cases[case_id] = _case_for_report(case, enum_codes)
+        run = {
+            "run_id": run_id,
+            "language": language,
+            "server": {
+                "id": server_id,
+                "version": server.get("version"),
+                "configuration_fingerprint": server.get("configuration_fingerprint"),
+            },
+            "protocol_version": version,
+            "catalog_sha256": payload.get("catalog_sha256"),
+            "execution": {
+                "transport": execution.get("transport"),
+                "encoding": execution.get("encoding"),
+                "api_level": execution.get("api_level"),
+                "library_commit": execution.get("library_commit"),
+                "artifact_sha256": execution.get("artifact_sha256"),
+            },
+            "summary": _summary_for_report(payload.get("summary", {})),
+            "cases": run_cases,
+        }
+        groups[(server_id, version)].append(run)
+        cases_by_group[(server_id, version)].update(run_cases)
 
-    # 1. Build Parity Matrix per Server
-    parity_by_server = {}
-    comparability_by_server = {}
-    evidence_summary_by_server = {}
-    for server_id in sorted(all_servers):
-        evidence = evidence_by_server[server_id]
-        evidence_complete = all(all(part is not None for part in item) for item in evidence)
-        if not evidence_complete:
-            comparability_by_server[server_id] = "UNVERIFIED"
-        elif len(set(evidence)) == 1:
-            comparability_by_server[server_id] = "COMPARABLE"
-        else:
-            comparability_by_server[server_id] = "INCOMPARABLE"
-        evidence_summary = {
-            "library_correctness": defaultdict(int),
-            "server_compatibility": defaultdict(int),
-            "cross_language_parity": defaultdict(int),
-            "not_executed": 0,
-        }
-        for (candidate_server, _language), case_map in data_by_server_lang.items():
-            if candidate_server != server_id:
-                continue
-            for case in case_map.values():
-                evidence_summary["library_correctness"][case.get("library_correctness", "not_checked")] += 1
-                evidence_summary["server_compatibility"][case.get("server_compatibility", "unknown")] += 1
-                evidence_summary["cross_language_parity"][case.get("parity", "not_compared")] += 1
-                if case.get("status") == "NOT_RUN":
-                    evidence_summary["not_executed"] += 1
-        evidence_summary_by_server[server_id] = {
-            key: (dict(value) if isinstance(value, defaultdict) else value)
-            for key, value in evidence_summary.items()
-        }
+    matrices = []
+    for (server_id, version), runs in sorted(groups.items()):
+        runs.sort(key=lambda item: (item["language"], item["run_id"]))
+        run_key_counts = defaultdict(int)
+        for run in runs:
+            run_key_counts[run["run_id"]] += 1
+            count = run_key_counts[run["run_id"]]
+            run["result_key"] = run["run_id"] if count == 1 else f"{run['run_id']}#{count}"
+        evidence = {_evidence_signature(run) for run in runs}
+        fields_complete = all(all(value is not None for value in item) for item in evidence)
+        comparability = "UNVERIFIED" if not fields_complete else ("COMPARABLE" if len(evidence) == 1 else "INCOMPARABLE")
         rows = []
-        for cid in sorted(all_cases):
+        correctness = defaultdict(int)
+        compatibility = defaultdict(int)
+        not_executed = 0
+        for case_id in sorted(cases_by_group[(server_id, version)]):
             row = {
-                "case_id": cid,
-                "category": case_meta.get(cid, {}).get("category", ""),
-                "description": case_meta.get(cid, {}).get("description", ""),
+                "case_id": case_id,
+                **case_metadata.get(case_id, {}),
                 "results": {},
-                "status": "PARITY_OK"
+                "status": "NOT_RUN",
+                "difference_dimensions": [],
             }
-            statuses = set()
-            for lang in sorted(all_languages):
-                cmap = data_by_server_lang.get((server_id, lang), {})
-                c_res = cmap.get(cid)
-                if c_res:
-                    st = c_res.get("status")
-                    row["results"][lang] = st
-                    if st in ("PASSED", "FAILED"):
-                        statuses.add(st)
-                else:
-                    row["results"][lang] = "NOT_RUN"
-
-            if len(statuses) > 1:
-                row["status"] = "PARITY_MISMATCH"
+            for run in runs:
+                result = _case_result_for_run(run, case_id)
+                row["results"][run["result_key"]] = result
+                correctness[result["library_correctness"]] += 1
+                compatibility[result["server_compatibility"]] += 1
+                if result["status"] == "NOT_RUN":
+                    not_executed += 1
+            if comparability == "INCOMPARABLE":
+                row["status"] = "NOT_COMPARABLE"
+            elif comparability == "UNVERIFIED":
+                row["status"] = "UNVERIFIED"
+            else:
+                executed_results = [result for result in row["results"].values() if result["status"] != "NOT_RUN"]
+                if len(executed_results) == 1:
+                    row["status"] = "PARTIAL" if len(runs) > 1 else "NOT_COMPARED"
+                elif len(executed_results) > 1:
+                    row["difference_dimensions"] = _difference_dimensions(executed_results)
+                    if row["difference_dimensions"]:
+                        row["status"] = "PARITY_MISMATCH"
+                    elif len(executed_results) < len(runs):
+                        row["status"] = "PARTIAL"
+                    else:
+                        row["status"] = "PARITY_OK"
             rows.append(row)
-        parity_by_server[server_id] = rows
+        matrices.append({
+            "server_id": server_id,
+            "protocol_version": version,
+            "comparability": comparability,
+            "runs": runs,
+            "cases": rows,
+            "summary": {
+                "library_correctness": dict(correctness),
+                "server_compatibility": dict(compatibility),
+                "not_executed": not_executed,
+            },
+        })
 
     return {
-        "servers": sorted(list(all_servers)),
-        "languages": sorted(list(all_languages)),
+        "servers": sorted(all_servers),
+        "languages": sorted(all_languages),
         "total_cases": len(all_cases),
-        "parity_by_server": parity_by_server,
-        "comparability_by_server": comparability_by_server,
-        "evidence_summary_by_server": evidence_summary_by_server,
+        "matrices": matrices,
     }
 
 
 def generate_markdown(aggregated: dict) -> str:
-    md = []
-    md.append("# KMIPKit Cross-Language & Multi-KMS Master Matrix\n")
-    md.append(f"- **Servers Evaluated**: {', '.join(aggregated['servers']) or 'None'}")
-    md.append(f"- **Languages Evaluated**: {', '.join(aggregated['languages']) or 'None'}")
-    md.append(f"- **Total Test Cases**: {aggregated['total_cases']}\n")
-
-    for s_id, rows in aggregated["parity_by_server"].items():
-        md.append(f"## Server: `{s_id}`\n")
-        md.append(f"Evidence comparability: **{aggregated['comparability_by_server'][s_id]}**")
-        summary = aggregated["evidence_summary_by_server"][s_id]
-        md.append(f"Library correctness: `{summary['library_correctness']}`")
-        md.append(f"Server compatibility: `{summary['server_compatibility']}`")
-        md.append(f"Cross-language parity: `{summary['cross_language_parity']}`")
-        md.append(f"Cases not executed: **{summary['not_executed']}**\n")
-        langs = aggregated["languages"]
-        header = ["Test Case", "Category"] + [l.capitalize() for l in langs] + ["Parity Status"]
-        md.append("| " + " | ".join(header) + " |")
-        md.append("| " + " | ".join(["---"] * len(header)) + " |")
-
-        for r in rows:
-            line = [f"`{r['case_id']}`", r["category"]]
-            for l in langs:
-                res = r["results"].get(l, "NOT_RUN")
-                badge = "✅ PASS" if res == "PASSED" else ("❌ FAIL" if res == "FAILED" else ("➖ UNSUPP" if res == "UNSUPPORTED_BY_SERVER" else "⚪ N/A"))
-                line.append(badge)
-            status_badge = "✅ OK" if r["status"] == "PARITY_OK" else "⚠️ **MISMATCH**"
-            line.append(status_badge)
-            md.append("| " + " | ".join(line) + " |")
-        md.append("\n")
-
+    md = ["# KMIPKit Interoperability Matrix\n"]
+    md.extend([
+        f"- **Servers:** {', '.join(aggregated['servers']) or 'None'}",
+        f"- **Languages:** {', '.join(aggregated['languages']) or 'None'}",
+        f"- **Catalog cases:** {aggregated['total_cases']}\n",
+    ])
+    for matrix in aggregated.get("matrices", []):
+        server = matrix["runs"][0]["server"] if matrix["runs"] else {"id": matrix["server_id"]}
+        md.append(f"## Server `{matrix['server_id']}` — KMIP {matrix['protocol_version']}\n")
+        md.append(f"Evidence comparability: **{matrix['comparability']}**; server configuration: `{server.get('configuration_fingerprint') or 'unknown'}`.")
+        md.append(f"Library correctness: `{matrix['summary']['library_correctness']}`")
+        md.append(f"Server compatibility: `{matrix['summary']['server_compatibility']}`")
+        md.append(f"Cases not executed (not_run): **{matrix['summary']['not_executed']}**\n")
+        md.append("Execution runs: " + "; ".join(
+            f"`{run.get('result_key', run['run_id'])}` ({run['language']}, {run['execution']['transport'] or 'unknown'}, "
+            f"{run['execution']['encoding'] or 'unknown'}, {run['execution']['api_level'] or 'unknown'})"
+            for run in matrix["runs"]
+        ) + "\n")
+        columns = ["Case", "Category"] + [run.get("result_key", run["run_id"]) for run in matrix["runs"]] + ["Language/route differences"]
+        md.append("| " + " | ".join(columns) + " |")
+        md.append("| " + " | ".join(["---"] * len(columns)) + " |")
+        for row in matrix["cases"]:
+            cells = [f"`{row['case_id']}`", row.get("category", "")]
+            for run in matrix["runs"]:
+                result = row["results"][run.get("result_key", run["run_id"])]
+                status_code = result["result_status_code"]
+                reason_code = result["result_reason_code"]
+                cells.append(
+                    f"{result['status']} / library:{result['library_correctness']} / "
+                    f"server:{result['server_compatibility']} / parity:{result['parity']} / "
+                    f"KMIP:{status_code if status_code is not None else '-'}:"
+                    f"{reason_code if reason_code is not None else '-'}"
+                )
+            difference = ", ".join(row["difference_dimensions"])
+            cells.append(f"{row['status']}" + (f" ({difference})" if difference else ""))
+            md.append("| " + " | ".join(str(cell).replace("|", "\\|") for cell in cells) + " |")
+        md.append("")
     return "\n".join(md)
 
 
 def generate_html(aggregated: dict) -> str:
-    """Generate a self-contained, air-gapped, offline HTML dashboard with zero CDN dependencies."""
-    servers_str = ", ".join(aggregated["servers"]) or "None"
-    langs = aggregated["languages"]
-    total_cases = aggregated["total_cases"]
+    matrices = aggregated.get("matrices", [])
+    if not matrices:
+        for server_id, rows in aggregated.get("parity_by_server", {}).items():
+            languages = sorted({name for row in rows for name in row.get("results", {})})
+            runs = [{
+                "run_id": language, "language": language,
+                "server": {"id": server_id, "version": None, "configuration_fingerprint": None},
+                "execution": {"transport": None, "encoding": None, "api_level": None},
+            } for language in languages]
+            cases = []
+            for row in rows:
+                cases.append({**row, "results": {
+                    language: {
+                        "run_id": language, "language": language, "transport": None,
+                        "encoding": None, "api_level": None,
+                        "status": row.get("results", {}).get(language, "NOT_RUN"),
+                        "library_correctness": "not_checked", "server_compatibility": "unknown",
+                    } for language in languages
+                }})
+            matrices.append({
+                "server_id": server_id, "protocol_version": "unknown", "comparability": "UNVERIFIED",
+                "runs": runs, "cases": cases,
+                "summary": {"library_correctness": {}, "server_compatibility": {}, "not_executed": 0},
+            })
 
-    # Calculate global KPIs
-    total_parity_ok = 0
-    total_mismatches = 0
-    total_all_pass = 0
-    total_unsupported = 0
-
-    all_rows = []
-    for s_id, rows in aggregated["parity_by_server"].items():
-        for r in rows:
-            all_rows.append(r)
-            if r["status"] == "PARITY_OK":
-                total_parity_ok += 1
-            else:
-                total_mismatches += 1
-
-            lang_statuses = list(r["results"].values())
-            if lang_statuses and all(st == "PASSED" for st in lang_statuses):
-                total_all_pass += 1
-            if any(st == "UNSUPPORTED_BY_SERVER" for st in lang_statuses):
-                total_unsupported += 1
-
-    categories = sorted(list({r["category"] for r in all_rows if r["category"]}))
-
-    css = """
-    :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #38bdf8;
-      --success-bg: #064e3b;
-      --success-text: #34d399;
-      --warn-bg: #78350f;
-      --warn-text: #fde047;
-      --fail-bg: #7f1d1d;
-      --fail-text: #fca5a5;
-      --na-bg: #334155;
-      --na-text: #cbd5e1;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 24px;
-      line-height: 1.5;
-    }
-    header { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-    h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-    .subtitle { color: var(--text-muted); font-size: 14px; }
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .kpi-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-    }
-    .kpi-value { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
-    .kpi-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .kpi-blue { color: var(--primary); }
-    .kpi-green { color: var(--success-text); }
-    .kpi-yellow { color: var(--warn-text); }
-    .kpi-purple { color: #c084fc; }
-
-    .controls-panel {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .search-row { display: flex; gap: 12px; }
-    .search-input {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: #0f172a;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-    .search-input:focus { border-color: var(--primary); }
-    .filter-group { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .filter-label { font-size: 13px; color: var(--text-muted); min-width: 90px; }
-    .pill {
-      background: #0f172a;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 12px;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.15s ease;
-    }
-    .pill:hover { border-color: var(--primary); color: #fff; }
-    .pill.active { background: var(--primary); color: #0f172a; border-color: var(--primary); font-weight: 600; }
-
-    .table-container {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow-x: auto;
-      margin-bottom: 24px;
-    }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-    th {
-      background: #111827;
-      color: var(--text-muted);
-      padding: 12px 14px;
-      font-weight: 600;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    td { padding: 10px 14px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
-    tr:hover td { background: rgba(255, 255, 255, 0.02); }
-    .case-id { font-family: monospace; font-weight: 600; color: #38bdf8; }
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .badge-pass { background: var(--success-bg); color: var(--success-text); }
-    .badge-fail { background: var(--fail-bg); color: var(--fail-text); }
-    .badge-warn { background: var(--warn-bg); color: var(--warn-text); }
-    .badge-unsupp { background: #374151; color: #9ca3af; }
-    .badge-na { background: var(--na-bg); color: var(--na-text); }
-    footer { text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 32px; }
-    """
-
-    js = """
-    function applyFilters() {
-      const q = document.getElementById('search-input').value.toLowerCase().trim();
-      const activeCat = document.querySelector('.cat-pill.active').dataset.cat;
-      const activeStatus = document.querySelector('.status-pill.active').dataset.status;
-
-      const rows = document.querySelectorAll('.matrix-row');
-      let visible = 0;
-      rows.forEach(r => {
-        const text = r.innerText.toLowerCase();
-        const cat = r.dataset.category;
-        const status = r.dataset.status;
-
-        const matchQ = (!q || text.includes(q));
-        const matchCat = (activeCat === 'ALL' || cat === activeCat);
-        const matchStatus = (activeStatus === 'ALL' || status === activeStatus);
-
-        if (matchQ && matchCat && matchStatus) {
-          r.style.display = '';
-          visible++;
-        } else {
-          r.style.display = 'none';
-        }
-      });
-      document.getElementById('visible-count').innerText = visible;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('search-input').addEventListener('input', applyFilters);
-
-      document.querySelectorAll('.cat-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          applyFilters();
-        });
-      });
-
-      document.querySelectorAll('.status-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.status-pill').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          applyFilters();
-        });
-      });
-    });
-    """
-
-    out = []
-    out.append("<!DOCTYPE html>")
-    out.append("<html lang=\"en\">")
-    out.append("<head>")
-    out.append("  <meta charset=\"utf-8\">")
-    out.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
-    out.append("  <title>KMIPKit Multi-Language Master Matrix</title>")
-    out.append(f"  <style>{css}</style>")
-    out.append(f"  <script>{js}</script>")
-    out.append("</head>")
-    out.append("<body>")
-
-    # Header
-    out.append("  <header>")
-    out.append("    <h1>🛡️ KMIPKit Interoperability Dashboard</h1>")
-    out.append(f"    <div class=\"subtitle\">Servers: <strong>{html.escape(servers_str)}</strong> | Languages: <strong>{html.escape(', '.join(langs))}</strong></div>")
-    out.append("  </header>")
-
-    # KPI Grid
-    out.append("  <div class=\"kpi-grid\">")
-    out.append(f"    <div class=\"kpi-card\"><div class=\"kpi-value kpi-blue\">{total_cases}</div><div class=\"kpi-label\">Total Test Cases</div></div>")
-    out.append(f"    <div class=\"kpi-card\"><div class=\"kpi-value kpi-green\">{total_parity_ok}</div><div class=\"kpi-label\">Parity OK</div></div>")
-    out.append(f"    <div class=\"kpi-card\"><div class=\"kpi-value kpi-yellow\">{total_mismatches}</div><div class=\"kpi-label\">Parity Mismatches</div></div>")
-    out.append(f"    <div class=\"kpi-card\"><div class=\"kpi-value kpi-purple\">{total_unsupported}</div><div class=\"kpi-label\">Server Unsupported</div></div>")
-    out.append("  </div>")
-
-    # Controls Panel
-    out.append("  <div class=\"controls-panel\">")
-    out.append("    <div class=\"search-row\">")
-    out.append("      <input type=\"text\" id=\"search-input\" class=\"search-input\" placeholder=\"🔍 Search test case ID, description, or category...\">")
-    out.append("    </div>")
-
-    # Status Filters
-    out.append("    <div class=\"filter-group\">")
-    out.append("      <span class=\"filter-label\">Parity:</span>")
-    out.append("      <button class=\"pill status-pill active\" data-status=\"ALL\">All</button>")
-    out.append("      <button class=\"pill status-pill\" data-status=\"PARITY_OK\">Parity OK</button>")
-    out.append("      <button class=\"pill status-pill\" data-status=\"PARITY_MISMATCH\">Mismatch Only</button>")
-    out.append("    </div>")
-
-    # Category Filters
-    out.append("    <div class=\"filter-group\">")
-    out.append("      <span class=\"filter-label\">Category:</span>")
-    out.append("      <button class=\"pill cat-pill active\" data-cat=\"ALL\">All</button>")
-    for c in categories:
-        out.append(f"      <button class=\"pill cat-pill\" data-cat=\"{html.escape(c)}\">{html.escape(c)}</button>")
-    out.append("    </div>")
-    out.append(f"    <div style=\"font-size: 12px; color: var(--text-muted);\">Showing <span id=\"visible-count\">{total_cases}</span> test cases</div>")
-    out.append("  </div>")
-
-    # Tables by Server
-    for s_id, rows in aggregated["parity_by_server"].items():
-        comparability = aggregated.get("comparability_by_server", {}).get(s_id, "UNVERIFIED")
-        evidence_summary = aggregated.get("evidence_summary_by_server", {}).get(s_id, {})
-        evidence_text = html.escape(json.dumps(evidence_summary, sort_keys=True))
-        out.append(f"  <h2 style=\"margin: 20px 0 12px; font-size: 18px;\">Server: <code>{html.escape(s_id)}</code></h2>")
-        out.append(f"  <p>Evidence comparability: <strong>{html.escape(comparability)}</strong> | Evidence summary: <code>{evidence_text}</code></p>")
-        out.append("  <div class=\"table-container\">")
-        out.append("    <table>")
-        out.append("      <thead><tr>")
-        out.append("        <th>Case ID</th>")
-        out.append("        <th>Category</th>")
-        out.append("        <th>Description</th>")
-        for l in langs:
-            out.append(f"        <th>{html.escape(l.capitalize())}</th>")
-        out.append("        <th>Parity</th>")
-        out.append("      </tr></thead>")
-        out.append("      <tbody>")
-
-        for r in rows:
-            cid = r["case_id"]
-            cat = r["category"]
-            desc = r.get("description", "")
-            status = r["status"]
-
-            out.append(f"      <tr class=\"matrix-row\" data-category=\"{html.escape(cat)}\" data-status=\"{status}\">")
-            out.append(f"        <td class=\"case-id\">{html.escape(cid)}</td>")
-            out.append(f"        <td><span class=\"badge badge-na\">{html.escape(cat)}</span></td>")
-            out.append(f"        <td style=\"color: var(--text-muted);\">{html.escape(desc)}</td>")
-
-            for l in langs:
-                res = r["results"].get(l, "NOT_RUN")
-                if res == "PASSED":
-                    badge = "<span class=\"badge badge-pass\">PASS</span>"
-                elif res == "FAILED":
-                    badge = "<span class=\"badge badge-fail\">FAIL</span>"
-                elif res == "UNSUPPORTED_BY_SERVER":
-                    badge = "<span class=\"badge badge-unsupp\">UNSUPP</span>"
-                else:
-                    badge = "<span class=\"badge badge-na\">N/A</span>"
-                out.append(f"        <td>{badge}</td>")
-
-            parity_badge = "<span class=\"badge badge-pass\">OK</span>" if status == "PARITY_OK" else "<span class=\"badge badge-warn\">MISMATCH</span>"
-            out.append(f"        <td>{parity_badge}</td>")
-            out.append("      </tr>")
-
-        out.append("      </tbody>")
-        out.append("    </table>")
-        out.append("  </div>")
-
-    out.append("  <footer>KMIPKit Interoperability Suite &bull; Self-Contained Air-Gapped Dashboard (Zero CDN)</footer>")
-    out.append("</body>")
-    out.append("</html>")
+    all_rows = [row for matrix in matrices for row in matrix.get("cases", [])]
+    total_cases = len(all_rows)
+    passed = sum(row.get("status") == "PARITY_OK" for row in all_rows)
+    mismatches = sum(row.get("status") == "PARITY_MISMATCH" for row in all_rows)
+    unsupported = sum(result.get("status") == "UNSUPPORTED_BY_SERVER" for row in all_rows for result in row.get("results", {}).values())
+    categories = sorted({row.get("category", "") for row in all_rows if row.get("category")})
+    style = '<style>body{font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;margin:2rem;line-height:1.5}h1,h2{color:#fff}.subtitle,small{color:#94a3b8}.kpi-grid{display:flex;gap:1rem;flex-wrap:wrap;margin:1.5rem 0}.kpi-card,.matrix{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:1rem;margin:1rem 0}.kpi-value{font-size:1.7rem}.kpi-label{color:#94a3b8}.search-input{padding:.7rem;width:min(40rem,90%);margin:.5rem 0 1rem}.table-container{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}th,td{border-bottom:1px solid #334155;padding:.6rem;text-align:left;vertical-align:top}code{overflow-wrap:anywhere}.status{font-weight:650}</style>'
+    out = [
+        "<!DOCTYPE html>", '<html lang="en"><head><meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        '<title>KMIPKit Interoperability Dashboard</title>', style, '</head><body>',
+        '<h1>KMIPKit Interoperability Dashboard</h1>',
+        '<p class="subtitle">Every report run is retained. Comparability is evaluated within one server configuration and KMIP protocol version.</p>',
+        '<div class="kpi-grid">',
+        f'<div class="kpi-card"><div class="kpi-value">{len(aggregated.get("servers", []))}</div><div class="kpi-label">Servers</div></div>',
+        f'<div class="kpi-card"><div class="kpi-value">{total_cases}</div><div class="kpi-label">Case rows</div></div>',
+        f'<div class="kpi-card"><div class="kpi-value">{passed}</div><div class="kpi-label">Parity OK</div></div>',
+        f'<div class="kpi-card"><div class="kpi-value">{mismatches}</div><div class="kpi-label">Language/route differences</div></div>',
+        f'<div class="kpi-card"><div class="kpi-value">{unsupported}</div><div class="kpi-label">Server Unsupported</div></div>',
+        '</div>', '<label for="search-input">Filter cases</label><br>',
+        '<input id="search-input" class="search-input" type="search" placeholder="Search case, language, route, or result">',
+        '<div class="filter-group">Categories: ' + ', '.join(html.escape(category) for category in categories) + '</div>',
+    ]
+    for matrix in matrices:
+        runs = matrix.get("runs", [])
+        config_fp = runs[0].get("server", {}).get("configuration_fingerprint") if runs else None
+        summary = matrix.get("summary", {})
+        out.extend([
+            '<section class="matrix">',
+            f'<h2>Server <code>{html.escape(str(matrix.get("server_id", "unknown")))}</code> — KMIP {html.escape(str(matrix.get("protocol_version", "unknown")))}</h2>',
+            f'<p>Evidence comparability: <strong>{html.escape(str(matrix.get("comparability", "UNVERIFIED")))}</strong> · Server configuration: <code>{html.escape(str(config_fp or "unknown"))}</code></p>',
+            f'<p>Library correctness: <code>{html.escape(json.dumps(summary.get("library_correctness", {}), sort_keys=True))}</code> · Server compatibility: <code>{html.escape(json.dumps(summary.get("server_compatibility", {}), sort_keys=True))}</code> · Not executed (not_run): {summary.get("not_executed", 0)}</p>',
+            '<div class="table-container"><table><thead><tr><th>Case</th><th>Category</th>',
+        ])
+        for run in runs:
+            execution = run.get("execution", {})
+            label = f"{run.get('result_key', run.get('run_id'))} · {run.get('language')}"
+            axes = f"{execution.get('transport') or 'unknown'} / {execution.get('encoding') or 'unknown'} / {execution.get('api_level') or 'unknown'}"
+            out.append(f'<th>{html.escape(str(label))}<br><small>{html.escape(axes)}</small></th>')
+        out.append('<th>Language/route differences</th></tr></thead><tbody>')
+        for row in matrix.get("cases", []):
+            out.append(f'<tr class="matrix-row"><td><code>{html.escape(str(row.get("case_id", "")))}</code></td><td>{html.escape(str(row.get("category", "")))}</td>')
+            for run in runs:
+                result = row.get("results", {}).get(run.get("result_key", run.get("run_id")), {})
+                status_code = result.get("result_status_code")
+                reason_code = result.get("result_reason_code")
+                details = (
+                    f"{result.get('status', 'NOT_RUN')} · library {result.get('library_correctness', 'not_checked')} · "
+                    f"server {result.get('server_compatibility', 'unknown')} · parity {result.get('parity', 'not_compared')} · "
+                    f"KMIP {status_code if status_code is not None else '-'}:"
+                    f"{reason_code if reason_code is not None else '-'}"
+                )
+                out.append(f'<td class="status">{html.escape(details)}</td>')
+            difference = ", ".join(row.get("difference_dimensions", []))
+            row_status = str(row.get("status", "PARITY_OK")) + (f" ({difference})" if difference else "")
+            out.append(f'<td>{html.escape(row_status)}</td></tr>')
+        out.append('</tbody></table></div></section>')
+    out.extend([
+        '<script>document.getElementById("search-input").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll(".matrix-row").forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?"":"none";});});</script>',
+        '<footer>KMIPKit interoperability results · self-contained offline report</footer>', '</body></html>',
+    ])
     return "\n".join(out)
-
 
 def main():
     parser = argparse.ArgumentParser(description="Aggregate Multi-Language & Multi-KMS validation results")

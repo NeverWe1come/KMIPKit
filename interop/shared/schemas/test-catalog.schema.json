@@ -61,7 +61,18 @@
               "additionalProperties": false
             }
           },
-          "requires": { "type": "object" },
+          "requires": {
+            "type": "object",
+            "properties": {
+              "expected_result_reasons": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": true
+          },
           "isolation_recipe": {
             "type": "object",
             "required": ["unique_name_prefix", "setup_steps", "target_step", "teardown_steps"],

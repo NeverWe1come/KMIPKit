@@ -1,5 +1,6 @@
 {
   "server_id": "example-kms",
+  "server_configuration_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "description": "Example connection configuration for a dedicated KMIP 2.0 or 2.1 test server",
   "protocol_version": "2.1",
   "transport": "raw_tls",

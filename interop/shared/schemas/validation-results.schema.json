@@ -62,6 +62,8 @@
           "duration_ms": { "type": "number", "minimum": 0 },
           "result_status": { "type": "string" },
           "result_reason": { "type": "string" },
+          "result_status_code": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+          "result_reason_code": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
           "diagnostic": { "type": "string" }
         },
         "additionalProperties": false

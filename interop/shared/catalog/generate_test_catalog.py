@@ -4,28 +4,129 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
 
-KMIP_21_ONLY_OPERATIONS = {
-    "Get Constraints": "6.1.22",
-    "Set Constraints": "6.1.52",
+OASIS_SOURCES = {
+    "2.0": (
+        "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+        "41346355fc966e555dbcbae68b4d73421b0da0f32fb1a86fc8e3cb5fd35bb4a2",
+    ),
+    "2.1": (
+        "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+        "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
+    ),
 }
 
 
-def add_execution_contract(test_case: dict) -> dict:
+class OASISSectionParser(HTMLParser):
+    """Read numbered section headings from the checked-in OASIS HTML sources."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.heading_tag = None
+        self.heading_text = []
+        self.sections = {}
+
+    def handle_starttag(self, tag, _attrs):
+        if re.fullmatch(r"h[1-6]", tag):
+            self.heading_tag = tag
+            self.heading_text = []
+
+    def handle_data(self, data):
+        if self.heading_tag:
+            self.heading_text.append(data)
+
+    def handle_endtag(self, tag):
+        if self.heading_tag != tag:
+            return
+        text = " ".join("".join(self.heading_text).split())
+        match = re.match(r"(\d+(?:\.\d+)*)(?:\s+|$)(.*)", text)
+        if match:
+            self.sections[match.group(1)] = match.group(2).strip()
+        self.heading_tag = None
+        self.heading_text = []
+
+
+def oasis_section_indexes(repository_root: Path) -> dict[str, dict[str, str]]:
+    indexes = {}
+    for version, (relative_path, expected_digest) in OASIS_SOURCES.items():
+        source_path = repository_root / relative_path
+        source_bytes = source_path.read_bytes()
+        actual_digest = hashlib.sha256(source_bytes).hexdigest()
+        if actual_digest != expected_digest:
+            raise ValueError(f"Pinned OASIS KMIP {version} source digest mismatch: {source_path}")
+        parser = OASISSectionParser()
+        parser.feed(source_bytes.decode("cp1252"))
+        indexes[version] = parser.sections
+    return indexes
+
+
+def _section_for_title(index: dict[str, str], title: str, section_family: str) -> str | None:
+    matches = [
+        section for section, candidate in index.items()
+        if section.startswith(section_family) and candidate.casefold() == title.casefold()
+    ]
+    if len(matches) > 1:
+        raise ValueError(f"Ambiguous OASIS section title {title!r}: {matches}")
+    return matches[0] if matches else None
+
+
+def _source_element(test_case: dict, elements: list[dict]) -> dict | None:
+    category = test_case["category"]
+    requires = test_case.get("requires", {})
+    if category == "attributes":
+        kind, name = "attribute", requires.get("attribute")
+    elif category == "managed_objects":
+        kind, name = "object_type", requires.get("object_type")
+    elif category == "enums_and_bitmasks":
+        kind = "enumeration" if "enum_type" in requires else "bitmask"
+        name = requires.get("enum_type", requires.get("bitmask_type"))
+    else:
+        kind, name = "operation", test_case.get("operation")
+    matches = [el for el in elements if el.get("kind") == kind and el.get("name") == name]
+    if kind == "operation" and requires.get("workflow_type") == "server_to_client":
+        return next((el for el in matches if el.get("direction") == "server_to_client"), None)
+    return matches[0] if matches else None
+
+
+def _element_sections(element: dict, indexes: dict[str, dict[str, str]]) -> dict[str, str]:
+    refs = element.get("source_refs", [])
+    source_ref = next((ref for ref in refs if ref.get("source_id") == "KMIPKIT-SRC-spec"), None)
+    if source_ref is None:
+        return {}
+    section21 = str(source_ref["section"])
+    title = indexes["2.1"].get(section21)
+    if title is None:
+        return {}
+    family = section21.rsplit(".", 1)[0] + "."
+    # A non-dotted top-level section (for example §2) is its own family.
+    if "." not in section21:
+        family = section21
+    sections = {"2.1": section21}
+    section20 = _section_for_title(indexes["2.0"], title, family)
+    if section20:
+        sections["2.0"] = section20
+    return sections
+
+
+def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[str, dict[str, str]]) -> dict:
     """Attach a machine-readable baseline execution recipe to a catalog case."""
     category = test_case["category"]
     req = test_case.get("requires", {})
-    operation = test_case.get("operation")
+    source_element = _source_element(test_case, elements)
+    section_by_version = _element_sections(source_element, indexes) if source_element else {}
     if category == "version_boundaries":
         versions = ["2.0"]
-    elif operation in KMIP_21_ONLY_OPERATIONS:
-        versions = ["2.1"]
     else:
-        versions = ["2.0", "2.1"]
+        versions = [version for version in ("2.0", "2.1") if version in section_by_version]
+    if not versions:
+        raise ValueError(f"No pinned OASIS applicability source for {test_case['case_id']}")
 
     if category == "enums_and_bitmasks":
         mode = "local_model"
@@ -48,16 +149,14 @@ def add_execution_contract(test_case: dict) -> dict:
         assertions = ["response_matches_operation_contract"]
         mutation = "read_only"
 
-    section = str(test_case.get("oasis_section", "6.1")).replace("§", "")
-    test_case["normative_refs"] = [{
-        "document": "OASIS KMIP 2.1 Specification",
-        "section": section,
-    }]
+    ref_versions = ("2.1",) if category == "version_boundaries" else versions
+    test_case["normative_refs"] = [
+        {"document": f"OASIS KMIP {version} Specification", "section": section_by_version[version]}
+        for version in ref_versions
+    ]
     if category == "version_boundaries":
-        test_case["normative_refs"].append({
-            "document": "OASIS KMIP 2.0 Specification",
-            "section": "6",
-        })
+        # The operation is defined in KMIP 2.1 and intentionally has no KMIP 2.0 entry.
+        test_case["normative_refs"].append({"document": "OASIS KMIP 2.0 Specification", "section": "6.1"})
     test_case["execution"] = {
         "mode": mode,
         "protocol_versions": versions,
@@ -74,6 +173,8 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         catalog = json.load(f)
 
     elements = catalog.get("elements", [])
+    repository_root = normative_catalog_path.resolve().parents[2]
+    section_indexes = oasis_section_indexes(repository_root)
 
     # 1. Collect in-scope client-to-server operations.
     c2s_ops = [
@@ -83,6 +184,15 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         and el.get("scope_state") == "client_1_0"
     ]
     c2s_ops.sort(key=lambda x: x["name"])
+    operation_sections = [
+        (operation, _element_sections(operation, section_indexes))
+        for operation in c2s_ops
+    ]
+    kmip_21_only_operations = {
+        operation["name"]: sections["2.1"]
+        for operation, sections in operation_sections
+        if "2.1" in sections and "2.0" not in sections
+    }
     s2c_ops = [
         el for el in elements
         if el.get("kind") == "operation"
@@ -148,11 +258,9 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
 
     # Category B: Object Lifecycle & General operations
     crypto_ops = {"Encrypt", "Decrypt", "Sign", "Signature Verify", "MAC", "MAC Verify", "Hash", "RNG Retrieve", "RNG Seed"}
-    attribute_ops = {"Get Attributes", "Get Attribute List", "Add Attribute", "Modify Attribute", "Set Attribute", "Delete Attribute", "Adjust Attribute"}
-
     for op in c2s_ops:
         name = op["name"]
-        if name in session_ops or name in crypto_ops or name in attribute_ops:
+        if name in session_ops or name in crypto_ops:
             continue
         case_id = f"test-op-{name.lower().replace(' ', '-')}"
         sec = op.get("source_refs", [{}])[0].get("section", "6.1")
@@ -422,19 +530,21 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "id": "test-neg-encrypt-preactive-key",
             "op": "Encrypt",
             "desc": "Verify server rejects Encrypt on Pre-Active SymmetricKey with CryptographicFailure or InvalidField.",
-            "exp_status": "OperationFailed"
+            "exp_status": "OperationFailed",
+            "expected_result_reasons": [7, 10],
         },
         {
             "id": "test-neg-modify-readonly-attribute",
             "op": "Modify Attribute",
             "desc": "Verify server rejects mutation of read-only server-generated attribute (InitialDate / UniqueIdentifier).",
-            "exp_status": "OperationFailed"
+            "exp_status": "OperationFailed",
         },
         {
             "id": "test-neg-destroy-active-without-revoke",
             "op": "Destroy",
             "desc": "Verify server enforces KMIP §3 lifecycle rules when attempting Destroy on Active object without prior Revocation.",
-            "exp_status": "OperationFailed"
+            "exp_status": "OperationFailed",
+            "expected_result_reasons": [67],
         }
     ]
     for nt in negative_tests:
@@ -456,15 +566,17 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
                 "normalized_fields": ["UniqueIdentifier", "TimeStamp"]
             }
         })
+        if nt.get("expected_result_reasons"):
+            test_cases[-1]["requires"]["expected_result_reasons"] = nt["expected_result_reasons"]
 
     # KMIP 2.1-only operations must be rejected locally when the effective
     # request version is 2.0. These cases do not contact a server.
-    for operation in sorted(KMIP_21_ONLY_OPERATIONS):
+    for operation in sorted(kmip_21_only_operations):
         test_cases.append({
             "case_id": f"test-v20-reject-{operation.lower().replace(' ', '-')}",
             "category": "version_boundaries",
             "operation": operation,
-            "oasis_section": KMIP_21_ONLY_OPERATIONS[operation],
+            "oasis_section": kmip_21_only_operations[operation],
             "description": f"Reject KMIP 2.1-only {operation} before sending under KMIP 2.0.",
             "requires": {"operation": operation, "expected_status": "NotSent"},
             "isolation_recipe": {
@@ -476,7 +588,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             },
         })
 
-    test_cases = [add_execution_contract(case) for case in test_cases]
+    test_cases = [add_execution_contract(case, elements, section_indexes) for case in test_cases]
 
     catalog_output = {
         "version": "2.0.0",
@@ -525,7 +637,7 @@ def main():
         if existing != content:
             print("Error: Catalog is out of date. Run with --write to regenerate.", file=sys.stderr)
             sys.exit(1)
-        print("Catalog check passed: 100% compliant with kmip-2.1.json")
+        print("Catalog check passed: pinned KMIP 2.0/2.1 section inventories match")
     elif args.write:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:  # NOSONAR

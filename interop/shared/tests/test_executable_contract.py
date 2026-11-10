@@ -34,7 +34,16 @@ class ExecutableContractTests(unittest.TestCase):
                     versions_by_operation.setdefault(case["operation"], execution["protocol_versions"])
         self.assertEqual(["2.0", "2.1"], versions_by_operation["Export"])
         self.assertEqual(["2.0", "2.1"], versions_by_operation["Import"])
-        self.assertEqual(2, sum(case["category"] == "version_boundaries" for case in catalog["test_cases"]))
+        self.assertEqual(6, sum(case["category"] == "version_boundaries" for case in catalog["test_cases"]))
+        source_operations = {
+            element["name"] for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
+            if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") == "client_1_0"
+        }
+        catalog_operations = {
+            case["operation"] for case in catalog["test_cases"]
+            if case["category"] not in {"version_boundaries", "server_initiated_operations"}
+        }
+        self.assertEqual(source_operations, catalog_operations)
 
     def test_catalog_and_result_schemas_validate_generated_evidence(self) -> None:
         try:
@@ -57,9 +66,12 @@ class ExecutableContractTests(unittest.TestCase):
             "catalog_sha256": "c" * 64,
             "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol", "library_commit": "abcdef0", "artifact_sha256": "b" * 64},
             "summary": {"total": 1, "passed": 1, "failed": 0, "unsupported": 0, "policy_restricted": 0, "not_run": 0},
-            "cases": [{"case_id": "test-get", "status": "passed", "library_correctness": "passed", "server_compatibility": "supported", "parity": "not_compared"}],
+            "cases": [{"case_id": "test-get", "status": "passed", "library_correctness": "passed", "server_compatibility": "supported", "parity": "not_compared", "result_status_code": 0, "result_reason_code": 7}],
         }
         jsonschema.validate(sample, result_schema)
+        sample["cases"][0]["result_reason_code"] = 4294967296
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(sample, result_schema)
 
     def test_live_configuration_requires_isolation_and_mutation_opt_in(self) -> None:
         try:
@@ -109,9 +121,9 @@ class ExecutableContractTests(unittest.TestCase):
                 paths.append(path)
             matrix = aggregate_results(paths)
 
-        self.assertEqual("COMPARABLE", matrix["comparability_by_server"]["test-kms"])
-        self.assertEqual({"passed": 2}, matrix["evidence_summary_by_server"]["test-kms"]["library_correctness"])
-        self.assertEqual({"supported": 2}, matrix["evidence_summary_by_server"]["test-kms"]["server_compatibility"])
+        self.assertEqual("COMPARABLE", matrix["matrices"][0]["comparability"])
+        self.assertEqual({"passed": 2}, matrix["matrices"][0]["summary"]["library_correctness"])
+        self.assertEqual({"supported": 2}, matrix["matrices"][0]["summary"]["server_compatibility"])
 
     def test_aggregator_marks_different_library_commits_incomparable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -130,7 +142,7 @@ class ExecutableContractTests(unittest.TestCase):
                 paths.append(path)
             matrix = aggregate_results(paths)
 
-        self.assertEqual("INCOMPARABLE", matrix["comparability_by_server"]["test-kms"])
+        self.assertEqual("INCOMPARABLE", matrix["matrices"][0]["comparability"])
 
 
 if __name__ == "__main__":
