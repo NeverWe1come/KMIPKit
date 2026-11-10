@@ -26,7 +26,7 @@ use crate::{ClientCauseCategory, ClientErrorCategory};
 
 const RNG_SEED: u32 = 0x0000_0026;
 const DATA: u32 = 0x0042_00C2;
-const DATA_LENGTH: u32 = 0x0042_00D5;
+const DATA_LENGTH: u32 = 0x0042_00C4;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;

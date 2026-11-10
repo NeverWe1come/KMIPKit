@@ -30,10 +30,20 @@ fn request() -> ExportRequest {
         .with_key_format_type(KeyFormatType::from_raw(0xF123_4568))
         .with_key_wrap_type(KeyWrapType::from_raw(0xF123_4569))
         .with_key_compression_type(KeyCompressionType::from_raw(0xF123_456A))
-        .with_key_wrapping_specification(test_structure([test_item(
-            0x0054_1234,
-            Value::text_string("synthetic-wrapping-specification".to_owned()),
-        )]))
+        .with_key_wrapping_specification(test_structure([
+            test_item(0x0042_009E, Value::enumeration(1)),
+            test_item(
+                0x0042_0036,
+                Value::structure(test_structure([test_item(
+                    0x0042_0094,
+                    Value::text_string("wrapping-key".to_owned()),
+                )])),
+            ),
+            test_item(
+                0x0054_1234,
+                Value::text_string("synthetic-wrapping-specification".to_owned()),
+            ),
+        ]))
 }
 
 fn server_error_response() -> Vec<u8> {

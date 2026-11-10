@@ -111,8 +111,9 @@ pub struct QueryRequest {
 impl QueryRequest {
     /// Creates a Query request with the supplied ordered Query Functions.
     ///
-    /// The list is validated when encoded so an empty request fails through
-    /// the normal client execution path before transmission.
+    /// The list can be checked with [`crate::ValidateKmipRequest::validate`] and is
+    /// validated again when encoded so invalid requests fail before
+    /// transmission.
     #[must_use]
     pub fn new(functions: impl IntoIterator<Item = QueryFunction>) -> Self {
         Self {
@@ -145,6 +146,16 @@ impl QueryRequest {
         self.object_groups.as_deref()
     }
 
+    pub(crate) fn has_query_functions(&self) -> bool {
+        !self.functions.is_empty()
+    }
+
+    pub(crate) fn has_valid_query_function_values(&self) -> bool {
+        self.functions
+            .iter()
+            .all(|function| function.is_valid_request_value())
+    }
+
     /// Builds the Request Payload Structure from §6.1.40, Table 282.
     ///
     /// # Errors
@@ -152,12 +163,7 @@ impl QueryRequest {
     /// Returns a sanitized error for an empty function list, a reserved Query
     /// Function value, or an invalid local TTLV model.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
-        if self.functions.is_empty()
-            || self
-                .functions
-                .iter()
-                .any(|function| !function.is_valid_request_value())
-        {
+        if !self.has_query_functions() || !self.has_valid_query_function_values() {
             return Err(ProtocolError::categorized(
                 ProtocolErrorKind::InvalidInput,
                 ProtocolCauseCategory::InvalidValue,

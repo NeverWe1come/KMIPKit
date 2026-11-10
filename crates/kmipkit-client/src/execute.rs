@@ -43,7 +43,7 @@ use kmipkit_protocol::{
     RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
     SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
     SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse, UniqueIdentifier,
+    SignatureVerifyResponse, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
 use kmipkit_protocol::{SetEndpointRoleRequest, SetEndpointRoleResponse};
@@ -784,17 +784,90 @@ impl ClientRequest {
         }
     }
 
-    fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+    pub(crate) fn validate_local_shape(&self) -> Result<(), ProtocolError> {
+        if self.validation_report().is_valid() {
+            Ok(())
+        } else {
+            Err(protocol_error(ProtocolErrorKind::InvalidInput))
+        }
+    }
+
+    /// Validates this typed request without consuming or encoding it.
+    ///
+    /// The report contains only stable codes, field paths, severity, and a
+    /// normative or project-policy source. It describes locally decidable
+    /// request constraints; it does not establish server capability,
+    /// authorization, object state, or policy. [`Client::execute`] runs the
+    /// same checks before encoding and reports a rejected request as `NotSent`.
+    #[must_use]
+    pub fn validation_report(&self) -> ValidationReport {
         match self {
-            Self::Encrypt(request) => request.validate_multipart_shape(),
-            Self::Decrypt(request) => request.validate_multipart_shape(),
-            Self::Hash(request) => request.validate_multipart_shape(),
-            Self::Mac(request) => request.validate_multipart_shape(),
-            Self::MacVerify(request) => request.validate_multipart_shape(),
-            Self::Sign(request) => request.validate_multipart_shape(),
-            Self::SignatureVerify(request) => request.validate_multipart_shape(),
-            Self::Register(request) => request.validate_local_shape(),
-            _ => Ok(()),
+            Self::DiscoverVersions(request) => request.validate(),
+            Self::Activate(request) => request.validate(),
+            Self::Archive(request) => request.validate(),
+            Self::Certify(request) => request.validate(),
+            Self::Check(request) => request.validate(),
+            Self::DelegatedLogin(request) => request.validate(),
+            Self::Login(request) => request.validate(),
+            Self::Logout(request) => request.validate(),
+            Self::ObtainLease(request) => request.validate(),
+            Self::Recertify(request) => request.validate(),
+            Self::Rekey(request) => request.validate(),
+            Self::RekeyKeyPair(request) => request.validate(),
+            Self::ReProvision(request) => request.validate(),
+            Self::Register(request) => request.validate(),
+            Self::Revoke(request) => request.validate(),
+            Self::Destroy(request) => request.validate(),
+            Self::Recover(request) => request.validate(),
+            Self::Get(request) => request.validate(),
+            Self::Locate(request) => request.validate(),
+            Self::Create(request) => request.validate(),
+            Self::CreateKeyPair(request) => request.validate(),
+            Self::CreateSplitKey(request) => request.validate(),
+            Self::AddAttribute(request) => request.validate(),
+            Self::AdjustAttribute(request) => request.validate(),
+            Self::DeleteAttribute(request) => request.validate(),
+            Self::ModifyAttribute(request) => request.validate(),
+            Self::SetAttribute(request) => request.validate(),
+            Self::GetAttributes(request) => request.validate(),
+            Self::GetAttributeList(request) => request.validate(),
+            Self::Ping(request) => request.validate(),
+            Self::Interop(request) => request.validate(),
+            Self::Log(request) => request.validate(),
+            Self::Validate(request) => request.validate(),
+            Self::Pkcs11(request) => request.validate(),
+            Self::GetConstraints(request) => request.validate(),
+            Self::SetConstraints(request) => request.validate(),
+            Self::SetDefaults(request) => request.validate(),
+            Self::GetUsageAllocation(request) => request.validate(),
+            Self::Query(request) => request.validate(),
+            Self::Encrypt(request) => request.validate(),
+            Self::Decrypt(request) => request.validate(),
+            Self::DeriveKey(request) => request.validate(),
+            Self::Export(request) => request.validate(),
+            Self::Import(request) => request.validate(),
+            Self::JoinSplitKey(request) => request.validate(),
+            Self::Hash(request) => request.validate(),
+            Self::Mac(request) => request.validate(),
+            Self::MacVerify(request) => request.validate(),
+            Self::Sign(request) => request.validate(),
+            Self::SignatureVerify(request) => request.validate(),
+            Self::RngRetrieve(request) => request.validate(),
+            Self::RngSeed(request) => request.validate(),
+            // KMIP 3.0 draft payloads use their dedicated typed models rather
+            // than the KMIP 2.1 Request Payload schema registry. Execution
+            // still version-gates the operation and every serialized payload
+            // tag before transport, returning NotSent for an older version.
+            // Set Endpoint Role is deferred to 1.1; its open Enumeration must
+            // preserve future and vendor values.
+            Self::CreateGroup(_)
+            | Self::Obliterate(_)
+            | Self::CreateUser(_)
+            | Self::CreateCredential(_)
+            | Self::Deactivate(_)
+            | Self::Encapsulate(_)
+            | Self::Decapsulate(_)
+            | Self::SetEndpointRole(_) => ValidationReport::default(),
         }
     }
 
@@ -4991,7 +5064,10 @@ impl Client {
                 error,
             )
         })?;
-        validate_cryptographic_request_shapes(&batch)?;
+        validate_typed_request_preflight(
+            &batch,
+            profiles.is_some_and(ProfileExchangeValidator::includes_original_creation_date_rule),
+        )?;
         validate_request_extension_ownership(&batch, &self.configuration).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -4999,15 +5075,8 @@ impl Client {
                 error,
             )
         })?;
-        let mutation_policy = if let Some(profiles) = profiles {
-            Some(validate_attribute_mutation_policy(
-                &batch,
-                profiles.includes_original_creation_date_rule(),
-            ))
-        } else {
-            validate_attribute_mutation_policy(&batch, false)?;
-            None
-        };
+        let mutation_policy =
+            validate_attribute_mutation_preflight(&batch, effective_version, profiles.is_some())?;
         validate_query_batch_limits(&batch, limits)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
 
@@ -5017,8 +5086,8 @@ impl Client {
             .map(BatchIdentity::from_request)
             .collect::<Vec<_>>();
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
-        let request_message = build_request_message(batch, &options, maximum_response_size)
-            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let request_message =
+            build_and_validate_request_message(batch, &options, maximum_response_size)?;
         let profile_request = if profiles.is_some() {
             Some(
                 clone_request_message(&request_message, limits)
@@ -7435,15 +7504,27 @@ pub(super) fn validate_batch(
     Ok(options)
 }
 
-fn validate_cryptographic_request_shapes(batch: &ClientBatch) -> Result<(), ClientError> {
+fn validate_typed_request_preflight(
+    batch: &ClientBatch,
+    profile_validates_original_creation_date: bool,
+) -> Result<(), ClientError> {
     for item in &batch.items {
-        item.request.validate_local_shape().map_err(|error| {
-            ClientError::validation(
-                ClientCauseCategory::InvalidInput,
-                RequestDeliveryState::NotSent,
-                error,
-            )
-        })?;
+        let report = item.request.validation_report();
+        let only_profile_owned_creation_date_findings = profile_validates_original_creation_date
+            && !report.is_valid()
+            && report.issues().iter().all(|issue| {
+                issue.code().as_str() == "KMIPKIT-0051-R282"
+                    && issue.path().to_string().ends_with("tag(0x4200bc)")
+            });
+        if !report.is_valid() && !only_profile_owned_creation_date_findings {
+            item.request.validate_local_shape().map_err(|error| {
+                ClientError::validation(
+                    ClientCauseCategory::InvalidInput,
+                    RequestDeliveryState::NotSent,
+                    error,
+                )
+            })?;
+        }
     }
     Ok(())
 }
@@ -7486,13 +7567,12 @@ impl fmt::Display for SourceBackedMutationProhibited {
 
 impl Error for SourceBackedMutationProhibited {}
 
-fn validate_attribute_mutation_policy(
-    batch: &ClientBatch,
-    allow_profile_validated_creation_date_add: bool,
-) -> Result<(), ClientError> {
-    if batch.items.iter().any(|item| {
-        request_mutation_is_prohibited(&item.request, allow_profile_validated_creation_date_add)
-    }) {
+fn validate_attribute_mutation_policy(batch: &ClientBatch) -> Result<(), ClientError> {
+    if batch
+        .items
+        .iter()
+        .any(|item| request_mutation_is_prohibited(&item.request))
+    {
         Err(ClientError::validation(
             ClientCauseCategory::InvalidInput,
             RequestDeliveryState::NotSent,
@@ -7503,21 +7583,118 @@ fn validate_attribute_mutation_policy(
     }
 }
 
-fn request_mutation_is_prohibited(
-    request: &ClientRequest,
-    allow_profile_validated_creation_date_add: bool,
-) -> bool {
-    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+fn validate_attribute_mutation_preflight(
+    batch: &ClientBatch,
+    version: ProtocolVersion,
+    defer_source_policy: bool,
+) -> Result<Option<Result<(), ClientError>>, ClientError> {
+    validate_attribute_mutation_versions(batch, version)?;
+    if defer_source_policy {
+        Ok(Some(validate_attribute_mutation_policy(batch)))
+    } else {
+        validate_attribute_mutation_policy(batch)?;
+        Ok(None)
+    }
+}
 
+fn validate_attribute_mutation_versions(
+    batch: &ClientBatch,
+    version: ProtocolVersion,
+) -> Result<(), ClientError> {
+    for item in &batch.items {
+        let validate = |tag| {
+            kmipkit_protocol::VersionGate::validate_attribute_mutation(version, tag).map_err(
+                |error| {
+                    ClientError::validation(
+                        ClientCauseCategory::InvalidInput,
+                        RequestDeliveryState::NotSent,
+                        error,
+                    )
+                },
+            )
+        };
+        match &item.request {
+            ClientRequest::AddAttribute(request) => {
+                validate(request.new_attribute().item().tag().raw())?;
+            }
+            ClientRequest::AdjustAttribute(request) => {
+                if let Some(tag) = request.attribute_reference().tag_value() {
+                    validate(tag)?;
+                }
+            }
+            ClientRequest::DeleteAttribute(request) => {
+                if let Some(attribute) = request.current_attribute() {
+                    validate(attribute.item().tag().raw())?;
+                }
+                if let Some(tag) = request
+                    .attribute_reference()
+                    .and_then(AttributeReference::tag_value)
+                {
+                    validate(tag)?;
+                }
+            }
+            ClientRequest::ModifyAttribute(request) => {
+                if let Some(attribute) = request.current_attribute() {
+                    validate(attribute.item().tag().raw())?;
+                }
+                validate(request.new_attribute().item().tag().raw())?;
+            }
+            ClientRequest::SetAttribute(request) => {
+                validate(request.new_attribute().item().tag().raw())?;
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn validate_request_message_version_tags(
+    request: &RequestMessage,
+    version: ProtocolVersion,
+) -> Result<(), ClientError> {
+    for batch_item in request.batch_items() {
+        if let Some(Err(error)) = batch_item
+            .with_request_payload(|payload| validate_version_tags_in_structure(&payload, version))
+        {
+            return Err(ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn build_and_validate_request_message(
+    batch: ClientBatch,
+    options: &ValidatedBatchOptions,
+    maximum_response_size: Option<i32>,
+) -> Result<RequestMessage, ClientError> {
+    let request = build_request_message(batch, options, maximum_response_size)
+        .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+    validate_request_message_version_tags(&request, options.protocol_version)?;
+    Ok(request)
+}
+
+fn validate_version_tags_in_structure(
+    structure: &StructureView<'_>,
+    version: ProtocolVersion,
+) -> Result<(), kmipkit_protocol::VersionGateError> {
+    for item in structure.children() {
+        kmipkit_protocol::VersionGate::validate_tag(version, item.tag().raw())?;
+        item.with_value(|value| match value {
+            ValueView::Structure(nested) => validate_version_tags_in_structure(&nested, version),
+            _ => Ok(()),
+        })?;
+    }
+    Ok(())
+}
+
+fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
     match request {
         ClientRequest::AddAttribute(request) => {
-            let attribute = request.new_attribute().item();
-            !(allow_profile_validated_creation_date_add
-                && attribute.tag().raw() == ORIGINAL_CREATION_DATE)
-                && new_attribute_is_prohibited(
-                    request.new_attribute(),
-                    ClientAttributeMutation::Add,
-                )
+            new_attribute_is_prohibited(request.new_attribute(), ClientAttributeMutation::Add)
         }
         ClientRequest::AdjustAttribute(request) => attribute_reference_is_prohibited(
             request.attribute_reference(),
@@ -7607,7 +7784,24 @@ fn new_attribute_is_prohibited(
 }
 
 fn attribute_item_is_prohibited(item: &Item, mutation: ClientAttributeMutation) -> bool {
-    client_attribute_mutation_is_prohibited(item.tag().raw(), mutation)
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+
+    let tag = item.tag().raw();
+    if (mutation == ClientAttributeMutation::Add && tag == ORIGINAL_CREATION_DATE)
+        || (matches!(
+            mutation,
+            ClientAttributeMutation::Add | ClientAttributeMutation::Modify
+        ) && tag == USAGE_LIMITS)
+    {
+        // §4.38 permits a later Add of Original Creation Date when it was
+        // omitted during creation; whether it is already present is remote
+        // state. §4.59 reserves only the nested Usage Limits Count member for
+        // Add/Modify, which the typed-request validator checks specifically.
+        return false;
+    }
+
+    client_attribute_mutation_is_prohibited(tag, mutation)
         || vendor_attribute_item_is_prohibited(item, mutation)
 }
 

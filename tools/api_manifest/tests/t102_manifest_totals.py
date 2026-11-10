@@ -11,8 +11,9 @@ def without_0047_versioned_values(rows: list[dict[str, Any]]) -> list[dict[str, 
     ]
 
 
-T102_BLOCKED_CANDIDATES = 0
-T102_PUBLIC_DECLARATIONS = 12_701
+# KMIPKIT-0051 adds 930 declarations, including 902 unresolved 0043 candidates.
+T102_BLOCKED_CANDIDATES = 902
+T102_PUBLIC_DECLARATIONS = 13_631
 T102_APPROVED_EXCLUSIONS = 17_594
 T102_RUST_AUDIT_MANIFEST = 3_287
 T102_RUST_AUDIT_EXCLUDED = 7_176

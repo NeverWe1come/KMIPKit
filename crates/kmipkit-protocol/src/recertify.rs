@@ -8,7 +8,8 @@ use kmipkit_ttlv::{Structure, StructureView, Value};
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes, UniqueIdentifier,
+    RequestPayloadSchema, ResponseBatchItemView, ResultMessage, ResultValidationError, SecretBytes,
+    UniqueIdentifier, ValidateKmipRequest, ValidationReport, ValidationSourceRef,
 };
 
 const OPERATION: u32 = 0x0000_0007;
@@ -19,7 +20,6 @@ const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const OFFSET: u32 = 0x0042_0058;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
-const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const SUCCESS: u32 = 0;
 const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 
@@ -124,28 +124,7 @@ impl RecertifyRequest {
     /// Identifier, source-defined Attribute cardinality rules are not met, or
     /// the payload cannot be represented by the generic TTLV model.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if let Some(attributes) = self.attributes.as_ref() {
-            let view = attributes.view();
-            crate::attribute::validate_single_instance_attribute_items(
-                view.children(),
-                Some(CERTIFICATE_OBJECT_TYPE),
-                true,
-            )
-            .map_err(|_| common::request_error())?;
-        }
-
-        let has_request_value = self.certificate_request_value.is_some();
-        if has_request_value && self.certificate_request_type.is_none() {
-            return Err(invalid_request());
-        }
-
-        let has_explicit_identifier = self.unique_identifier.as_ref().is_some_and(|identifier| {
-            !matches!(
-                identifier,
-                UniqueIdentifier::Enumeration(ID_PLACEHOLDER_ENUMERATION_VALUE)
-            )
-        });
-        if !has_request_value && !has_explicit_identifier {
+        if !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -192,6 +171,44 @@ impl RecertifyRequest {
             )?;
         }
         Ok(payload)
+    }
+
+    fn validation_report(&self) -> ValidationReport {
+        let has_request_value = self.certificate_request_value.is_some();
+        if let Some(report) = crate::validation::certificate_request_preflight_report(
+            self.attributes.as_ref(),
+            has_request_value,
+            self.certificate_request_type.is_some(),
+            "§6.1.45, Table 300",
+        ) {
+            return report;
+        }
+
+        let has_explicit_identifier = self.unique_identifier.as_ref().is_some_and(|identifier| {
+            !matches!(
+                identifier,
+                UniqueIdentifier::Enumeration(ID_PLACEHOLDER_ENUMERATION_VALUE)
+            )
+        });
+        if !has_request_value && !has_explicit_identifier {
+            return crate::validation::request_issue_report(
+                "KMIPKIT-0051-P005",
+                "Unique Identifier",
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§6.1.45, Table 300",
+                },
+            );
+        }
+        ValidationReport::default()
+    }
+}
+
+impl ValidateKmipRequest for RecertifyRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Recertify;
+
+    fn validate(&self) -> ValidationReport {
+        self.validation_report()
     }
 }
 

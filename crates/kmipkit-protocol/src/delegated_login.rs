@@ -78,6 +78,14 @@ impl DelegatedLoginRequest {
         self
     }
 
+    pub(crate) const fn rights(&self) -> &Structure {
+        &self.rights
+    }
+
+    pub(crate) const fn usage_limits(&self) -> Option<&Structure> {
+        self.usage_limits.as_ref()
+    }
+
     /// Encodes the Table 199 Request Payload in protocol field order.
     ///
     /// # Errors

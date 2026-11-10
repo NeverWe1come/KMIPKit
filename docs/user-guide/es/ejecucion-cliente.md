@@ -435,6 +435,40 @@ cliente sigue rechazando antes de decodificar cualquier respuesta que supere
 el límite configurado. La [guía de transporte](transportes-produccion.md) documenta los plazos de conexión,
 escritura, lectura e intercambio completo.
 
+## Validación local de peticiones
+
+KMIPKit valida cada petición tipada antes de codificarla o llamar al
+transporte. Puedes consultar el mismo resultado local sin enviar la petición:
+
+```rust
+use kmipkit_client::ClientRequest;
+
+let request = ClientRequest::discover_versions();
+let report = request.validation_report();
+assert!(report.is_valid());
+```
+
+El informe contiene códigos estables, rutas de campos, gravedad y la
+referencia exacta a OASIS o a una política de KMIPKit. Nunca incluye valores
+de la petición. El validador toma prestada la petición y no codifica ni copia
+credenciales o material de claves para generar diagnósticos. Si una petición
+no supera la validación local, `Client::execute` devuelve un error de
+validación redactado con estado `NotSent`; el transporte no recibe ningún
+intercambio ni bytes de la petición.
+
+Para TTLV genérico, selecciona explícitamente el esquema de petición o de
+estructura anidada cuando necesites comprobar los campos KMIP. KMIPKit no
+deduce el esquema a partir de tags coincidentes. Conserva tags desconocidos,
+valores Enumeration futuros, bits de máscaras desconocidos y extensiones de
+fabricante mientras comprueba los campos conocidos. El orden sigue la
+descripción de estructura aplicable en KMIP v2.1 §10.1.2, no el orden numérico
+de los tags. Para objetos gestionados, selecciona `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData` o `NestedStructureSchema::SplitKey` para
+validar directamente la estructura correspondiente. Un informe local válido
+no predice las capacidades,
+autorizaciones, estado del objeto ni políticas del servidor, y tampoco
+afirma conformidad con un perfil.
+
 ## Errores, estado de entrega y redacción
 
 Los `ClientError` locales distinguen errores de validación, protocolo y

@@ -6,8 +6,10 @@ use std::fmt;
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::{
-    AttributeSet, KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ResponseBatchItemView, ResultMessage, ResultValidationError,
+    AttributeSet, AttributeSetError, KmipOperationResult, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
+    ResultValidationError, ValidateKmipRequest, ValidationCode, ValidationIssue, ValidationPath,
+    ValidationReport, ValidationSeverity, ValidationSourceRef,
 };
 
 const CREATE_OPERATION: u32 = 0x0000_0001;
@@ -147,6 +149,11 @@ impl CreateRequest {
         self.protection_storage_masks.as_ref()
     }
 
+    fn validate_attribute_cardinality(&self) -> Result<(), AttributeSetError> {
+        self.attributes
+            .validate_single_instance_cardinality_for_object_type(self.object_type.raw())
+    }
+
     /// Builds the ordered generic Structure for the Create request payload.
     ///
     /// The common message model owns the enclosing Request Payload and Batch
@@ -159,15 +166,13 @@ impl CreateRequest {
     /// singleton or an internally defined tag or nested generic Structure
     /// violates the TTLV model constraints.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        self.attributes
-            .validate_single_instance_cardinality_for_object_type(self.object_type.raw())
-            .map_err(|error| {
-                ProtocolError::new(
-                    ProtocolErrorKind::InvalidValue,
-                    ProtocolCauseCategory::InvalidValue,
-                    error,
-                )
-            })?;
+        self.validate_attribute_cardinality().map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })?;
 
         let mut attributes = Structure::new();
         for attribute in self.attributes.into_items() {
@@ -190,6 +195,28 @@ impl CreateRequest {
                 .map_err(model_error)?;
         }
         Ok(payload)
+    }
+}
+
+impl ValidateKmipRequest for CreateRequest {
+    const SCHEMA: RequestPayloadSchema = RequestPayloadSchema::Create;
+
+    fn validate(&self) -> ValidationReport {
+        let mut report = ValidationReport::default();
+        if self.validate_attribute_cardinality().is_err() {
+            report.push(ValidationIssue::new(
+                ValidationCode::new("KMIPKIT-0051-R190"),
+                ValidationPath::root()
+                    .field("Request Payload")
+                    .field("Attributes"),
+                ValidationSeverity::Error,
+                ValidationSourceRef::Oasis {
+                    document: "KMIP v2.1",
+                    reference: "§4, Table 46",
+                },
+            ));
+        }
+        report
     }
 }
 

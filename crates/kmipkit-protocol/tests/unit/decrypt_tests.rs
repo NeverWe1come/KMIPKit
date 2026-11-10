@@ -148,15 +148,13 @@ fn snapshot_value(value: ValueView<'_>) -> ValueSnapshot {
 fn request_emits_present_table_196_members_in_exact_order_and_accepts_decrypt_tag() {
     let data = vec![0x00, 0x7F, 0x80, 0xFF];
     let iv = vec![0x11, 0x22, 0x33];
-    let correlation = vec![0x44, 0x55];
     let additional_data = vec![0x66, 0x77, 0x88];
     let authentication_tag = vec![0x99, 0xAA, 0xBB, 0xCC];
     let request = base_request(OperationData::ByteString(SecretBytes::new(data.clone())))
         .with_cryptographic_parameters(vendor_parameters())
         .with_iv_counter_nonce(SecretBytes::new(iv.clone()))
-        .with_correlation_value(SecretBytes::new(correlation.clone()))
-        .with_init_indicator(false)
-        .with_final_indicator(false)
+        .with_init_indicator(true)
+        .with_final_indicator(true)
         .with_authenticated_encryption_additional_data(SecretBytes::new(additional_data.clone()))
         .with_authenticated_encryption_tag(SecretBytes::new(authentication_tag.clone()));
 
@@ -174,9 +172,8 @@ fn request_emits_present_table_196_members_in_exact_order_and_accepts_decrypt_ta
         ),
         (DATA_TAG, Value::byte_string(data)),
         (IV_COUNTER_NONCE_TAG, Value::byte_string(iv)),
-        (CORRELATION_VALUE_TAG, Value::byte_string(correlation)),
-        (INIT_INDICATOR_TAG, Value::boolean(false)),
-        (FINAL_INDICATOR_TAG, Value::boolean(false)),
+        (INIT_INDICATOR_TAG, Value::boolean(true)),
+        (FINAL_INDICATOR_TAG, Value::boolean(true)),
         (
             AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,
             Value::byte_string(additional_data),
@@ -194,7 +191,6 @@ fn request_emits_present_table_196_members_in_exact_order_and_accepts_decrypt_ta
             CRYPTOGRAPHIC_PARAMETERS_TAG,
             DATA_TAG,
             IV_COUNTER_NONCE_TAG,
-            CORRELATION_VALUE_TAG,
             INIT_INDICATOR_TAG,
             FINAL_INDICATOR_TAG,
             AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,

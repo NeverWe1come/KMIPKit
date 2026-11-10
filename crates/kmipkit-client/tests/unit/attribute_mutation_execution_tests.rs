@@ -898,6 +898,14 @@ fn every_generated_unconditional_standard_policy_is_rejected_before_transport() 
             MutationKind::Modify,
             MutationKind::Set,
         ] {
+            if policy.name == "Original Creation Date" && matches!(mutation, MutationKind::Add) {
+                // KMIP v2.1 §4.38 allows this initial assignment through Add
+                // when the attribute was omitted during object creation.
+                let (_response, fake, captured_request) =
+                    run_once(mutation.request(policy), mutation.operation());
+                assert_one_exchange(&fake, &captured_request, &context);
+                continue;
+            }
             assert_payload_free_not_sent(
                 mutation.request(policy),
                 mutation.operation(),
@@ -995,6 +1003,56 @@ fn usage_limits_new_attribute_is_rejected_only_for_add_and_modify() {
             "§4.59/§7.40 Usage Limits Count Add/Modify prohibition",
         );
     }
+}
+
+#[test]
+fn usage_limits_total_and_unit_can_be_added_or_modified_without_client_set_count() {
+    let total_and_unit = || {
+        item(
+            USAGE_LIMITS,
+            Value::structure(structure([
+                item(USAGE_LIMITS_TOTAL, Value::long_integer(9)),
+                item(USAGE_LIMITS_UNIT, Value::enumeration(1)),
+            ])),
+        )
+    };
+    let requests = [
+        (
+            ADD_ATTRIBUTE_OPERATION,
+            ClientRequest::add_attribute(AddAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                NewAttribute::new(total_and_unit()),
+            )),
+        ),
+        (
+            MODIFY_ATTRIBUTE_OPERATION,
+            ClientRequest::modify_attribute(ModifyAttributeRequest::new(
+                Some(OBJECT_IDENTIFIER.to_owned()),
+                None,
+                NewAttribute::new(total_and_unit()),
+            )),
+        ),
+    ];
+
+    for (operation, request) in requests {
+        let (_response, fake, captured_request) = run_once(request, operation);
+        assert_one_exchange(&fake, &captured_request, "Usage Limits without Count");
+    }
+}
+
+#[test]
+fn original_creation_date_add_without_profile_context_reaches_the_server() {
+    let request = ClientRequest::add_attribute(AddAttributeRequest::new(
+        Some(OBJECT_IDENTIFIER.to_owned()),
+        NewAttribute::new(item(0x0042_00BC, Value::date_time(1_700_000_000))),
+    ));
+
+    let (_response, fake, captured_request) = run_once(request, ADD_ATTRIBUTE_OPERATION);
+    assert_one_exchange(
+        &fake,
+        &captured_request,
+        "§4.38 permits Add when Original Creation Date may be absent",
+    );
 }
 
 #[test]
@@ -1169,6 +1227,48 @@ fn duplicate_vendor_identification_containing_y_is_rejected_before_exchange() {
     for (request, operation, context) in cases {
         assert_payload_free_not_sent(request, operation, context);
     }
+}
+
+#[test]
+fn malformed_vendor_attribute_shape_is_rejected_before_exchange() {
+    let malformed = item(
+        VENDOR_ATTRIBUTE,
+        Value::structure(structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string(OTHER_VENDOR_IDENTIFIER.to_owned()),
+            ),
+            item(
+                ATTRIBUTE_NAME,
+                Value::text_string("SECRET_ATTRIBUTE_CANARY".to_owned()),
+            ),
+        ])),
+    );
+    let request = ClientRequest::add_attribute(AddAttributeRequest::new(
+        Some(OBJECT_IDENTIFIER.to_owned()),
+        NewAttribute::new(malformed),
+    ));
+
+    assert_payload_free_not_sent(
+        request,
+        ADD_ATTRIBUTE_OPERATION,
+        "malformed Vendor Attribute shape must fail before transport exchange",
+    );
+}
+
+#[test]
+fn known_attribute_type_mismatch_is_rejected_before_exchange() {
+    let activation_date_with_wrong_type = item(0x0042_0001, Value::integer(1_700_000_000));
+    let request = ClientRequest::add_attribute(AddAttributeRequest::new(
+        Some(OBJECT_IDENTIFIER.to_owned()),
+        NewAttribute::new(activation_date_with_wrong_type),
+    ));
+
+    assert_payload_free_not_sent(
+        request,
+        ADD_ATTRIBUTE_OPERATION,
+        "known attribute Item Type mismatch must fail before transport exchange",
+    );
 }
 
 fn tag_reference_and_unknown_attribute_cases() -> Vec<ServerAuthoritativeCase> {

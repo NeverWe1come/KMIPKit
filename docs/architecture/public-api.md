@@ -293,9 +293,34 @@ optional profile selection.
 
 ## Validation boundary
 
-KMIPKit validates standard invariants before network I/O. It does not predict
-server authorization, configured algorithms, policy, quotas, or product
-capabilities. Those failures are returned from the KMIP response.
+Typed client requests expose `ValidateKmipRequest::validate()` and
+`ClientRequest::validation_report()`. The report contains stable rule codes,
+schema-relative paths, severity, and the OASIS or project-policy source. It
+does not contain caller values. The validators borrow their request data and
+do not encode or clone secret-bearing values to produce diagnostics.
+
+For a generic TTLV `Structure`, callers must select a
+`RequestPayloadSchema` or `NestedStructureSchema` explicitly when they want
+schema checks. `validate_structure(&view, None)` performs no KMIP schema
+inference; generic model validity is already enforced by the TTLV model.
+The public nested identities include `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData`, and `NestedStructureSchema::SplitKey` for
+the KMIP 2.1 §2.4 Table 5, §2.7 Table 8, and §2.8 Table 9 object schemas.
+KMIP 3.0 Working Draft operations use their own typed request models rather
+than the KMIP 2.1 payload-schema registry; execution still gates their operation
+codes and serialized tags against the effective protocol version before
+calling the transport.
+Schema-aware validation checks known field order, type, cardinality, and
+requiredness while retaining unknown tags, future enum values, unknown mask
+bits, and extensions. The order check follows each OASIS structure
+description, not numeric tag order (KMIP v2.1 §10.1.2).
+
+`Client::execute` applies the same locally decidable request checks before
+encoding or calling the transport. A failed check returns a sanitized
+validation error with delivery state `NotSent` and performs no exchange. A
+valid local report does not establish peer support, server authorization,
+configured algorithms, policy, quotas, object state, or formal profile
+conformance; those outcomes remain with the server.
 
 Profile validation is explicit. Query and Discover Versions are explicit
 operations; they are never hidden prerequisites for ordinary calls.

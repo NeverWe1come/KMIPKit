@@ -169,7 +169,7 @@ EXPECTED = (
 # Baseline fingerprints exclude response views and exact request-builder batches.
 # The non-target snapshots include subsequent approved T102 manifest slices.
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
-UNCHANGED_DECLARATIONS_SHA256 = "67e7b233a7c845a17412df3908255082c6062dde1c02bada0a0475e2fffe83bb"
+UNCHANGED_DECLARATIONS_SHA256 = "d5dafe2828f25f56213bf201c5411e261599a9a397c5c626f82dd72763aae35c"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.

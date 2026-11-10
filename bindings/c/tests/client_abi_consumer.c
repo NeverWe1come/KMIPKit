@@ -653,7 +653,7 @@ int kmipkit_client_abi_c_consumer_validate_rng_seed_response(
     int32_t expected_data_length) {
     static const uint32_t response_tags[] = {
         UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
-    static const uint32_t payload_tags[] = {UINT32_C(0x4200d5)};
+    static const uint32_t payload_tags[] = {UINT32_C(0x4200c4)};
     uint8_t present = 0;
     uint8_t data_length_present = 0;
     uint8_t ttlv_present = 0;
@@ -1810,19 +1810,15 @@ cleanup:
 static int create_import_request(
     kmipkit_codec_limits_t *limits, kmipkit_client_batch_item_t **out_item) {
     static const uint8_t identifier_bytes[] = "import-key";
-    static const uint8_t object_bytes[] = {0xde, 0xad, 0x00, 0xff};
+    static const uint8_t key_material_bytes[] = {0xde, 0xad, 0x00, 0xff};
     kmipkit_unique_identifier_v1_t identifier = {0};
     kmipkit_ttlv_structure_t *attributes = 0;
     kmipkit_ttlv_structure_t *object_body = 0;
-    kmipkit_ttlv_structure_t *object_body_with_item = 0;
+    kmipkit_ttlv_structure_t *key_block = 0;
+    kmipkit_ttlv_structure_t *key_value = 0;
     kmipkit_ttlv_structure_t *any_object = 0;
-    kmipkit_ttlv_structure_t *any_object_with_item = 0;
     kmipkit_ttlv_value_t *object_value = 0;
     kmipkit_ttlv_value_t *secret_value = 0;
-    kmipkit_ttlv_item_t *secret_item = 0;
-    kmipkit_ttlv_item_t *any_object_item = 0;
-    kmipkit_raw_tag_t *raw_tag = 0;
-    kmipkit_tag_t *tag = 0;
     int result = 0;
 
     if (limits == 0 || out_item == 0) {
@@ -1836,49 +1832,40 @@ static int create_import_request(
     identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
     if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
         kmipkit_ttlv_structure_create(&object_body) != 0 ||
+        kmipkit_ttlv_structure_create(&key_block) != 0 ||
+        kmipkit_ttlv_structure_create(&key_value) != 0 ||
         kmipkit_ttlv_structure_create(&any_object) != 0 ||
+        kmipkit_ttlv_value_enumeration(UINT32_C(1), &secret_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &object_body, UINT32_C(0x420086), &secret_value) ||
+        kmipkit_ttlv_value_enumeration(UINT32_C(1), &secret_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &key_block, UINT32_C(0x420042), &secret_value) ||
         kmipkit_ttlv_value_byte_string(
-            limits, object_bytes, (uint64_t)sizeof(object_bytes), &secret_value) != 0 ||
-        kmipkit_ttlv_raw_tag_create(UINT32_C(0x541234), &raw_tag) != 0 ||
-        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
-        kmipkit_ttlv_item_create(tag, secret_value, limits, &secret_item) != 0) {
+            limits, key_material_bytes, (uint64_t)sizeof(key_material_bytes),
+            &secret_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &key_value, UINT32_C(0x420043), &secret_value) ||
+        kmipkit_ttlv_value_structure(key_value, limits, &secret_value) != 0) {
         goto cleanup;
     }
-    secret_value = 0;
-    kmipkit_tag_release(tag);
-    tag = 0;
-    kmipkit_raw_tag_release(raw_tag);
-    raw_tag = 0;
-    if (kmipkit_ttlv_structure_with_item(
-            object_body, secret_item, limits, &object_body_with_item) != 0) {
+    key_value = 0;
+    if (!append_derive_key_parameter(
+            limits, &key_block, UINT32_C(0x420045), &secret_value) ||
+        kmipkit_ttlv_value_structure(key_block, limits, &secret_value) != 0) {
         goto cleanup;
     }
-    object_body = 0;
-    secret_item = 0;
-    object_body = object_body_with_item;
-    object_body_with_item = 0;
-    if (kmipkit_ttlv_value_structure(object_body, limits, &object_value) != 0) {
+    key_block = 0;
+    if (!append_derive_key_parameter(
+            limits, &object_body, UINT32_C(0x420040), &secret_value) ||
+        kmipkit_ttlv_value_structure(object_body, limits, &object_value) != 0) {
         goto cleanup;
     }
     object_body = 0;
-    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x420085), &raw_tag) != 0 ||
-        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
-        kmipkit_ttlv_item_create(tag, object_value, limits, &any_object_item) != 0) {
+    if (!append_derive_key_parameter(
+            limits, &any_object, UINT32_C(0x420085), &object_value)) {
         goto cleanup;
     }
-    object_value = 0;
-    kmipkit_tag_release(tag);
-    tag = 0;
-    kmipkit_raw_tag_release(raw_tag);
-    raw_tag = 0;
-    if (kmipkit_ttlv_structure_with_item(
-            any_object, any_object_item, limits, &any_object_with_item) != 0) {
-        goto cleanup;
-    }
-    any_object = 0;
-    any_object_item = 0;
-    any_object = any_object_with_item;
-    any_object_with_item = 0;
     if (kmipkit_client_batch_item_import(
             &identifier, 7, 1, 0, 0, 0, attributes, any_object, out_item) != 0 ||
         *out_item == 0) {
@@ -1887,16 +1874,12 @@ static int create_import_request(
     result = 1;
 
 cleanup:
-    kmipkit_tag_release(tag);
-    kmipkit_raw_tag_release(raw_tag);
-    kmipkit_ttlv_item_release(any_object_item);
-    kmipkit_ttlv_item_release(secret_item);
     kmipkit_ttlv_value_release(object_value);
     kmipkit_ttlv_value_release(secret_value);
-    kmipkit_ttlv_structure_release(any_object_with_item);
     kmipkit_ttlv_structure_release(any_object);
-    kmipkit_ttlv_structure_release(object_body_with_item);
     kmipkit_ttlv_structure_release(object_body);
+    kmipkit_ttlv_structure_release(key_block);
+    kmipkit_ttlv_structure_release(key_value);
     kmipkit_ttlv_structure_release(attributes);
     if (!result) {
         kmipkit_client_batch_item_release(*out_item);
@@ -4629,22 +4612,47 @@ static int execute_public_tls_request(
             }
         } else if (index == 15) {
             static const uint8_t request_identifier_bytes[] = "export-key";
+            static const uint8_t wrapping_key_identifier[] = "wrapping-key";
             kmipkit_unique_identifier_v1_t identifier = {0};
             kmipkit_ttlv_structure_t *wrapping_specification = 0;
+            kmipkit_ttlv_structure_t *key_information = 0;
+            kmipkit_ttlv_value_t *value = 0;
             identifier.struct_size = (uint32_t)sizeof(identifier);
             identifier.abi_version = 1;
             identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
             identifier.text_data = request_identifier_bytes;
             identifier.text_length = (uint64_t)(sizeof(request_identifier_bytes) - 1);
             if (kmipkit_ttlv_structure_create(&wrapping_specification) != 0 ||
-                kmipkit_client_batch_item_export(
-                    &identifier, 1, UINT32_C(0xfedcba98), 1, UINT32_C(0xfedcba99),
-                    1, UINT32_C(0xfedcba9a), wrapping_specification, &items[index]) != 0 ||
-                items[index] == 0) {
+                kmipkit_ttlv_structure_create(&key_information) != 0 ||
+                kmipkit_ttlv_value_enumeration(1, &value) != 0 ||
+                !append_derive_key_parameter(
+                    limits, &wrapping_specification, UINT32_C(0x42009E), &value) ||
+                kmipkit_ttlv_value_text_string(
+                    limits, wrapping_key_identifier,
+                    (uint64_t)(sizeof(wrapping_key_identifier) - 1), &value) != 0 ||
+                !append_derive_key_parameter(
+                    limits, &key_information, UINT32_C(0x420094), &value) ||
+                kmipkit_ttlv_value_structure(key_information, limits, &value) != 0) {
+                kmipkit_ttlv_value_release(value);
+                kmipkit_ttlv_structure_release(key_information);
                 kmipkit_ttlv_structure_release(wrapping_specification);
                 result = 40 + (int)index;
                 goto cleanup;
             }
+            key_information = 0;
+            if (!append_derive_key_parameter(
+                    limits, &wrapping_specification, UINT32_C(0x420036), &value) ||
+                kmipkit_client_batch_item_export(
+                    &identifier, 1, UINT32_C(0xfedcba98), 1, UINT32_C(0xfedcba99),
+                    1, UINT32_C(0xfedcba9a), wrapping_specification, &items[index]) != 0 ||
+                items[index] == 0) {
+                kmipkit_ttlv_value_release(value);
+                kmipkit_ttlv_structure_release(key_information);
+                kmipkit_ttlv_structure_release(wrapping_specification);
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+            kmipkit_ttlv_value_release(value);
             kmipkit_ttlv_structure_release(wrapping_specification);
         } else if (index == 16) {
             if (kmipkit_client_batch_item_get_constraints(&items[index]) != 0 ||

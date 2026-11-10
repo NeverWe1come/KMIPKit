@@ -1744,10 +1744,10 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.locate(null, null, null, null, createAttributes)
                             .withUniqueBatchItemId(uniqueBatchItemId(21)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    7, Boolean.FALSE, null, importAttributes, importAnyObject)
+                                    8, Boolean.FALSE, null, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(22)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
-                                    7, Boolean.FALSE, null, importAttributes, importAnyObject)
+                                    8, Boolean.FALSE, null, importAttributes, importAnyObject)
                             .withUniqueBatchItemId(uniqueBatchItemId(23)))
                     .add(ClientBatchItem.interop(0xf1234567L,
                                     "interop-integration-test".getBytes(StandardCharsets.UTF_8))
@@ -4239,7 +4239,7 @@ final class ClientFacadeTlsIntegrationTest {
         }
 
         assertContains(request, enumeration(0x42005c, 0x25));
-        assertContains(request, item(0x4200d5, 2, integer(-17)));
+        assertContains(request, item(0x4200c4, 2, integer(-17)));
         assertContains(request, enumeration(0x42005c, 0x26));
         assertTrue(containsTtlvItem(request, item(0x4200c2, 8, seed)),
                 "RNG Seed must preserve caller-supplied bytes");
@@ -5121,15 +5121,11 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static TtlvStructure importAnyObjectStructure() {
         CodecLimits limits = CodecLimits.defaults();
-        TtlvStructure body = TtlvStructure.create();
         TtlvStructure object = TtlvStructure.create();
-        try (Tag tag = RawTag.fromRaw(0x42008f).checked();
-                TtlvValue value = TtlvValue.structure(body, limits);
-                TtlvItem item = TtlvItem.create(tag, value, limits)) {
-            return TtlvStructure.withItem(object, item, limits);
+        try (TtlvItem opaqueObject = registerOpaqueObject()) {
+            return TtlvStructure.withItem(object, opaqueObject, limits);
         } finally {
             object.close();
-            body.close();
         }
     }
 
@@ -6618,7 +6614,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] retrieve = structure(0x42000f, enumeration(0x42005c, 0x25),
                 item(0x420093, 8, uniqueBatchItemId(0)), enumeration(0x42007f, 0),
                 retrievePayload);
-        byte[] seedPayload = structure(0x42007c, item(0x4200d5, 2, integer(0)));
+        byte[] seedPayload = structure(0x42007c, item(0x4200c4, 2, integer(0)));
         byte[] seed = structure(0x42000f, enumeration(0x42005c, 0x26),
                 item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 0), seedPayload);
         return structure(0x42007b, header, retrieve, seed);

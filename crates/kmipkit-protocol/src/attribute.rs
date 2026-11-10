@@ -67,12 +67,16 @@ pub fn client_attribute_mutation_is_prohibited(
     tag: u32,
     mutation: ClientAttributeMutation,
 ) -> bool {
-    let Some(policy) = crate::attribute_policy::ATTRIBUTE_POLICIES
+    client_attribute_mutation_source_section(tag, mutation).is_some()
+}
+
+pub(crate) fn client_attribute_mutation_source_section(
+    tag: u32,
+    mutation: ClientAttributeMutation,
+) -> Option<&'static str> {
+    let policy = crate::attribute_policy::ATTRIBUTE_POLICIES
         .iter()
-        .find(|policy| policy.tag == tag)
-    else {
-        return false;
-    };
+        .find(|policy| policy.tag == tag)?;
 
     let client_capability = match mutation {
         ClientAttributeMutation::Delete => policy.source_deletable_by_client,
@@ -81,12 +85,20 @@ pub fn client_attribute_mutation_is_prohibited(
         | ClientAttributeMutation::Modify
         | ClientAttributeMutation::Set => policy.source_modifiable_by_client,
     };
-    source_says_no(client_capability)
+    let prohibited = source_says_no(client_capability)
         || policy.source_operation_restrictions.iter().any(|rule| {
             let text = rule.source_text;
             (text.contains("SHALL NOT") || text.contains("MUST NOT"))
                 && text.contains(mutation.operation_name())
-        })
+        });
+    if !prohibited {
+        return None;
+    }
+    policy
+        .source_refs
+        .iter()
+        .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")
+        .map(|reference| reference.section)
 }
 
 /// Returns whether the generated §4.60 policy prohibits the supplied client
@@ -96,11 +108,26 @@ pub fn client_vendor_attribute_mutation_is_prohibited(
     vendor_identification: &str,
     mutation: ClientAttributeMutation,
 ) -> bool {
+    client_vendor_attribute_mutation_source_section(vendor_identification, mutation).is_some()
+}
+
+pub(crate) fn client_vendor_attribute_mutation_source_section(
+    vendor_identification: &str,
+    mutation: ClientAttributeMutation,
+) -> Option<&'static str> {
     let policy = crate::attribute_policy::VENDOR_ATTRIBUTE_POLICY;
-    policy.matches_vendor_identification(vendor_identification)
-        && policy
+    if !policy.matches_vendor_identification(vendor_identification)
+        || !policy
             .prohibited_client_operations
             .contains(&mutation.operation_name())
+    {
+        return None;
+    }
+    policy
+        .source_refs
+        .iter()
+        .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")
+        .map(|reference| reference.section)
 }
 
 fn source_says_no(value: &str) -> bool {
@@ -563,7 +590,7 @@ fn enumeration_value(items: &[Item], tag: u32) -> Option<u32> {
     values.next().is_none().then_some(value)
 }
 
-fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
+pub(crate) fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
     if crate::attribute_types_generated::expected_types(item.tag().raw())
         .is_some_and(|expected| !expected.contains(&item.item_type()))
     {
@@ -571,6 +598,20 @@ fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
     } else {
         Ok(())
     }
+}
+
+pub(crate) fn catalogued_attribute_type_source(
+    raw_tag: u32,
+) -> Option<(&'static str, &'static str)> {
+    let policy = crate::attribute_policy::ATTRIBUTE_POLICIES
+        .iter()
+        .find(|policy| policy.tag == raw_tag)?;
+    let section = policy
+        .source_refs
+        .iter()
+        .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")?
+        .section;
+    Some((policy.name, section))
 }
 
 impl Default for AttributeSet {

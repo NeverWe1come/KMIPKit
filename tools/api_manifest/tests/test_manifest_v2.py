@@ -33,7 +33,7 @@ CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_EXPORT_REPORT_PATH = ROOT / "specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json"
+RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",

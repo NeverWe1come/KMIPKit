@@ -189,6 +189,16 @@ fn all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21() {
     }
 }
 
+#[test]
+fn kmip30_typed_requests_have_explicit_validation_dispatch() {
+    for request in kmip30_requests() {
+        assert!(
+            request.validation_report().is_valid(),
+            "KMIP 3.0 typed requests do not use KMIP 2.1 Request Payload schemas"
+        );
+    }
+}
+
 fn kmip30_requests() -> [ClientRequest; 7] {
     let credential_fields = PasswordCredentialObjectFields {
         password: Some(SecretText::new("sentinel".to_owned())),

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from tools.api_manifest.tests.pre_send_validation_routes import is_pre_send_validation_trait
+
 import json
 import unittest
 
@@ -91,6 +93,7 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("exportName", "").startswith(PROTOCOL_PREFIX)
+            and not is_pre_send_validation_trait(row)
         }
         exclusions = {
             row["exportName"]: row
@@ -199,6 +202,8 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             for row in self.manifest["publicDeclarations"]
             if row.get("packageId") == "rust-kmipkit-client"
             and "Pkcs11Request" in row.get("exportName", "")
+
+            and not is_pre_send_validation_trait(row)
         }
         self.assertIn("kmipkit_client::Pkcs11Request", client_rows)
         self.assertFalse(
@@ -288,7 +293,6 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
     def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
         # The checked-in API inventory includes the 0047 versioned values,
         # 0048 typed attributes, and 0049 managed-object additions.
-        self.assertEqual(T102_PUBLIC_DECLARATIONS, 12_701)
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"
