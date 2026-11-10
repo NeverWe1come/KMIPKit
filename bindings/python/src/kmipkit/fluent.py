@@ -219,6 +219,7 @@ class SymmetricKeyBuilder:
         return self
 
     def with_options(self, options: RequestOptions) -> SymmetricKeyBuilder:
+        self._ensure_open()
         if not isinstance(options, RequestOptions):
             errors.raise_for_status(4)
         self._options = options
@@ -226,6 +227,7 @@ class SymmetricKeyBuilder:
 
     def asynchronous_indicator(self, value: int) -> SymmetricKeyBuilder:
         """Set the KMIP Request Header indicator on the one-item batch."""
+        self._ensure_open()
         if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 0xFFFF_FFFF:
             errors.raise_for_status(4)
         self._asynchronous_indicator = value
