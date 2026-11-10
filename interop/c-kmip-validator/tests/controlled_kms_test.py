@@ -215,11 +215,11 @@ def main() -> int:
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
-         1, 18, 19, 20, 8, 24, 44, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20)
+         1, 18, 19, 20, 8, 24, 44, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
               1, 20, 19, 20, 1, 18, 19, 20, 1, 56, 19, 20, 8, 24, 30, 44, 45, 59, 1, 11, 20,
-              1, 11, 20, 1, 20, 1, 20)
+              1, 11, 20, 1, 20, 1, 20, 1, 20)
     )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
@@ -229,14 +229,14 @@ def main() -> int:
               "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
               "test-op-revoke", "test-op-destroy", "test-op-get-constraints",
               "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
-              "test-obj-symmetric-key", "test-obj-private-key")
+              "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key")
     )
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
             "test-op-create", "test-op-activate", "test-op-revoke", "test-op-destroy",
             "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
-            "test-obj-symmetric-key", "test-obj-private-key"
+            "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key"
         )
         expected_cases += ("test-v20-reject-get-constraints",)
     shared = repository / "interop/shared"
@@ -486,11 +486,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 86,
+            "passed": 87,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 126,
+            "not_run": 125,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -499,11 +499,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 81,
+            "passed": 82,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 122,
+            "not_run": 121,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
