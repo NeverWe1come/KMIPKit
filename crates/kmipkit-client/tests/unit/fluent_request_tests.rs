@@ -105,6 +105,54 @@ fn symmetric_key_builder_requires_algorithm_length_and_usage_mask() {
         .err()
         .expect("a preset does not silently choose key usage");
     assert_eq!(error, FluentBuildError::MissingCryptographicUsageMask);
+
+    let error = CreateSymmetricKeyBuilder::detached()
+        .algorithm(kmipkit_protocol::CryptographicAlgorithm::from_raw(3))
+        .build()
+        .err()
+        .expect("algorithm alone does not select a key length or usage policy");
+    assert_eq!(error, FluentBuildError::MissingCryptographicLength);
+}
+
+#[test]
+fn fluent_build_errors_have_stable_user_facing_messages() {
+    let cases = [
+        (
+            FluentBuildError::MissingCryptographicAlgorithm,
+            "Create Symmetric Key requires Cryptographic Algorithm",
+        ),
+        (
+            FluentBuildError::MissingCryptographicLength,
+            "Create Symmetric Key requires Cryptographic Length",
+        ),
+        (
+            FluentBuildError::MissingCryptographicUsageMask,
+            "Create Symmetric Key requires Cryptographic Usage Mask",
+        ),
+        (
+            FluentBuildError::InvalidAttributeValue,
+            "fluent Object Attribute value is invalid",
+        ),
+        (
+            FluentBuildError::MessageExtensionTagNotObjectAttribute,
+            "KMIP message extension tags are not Object Attributes",
+        ),
+        (
+            FluentBuildError::InvalidRequest,
+            "fluent request failed typed request validation",
+        ),
+        (
+            FluentBuildError::InvalidTtlvValue,
+            "fluent TTLV value could not be represented",
+        ),
+        (
+            FluentBuildError::MissingClientForExecution,
+            "detached fluent builder has no client for execution",
+        ),
+    ];
+    for (error, message) in cases {
+        assert_eq!(error.to_string(), message);
+    }
 }
 
 #[test]
@@ -160,7 +208,11 @@ fn explicit_unknown_attribute_is_preserved_but_extension_tags_are_rejected() {
         .create_symmetric_key()
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT)
-        .attribute_item(unknown);
+        .attribute_item(unknown)
+        .attribute_item(item(
+            0x0042_005C,
+            Value::text_string("ignored after error".to_owned()),
+        ));
     assert_eq!(
         builder
             .build()
@@ -168,6 +220,38 @@ fn explicit_unknown_attribute_is_preserved_but_extension_tags_are_rejected() {
             .expect("message extension tags are not attributes"),
         FluentBuildError::MessageExtensionTagNotObjectAttribute
     );
+}
+
+#[test]
+fn vendor_attribute_copies_every_supported_ttlv_value_kind() {
+    let mut nested = Structure::new();
+    nested
+        .try_push(item(0x0042_005C, Value::text_string("nested".to_owned())))
+        .expect("nested structure item is valid");
+    let values = [
+        Value::structure(nested),
+        Value::integer(-7),
+        Value::long_integer(-9),
+        Value::big_integer(vec![0x01, 0x02]),
+        Value::enumeration(3),
+        Value::boolean(true),
+        Value::text_string("text".to_owned()),
+        Value::byte_string(vec![0x00, 0xFF]),
+        Value::date_time(1),
+        Value::interval(2),
+        Value::date_time_extended(3),
+    ];
+    let mut builder = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT);
+    for value in values {
+        let source = item(0x0042_005C, value);
+        builder = builder.vendor_attribute("Vendor_Name.1", "sample", &source);
+    }
+    let request = builder
+        .build_request()
+        .expect("vendor value cloning preserves all supported TTLV value kinds");
+    assert_eq!(request.attributes().len(), 14);
 }
 
 #[test]
@@ -282,6 +366,17 @@ fn detached_create_builder_can_build_reusable_typed_requests_without_a_client() 
         .expect("building a batch item does not consume the builder state");
 
     assert_eq!(first.attributes().len(), second.attributes().len());
+
+    let detached = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT);
+    let error = detached
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached builder cannot execute without a client");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
 }
 
 #[test]

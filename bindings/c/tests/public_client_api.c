@@ -208,6 +208,11 @@ int kmipkit_public_fluent_validation_probe(void) {
     }
     request.struct_size = (uint32_t)sizeof(request);
     request.abi_version = UINT32_C(1);
+    if (kmipkit_client_create_symmetric_key_v1(NULL, &request, limits, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        result = 171;
+        goto cleanup;
+    }
     request.cryptographic_algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
     request.cryptographic_length = INT32_C(256);
     request.cryptographic_usage_mask = KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT;
@@ -216,6 +221,18 @@ int kmipkit_public_fluent_validation_probe(void) {
         kmipkit_client_create_symmetric_key_with_options_v1(
             NULL, &request, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT) {
         result = 17;
+        goto cleanup;
+    }
+    if (kmipkit_client_create_symmetric_key_with_options_v1(
+            NULL, &request, limits, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL ||
+        kmipkit_client_get_by_id_with_options_v1(
+            NULL, NULL, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL ||
+        kmipkit_client_destroy_by_id_with_options_v1(
+            NULL, NULL, limits, &options, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL) {
+        result = 172;
         goto cleanup;
     }
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -466,7 +483,7 @@ int kmipkit_public_fluent_lifecycle_probe(
     tls.client_private_key.length = private_key_length;
     tls.trust_certificates = trust_certificates;
     tls.trust_certificate_count = UINT64_C(1);
-    tls.max_request_bytes = UINT64_C(0);
+    tls.max_request_bytes = UINT64_C(1024 * 1024);
     tls.abi_version = UINT32_C(2);
     if (kmipkit_client_create_mtls_v1(configuration, &tls, &client) !=
             KMIPKIT_ERROR_INVALID_INPUT || client != NULL) {
@@ -481,6 +498,15 @@ int kmipkit_public_fluent_lifecycle_probe(
         goto lifecycle_cleanup;
     }
     tls.struct_size = (uint32_t)sizeof(tls);
+    tls.client_certificates = NULL;
+    tls.client_certificate_count = UINT64_C(0);
+    if (kmipkit_client_create_mtls_v1(configuration, &tls, &client) !=
+            KMIPKIT_ERROR_INVALID_INPUT || client != NULL) {
+        result = 23;
+        goto lifecycle_cleanup;
+    }
+    tls.client_certificates = client_certificates;
+    tls.client_certificate_count = UINT64_C(2);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_create_mtls_v1(configuration, &tls, &client), 6);
     REQUIRE_LIFECYCLE_C_API(kmipkit_codec_limits_defaults(&limits), 7);
 

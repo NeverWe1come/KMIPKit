@@ -226,6 +226,41 @@ def test_operation_builds_typed_batch_item() -> None:
         assert item.operation == 10
 
 
+def test_fluent_operation_and_symmetric_builder_execute_with_and_without_options() -> None:
+    port, observations, peer_failures, peer = _start_lifecycle_peer((10, 20, 1, 1))
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    results: list[client.BatchResult] = []
+    identifier = extensions.UniqueIdentifier.text_string("fluent-execute-id")
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                results.append(kmip_client.request().get(identifier).execute(limits))
+                results.append(kmip_client.request().destroy(identifier).with_options(
+                    client.RequestOptions()
+                ).execute(limits))
+                results.append(kmip_client.request().create_symmetric_key()
+                               .aes_256().usage_mask(12).execute(limits))
+                results.append(kmip_client.request().create_symmetric_key()
+                               .aes_256().usage_mask(12)
+                               .with_options(client.RequestOptions()).execute(limits))
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [result.items[0].operation for result in results] == [10, 20, 1, 1]
+        assert [operation for operation, _ in observations] == [10, 20, 1, 1]
+    finally:
+        for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
 def test_destroy_operation_builds_typed_batch_item() -> None:
     operation = fluent.Operation(
         object(), "destroy", extensions.UniqueIdentifier.text_string("key-1")
@@ -506,10 +541,34 @@ def test_fluent_builder_and_operation_reject_invalid_options_and_closed_handles(
         object(), "destroy", extensions.UniqueIdentifier.integer(-17)
     )
     assert operation.with_options(client.RequestOptions()) is operation
+    with pytest.raises(errors.KmipKitError):
+        operation.with_options(object())  # type: ignore[arg-type]
     record, owner = fluent._identifier(extensions.UniqueIdentifier.enumeration(9))
     assert owner is None
     assert record.enumeration_value == 9
     assert record.kind == int(extensions.UniqueIdentifierKind.ENUMERATION)
+
+
+def test_fluent_abi_pointer_bridge_and_direct_entrypoint_argument_checks() -> None:
+    foreign_pointer = fluent._base_ffi.cast("kmipkit_client_t *", 0x1234)
+    bridged = fluent._client_abi_pointer("kmipkit_client_t *", foreign_pointer)
+    assert int(fluent.ffi.cast("uintptr_t", bridged)) == 0x1234
+
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(errors.KmipKitError):
+            fluent._execute_direct(object(), object(), None, limits, None)  # type: ignore[arg-type]
+        with pytest.raises(errors.KmipKitError):
+            fluent._execute_direct_create(object(), object(), limits, None)  # type: ignore[arg-type]
+
+
+def test_fluent_finalizer_swallows_shutdown_cleanup_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    builder = fluent.SymmetricKeyBuilder()
+
+    def fail_close() -> None:
+        raise RuntimeError("native runtime already shut down")
+
+    monkeypatch.setattr(builder, "close", fail_close)
+    builder.__del__()
 
 
 def test_legacy_extensions_remain_available() -> None:
