@@ -34,6 +34,11 @@ public final class SymmetricKeyBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Selects AES with a 256-bit key; the caller must still choose a usage mask. */
+    public SymmetricKeyBuilder aes256() {
+        return algorithm(org.kmipkit.protocol.KmipValues.CryptographicAlgorithm.AES).length(256);
+    }
+
     public SymmetricKeyBuilder length(int bits) {
         handle.withValue(builder -> { NativeExtensionRegistry.symmetricKeyBuilderSetLength(builder, bits); return null; });
         return this;
