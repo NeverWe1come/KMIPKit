@@ -21,6 +21,8 @@ import xml.etree.ElementTree as ET
 
 import jsonschema
 
+from request_parity import RequestNormalizer, parity_signature, result_code
+
 ROOT = Path(__file__).resolve().parents[3]
 VALIDATOR = Path(os.environ.get("KMIPKIT_VALIDATOR_BIN", ROOT / "interop/rust-kmip-validator/target/debug/rust-kmip-validator"))
 SERVER = Path(os.environ.get("KMIPKIT_TEST_SERVER", ROOT / "interop/.local/rust-test-server/harness/target/debug/kmipkit-interop-local-server"))
@@ -52,8 +54,8 @@ def parse(data):
         value = data[offset+8:offset+8+size]
         if kind == 1:
             value = parse(value)
-        elif kind in (2, 5, 6, 9):
-            value = int.from_bytes(value, "big")
+        elif kind in (2, 3, 5, 6, 9, 10, 11):
+            value = int.from_bytes(value, "big", signed=kind in (2, 3, 9, 11))
         elif kind == 7:
             value = value.decode()
         result.append((tag, kind, value))
@@ -103,10 +105,6 @@ def receive(channel):
     return header + body
 
 
-def parity_signature(report, request_trees=()):
-    """Current full-catalog comparison, factored so its omissions are testable."""
-    return tuple((c["case_id"], c["status"], c["library_correctness"], c["server_compatibility"]) for c in report["cases"])
-
 
 class ParityContract(unittest.TestCase):
     def case(self, result_status="Operation Failed", result_reason="Operation Not Supported"):
@@ -139,6 +137,8 @@ class ControlledPeer:
         self.context.verify_mode = ssl.CERT_REQUIRED
         self.responder = responder
         self.operations = []
+        self.request_trees = []
+        self.normalizer = RequestNormalizer()
         self.connections = 0
         self.stop = threading.Event()
         self.errors = []
@@ -158,9 +158,11 @@ class ControlledPeer:
                     if data is None:
                         continue
                     tree = parse(data)
+                    self.request_trees.append(self.normalizer.normalize(tree))
                     self.operations.extend(find(batch, 0x42005c) for tag, kind, batch in tree[0][2] if tag == 0x42000f)
                     reply = self.responder(tree)
                     if reply is not None:
+                        self.normalizer.observe_response(parse(reply))
                         channel.sendall(reply)
         except Exception as error:
             if not self.stop.is_set():
@@ -326,12 +328,12 @@ class LiveContract(unittest.TestCase):
             baseline = None
             for api in ("typed-protocol", "high-level"):
                 with self.subTest(version=version, api=api):
-                    report = self.catalog_scenario(version, api)
-                    normalized = parity_signature(report)
+                    report, requests = self.catalog_scenario(version, api)
+                    normalized = parity_signature(report, requests)
                     if baseline is None:
                         baseline = normalized
                     else:
-                        self.assertEqual(normalized, baseline)
+                        self.assertTrue(normalized == baseline, "full-catalog normalized KMIP request/result parity differs")
 
     def catalog_scenario(self, version, api="typed-protocol"):
         elements = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
@@ -425,7 +427,8 @@ class LiveContract(unittest.TestCase):
                 output = Path(evidence)
                 output.mkdir(parents=True, exist_ok=True)
                 (output / f"rust-controlled-{version}-{api}.json").write_text(json.dumps(report, indent=2) + "\n")
-            return report
+            self.assertEqual(len(peer.request_trees), peer.connections)
+            return report, tuple(peer.request_trees)
 
     def test_incoming_operations_use_public_listener_and_dispatcher(self):
         for version in ("2.0", "2.1"):
