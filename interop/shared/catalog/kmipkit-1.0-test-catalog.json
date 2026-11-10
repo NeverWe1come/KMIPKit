@@ -18,7 +18,7 @@
     "attributes_covered": 63,
     "enumerations_covered": 64,
     "bitmasks_covered": 3,
-    "total_cases": 209
+    "total_cases": 207
   },
   "test_cases": [
     {
@@ -936,6 +936,7 @@
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
+          "2.0",
           "2.1"
         ],
         "steps": [
@@ -1151,6 +1152,7 @@
       "execution": {
         "mode": "server_exchange",
         "protocol_versions": [
+          "2.0",
           "2.1"
         ],
         "steps": [
@@ -9868,51 +9870,6 @@
       }
     },
     {
-      "case_id": "test-v20-reject-export",
-      "category": "version_boundaries",
-      "operation": "Export",
-      "oasis_section": "6.1.18",
-      "description": "Reject KMIP 2.1-only Export before sending under KMIP 2.0.",
-      "requires": {
-        "operation": "Export",
-        "expected_status": "NotSent"
-      },
-      "isolation_recipe": {
-        "unique_name_prefix": "kmipkit-v20-export",
-        "setup_steps": [],
-        "target_step": "Attempt Export under KMIP 2.0",
-        "teardown_steps": [],
-        "normalized_fields": [
-          "RequestDeliveryState"
-        ]
-      },
-      "normative_refs": [
-        {
-          "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1.18"
-        },
-        {
-          "document": "OASIS KMIP 2.0 Specification",
-          "section": "6"
-        }
-      ],
-      "execution": {
-        "mode": "server_exchange",
-        "protocol_versions": [
-          "2.0"
-        ],
-        "steps": [
-          "execute_operation",
-          "verify_response"
-        ],
-        "assertions": [
-          "response_matches_operation_contract"
-        ],
-        "mutation": "read_only",
-        "status": "planned"
-      }
-    },
-    {
       "case_id": "test-v20-reject-get-constraints",
       "category": "version_boundaries",
       "operation": "Get Constraints",
@@ -9935,51 +9892,6 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.22"
-        },
-        {
-          "document": "OASIS KMIP 2.0 Specification",
-          "section": "6"
-        }
-      ],
-      "execution": {
-        "mode": "server_exchange",
-        "protocol_versions": [
-          "2.0"
-        ],
-        "steps": [
-          "execute_operation",
-          "verify_response"
-        ],
-        "assertions": [
-          "response_matches_operation_contract"
-        ],
-        "mutation": "read_only",
-        "status": "planned"
-      }
-    },
-    {
-      "case_id": "test-v20-reject-import",
-      "category": "version_boundaries",
-      "operation": "Import",
-      "oasis_section": "6.1.25",
-      "description": "Reject KMIP 2.1-only Import before sending under KMIP 2.0.",
-      "requires": {
-        "operation": "Import",
-        "expected_status": "NotSent"
-      },
-      "isolation_recipe": {
-        "unique_name_prefix": "kmipkit-v20-import",
-        "setup_steps": [],
-        "target_step": "Attempt Import under KMIP 2.0",
-        "teardown_steps": [],
-        "normalized_fields": [
-          "RequestDeliveryState"
-        ]
-      },
-      "normative_refs": [
-        {
-          "document": "OASIS KMIP 2.1 Specification",
-          "section": "6.1.25"
         },
         {
           "document": "OASIS KMIP 2.0 Specification",

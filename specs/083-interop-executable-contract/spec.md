@@ -48,6 +48,14 @@ The catalog can define planned cases before external servers exist. Such cases
 must remain visibly `planned` until executable implementations and offline
 evidence are present; catalog inclusion is not a passing test result.
 
+The pinned OASIS KMIP 2.0 source includes Export (§6.1.18) and Import (§6.1.24).
+Therefore these operations are covered in both target versions. This corrects
+the conflicting KMIPKIT-0070 §3.1 list, which labels them KMIP 2.1-only. The
+version-boundary cases currently cover Get Constraints and Set Constraints,
+which are absent from the KMIP 2.0 operation inventory. Any additional names
+in KMIPKIT-0070 §3.1 that are not OASIS KMIP 2.0/2.1 operations remain excluded
+from this standard-only test catalog.
+
 ## 5. Delivery and Acceptance
 
 The common contract is delivered on its own feature branch and draft PR. The

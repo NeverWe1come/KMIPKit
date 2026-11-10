@@ -10,8 +10,6 @@ from pathlib import Path
 
 
 KMIP_21_ONLY_OPERATIONS = {
-    "Export": "6.1.18",
-    "Import": "6.1.25",
     "Get Constraints": "6.1.22",
     "Set Constraints": "6.1.52",
 }
