@@ -30,47 +30,62 @@ def enumeration(tag: int, value: int) -> bytes:
     return tlv(tag, 5, struct.pack(">I", value))
 
 
-def response(operation: int, protocol_minor: int) -> bytes:
+def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
         0x42007A,
         1,
-        version + tlv(0x420092, 9, struct.pack(">q", int(time.time()))) + integer(0x42000D, 1),
+        version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+        + integer(0x42000D, len(operations)),
     )
-    payload_value = b""
-    if operation == 30:
-        payload_value = tlv(
+    batch_items = []
+    for operation in operations:
+        payload_value = b""
+        if operation == 30:
+            payload_value = tlv(
             0x420069, 1,
             integer(0x42006A, 2) + integer(0x42006B, protocol_minor),
-        )
-    elif operation == 24:
-        query_operations = (24, 30, 44) if protocol_minor == 0 else (24, 30, 44, 59)
-        payload_value = b"".join(integer(0x42005C, value, 5) for value in query_operations)
-        payload_value += tlv(0x42015F, 1, b"")
-    elif operation == 8:
-        payload_value = (
-            integer(0x4200D5, 3)
-            + tlv(0x420094, 7, b"fixture-locate-1")
-            + enumeration(0x420094, 0xF1234567)
-            + integer(0x420094, -12345)
-            if protocol_minor == 1
-            else b""
-        )
-    elif operation == 45:
-        payload_value = tlv(
-            0x420149,
+            )
+        elif operation == 24:
+            query_operations = (24, 30, 44) if protocol_minor == 0 else (24, 30, 44, 59)
+            payload_value = b"".join(integer(0x42005C, value, 5) for value in query_operations)
+            payload_value += tlv(0x42015F, 1, b"")
+        elif operation == 8:
+            payload_value = (
+                integer(0x4200D5, 3)
+                + tlv(0x420094, 7, b"fixture-locate-1")
+                + enumeration(0x420094, 0xF1234567)
+                + integer(0x420094, -12345)
+                if protocol_minor == 1
+                else b""
+            )
+        elif operation == 45:
+            payload_value = tlv(
+                0x420149,
+                1,
+                enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-login-ticket"),
+            )
+        elif operation == 1:
+            payload_value = enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 11:
+            attributes = (
+                tlv(0x420008, 1, tlv(0x42000A, 7, b"Cryptographic Algorithm")
+                    + enumeration(0x42000B, 3))
+                + tlv(0x420008, 1, tlv(0x42000A, 7, b"Cryptographic Length")
+                      + integer(0x42000B, 128))
+            )
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(0x420125, 1, attributes)
+        elif operation == 20:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        batch_items.append(tlv(
+            0x42000F,
             1,
-            enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-login-ticket"),
-        )
-    batch_item = tlv(
-        0x42000F,
-        1,
-        integer(0x42005C, operation, 5)
-        + integer(0x42007F, 0, 5)
-        + tlv(0x42007C, 1, payload_value),
-    )
-    return tlv(0x42007B, 1, header + batch_item)
+            integer(0x42005C, operation, 5)
+            + integer(0x42007F, 0, 5)
+            + tlv(0x42007C, 1, payload_value),
+        ))
+    return tlv(0x42007B, 1, header + b"".join(batch_items))
 
 
 def read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
@@ -143,13 +158,15 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
-    expected_operations = (8, 24, 44) if protocol_version == "2.0" else (8, 24, 30, 44, 45, 59)
+    expected_operations = (1, 8, 11, 20, 24, 44) if protocol_version == "2.0" else (1, 8, 11, 20, 24, 30, 44, 45, 59)
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
-              "test-op-locate", "test-op-login")
+              "test-op-locate", "test-op-login", "test-op-get-attributes")
     )
+    if protocol_version == "2.0":
+        expected_cases += ("test-op-get-attributes",)
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
@@ -169,6 +186,7 @@ def main() -> int:
         server_errors: list[BaseException] = []
         handled = 0
         handled_operations: list[int] = []
+        handled_batches: list[tuple[int, ...]] = []
 
         def serve() -> None:
             nonlocal handled
@@ -182,15 +200,19 @@ def main() -> int:
                             if request is None:
                                 break
                             operation_marker = bytes.fromhex("42005c0500000004")
+                            offsets = []
                             offset = request.find(operation_marker)
-                            if offset < 0:
+                            while offset >= 0:
+                                offsets.append(offset)
+                                offset = request.find(operation_marker, offset + len(operation_marker) + 4)
+                            if not offsets:
                                 raise AssertionError("request has no KMIP Operation field")
-                            operation = int.from_bytes(request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big")
-                            if operation not in expected_operations:
-                                raise AssertionError(
-                                    f"unexpected operation {operation} reached controlled peer for {protocol_version}"
-                                )
-                            if operation == 8:
+                            operations = tuple(int.from_bytes(
+                                request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big"
+                            ) for offset in offsets)
+                            if any(operation not in expected_operations for operation in operations):
+                                raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
+                            if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
                                     raise AssertionError("Locate request omitted its required Attributes structure")
                                 if integer(0x42004F, 3) not in request:
@@ -203,9 +225,10 @@ def main() -> int:
                             if tlv(0x420099, 7, b"interop-user") not in request or \
                                     tlv(0x4200A1, 7, b"interop-password") not in request:
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            stream.sendall(response(operation, protocol_minor))
-                            handled += 1
-                            handled_operations.append(operation)
+                            stream.sendall(response(operations, protocol_minor))
+                            handled += len(operations)
+                            handled_operations.extend(operations)
+                            handled_batches.append(operations)
             except BaseException as error:  # surfaced in the main test thread below
                 server_errors.append(error)
             finally:
@@ -263,9 +286,10 @@ def main() -> int:
         thread.join(timeout=10)
         if server_errors:
             raise AssertionError("controlled TLS peer failed") from server_errors[0]
-        if handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations):
+        if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
+                or (1, 11, 20) not in handled_batches):
             raise AssertionError(
-                f"controlled peer observed operations {handled_operations!r}, "
+                f"controlled peer observed batches {handled_batches!r}, "
                 f"expected {expected_operations!r}"
             )
         result = json.loads(result_path.read_text(encoding="utf-8"))
@@ -307,11 +331,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 73,
+            "passed": 74,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 139,
+            "not_run": 138,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -320,11 +344,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 68,
+            "passed": 69,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 135,
+            "not_run": 134,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
