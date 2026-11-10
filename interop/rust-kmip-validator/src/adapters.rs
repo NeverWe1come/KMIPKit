@@ -102,3 +102,19 @@ pub(crate) fn request(case: &Case, identifier: Option<UniqueIdentifier>, name: &
         _ => return Err("operation prerequisites are not represented by this connection contract"),
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // KMIPKIT-0084-FR-003; each row's own exact OASIS references identify the contract.
+    #[test]
+    fn every_synchronous_operation_has_a_public_typed_builder() {
+        let catalog: crate::models::Catalog = crate::models::load(&std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../shared/catalog/kmipkit-1.0-test-catalog.json")).expect("catalog");
+        let mut absent = Vec::new();
+        for case in &catalog.test_cases {
+            if ["Poll", "Process", "Cancel", "Query Asynchronous Requests"].contains(&case.operation.as_str()) || case.execution.mode == "local_model" || case.requires["workflow_type"] == "server_to_client" { continue; }
+            if !request(case, Some(UniqueIdentifier::from("owned-fixture")), "kmipkit-fixture").is_ok_and(|request| request.validation_report().is_valid()) { absent.push(&case.case_id); }
+        }
+        assert!(absent.is_empty(), "catalog rows without typed builders: {absent:?}");
+    }
+}
