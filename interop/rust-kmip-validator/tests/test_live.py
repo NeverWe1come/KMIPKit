@@ -455,11 +455,10 @@ class LiveContract(unittest.TestCase):
                 for name in ("ping", "process", "query-asynchronous-requests", "set-defaults"):
                     self.assertIn("not_applicable:", by_id["test-op-" + name]["diagnostic"])
                 for name in ("login", "logout", "delegated-login"):
-                    gap = by_id["test-op-" + name]
-                    self.assertEqual(gap["status"], "not_run")
-                    self.assertEqual(gap["server_compatibility"], "unknown")
-                    self.assertEqual(gap["library_correctness"], "failed")
-                    self.assertIn("library_api_unavailable:", gap["diagnostic"])
+                    result = by_id["test-op-" + name]
+                    self.assertEqual(result["status"], "passed")
+                    self.assertEqual(result["server_compatibility"], "supported")
+                    self.assertEqual(result["library_correctness"], "passed")
             self.assertGreater(len(peer.operations), len(cases))
             self.assertEqual(report["summary"]["total"], 207)
             evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")

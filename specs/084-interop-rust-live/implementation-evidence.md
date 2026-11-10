@@ -89,3 +89,24 @@ trees and raw alias keys remain ephemeral memory and are never written to
 reports/artifacts or displayed by the matrix assertion. Incoming operations
 retain their separate two-version listener verification. These comparisons do
 not establish live vendor compatibility or cross-language parity.
+
+## Revalidation against the merged KMIP 2.0 session fix
+
+After KMIPKIT-0089 merged into `release/1.0.0`, the independent Rust consumer
+was rebuilt from release commit
+`3017cfda4dbe1ccdf94c827e318e57688f858165`. The installed artifact SHA-256 was
+`8cb649af459ea7a37d8ecbe4da3cfe65686a324e8719f3facfaa446c2e31b123`; the
+installer and verifier both confirmed this exact provenance. A clean Cargo
+rebuild ensured no artifacts from the previous release pin were reused.
+
+The controlled 207-row catalog now passes for KMIP 2.0 and 2.1 through both
+high-level and typed-protocol APIs. Login, Logout and Delegated Login succeed
+in the 2.0 scenario, including Login/Logout setup and teardown. The earlier
+2.0 non-run classification documented above applied to the pre-fix release pin
+and is superseded by this run. No deployed KMS was involved.
+
+Verification on the clean rebuild: Rust formatting, Clippy with warnings
+denied, one adapter unit test, three CLI tests, the 19-test controlled Python
+suite, artifact verification and `git diff --check` pass. The isolated
+coverage gate measures 90.37% (1812/2005 handwritten consumer lines), above
+the 90% requirement.

@@ -4,7 +4,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
-pub(crate) const PIN: &str = "fdafef8a3eb0c7b4b18d6433b78fde4151493ceb";
+pub(crate) const PIN: &str = "3017cfda4dbe1ccdf94c827e318e57688f858165";
 pub(crate) type Result<T> = std::result::Result<T, &'static str>;
 
 pub(crate) fn hash(bytes: &[u8]) -> String {

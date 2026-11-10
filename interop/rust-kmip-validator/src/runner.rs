@@ -46,14 +46,6 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
     if connection.api_level == "generic-ttlv" && case.execution.mode != "local_model" {
         return Some(CaseResult::non_run(case, "not_run", "library_api_unavailable: generic TTLV outbound KMIP 2.0/2.1 construction; KMIPKIT-0083-FR-007".to_owned()));
     }
-    if connection.protocol_version == "2.0"
-        && ["Login", "Logout", "Delegated Login"].contains(&case.operation.as_str())
-        && kmipkit::VersionGate::validate_tag(kmipkit::ProtocolVersion::V2_0, 0x0042_014a).is_err()
-    {
-        let mut result = CaseResult::non_run(case, "not_run", "library_api_unavailable: pinned VersionGate rejects KMIP 2.0 Ticket/Request Count/Rights tags required by the bounded session recipe and Logout cleanup; OASIS KMIP 2.0 Specification §§6.1.12, 6.1.29, 6.1.30, 7.29, 7.33".to_owned());
-        result.library_correctness = "failed";
-        return Some(result);
-    }
     None
 }
 
