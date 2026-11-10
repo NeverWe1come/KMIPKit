@@ -95,8 +95,16 @@ fn transport_from_mtls_v1(input: &kmipkit_mtls_client_config_v1_t) -> FfiResult<
     super::transport_config_from_v1(ptr::addr_of!(transport))
 }
 
+/// Creates a client using the compact DER mutual TLS configuration.
+///
+/// # Safety
+///
+/// `configuration` must be null or a live configuration handle. `input` must
+/// point to a readable, aligned v1 record whose non-empty spans and certificate
+/// array remain readable for this call. `out_client` must point to an aligned,
+/// writable handle slot that does not overlap the input record.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_create_mtls_v1(
+pub unsafe extern "C" fn kmipkit_client_create_mtls_v1(
     configuration: *mut kmipkit_client_configuration_t,
     input: *const kmipkit_mtls_client_config_v1_t,
     out_client: *mut *mut kmipkit_client_t,
@@ -259,8 +267,16 @@ pub extern "C" fn kmipkit_client_create_symmetric_key_v1(
 }
 
 /// Executes Create Symmetric Key with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `client` and `limits` must be null or live handles of the declared types.
+/// Every non-null request and options pointer must refer to an aligned,
+/// initialized record readable for this call. `out_response` must be an
+/// aligned, writable handle slot. Input records and the output slot must not
+/// overlap.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_create_symmetric_key_with_options_v1(
+pub unsafe extern "C" fn kmipkit_client_create_symmetric_key_with_options_v1(
     client: *mut kmipkit_client_t,
     request: *const kmipkit_symmetric_key_request_v1_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -310,8 +326,16 @@ pub extern "C" fn kmipkit_client_get_by_id_v1(
 }
 
 /// Executes Get with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `client` and `limits` must be null or live handles of the declared types.
+/// `unique_identifier` and `options` must point to aligned, initialized
+/// records readable for this call, including any referenced byte spans.
+/// `out_response` must be an aligned, writable handle slot. Input records and
+/// the output slot must not overlap.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_get_by_id_with_options_v1(
+pub unsafe extern "C" fn kmipkit_client_get_by_id_with_options_v1(
     client: *mut kmipkit_client_t,
     unique_identifier: *const kmipkit_unique_identifier_v1_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -364,8 +388,16 @@ pub extern "C" fn kmipkit_client_destroy_by_id_v1(
 }
 
 /// Executes Destroy with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `client` and `limits` must be null or live handles of the declared types.
+/// `unique_identifier` and `options` must point to aligned, initialized
+/// records readable for this call, including any referenced byte spans.
+/// `out_response` must be an aligned, writable handle slot. Input records and
+/// the output slot must not overlap.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_destroy_by_id_with_options_v1(
+pub unsafe extern "C" fn kmipkit_client_destroy_by_id_with_options_v1(
     client: *mut kmipkit_client_t,
     unique_identifier: *const kmipkit_unique_identifier_v1_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -618,8 +650,15 @@ pub extern "C" fn kmipkit_symmetric_key_builder_execute_v1(
 }
 
 /// Executes the builder with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `builder`, `client`, and `limits` must be null or live handles of the
+/// declared types. `options` must point to an aligned, initialized v1 record
+/// readable for this call. `out_response` must be an aligned, writable handle
+/// slot. The options record and output slot must not overlap.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_symmetric_key_builder_execute_with_options_v1(
+pub unsafe extern "C" fn kmipkit_symmetric_key_builder_execute_with_options_v1(
     builder: *mut kmipkit_symmetric_key_builder_t,
     client: *mut kmipkit_client_t,
     limits: *mut kmipkit_codec_limits_t,
