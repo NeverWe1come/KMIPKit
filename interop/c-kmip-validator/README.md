@@ -52,11 +52,12 @@ version, catalog digest, exact library commit and installed library digest.
 The capability profile is informational; it never suppresses a probe.
 
 The pinned release artifact preserves the configured KMIP version. Controlled
-TLS fixtures exercise Discover Versions, Ping, Locate, Query and Log under
-KMIP 2.1, and Locate, Query and Log under KMIP 2.0. The public C
+TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log and Login
+under KMIP 2.1, and Locate, Query and Log under KMIP 2.0. The public C
 Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
 a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
-API limitation. The public C API exposes generic TTLV constructors, inspectors,
+API limitation. The public C Login builder only supports KMIP 2.1, so its
+KMIP 2.0 case is also reported as a public API limitation. The public C API exposes generic TTLV constructors, inspectors,
 and a decoder, but it has no generic TTLV encoder and no generic TTLV request dispatch.
 It also exposes no high-level client API. The consumer records those route
 limits as library/API gaps. Live runs require a dedicated test KMS, valid

@@ -761,6 +761,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run(
             "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
     }
+    if (strcmp(test_case->operation, "Login") == 0 && client->protocol_minor == 0) {
+        return outcome_not_run(
+            "the public C Login builder only supports KMIP 2.1");
+    }
 
     kmipkit_client_batch_item_t *item = NULL;
     kmipkit_ttlv_structure_t *request_attributes = NULL;
@@ -781,6 +785,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     } else if (strcmp(test_case->operation, "Log") == 0) {
         static const uint8_t message[] = "KMIPKit interoperability validation probe";
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
+    } else if (strcmp(test_case->operation, "Login") == 0) {
+        status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
     } else {
         return outcome_not_run("no installed typed C request route is mapped for this case");
     }
@@ -904,6 +910,21 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "server did not advertise the configured KMIP protocol version");
+        }
+    } else if (strcmp(test_case->operation, "Login") == 0) {
+        uint8_t present = 0;
+        uint8_t ticket_present = 0;
+        uint32_t ticket_type = 0;
+        kmipkit_byte_span_v1_t ticket_value = {0};
+        status = kmipkit_client_batch_item_response_login(
+            response_item, &present, &ticket_present, &ticket_type, &ticket_value);
+        if (status != 0 || !present || !ticket_present ||
+            ticket_type != KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN ||
+            ticket_value.length == 0 || !ticket_value.data) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not expose a valid typed Login response");
         }
     } else if (strcmp(test_case->operation, "Ping") == 0) {
         uint8_t present = 0;

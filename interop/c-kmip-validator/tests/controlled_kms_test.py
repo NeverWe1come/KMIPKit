@@ -292,6 +292,9 @@ def main() -> int:
                 raise AssertionError(
                     "KMIP 2.0 Discover Versions must report the documented C API offer limitation"
                 )
+            login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
+            if login["status"] != "not_run" or "Login builder only supports KMIP 2.1" not in login.get("diagnostic", ""):
+                raise AssertionError("KMIP 2.0 Login must report the documented public C API limitation")
         if run.returncode != 0:
             raise AssertionError(
                 f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "
@@ -304,11 +307,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 72,
+            "passed": 73,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 140,
+            "not_run": 139,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
