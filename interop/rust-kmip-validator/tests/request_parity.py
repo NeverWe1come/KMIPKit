@@ -43,7 +43,7 @@ def parity_signature(report, request_trees=(), response_trees=()):
                       result_code(c.get("result_status"), "RESULT-STATUS"),
                       result_code(c.get("result_reason"), "RESULT-REASON"))
                      for c in report["cases"])
-    return outcomes, tuple(request_trees)
+    return outcomes, tuple(request_trees), tuple(response_trees)
 
 
 class RequestNormalizer:
@@ -67,6 +67,8 @@ class RequestNormalizer:
 
     def observe_response(self, tree):
         for tag, kind, value in tree:
+            if tag in self.SENSITIVE_CONTAINERS:
+                continue
             if kind == 1:
                 self.observe_response(value)
             elif tag in self.IDENTIFIERS and kind in (2, 3, 7):

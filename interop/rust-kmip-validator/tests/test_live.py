@@ -121,6 +121,38 @@ class ParityContract(unittest.TestCase):
         private = ((0x420057, 5, 4),)
         self.assertNotEqual(parity_signature(self.case(), response_trees=(symmetric,)), parity_signature(self.case(), response_trees=(private,)))
 
+    def test_result_codes_normalize_names_hex_and_future_values(self):
+        self.assertEqual(result_code("OperationFailed", "RESULT-STATUS"), 1)
+        self.assertEqual(result_code("Operation Failed", "RESULT-STATUS"), 1)
+        self.assertEqual(result_code("0x00000008", "RESULT-REASON"), 8)
+        self.assertEqual(result_code("Feature Not Supported", "RESULT-REASON"), 8)
+        self.assertEqual(result_code("0x8000ffff", "RESULT-REASON"), 0x8000ffff)
+        self.assertTrue(parity_signature(self.case()) == parity_signature(self.case("0x00000001", "0x00000005")))
+
+    def test_request_and_response_normalizer_redacts_secrets_and_volatile_fields(self):
+        snapshots = []
+        for identifier, name, timestamp, secret in (("owned-a", "name-a", 1, "private-a"), ("owned-b", "name-b", 2, "private-b")):
+            normalizer = RequestNormalizer()
+            normalizer.observe_response([(0x420094, 7, identifier)])
+            tree = [(0x420092, 9, timestamp), (0x420094, 7, identifier), (0x420055, 7, name),
+                    (0x42002a, 2, 256), (0x420025, 1, [(0x420099, 7, secret)]),
+                    (0x420043, 1, [(0x42003f, 8, secret.encode())]), (0x4200c2, 8, secret.encode())]
+            snapshot = normalizer.normalize(tree)
+            encoded = json.dumps(snapshot)
+            self.assertTrue(all(value not in encoded for value in (identifier, name, secret)), "sensitive value escaped normalization")
+            self.assertTrue(all(node[0] != 0x420092 for node in snapshot), "volatile timestamp retained")
+            snapshots.append(snapshot)
+        self.assertTrue(snapshots[0] == snapshots[1], "redacted trees should normalize equally")
+
+    def test_request_normalizer_preserves_seeded_resource_relationships(self):
+        normalizer = RequestNormalizer()
+        normalizer.observe_response([(0x420094, 7, "owned-resource")])
+        correct = normalizer.normalize([(0x420094, 7, "owned-resource")])
+        wrong = normalizer.normalize([(0x420094, 7, "different-resource")])
+        self.assertTrue(correct != wrong, "normalization hid a changed resource reference")
+        normalizer.observe_response([(0x420043, 1, [(0x420094, 7, "private-material")])])
+        self.assertEqual(len(normalizer.aliases["identifier"]), 2)
+
     def test_parity_signature_detects_different_deterministic_request(self):
         aes256 = ((0x42002a, 2, 256),)
         aes128 = ((0x42002a, 2, 128),)
@@ -143,6 +175,7 @@ class ControlledPeer:
         self.responder = responder
         self.operations = []
         self.request_trees = []
+        self.response_trees = []
         self.normalizer = RequestNormalizer()
         self.connections = 0
         self.stop = threading.Event()
@@ -167,7 +200,9 @@ class ControlledPeer:
                     self.operations.extend(find(batch, 0x42005c) for tag, kind, batch in tree[0][2] if tag == 0x42000f)
                     reply = self.responder(tree)
                     if reply is not None:
-                        self.normalizer.observe_response(parse(reply))
+                        parsed_reply = parse(reply)
+                        self.normalizer.observe_response(parsed_reply)
+                        self.response_trees.append(self.normalizer.normalize(parsed_reply))
                         channel.sendall(reply)
         except Exception as error:
             if not self.stop.is_set():
@@ -333,8 +368,8 @@ class LiveContract(unittest.TestCase):
             baseline = None
             for api in ("typed-protocol", "high-level"):
                 with self.subTest(version=version, api=api):
-                    report, requests = self.catalog_scenario(version, api)
-                    normalized = parity_signature(report, requests)
+                    report, requests, responses = self.catalog_scenario(version, api)
+                    normalized = parity_signature(report, requests, responses)
                     if baseline is None:
                         baseline = normalized
                     else:
@@ -433,7 +468,8 @@ class LiveContract(unittest.TestCase):
                 output.mkdir(parents=True, exist_ok=True)
                 (output / f"rust-controlled-{version}-{api}.json").write_text(json.dumps(report, indent=2) + "\n")
             self.assertEqual(len(peer.request_trees), peer.connections)
-            return report, tuple(peer.request_trees)
+            self.assertEqual(len(peer.response_trees), len(peer.request_trees))
+            return report, tuple(peer.request_trees), tuple(peer.response_trees)
 
     def test_incoming_operations_use_public_listener_and_dispatcher(self):
         for version in ("2.0", "2.1"):
