@@ -35,6 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
+    private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
+
     @TempDir
     Path temporaryDirectory;
 
@@ -111,6 +113,43 @@ class ControlledTlsPeerTest {
                 "The controlled peer must receive the typed Query operation.");
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4, 0, 0, 0, 1}),
                 "The Query request must include a non-empty Query Function.");
+        assertEquals("passed", outcome.status(), outcome.toString());
+    }
+
+    @Test
+    void typedLogSendsTheRequiredMessageAndVerifiesAnEmptyResponsePayload() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        X509Certificate serverCertificate = certificate(serverCertificatePem);
+        X509Certificate clientCertificate = certificate(clientCertificatePem);
+        SSLServerSocket listener = listener(serverCertificate, privateKey(serverPrivateKeyPem), clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, logResponse()));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-log-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("log-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem));
+        var connection = ConnectionConfig.load(connectionFile);
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream()
+                .filter(value -> value.caseId().equals("test-op-log"))
+                .findFirst().orElseThrow();
+
+        JavaKmipDriver.CaseOutcome outcome;
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
+            outcome = driver.execute(testCase);
+        } finally {
+            listener.close();
+        }
+        byte[] request = peer.get(15, TimeUnit.SECONDS);
+        assertTrue(contains(request, new byte[] {0x42, 0x00, 0x5c, 0x05, 0, 0, 0, 4, 0, 0, 0, 0x2c}),
+                "The controlled peer must receive the typed Log operation.");
+        assertTrue(contains(request, item(0x420141, 7, LOG_MESSAGE.getBytes(StandardCharsets.UTF_8))),
+                "The typed Log request must contain the deterministic Log Message.");
         assertEquals("passed", outcome.status(), outcome.toString());
     }
 
@@ -220,6 +259,18 @@ class ControlledTlsPeerTest {
                 structure(0x42007c,
                         item(0x42005c, 5, intBytes(0x3b)),
                         structure(0x42015f)));
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] logResponse() throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x2c)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), structure(0x42007c));
         return structure(0x42007b, header, responseItem);
     }
 

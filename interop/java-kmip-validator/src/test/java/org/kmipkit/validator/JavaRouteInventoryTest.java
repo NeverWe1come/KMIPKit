@@ -22,6 +22,7 @@ class JavaRouteInventoryTest {
         assertEquals(catalogOperations, inventory.keySet());
         assertEquals(59, inventory.size());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Query").status());
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Log").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attributes").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Attribute List").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Constraints").status());

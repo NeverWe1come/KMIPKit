@@ -16,6 +16,7 @@ class TypedRequestFactoryTest {
                 "Discover Versions", () -> 0x1e,
                 "Ping", () -> 0x3b,
                 "Query", () -> 0x18,
+                "Log", () -> 0x2c,
                 "Get Constraints", () -> KmipValues.V2_1_OPERATION_GET_CONSTRAINTS,
                 "Get Attribute List", () -> 0x0c);
 
