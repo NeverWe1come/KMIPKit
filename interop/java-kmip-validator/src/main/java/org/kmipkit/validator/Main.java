@@ -56,7 +56,7 @@ public final class Main {
     private static int plan(Arguments options, PrintStream out) throws Exception {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
-        Map<String, JavaRouteInventory.Route> routes = JavaRouteInventory.classify(catalog);
+        JavaRouteInventory.classify(catalog);
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
         long typed = "typed-protocol".equals(connection.apiLevel())
@@ -103,7 +103,7 @@ public final class Main {
     private static int run(Arguments options, PrintStream out) throws Exception {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
-        Map<String, JavaRouteInventory.Route> routes = JavaRouteInventory.classify(catalog);
+        JavaRouteInventory.classify(catalog);
         ArtifactProvenance artifact = loadArtifact(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
