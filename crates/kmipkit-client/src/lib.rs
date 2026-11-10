@@ -167,6 +167,10 @@ mod cancel_execution_tests;
 mod create_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_request_tests.rs"]
+mod fluent_request_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_execution_tests.rs"]
 mod create_key_pair_execution_tests;
 
