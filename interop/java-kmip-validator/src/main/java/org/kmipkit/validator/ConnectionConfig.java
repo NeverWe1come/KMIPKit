@@ -53,51 +53,9 @@ public record ConnectionConfig(
         String apiLevel = text(root, "api_level", "config");
         require(API_LEVELS.contains(apiLevel), "api_level is invalid");
 
-        JsonNode endpoints = object(root, "endpoints", "config");
-        String host = "";
-        int port = 0;
-        URI httpsUri = null;
-        if ("raw_tls".equals(transport)) {
-            JsonNode endpoint = object(endpoints, "raw_tls", "endpoints");
-            host = text(endpoint, "host", "endpoints.raw_tls");
-            require(!host.isBlank(), "endpoints.raw_tls.host is empty");
-            port = integer(endpoint, "port", "endpoints.raw_tls");
-            require(port >= 1 && port <= 65_535, "endpoints.raw_tls.port is invalid");
-        } else {
-            JsonNode endpoint = object(endpoints, "https", "endpoints");
-            String rawUri = text(endpoint, "url", "endpoints.https");
-            try {
-                httpsUri = URI.create(rawUri);
-            } catch (IllegalArgumentException exception) {
-                throw new IllegalArgumentException("endpoints.https.url is invalid");
-            }
-            require("https".equalsIgnoreCase(httpsUri.getScheme()) && httpsUri.getHost() != null
-                    && httpsUri.getUserInfo() == null && httpsUri.getFragment() == null,
-                    "endpoints.https.url must be an HTTPS URI without user info or fragment");
-        }
-
-        JsonNode tlsNode = object(root, "tls", "config");
-        Tls tls = new Tls(optionalText(tlsNode, "ca_cert_path"),
-                optionalText(tlsNode, "client_cert_path"), optionalText(tlsNode, "client_key_path"),
-                optionalText(tlsNode, "server_name_override"),
-                positiveInteger(tlsNode, "connect_timeout_seconds", 10),
-                positiveInteger(tlsNode, "read_timeout_seconds", 30));
-        require(!tls.caCertificatePath().isBlank() && !tls.clientCertificatePath().isBlank()
-                && !tls.clientKeyPath().isBlank(), "TLS trust and mutual-authentication files are required");
-
-        UsernamePassword usernamePassword = null;
-        JsonNode authentication = optionalObject(root, "authentication");
-        if (authentication != null) {
-            JsonNode credentials = optionalObject(authentication, "username_password");
-            if (credentials != null) {
-                String usernameEnv = text(credentials, "username_env", "authentication.username_password");
-                String passwordEnv = text(credentials, "password_env", "authentication.username_password");
-                require(usernameEnv.matches("[A-Z_][A-Z0-9_]*")
-                        && passwordEnv.matches("[A-Z_][A-Z0-9_]*"),
-                        "Credential environment variable names are invalid");
-                usernamePassword = new UsernamePassword(usernameEnv, passwordEnv);
-            }
-        }
+        Endpoint endpoint = parseEndpoint(root, transport);
+        Tls tls = parseTls(root);
+        UsernamePassword usernamePassword = parseUsernamePassword(root);
 
         JsonNode environment = object(root, "environment", "config");
         require("dedicated_test".equals(text(environment, "kind", "environment")),
@@ -109,8 +67,54 @@ public record ConnectionConfig(
         boolean probeUnsupported = optionalBoolean(policy, "probe_unsupported", true);
         boolean cleanupOnFailure = optionalBoolean(policy, "cleanup_on_failure", true);
         return new ConnectionConfig(serverId, fingerprint, version, transport, encoding, apiLevel,
-                host, port, httpsUri, tls, usernamePassword, true, allowMutations,
+                endpoint.host(), endpoint.port(), endpoint.httpsUri(), tls, usernamePassword, true, allowMutations,
                 probeUnsupported, cleanupOnFailure);
+    }
+
+    private static Endpoint parseEndpoint(JsonNode root, String transport) {
+        JsonNode endpoints = object(root, "endpoints", "config");
+        if ("raw_tls".equals(transport)) {
+            JsonNode endpoint = object(endpoints, "raw_tls", "endpoints");
+            String host = text(endpoint, "host", "endpoints.raw_tls");
+            int port = integer(endpoint, "port", "endpoints.raw_tls");
+            require(port >= 1 && port <= 65_535, "endpoints.raw_tls.port is invalid");
+            return new Endpoint(host, port, null);
+        }
+
+        JsonNode endpoint = object(endpoints, "https", "endpoints");
+        URI uri;
+        try {
+            uri = URI.create(text(endpoint, "url", "endpoints.https"));
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("endpoints.https.url is invalid");
+        }
+        require("https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null
+                && uri.getUserInfo() == null && uri.getFragment() == null,
+                "endpoints.https.url must be an HTTPS URI without user info or fragment");
+        return new Endpoint("", 0, uri);
+    }
+
+    private static Tls parseTls(JsonNode root) {
+        JsonNode node = object(root, "tls", "config");
+        Tls tls = new Tls(optionalText(node, "ca_cert_path"), optionalText(node, "client_cert_path"),
+                optionalText(node, "client_key_path"), optionalText(node, "server_name_override"),
+                positiveInteger(node, "connect_timeout_seconds", 10),
+                positiveInteger(node, "read_timeout_seconds", 30));
+        require(!tls.caCertificatePath().isBlank() && !tls.clientCertificatePath().isBlank()
+                && !tls.clientKeyPath().isBlank(), "TLS trust and mutual-authentication files are required");
+        return tls;
+    }
+
+    private static UsernamePassword parseUsernamePassword(JsonNode root) {
+        JsonNode authentication = optionalObject(root, "authentication");
+        if (authentication == null) return null;
+        JsonNode credentials = optionalObject(authentication, "username_password");
+        if (credentials == null) return null;
+        String usernameEnv = text(credentials, "username_env", "authentication.username_password");
+        String passwordEnv = text(credentials, "password_env", "authentication.username_password");
+        require(usernameEnv.matches("[A-Z_][A-Z0-9_]*") && passwordEnv.matches("[A-Z_][A-Z0-9_]*"),
+                "Credential environment variable names are invalid");
+        return new UsernamePassword(usernameEnv, passwordEnv);
     }
 
     /** Fails before network activity if a live run violates the dedicated environment or mutation policy. */
@@ -138,6 +142,7 @@ public record ConnectionConfig(
     public record Tls(String caCertificatePath, String clientCertificatePath, String clientKeyPath,
                       String serverNameOverride, int connectTimeoutSeconds, int readTimeoutSeconds) { }
     public record UsernamePassword(String usernameEnvironmentName, String passwordEnvironmentName) { }
+    private record Endpoint(String host, int port, URI httpsUri) { }
 
     private static JsonNode object(JsonNode parent, String field, String location) {
         JsonNode value = optionalObject(parent, field);
