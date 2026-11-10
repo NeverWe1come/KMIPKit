@@ -52,7 +52,20 @@ class MainContractTest {
         assertTrue(Files.isRegularFile(output.resolve("report.html")));
     }
 
+    @Test
+    void planDoesNotCountKmip20RoutesBlockedByThePinnedArtifact() throws Exception {
+        Path connection = connection("2.0", "typed-protocol");
+        String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
+                "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
+        assertTrue(plan.contains("KMIP 2.0 live routes are blocked by the pinned artifact"));
+    }
+
     private Path connection() throws Exception {
+        return connection("2.1", "high-level");
+    }
+
+    private Path connection(String protocolVersion, String apiLevel) throws Exception {
         Path trust = temporaryDirectory.resolve("trust.pem");
         Path client = temporaryDirectory.resolve("client.pem");
         Path key = temporaryDirectory.resolve("client-key.pem");
@@ -62,10 +75,10 @@ class MainContractTest {
         ObjectNode root = new ObjectMapper().createObjectNode();
         root.put("server_id", "no-network-target");
         root.put("server_configuration_fingerprint", "c".repeat(64));
-        root.put("protocol_version", "2.1");
+        root.put("protocol_version", protocolVersion);
         root.put("transport", "raw_tls");
         root.put("encoding", "TTLV");
-        root.put("api_level", "high-level");
+        root.put("api_level", apiLevel);
         root.putObject("endpoints").putObject("raw_tls")
                 .put("host", "no-dns-lookup.invalid").put("port", 5696);
         root.putObject("tls").put("ca_cert_path", trust.toString())
