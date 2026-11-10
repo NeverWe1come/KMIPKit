@@ -59,7 +59,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
         target_ids = {t['target_id'] for t in catalog['normative_targets']
                       if t['kind'] in {'enumeration_value', 'bitmask_value'} and t.get('allocation') == 'assigned'}
         for language in ('rust', 'c', 'java', 'python'):
-            values = {v['target_id'] for v in self.data.get('value_symbols', []) if v['language'] == language}
+            values = {v['target_id'] for v in self.data.get('value_symbols', []) if v['language'] == language and v['availability'] == 'named-constant'}
             self.assertEqual(target_ids, values)
 
     def test_installed_named_values_cannot_be_missing_or_have_the_wrong_wire_value(self):
@@ -67,7 +67,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'named value'):
             self.module.validate_installed_values(self.data, 'python', {})
         values = {row['public_api_symbol']: row['wire_value'] for row in self.data['value_symbols']
-                  if row['language'] == 'python'}
+                  if row['language'] == 'python' and row['availability'] == 'named-constant'}
         first = next(iter(values))
         values[first] ^= 1
         with self.assertRaisesRegex(ValueError, 'named value'):
@@ -78,6 +78,17 @@ class RouteCapabilitiesTests(unittest.TestCase):
         for symbol in ('kmipkit_ttlv::Value::enumeration', 'kmipkit_ttlv_value_enumeration',
                        'org.kmipkit.ttlv.TtlvValue.Enumeration', 'kmipkit.ttlv.ttlv_value_enumeration'):
             self.assertTrue(symbol in symbols, symbol)
+
+    def test_known_but_false_api_level_cannot_relabel_a_constructor(self):
+        self.data['routes'][0]['api_level'] = 'high-level'
+        self.reject(self.data, 'api_level')
+
+    def test_case_category_and_protocol_coverage_cannot_be_silently_removed(self):
+        self.data['routes'][0]['case_categories'] = []
+        self.reject(self.data, 'case_categories')
+        self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
+        self.data['routes'][0]['protocol_versions'] = ['2.1']
+        self.reject(self.data, 'protocol_versions')
 
     def test_checked_in_manifest_validates_against_public_api(self):
         self.module.validate(self.data, ROOT)
@@ -163,6 +174,16 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_artifact_probe_requires_every_declared_symbol(self):
         with self.assertRaisesRegex(ValueError, 'installed artifact.*missing'):
             self.module.validate_installed_symbols(self.data, 'python', set())
+
+
+class ManifestSerializationTests(unittest.TestCase):
+    def test_generated_records_are_complete_json_before_atomic_replacement(self):
+        sys.path.insert(0, str(SHARED / 'tools'))
+        import route_capabilities
+        data = {'schema_version': '1.0', 'routes': [{'route_id': 'a'}], 'value_symbols': []}
+        serialized = route_capabilities.serialize_manifest(data)
+        self.assertTrue(serialized.endswith('}\n'), 'serialized manifest must close its root object')
+        self.assertEqual(data, json.loads(serialized))
 
 
 if __name__ == '__main__':
