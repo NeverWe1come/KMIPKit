@@ -462,11 +462,18 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
 
     kmipkit_client_batch_item_t *item = NULL;
+    kmipkit_ttlv_structure_t *request_attributes = NULL;
     int32_t status = 0;
     if (strcmp(test_case->operation, "Discover Versions") == 0) {
         status = kmipkit_client_batch_item_discover_versions(&item);
     } else if (strcmp(test_case->operation, "Ping") == 0 && client->protocol_minor == 1) {
         status = kmipkit_client_batch_item_ping(&item);
+    } else if (strcmp(test_case->operation, "Locate") == 0) {
+        status = kmipkit_ttlv_structure_create(&request_attributes);
+        if (status == 0) {
+            status = kmipkit_client_batch_item_locate(1, 1, 0, 0, 0, 0, 0, 0,
+                                                      request_attributes, &item);
+        }
     } else if (strcmp(test_case->operation, "Query") == 0) {
         const uint32_t query_function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
         status = kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &item);
@@ -606,6 +613,35 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit did not expose a valid typed Ping response");
         }
+    } else if (strcmp(test_case->operation, "Locate") == 0) {
+        uint8_t present = 0;
+        uint8_t payload_present = 0;
+        uint8_t located_items_present = 0;
+        int32_t located_items = 0;
+        uint64_t identifier_count = 0;
+        status = kmipkit_client_batch_item_response_locate(
+            response_item, &present, &payload_present, &located_items_present,
+            &located_items, &identifier_count);
+        bool valid_response = status == 0 && present && payload_present;
+        if (valid_response && located_items_present && located_items < 0) {
+            valid_response = false;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "server returned a negative Located Items value");
+        }
+        for (uint64_t index = 0; valid_response && index < identifier_count; ++index) {
+            kmipkit_unique_identifier_v1_t identifier = {0};
+            status = kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                response_item, index, &identifier);
+            valid_response = status == 0;
+        }
+        if (!valid_response) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            if (outcome.result_reason[0] == '\0') {
+                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                         "KMIPKit did not expose a valid typed Locate response");
+            }
+        }
     } else if (strcmp(test_case->operation, "Query") == 0) {
         uint8_t present = 0;
         uint64_t field_count = 0;
@@ -657,5 +693,6 @@ cleanup:
     if (response) kmipkit_client_batch_response_release(response);
     if (batch) kmipkit_client_batch_release(batch);
     if (item) kmipkit_client_batch_item_release(item);
+    if (request_attributes) kmipkit_ttlv_structure_release(request_attributes);
     return outcome;
 }

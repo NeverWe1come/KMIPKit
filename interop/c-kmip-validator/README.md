@@ -51,8 +51,9 @@ the shared schema and record the configured server identity, selected KMIP
 version, catalog digest, exact library commit and installed library digest.
 The capability profile is informational; it never suppresses a probe.
 
-The pinned release artifact preserves the configured KMIP version and the
-controlled fixtures exercise requests under both KMIP 2.0 and 2.1. The public C
+The pinned release artifact preserves the configured KMIP version. Controlled
+TLS fixtures exercise Discover Versions, Ping, Locate, Query and Log under
+KMIP 2.1, and Locate, Query and Log under KMIP 2.0. The public C
 Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
 a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
 API limitation. The public C API also does not expose a high-level client API or
