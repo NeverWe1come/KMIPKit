@@ -116,6 +116,11 @@ class ParityContract(unittest.TestCase):
     def test_parity_signature_detects_different_kmip_result_status(self):
         self.assertNotEqual(parity_signature(self.case()), parity_signature(self.case(result_status="Operation Pending")))
 
+    def test_parity_signature_detects_different_response_payload(self):
+        symmetric = ((0x420057, 5, 2),)
+        private = ((0x420057, 5, 4),)
+        self.assertNotEqual(parity_signature(self.case(), response_trees=(symmetric,)), parity_signature(self.case(), response_trees=(private,)))
+
     def test_parity_signature_detects_different_deterministic_request(self):
         aes256 = ((0x42002a, 2, 256),)
         aes128 = ((0x42002a, 2, 128),)

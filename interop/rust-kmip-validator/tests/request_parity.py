@@ -37,7 +37,7 @@ def result_code(value, group):
     return code
 
 
-def parity_signature(report, request_trees=()):
+def parity_signature(report, request_trees=(), response_trees=()):
     outcomes = tuple((c["case_id"], c["status"], c["library_correctness"],
                       c["server_compatibility"],
                       result_code(c.get("result_status"), "RESULT-STATUS"),
