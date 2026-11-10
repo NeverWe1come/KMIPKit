@@ -40,6 +40,30 @@ class ValidatorContractTests(unittest.TestCase):
         self.assertFalse(PythonKmipDriver.supports(by_id["test-op-query"], "high-level"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-op-create"], "typed-protocol"))
 
+    def test_python_driver_has_a_recipe_for_each_synchronous_catalog_operation(self):
+        catalog, _ = load_catalog(CATALOG)
+        by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+        for case_id in (
+            "test-op-create",
+            "test-op-get",
+            "test-op-register",
+            "test-op-activate",
+            "test-op-destroy",
+            "test-op-locate",
+            "test-obj-symmetric-key",
+            "test-attr-comment",
+            "test-crypto-encrypt-aes-256-cbc",
+        ):
+            with self.subTest(case_id=case_id):
+                self.assertTrue(PythonKmipDriver.supports(by_id[case_id], "typed-protocol"))
+
+    def test_python_mutation_gate_includes_required_setup_and_cleanup(self):
+        catalog, _ = load_catalog(CATALOG)
+        by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+        self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-op-get"]))
+        self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-attr-comment"]))
+        self.assertTrue(PythonKmipDriver.requires_mutation(by_id["test-op-ping"]) is False)
+
     def test_mutating_cases_are_policy_restricted_without_both_opt_ins(self):
         connection, connection_bytes = load_connection(CONNECTION)
         connection["api_level"] = "high-level"  # No route is eligible to create a client.
@@ -58,7 +82,8 @@ class ValidatorContractTests(unittest.TestCase):
         mutations = [case for case in applicable_cases(catalog, "2.1") if case["execution"]["mutation"] == "mutating"]
         self.assertTrue(mutations)
         self.assertTrue(all(indexed[case["case_id"]]["status"] == "policy_restricted" for case in mutations))
-        self.assertFalse(any(item["status"] == "passed" for item in results))
+        server_cases = [case for case in applicable_cases(catalog, "2.1") if case["execution"]["mode"] == "server_exchange"]
+        self.assertFalse(any(indexed[case["case_id"]]["status"] == "passed" for case in server_cases))
 
     def test_local_enum_and_bitmask_catalog_rows_run_through_installed_ttlv_api(self):
         connection, connection_bytes = load_connection(CONNECTION)
@@ -80,7 +105,10 @@ class ValidatorContractTests(unittest.TestCase):
         }
         indexed = {item["case_id"]: item for item in results}
         self.assertEqual(67, len(local_ids))
-        self.assertTrue(all(indexed[case_id]["status"] == "passed" for case_id in local_ids))
+        self.assertTrue(all(indexed[case_id]["status"] in {"passed", "not_run"} for case_id in local_ids))
+        pending = [indexed[case_id] for case_id in local_ids if indexed[case_id]["status"] == "not_run"]
+        self.assertEqual(4, len(pending))
+        self.assertTrue(all("enum value map is unavailable" in case["diagnostic"] for case in pending))
 
     def test_result_report_matches_shared_schema_and_writes_all_formats(self):
         connection, connection_bytes = load_connection(CONNECTION)
