@@ -884,7 +884,8 @@ pub extern "C" fn kmipkit_client_create(
         let client_configuration = client_extension::ClientConfiguration::from_shared_registry(
             configuration.shared_extension_registry(),
         )
-        .with_wire_encoding(configuration.wire_encoding());
+        .with_wire_encoding(configuration.wire_encoding())
+        .with_protocol_version(configuration.protocol_version());
         let transport_configuration = match owned_payload(transport_handle, Kind::TransportConfig) {
             Ok(HandleValue::TransportConfig(configuration)) => *configuration,
             Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),

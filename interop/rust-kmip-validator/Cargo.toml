@@ -1,14 +1,19 @@
 [package]
 name = "rust-kmip-validator"
 version = "0.1.0"
-edition = "2021"
-description = "Standalone Rust validation suite for KMIP 2.1 servers and KMIPKit conformance"
+edition = "2024"
+rust-version = "1.94"
+description = "Installed-library KMIP 2.0/2.1 interoperability consumer"
 license = "Apache-2.0"
 
 # Independent workspace so this project is not built with the KMIPKit library crates
 [workspace]
 
 [dependencies]
+kmipkit-transport = { version = "=1.0.0", path = "../.local/rust-live/install/crates/kmipkit-transport-1.0.0" }
+kmipkit = { version = "=1.0.0", path = "../.local/rust-live/install/crates/kmipkit-1.0.0" }
+sha2 = "0.10"
+zeroize = "=1.9.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 clap = { version = "4.4", features = ["derive"] }
@@ -17,3 +22,17 @@ uuid = { version = "1.6", features = ["v4"] }
 
 [dev-dependencies]
 tempfile = "3.8"
+
+[patch.crates-io]
+kmipkit-ttlv = { path = "../.local/rust-live/install/crates/kmipkit-ttlv-1.0.0" }
+kmipkit-protocol = { path = "../.local/rust-live/install/crates/kmipkit-protocol-1.0.0" }
+kmipkit-transport = { path = "../.local/rust-live/install/crates/kmipkit-transport-1.0.0" }
+kmipkit-client = { path = "../.local/rust-live/install/crates/kmipkit-client-1.0.0" }
+aws-lc-sys = { path = "../.local/rust-live/install/vendor/aws-lc-sys-0.45.0" }
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+[build-dependencies]
+serde_json = "1.0"
