@@ -8,6 +8,7 @@ from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._handles import _wrap_owned_handle
 from .client import (
+    Batch,
     BatchResult,
     Client,
     RequestOptions,
@@ -110,6 +111,7 @@ class Operation:
         _identifier(unique_identifier)
         self._client, self._operation, self._identifier = client, operation, unique_identifier
         self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
 
     def with_options(self, options: RequestOptions) -> Operation:
         if not isinstance(options, RequestOptions):
@@ -222,6 +224,13 @@ class SymmetricKeyBuilder:
         self._options = options
         return self
 
+    def asynchronous_indicator(self, value: int) -> SymmetricKeyBuilder:
+        """Set the KMIP Request Header indicator on the one-item batch."""
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 0xFFFF_FFFF:
+            errors.raise_for_status(4)
+        self._asynchronous_indicator = value
+        return self
+
     def build(self) -> Any:
         self._ensure_open()
         if self._algorithm is None or self._length is None or self._usage_mask is None:
@@ -240,17 +249,16 @@ class SymmetricKeyBuilder:
         target = client or self._client
         if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
             errors.raise_for_status(4)
-        output = ffi.new("kmipkit_client_batch_response_t **")
-        options_record = _request_options_record(self._options) if self._options else None
-        with _NATIVE_CALL_LOCK:
-            if options_record is None:
-                status = lib.kmipkit_symmetric_key_builder_execute_v1(self._handle, target._pointer(), ffi.cast("kmipkit_codec_limits_t *", limits._pointer()), output)
-            else:
-                status = lib.kmipkit_symmetric_key_builder_execute_with_options_v1(self._handle, target._pointer(), ffi.cast("kmipkit_codec_limits_t *", limits._pointer()), options_record, output)
-            _raise_client_status(status)
-        if output[0] == ffi.NULL:
-            errors.raise_for_status(7)
-        return _batch_result(output[0], limits)
+        batch = Batch.create()
+        try:
+            batch.add_item(self.build())
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            if self._options is None:
+                return target.execute(batch, limits)
+            return target.execute_with_options(batch, limits, self._options)
+        finally:
+            batch.close()
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
