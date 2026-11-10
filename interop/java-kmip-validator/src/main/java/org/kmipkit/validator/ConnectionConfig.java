@@ -13,6 +13,8 @@ import java.util.Set;
 public record ConnectionConfig(
         String serverId,
         String configurationFingerprint,
+        String serverProduct,
+        String serverVersion,
         String protocolVersion,
         String transport,
         String encoding,
@@ -44,6 +46,10 @@ public record ConnectionConfig(
         require(serverId.matches("[a-zA-Z0-9_-]+"), "server_id is invalid");
         String fingerprint = text(root, "server_configuration_fingerprint", "config");
         require(fingerprint.matches("[a-f0-9]{64}"), "server_configuration_fingerprint is invalid");
+        String serverProduct = optionalText(root, "server_product");
+        if (serverProduct.isBlank()) serverProduct = "Unspecified KMIP server";
+        String serverVersion = optionalText(root, "server_version");
+        if (serverVersion.isBlank()) serverVersion = "not-recorded";
         String version = text(root, "protocol_version", "config");
         require(VERSIONS.contains(version), "Only KMIP 2.0 and 2.1 are supported");
         String transport = text(root, "transport", "config");
@@ -66,7 +72,8 @@ public record ConnectionConfig(
         boolean allowMutations = bool(policy, "allow_mutations", "execution_policy");
         boolean probeUnsupported = optionalBoolean(policy, "probe_unsupported", true);
         boolean cleanupOnFailure = optionalBoolean(policy, "cleanup_on_failure", true);
-        return new ConnectionConfig(serverId, fingerprint, version, transport, encoding, apiLevel,
+        return new ConnectionConfig(serverId, fingerprint, serverProduct, serverVersion,
+                version, transport, encoding, apiLevel,
                 endpoint.host(), endpoint.port(), endpoint.httpsUri(), tls, usernamePassword, true, allowMutations,
                 probeUnsupported, cleanupOnFailure);
     }

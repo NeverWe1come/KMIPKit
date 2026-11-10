@@ -47,4 +47,5 @@ application {
 tasks.test {
     useJUnitPlatform()
     systemProperty("kmipkit.artifactManifest", layout.projectDirectory.file("build/artifact-manifest.json").asFile.absolutePath)
+    systemProperty("kmipkit.reportOutputDir", layout.projectDirectory.dir("build/offline-report").asFile.absolutePath)
 }

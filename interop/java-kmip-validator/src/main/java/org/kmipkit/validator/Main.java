@@ -117,7 +117,7 @@ public final class Main {
         String catalogDigest = ArtifactProvenance.sha256(options.pathOr("--catalog", DEFAULT_CATALOG));
         RunReport.Summary summary = summarize(evidence);
         RunReport report = new RunReport("2.0", "java-" + UUID.randomUUID(), Instant.now().toString(), "java",
-                new RunReport.Server(connection.serverId(), "Unspecified KMIP server", "not-recorded",
+                new RunReport.Server(connection.serverId(), connection.serverProduct(), connection.serverVersion(),
                         connection.configurationFingerprint()), connection.protocolVersion(), catalogDigest,
                 new RunReport.Execution(connection.transport(), connection.encoding(), connection.apiLevel(),
                         artifact.libraryCommit(), artifact.artifactSha256()), summary, evidence);
