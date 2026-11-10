@@ -404,6 +404,21 @@ class VersionedContractTests(unittest.TestCase):
         self.assertEqual({0}, {result["result_status_code"] for result in row["results"].values()})
         self.assertEqual({7}, {result["result_reason_code"] for result in row["results"].values()})
 
+    def test_boolean_is_not_accepted_as_a_numeric_kmip_result_code(self) -> None:
+        first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
+        second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="passed")
+        first["cases"][0]["result_reason"] = True
+        second["cases"][0]["result_reason_code"] = 1
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = aggregate_results([
+                write_result(root, "first", first), write_result(root, "second", second),
+            ])
+        row = matrix["matrices"][0]["cases"][0]
+        self.assertEqual("PARITY_MISMATCH", row["status"])
+        self.assertIn("result_reason", row["difference_dimensions"])
+        self.assertNotEqual(1, row["results"]["rust"]["result_reason_code"])
+
 
 if __name__ == "__main__":
     unittest.main()
