@@ -59,7 +59,8 @@ public final class Main {
         Map<String, JavaRouteInventory.Route> routes = JavaRouteInventory.classify(catalog);
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
-        long typed = countCases(applicable, routes, JavaRouteInventory.Status.EXECUTABLE_TYPED);
+        long typed = "typed-protocol".equals(connection.apiLevel())
+                ? countCases(applicable, routes, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
         long recipePending = countCases(applicable, routes, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, routes, JavaRouteInventory.Status.PAYLOAD_ONLY);
         long apiUnavailable = countCases(applicable, routes, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
@@ -69,7 +70,7 @@ public final class Main {
         out.println("Protocol: KMIP " + connection.protocolVersion());
         out.println("Applicable cases: " + applicable.size());
         out.println("Local TTLV model cases: " + local);
-        out.println("Server exchanges with an executable Java typed route: " + typed);
+        out.println("Server exchanges executable through selected Java API level: " + typed);
         out.println("Public typed constructors awaiting catalog recipes: " + recipePending);
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
