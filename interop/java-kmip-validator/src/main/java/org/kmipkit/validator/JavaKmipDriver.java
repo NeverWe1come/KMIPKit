@@ -114,6 +114,12 @@ public final class JavaKmipDriver implements AutoCloseable {
                     yield JavaResponseChecks.queryAdvertisesOperations(query.operations());
                 }
             }
+            case "Log" -> {
+                var payload = result.logResponse();
+                if (payload.isEmpty()) yield false;
+                payload.orElseThrow().close();
+                yield true;
+            }
             case "Get Constraints" -> {
                 var payload = result.getConstraintsResponse();
                 if (payload.isEmpty()) yield false;

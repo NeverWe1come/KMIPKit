@@ -52,6 +52,7 @@ public final class JavaRouteInventory {
         executable(routes, "Discover Versions", "discoverVersions");
         executable(routes, "Ping", "ping");
         executable(routes, "Query", "query");
+        pendingSafetyClassification(routes, "Log", "log");
         pendingRecipe(routes, "Get Constraints", "getConstraints");
         pendingRecipe(routes, "Get Attribute List", "getAttributeList");
 
@@ -80,7 +81,6 @@ public final class JavaRouteInventory {
         typed(routes, "Interop", "interop");
         typed(routes, "Join Split Key", "joinSplitKey");
         typed(routes, "Locate", "locate");
-        typed(routes, "Log", "log");
         typed(routes, "Login", "login");
         typed(routes, "Logout", "logout");
         typed(routes, "MAC", "mac");
@@ -130,6 +130,14 @@ public final class JavaRouteInventory {
         routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
                 "ClientBatchItem." + method + " is available, but the catalog case requires an isolated "
                         + "object fixture, response assertions, and cleanup that are not implemented yet."));
+    }
+
+    private static void pendingSafetyClassification(Map<String, Route> routes, String operation, String method) {
+        requirePublicFactory(method);
+        routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
+                "ClientBatchItem." + method + " is available, but KMIP 2.1 §6.1.29 writes the message to the "
+                        + "server log while the shared catalog marks this case read_only; it stays pending until "
+                        + "the shared contract requires explicit mutation opt-in."));
     }
 
     private static void payloadOnly(Map<String, Route> routes, String operation, String requestType) {

@@ -43,7 +43,11 @@ correctness, observed server support, policy rejection, parity, and coverage
 that has not run.
 
 The current live executor sends typed requests for `Discover Versions`,
-`Ping`, and `Query`. Although the installed Java API also provides
+`Ping`, and `Query`. The installed Java API can build and decode `Log`, and a
+controlled TLS test covers its request and response. The catalog currently
+classifies `Log` as read-only even though KMIP 2.1 §6.1.29 writes the message
+to the server log, so the live CLI keeps it pending until the shared contract
+requires mutation opt-in. Although the installed Java API also provides
 `Get Constraints` and `Get Attribute List` request constructors, their catalog
 cases require an isolated object fixture, response assertions, and cleanup;
 they remain pending until that complete recipe is implemented. The route
