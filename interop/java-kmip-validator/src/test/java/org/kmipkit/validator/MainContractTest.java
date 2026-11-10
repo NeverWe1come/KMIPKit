@@ -40,6 +40,9 @@ class MainContractTest {
         assertEquals(132, report.path("summary").path("policy_restricted").asInt());
         assertEquals(13, report.path("summary").path("not_run").asInt());
         for (JsonNode result : report.path("cases")) {
+            if ("policy_restricted".equals(result.path("status").asText())) {
+                assertEquals("unknown", result.path("server_compatibility").asText());
+            }
             if (result.path("case_id").asText().startsWith("test-enum-")
                     || result.path("case_id").asText().startsWith("test-bitmask-")) {
                 assertEquals("unknown", result.path("server_compatibility").asText());
