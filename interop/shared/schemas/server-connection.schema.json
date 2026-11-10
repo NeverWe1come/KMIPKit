@@ -14,6 +14,16 @@
       "description": "Stable SHA-256 fingerprint of one deployed server configuration, independent of client transport, encoding, API level, and protocol version.",
       "pattern": "^[a-f0-9]{64}$"
     },
+    "server_product": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional operator-verified product label for report metadata; a capability profile is not evidence."
+    },
+    "server_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional operator-verified server release; do not use the negotiated KMIP protocol version here."
+    },
     "description": {
       "type": "string"
     },

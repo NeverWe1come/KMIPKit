@@ -1,110 +1,167 @@
 package org.kmipkit.validator;
 
-import org.kmipkit.validator.models.Models.CaseResult;
-import org.kmipkit.validator.models.Models.CaseStatus;
-import org.kmipkit.validator.models.Models.ValidationSummary;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Set;
 
-public class MatrixReporter {
-    public static void printAnsiTable(ValidationSummary summary) {
-        renderAnsi(summary);
-    }
+/** Writes sanitized JSON, Markdown, and HTML evidence using the shared report contract. */
+public final class MatrixReporter {
+    private static final Set<String> STATUSES = Set.of(
+            "passed", "failed", "server_unsupported", "policy_restricted", "not_run");
+    private static final Set<String> CORRECTNESS = Set.of("passed", "failed", "not_checked");
+    private static final Set<String> SERVER_COMPATIBILITY = Set.of(
+            "supported", "unsupported", "policy_restricted", "unknown");
+    private static final Set<String> PARITY = Set.of("matched", "mismatched", "not_compared");
+    private static final ObjectMapper JSON = new ObjectMapper()
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
-    public static void writeReports(ValidationSummary summary, Path outputDir) throws IOException {
-        renderMarkdown(summary, outputDir.resolve("report.md"));
-        renderHtml(summary, outputDir.resolve("report.html"));
-        renderJson(summary, outputDir.resolve("results.json"));
-    }
+    private MatrixReporter() { }
 
-    public static void renderAnsi(ValidationSummary summary) {
-        System.out.printf("%n=== KMIP 2.1 Validation Matrix: Server [%s] (Lang: %s) ===%n",
-                summary.serverId(), summary.language());
-        System.out.printf("Total: %d | ✅ Passed: %d | ❌ Failed: %d | ➖ Unsupported: %d%n",
-                summary.totalCases(), summary.passed(), summary.failed(), summary.unsupported());
-        System.out.println("--------------------------------------------------------------------------------");
-        System.out.printf("%-35s | %-25s | %-10s%n", "Case ID", "Operation", "Status");
-        System.out.println("--------------------------------------------------------------------------------");
-
-        for (CaseResult r : summary.results()) {
-            String sym = switch (r.status()) {
-                case PASSED -> "✅ PASS";
-                case FAILED -> "❌ FAIL";
-                case UNSUPPORTED_SKIPPED, UNSUPPORTED_VERIFIED_REJECTED -> "➖ UNSUPP";
-                case UNEXPECTED_SUCCESS -> "⚠️ UNEXP";
-            };
-            System.out.printf("%-35s | %-25s | %-10s%n", r.caseId(), r.operation(), sym);
+    /** Validates the shared contract and renders its canonical JSON shape. */
+    public static String toJson(RunReport report) {
+        validate(report);
+        try {
+            return JSON.writerWithDefaultPrettyPrinter().writeValueAsString(report) + "\n";
+        } catch (IOException exception) {
+            throw new IllegalStateException("Run report could not be serialized", exception);
         }
-        System.out.println("--------------------------------------------------------------------------------");
     }
 
-    public static void renderMarkdown(ValidationSummary summary, Path path) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("# KMIP 2.1 Conformance Matrix: `%s`%n%n", summary.serverId()));
-        sb.append(String.format("- **Language**: `%s`%n", summary.language()));
-        sb.append(String.format("- **Total Cases**: %d%n%n", summary.totalCases()));
-        sb.append("### Summary\n\n| Metric | Count |\n|---|---:|\n");
-        sb.append(String.format("| Total Cases | %d |%n", summary.totalCases()));
-        sb.append(String.format("| ✅ Passed | %d |%n", summary.passed()));
-        sb.append(String.format("| ❌ Failed | %d |%n", summary.failed()));
-        sb.append(String.format("| ➖ Unsupported | %d |%n%n", summary.unsupported()));
-
-        sb.append("### Detailed Operations\n\n| Case ID | Operation | Status |\n|---|---|:---:|\n");
-        for (CaseResult r : summary.results()) {
-            String sym = (r.status() == CaseStatus.PASSED) ? "✅" : (r.status() == CaseStatus.FAILED) ? "❌" : "➖";
-            sb.append(String.format("| `%s` | %s | %s |%n", r.caseId(), r.operation(), sym));
-        }
-
-        Files.createDirectories(path.getParent() != null ? path.getParent() : Path.of("."));
-        Files.writeString(path, sb.toString());
+    /** Writes all three shared report formats to the requested directory. */
+    public static void writeReports(RunReport report, Path outputDirectory) throws IOException {
+        Files.createDirectories(outputDirectory);
+        Files.writeString(outputDirectory.resolve("results.json"), toJson(report));
+        Files.writeString(outputDirectory.resolve("report.md"), toMarkdown(report));
+        Files.writeString(outputDirectory.resolve("report.html"), toHtml(report));
     }
 
-    public static void renderHtml(ValidationSummary summary, Path path) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<title>KMIP 2.1 Validation Report</title>\n");
-        sb.append("<style>\nbody { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 2rem; background: #f8fafc; color: #1e293b; }\n");
-        sb.append(".card { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }\n");
-        sb.append("table { width: 100%; border-collapse: collapse; margin-top: 1rem; }\n");
-        sb.append("th, td { text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; }\n");
-        sb.append("th { background: #f1f5f9; font-weight: 600; }\n");
-        sb.append(".pass { color: #16a34a; font-weight: bold; }\n.fail { color: #dc2626; font-weight: bold; }\n.unsupp { color: #64748b; font-weight: bold; }\n</style>\n</head>\n<body>\n");
-        sb.append(String.format("<div class=\"card\">\n<h1>KMIP 2.1 Validation Matrix: %s</h1>\n", summary.serverId()));
-        sb.append(String.format("<p><strong>Language:</strong> %s</p>\n", summary.language()));
-        sb.append(String.format("<p>✅ <strong>Passed:</strong> %d | ❌ <strong>Failed:</strong> %d | ➖ <strong>Unsupported:</strong> %d</p>\n</div>\n",
-                summary.passed(), summary.failed(), summary.unsupported()));
-        sb.append("<div class=\"card\">\n<table>\n<thead>\n<tr><th>Case ID</th><th>Operation</th><th>Status</th></tr>\n</thead>\n<tbody>\n");
-
-        for (CaseResult r : summary.results()) {
-            String cls = (r.status() == CaseStatus.PASSED) ? "pass" : (r.status() == CaseStatus.FAILED) ? "fail" : "unsupp";
-            String st = (r.status() == CaseStatus.PASSED) ? "✅ Passed" : (r.status() == CaseStatus.FAILED) ? "❌ Failed" : "➖ Unsupported";
-            sb.append(String.format("<tr><td><code>%s</code></td><td>%s</td><td class=\"%s\">%s</td></tr>\n",
-                    r.caseId(), r.operation(), cls, st));
+    public static String toMarkdown(RunReport report) {
+        validate(report);
+        StringBuilder output = new StringBuilder("# KMIP interoperability results\n\n");
+        output.append("- **Server:** `").append(markdown(report.server().id())).append("`\n");
+        output.append("- **Protocol:** KMIP ").append(markdown(report.protocolVersion())).append("\n");
+        output.append("- **Language:** `Java`\n");
+        output.append("- **Library commit:** `").append(report.execution().libraryCommit()).append("`\n\n");
+        output.append("| Total | Passed | Failed | Unsupported | Policy restricted | Not run |\n");
+        output.append("|---:|---:|---:|---:|---:|---:|\n");
+        RunReport.Summary summary = report.summary();
+        output.append("| ").append(summary.total()).append(" | ").append(summary.passed()).append(" | ")
+                .append(summary.failed()).append(" | ").append(summary.unsupported()).append(" | ")
+                .append(summary.policyRestricted()).append(" | ").append(summary.notRun()).append(" |\n\n");
+        output.append("| Case | Status | Library correctness | Server compatibility | Parity |\n");
+        output.append("|---|---|---|---|---|\n");
+        for (RunReport.CaseEvidence evidence : report.cases()) {
+            output.append("| `").append(markdown(evidence.caseId())).append("` | ")
+                    .append(evidence.status()).append(" | ").append(evidence.libraryCorrectness())
+                    .append(" | ").append(evidence.serverCompatibility()).append(" | ")
+                    .append(evidence.parity()).append(" |\n");
         }
-
-        sb.append("</tbody>\n</table>\n</div>\n</body>\n</html>\n");
-        Files.createDirectories(path.getParent() != null ? path.getParent() : Path.of("."));
-        Files.writeString(path, sb.toString());
+        return output.toString();
     }
 
-    public static void renderJson(ValidationSummary summary, Path path) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n  \"run_id\": \"run-java\",\n  \"language\": \"java\",\n");
-        sb.append(String.format("  \"server_id\": \"%s\",\n", summary.serverId()));
-        sb.append(String.format("  \"summary\": {\n    \"total_cases\": %d,\n    \"passed\": %d,\n    \"failed\": %d,\n    \"unsupported_by_server\": %d\n  },\n",
-                summary.totalCases(), summary.passed(), summary.failed(), summary.unsupported()));
-        sb.append("  \"results\": [\n");
-
-        for (int i = 0; i < summary.results().size(); i++) {
-            CaseResult r = summary.results().get(i);
-            String st = (r.status() == CaseStatus.PASSED) ? "passed" : (r.status() == CaseStatus.FAILED) ? "failed" : "unsupported_skipped";
-            sb.append(String.format("    {\n      \"case_id\": \"%s\",\n      \"operation\": \"%s\",\n      \"status\": \"%s\"\n    }%s\n",
-                    r.caseId(), r.operation(), st, (i + 1 < summary.results().size()) ? "," : ""));
+    public static String toHtml(RunReport report) {
+        validate(report);
+        StringBuilder output = new StringBuilder("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\">");
+        output.append("<title>KMIP interoperability results</title><h1>KMIP interoperability results</h1>");
+        output.append("<p>Server <code>").append(html(report.server().id())).append("</code>; protocol KMIP ")
+                .append(html(report.protocolVersion())).append("; Java.</p>");
+        output.append("<table><thead><tr><th>Case</th><th>Status</th><th>Library</th><th>Server</th><th>Parity</th>")
+                .append("</tr></thead><tbody>");
+        for (RunReport.CaseEvidence evidence : report.cases()) {
+            output.append("<tr><td><code>").append(html(evidence.caseId())).append("</code></td><td>")
+                    .append(evidence.status()).append("</td><td>").append(evidence.libraryCorrectness())
+                    .append("</td><td>").append(evidence.serverCompatibility()).append("</td><td>")
+                    .append(evidence.parity()).append("</td></tr>");
         }
-        sb.append("  ]\n}\n");
+        return output.append("</tbody></table></html>\n").toString();
+    }
 
-        Files.createDirectories(path.getParent() != null ? path.getParent() : Path.of("."));
-        Files.writeString(path, sb.toString());
+    private static void validate(RunReport report) {
+        require(report != null, "Run report is required");
+        require("2.0".equals(report.schemaVersion()), "Report schema_version must be 2.0");
+        text(report.runId(), "run_id");
+        try {
+            Instant.parse(report.testedAt());
+        } catch (RuntimeException exception) {
+            throw new IllegalArgumentException("Report tested_at must be an ISO-8601 date-time");
+        }
+        require("java".equals(report.language()), "Report language must be java");
+        require(report.server() != null, "Report server is required");
+        text(report.server().id(), "server.id");
+        text(report.server().product(), "server.product");
+        text(report.server().version(), "server.version");
+        digest(report.server().configurationFingerprint(), "server.configuration_fingerprint");
+        require(Set.of("2.0", "2.1").contains(report.protocolVersion()), "Report protocol_version is invalid");
+        digest(report.catalogSha256(), "catalog_sha256");
+        require(report.execution() != null, "Report execution is required");
+        require(Set.of("raw_tls", "https").contains(report.execution().transport()), "Report transport is invalid");
+        require(Set.of("TTLV", "JSON", "XML").contains(report.execution().encoding()), "Report encoding is invalid");
+        require(Set.of("high-level", "typed-protocol", "generic-ttlv").contains(report.execution().apiLevel()),
+                "Report api_level is invalid");
+        require(report.execution().libraryCommit() != null
+                && report.execution().libraryCommit().matches("[0-9a-f]{7,40}"),
+                "Report library_commit is invalid");
+        digest(report.execution().artifactSha256(), "execution.artifact_sha256");
+        require(report.summary() != null, "Report summary is required");
+        int total = report.cases().size();
+        require(report.summary().total() == total, "Report summary.total does not match cases");
+        int passed = 0;
+        int failed = 0;
+        int unsupported = 0;
+        int policyRestricted = 0;
+        int notRun = 0;
+        for (RunReport.CaseEvidence evidence : report.cases()) {
+            text(evidence.caseId(), "case.case_id");
+            require(STATUSES.contains(evidence.status()), "Report case status is invalid");
+            require(CORRECTNESS.contains(evidence.libraryCorrectness()), "Report library correctness is invalid");
+            require(SERVER_COMPATIBILITY.contains(evidence.serverCompatibility()), "Report server compatibility is invalid");
+            require(PARITY.contains(evidence.parity()), "Report parity is invalid");
+            require(Double.isFinite(evidence.durationMs()) && evidence.durationMs() >= 0,
+                    "Report case duration_ms is invalid");
+            require(evidence.resultStatusCode() == null || (evidence.resultStatusCode() >= 0
+                    && evidence.resultStatusCode() <= 0xffff_ffffL), "Report result_status_code is invalid");
+            require(evidence.resultReasonCode() == null || (evidence.resultReasonCode() >= 0
+                    && evidence.resultReasonCode() <= 0xffff_ffffL), "Report result_reason_code is invalid");
+            switch (evidence.status()) {
+                case "passed" -> passed++;
+                case "failed" -> failed++;
+                case "server_unsupported" -> unsupported++;
+                case "policy_restricted" -> policyRestricted++;
+                case "not_run" -> notRun++;
+                default -> throw new IllegalArgumentException("Report case status is invalid");
+            }
+        }
+        require(report.summary().passed() == passed && report.summary().failed() == failed
+                        && report.summary().unsupported() == unsupported
+                        && report.summary().policyRestricted() == policyRestricted
+                        && report.summary().notRun() == notRun,
+                "Report summary counts do not match cases");
+    }
+
+    private static String text(String value, String field) {
+        require(value != null && !value.isBlank(), "Report " + field + " is required");
+        return value;
+    }
+
+    private static void digest(String value, String field) {
+        require(value != null && value.matches("[a-f0-9]{64}"), "Report " + field + " is invalid");
+    }
+
+    private static String markdown(String value) {
+        return value.replace("|", "\\|").replace("\n", " ").replace("\r", " ");
+    }
+
+    private static String html(String value) {
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) throw new IllegalArgumentException(message);
     }
 }
