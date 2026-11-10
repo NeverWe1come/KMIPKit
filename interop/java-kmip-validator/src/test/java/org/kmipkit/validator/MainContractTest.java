@@ -26,7 +26,9 @@ class MainContractTest {
         Path output = Path.of(System.getProperty("kmipkit.reportOutputDir",
                 temporaryDirectory.resolve("report").toString()));
 
-        assertCommand(0, "plan", "--connection", connection.toString(), "--catalog", catalog.toString());
+        String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
+                "--catalog", catalog.toString());
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
         assertCommand(0, "preflight", "--connection", connection.toString(), "--catalog", catalog.toString(),
                 "--artifact-manifest", manifest.toString());
         assertCommand(0, "run", "--connection", connection.toString(), "--catalog", catalog.toString(),
@@ -74,9 +76,14 @@ class MainContractTest {
     }
 
     private static void assertCommand(int expectedStatus, String... args) {
+        assertCommandOutput(expectedStatus, args);
+    }
+
+    private static String assertCommandOutput(int expectedStatus, String... args) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         ByteArrayOutputStream error = new ByteArrayOutputStream();
         int status = Main.execute(args, new PrintStream(output), new PrintStream(error));
         assertEquals(expectedStatus, status, error.toString());
+        return output.toString();
     }
 }
