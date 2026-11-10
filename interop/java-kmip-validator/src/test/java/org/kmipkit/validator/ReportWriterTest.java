@@ -27,6 +27,7 @@ class ReportWriterTest {
         assertEquals("raw_tls", tree.path("execution").path("transport").asText());
         assertEquals("passed", tree.path("cases").get(0).path("status").asText());
         assertEquals(1, tree.path("summary").path("total").asInt());
+        assertFalse(tree.path("cases").get(0).has("result_reason_code"));
         assertFalse(json.contains("KMIP body"));
     }
 

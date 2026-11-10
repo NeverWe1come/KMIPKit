@@ -21,6 +21,7 @@ public record RunReport(String schemaVersion, String runId, String testedAt, Str
     public record Summary(int total, int passed, int failed, int unsupported,
                           int policyRestricted, int notRun) { }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record CaseEvidence(String caseId, String status, String libraryCorrectness,
                                String serverCompatibility, String parity, double durationMs,
                                Long resultStatusCode, Long resultReasonCode, String diagnostic) { }
