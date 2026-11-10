@@ -1,15 +1,20 @@
 # Typed client execution
 
-This guide describes the Rust typed execution foundation introduced by
-KMIPKIT-0007 and its Rust operation APIs: Discover Versions, Create, Create
-Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
-Get Attributes, Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive,
-Destroy, Recover, Encrypt, Decrypt, Query, and Ping. For Encrypt and Decrypt
-single-part and caller-driven multipart examples, see the
-[Encrypt and Decrypt guide](encrypt-decrypt.md). For lifecycle-specific behavior, see the
-[managed-object lifecycle guide](lifecycle-operations.md); for Query and Ping,
-see the [Query and Ping guide](query-ping.md). For configuring a production
-connection, see the [TLS and HTTPS transport guide](production-transports.md).
+This guide began with the Rust execution slice introduced by KMIPKIT-0007.
+Its operation list and examples are historical entry points, not the current
+complete API inventory. The release branch now includes 56 client-initiated
+operation mappings, the separate Set Endpoint Role route, and the approved
+server-to-client listener and dispatch APIs under KMIPKIT-0066. See the
+[project status](../../project-status.md), [language package and manifest
+status](language-packages.md), and [server interoperability
+matrix](../../development/kmip-interoperability.md) for implementation and
+evidence distinctions.
+
+This page focuses on Rust execution examples. KMIPKit's approved 1.0 surface
+also includes TTLV, JSON, and XML; the synchronous client and protocol-level
+asynchronous outcomes remain caller-driven. KMIP 2.1 is the default, with
+catalog-gated KMIP 2.0 and a bounded KMIP 3.0 draft surface; details are
+version-specific and do not imply blanket conformance.
 
 This guide describes the Rust `kmipkit-client` API surface. A Rust model or
 accessor does not establish four-language 1.0 operation availability. In the
@@ -26,8 +31,10 @@ Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
 Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
 Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query, and Ping
 requests.
-Discover Versions advertises exactly the KMIP 2.1 version pair (2, 1), as
-specified by OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.
+With default configuration, Discover Versions advertises KMIP 2.1. The
+multi-version API can advertise an explicitly configured set of supported
+versions; see KMIPKIT-0069 and ADR-0022. Each response is still subject to the
+effective-version checks and server behavior.
 Get Attributes and Get Attribute List use their typed request and response
 models from §§6.1.20–6.1.21.
 Passing generic TTLV `Item` or
@@ -55,19 +62,14 @@ client APIs against a loopback-only TLS 1.3/mTLS fixture responder. This checks
 the client execution and typed-result path; the fixture is not a KMIP server
 implementation and does not provide interoperability evidence.
 
-The typed KMIP 1.0 operation API remains scoped to KMIP 2.1 under the product
-decision recorded for [`KMIPKIT-DISC-022`](../../../specs/007-client-execution/spec.md);
-this is not a claim that the implementation provides KMIP §9.16 same-major
-backward compatibility. Separately, KMIPKit exposes opt-in routes for the
-KMIP 3.0 Working Draft operations Create Group, Obliterate, Create User, Create
-Credential, Deactivate, Encapsulate, and Decapsulate. Those routes accept and
-preserve caller-supplied ordered generic TTLV payloads; they do not provide
-operation-specific typed payload builders or schema validation. Select the
-protocol version explicitly with `ClientConfiguration::with_protocol_version`;
-the default remains KMIP 2.1. The `kmip30_draft_routes` capability reports API
-availability only and does not claim profile conformance or certification. See
-[ADR-0002](../../adr/0002-kmip-21-release-scope.md) for the 1.0 typed-operation
-scope.
+KMIP 2.1 remains the default. KMIP 2.0 and the catalogued KMIP 3.0
+draft/standard surface are selected explicitly and checked before transport
+writes under KMIPKIT-0069–0071 and ADR-0022. KMIP 1.x is not supported by the
+client library. The 3.0 APIs are limited to their approved version-specific
+models and routes; their presence does not claim blanket 3.0 conformance,
+profile support, or certification. The initial 2.1-only execution specification
+and ADR-0002 have been superseded in scope by later approved specifications and
+ADRs.
 
 ## Direct operation methods and per-exchange options
 

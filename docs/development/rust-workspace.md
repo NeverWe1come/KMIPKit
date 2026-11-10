@@ -1,8 +1,8 @@
 # Rust workspace and PowerShell commands
 
-KMIPKit is a Cargo workspace. Its seven crates separate protocol-independent
+KMIPKit is a Cargo workspace. Its eight crates separate protocol-independent
 TTLV handling, KMIP models, I/O, client orchestration, the supported Rust API,
-the C ABI, and test support. The workspace uses Rust 2024, MSRV 1.94, shared
+the C ABI, shared test support, and a standalone test server. The workspace uses Rust 2024, MSRV 1.94, shared
 package metadata, a central dependency graph, and shared lint settings.
 
 ## Crate responsibilities
@@ -16,6 +16,7 @@ package metadata, a central dependency graph, and shared lint settings.
 | `kmipkit` | Supported high-level Rust API | Public |
 | `kmipkit-ffi` | Stable C ABI and native library targets | Private workspace crate |
 | `kmipkit-test-support` | Shared test fixtures and helpers | Private workspace crate |
+| `kmipkit-test-server` | Standalone KMIP peer for integration and listener tests | Private workspace crate |
 
 Internal dependencies flow downward. `kmipkit-ttlv` is transport independent;
 protocol code performs no I/O; bindings do not implement KMIP semantics.
@@ -123,9 +124,14 @@ pwsh -File .\scripts\tests\Test-Wsl.ps1
 python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 ```
 
-## Current implementation boundary
+## Implementation and release status
 
-The crates currently contain crate-level documentation and compile-time lint
-policy only. They do not yet implement KMIP values, operations, encoding,
-transport, or C symbols. Each behavior is added through an approved feature
-specification and its tests.
+The release branch contains working implementations across the listed layers,
+language bindings, multi-encoding client paths, and server-to-client listener
+support. See the dated [project status](../project-status.md) and the
+[architecture overview](../architecture/overview.md) for the reviewed
+snapshot. Code presence does not imply every requirement, profile, external
+server combination, or release package has passed its acceptance evidence.
+
+Every further behavior change still requires an approved feature
+specification and its verification evidence.

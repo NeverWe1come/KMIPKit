@@ -1,131 +1,105 @@
 # KMIPKit roadmap
 
-The roadmap expresses dependency order. Each item becomes one or more approved
-Spec Kit specifications before implementation.
+This roadmap records implementation order and release work. Feature code is
+added from approved Spec Kit specifications. “Integrated” means merged into
+the reviewed release branch; it does not mean every conformance, interoperability,
+security, package, or publication gate has passed.
 
-## Phase 0: repository governance
+**Status snapshot:** `release/1.0.0` at `ef9a19b770b59d29af1770a1c99e7634e7ff9034`
+(2026-11-10). See the [project status](project-status.md) for evidence details.
 
-- Constitution and Spec Kit installation (complete; maintainer owned).
-- Community, security, contribution, ADR, and agent documentation.
-- Branch protections, CODEOWNERS, DCO, and draft PR workflow.
-- CI skeleton and pinned toolchains.
+## Phase 0: repository governance — integrated
 
-## Phase 1: stable foundation
+Constitution and Spec Kit, community and security policies, ADR process,
+contribution rules, CI, CODEOWNERS, DCO, release/feature branch workflow, and
+AI agent rules are present. Repository protection and release evidence are
+rechecked by applicable CI workflows.
 
-Parallel feature development must wait until this phase is accepted.
+## Phase 1: shared foundation — integrated
 
-- Cargo workspace skeleton (initialized); common automation remains pending.
-- Normative source inventory and machine-readable catalog.
-- Generated tags, types, enumerations, and value metadata.
-- Lossless generic TTLV tree.
-- Strict encoder and decoder with resource limits.
-- Protocol error model and validation framework.
-- Message headers, batch model, correlation, and unknown value preservation.
-- Transport abstraction and deterministic fake transport.
-- Raw TLS and HTTPS vertical skeleton with mTLS.
-- Synchronous request/response client skeleton.
-- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; assigned outbound Batch Error Continuation values under §9.6 and Table 435; response-size enforcement and large-response policy under `KMIPKIT-REQ-SPEC-9.12-001-002/-003`; and version enforcement for the initial KMIP 2.1 default. The later multi-version acceptance rules are owned by KMIPKIT-0069 through KMIPKIT-0071 and ADR-0022. `KMIPKIT-DISC-043` records the §9.6/Table 435 value-range discrepancy separately from `KMIPKIT-DISC-001`; delegated decision `KMIPKIT-DEC-002` accepts assigned values for the initial client while raw Enumeration values remain preserved. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; protocol-version pair validation for the configured edition, assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of Batch Error Continuation extension-range outbound values under the project policy, raw-value preservation, exact/over-limit response-size boundaries, and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
-- Minimal stable C ABI vertical slice.
-- Coverage, conformance, compatibility, and supply-chain CI gates.
-- `KMIPKIT-0011-dependency-policy-gates`: finite reviewed Cargo license/source
-  policy, advisory checks for both root and fuzz workspaces, exact expiring
-  exceptions, and pull-request/scheduled CI. The approved specification and
-  implementation were merged by PR #37 at `d4582e2`; release signing, SBOM,
-  provenance, and branch protection remain separate.
+The workspace, OASIS source inventory and generated catalog, generic ordered
+TTLV model and bounded codec, protocol errors and validation, message and
+batch models, transport contract and fake, production TLS/HTTPS path,
+synchronous client execution, C ABI foundation, and quality automation are
+present in the release branch. Foundation stabilization no longer blocks
+independent feature work; each feature still needs its own approved
+specification and worktree.
 
-## Phase 2: typed KMIP protocol
+## Phase 2: KMIP protocol and operations — integrated, evidence tracked
 
-- Managed objects and attributes.
-- `KMIPKIT-0008-credentials-attestation`: credential construction and message credential models; authentication policy; Device Identifier; hashed-password algorithm/timestamp/default rules; conditional credential/header fields; and attestation, including truthful Attestation Capable Indicator behavior. Add exact-clause tests for credential variants and required/conditional fields, authentication policy, Device Identifier handling, hash/default behavior, and indicator truthfulness against supported Attestation Credential creation capability.
-- `KMIPKIT-0009-asynchronous-operations`: implemented client-initiated Poll, Cancel, Process, and Query Asynchronous Requests models with explicit one-exchange execution, exact correlation bytes, no automatic polling or retry, and generic Poll/Query response payload access. `KMIPKIT-DEC-015` records the accepted Table 286 context interpretation; typed Query response mapping remains tracked in KMIPKIT-0043 T035. The missing catalog requirement ID for Process Table 278 remains open under `OD-002`; no formal conformance claim is made.
-- `KMIPKIT-0010-profile-conformance`: profile-specific requirement applicability, defaults, validation, and claims; each claimed profile must have exact OASIS Profile clause mapping and passing executable tests before any support claim.
-- All client initiated request and response types.
-- Profile-specific validation.
-- KMIP protocol asynchronous outcome model.
-- `KMIPKIT-0012-vendor-extension-registry`: immutable per-client registry,
-  typed validated extension values, and generated Rust/C/Java/Python adapters.
-  It implements ADR-0007's 1.0 extension commitment; dynamic executable
-  plugins remain deferred. Complete it before public API parity is frozen.
-- Official and derived conformance fixtures.
+Typed objects, attributes, credentials, extensions, message models,
+asynchronous protocol outcomes, and operation request/response surfaces have
+been added through approved features. The catalog and conformance record remain
+authoritative for requirement-level closure; a complete API surface alone does
+not establish profile conformance.
 
-Work is split into independent vertical specifications after shared models have
-stabilized.
+## Phase 3: public API and language parity — integrated, release gate
 
-## Phase 3: complete public APIs
+The Rust facade, C ABI, Java JNI API, and Python CFFI API have undergone
+cross-language parity work through KMIPKIT-0043 and KMIPKIT-0047–0053. The
+versioned API manifest and generators define the public surface. Package
+publishing and final compatibility evidence remain separate release gates.
 
-- Rust high-level builders for every operation, typed protocol models, the
-  complete C ABI, generic TTLV access, batch outcomes, secret lifecycle
-  controls, and structured diagnostics.
-- Java and Python bindings provide the corresponding operation and TTLV
-  capabilities as detailed in Phase 4.
-- **1.0.0 release gate:** approve a versioned public API manifest covering
-  every in-scope client-initiated operation and generic TTLV, then generate
-  and verify equivalent Rust, C, Java, and Python capabilities. The Rust
-  Credential and Authentication models in KMIPKIT-0008 are the protocol core
-  only; they do not satisfy this cross-language parity gate. Assign the
-  manifest and language surfaces to their own approved API/bindings
-  specifications before claiming 1.0 API completeness.
+## Phase 4: production transport and packages — implementation integrated, packaging evidence pending
 
-## Phase 4: Java and Python
+Raw TLS and HTTPS/HTTP 1.1, TLS 1.3 mutual authentication, request delivery
+states, TLS credential reload, session resumption, and keep-alive reconnect
+are implemented under the approved transport specifications. JSON and XML
+codecs and client/transport integration are implemented under KMIPKIT-0054–0057.
+KMIPKIT-0068 tracks package dry-runs; the dated status page records its PR state
+at the snapshot.
 
-- JNI bridge and Java 17 API.
-- CFFI and Python 3.12 API.
-- High level, typed, and TTLV parity.
-- Native package loading and installation tests.
-- Maven Central and PyPI release pipelines in dry-run mode.
+## Phase 5: typed API usability and preflight validation — integrated
 
-## Phase 5: high-level API usability and preflight validation
+Named protocol values, typed attributes and managed objects, operation
+parameters, request authentication, schema-aware pre-send validation, typed
+responses, generic response navigation, and parity across the four supported
+languages are integrated through KMIPKIT-0047–0053.
 
-- Add named values for KMIP 2.1 enumerations and bitmasks, plus reviewed
-  edition-specific deltas for KMIP 2.1 and 3.0, while preserving unknown and
-  vendor values.
-- Add typed builders and readers for attributes and managed objects, key
-  material, and wrapping structures.
-- Complete typed operation parameters, request-scoped authentication, and
-  direct client methods for all client-initiated operations.
-- Provide schema-aware request validation and block locally detectable
-  normative violations before transport I/O.
-- Complete typed response readers and navigable generic TTLV access for the
-  response payload and nested structures in Rust, C, Java, and Python.
-- Reconcile the public API manifest, examples, and English and Spanish guides.
+## Phase 6: protocol breadth, interoperability, and release hardening — implementation integrated; release evidence remains
 
-## Phase 6: interoperability and release hardening
+- KMIP 2.1 server-to-client operations and role handling: KMIPKIT-0066 and
+  ADR-0021.
+- KMIP 2.0 and catalogued KMIP 3.0 version support: KMIPKIT-0069–0071 and
+  ADR-0022. The KMIP 3.0 surface remains limited to the pinned draft and
+  approved feature requirements; it is not a blanket conformance claim.
+- Shared interoperability catalog and Rust, C, Java, and Python validators:
+  KMIPKIT-0058–0062. The server compatibility matrix remains an evidence
+  ledger; untested operations and products stay pending.
+- Standalone multi-version test server: KMIPKIT-0065.
+- Release work still includes final package build/install/smoke tests, complete
+  release-matrix checks, profile evidence, independent security review,
+  signed artifacts, hashes, SBOM, provenance, release notes, and human release
+  approval. Consult `docs/development/testing.md` and
+  `docs/development/git-and-releases.md` for current gates.
 
-Feature identifiers `KMIPKIT-0047` through `KMIPKIT-0053` are reserved for
-the Phase 5 ergonomics, `validate()`, and `.raw()` work. Multi-encoding work
-uses the consecutive identifiers `KMIPKIT-0054` through `KMIPKIT-0057` and
-must not reuse those Phase 5 identifiers.
+The transport benchmark in `docs/development/transport-performance.md` is a
+reproducible local HTTPS loopback baseline. It is not a cross-platform service
+target; controlled regression analysis requires comparable machine and toolchain
+records.
 
-- Automated integration with an external open source KMIP 2.1 server.
-- Manual or automated integration with a second independent implementation.
-- Server compatibility matrix.
-- Fuzzing, Miri, sanitizers, and extended negative testing.
-- Performance baselines and regression analysis.
-- Independent security review.
-- Complete English and Spanish documentation.
-- Reproducible packages, SBOM, provenance, and signed artifacts.
-- `1.0.0` release readiness review.
-- **KMIP 2.1 multi-encoding work for 1.0.0:** KMIPKIT-0054 establishes the
-  approved scope amendment and private common codec contract. Once 0054 is
-  accepted, KMIPKIT-0055 (JSON, Profiles §5.5) and KMIPKIT-0056 (XML,
-  Profiles §5.4) may be implemented and tested independently in dedicated
-  worktrees. Their codec modules consume the same ordered generic TTLV item
-  model and checked-in catalog naming metadata. Neither codec changes the
-  public client API manifest. KMIPKIT-0057 integrates both codecs with the
-  client and transports, then updates the manifest, generated API surfaces,
-  and Rust/C/Java/Python parity together.
+## Separate deliverable: stateless KMS proxy
 
-## Phase 7: after 1.0
+The proxy has its own Cargo workspace, dependency boundary, specifications,
+and provider workflows. KMIPKIT-0072–0082 cover the foundation and bridges for
+AWS, Azure, Google Cloud, Oracle OCI, Vault/OpenBao, Infisical, IBM, Alibaba,
+Scaleway, and Open Telekom Cloud. Its implementation does not make proxy
+support part of the core client library or its 1.0 packages. See ADR-0023.
 
-- Evaluate and specify legacy KMIP version support using the
-  [compatibility feasibility research](design/kmip-legacy-version-feasibility.md).
-  This work starts after KMIPKit 1.0.0 is complete and published; the exact
-  version set and sequence require a separate reviewed ADR and approved
-  specification.
-- 1.1.0 server initiated operations.
-- Additional idiomatic adapters, in order: Go, C++, C#, and JavaScript.
-- Declarative vendor extension SDK.
-- Optional compiled extension packages.
-- Async/await client.
-- Connection pools, explicit retry policies, and failover components.
-- Additional TLS identity providers, platforms, and proxy support.
+## Later roadmap candidates
+
+These remain subject to approved specifications, compatibility review, and
+the security policy:
+
+- Additional idiomatic adapters: Go, C++, C#, and JavaScript.
+- Rust async/await APIs.
+- Connection pools and capability caching.
+- Additional TLS identity providers and supported platforms.
+- Declarative extension SDKs and optional compiled extension packages.
+- Further transport and operational facilities.
+
+KMIP 1.x client support is excluded by ADR-0022. Automatic KMIP request
+retries remain prohibited by `AGENTS.md`; any proposed explicit retry facility
+must not silently replay a request and requires a reviewed specification and
+security decision. Proxy support is already tracked as the separate deliverable
+above, not an unowned future core-client item.

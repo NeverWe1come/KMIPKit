@@ -1,8 +1,12 @@
 # KMIPKit project definition
 
-Status: approved design baseline
+Status: approved design baseline, as amended by the constitution and accepted ADRs
 Date: 2026-10-03
 Owner: NeverWe1come
+
+For the implementation and release-evidence snapshot, see
+[`../project-status.md`](../project-status.md). This definition records the
+approved target; code presence and release readiness are tracked separately.
 
 ## 1. Purpose
 
@@ -44,23 +48,29 @@ Version 1.0.0 includes:
 
 Version 1.0.0 excludes:
 
-- Server initiated operations.
-- JSON and XML codecs are owned by KMIPKIT-0055 and KMIPKIT-0056; client and
-  transport integration and public exposure are owned by KMIPKIT-0057.
 - Rust async/await APIs.
-- Automatic retries, failover, connection pools, proxy support, and
-  capability caching.
+- Automatic KMIP request retries. Failed requests report delivery state; a
+  later caller-initiated request may reconnect.
+- Automatic endpoint failover, connection pools, and capability caching.
 - Local cryptographic algorithm implementations.
 - Dynamic executable plugins.
 - PKCS#11, HSM, operating system, and language runtime TLS key providers.
 
 ### 2.2 Later releases
 
-- 1.1.0: server initiated operations.
+- KMIP 1.x is excluded from the client library. The test server may retain
+  compatibility adapters for test purposes.
 - Additional idiomatic adapters, prioritized as Go, C++, C#, and JavaScript.
-- Later compatible 1.x releases: optional async APIs, additional transports
-  and operational facilities.
+- Optional async/await APIs, additional transports, and operational facilities
+  require their own approved specifications. Any retry or proxy behavior must
+  preserve the security invariants in `AGENTS.md` and the accepted ADRs.
 - A new major version is reserved for public API or ABI incompatibility.
+
+Server-to-client operations, role handling, JSON/XML encodings, and the
+catalogued modern multi-version foundation have been advanced into the
+approved 1.0 boundary by later decisions. See the constitution amendments and
+ADR-0018, ADR-0021, and ADR-0022; earlier release-scope statements do not
+supersede them.
 
 ## 3. Completeness
 
@@ -164,10 +174,11 @@ files.
 - No panic based production control flow.
 - Public APIs documented.
 - Normative traceability: 100 percent.
-- TTLV and protocol line coverage: at least 95 percent.
+- TTLV and protocol/model line coverage: at least 90 percent.
 - Transport, FFI, and bindings: at least 85 percent.
 - Workspace overall: at least 90 percent.
-- Changed production code: at least 95 percent.
+- New or changed production code: at least 90 percent.
+- Normative requirement traceability: 100 percent.
 - Two independent real KMIP implementations tested before 1.0.
 - Independent security review before 1.0.
 
@@ -195,7 +206,6 @@ Musl, Alpine, Windows ARM64, and additional platforms are later work.
 
 - Apache-2.0.
 - DCO sign-off; no CLA initially.
-- Private repository until 1.0.0.
 - Human maintainer owns approval and merging.
 - External OASIS material retains its notices and is not relicensed.
 - KMIPKit is independent and does not claim OASIS endorsement.
