@@ -460,7 +460,7 @@ class LiveContract(unittest.TestCase):
                     self.assertEqual(result["server_compatibility"], "supported")
                     self.assertEqual(result["library_correctness"], "passed")
             self.assertGreater(len(peer.operations), len(cases))
-            self.assertEqual(report["summary"]["total"], 207)
+            self.assertEqual(report["summary"]["total"], 218)
             evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")
             if evidence:
                 output = Path(evidence)

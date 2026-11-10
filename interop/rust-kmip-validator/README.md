@@ -1,7 +1,7 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from release commit `3017cfda4dbe1ccdf94c827e318e57688f858165`, targeting KMIP
+from release commit `9692057c9ade474fb0c4e0b7130539da368eb794`, targeting KMIP
 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
 From the repository root:
@@ -90,9 +90,10 @@ because the stock CLI joins stdin on a current-thread runtime. No release
 source is modified. Controlled fixtures establish consumer behavior and request
 reachability, not vendor or cryptographic certification.
 
-`KMIPKIT_EVIDENCE_DIR` saves a redacted 207-row report. The 2.1 scenario has 107
-passes, 92 observed unsupported rejections and 8 non-run rows: five incoming
-channels omitted in that scenario, two 2.0-only probes and the State rejection.
+`KMIPKIT_EVIDENCE_DIR` saves a redacted 218-row report. The controlled 2.1
+scenario has 107 passes, 99 observed unsupported rejections and 12 non-run
+rows: five incoming channels omitted in that scenario, six 2.0-only probes and
+the State rejection.
 Separate tests execute all five incoming operations and both version probes.
 CI uploads only redacted results and package provenance.
 

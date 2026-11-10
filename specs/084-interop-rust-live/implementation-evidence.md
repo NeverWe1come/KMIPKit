@@ -61,7 +61,8 @@ or pinned library source is modified.
 
 ## Full API matrix and coverage gate
 
-Both 207-row inventories now execute through **both** high-level and typed APIs
+At this implementation stage, both 207-row inventories executed through
+**both** high-level and typed APIs
 and compare normalized outcomes per version. Twelve integration tests include
 Markdown identity/outcome/redaction checks. `tools/check_coverage.py` instruments
 an isolated target, runs Rust tests plus the real subprocess/controlled-peer
@@ -90,7 +91,7 @@ reports/artifacts or displayed by the matrix assertion. Incoming operations
 retain their separate two-version listener verification. These comparisons do
 not establish live vendor compatibility or cross-language parity.
 
-## Revalidation against the merged KMIP 2.0 session fix
+## Historical revalidation against the KMIP 2.0 session fix (superseded)
 
 After KMIPKIT-0089 merged into `release/1.0.0`, the independent Rust consumer
 was rebuilt from release commit
@@ -110,3 +111,28 @@ denied, one adapter unit test, three CLI tests, the 19-test controlled Python
 suite, artifact verification and `git diff --check` pass. The isolated
 coverage gate measures 90.37% (1812/2005 handwritten consumer lines), above
 the 90% requirement.
+
+## Revalidation against the merged 218-case contract
+
+After KMIPKIT-0088 merged into `release/1.0.0`, the Rust consumer was rebased on
+release commit `9692057c9ade474fb0c4e0b7130539da368eb794`. The installed package
+bundle SHA-256 is
+`077fcbd09d8220849e3377580000245e29c83c4be393564bfcb97e8cadb85fb7`; the
+installer and verifier confirmed the exact commit and bundle digest.
+
+All 218 catalog rows pass the controlled no-gap scenario through both
+high-level and typed-protocol APIs. For KMIP 2.0 each run reports 107 passed,
+86 observed unsupported, 25 not run and zero failures. For KMIP 2.1 each run
+reports 107 passed, 99 observed unsupported, 12 not run and zero failures. The
+KMIP 2.1 non-run cases are five incoming channels, six KMIP 2.0 boundary probes
+and the State mutation rejected locally under §4.57. Request and response tree
+parity and canonical KMIP result codes match between the two API routes in each
+version. All five incoming operations and both version boundaries also pass
+their dedicated controlled tests.
+
+Rust 1.94 formatting, Clippy with warnings denied, all four Rust unit/CLI tests,
+the 19-test mTLS controlled Python suite, test-server build, artifact
+provenance verification and the >=90% coverage gate pass. The latest isolated
+coverage result is 92.67% (1858/2005 handwritten consumer lines). These are
+offline library and controlled-fixture results; no deployed KMS or
+cross-language parity claim is made.

@@ -20,7 +20,7 @@ fn plan_is_machine_readable_and_does_not_skip_profile_omissions() {
     let plan: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("plan must be JSON");
     assert_eq!(plan["capability_policy"], "probe_all_applicable");
-    assert_eq!(plan["cases"].as_array().expect("catalog rows").len(), 207);
+    assert_eq!(plan["cases"].as_array().expect("catalog rows").len(), 218);
 }
 
 // KMIPKIT-0084-FR-001/004: incomplete TLS files must fail offline preflight.

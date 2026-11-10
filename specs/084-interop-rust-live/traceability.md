@@ -17,7 +17,7 @@ Each immutable catalog row supplies its exact OASIS document and section.
 | Family | Installed public implementation | Verification |
 |---|---|---|
 | 67 enum/bitmask cases | Generated named-value lookup and generic TTLV build/read | Local model test; no server-support claim |
-| Synchronous/object/attribute cases | adapters, fixtures, recipes, direct methods and typed batches | Exhaustive constructor validation and complete 207-row TLS scenario |
+| Synchronous/object/attribute cases | adapters, fixtures, recipes, direct methods and typed batches | Exhaustive constructor validation and complete 218-row TLS scenario |
 | Async and lifecycle | Public Poll/Cancel/Process/query methods | Pending setup and explicit follow-up/cleanup |
 | Split/join, batch, multipart, crypto | recipes::{join,batch,multipart,crypto} | Controlled full-catalog reachability and public shape validation |
 | Five incoming operations, §§6.2.1–6.2.5 | ClientListener and ServerRequestDispatcher | Five successful dedicated mTLS exchanges |
