@@ -54,6 +54,48 @@ class NormativeInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(len(targets_by_kind["message_field"]), 71)
         self.assertGreaterEqual(len(targets_by_kind["structure_member"]), 241)
 
+    def test_kmip_21_only_enum_assignments_are_not_run_against_kmip_20(self) -> None:
+        parent_names = {
+            element["element_id"]: element["name"]
+            for element in self.source["elements"] if element["kind"] == "enumeration"
+        }
+        actual = {
+            (parent_names[target["parent_element_ids"][0]], target["name"], target["wire_value"])
+            for target in self.targets
+            if target["kind"] == "enumeration_value" and target["protocol_versions"] == ["2.1"]
+        }
+        expected = {
+            ("Operation", "Get Constraints", "00000038"),
+            ("Operation", "Ping", "0000003B"),
+            ("Operation", "Process", "0000003A"),
+            ("Operation", "Query Asynchronous Requests", "00000039"),
+            ("Operation", "Set Constraints", "00000037"),
+            ("Operation", "Set Defaults", "00000036"),
+            ("Processing Stage", "Completed", "00000003"),
+            ("Processing Stage", "In Process", "00000002"),
+            ("Processing Stage", "Submitted", "00000001"),
+            ("Result Reason", "Constraint Violation", "0000004B"),
+            ("Result Reason", "Duplicate Process Request", "0000004C"),
+            ("Result Reason", "Unknown Object Group", "0000004A"),
+            ("Rotate Name Type", "Uninterpreted Text String", "00000001"),
+            ("Rotate Name Type", "URI", "00000002"),
+        }
+        self.assertEqual(expected, actual)
+
+    def test_every_target_has_one_case_per_applicable_version(self) -> None:
+        cases_by_target: dict[str, list[dict]] = {}
+        for case in self.catalog["test_cases"]:
+            target_id = case.get("requires", {}).get("normative_target_id")
+            if target_id:
+                cases_by_target.setdefault(target_id, []).append(case)
+        for target in self.targets:
+            with self.subTest(target=target["target_id"]):
+                matches = cases_by_target.get(target["target_id"], [])
+                self.assertEqual(1, len(matches))
+                self.assertEqual(target["protocol_versions"], matches[0]["execution"]["protocol_versions"])
+                self.assertEqual(target["protocol_versions"], matches[0]["requires"]["target_protocol_versions"])
+        self.assertEqual({target["target_id"] for target in self.targets}, set(cases_by_target))
+
     def test_set_endpoint_role_is_an_executable_client_operation(self) -> None:
         matches = [
             case for case in self.catalog["test_cases"]
@@ -61,7 +103,7 @@ class NormativeInventoryTests(unittest.TestCase):
             and case["category"] != "server_initiated_operations"
         ]
         self.assertEqual(1, len(matches))
-        self.assertEqual(["2.1"], matches[0]["execution"]["protocol_versions"])
+        self.assertEqual(["2.0", "2.1"], matches[0]["execution"]["protocol_versions"])
 
     def test_create_recipe_does_not_use_create_for_noncreatable_object_types(self) -> None:
         cases = {
