@@ -53130,7 +53130,7 @@
           "transport"
         ],
         "returnType": "Client",
-        "cffiSymbol": "kmipkit_client_create"
+        "cffiSymbol": "kmipkit_client_create_mtls_v1"
       }
     },
     {
@@ -710929,6 +710929,3859 @@
           "name": "kmipkit_symmetric_key_request_v1_t.struct_size"
         }
       }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.client.Client.create_symmetric_key",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.create_symmetric_key",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::create_symmetric_key"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_symmetric_key_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.create_symmetric_key"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.client.Client.get_by_id",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.get_by_id",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.getById"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.get_by_id"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.client.Client.destroy_by_id",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.destroy_by_id",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::destroy"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.destroyById"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.destroy_by_id"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.client.Client.request",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.request"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.request"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Operation",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.fluent.Operation",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Operation.__init__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Operation.__init__",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Operation.execute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Operation.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Operation.with_options",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Operation.with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Request",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.fluent.Request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Request.__init__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.__init__",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.<init>"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Request.create_symmetric_key",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.create_symmetric_key",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::create_symmetric_key"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.create_symmetric_key"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Request.get",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.get",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.get"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.Request.destroy",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.destroy",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::destroy"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.destroy"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.destroy"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.__init__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.__init__",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.__enter__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.__enter__",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.__enter__"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.__exit__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.__exit__",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.add_attribute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.add_vendor_attribute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.add_vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_vendor_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.aes_256",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.aes_256",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.aes256"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.aes_256"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.algorithm",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.algorithm",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.build",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.build"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.execute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.length",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.length",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.length"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.name",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.name",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_name"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.name"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.name"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.to_batch_item",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.usage_mask",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.usage_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.with_options",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python:kmipkit.fluent.SymmetricKeyBuilder.close",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::create_symmetric_key"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_symmetric_key_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.create_symmetric_key"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:56a05867e36ef869",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder::create_symmetric_key"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::create_symmetric_key"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_symmetric_key_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.create_symmetric_key"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:5f9e2f1be2a97898",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.createSymmetricKey",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse createSymmetricKey(org.kmipkit.client.SymmetricKeyRequest, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse createSymmetricKey(org.kmipkit.client.SymmetricKeyRequest, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ]
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.getById"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.get_by_id"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:d923af3bdbbddf43",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder::get"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.getById"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.get_by_id"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:3d7a6cf08bb7c834",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.getById",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse getById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse getById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ]
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::destroy"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.destroyById"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.destroy_by_id"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:4eb2f839455e6a66",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder::destroy"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::destroy"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.destroyById"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.destroy_by_id"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:a205bcf9e09561f3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.destroyById",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse destroyById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse destroyById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ]
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.request"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.request"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:7295c71098c9d826",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::Client::request"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.request"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.request"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:f5af73dddd2dd54f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.request"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:e0578d69e935f5d9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::GetBuilder"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:0d31fe1cd5948909",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.OperationBuilder"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.execute"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:522ada6eb7efcae3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::GetBuilder::execute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.execute"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:dd4292f709559825",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.OperationBuilder.execute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.with_options"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:5a6219aba19b7a57",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::GetBuilder::with_options"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.with_options"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:bf7bb3cc1a2b8cc8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.OperationBuilder.withOptions"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:00943bde02fc226b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RequestBuilder"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:318f64718f96f3e1",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.FluentRequest"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::create_symmetric_key"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.create_symmetric_key"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:124c12c3e77ef89f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.createSymmetricKey"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_get_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.get"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:1ae5aa98823cb3a4",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.get"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder::destroy"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_destroy_by_id_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.destroy"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.destroy"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:ceef869d9594a764",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.destroy"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:169a327ca95dc1f1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:363a940faffcb184",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createSymmetricKey"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.__init__"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:0d9e1323715e0f7f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "declarationId": "T091:fluent-java-map:a1f021b8dbe9ff62",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.close"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:88fffd03418c1cb4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_catalogued_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.cataloguedAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:856b6e280c9e370a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.cataloguedAttribute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:73e602c18d32bcaf",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_attribute_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:cc31b66480ef68c6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_vendor_attribute"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:b3da8c3fc040b402",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_add_vendor_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.add_vendor_attribute"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:1d7aeabfb00b4b7b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.aes256"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.aes_256"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:b4bf728f70df8f2c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.aes256"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.aes_256"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:d3fc43436cd3d7fd",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.aes256"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:a4951b0170c51169",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:4f652b4de6b5e04f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.build"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:7e968f79be9855f4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.build"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:4c1fbc445784a496",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.build"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.execute"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:e11a727ed801e39c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.execute"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:9e69de1a9973ec95",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.execute"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.length"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:e7e451b4acac3bc4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.length"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:1af3d2abf987528c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.length"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_name"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.name"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.name"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:09e7444e3c372f1b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_name"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.name"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.name"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:d1d33dfdb61ac59d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.name"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_build_batch_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.to_batch_item"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:f6dcd5567450e4fe",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.toBatchItem"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.usage_mask"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:b630d94f2102157b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_set_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.usage_mask"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:965be411fb76581a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.with_options"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:274edc62b98c98a0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_options"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_builder_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.with_options"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:6e1b581dd5be683b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator"
+        }
+      },
+      "declarationId": "T091:fluent-rust-map:4ed258ec77221cd7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_asynchronous_indicator"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator"
+        }
+      },
+      "declarationId": "T091:fluent-java-map:de2764fbaa12fb77",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.asynchronousIndicator"
+    },
+    {
+      "declarationId": "T091:fluent-python-export:1ca6ca559a4f4f23",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Operation.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.build"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python-export:133efa6f46921701",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Operation.to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-python-export:2fe24e685a9837bb",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Operation.asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:93433fea16581d02",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.client.KmipClient",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:61eb7a212a9faa90",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.create",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.create"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:d26a6272346b999c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:29416eff93697105",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.executeWithOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:94933e28b3ffe3d4",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.KmipClient.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.KmipClient.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.close"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:5779a51532611237",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:9942c0942b74dc50",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.<init>",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.<init>"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:e84508f9cc8f0d18",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.algorithm",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:b7acb4088d6fe7ce",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.length",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.length"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:6cdc227c0bd9cb99",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.usageMask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.cryptographic_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.usageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:f304cc599cec548b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.name",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t.name"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.name"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.name"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:f6190f5ac7f7b1ec",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.named",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.named"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:44daac95881a952e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.unnamed",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_symmetric_key_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.client.SymmetricKeyRequest.unnamed"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.SymmetricKeyBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:f398f1afe61b7657",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.<init>",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::request"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.<init>"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:ee983f4b4361e550",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.OperationBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:fc15fb62ee3a4c2f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.OperationBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.build"
+        }
+      }
+    },
+    {
+      "declarationId": "T091:fluent-java-export:ba2bfe7428b1935b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.OperationBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.to_batch_item"
+        }
+      }
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.build"
+        }
+      },
+      "declarationId": "T091:fluent-rust-target:e6dde22b653fa4d2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::GetBuilder::to_batch_item"
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.OperationBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Operation.asynchronous_indicator"
+        }
+      },
+      "declarationId": "T091:fluent-rust-target:9d32d60746b88672",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator"
     }
   ],
   "approvedExclusions": [
@@ -972435,6 +976288,272 @@
         "tools/api_manifest/tests/test_binding_exports.py"
       ],
       "candidateSpecId": "KMIPKIT-0053"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SYMMETRIC_KEY_BUILDER",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddAttributeItem",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddCataloguedAttribute",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddVendorAttribute",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderBuildBatchItem",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderCreate",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetAlgorithm",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetLength",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetName",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetUsageMask",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.equals",
+      "reason": "This exact method is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "KMIPKIT-0091 specifies the typed symmetric-key request fields and helper factories; Java record equality, hash calculation, and formatting are generated language behavior.",
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.hashCode",
+      "reason": "This exact method is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "KMIPKIT-0091 specifies the typed symmetric-key request fields and helper factories; Java record equality, hash calculation, and formatting are generated language behavior.",
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.client.SymmetricKeyRequest.toString",
+      "reason": "This exact method is compiler-provided record value boilerplate, not a separately specified KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "KMIPKIT-0091 specifies the typed symmetric-key request fields and helper factories; Java record equality, hash calculation, and formatting are generated language behavior.",
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.FluentBatchItemAdapter",
+      "reason": "Internal ownership-transfer adapter used by the fluent Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. This class transfers ownership of a native batch-item handle to the typed Java batch API; applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.FluentBatchItemAdapter.takeOwnership",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "candidateSpecId": "KMIPKIT-0091"
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.fluent",
+      "reason": "This module is the import namespace for its individually declared fluent API types and methods, not an independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "evidence": "KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, and KMIPKIT-0091-FR-016 are represented by explicit declarations for the module exports."
     }
   ],
   "apiLevels": [
@@ -989358,6 +993477,171 @@
           "kmipkit.extensions.client_batch_item_decapsulate",
           "kmipkit.extensions.client_batch_item_encapsulate",
           "kmipkit.extensions.client_batch_item_obliterate"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0091-FR-009",
+        "KMIPKIT-0091-FR-015",
+        "KMIPKIT-0091-FR-016"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0091",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::Client",
+          "kmipkit_client::Client::execute",
+          "kmipkit_client::Client::execute_with_options",
+          "kmipkit_client::Client::new",
+          "kmipkit_client::Client::request",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_asynchronous_indicator",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_options",
+          "kmipkit_client::fluent::GetBuilder",
+          "kmipkit_client::fluent::GetBuilder::execute",
+          "kmipkit_client::fluent::GetBuilder::to_batch_item",
+          "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator",
+          "kmipkit_client::fluent::GetBuilder::with_options",
+          "kmipkit_client::fluent::RequestBuilder",
+          "kmipkit_client::fluent::RequestBuilder::create_symmetric_key",
+          "kmipkit_client::fluent::RequestBuilder::destroy",
+          "kmipkit_client::fluent::RequestBuilder::get"
+        ],
+        "c": [
+          "kmipkit_client_batch_item_get",
+          "kmipkit_client_batch_set_asynchronous_indicator",
+          "kmipkit_client_create",
+          "kmipkit_client_create_symmetric_key_v1",
+          "kmipkit_client_destroy_by_id_v1",
+          "kmipkit_client_execute",
+          "kmipkit_client_execute_with_options_v1",
+          "kmipkit_client_get_by_id_v1",
+          "kmipkit_client_get_by_id_with_options_v1",
+          "kmipkit_client_release",
+          "kmipkit_client_t",
+          "kmipkit_symmetric_key_builder_add_attribute_item",
+          "kmipkit_symmetric_key_builder_add_catalogued_attribute",
+          "kmipkit_symmetric_key_builder_add_vendor_attribute",
+          "kmipkit_symmetric_key_builder_build_batch_item",
+          "kmipkit_symmetric_key_builder_create",
+          "kmipkit_symmetric_key_builder_execute_v1",
+          "kmipkit_symmetric_key_builder_execute_with_options_v1",
+          "kmipkit_symmetric_key_builder_release",
+          "kmipkit_symmetric_key_builder_set_algorithm",
+          "kmipkit_symmetric_key_builder_set_length",
+          "kmipkit_symmetric_key_builder_set_name",
+          "kmipkit_symmetric_key_builder_set_usage_mask",
+          "kmipkit_symmetric_key_builder_t",
+          "kmipkit_symmetric_key_request_v1_t",
+          "kmipkit_symmetric_key_request_v1_t.cryptographic_algorithm",
+          "kmipkit_symmetric_key_request_v1_t.cryptographic_length",
+          "kmipkit_symmetric_key_request_v1_t.cryptographic_usage_mask",
+          "kmipkit_symmetric_key_request_v1_t.name"
+        ],
+        "java": [
+          "org.kmipkit.client.KmipClient",
+          "org.kmipkit.client.KmipClient.close",
+          "org.kmipkit.client.KmipClient.create",
+          "org.kmipkit.client.KmipClient.createSymmetricKey",
+          "org.kmipkit.client.KmipClient.destroyById",
+          "org.kmipkit.client.KmipClient.execute",
+          "org.kmipkit.client.KmipClient.executeWithOptions",
+          "org.kmipkit.client.KmipClient.getById",
+          "org.kmipkit.client.KmipClient.request",
+          "org.kmipkit.client.SymmetricKeyRequest",
+          "org.kmipkit.client.SymmetricKeyRequest.<init>",
+          "org.kmipkit.client.SymmetricKeyRequest.algorithm",
+          "org.kmipkit.client.SymmetricKeyRequest.length",
+          "org.kmipkit.client.SymmetricKeyRequest.name",
+          "org.kmipkit.client.SymmetricKeyRequest.named",
+          "org.kmipkit.client.SymmetricKeyRequest.unnamed",
+          "org.kmipkit.client.SymmetricKeyRequest.usageMask",
+          "org.kmipkit.fluent.FluentRequest",
+          "org.kmipkit.fluent.FluentRequest.<init>",
+          "org.kmipkit.fluent.FluentRequest.createSymmetricKey",
+          "org.kmipkit.fluent.FluentRequest.destroy",
+          "org.kmipkit.fluent.FluentRequest.get",
+          "org.kmipkit.fluent.OperationBuilder",
+          "org.kmipkit.fluent.OperationBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.OperationBuilder.build",
+          "org.kmipkit.fluent.OperationBuilder.execute",
+          "org.kmipkit.fluent.OperationBuilder.toBatchItem",
+          "org.kmipkit.fluent.OperationBuilder.withOptions",
+          "org.kmipkit.fluent.SymmetricKeyBuilder",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.aes256",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.algorithm",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.build",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.cataloguedAttribute",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.close",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.execute",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.length",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.name",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.toBatchItem",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+        ],
+        "python": [
+          "kmipkit.client.Client",
+          "kmipkit.client.Client.close",
+          "kmipkit.client.Client.create",
+          "kmipkit.client.Client.create_symmetric_key",
+          "kmipkit.client.Client.destroy_by_id",
+          "kmipkit.client.Client.execute",
+          "kmipkit.client.Client.execute_with_options",
+          "kmipkit.client.Client.get_by_id",
+          "kmipkit.client.Client.request",
+          "kmipkit.fluent.Operation",
+          "kmipkit.fluent.Operation.__init__",
+          "kmipkit.fluent.Operation.asynchronous_indicator",
+          "kmipkit.fluent.Operation.build",
+          "kmipkit.fluent.Operation.execute",
+          "kmipkit.fluent.Operation.to_batch_item",
+          "kmipkit.fluent.Operation.with_options",
+          "kmipkit.fluent.Request",
+          "kmipkit.fluent.Request.__init__",
+          "kmipkit.fluent.Request.create_symmetric_key",
+          "kmipkit.fluent.Request.destroy",
+          "kmipkit.fluent.Request.get",
+          "kmipkit.fluent.SymmetricKeyBuilder",
+          "kmipkit.fluent.SymmetricKeyBuilder.__enter__",
+          "kmipkit.fluent.SymmetricKeyBuilder.__init__",
+          "kmipkit.fluent.SymmetricKeyBuilder.add_attribute",
+          "kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item",
+          "kmipkit.fluent.SymmetricKeyBuilder.add_vendor_attribute",
+          "kmipkit.fluent.SymmetricKeyBuilder.aes_256",
+          "kmipkit.fluent.SymmetricKeyBuilder.algorithm",
+          "kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator",
+          "kmipkit.fluent.SymmetricKeyBuilder.build",
+          "kmipkit.fluent.SymmetricKeyBuilder.close",
+          "kmipkit.fluent.SymmetricKeyBuilder.execute",
+          "kmipkit.fluent.SymmetricKeyBuilder.length",
+          "kmipkit.fluent.SymmetricKeyBuilder.name",
+          "kmipkit.fluent.SymmetricKeyBuilder.to_batch_item",
+          "kmipkit.fluent.SymmetricKeyBuilder.usage_mask",
+          "kmipkit.fluent.SymmetricKeyBuilder.with_options"
         ]
       }
     },

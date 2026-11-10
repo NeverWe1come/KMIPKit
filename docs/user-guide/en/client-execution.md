@@ -113,6 +113,10 @@ builders expose `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`,
 `name()`, and `execute()`, followed by `get(id)` and `destroy(id)`. Their direct
 client methods also expose `createSymmetricKey`, `getById`, and `destroyById`
 in Java, and `create_symmetric_key`, `get_by_id`, and `destroy_by_id` in Python.
+Get and Destroy builders can also produce typed batch items (`to_batch_item()`
+in Rust, `build()` / `toBatchItem()` in Java, and `build()` / `to_batch_item()`
+in Python). Their asynchronous indicator is a separate request-header setting;
+`with_options` remains limited to exchange-local transport options.
 
 C provides direct one-operation helpers
 `kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1`, and

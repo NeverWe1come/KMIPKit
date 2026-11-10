@@ -151,6 +151,8 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
 
 def _start_lifecycle_peer(
     expected_operations: tuple[int, ...],
+    *,
+    expected_asynchronous_indicator: int | None = None,
 ) -> tuple[int, list[tuple[int, bytes | None]], queue.Queue[BaseException], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
@@ -173,6 +175,8 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
+                    if expected_asynchronous_indicator is not None:
+                        assert _request_header_indicator(request) == expected_asynchronous_indicator
                     operation, request_identifier = _request_operation_and_identifier(request)
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
@@ -206,6 +210,65 @@ def test_client_request_namespace_and_named_identifier_validation() -> None:
     assert hasattr(client.Client, "destroy_by_id")
     with pytest.raises(errors.KmipKitError):
         fluent._identifier("bad")
+
+
+def test_operation_builds_typed_batch_item() -> None:
+    operation = fluent.Operation(
+        object(), "get", extensions.UniqueIdentifier.text_string("key-1")
+    )
+    with operation.build() as item:
+        assert item.operation == 10
+
+
+def test_destroy_operation_builds_typed_batch_item() -> None:
+    operation = fluent.Operation(
+        object(), "destroy", extensions.UniqueIdentifier.text_string("key-1")
+    )
+    with operation.to_batch_item() as item:
+        assert item.operation == 20
+
+
+def test_operation_sets_batch_level_asynchronous_indicator() -> None:
+    operation = fluent.Operation(
+        object(), "get", extensions.UniqueIdentifier.text_string("key-1")
+    )
+    assert operation.asynchronous_indicator(2) is operation
+    assert operation._asynchronous_indicator == 2
+    with pytest.raises(errors.KmipKitError):
+        operation.asynchronous_indicator(True)
+
+
+def test_operation_async_indicator_is_encoded_in_request_header() -> None:
+    port, _, peer_failures, peer = _start_lifecycle_peer(
+        (10,), expected_asynchronous_indicator=2
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result: client.BatchResult | None = None
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                result = (
+                    kmip_client.request()
+                    .get(extensions.UniqueIdentifier.text_string("key-1"))
+                    .asynchronous_indicator(2)
+                    .execute(limits)
+                )
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert result is not None and result.items[0].operation == 10
+        assert result.items[0].outcome is client.BatchOutcome.COMPLETED
+    finally:
+        if result is not None:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
 
 
 def test_builder_builds_existing_typed_batch_item() -> None:

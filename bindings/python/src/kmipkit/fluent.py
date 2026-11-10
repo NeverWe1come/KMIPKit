@@ -16,6 +16,7 @@ from .client import (
     _batch_result,
     _raise_client_status,
     _request_options_record,
+    _unsigned,
 )
 from .typed_attributes import StandardAttribute
 
@@ -111,6 +112,7 @@ class Operation:
         _identifier(unique_identifier)
         self._client, self._operation, self._identifier = client, operation, unique_identifier
         self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
 
     def with_options(self, options: RequestOptions) -> Operation:
         if not isinstance(options, RequestOptions):
@@ -118,12 +120,29 @@ class Operation:
         self._options = options
         return self
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+    def asynchronous_indicator(self, value: int) -> Operation:
+        """Set the Request Header Asynchronous Indicator for this exchange."""
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        """Build the existing typed Get or Destroy batch item without sending it."""
         if self._operation == "get":
-            fn = lib.kmipkit_client_get_by_id_with_options_v1 if self._options else lib.kmipkit_client_get_by_id_v1
-        else:
-            fn = lib.kmipkit_client_destroy_by_id_with_options_v1 if self._options else lib.kmipkit_client_destroy_by_id_v1
-        return _execute_direct(self._client, fn, self._identifier, limits, self._options)
+            return extensions.client_batch_item_get(self._identifier)
+        return extensions.client_batch_item_destroy(self._identifier)
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        """Alias for :meth:`build` for consistency with the Rust builder."""
+        return self.build()
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        with Batch.create() as batch:
+            batch.add_item(self.build())
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            if self._options is not None:
+                return self._client.execute_with_options(batch, limits, self._options)
+            return self._client.execute(batch, limits)
 
 
 class SymmetricKeyBuilder:

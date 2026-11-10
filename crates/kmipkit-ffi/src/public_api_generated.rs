@@ -16,6 +16,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "crypto_response_ttlv",
     "discover_versions_request_item",
     "ffi_runtime_metadata",
+    "fluent_dx_api",
     "generic_ttlv_model",
     "hashed_password_timestamp_sequence",
     "kmip30_draft_routes",
@@ -35820,5 +35821,125 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit-0049-kmipkit-protocol-fe5f1cb6fd6076d97d4f",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DeviceCredentialObject::with_machine_identifier",
+    ),
+    (
+        "T091:fluent-rust-map:56a05867e36ef869",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder::create_symmetric_key",
+    ),
+    (
+        "T091:fluent-rust-map:d923af3bdbbddf43",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder::get",
+    ),
+    (
+        "T091:fluent-rust-map:4eb2f839455e6a66",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder::destroy",
+    ),
+    (
+        "T091:fluent-rust-map:7295c71098c9d826",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::request",
+    ),
+    (
+        "T091:fluent-rust-map:e0578d69e935f5d9",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::GetBuilder",
+    ),
+    (
+        "T091:fluent-rust-map:522ada6eb7efcae3",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::GetBuilder::execute",
+    ),
+    (
+        "T091:fluent-rust-map:5a6219aba19b7a57",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::GetBuilder::with_options",
+    ),
+    (
+        "T091:fluent-rust-map:00943bde02fc226b",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder",
+    ),
+    (
+        "T091:fluent-rust-map:169a327ca95dc1f1",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder",
+    ),
+    (
+        "T091:fluent-rust-map:0d9e1323715e0f7f",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached",
+    ),
+    (
+        "T091:fluent-rust-map:88fffd03418c1cb4",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute",
+    ),
+    (
+        "T091:fluent-rust-map:73e602c18d32bcaf",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item",
+    ),
+    (
+        "T091:fluent-rust-map:b3da8c3fc040b402",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute",
+    ),
+    (
+        "T091:fluent-rust-map:b4bf728f70df8f2c",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256",
+    ),
+    (
+        "T091:fluent-rust-map:a4951b0170c51169",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm",
+    ),
+    (
+        "T091:fluent-rust-map:7e968f79be9855f4",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::to_batch_item",
+    ),
+    (
+        "T091:fluent-rust-map:e11a727ed801e39c",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute",
+    ),
+    (
+        "T091:fluent-rust-map:e7e451b4acac3bc4",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::length",
+    ),
+    (
+        "T091:fluent-rust-map:09e7444e3c372f1b",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::name",
+    ),
+    (
+        "T091:fluent-rust-map:b630d94f2102157b",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::usage_mask",
+    ),
+    (
+        "T091:fluent-rust-map:274edc62b98c98a0",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_options",
+    ),
+    (
+        "T091:fluent-rust-map:4ed258ec77221cd7",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::with_asynchronous_indicator",
+    ),
+    (
+        "T091:fluent-rust-target:e6dde22b653fa4d2",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::GetBuilder::to_batch_item",
+    ),
+    (
+        "T091:fluent-rust-target:9d32d60746b88672",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator",
     ),
 ];
