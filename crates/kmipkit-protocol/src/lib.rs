@@ -47,6 +47,9 @@ mod import;
 mod interop;
 mod join_split_key;
 mod kem;
+mod key_block;
+mod key_material;
+mod key_wrapping;
 mod lifecycle;
 pub mod link_normalizer;
 mod locate;
@@ -55,6 +58,7 @@ mod login;
 mod logout;
 mod mac;
 mod mac_verify;
+mod managed_object;
 mod message;
 mod modify_attribute;
 mod multipart;
@@ -95,6 +99,7 @@ mod set_defaults_tests;
 mod set_endpoint_role;
 mod sign;
 mod signature_verify;
+mod system_credential_objects;
 mod ticket;
 mod typed_attributes;
 mod validate;
@@ -166,6 +171,14 @@ pub use kem::{
     DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,
     EncapsulateRequest, EncapsulateResponse,
 };
+pub use key_block::{KeyBlock, KeyBlockValue, KeyValue};
+pub use key_material::{
+    KeyMaterial, TransparentDhPrivateKey, TransparentDhPublicKey, TransparentDsaPrivateKey,
+    TransparentDsaPublicKey, TransparentEcPrivateKey, TransparentEcPublicKey,
+    TransparentRsaPrivateKey, TransparentRsaPublicKey, TransparentSymmetricKey,
+    expected_key_material_item_type,
+};
+pub use key_wrapping::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
 pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
@@ -175,6 +188,10 @@ pub use login::{LoginError, LoginRequest, LoginResponse};
 pub use logout::{LogoutError, LogoutRequest, LogoutResponse};
 pub use mac::{MacError, MacRequest, MacResponse};
 pub use mac_verify::{MacVerifyError, MacVerifyRequest, MacVerifyResponse};
+pub use managed_object::{
+    Certificate, CertificateRequest, ManagedObject, ManagedObjectError, OpaqueObject, PgpKey,
+    PrivateKey, PublicKey, SecretData, SplitKey, SymmetricKey,
+};
 pub use message::{
     MessageExtensionView, MessageValidationError, MessageValidationErrorKind, ProtocolVersion,
     RequestBatchItemView, RequestHeaderView, RequestMessage, ResponseBatchItemView,
@@ -222,6 +239,12 @@ pub use set_endpoint_role::{
 };
 pub use sign::{SignError, SignRequest, SignResponse};
 pub use signature_verify::{SignatureVerifyError, SignatureVerifyRequest, SignatureVerifyResponse};
+pub use system_credential_objects::{
+    DeviceCredentialObject, DeviceCredentialObjectFields, HashedPasswordCredentialObject,
+    HashedPasswordCredentialObjectFields, OneTimePasswordCredentialObject,
+    OneTimePasswordCredentialObjectFields, PasswordCredentialObject,
+    PasswordCredentialObjectFields,
+};
 pub use ticket::{Ticket, TicketType, TicketValidationError, TicketValidationErrorKind};
 pub use validate::{ValidateError, ValidateRequest, ValidateResponse};
 pub use version_codec::{CodecContext, VersionedCodec};

@@ -131,15 +131,20 @@ class T102ProfileValidationErrorCodeMappingTests(unittest.TestCase):
         for language, (_, target) in LANGUAGE_TARGETS.items():
             self.assertIn(target, capability["mappings"][language])
 
-        for package, crate in PACKAGES.items():
+        for package, crate in (
+            *PACKAGES.items(),
+            ("rust-kmipkit", "kmipkit::protocol"),
+        ):
             code_accessor = next(
                 row
                 for row in declarations
                 if row["packageId"] == package
                 and row["exportName"] == f"{crate}::ProfileValidationError::code"
             )
-            for (row_package, _), row in rows.items():
-                if row_package == package:
+            for (row_package, row_export), row in rows.items():
+                if row_package == package and row_export.startswith(
+                    f"{crate}::ProfileValidationErrorCode"
+                ):
                     self.assertEqual(row["requirementIds"], code_accessor["requirementIds"])
                     self.assertEqual(row["approvalSource"], code_accessor["approvalSource"])
 

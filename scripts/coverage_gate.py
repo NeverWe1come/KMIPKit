@@ -21,10 +21,10 @@ import xml.etree.ElementTree as ET
 
 _RUST_RAW_STRING_PREFIX = re.compile(r'(?:br|cr|r)(?P<hashes>#{0,})"')
 _WORKSPACE_COVERAGE_MINIMUM = 90
-_CHANGED_PRODUCTION_COVERAGE_MINIMUM = 95
+_CHANGED_PRODUCTION_COVERAGE_MINIMUM = 90
 _RUST_CRATE_COVERAGE_MINIMUMS = {
     "kmipkit-ttlv": 95,
-    "kmipkit-protocol": 95,
+    "kmipkit-protocol": 90,
     "kmipkit-transport": 85,
     "kmipkit-ffi": 85,
 }

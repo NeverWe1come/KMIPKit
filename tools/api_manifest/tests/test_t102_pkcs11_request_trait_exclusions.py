@@ -286,9 +286,9 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         self.assertIn("vendor-defined functions", research)
 
     def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
-        # KMIPKIT-0047 adds 143 exact versioned value declarations to the
-        # checked-in API inventory; keep the aggregate snapshot current.
-        self.assertEqual(T102_PUBLIC_DECLARATIONS, 12_017)
+        # The checked-in API inventory includes the 0047 versioned values,
+        # 0048 typed attributes, and 0049 managed-object additions.
+        self.assertEqual(T102_PUBLIC_DECLARATIONS, 12_517)
         self.assertEqual(
             sum(
                 row.get("candidateSpecId") == "KMIPKIT-0043"

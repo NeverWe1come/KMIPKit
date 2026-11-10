@@ -153,9 +153,8 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
-# The non-target snapshot includes the updated 0047 inventory and 0048 slices.
-# Current approved declaration baseline after 0047/0048 stack synchronization.
-DECLARATIONS_SHA256 = "d578394c398d90255d38bbd976d87bd74bafa043e3dd7ba966b4cc741cf431b5"
+# The non-target snapshot includes subsequent approved T102 manifest slices.
+DECLARATIONS_SHA256 = "6fc9e53cd4c2ab76bdd3801387d14623ad32d3c5618f60693bf54fa949e089c5"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
@@ -436,6 +435,23 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+        # Stack additions remain inside the exact non-target fingerprint and
+        # cannot acquire four-language parity through snapshot normalization.
+        for capability, count in (
+            ("typed_object_attributes", 286),
+            ("typed_managed_objects_and_key_material", 500),
+        ):
+            with self.subTest(stack_capability=capability):
+                typed_rows = [
+                    row for row in other_declarations
+                    if row["capabilityId"] == capability
+                ]
+                self.assertEqual(count, len(typed_rows))
+                self.assertTrue(all(
+                    row["declarationState"] == "blocked"
+                    and row["candidateSpecId"] == "KMIPKIT-0053"
+                    for row in typed_rows
+                ))
         other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
