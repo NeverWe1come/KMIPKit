@@ -6,6 +6,7 @@ from typing import Any
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
+from ._ffi import ffi as _base_ffi
 from ._handles import _wrap_owned_handle
 from .client import (
     Batch,
@@ -261,7 +262,13 @@ class SymmetricKeyBuilder:
             _raise_client_status(lib.kmipkit_symmetric_key_builder_build_batch_item(self._handle, output))
         if output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return _wrap_owned_handle(extensions.ClientBatchItem, output[0])
+        # The fluent facade uses the client CFFI declarations while the shared
+        # handle wrapper is owned by the base ABI declarations. Bridge the
+        # opaque pointer by address, as Client.Batch.item_at does.
+        handle = _base_ffi.cast(
+            "kmipkit_client_batch_item_t *", int(ffi.cast("uintptr_t", output[0]))
+        )
+        return _wrap_owned_handle(extensions.ClientBatchItem, handle)
 
     to_batch_item = build
 
