@@ -5,11 +5,11 @@ references in `interop/shared/catalog/kmipkit-1.0-test-catalog.json`.
 
 | Requirement | Implementation | Verification |
 |---|---|---|
-| FR-001 | `Main.java`, `ConnectionConfig.java`, `Preflight.java` | `JavaContractTest.planAndPreflightAreOffline`; `ConnectionConfigTest.rejectsInvalidContracts` |
-| FR-002 | `tools/install_artifact.py`, `ArtifactProvenance.java` | `ArtifactProvenanceTest.rejectsCommitAndDigestMismatch`; installed-consumer CI |
-| FR-003 | `CatalogLoader.java`, `JavaKmipDriver.java`, `Models.java` | `CatalogCoverageTest.everyApplicableCaseHasAnOutcomeOrReason` |
-| FR-004 | `JavaKmipDriver.java`, `CaseRecipes.java` | `ControlledTlsPeerTest.typedOperationsUseTheInstalledPackage` |
-| FR-005 | `TtlvModelChecks.java`, `EquivalenceVerifier.java` | `TtlvModelTest.preservesRawValuesAndOrder`; `EquivalenceVerifierTest.normalizesEquivalentResponses` |
-| FR-006 | `ConnectionConfig.java`, `JavaKmipDriver.java` | `SafetyGuardTest.requiresDedicatedEnvironmentAndMutationOptIn`; `ControlledTlsPeerTest.doesNotLeakCredentials` |
-| FR-007 | `MatrixReporter.java`, `Models.java` | `ReportSchemaTest.jsonMatchesSharedSchemaAndIsSanitized` |
-| FR-008 | `.github/workflows/interop-java.yml`, `tests/controlled_kms_test.py` | Workflow builds the installed artifact and runs the TLS peer fixture against the external Java consumer. |
+| FR-001 | `Main.java`, `ConnectionConfig.java`, `CatalogLoader.java` | `MainContractTest.offlinePlanPreflightAndRunClassifyLocalCasesWithoutServerClaims`; `CatalogLoaderTest` |
+| FR-002 | `tools/install_artifact.py`, `ArtifactProvenance.java` | `ArtifactProvenanceTest.verifiesPinnedCommitAndJarDigest`; `ArtifactProvenanceTest.executesPublicApiFromTheInstalledJar` |
+| FR-003 | `CatalogLoader.java`, `JavaRouteInventory.java`, `Main.java`, `JavaKmipDriver.java` | `CatalogLoaderTest.preservesVersionedCatalogAndCompleteNormativeCaseData`; `JavaRouteInventoryTest.classifiesEveryCatalogOperationAndExplainsPendingRoutes`; every applicable case is represented in the `MainContractTest` report |
+| FR-004 | `JavaKmipDriver.java` | `ControlledTlsPeerTest.typedDiscoverVersionsUsesInstalledPackageAndVerifiedMutualTls`; additional catalog operations remain explicit coverage gaps |
+| FR-005 | `TtlvModelChecks.java` | `TtlvModelChecksTest.preservesUnknownEnumerationValuesAndBitmaskBits`; `TtlvModelChecksTest.preservesGenericStructureItemOrder` |
+| FR-006 | `ConnectionConfig.java`, `Main.java`, `JavaKmipDriver.java` | `ConnectionConfigTest.rejectsUnconfirmedEnvironmentAndMalformedFingerprint`; `ConnectionConfigTest.mutationsRequireConfigurationAndCommandLineOptIn` |
+| FR-007 | `RunReport.java`, `MatrixReporter.java` | `ReportWriterTest.emitsTheSharedSchemaAndDoesNotAcceptRemotePayloadText`; workflow validates JSON against `validation-results.schema.json` |
+| FR-008 | `.github/workflows/interop-java.yml`, `ControlledTlsPeerTest.java` | Workflow installs the exact pinned artifact and exercises mTLS with a local controlled peer. |
