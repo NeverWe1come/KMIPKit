@@ -31,9 +31,8 @@ const TICKET: u32 = 0x0042_0149;
 const TICKET_TYPE: u32 = 0x0042_014A;
 const TICKET_VALUE: u32 = 0x0042_014B;
 const RIGHTS: u32 = 0x0042_014D;
-const RIGHT_STRUCTURE: u32 = 0x0042_0150;
 const REQUEST_COUNT: u32 = 0x0042_014C;
-const RIGHT: u32 = 0x0042_014E;
+const RIGHT: u32 = 0x0042_0150;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 const SECRET_SENTINEL: &[u8] = b"delegated-login-ticket-secret";
 
@@ -167,13 +166,9 @@ fn delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket() {
 #[test]
 fn delegated_login_kmip_20_rights_tags_pass_version_gate() {
     // KMIP 2.0 §§7.28–7.29 assign Right (0x420150) within Rights.
-    let rights = test_structure([test_item(
-        RIGHT_STRUCTURE,
-        Value::structure(Structure::new()),
-    )]);
-    let request = ClientRequest::delegated_login(
-        DelegatedLoginRequest::new(rights).with_request_count(1),
-    );
+    let rights = test_structure([test_item(RIGHT, Value::structure(Structure::new()))]);
+    let request =
+        ClientRequest::delegated_login(DelegatedLoginRequest::new(rights).with_request_count(1));
     let response = asynchronous_response_bytes_with_version(
         ProtocolVersion::V2_0,
         DELEGATED_LOGIN,
@@ -193,14 +188,21 @@ fn delegated_login_kmip_20_rights_tags_pass_version_gate() {
         .expect("KMIP 2.0 Delegated Login and Ticket response pass version validation");
 
     assert_eq!(
-        result.items.first().expect("one response item").outcome().result().status().raw(),
+        result
+            .items
+            .first()
+            .expect("one response item")
+            .outcome()
+            .result()
+            .status()
+            .raw(),
         SUCCESS
     );
     let state = state.borrow();
     assert_eq!(state.calls, 1);
     let request = state.requests.first().expect("request reached transport");
     assert!(request_contains_tag(request, RIGHTS));
-    assert!(request_contains_tag(request, RIGHT_STRUCTURE));
+    assert!(request_contains_tag(request, RIGHT));
     assert!(request_contains_tag(request, REQUEST_COUNT));
 }
 

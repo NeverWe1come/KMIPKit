@@ -155,9 +155,7 @@ impl VersionGate {
         match tag {
             // KMIP 2.1 Constraints (§7.7) and Rotate* attributes
             // (§§4.48-4.54); KMIP 2.0 session tags are assigned in §11.54.
-            0x0042_0168..=0x0042_0172 => {
-                Some(VersionSpan::since(ProtocolVersion::V2_1))
-            }
+            0x0042_0168..=0x0042_0172 => Some(VersionSpan::since(ProtocolVersion::V2_1)),
             _ if KMIP_3_0_TAG_ASSIGNMENTS.binary_search(&tag).is_ok() => {
                 Some(VersionSpan::since(ProtocolVersion::V3_0))
             }

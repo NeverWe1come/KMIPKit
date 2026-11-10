@@ -234,7 +234,16 @@ fn login_kmip_20_session_tags_pass_version_gate() {
         )
         .expect("KMIP 2.0 Login request and Ticket response pass version validation");
 
-    assert_eq!(outcome.get(0).expect("one Login result").outcome().result().status().raw(), SUCCESS);
+    assert_eq!(
+        outcome
+            .get(0)
+            .expect("one Login result")
+            .outcome()
+            .result()
+            .status()
+            .raw(),
+        SUCCESS
+    );
     let request = captured.borrow();
     let request = request.as_deref().expect("Login request reached transport");
     assert!(request_contains_tag(request, REQUEST_COUNT));

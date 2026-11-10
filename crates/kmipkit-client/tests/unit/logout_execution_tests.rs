@@ -152,8 +152,20 @@ fn logout_kmip_20_ticket_tags_pass_version_gate() {
         )
         .expect("KMIP 2.0 Logout request and success response pass version validation");
 
-    assert_eq!(outcome.get(0).expect("one Logout result").outcome().result().status().raw(), SUCCESS);
-    assert!(captured.borrow().is_some(), "Logout request reached transport");
+    assert_eq!(
+        outcome
+            .get(0)
+            .expect("one Logout result")
+            .outcome()
+            .result()
+            .status()
+            .raw(),
+        SUCCESS
+    );
+    assert!(
+        captured.borrow().is_some(),
+        "Logout request reached transport"
+    );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
