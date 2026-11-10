@@ -1,7 +1,7 @@
 # Specification: Executable KMIP 2.0/2.1 Interoperability Contract
 
-**Feature Branch**: `feature/KMIPKIT-0083-interop-executable-contract`  
-**Status**: Approved for implementation by maintainer plan authorization  
+**Feature Branch**: `feature/KMIPKIT-0083-interop-executable-contract`
+**Status**: Approved for implementation by maintainer plan authorization
 **Owning identifier**: KMIPKIT-0083
 
 ## 1. Purpose
