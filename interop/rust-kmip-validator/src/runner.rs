@@ -122,7 +122,7 @@ fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> CaseResult 
     let expected_failure = case.requires["expected_status"] == "OperationFailed";
     let (outcome, server) = if status == 1 && reason == Some(5) {
         ("server_unsupported", "unsupported")
-    } else if status == 1 && matches!(reason, Some(3 | 12)) {
+    } else if status == 1 && reason == Some(12) {
         ("policy_restricted", "policy_restricted")
     } else if (status == 0 && !expected_failure)
         || (status == 1 && expected_failure && reason == Some(0x43))
