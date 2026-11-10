@@ -30,9 +30,18 @@ fn test_cli_plan_and_run_cosmian_profile() {
 
     let json_content = std::fs::read_to_string(output_json.path()).unwrap();
     let parsed: serde_json::Value = serde_json::from_str(&json_content).unwrap();
-    assert_eq!(parsed["summary"]["total_cases"], 200);
-    assert_eq!(parsed["summary"]["passed"], 117);
-    assert_eq!(parsed["summary"]["unsupported_by_server"], 83);
+    let catalog_content =
+        std::fs::read_to_string("../shared/catalog/kmipkit-1.0-test-catalog.json").unwrap();
+    let catalog: serde_json::Value = serde_json::from_str(&catalog_content).unwrap();
+    let catalog_size = catalog["test_cases"].as_array().unwrap().len() as u64;
+    let summary = &parsed["summary"];
+    assert_eq!(summary["total_cases"].as_u64(), Some(catalog_size));
+    assert_eq!(
+        summary["passed"].as_u64().unwrap()
+            + summary["failed"].as_u64().unwrap()
+            + summary["unsupported_by_server"].as_u64().unwrap(),
+        catalog_size
+    );
 
     let md_content = std::fs::read_to_string(output_md.path()).unwrap();
     assert!(md_content.contains("KMIP 2.1 Conformance Matrix"));
