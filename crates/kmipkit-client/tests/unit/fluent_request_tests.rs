@@ -8,7 +8,10 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
-use crate::fluent::{CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentBuildError};
+use crate::fluent::{
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition,
+    FluentBuildError,
+};
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -313,6 +316,100 @@ fn explicit_generic_attribute_and_vendor_attribute_are_retained() {
         value,
         ValueView::TextString(value) if value == "eu"
     )));
+}
+
+#[test]
+fn expert_attribute_positions_apply_to_the_final_ordered_attribute_sequence() {
+    let request = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .name("ordered-key")
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0042_005C, Value::text_string("first".to_owned())),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 2 },
+            item(0x0042_005C, Value::text_string("middle".to_owned())),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 6 },
+            item(0x0042_005C, Value::text_string("last".to_owned())),
+        )
+        .build_request()
+        .expect("explicit positions fit the final attribute sequence");
+
+    let attributes = request.attributes().as_items();
+    assert_eq!(attributes.len(), 7);
+    assert_eq!(attributes[0].tag().raw(), 0x0042_005C);
+    assert_eq!(attributes[1].tag().raw(), typed::CryptographicAlgorithm::TAG);
+    assert_eq!(attributes[2].tag().raw(), 0x0042_005C);
+    assert_eq!(attributes[3].tag().raw(), typed::CryptographicLength::TAG);
+    assert_eq!(attributes[4].tag().raw(), typed::CryptographicUsageMask::TAG);
+    assert_eq!(attributes[5].tag().raw(), typed::Name::TAG);
+    assert_eq!(attributes[6].tag().raw(), 0x0042_005C);
+    for (position, expected) in [(0, "first"), (2, "middle"), (6, "last")] {
+        assert!(attributes[position].with_value(|value| matches!(
+            value,
+            ValueView::TextString(actual) if actual == expected
+        )));
+    }
+}
+
+#[test]
+fn expert_attribute_positions_reject_duplicate_and_out_of_range_indices() {
+    let duplicate = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0042_005C, Value::text_string("one".to_owned())),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0042_005C, Value::text_string("two".to_owned())),
+        )
+        .build_request();
+    assert_eq!(duplicate.err(), Some(FluentBuildError::DuplicateAttributePosition));
+
+    let out_of_range = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 4 },
+            item(0x0042_005C, Value::text_string("too late".to_owned())),
+        )
+        .build_request();
+    assert_eq!(
+        out_of_range.err(),
+        Some(FluentBuildError::AttributePositionOutOfBounds)
+    );
+}
+
+#[test]
+fn expert_attribute_positions_keep_type_and_extension_validation() {
+    let wrong_type = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(typed::CryptographicAlgorithm::TAG, Value::integer(3)),
+        )
+        .build_request();
+    assert_eq!(wrong_type.err(), Some(FluentBuildError::InvalidAttributeValue));
+
+    let extension = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0054_0001, Value::integer(7)),
+        )
+        .build_request();
+    assert_eq!(
+        extension.err(),
+        Some(FluentBuildError::MessageExtensionTagNotObjectAttribute)
+    );
 }
 
 #[test]
