@@ -26,6 +26,10 @@ def integer(tag: int, value: int, item_type: int = 2) -> bytes:
     return tlv(tag, item_type, struct.pack(">i", value))
 
 
+def enumeration(tag: int, value: int) -> bytes:
+    return tlv(tag, 5, struct.pack(">I", value))
+
+
 def response(operation: int, protocol_minor: int) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
@@ -45,7 +49,14 @@ def response(operation: int, protocol_minor: int) -> bytes:
         payload_value = b"".join(integer(0x42005C, value, 5) for value in query_operations)
         payload_value += tlv(0x42015F, 1, b"")
     elif operation == 8:
-        payload_value = integer(0x4200D5, 0) if protocol_minor == 1 else b""
+        payload_value = (
+            integer(0x4200D5, 3)
+            + tlv(0x420094, 7, b"fixture-locate-1")
+            + enumeration(0x420094, 0xF1234567)
+            + integer(0x420094, -12345)
+            if protocol_minor == 1
+            else b""
+        )
     batch_item = tlv(
         0x42000F,
         1,
@@ -172,8 +183,11 @@ def main() -> int:
                                 raise AssertionError(
                                     f"unexpected operation {operation} reached controlled peer for {protocol_version}"
                                 )
-                            if operation == 8 and bytes.fromhex("4201250100000000") not in request:
-                                raise AssertionError("Locate request omitted its required Attributes structure")
+                            if operation == 8:
+                                if bytes.fromhex("4201250100000000") not in request:
+                                    raise AssertionError("Locate request omitted its required Attributes structure")
+                                if integer(0x42004F, 3) not in request:
+                                    raise AssertionError("Locate request omitted its bounded Maximum Items value")
                             if integer(0x42006A, 2) not in request or \
                                     integer(0x42006B, protocol_minor) not in request:
                                 raise AssertionError(
