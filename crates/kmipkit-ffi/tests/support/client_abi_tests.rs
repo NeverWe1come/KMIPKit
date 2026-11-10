@@ -3757,10 +3757,10 @@ fn find_ttlv_integer(bytes: &[u8], expected_tag: u32) -> Option<i32> {
                 bytes[value_start..value_end].try_into().ok()?,
             ));
         }
-        if item_type == 1 {
-            if let Some(found) = find_ttlv_integer(&bytes[value_start..value_end], expected_tag) {
-                return Some(found);
-            }
+        if item_type == 1
+            && let Some(found) = find_ttlv_integer(&bytes[value_start..value_end], expected_tag)
+        {
+            return Some(found);
         }
         offset = item_end;
     }
@@ -3785,6 +3785,8 @@ fn response_header(version_minor: i32) -> Vec<u8> {
 }
 
 #[test]
+// Keep FFI setup, mTLS exchange, wire assertion, and handle cleanup in one integration fixture.
+#[allow(clippy::too_many_lines)]
 fn ffi_client_preserves_configured_kmip_20_protocol_version_on_the_wire() {
     let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
     let listener = TcpListener::bind(("127.0.0.1", 0)).expect("loopback binds");
