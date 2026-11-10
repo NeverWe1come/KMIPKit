@@ -42,12 +42,12 @@ fn request_emits_optional_identifier_parameters_inputs_and_framing_in_order() {
         .with_unique_identifier(UniqueIdentifier::TextString("signing-key".to_owned()))
         .with_cryptographic_parameters(payload([
             (
-                CRYPTOGRAPHIC_ALGORITHM,
-                Value::enumeration(CryptographicAlgorithm::from_raw(0x38).raw()),
-            ),
-            (
                 DIGITAL_SIGNATURE_ALGORITHM,
                 Value::enumeration(DigitalSignatureAlgorithm::from_raw(0x13).raw()),
+            ),
+            (
+                CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(CryptographicAlgorithm::from_raw(0x38).raw()),
             ),
         ]))
         .with_data(OperationData::ByteString(SecretBytes::new(data.to_vec())))

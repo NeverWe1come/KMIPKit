@@ -154,7 +154,9 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
-DECLARATIONS_SHA256 = "6fc9e53cd4c2ab76bdd3801387d14623ad32d3c5618f60693bf54fa949e089c5"
+# Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
+# Snapshot includes final 0049 and exact 0050 constructor mappings.
+DECLARATIONS_SHA256 = "f892727a2deab5b18f1162a4ea61e99c166891da19cf1b0020bee5c5ac965195"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 

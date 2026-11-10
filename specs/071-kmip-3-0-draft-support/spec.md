@@ -89,9 +89,15 @@ The specification introduces:
   - `MlKem512`, `MlKem768`, `MlKem1024`
   - `MlDsa44`, `MlDsa65`, `MlDsa87`
   - `SlhDsa`
-- KEM operations:
-  - `Encapsulate` (`0x00000041`): takes public key identifier, returns ciphertext and shared secret.
-  - `Decapsulate` (`0x00000042`): takes private key identifier and ciphertext, returns shared secret.
+- KEM operations, using the assignments in §11.37 Table 584:
+  - `Encapsulate` (`0x00000041`): takes the key's `Unique Identifier`; its
+    response contains the newly created Secret Data object's `Unique
+    Identifier` and encapsulated output in `Data` (§6.1.22, Tables 317–318).
+  - `Decapsulate` (`0x00000042`): takes the key's `Unique Identifier` and the
+    peer's encapsulated value in `Data`; its response contains only the newly
+    created Secret Data object's `Unique Identifier` (§6.1.15, Tables 296–297).
+  - Neither response payload returns the shared secret. KMIPKit's typed
+    response models therefore do not expose it or include it in `Debug` output.
 
 ### 3.4 Deactivate Operation
 - `Deactivate` (`0x00000040`): explicitly transitions an active object to the deactivated lifecycle state without immediate destruction.

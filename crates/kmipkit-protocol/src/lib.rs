@@ -50,6 +50,7 @@ mod kem;
 mod key_block;
 mod key_material;
 mod key_wrapping;
+mod kmip30_operations;
 mod lifecycle;
 pub mod link_normalizer;
 mod locate;
@@ -139,6 +140,7 @@ pub use cryptographic_operation::{
     CryptographicOperationResponseContext, DigitalSignatureAlgorithm, HashingAlgorithm,
     ValidityIndicator, VerificationResponseContext,
 };
+pub use cryptographic_parameters::{CryptographicParameters, CryptographicParametersBuilder};
 pub use decrypt::{DecryptError, DecryptRequest, DecryptResponse};
 pub use delegated_login::{DelegatedLoginError, DelegatedLoginRequest, DelegatedLoginResponse};
 pub use delete_attribute::{DeleteAttributeError, DeleteAttributeRequest, DeleteAttributeResponse};
@@ -179,6 +181,11 @@ pub use key_material::{
     expected_key_material_item_type,
 };
 pub use key_wrapping::{EncryptionKeyInformation, KeyWrappingData, MacSignatureKeyInformation};
+pub use kmip30_operations::{
+    CreateCredentialObject, CreateCredentialRequest, CreateCredentialResponse, CreateGroupRequest,
+    CreateGroupResponse, CreateUserRequest, CreateUserResponse, Kmip30OperationError,
+    ObliterateRequest, ObliterateResponse,
+};
 pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
@@ -631,3 +638,6 @@ mod kmip30_operations_tests;
 #[cfg(test)]
 #[path = "../tests/unit/kem_tests.rs"]
 mod kem_tests;
+#[cfg(test)]
+#[path = "../tests/unit/kmip30_client_models_tests.rs"]
+mod kmip30_client_models_tests;

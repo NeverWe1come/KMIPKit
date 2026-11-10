@@ -90,8 +90,8 @@ RUST_ONLY_DECLARATIONS = {
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
 # The 0047 release-stack and 0048 snapshots remain immutable historical evidence.
-RUST_REPORT_PATH = Path("specs/049-managed-objects/reports/rust-export-report-post-sync-2026-11-07.json")
-REPORT_PATH = Path("specs/049-managed-objects/reports/shared-rust-inventory-post-sync-2026-11-07.json")
+RUST_REPORT_PATH = Path("specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json")
+REPORT_PATH = Path("specs/050-parameters-auth-client/reports/shared-rust-inventory-post-sync-2026-11-07.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )

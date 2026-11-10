@@ -83,6 +83,15 @@ impl DerivationParameters {
         self
     }
 
+    /// Supplies typed Cryptographic Parameters for the Derivation Parameters.
+    #[must_use]
+    pub fn with_typed_cryptographic_parameters(
+        self,
+        value: crate::CryptographicParameters,
+    ) -> Self {
+        self.with_cryptographic_parameters(value.into_ttlv())
+    }
+
     /// Supplies an explicit Initialization Vector.
     #[must_use]
     pub fn with_initialization_vector(mut self, value: SecretBytes) -> Self {

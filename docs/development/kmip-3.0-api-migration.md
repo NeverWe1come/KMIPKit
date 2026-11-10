@@ -53,6 +53,21 @@ Text String for these link attributes, so conversion to KMIP 3.0 also rejects
 that encoding. Enumeration and Integer identifiers round-trip unchanged. The
 original item remains unchanged when normalization fails.
 
+## KEM response models
+
+The pre-1.0 `EncapsulateResponse` incorrectly accepted a shared-secret value,
+exposed it through `shared_secret()`, and serialized it using the Key Material
+tag. KMIP 3.0 §6.1.22, Table 318 defines the response as `Unique Identifier`
+followed by `Data`; the resulting shared secret remains in the server-managed
+Secret Data object. Use `EncapsulateResponse::new(unique_identifier, data)`
+and `data()`.
+
+The pre-1.0 `DecapsulateResponse` likewise exposed and serialized a shared
+secret. KMIP 3.0 §6.1.15, Table 297 defines only the resulting object's
+`Unique Identifier`. Use `DecapsulateResponse::new(unique_identifier)`; the
+secret is accessed through the server-managed object under the protocol's
+authorization rules.
+
 These corrected values and models do not claim complete KMIP 3.0 protocol or
 profile support. See KMIPKIT-0069 through KMIPKIT-0071 for the scoped
 multi-version contract.

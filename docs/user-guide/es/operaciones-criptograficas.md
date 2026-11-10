@@ -7,6 +7,37 @@ cliente no reintenta, divide datos ni continúa una operación multiparte por su
 cuenta. Los campos siguen la especificación OASIS KMIP v2.1 §§6.1.24, 6.1.32,
 6.1.33, 6.1.55 y 6.1.56, Tablas 235–237, 259–264 y 334–339.
 
+## Parámetros criptográficos tipados
+
+`CryptographicParametersBuilder` ofrece setters tipados para los 18 miembros
+de KMIP v2.1 §4.16, Tabla 59. Emite los campos conocidos en el orden requerido
+por la tabla, independientemente del orden de las llamadas. Las enumeraciones
+se reciben como valores raw para conservar valores futuros y de fabricantes.
+El modelo también conserva los miembros TTLV desconocidos y permite
+consultarlos mediante `with_ttlv`. El constructor no elige un algoritmo ni una
+política de protección por el llamador.
+
+```rust,kmipkit-test
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+use kmipkit_protocol::{CryptographicParametersBuilder, EncryptRequest, ProtocolError};
+
+#[allow(dead_code)]
+fn crear_peticion_encrypt_tipada() -> Result<EncryptRequest, ProtocolError> {
+    let parameters = CryptographicParametersBuilder::new()
+        .with_random_iv(true)
+        .with_cryptographic_algorithm(cryptographic_algorithm::AES)
+        .build()?;
+    Ok(EncryptRequest::new(None, None).with_typed_cryptographic_parameters(parameters))
+}
+
+fn main() {}
+```
+
+`P Source` es entrada secreta: el builder toma posesión de sus bytes y KMIPKit
+limpia su copia al liberarla. El acceso por callback solo presta los bytes
+durante la vida del callback. Las copias que cree la aplicación quedan fuera
+de esa garantía. La salida `Debug` solo incluye metadatos.
+
 ## Construir y enviar peticiones
 
 Elige las claves y los parámetros criptográficos según la política de la

@@ -85,6 +85,18 @@ impl fmt::Debug for UniqueIdentifier {
     }
 }
 
+impl From<String> for UniqueIdentifier {
+    fn from(value: String) -> Self {
+        Self::TextString(value)
+    }
+}
+
+impl From<&str> for UniqueIdentifier {
+    fn from(value: &str) -> Self {
+        Self::TextString(value.to_owned())
+    }
+}
+
 /// A typed KMIP 2.1 Create request payload.
 ///
 /// Object Type remains a raw-value wrapper so future Object Type values are
