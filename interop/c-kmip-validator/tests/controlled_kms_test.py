@@ -40,8 +40,13 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
         + integer(0x42000D, len(operations)),
     )
     batch_items = []
-    for operation in operations:
+    for item_index, operation in enumerate(operations):
         payload_value = b""
+        result_status = 0
+        result_reason = None
+        if operations == (1, 20, 19, 20) and item_index >= 2:
+            result_status = 1
+            result_reason = 55
         if operation == 30:
             payload_value = tlv(
             0x420069, 1,
@@ -93,7 +98,7 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
-        elif operation == 19:
+        elif operation == 19 and result_status == 0:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         unique_batch_item_id = {
             1: b"interop-create",
@@ -105,10 +110,19 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
             18: b"interop-activate",
             19: b"interop-revoke",
         }.get(operation)
+        if operations == (1, 20, 19, 20):
+            unique_batch_item_id = (
+                b"interop-create", b"interop-destroy-target",
+                b"interop-revoke-cleanup", b"interop-destroy-cleanup"
+            )[item_index]
         item_fields = integer(0x42005C, operation, 5)
         if unique_batch_item_id is not None:
             item_fields += tlv(0x420093, 8, unique_batch_item_id)
-        item_fields += integer(0x42007F, 0, 5) + tlv(0x42007C, 1, payload_value)
+        item_fields += integer(0x42007F, result_status, 5)
+        if result_reason is not None:
+            item_fields += enumeration(0x42007E, result_reason)
+        if result_status == 0:
+            item_fields += tlv(0x42007C, 1, payload_value)
         batch_items.append(tlv(
             0x42000F,
             1,
@@ -189,10 +203,11 @@ def main() -> int:
     protocol_minor = int(protocol_version.split(".")[1])
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
+         1, 20, 19, 20,
          1, 18, 19, 20, 8, 24, 44)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
-              1, 18, 19, 20, 8, 24, 30, 44, 45, 59)
+              1, 20, 19, 20, 1, 18, 19, 20, 8, 24, 30, 44, 45, 59)
     )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
@@ -200,12 +215,12 @@ def main() -> int:
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
               "test-op-locate", "test-op-login", "test-op-get", "test-op-get-attributes",
               "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
-              "test-op-revoke")
+              "test-op-revoke", "test-op-destroy")
     )
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
-            "test-op-create", "test-op-activate", "test-op-revoke"
+            "test-op-create", "test-op-activate", "test-op-revoke", "test-op-destroy"
         )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
@@ -258,6 +273,7 @@ def main() -> int:
                             check_lifecycle = operations == (1, 9, 19, 20)
                             activate_lifecycle = operations == (1, 18, 19, 20)
                             revoke_lifecycle = operations == (1, 19, 20)
+                            destroy_lifecycle = operations == (1, 20, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -268,11 +284,15 @@ def main() -> int:
                                 lifecycle_target = {18: b"interop-activate"}
                             if revoke_lifecycle:
                                 lifecycle_target = {19: b"interop-revoke"}
+                            if destroy_lifecycle:
+                                lifecycle_target = {20: b"interop-destroy-target"}
                             if create_lifecycle:
                                 lifecycle_target = {1: b"interop-create"}
                             lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
                                              *((b"interop-revoke",) if (check_lifecycle or activate_lifecycle) else ()),
-                                             b"interop-destroy")
+                                             *((b"interop-revoke-cleanup", b"interop-destroy-cleanup")
+                                               if destroy_lifecycle else ()),
+                                             *((b"interop-destroy",) if not destroy_lifecycle else ()))
                             if lifecycle_target and any(
                                     tlv(0x420093, 8, item_id) not in request for item_id in lifecycle_ids):
                                 raise AssertionError("lifecycle batch omitted a unique batch item ID")
@@ -284,8 +304,10 @@ def main() -> int:
                                 raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
-                            if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20), (1, 10, 20)) and request.count(
-                                    enumeration(0x420094, 1)) < (3 if (check_lifecycle or activate_lifecycle) else 2):
+                            if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
+                                              (1, 20, 19, 20), (1, 10, 20)) and request.count(
+                                    enumeration(0x420094, 1)) < (
+                                        3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
@@ -417,11 +439,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 80,
+            "passed": 81,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 132,
+            "not_run": 131,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -430,11 +452,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 75,
+            "passed": 76,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 128,
+            "not_run": 127,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
