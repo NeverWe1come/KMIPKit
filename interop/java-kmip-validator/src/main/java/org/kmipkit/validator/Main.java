@@ -158,15 +158,6 @@ public final class Main {
                     ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
                     : JavaKmipDriver.CaseOutcome.failed("Local TTLV model assertion failed.", elapsedMillis(start));
         }
-        if ("mutating".equals(testCase.execution().mutation())) {
-            try {
-                connection.requireLiveExecution(true, enableMutations);
-            } catch (IllegalArgumentException rejected) {
-                return new JavaKmipDriver.CaseOutcome("policy_restricted", "not_checked", "unknown",
-                        "not_compared", elapsedMillis(start), null, null,
-                        "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
-            }
-        }
         if (!"typed-protocol".equals(connection.apiLevel())) {
             return JavaKmipDriver.CaseOutcome.notRun("The selected Java API level has no server request route.",
                     elapsedMillis(start));
@@ -179,6 +170,15 @@ public final class Main {
         if (!hasTypedRoute(testCase)) {
             return JavaKmipDriver.CaseOutcome.notRun(JavaRouteInventory.routeFor(testCase).reason(),
                     elapsedMillis(start));
+        }
+        if ("mutating".equals(testCase.execution().mutation())) {
+            try {
+                connection.requireLiveExecution(true, enableMutations);
+            } catch (IllegalArgumentException rejected) {
+                return new JavaKmipDriver.CaseOutcome("policy_restricted", "not_checked", "unknown",
+                        "not_compared", elapsedMillis(start), null, null,
+                        "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
+            }
         }
         if (driver == null) {
             return JavaKmipDriver.CaseOutcome.notRun("No Java typed client was initialized for this run.",

@@ -52,8 +52,8 @@ public final class JavaRouteInventory {
         executable(routes, "Discover Versions", "discoverVersions");
         executable(routes, "Ping", "ping");
         executable(routes, "Query", "query");
-        executable(routes, "Get Constraints", "getConstraints");
-        executable(routes, "Get Attribute List", "getAttributeList");
+        pendingRecipe(routes, "Get Constraints", "getConstraints");
+        pendingRecipe(routes, "Get Attribute List", "getAttributeList");
 
         typed(routes, "Activate", "activate");
         typed(routes, "Add Attribute", "addAttribute");
@@ -123,6 +123,13 @@ public final class JavaRouteInventory {
         routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
                 "The pinned Java package exposes ClientBatchItem." + method
                         + ", but this catalog case still needs an executable recipe and verifiable fixture."));
+    }
+
+    private static void pendingRecipe(Map<String, Route> routes, String operation, String method) {
+        requirePublicFactory(method);
+        routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
+                "ClientBatchItem." + method + " is available, but the catalog case requires an isolated "
+                        + "object fixture, response assertions, and cleanup that are not implemented yet."));
     }
 
     private static void payloadOnly(Map<String, Route> routes, String operation, String requestType) {

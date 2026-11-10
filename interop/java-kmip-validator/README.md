@@ -42,17 +42,20 @@ or remote text. JSON, Markdown, and HTML reports distinguish KMIPKit
 correctness, observed server support, policy rejection, parity, and coverage
 that has not run.
 
-The validator sends typed requests for `Discover Versions`, `Ping`, `Query`,
-`Get Constraints`, and `Get Attribute List`. The route inventory checks every
-catalog operation against the installed Java API. Other public typed request
-constructors are reported as pending until their case has a complete fixture,
-request recipe, response assertion, and cleanup. Asynchronous request types
-that only build payloads and operations with no public client request route
-carry separate API limitation reasons. The validator also constructs and
-decodes generic TTLV values locally. It does not send arbitrary generic TTLV
-requests, and the Java package has no distinct high-level API route. The KMIP
-2.0 live route remains disabled while protocol-version preservation is outside
-the pinned release artifact.
+The current live executor sends typed requests for `Discover Versions`,
+`Ping`, and `Query`. Although the installed Java API also provides
+`Get Constraints` and `Get Attribute List` request constructors, their catalog
+cases require an isolated object fixture, response assertions, and cleanup;
+they remain pending until that complete recipe is implemented. The route
+inventory checks every catalog operation against the installed Java API.
+Other public typed request constructors are reported as pending until their
+case has a complete fixture, request recipe, response assertion, and cleanup.
+Asynchronous request types that only build payloads and operations with no
+public client request route carry separate API limitation reasons. The
+validator also constructs and decodes generic TTLV values locally. It does not
+send arbitrary generic TTLV requests, and the Java package has no distinct
+high-level API route. The KMIP 2.0 live route remains disabled while
+protocol-version preservation is outside the pinned release artifact.
 
 CI builds the pinned JNI JAR and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
