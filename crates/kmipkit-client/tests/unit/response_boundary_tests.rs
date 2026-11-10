@@ -123,6 +123,49 @@ fn client_accepts_a_valid_transport_response_exactly_at_the_limit() {
 }
 
 #[test]
+fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
+    let mut fixture = ResponseItemFixture::success(None);
+    fixture.extension_criticality = Some(false);
+    let response = response_bytes((2, 1), &[fixture]);
+    let mut expected_ttlv = response.clone();
+    expected_ttlv[..3].copy_from_slice(&[0x42, 0x00, 0x7B]);
+    let expected_ttlv = expected_ttlv
+        .iter()
+        .map(|byte| format!("{byte:02X}"))
+        .collect::<String>();
+    let limits = CodecLimits::defaults();
+    let transport = ExactLimitTransport {
+        response,
+        exchange_count: Rc::new(Cell::new(0)),
+        last_response_cap: Rc::new(Cell::new(None)),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    let response = client
+        .execute(batch, &limits)
+        .expect("fixture response is a validated KMIP message");
+    let item = response.get(0).expect("fixture has one response item");
+
+    let ttlv = item
+        .ttlv_hex(&limits)
+        .expect("retained response can render as TTLV");
+    let json = item
+        .json(&limits)
+        .expect("retained response can render as KMIP JSON");
+    let xml = item
+        .xml(&limits)
+        .expect("retained response can render as KMIP XML");
+
+    assert_eq!(ttlv.as_str(), expected_ttlv);
+    assert!(json.contains("ResponseMessage"));
+    assert!(xml.contains("ResponseMessage"));
+    assert!(json.contains("FixtureVendor"));
+    assert!(xml.contains("FixtureVendor"));
+    assert!(json.find("ResponseHeader").expect("header") < json.find("BatchItem").expect("batch"));
+    assert!(xml.find("ResponseHeader").expect("header") < xml.find("BatchItem").expect("batch"));
+}
+
+#[test]
 fn empty_successful_transport_response_preserves_possibly_sent_state() {
     let limits = limits_with_response_cap(256);
     let exchange_count = Rc::new(Cell::new(0));
