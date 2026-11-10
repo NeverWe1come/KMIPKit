@@ -31,7 +31,7 @@ def enumeration(tag: int, value: int) -> bytes:
 
 
 def response(operations: tuple[int, ...], protocol_minor: int,
-             selected_cryptographic_algorithm: bool = False) -> bytes:
+             selected_attribute_tag: int = 0) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -87,9 +87,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 1:
             payload_value = enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
-            attributes = enumeration(0x420028, 3)
-            if not selected_cryptographic_algorithm:
-                attributes += integer(0x42002A, 128)
+            if selected_attribute_tag == 0x420028:
+                attributes = enumeration(0x420028, 3)
+            elif selected_attribute_tag == 0x42002A:
+                attributes = integer(0x42002A, 128)
+            else:
+                attributes = enumeration(0x420028, 3) + integer(0x42002A, 128)
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(0x420125, 1, attributes)
         elif operation == 12:
             payload_value = (
@@ -210,10 +213,11 @@ def main() -> int:
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
-         1, 18, 19, 20, 8, 24, 44, 1, 11, 20)
+         1, 18, 19, 20, 8, 24, 44, 1, 11, 20, 1, 11, 20)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
-              1, 20, 19, 20, 1, 18, 19, 20, 1, 56, 19, 20, 8, 24, 30, 44, 45, 59, 1, 11, 20)
+              1, 20, 19, 20, 1, 18, 19, 20, 1, 56, 19, 20, 8, 24, 30, 44, 45, 59, 1, 11, 20,
+              1, 11, 20)
     )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
@@ -222,13 +226,13 @@ def main() -> int:
               "test-op-locate", "test-op-login", "test-op-get", "test-op-get-attributes",
               "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
               "test-op-revoke", "test-op-destroy", "test-op-get-constraints",
-              "test-attr-cryptographic-algorithm")
+              "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length")
     )
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
             "test-op-create", "test-op-activate", "test-op-revoke", "test-op-destroy",
-            "test-attr-cryptographic-algorithm"
+            "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length"
         )
         expected_cases += ("test-v20-reject-get-constraints",)
     shared = repository / "interop/shared"
@@ -314,12 +318,16 @@ def main() -> int:
                                     enumeration(0x420028, 3) not in request
                                     or integer(0x42002A, 128) not in request):
                                 raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
-                            selected_attribute = enumeration(0x42013B, 0x420028) in request
-                            if operations == (1, 11, 20) and any(
-                                    prior == (1, 11, 20) for prior in handled_batches) and not selected_attribute:
-                                raise AssertionError(
-                                    "attribute-specific Get Attributes omitted the Cryptographic Algorithm reference"
-                                )
+                            selected_attribute_tag = next((tag for tag in (0x420028, 0x42002A)
+                                                           if enumeration(0x42013B, tag) in request), 0)
+                            prior_attribute_requests = sum(1 for prior in handled_batches
+                                                           if prior == (1, 11, 20))
+                            if operations == (1, 11, 20) and prior_attribute_requests > 0:
+                                expected_tag = 0x420028 if prior_attribute_requests == 1 else 0x42002A
+                                if selected_attribute_tag != expected_tag:
+                                    raise AssertionError(
+                                        "attribute-specific Get Attributes used the wrong Attribute Reference"
+                                    )
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
@@ -340,7 +348,7 @@ def main() -> int:
                             if tlv(0x420099, 7, b"interop-user") not in request or \
                                     tlv(0x4200A1, 7, b"interop-password") not in request:
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            stream.sendall(response(operations, protocol_minor, selected_attribute))
+                            stream.sendall(response(operations, protocol_minor, selected_attribute_tag))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
@@ -467,11 +475,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 83,
+            "passed": 84,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 129,
+            "not_run": 128,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -480,11 +488,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 78,
+            "passed": 79,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 125,
+            "not_run": 124,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
