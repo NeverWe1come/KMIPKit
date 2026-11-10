@@ -20,8 +20,11 @@ find_library(KMIPKIT_FFI_LIBRARY
     NAMES kmipkit_ffi
     PATHS "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib"
     NO_DEFAULT_PATH
-    REQUIRED
 )
+if(NOT KMIPKIT_FFI_LIBRARY)
+    message(FATAL_ERROR
+        "KMIPKit FFI library not found in ${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib")
+endif()
 file(SHA256 "${KMIPKIT_FFI_LIBRARY}" KMIPKIT_C_ARTIFACT_SHA256)
 file(SHA256 "${CMAKE_CURRENT_SOURCE_DIR}/../shared/catalog/kmipkit-1.0-test-catalog.json"
     KMIPKIT_C_CATALOG_SHA256)
