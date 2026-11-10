@@ -21,6 +21,15 @@ class RouteCapabilitiesTests(unittest.TestCase):
         spec.loader.exec_module(self.module)
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
+    def test_normative_inventory_requires_local_construct_and_decode_in_every_language(self):
+        for language in ('rust', 'c', 'java', 'python'):
+            routes = [r for r in self.data['routes'] if r['language'] == language
+                      and 'normative_inventory' in r['case_categories']]
+            self.assertEqual({'construct', 'decode'}, {a for r in routes for a in r['actions']})
+            self.assertTrue(all(r['mode'] == 'local' for r in routes))
+            self.assertTrue(all(r['combinations'] == [{'encoding': 'TTLV', 'transport': None}]
+                                for r in routes))
+
     def test_checked_in_manifest_validates_against_public_api(self):
         self.module.validate(self.data, ROOT)
         self.assertEqual({'rust', 'c', 'java', 'python'}, {r['language'] for r in self.data['routes']})
