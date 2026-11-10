@@ -17,6 +17,8 @@ La API pública C expone construcción tipada de operaciones y lectura,
 construcción y navegación TTLV genérica. No expone un cliente de alto nivel ni
 la emisión directa de un request TTLV genérico; esos dos límites se registran
 como indisponibilidad de ruta pública y no como incompatibilidad del servidor.
+El constructor público C de Discover Versions ofrece solo KMIP 2.1 y no permite
+crear una oferta KMIP 2.0; el caso específico se reporta como limitación de API.
 
 ## Requisitos y aceptación
 

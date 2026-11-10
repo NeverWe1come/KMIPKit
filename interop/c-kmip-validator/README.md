@@ -51,12 +51,11 @@ the shared schema and record the configured server identity, selected KMIP
 version, catalog digest, exact library commit and installed library digest.
 The capability profile is informational; it never suppresses a probe.
 
-The pinned release artifact currently supports KMIP 2.1 live requests. KMIP 2.0
-client execution remains blocked until the separate FFI protocol-version
-preservation fix is integrated into `release/1.0.0` and this consumer is rebuilt
-from that updated exact release commit. The public C API exposes typed request
-builders plus generic TTLV construction and navigation. It does not currently
-expose a high-level client API or a generic TTLV request dispatch path; the
-consumer records those route limits as library/API gaps. Live runs require a
-dedicated test KMS, valid mutual-TLS credentials and explicit opt-in for
-mutations.
+The pinned release artifact preserves the configured KMIP version and the
+controlled fixtures exercise requests under both KMIP 2.0 and 2.1. The public C
+Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
+a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
+API limitation. The public C API also does not expose a high-level client API or
+a generic TTLV request dispatch path; the consumer records those route limits
+as library/API gaps. Live runs require a dedicated test KMS, valid mutual-TLS
+credentials and explicit opt-in for mutations.

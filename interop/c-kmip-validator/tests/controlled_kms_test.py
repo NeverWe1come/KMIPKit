@@ -36,12 +36,14 @@ def response(operation: int, protocol_minor: int) -> bytes:
     )
     payload_value = b""
     if operation == 30:
-        payload_value = tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 1))
-    elif operation == 24:
-        payload_value = (
-            integer(0x42005C, 59, 5)
-            + tlv(0x42015F, 1, b"")
+        payload_value = tlv(
+            0x420069, 1,
+            integer(0x42006A, 2) + integer(0x42006B, protocol_minor),
         )
+    elif operation == 24:
+        query_operations = (24, 30, 44) if protocol_minor == 0 else (24, 30, 44, 59)
+        payload_value = b"".join(integer(0x42005C, value, 5) for value in query_operations)
+        payload_value += tlv(0x42015F, 1, b"")
     batch_item = tlv(
         0x42000F,
         1,
@@ -122,9 +124,9 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
-    expected_operations = (24, 30, 59) if protocol_version == "2.0" else (24, 30, 44, 59)
+    expected_operations = (24, 44) if protocol_version == "2.0" else (24, 30, 44, 59)
     expected_cases = (
-        ("test-op-discover-versions", "test-op-query", "test-op-log")
+        ("test-op-query", "test-op-log")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log")
     )
@@ -165,7 +167,9 @@ def main() -> int:
                                 raise AssertionError("request has no KMIP Operation field")
                             operation = int.from_bytes(request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big")
                             if operation not in expected_operations:
-                                raise AssertionError("unexpected operation reached controlled peer")
+                                raise AssertionError(
+                                    f"unexpected operation {operation} reached controlled peer for {protocol_version}"
+                                )
                             if integer(0x42006A, 2) not in request or \
                                     integer(0x42006B, protocol_minor) not in request:
                                 raise AssertionError(
@@ -253,8 +257,15 @@ def main() -> int:
         statuses = {case["case_id"]: case["status"] for case in result["cases"]}
         if any(statuses.get(case_id) != "passed" for case_id in expected_cases):
             details = {case["case_id"]: case.get("diagnostic", "") for case in result["cases"]
-                       if case["case_id"] in expected_cases}
+                       if case["case_id"] in expected_cases and case["status"] != "passed"}
             raise AssertionError(f"controlled operation response checks failed: {details!r}")
+        if protocol_version == "2.0":
+            discovery = next(case for case in result["cases"]
+                             if case["case_id"] == "test-op-discover-versions")
+            if discovery["status"] != "not_run" or "cannot construct a KMIP 2.0 offer" not in discovery.get("diagnostic", ""):
+                raise AssertionError(
+                    "KMIP 2.0 Discover Versions must report the documented C API offer limitation"
+                )
         if run.returncode != 0:
             raise AssertionError(
                 f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "
@@ -276,6 +287,19 @@ def main() -> int:
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
                 f"controlled run must execute only the mapped recipes and classify all other cases: "
+                f"{result['summary']!r}"
+            )
+        expected_kmip20_summary = {
+            "total": 203,
+            "passed": 67,
+            "failed": 0,
+            "unsupported": 0,
+            "policy_restricted": 120,
+            "not_run": 16,
+        }
+        if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
+            raise AssertionError(
+                f"controlled KMIP 2.0 run did not preserve complete case classification: "
                 f"{result['summary']!r}"
             )
         if not markdown_path.is_file() or not html_path.is_file():

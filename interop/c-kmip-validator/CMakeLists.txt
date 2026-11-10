@@ -38,7 +38,7 @@ set(VALIDATOR_SOURCES
 
 option(KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE
     "Whether the pinned KMIPKit C artifact includes the KMIP 2.0 client-version fix"
-    OFF)
+    ON)
 
 add_executable(kmip_validator_c
     src/main.c
@@ -69,6 +69,7 @@ target_compile_definitions(test_c_validator PRIVATE
     KMIPKIT_C_INSTALL_DIR="${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}"
     KMIPKIT_C_ARTIFACT_SHA256="${KMIPKIT_C_ARTIFACT_SHA256}"
     KMIPKIT_C_CATALOG_SHA256="${KMIPKIT_C_CATALOG_SHA256}"
+    KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE=$<BOOL:${KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE}>
 )
 set_target_properties(test_c_validator PROPERTIES BUILD_RPATH "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib")
 

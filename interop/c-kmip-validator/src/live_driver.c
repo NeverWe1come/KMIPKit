@@ -306,7 +306,7 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
         out_client->protocol_minor == 0 &&
         !out_client->configured_version_propagation_available) {
         set_error(error, error_capacity,
-                  "KMIP 2.0 execution awaits the separately reviewed FFI client-version fix", 0);
+                  "pinned KMIPKit C artifact does not preserve the configured KMIP 2.0 version", 0);
         return false;
     }
     int32_t limits_status = kmipkit_codec_limits_defaults(&out_client->limits);
@@ -454,6 +454,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->mode, "server_exchange") != 0) {
         return outcome_not_run("catalog mode is not supported by the C validator");
+    }
+    if (strcmp(test_case->operation, "Discover Versions") == 0 &&
+        client->protocol_minor == 0) {
+        return outcome_not_run(
+            "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
     }
 
     kmipkit_client_batch_item_t *item = NULL;
