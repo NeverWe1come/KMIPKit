@@ -21,10 +21,7 @@ fn capability_query_matches_manifest_ready_capabilities() {
         kmipkit::capability_is_available("ffi_runtime_metadata"),
         Ok(true)
     );
-    assert_eq!(
-        kmipkit::capability_is_available("fluent_dx_api"),
-        Ok(true)
-    );
+    assert_eq!(kmipkit::capability_is_available("fluent_dx_api"), Ok(true));
     assert_eq!(
         kmipkit::capability_is_available("generic_ttlv_model"),
         Ok(true)
