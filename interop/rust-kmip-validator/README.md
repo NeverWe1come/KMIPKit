@@ -95,3 +95,18 @@ passes, 92 observed unsupported rejections and 8 non-run rows: five incoming
 channels omitted in that scenario, two 2.0-only probes and the State rejection.
 Separate tests execute all five incoming operations and both version probes.
 CI uploads only redacted results and package provenance.
+
+The full controlled inventory and all five incoming operations are verified in
+both 2.0 and 2.1. Eleven Python integration tests cover the matrix and rejection
+classifications. In 2.0, Ping, Process, Query Asynchronous Requests and Set
+Defaults are non-applicable under the exact 2.0 §§6.1/11.36 inventories, despite
+the shared catalog's broader version lists. Login, Logout and Delegated Login
+are present in 2.0, but the pinned library incorrectly rejects their Ticket/
+Rights tags as newer-version values. Those three rows are explicitly non-run
+with library correctness failed and server compatibility unknown; this branch
+does not change the package or mislabel that result as server incompatibility.
+The 2.0 report has 106 passed, 86 unsupported and 15 non-run rows; 2.1 retains
+the 107/92/8 split. Authentication failure is failed/unknown, Feature Not
+Supported is unsupported, and a malformed server response is failed with
+library correctness not_checked. The pre-active Encrypt negative accepts only
+Invalid Field (7) or Cryptographic Failure (10), as specified by its catalog.

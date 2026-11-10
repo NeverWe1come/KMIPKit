@@ -43,3 +43,18 @@ KMIPKIT-0051-R282 / OASIS KMIP 2.1 §4.57 rejects direct mutation before sending
 The server-negative row stays not_run with library passed and server unknown.
 Outbound generic TTLV, raw-TLS text reception and authenticated async follow-up
 limitations remain explicitly distinguished from server incompatibility.
+
+## Independent review corrections
+
+Controlled tests now run the complete catalog in both 2.0 and 2.1 and incoming
+operations in both versions. Eleven Python tests additionally prove that
+Authentication Not Successful is failed/unknown; Feature Not Supported is
+unsupported; malformed server input does not automatically blame the library;
+and Encrypt-on-pre-active accepts only catalog reasons 7/10 and rejects 0x43.
+The 2.0 inventory has 106 passed, 86 unsupported and 15 non-run rows. Four extra
+non-applicabilities follow OASIS 2.0 §§6.1/11.36 (Ping, Process, Query Async,
+Set Defaults). Three additional local API failures are the pinned VersionGate's
+incorrect Ticket/Rights tag restriction for Login/Logout/Delegated Login, which
+are defined in OASIS 2.0 §§6.1.12, 6.1.29, 6.1.30, 7.29 and 7.33. These record
+library correctness failed and server compatibility unknown. No shared input
+or pinned library source is modified.

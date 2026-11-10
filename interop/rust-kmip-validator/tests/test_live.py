@@ -330,7 +330,7 @@ class LiveContract(unittest.TestCase):
                     payload = [ttlv(0x420006, 8, find(batch, 0x420006)), ttlv(0x420012, 5, 1)]
                 elif name in ("Encrypt", "Decrypt", "MAC", "Sign", "Hash"):
                     if name == "Encrypt" and uid not in active and find(tree, 0x42000d) == 1:
-                        status, reason, payload = 1, 0x43, None
+                        status, reason, payload = 1, 7, None
                     elif find(batch, 0x4200d6) is not None:
                         status, reason, payload = 1, 5, None
                     elif find(batch, 0x4200d7) == 1:
@@ -361,20 +361,30 @@ class LiveContract(unittest.TestCase):
             header = ttlv(0x42007a, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)]), ttlv(0x420092, 9, 1794268800), ttlv(0x42000d, 2, len(results))])
             return ttlv(0x42007b, 1, [header, *results])
         cases = CATALOG["test_cases"]
-        environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or version not in c["execution"]["protocol_versions"]}
+        environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or version not in c["execution"]["protocol_versions"] or version == "2.0" and c["operation"] in {"Ping", "Process", "Query Asynchronous Requests", "Set Defaults"}}
         with ControlledPeer(self.pki, answer) as peer:
             _, report = self.command(self.connection(peer.port, version=version, mutations=True), cases)
             gaps = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "not_run" and c["case_id"] not in environment_non_runs and "library_api_unavailable:" not in c["diagnostic"] and "library_preflight_rejection:" not in c["diagnostic"]]
             self.assertEqual(gaps, [])
             failures = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "failed"]
             self.assertEqual(failures, [])
+            by_id = {c["case_id"]: c for c in report["cases"]}
+            if version == "2.0":
+                for name in ("ping", "process", "query-asynchronous-requests", "set-defaults"):
+                    self.assertIn("not_applicable:", by_id["test-op-" + name]["diagnostic"])
+                for name in ("login", "logout", "delegated-login"):
+                    gap = by_id["test-op-" + name]
+                    self.assertEqual(gap["status"], "not_run")
+                    self.assertEqual(gap["server_compatibility"], "unknown")
+                    self.assertEqual(gap["library_correctness"], "failed")
+                    self.assertIn("library_api_unavailable:", gap["diagnostic"])
             self.assertGreater(len(peer.operations), len(cases))
             self.assertEqual(report["summary"]["total"], 207)
             evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")
             if evidence:
                 output = Path(evidence)
                 output.mkdir(parents=True, exist_ok=True)
-                (output / "rust-controlled.json").write_text(json.dumps(report, indent=2) + "\n")
+                (output / f"rust-controlled-{version}.json").write_text(json.dumps(report, indent=2) + "\n")
 
     def test_incoming_operations_use_public_listener_and_dispatcher(self):
         for version in ("2.0", "2.1"):
@@ -402,7 +412,7 @@ class LiveContract(unittest.TestCase):
                         with context.wrap_socket(raw, server_hostname="localhost") as channel:
                             channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, int(version[-1]))]), ttlv(0x42000d, 2, 1)]), ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
                             reply = parse(receive(channel))
-                            if find(reply, 0x42005c) != operation or find(reply, 0x42007f) != 0:
+                            if find(reply, 0x42005c) != operation or find(reply, 0x42007f) != 0 or find(reply, 0x42006b) != int(version[-1]):
                                 raise AssertionError(f"incoming response contract mismatch: expected operation={operation}, observed operation={find(reply, 0x42005c)}, status={find(reply, 0x42007f)}")
             except Exception as error:
                 errors.append(str(error))

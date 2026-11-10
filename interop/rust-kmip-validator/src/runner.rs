@@ -22,6 +22,17 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             format!("not_applicable: selected version; {}", reference(case)),
         ));
     }
+    if connection.protocol_version == "2.0"
+        && [
+            "Ping",
+            "Process",
+            "Query Asynchronous Requests",
+            "Set Defaults",
+        ]
+        .contains(&case.operation.as_str())
+    {
+        return Some(CaseResult::non_run(case, "not_run", "not_applicable: operation absent from OASIS KMIP 2.0 Specification §§6.1, 11.36 operation inventories".to_owned()));
+    }
     if (case.execution.mutation != "read_only"
         || ["Login", "Logout", "Delegated Login", "Log"].contains(&case.operation.as_str()))
         && !connection.execution_policy.allow_mutations
@@ -34,6 +45,14 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
     }
     if connection.api_level == "generic-ttlv" && case.execution.mode != "local_model" {
         return Some(CaseResult::non_run(case, "not_run", "library_api_unavailable: generic TTLV outbound KMIP 2.0/2.1 construction; KMIPKIT-0083-FR-007".to_owned()));
+    }
+    if connection.protocol_version == "2.0"
+        && ["Login", "Logout", "Delegated Login"].contains(&case.operation.as_str())
+        && kmipkit::VersionGate::validate_tag(kmipkit::ProtocolVersion::V2_0, 0x0042_014a).is_err()
+    {
+        let mut result = CaseResult::non_run(case, "not_run", "library_api_unavailable: pinned VersionGate rejects KMIP 2.0 Ticket/Request Count/Rights tags required by the bounded session recipe and Logout cleanup; OASIS KMIP 2.0 Specification §§6.1.12, 6.1.29, 6.1.30, 7.29, 7.33".to_owned());
+        result.library_correctness = "failed";
+        return Some(result);
     }
     None
 }
@@ -91,7 +110,7 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                 result.library_correctness = "passed";
                 result
             } else {
-                let mut result = CaseResult::non_run(
+                CaseResult::non_run(
                     case,
                     "failed",
                     format!(
@@ -99,14 +118,7 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                         error.category(),
                         error.delivery_state()
                     ),
-                );
-                result.library_correctness =
-                    if error.category() == kmipkit::ClientErrorCategory::Protocol {
-                        "failed"
-                    } else {
-                        "not_checked"
-                    };
-                result
+                )
             }
         }
     };
@@ -120,12 +132,17 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
 
 fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> CaseResult {
     let expected_failure = case.requires["expected_status"] == "OperationFailed";
-    let (outcome, server) = if status == 1 && reason == Some(5) {
+    let accepted_negative_reason = match case.case_id.as_str() {
+        "test-neg-encrypt-preactive-key" => matches!(reason, Some(7 | 10)),
+        "test-neg-destroy-active-without-revoke" => reason == Some(0x43),
+        _ => false,
+    };
+    let (outcome, server) = if status == 1 && matches!(reason, Some(5 | 8)) {
         ("server_unsupported", "unsupported")
     } else if status == 1 && reason == Some(12) {
         ("policy_restricted", "policy_restricted")
     } else if (status == 0 && !expected_failure)
-        || (status == 1 && expected_failure && reason == Some(0x43))
+        || (status == 1 && expected_failure && accepted_negative_reason)
     {
         ("passed", "supported")
     } else {
