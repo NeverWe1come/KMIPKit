@@ -60,6 +60,7 @@ public final class Main {
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
         long typed = "typed-protocol".equals(connection.apiLevel())
+                && !"2.0".equals(connection.protocolVersion())
                 ? countCases(applicable, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
         long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
@@ -76,6 +77,9 @@ public final class Main {
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
         out.println("Server-initiated workflows without a Java listener: " + workflowUnavailable);
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
+        if ("2.0".equals(connection.protocolVersion())) {
+            out.println("KMIP 2.0 live routes are blocked by the pinned artifact until protocol-version preservation is available.");
+        }
         out.println("Capability profiles are hypotheses and do not filter cases.");
         return 0;
     }
