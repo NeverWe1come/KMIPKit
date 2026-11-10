@@ -4,14 +4,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 1733,
+        "exactMatches": 1749,
         "kindMismatches": 0,
-        "manifest": 1733,
-        "matched": 1733,
+        "manifest": 1749,
+        "matched": 1749,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 1791,
-        "pathMatches": 1733
+        "observed": 1810,
+        "pathMatches": 1749
       },
       "issues": [],
       "kindMismatches": [],
@@ -23,14 +23,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 1906,
+        "exactMatches": 1928,
         "kindMismatches": 0,
-        "manifest": 1906,
-        "matched": 1906,
+        "manifest": 1928,
+        "matched": 1928,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 2527,
-        "pathMatches": 1906
+        "observed": 2551,
+        "pathMatches": 1928
       },
       "issues": [],
       "kindMismatches": [],
@@ -42,14 +42,14 @@
     {
       "complete": true,
       "counts": {
-        "exactMatches": 2025,
+        "exactMatches": 2047,
         "kindMismatches": 0,
-        "manifest": 2025,
-        "matched": 2025,
+        "manifest": 2047,
+        "matched": 2047,
         "missingFromManifest": 0,
         "notObserved": 0,
-        "observed": 2941,
-        "pathMatches": 2025
+        "observed": 2980,
+        "pathMatches": 2047
       },
       "issues": [],
       "kindMismatches": [],

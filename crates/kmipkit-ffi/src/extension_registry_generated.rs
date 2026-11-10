@@ -3,22 +3,46 @@
 
 pub const PUBLIC_API_MANIFEST_FORMAT_VERSION: u32 = 1;
 #[repr(C)]
-pub struct kmipkit_extension_identity_t { _private: [u8; 0] }
+pub struct kmipkit_client_batch_item_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_client_batch_item_response_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_client_configuration_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_client_extension_registry_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_client_request_message_extension_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_codec_limits_t { _private: [u8; 0] }
 
 #[repr(C)]
 pub struct kmipkit_extension_compatibility_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_ttlv_path_t { _private: [u8; 0] }
-
-#[repr(C)]
 pub struct kmipkit_extension_discriminator_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_extension_schema_t { _private: [u8; 0] }
+pub struct kmipkit_extension_child_rule_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_extension_definition_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_extension_identity_t { _private: [u8; 0] }
 
 #[repr(C)]
 pub struct kmipkit_extension_information_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_extension_order_constraint_t { _private: [u8; 0] }
+
+#[repr(C)]
+pub struct kmipkit_extension_recognition_t { _private: [u8; 0] }
 
 #[repr(C)]
 pub struct kmipkit_extension_registry_limits_t {
@@ -37,34 +61,19 @@ pub struct kmipkit_extension_registry_limits_t {
 }
 
 #[repr(C)]
-pub struct kmipkit_extension_definition_t { _private: [u8; 0] }
+pub struct kmipkit_extension_schema_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_client_extension_registry_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_client_configuration_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_validated_extension_value_t { _private: [u8; 0] }
+pub struct kmipkit_raw_tag_t { _private: [u8; 0] }
 
 #[repr(C)]
 pub struct kmipkit_registered_extension_value_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_client_request_message_extension_t { _private: [u8; 0] }
+pub struct kmipkit_tag_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_ttlv_structure_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_client_batch_item_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_extension_child_rule_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_extension_order_constraint_t { _private: [u8; 0] }
+pub struct kmipkit_ttlv_item_t { _private: [u8; 0] }
 
 pub type kmipkit_ttlv_item_type_t = u8;
 pub const KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE: kmipkit_ttlv_item_type_t = 1;
@@ -80,62 +89,53 @@ pub const KMIPKIT_TTLV_ITEM_TYPE_INTERVAL: kmipkit_ttlv_item_type_t = 10;
 pub const KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED: kmipkit_ttlv_item_type_t = 11;
 
 #[repr(C)]
-pub struct kmipkit_ttlv_value_t { _private: [u8; 0] }
+pub struct kmipkit_ttlv_item_view_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_extension_recognition_t { _private: [u8; 0] }
+pub struct kmipkit_ttlv_path_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_raw_tag_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_tag_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_ttlv_item_t { _private: [u8; 0] }
-
-#[repr(C)]
-pub struct kmipkit_codec_limits_t { _private: [u8; 0] }
+pub struct kmipkit_ttlv_structure_t { _private: [u8; 0] }
 
 #[repr(C)]
 pub struct kmipkit_ttlv_structure_view_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_ttlv_item_view_t { _private: [u8; 0] }
+pub struct kmipkit_ttlv_value_t { _private: [u8; 0] }
 
 #[repr(C)]
 pub struct kmipkit_ttlv_value_view_t { _private: [u8; 0] }
 
 #[repr(C)]
-pub struct kmipkit_client_batch_item_response_t { _private: [u8; 0] }
+pub struct kmipkit_validated_extension_value_t { _private: [u8; 0] }
 
 unsafe extern "C" {
-    pub fn kmipkit_extension_identity_release(handle: *mut kmipkit_extension_identity_t);
-    pub fn kmipkit_extension_compatibility_release(handle: *mut kmipkit_extension_compatibility_t);
-    pub fn kmipkit_ttlv_path_release(handle: *mut kmipkit_ttlv_path_t);
-    pub fn kmipkit_extension_discriminator_release(handle: *mut kmipkit_extension_discriminator_t);
-    pub fn kmipkit_extension_schema_release(handle: *mut kmipkit_extension_schema_t);
-    pub fn kmipkit_extension_information_release(handle: *mut kmipkit_extension_information_t);
-    pub fn kmipkit_extension_definition_release(handle: *mut kmipkit_extension_definition_t);
-    pub fn kmipkit_client_extension_registry_release(handle: *mut kmipkit_client_extension_registry_t);
-    pub fn kmipkit_client_configuration_release(handle: *mut kmipkit_client_configuration_t);
-    pub fn kmipkit_validated_extension_value_release(handle: *mut kmipkit_validated_extension_value_t);
-    pub fn kmipkit_registered_extension_value_release(handle: *mut kmipkit_registered_extension_value_t);
-    pub fn kmipkit_client_request_message_extension_release(handle: *mut kmipkit_client_request_message_extension_t);
-    pub fn kmipkit_ttlv_structure_release(handle: *mut kmipkit_ttlv_structure_t);
     pub fn kmipkit_client_batch_item_release(handle: *mut kmipkit_client_batch_item_t);
+    pub fn kmipkit_client_batch_item_response_release(handle: *mut kmipkit_client_batch_item_response_t);
+    pub fn kmipkit_client_configuration_release(handle: *mut kmipkit_client_configuration_t);
+    pub fn kmipkit_client_extension_registry_release(handle: *mut kmipkit_client_extension_registry_t);
+    pub fn kmipkit_client_request_message_extension_release(handle: *mut kmipkit_client_request_message_extension_t);
+    pub fn kmipkit_codec_limits_release(handle: *mut kmipkit_codec_limits_t);
+    pub fn kmipkit_extension_compatibility_release(handle: *mut kmipkit_extension_compatibility_t);
+    pub fn kmipkit_extension_discriminator_release(handle: *mut kmipkit_extension_discriminator_t);
     pub fn kmipkit_extension_child_rule_release(handle: *mut kmipkit_extension_child_rule_t);
+    pub fn kmipkit_extension_definition_release(handle: *mut kmipkit_extension_definition_t);
+    pub fn kmipkit_extension_identity_release(handle: *mut kmipkit_extension_identity_t);
+    pub fn kmipkit_extension_information_release(handle: *mut kmipkit_extension_information_t);
     pub fn kmipkit_extension_order_constraint_release(handle: *mut kmipkit_extension_order_constraint_t);
-    pub fn kmipkit_ttlv_value_release(handle: *mut kmipkit_ttlv_value_t);
     pub fn kmipkit_extension_recognition_release(handle: *mut kmipkit_extension_recognition_t);
+    pub fn kmipkit_extension_schema_release(handle: *mut kmipkit_extension_schema_t);
     pub fn kmipkit_raw_tag_release(handle: *mut kmipkit_raw_tag_t);
+    pub fn kmipkit_registered_extension_value_release(handle: *mut kmipkit_registered_extension_value_t);
     pub fn kmipkit_tag_release(handle: *mut kmipkit_tag_t);
     pub fn kmipkit_ttlv_item_release(handle: *mut kmipkit_ttlv_item_t);
-    pub fn kmipkit_codec_limits_release(handle: *mut kmipkit_codec_limits_t);
-    pub fn kmipkit_ttlv_structure_view_release(handle: *mut kmipkit_ttlv_structure_view_t);
     pub fn kmipkit_ttlv_item_view_release(handle: *mut kmipkit_ttlv_item_view_t);
+    pub fn kmipkit_ttlv_path_release(handle: *mut kmipkit_ttlv_path_t);
+    pub fn kmipkit_ttlv_structure_release(handle: *mut kmipkit_ttlv_structure_t);
+    pub fn kmipkit_ttlv_structure_view_release(handle: *mut kmipkit_ttlv_structure_view_t);
+    pub fn kmipkit_ttlv_value_release(handle: *mut kmipkit_ttlv_value_t);
     pub fn kmipkit_ttlv_value_view_release(handle: *mut kmipkit_ttlv_value_view_t);
-    pub fn kmipkit_client_batch_item_response_release(handle: *mut kmipkit_client_batch_item_response_t);
+    pub fn kmipkit_validated_extension_value_release(handle: *mut kmipkit_validated_extension_value_t);
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
     pub fn kmipkit_client_batch_item_discover_versions(out_item: *mut *mut kmipkit_client_batch_item_t) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011

@@ -23,7 +23,7 @@ the Rust and binding export snapshots remain applicable to this branch.
   evidence.
 - `binding-export-report-2026-11-07.json` inventories C, Java, and Python
   exports against the same combined manifest. The current exact declaration
-  counts are C 1,733, Java 1,906, and Python 2,025, with no mismatches.
+  counts are C 1,749, Java 1,928, and Python 2,047, with no mismatches.
 
 Reproduction from the repository root:
 

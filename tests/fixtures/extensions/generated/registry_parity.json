@@ -9033,236 +9033,88 @@
   "types": [
     {
       "c": {
-        "handleKind": "extension_identity",
+        "handleKind": "client_batch_item",
         "kind": "opaque-handle",
-        "name": "kmipkit_extension_identity_t",
+        "name": "kmipkit_client_batch_item_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_identity_release"
+        "releaseFunction": "kmipkit_client_batch_item_release"
       },
-      "id": "ExtensionIdentity",
+      "id": "ClientBatchItem",
       "java": {
-        "name": "ExtensionIdentity",
-        "package": "org.kmipkit.extensions"
+        "name": "ClientBatchItem",
+        "package": "org.kmipkit"
       },
       "kind": "struct",
       "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionIdentity"
+        "module": "kmipkit",
+        "name": "ClientBatchItem"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionIdentity",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "compatibility",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_compatibility_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_compatibility_release"
-      },
-      "id": "Compatibility",
-      "java": {
-        "name": "Compatibility",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "Compatibility"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-010"
       ],
       "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "Compatibility",
-        "owner": "protocol"
+        "module": "kmipkit_client",
+        "name": "ClientBatchItem",
+        "owner": "client"
       }
     },
     {
       "c": {
-        "handleKind": "ttlv_path",
+        "handleKind": "client_batch_item_response",
         "kind": "opaque-handle",
-        "name": "kmipkit_ttlv_path_t",
+        "name": "kmipkit_client_batch_item_response_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_ttlv_path_release"
+        "releaseFunction": "kmipkit_client_batch_item_response_release"
       },
-      "id": "TtlvPath",
+      "id": "ClientBatchItemOutcome",
       "java": {
-        "name": "TtlvPath",
+        "name": "ClientBatchItemResult",
         "package": "org.kmipkit.extensions"
       },
       "kind": "struct",
       "python": {
-        "module": "kmipkit.extensions",
-        "name": "TtlvPath"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "TtlvPath",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "discriminator",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_discriminator_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_discriminator_release"
-      },
-      "id": "Discriminator",
-      "java": {
-        "name": "Discriminator",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "Discriminator"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "Discriminator",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "extension_schema",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_schema_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_schema_release"
-      },
-      "id": "ExtensionSchema",
-      "java": {
-        "name": "ExtensionSchema",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionSchema"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionSchema",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "extension_information",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_information_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_information_release"
-      },
-      "id": "ExtensionInformation",
-      "java": {
-        "name": "ExtensionInformation",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionInformation"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionInformation",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "kind": "fixed-width-value",
-        "name": "kmipkit_extension_registry_limits_t"
-      },
-      "id": "ExtensionRegistryLimits",
-      "java": {
-        "name": "ExtensionRegistryLimits",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionRegistryLimits"
+        "module": "kmipkit.client",
+        "name": "BatchItemResult"
       },
       "requirementIds": [
         "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0012-FR-011"
       ],
       "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionRegistryLimits",
-        "owner": "protocol"
+        "module": "kmipkit_client",
+        "name": "ClientBatchItemResponse",
+        "owner": "client"
       }
     },
     {
       "c": {
-        "handleKind": "extension_definition",
+        "handleKind": "client_configuration",
         "kind": "opaque-handle",
-        "name": "kmipkit_extension_definition_t",
+        "name": "kmipkit_client_configuration_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_definition_release"
+        "releaseFunction": "kmipkit_client_configuration_release"
       },
-      "id": "ExtensionDefinition",
+      "id": "ClientConfiguration",
       "java": {
-        "name": "ExtensionDefinition",
+        "name": "ClientConfiguration",
         "package": "org.kmipkit.extensions"
       },
-      "kind": "struct",
+      "kind": "opaque-handle",
       "python": {
         "module": "kmipkit.extensions",
-        "name": "ExtensionDefinition"
+        "name": "ClientConfiguration"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-001",
         "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-004",
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionDefinition",
-        "owner": "protocol"
+        "module": "kmipkit_client::extension_registry",
+        "name": "ClientConfiguration",
+        "owner": "client"
       }
     },
     {
@@ -9301,62 +9153,382 @@
     },
     {
       "c": {
-        "handleKind": "client_configuration",
+        "handleKind": "client_request_message_extension",
         "kind": "opaque-handle",
-        "name": "kmipkit_client_configuration_t",
+        "name": "kmipkit_client_request_message_extension_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_client_configuration_release"
+        "releaseFunction": "kmipkit_client_request_message_extension_release"
       },
-      "id": "ClientConfiguration",
+      "id": "ClientRequestMessageExtension",
       "java": {
-        "name": "ClientConfiguration",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "opaque-handle",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ClientConfiguration"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_client::extension_registry",
-        "name": "ClientConfiguration",
-        "owner": "client"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "validated_extension_value",
-        "kind": "opaque-handle",
-        "name": "kmipkit_validated_extension_value_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_validated_extension_value_release"
-      },
-      "id": "ValidatedExtensionValue",
-      "java": {
-        "name": "ValidatedExtensionValue",
+        "name": "ClientRequestMessageExtension",
         "package": "org.kmipkit.extensions"
       },
       "kind": "sealed-value",
       "python": {
         "module": "kmipkit.extensions",
-        "name": "ValidatedExtensionValue"
+        "name": "ClientRequestMessageExtension"
       },
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-011"
       ],
       "rust": {
+        "module": "kmipkit_client::extension_registry",
+        "name": "ClientRequestMessageExtension",
+        "owner": "client"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "codec_limits",
+        "kind": "opaque-handle",
+        "name": "kmipkit_codec_limits_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_codec_limits_release"
+      },
+      "id": "CodecLimits",
+      "java": {
+        "name": "CodecLimits",
+        "package": "org.kmipkit.ttlv"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "CodecLimits"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv::codec",
+        "name": "CodecLimits",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "compatibility",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_compatibility_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_compatibility_release"
+      },
+      "id": "Compatibility",
+      "java": {
+        "name": "Compatibility",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "Compatibility"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
         "module": "kmipkit_protocol::extension",
-        "name": "ValidatedExtensionValue",
+        "name": "Compatibility",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "discriminator",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_discriminator_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_discriminator_release"
+      },
+      "id": "Discriminator",
+      "java": {
+        "name": "Discriminator",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "Discriminator"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-006",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "Discriminator",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_child_rule",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_child_rule_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_child_rule_release"
+      },
+      "id": "ExtensionChildRule",
+      "java": {
+        "name": "ExtensionChildRule",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionChildRule"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-004",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionChildRule",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_definition",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_definition_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_definition_release"
+      },
+      "id": "ExtensionDefinition",
+      "java": {
+        "name": "ExtensionDefinition",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionDefinition"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-003",
+        "KMIPKIT-0012-FR-004",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionDefinition",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_identity",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_identity_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_identity_release"
+      },
+      "id": "ExtensionIdentity",
+      "java": {
+        "name": "ExtensionIdentity",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionIdentity"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-002",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionIdentity",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_information",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_information_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_information_release"
+      },
+      "id": "ExtensionInformation",
+      "java": {
+        "name": "ExtensionInformation",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionInformation"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-009",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionInformation",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_order_constraint",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_order_constraint_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_order_constraint_release"
+      },
+      "id": "ExtensionOrderConstraint",
+      "java": {
+        "name": "ExtensionOrderConstraint",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionOrderConstraint"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-004",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionOrderConstraint",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_recognition",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_recognition_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_recognition_release"
+      },
+      "id": "ExtensionRecognition",
+      "java": {
+        "name": "ExtensionRecognition",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "sealed-value",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionRecognition"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-006",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_client::extension_registry",
+        "name": "ExtensionRecognition",
+        "owner": "client"
+      }
+    },
+    {
+      "c": {
+        "kind": "fixed-width-value",
+        "name": "kmipkit_extension_registry_limits_t"
+      },
+      "id": "ExtensionRegistryLimits",
+      "java": {
+        "name": "ExtensionRegistryLimits",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionRegistryLimits"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionRegistryLimits",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "extension_schema",
+        "kind": "opaque-handle",
+        "name": "kmipkit_extension_schema_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_extension_schema_release"
+      },
+      "id": "ExtensionSchema",
+      "java": {
+        "name": "ExtensionSchema",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "ExtensionSchema"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-004",
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
+      ],
+      "rust": {
+        "module": "kmipkit_protocol::extension",
+        "name": "ExtensionSchema",
+        "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "raw_tag",
+        "kind": "opaque-handle",
+        "name": "kmipkit_raw_tag_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_raw_tag_release"
+      },
+      "id": "RawTag",
+      "java": {
+        "name": "RawTag",
+        "package": "org.kmipkit.ttlv"
+      },
+      "kind": "sealed-value",
+      "python": {
+        "module": "kmipkit.ttlv",
+        "name": "RawTag"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ttlv",
+        "name": "RawTag",
         "owner": "protocol"
       }
     },
@@ -9392,148 +9564,59 @@
     },
     {
       "c": {
-        "handleKind": "client_request_message_extension",
+        "handleKind": "tag",
         "kind": "opaque-handle",
-        "name": "kmipkit_client_request_message_extension_t",
+        "name": "kmipkit_tag_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_client_request_message_extension_release"
+        "releaseFunction": "kmipkit_tag_release"
       },
-      "id": "ClientRequestMessageExtension",
+      "id": "Tag",
       "java": {
-        "name": "ClientRequestMessageExtension",
-        "package": "org.kmipkit.extensions"
+        "name": "Tag",
+        "package": "org.kmipkit.ttlv"
       },
       "kind": "sealed-value",
       "python": {
-        "module": "kmipkit.extensions",
-        "name": "ClientRequestMessageExtension"
+        "module": "kmipkit.ttlv",
+        "name": "Tag"
       },
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
       ],
       "rust": {
-        "module": "kmipkit_client::extension_registry",
-        "name": "ClientRequestMessageExtension",
-        "owner": "client"
+        "module": "kmipkit_ttlv",
+        "name": "Tag",
+        "owner": "protocol"
       }
     },
     {
       "c": {
-        "handleKind": "ttlv_structure",
+        "handleKind": "ttlv_item",
         "kind": "opaque-handle",
-        "name": "kmipkit_ttlv_structure_t",
+        "name": "kmipkit_ttlv_item_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_ttlv_structure_release"
+        "releaseFunction": "kmipkit_ttlv_item_release"
       },
-      "id": "TtlvStructure",
+      "id": "TtlvItem",
       "java": {
-        "name": "TtlvStructure",
+        "name": "TtlvItem",
         "package": "org.kmipkit.ttlv"
       },
       "kind": "struct",
       "python": {
         "module": "kmipkit.ttlv",
-        "name": "Structure"
+        "name": "TtlvItem"
       },
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_ttlv",
-        "name": "Structure",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "client_batch_item",
-        "kind": "opaque-handle",
-        "name": "kmipkit_client_batch_item_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_client_batch_item_release"
-      },
-      "id": "ClientBatchItem",
-      "java": {
-        "name": "ClientBatchItem",
-        "package": "org.kmipkit"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit",
-        "name": "ClientBatchItem"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-010"
       ],
       "rust": {
-        "module": "kmipkit_client",
-        "name": "ClientBatchItem",
-        "owner": "client"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "extension_child_rule",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_child_rule_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_child_rule_release"
-      },
-      "id": "ExtensionChildRule",
-      "java": {
-        "name": "ExtensionChildRule",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionChildRule"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionChildRule",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "extension_order_constraint",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_order_constraint_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_order_constraint_release"
-      },
-      "id": "ExtensionOrderConstraint",
-      "java": {
-        "name": "ExtensionOrderConstraint",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionOrderConstraint"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
-      ],
-      "rust": {
-        "module": "kmipkit_protocol::extension",
-        "name": "ExtensionOrderConstraint",
+        "module": "kmipkit_ttlv",
+        "name": "Item",
         "owner": "protocol"
       }
     },
@@ -9618,167 +9701,80 @@
     },
     {
       "c": {
-        "handleKind": "ttlv_value",
+        "handleKind": "ttlv_item_view",
         "kind": "opaque-handle",
-        "name": "kmipkit_ttlv_value_t",
+        "name": "kmipkit_ttlv_item_view_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_ttlv_value_release"
+        "releaseFunction": "kmipkit_ttlv_item_view_release"
       },
-      "id": "TtlvValue",
+      "id": "TtlvItemView",
       "java": {
-        "name": "TtlvValue",
+        "name": "TtlvItemView",
         "package": "org.kmipkit.ttlv"
       },
       "kind": "sealed-value",
       "python": {
         "module": "kmipkit.ttlv",
-        "name": "Value"
+        "name": "TtlvItemView"
+      },
+      "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-007",
+        "KMIPKIT-0012-FR-010"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::ttlv",
+        "name": "TtlvItemViewHandle",
+        "owner": "ffi"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "ttlv_path",
+        "kind": "opaque-handle",
+        "name": "kmipkit_ttlv_path_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_ttlv_path_release"
+      },
+      "id": "TtlvPath",
+      "java": {
+        "name": "TtlvPath",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.extensions",
+        "name": "TtlvPath"
       },
       "requirementIds": [
         "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
-      ],
-      "rust": {
-        "module": "kmipkit_ttlv",
-        "name": "Value",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "extension_recognition",
-        "kind": "opaque-handle",
-        "name": "kmipkit_extension_recognition_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_extension_recognition_release"
-      },
-      "id": "ExtensionRecognition",
-      "java": {
-        "name": "ExtensionRecognition",
-        "package": "org.kmipkit.extensions"
-      },
-      "kind": "sealed-value",
-      "python": {
-        "module": "kmipkit.extensions",
-        "name": "ExtensionRecognition"
-      },
-      "requirementIds": [
         "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_client::extension_registry",
-        "name": "ExtensionRecognition",
-        "owner": "client"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "raw_tag",
-        "kind": "opaque-handle",
-        "name": "kmipkit_raw_tag_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_raw_tag_release"
-      },
-      "id": "RawTag",
-      "java": {
-        "name": "RawTag",
-        "package": "org.kmipkit.ttlv"
-      },
-      "kind": "sealed-value",
-      "python": {
-        "module": "kmipkit.ttlv",
-        "name": "RawTag"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
-      ],
-      "rust": {
-        "module": "kmipkit_ttlv",
-        "name": "RawTag",
+        "module": "kmipkit_protocol::extension",
+        "name": "TtlvPath",
         "owner": "protocol"
       }
     },
     {
       "c": {
-        "handleKind": "tag",
+        "handleKind": "ttlv_structure",
         "kind": "opaque-handle",
-        "name": "kmipkit_tag_t",
+        "name": "kmipkit_ttlv_structure_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_tag_release"
+        "releaseFunction": "kmipkit_ttlv_structure_release"
       },
-      "id": "Tag",
+      "id": "TtlvStructure",
       "java": {
-        "name": "Tag",
-        "package": "org.kmipkit.ttlv"
-      },
-      "kind": "sealed-value",
-      "python": {
-        "module": "kmipkit.ttlv",
-        "name": "Tag"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
-      ],
-      "rust": {
-        "module": "kmipkit_ttlv",
-        "name": "Tag",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "ttlv_item",
-        "kind": "opaque-handle",
-        "name": "kmipkit_ttlv_item_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_ttlv_item_release"
-      },
-      "id": "TtlvItem",
-      "java": {
-        "name": "TtlvItem",
+        "name": "TtlvStructure",
         "package": "org.kmipkit.ttlv"
       },
       "kind": "struct",
       "python": {
         "module": "kmipkit.ttlv",
-        "name": "TtlvItem"
-      },
-      "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
-      ],
-      "rust": {
-        "module": "kmipkit_ttlv",
-        "name": "Item",
-        "owner": "protocol"
-      }
-    },
-    {
-      "c": {
-        "handleKind": "codec_limits",
-        "kind": "opaque-handle",
-        "name": "kmipkit_codec_limits_t",
-        "ownership": "library-owned",
-        "releaseFunction": "kmipkit_codec_limits_release"
-      },
-      "id": "CodecLimits",
-      "java": {
-        "name": "CodecLimits",
-        "package": "org.kmipkit.ttlv"
-      },
-      "kind": "struct",
-      "python": {
-        "module": "kmipkit.ttlv",
-        "name": "CodecLimits"
+        "name": "Structure"
       },
       "requirementIds": [
         "KMIPKIT-0012-FR-005",
@@ -9787,8 +9783,8 @@
         "KMIPKIT-0012-FR-012"
       ],
       "rust": {
-        "module": "kmipkit_ttlv::codec",
-        "name": "CodecLimits",
+        "module": "kmipkit_ttlv",
+        "name": "Structure",
         "owner": "protocol"
       }
     },
@@ -9823,31 +9819,32 @@
     },
     {
       "c": {
-        "handleKind": "ttlv_item_view",
+        "handleKind": "ttlv_value",
         "kind": "opaque-handle",
-        "name": "kmipkit_ttlv_item_view_t",
+        "name": "kmipkit_ttlv_value_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_ttlv_item_view_release"
+        "releaseFunction": "kmipkit_ttlv_value_release"
       },
-      "id": "TtlvItemView",
+      "id": "TtlvValue",
       "java": {
-        "name": "TtlvItemView",
+        "name": "TtlvValue",
         "package": "org.kmipkit.ttlv"
       },
       "kind": "sealed-value",
       "python": {
         "module": "kmipkit.ttlv",
-        "name": "TtlvItemView"
+        "name": "Value"
       },
       "requirementIds": [
+        "KMIPKIT-0012-FR-002",
         "KMIPKIT-0012-FR-005",
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010"
       ],
       "rust": {
-        "module": "kmipkit_ffi::ttlv",
-        "name": "TtlvItemViewHandle",
-        "owner": "ffi"
+        "module": "kmipkit_ttlv",
+        "name": "Value",
+        "owner": "protocol"
       }
     },
     {
@@ -9881,30 +9878,33 @@
     },
     {
       "c": {
-        "handleKind": "client_batch_item_response",
+        "handleKind": "validated_extension_value",
         "kind": "opaque-handle",
-        "name": "kmipkit_client_batch_item_response_t",
+        "name": "kmipkit_validated_extension_value_t",
         "ownership": "library-owned",
-        "releaseFunction": "kmipkit_client_batch_item_response_release"
+        "releaseFunction": "kmipkit_validated_extension_value_release"
       },
-      "id": "ClientBatchItemOutcome",
+      "id": "ValidatedExtensionValue",
       "java": {
-        "name": "ClientBatchItemResult",
+        "name": "ValidatedExtensionValue",
         "package": "org.kmipkit.extensions"
       },
-      "kind": "struct",
+      "kind": "sealed-value",
       "python": {
-        "module": "kmipkit.client",
-        "name": "BatchItemResult"
+        "module": "kmipkit.extensions",
+        "name": "ValidatedExtensionValue"
       },
       "requirementIds": [
+        "KMIPKIT-0012-FR-005",
+        "KMIPKIT-0012-FR-006",
+        "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-011"
       ],
       "rust": {
-        "module": "kmipkit_client",
-        "name": "ClientBatchItemResponse",
-        "owner": "client"
+        "module": "kmipkit_protocol::extension",
+        "name": "ValidatedExtensionValue",
+        "owner": "protocol"
       }
     }
   ]
