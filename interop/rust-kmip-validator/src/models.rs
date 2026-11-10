@@ -1,208 +1,136 @@
+//! Shared contract data. Sensitive connection data deliberately has no Debug implementation.
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde_json::Value;
+use sha2::{Digest, Sha256};
+use std::path::Path;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ServerConnection {
+pub(crate) const PIN: &str = "fdafef8a3eb0c7b4b18d6433b78fde4151493ceb";
+pub(crate) type Result<T> = std::result::Result<T, &'static str>;
+
+pub(crate) fn hash(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+
+pub(crate) fn load<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
+    let bytes = std::fs::read(path).map_err(|_| "input file unavailable")?;
+    serde_json::from_slice(&bytes).map_err(|_| "input does not match the contract")
+}
+
+#[derive(Deserialize)]
+pub(crate) struct Connection {
     pub server_id: String,
-    pub description: Option<String>,
+    pub protocol_version: String,
+    pub transport: String,
+    pub encoding: String,
+    pub api_level: String,
     pub endpoints: Endpoints,
-    pub tls: Option<TlsConfig>,
-    pub execution_policy: Option<ExecutionPolicy>,
+    pub tls: Option<Tls>,
+    pub authentication: Option<Authentication>,
+    pub environment: Environment,
+    pub execution_policy: Policy,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Endpoints {
-    pub raw_tls: Option<RawTlsEndpoint>,
-    pub https: Option<HttpsEndpoint>,
+#[derive(Deserialize)]
+pub(crate) struct Endpoints {
+    pub raw_tls: Option<RawTls>,
+    pub https: Option<Https>,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RawTlsEndpoint {
-    pub host: String,
-    pub port: u16,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HttpsEndpoint {
-    pub url: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TlsConfig {
-    pub ca_cert_path: Option<String>,
-    pub client_cert_path: Option<String>,
-    pub client_key_path: Option<String>,
+#[derive(Deserialize)]
+pub(crate) struct RawTls { pub host: String, pub port: u16 }
+#[derive(Deserialize)]
+pub(crate) struct Https { pub url: String }
+#[derive(Deserialize)]
+pub(crate) struct Tls {
+    pub ca_cert_path: String,
+    pub client_cert_path: String,
+    pub client_key_path: String,
     pub server_name_override: Option<String>,
+    pub connect_timeout_seconds: Option<u64>,
+    pub read_timeout_seconds: Option<u64>,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct ExecutionPolicy {
-    #[serde(default)]
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Authentication { pub username_password: Option<EnvCredentials> }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct EnvCredentials { pub username_env: String, pub password_env: String }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Environment { pub kind: String, pub dedicated_test_environment_confirmed: bool }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Policy {
     pub probe_unsupported: bool,
+    pub allow_mutations: bool,
     pub encodings: Option<Vec<String>>,
     pub api_levels: Option<Vec<String>>,
+    pub cleanup_on_failure: Option<bool>,
+}
+impl Connection {
+    pub fn validate(&self) -> Result<()> {
+        if self.server_id.is_empty() || !self.server_id.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-') {
+            return Err("invalid server identity");
+        }
+        if !["2.0", "2.1"].contains(&self.protocol_version.as_str())
+            || !["TTLV", "JSON", "XML"].contains(&self.encoding.as_str())
+            || !["raw_tls", "https"].contains(&self.transport.as_str())
+            || !["high-level", "typed-protocol", "generic-ttlv"].contains(&self.api_level.as_str()) {
+            return Err("unsupported execution selection");
+        }
+        if self.environment.kind != "dedicated_test" || !self.environment.dedicated_test_environment_confirmed {
+            return Err("dedicated test environment confirmation required");
+        }
+        // Profiles are hints: this flag never suppresses an applicable probe.
+        let _ = self.execution_policy.probe_unsupported;
+        let _ = self.execution_policy.cleanup_on_failure;
+        if self.execution_policy.encodings.as_ref().is_some_and(|values| !values.iter().all(|v| ["TTLV", "JSON", "XML"].contains(&v.as_str())))
+            || self.execution_policy.api_levels.as_ref().is_some_and(|values| !values.iter().all(|v| ["high-level", "typed-protocol", "generic-ttlv"].contains(&v.as_str()))) {
+            return Err("invalid policy execution matrix");
+        }
+        if let Some(credentials) = self.authentication.as_ref().and_then(|a| a.username_password.as_ref()) {
+            for name in [&credentials.username_env, &credentials.password_env] {
+                if name.is_empty() || !name.bytes().enumerate().all(|(i, b)| b == b'_' || b.is_ascii_uppercase() || i > 0 && b.is_ascii_digit()) {
+                    return Err("invalid credential environment reference");
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ServerCapabilities {
-    #[serde(default = "default_schema_version")]
-    pub schema_version: String,
-    pub server: ServerMetadata,
-    pub transports: Option<TransportsSupport>,
-    pub encodings: HashMap<String, EncodingSupport>,
-    #[serde(default)]
-    pub operations: HashMap<String, OperationSupport>,
-    #[serde(default)]
-    pub managed_objects: HashMap<String, ObjectSupport>,
-    #[serde(default)]
-    pub attributes: HashMap<String, AttributeSupport>,
-}
-
-fn default_schema_version() -> String {
-    "1.0".to_string()
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ServerMetadata {
-    pub id: String,
-    pub vendor: String,
-    pub product: String,
-    pub version: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TransportsSupport {
-    pub raw_tls: Option<SupportStatus>,
-    pub https: Option<SupportStatus>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SupportStatus {
-    pub supported: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EncodingSupport {
-    pub supported: bool,
-    #[serde(default)]
-    pub transports: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct OperationSupport {
-    pub supported: bool,
-    pub notes: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct ObjectSupport {
-    pub supported: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct AttributeSupport {
-    pub supported: bool,
-    pub read: Option<bool>,
-    pub create: Option<bool>,
-    pub modify: Option<bool>,
-    pub delete: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestCatalog {
-    pub version: String,
-    pub statistics: CatalogStatistics,
-    pub test_cases: Vec<TestCase>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CatalogStatistics {
-    pub operations_covered: usize,
-    pub managed_objects_covered: usize,
-    pub attributes_covered: usize,
-    pub total_cases: usize,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestCase {
-    pub case_id: String,
-    pub category: String,
-    pub operation: String,
-    pub oasis_section: Option<String>,
-    pub description: Option<String>,
-    pub requires: CaseRequirements,
-    pub isolation_recipe: IsolationRecipe,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct CaseRequirements {
-    pub operation: Option<String>,
-    pub object_type: Option<String>,
-    pub algorithm: Option<String>,
-    pub key_length: Option<usize>,
-    pub attribute: Option<String>,
-    pub attribute_op: Option<String>,
-    pub requires_async: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct IsolationRecipe {
-    pub unique_name_prefix: String,
-    #[serde(default)]
-    pub setup_steps: Vec<String>,
-    pub target_step: String,
-    #[serde(default)]
-    pub teardown_steps: Vec<String>,
-    #[serde(default)]
-    pub normalized_fields: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ValidationResults {
-    pub run_id: String,
-    pub timestamp: String,
-    pub language: String,
-    pub server_id: String,
-    pub summary: ResultsSummary,
-    pub results: Vec<CaseResult>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct ResultsSummary {
-    pub total_cases: usize,
-    pub passed: usize,
-    pub failed: usize,
-    pub unsupported_by_server: usize,
-    pub unexpected_success: usize,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CaseResult {
+#[derive(Deserialize)]
+pub(crate) struct Catalog { pub test_cases: Vec<Case> }
+#[derive(Deserialize)]
+pub(crate) struct Case {
     pub case_id: String,
     pub operation: String,
-    pub status: CaseStatus,
+    pub execution: Execution,
+    pub normative_refs: Vec<Reference>,
     #[serde(default)]
-    pub encodings_verified: Vec<String>,
-    #[serde(default)]
-    pub api_levels_verified: Vec<String>,
+    pub requires: Value,
+}
+#[derive(Deserialize)]
+pub(crate) struct Reference { pub document: String, pub section: String }
+#[derive(Deserialize)]
+pub(crate) struct Execution { pub mode: String, pub protocol_versions: Vec<String>, pub mutation: String }
+
+#[derive(Serialize)]
+pub(crate) struct CaseResult {
+    pub case_id: String,
+    pub status: &'static str,
+    pub library_correctness: &'static str,
+    pub server_compatibility: &'static str,
+    pub parity: &'static str,
     pub duration_ms: f64,
-    pub error_detail: Option<ErrorDetail>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum CaseStatus {
-    Passed,
-    Failed,
-    UnsupportedSkipped,
-    UnsupportedVerifiedRejected,
-    UnexpectedSuccess,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ErrorDetail {
-    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub result_status: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub result_reason: Option<String>,
-    pub encoding: Option<String>,
-    pub api_level: Option<String>,
+    pub diagnostic: String,
+}
+impl CaseResult {
+    pub fn non_run(case: &Case, status: &'static str, diagnostic: String) -> Self {
+        Self { case_id: case.case_id.clone(), status, library_correctness: "not_checked",
+            server_compatibility: if status == "policy_restricted" { "policy_restricted" } else { "unknown" },
+            parity: "not_compared", duration_ms: 0.0, result_status: None, result_reason: None, diagnostic }
+    }
 }

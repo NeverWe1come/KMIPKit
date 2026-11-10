@@ -1,191 +1,153 @@
-use crate::isolation::AttemptContext;
-use crate::models::TestCase;
-use serde::{Deserialize, Serialize};
+//! Installed public-library configuration and a single request exchange.
+use crate::models::{Connection, Result};
+use kmipkit::client_config::{ClientConfiguration, client_extension_registry};
+use kmipkit::protocol::{Authentication, Credential, SecretText, UsernameAndPasswordCredential};
+use kmipkit::transport_config::{CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TimeoutLimit, TimeoutPolicy, TransportConfig, TrustSource};
+use kmipkit::ttlv::{Item, RawTag, Structure, Value};
+use kmipkit::{Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientRequest, RequestOptions};
+use std::time::Duration;
 
-pub trait KmipDriver: Send + Sync {
-    fn execute_case(
-        &self,
-        test_case: &TestCase,
-        attempt: &AttemptContext,
-    ) -> Result<ExecutionOutcome, DriverError>;
+pub(crate) fn item(tag: u32, value: Value) -> Result<Item> {
+    Item::new(RawTag::new(tag).map_err(|_| "invalid tag")?.try_checked().map_err(|_| "unallocated tag")?, value).map_err(|_| "invalid TTLV item")
+}
+pub(crate) fn structure(_tag: u32, children: Vec<Item>) -> Result<Structure> {
+    let mut result = Structure::new();
+    for child in children { result.try_push(child).map_err(|_| "invalid TTLV structure")?; }
+    Ok(result)
+}
+pub(crate) fn client(connection: &Connection) -> Result<Client> {
+    connection.validate()?;
+    if env!("KMIPKIT_LIBRARY_COMMIT") != crate::models::PIN { return Err("library release provenance mismatch"); }
+    let tls = connection.tls.as_ref().ok_or("TLS identity required")?;
+    let endpoint = match connection.transport.as_str() {
+        "raw_tls" => { let value = connection.endpoints.raw_tls.as_ref().ok_or("raw TLS endpoint required")?; Endpoint::raw_tls(&value.host, value.port) }
+        "https" => { let value = connection.endpoints.https.as_ref().ok_or("HTTPS endpoint required")?; Endpoint::https(&value.url) }
+        _ => return Err("unsupported transport"),
+    };
+    let mut builder = TransportConfig::builder(endpoint)
+        .client_identity(ClientIdentity::new(CertificateInput::from_pem_file(&tls.client_cert_path).map_err(|_| "client certificate unavailable or invalid")?, PrivateKeyInput::from_pem_file(&tls.client_key_path).map_err(|_| "client key unavailable or invalid")?))
+        .trust_source(TrustSource::certificate_authorities(vec![CertificateInput::from_pem_file(&tls.ca_cert_path).map_err(|_| "CA certificate unavailable or invalid")?]))
+        .timeouts(TimeoutPolicy::default().with_connect(TimeoutLimit::Bounded(Duration::from_secs(tls.connect_timeout_seconds.unwrap_or(10))))
+            .with_read(TimeoutLimit::Bounded(Duration::from_secs(tls.read_timeout_seconds.unwrap_or(30)))));
+    if let Some(name) = &tls.server_name_override { builder = builder.tls_server_name(name); }
+    let transport = builder.build().map_err(|_| "invalid TLS or endpoint configuration")?;
+    let registry = client_extension_registry(Vec::new(), kmipkit::protocol::extension::defaults()).map_err(|_| "library registry failure")?;
+    let version = if connection.protocol_version == "2.0" { kmipkit::ProtocolVersion::V2_0 } else { kmipkit::ProtocolVersion::V2_1 };
+    let configuration = ClientConfiguration::new(registry).with_protocol_version(version);
+    Client::new(configuration, transport).map_err(|_| "client configuration rejected")
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExecutionOutcome {
-    pub success: bool,
-    pub raw_response_received: bool,
-    pub result_reason: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub struct DriverError {
-    pub message: String,
-    pub result_reason: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct NormalizedResponse {
-    pub status: String,
-    pub result_reason: Option<String>,
-    pub object_type: Option<String>,
-    pub sanitized_payload_hex: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub struct EquivalenceResult {
-    pub is_equivalent: bool,
-    pub discrepancies: Vec<String>,
-}
-
-pub struct EquivalenceVerifier;
-
-impl EquivalenceVerifier {
-    pub fn verify_equivalence(responses: &[(&str, &NormalizedResponse)]) -> EquivalenceResult {
-        let mut discrepancies = Vec::new();
-        if responses.is_empty() {
-            return EquivalenceResult {
-                is_equivalent: true,
-                discrepancies,
-            };
-        }
-        let (base_label, baseline) = responses[0];
-        for (label, resp) in &responses[1..] {
-            if resp.status != baseline.status {
-                discrepancies.push(format!(
-                    "[{label}] status '{}' does not match [{base_label}] '{}'",
-                    resp.status, baseline.status
-                ));
-            }
-            if resp.result_reason != baseline.result_reason {
-                discrepancies.push(format!(
-                    "[{label}] result_reason '{:?}' does not match [{base_label}] '{:?}'",
-                    resp.result_reason, baseline.result_reason
-                ));
-            }
-            if resp.object_type != baseline.object_type {
-                discrepancies.push(format!(
-                    "[{label}] object_type '{:?}' does not match [{base_label}] '{:?}'",
-                    resp.object_type, baseline.object_type
-                ));
-            }
-            if resp.sanitized_payload_hex != baseline.sanitized_payload_hex {
-                discrepancies.push(format!(
-                    "[{label}] sanitized payload differs from [{base_label}]"
-                ));
-            }
-        }
-        EquivalenceResult {
-            is_equivalent: discrepancies.is_empty(),
-            discrepancies,
-        }
+pub(crate) fn authenticated_batch(connection: &Connection, request: ClientRequest) -> Result<ClientBatch> {
+    let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+    if let Some(credentials) = connection.authentication.as_ref().and_then(|a| a.username_password.as_ref()) {
+        let user = SecretText::new(std::env::var(&credentials.username_env).map_err(|_| "credential environment unavailable")?);
+        let password = SecretText::new(std::env::var(&credentials.password_env).map_err(|_| "credential environment unavailable")?);
+        let value = structure(0x420025, vec![item(0x420099, user.into_ttlv_value())?, item(0x4200a1, password.into_ttlv_value())?])?;
+        let value = UsernameAndPasswordCredential::try_from_ttlv(value).map_err(|_| "invalid credential")?;
+        let credential = Credential::try_from_ttlv(structure(0x420023, vec![
+            item(0x420024, Value::enumeration(1))?, item(0x420025, Value::structure(value.into_ttlv()))?
+        ])?).map_err(|_| "invalid credential")?;
+        batch = batch.with_authentication(Authentication::new(vec![credential]).map_err(|_| "invalid authentication")?);
     }
+    Ok(batch)
 }
 
-pub struct RecipeRunner;
+pub(crate) struct Observed {
+    pub status: u32,
+    pub reason: Option<u32>,
+    pub payload_tags: Vec<u32>,
+    pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
+    pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
+    pub correlation: Option<kmipkit::protocol::SecretBytes>,
+    pub bytes: Option<kmipkit::protocol::SecretBytes>,
+    pub ticket: Option<kmipkit::protocol::Ticket>,
+}
 
-impl RecipeRunner {
-    pub fn execute_with_guaranteed_teardown<FSetup, FTarget, FTeardown, T>(
-        setup: FSetup,
-        target: FTarget,
-        teardown: FTeardown,
-    ) -> Result<T, String>
-    where
-        FSetup: FnOnce() -> Result<(), String>,
-        FTarget: FnOnce() -> Result<T, String>,
-        FTeardown: FnOnce() -> Result<(), String>,
-    {
-        setup()?;
-
-        struct TeardownGuard<F: FnOnce() -> Result<(), String>>(Option<F>);
-        impl<F: FnOnce() -> Result<(), String>> Drop for TeardownGuard<F> {
-            fn drop(&mut self) {
-                if let Some(td) = self.0.take() {
-                    let _ = td();
-                }
+pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
+    use kmipkit::ttlv::ValueView;
+    let view = response.outcome().response();
+    let result = view.result();
+    let mut identifier = None;
+    let mut identifiers = Vec::new();
+    let mut bytes = None;
+    let mut ticket = None;
+    let mut correlation = None;
+    let mut payload_tags = Vec::new();
+    if let Some(raw) = response.raw() {
+        for value in raw.children() {
+            payload_tags.push(value.tag().raw());
+            if [0x420094, 0x420066, 0x42006f].contains(&value.tag().raw()) {
+                identifier = value.with_value(|v| match v {
+                    ValueView::TextString(v) => Some(kmipkit::protocol::UniqueIdentifier::TextString(v.to_string())),
+                    _ => None,
+                });
+                if let Some(id) = &identifier { identifiers.push(id.clone()); }
+            }
+            if [0x4200c2, 0x4200c3, 0x42004f].contains(&value.tag().raw()) {
+                bytes = value.with_value(|v| match v { ValueView::ByteString(v) => Some(kmipkit::protocol::SecretBytes::new(v.to_vec())), _ => None });
+            }
+            if value.tag().raw() == 0x420149 {
+                ticket = value.as_structure().and_then(|v| v.try_clone().ok()).and_then(|v| kmipkit::protocol::Ticket::try_from_ttlv(v).ok());
+            }
+            if value.tag().raw() == 0x4200d6 {
+                correlation = value.with_value(|v| match v { ValueView::ByteString(v) => Some(kmipkit::protocol::SecretBytes::new(v.to_vec())), _ => None });
             }
         }
-
-        let guard = TeardownGuard(Some(teardown));
-        let target_res = target();
-        drop(guard);
-
-        target_res
     }
+    if let kmipkit::ClientBatchOutcome::Pending(pending) = response.outcome() {
+        correlation = Some(kmipkit::protocol::SecretBytes::new(pending.asynchronous_correlation_value().to_vec()));
+    }
+    Observed { status: result.status().raw(), reason: result.reason().map(kmipkit::ResultReason::raw), payload_tags, identifier, identifiers, correlation, bytes, ticket }
 }
 
-/// Simulated mock driver for independent testing without requiring live KMIPKit bindings
-pub struct MockKmipDriver;
-
-impl KmipDriver for MockKmipDriver {
-    fn execute_case(
-        &self,
-        _test_case: &TestCase,
-        _attempt: &AttemptContext,
-    ) -> Result<ExecutionOutcome, DriverError> {
-        Ok(ExecutionOutcome {
-            success: true,
-            raw_response_received: true,
-            result_reason: None,
-        })
+pub(crate) fn execute(client: &mut Client, connection: &Connection, request: ClientRequest) -> std::result::Result<Observed, kmipkit::ClientError> {
+    let encoding = match connection.encoding.as_str() { "JSON" => kmipkit_transport::WireEncoding::Json, "XML" => kmipkit_transport::WireEncoding::Xml, _ => kmipkit_transport::WireEncoding::Ttlv };
+    let options = RequestOptions::default().with_wire_encoding(encoding);
+    let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
+    // Direct operation methods are used where the public high-level API admits
+    // the same immutable request. Authentication requires the explicit batch.
+    if connection.api_level == "high-level" && connection.authentication.is_none() {
+        match request {
+            ClientRequest::DiscoverVersions(request) => return client.discover_versions_with_options(request, &limits, &options).map(|response| observed(&response)),
+            ClientRequest::Ping(_) => return client.ping_with_options(&limits, &options).map(|response| observed(&response)),
+            ClientRequest::Query(request) => return client.query_with_options(request, &limits, &options).map(|response| observed(&response)),
+            request => return execute_batch(client, connection, request, &options, &limits),
+        }
     }
+    execute_batch(client, connection, request, &options, &limits)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+fn execute_batch(client: &mut Client, connection: &Connection, request: ClientRequest, options: &RequestOptions, limits: &kmipkit::ttlv::codec::CodecLimits) -> std::result::Result<Observed, kmipkit::ClientError> {
+    let batch = authenticated_batch(connection, request).map_err(|_| kmipkit::ClientError::validation(kmipkit::ClientCauseCategory::InvalidInput, kmipkit::RequestDeliveryState::NotSent, std::io::Error::other("credential unavailable")))?;
+    let response = client.execute_with_options(batch, limits, options)?;
+    response.get(0).map(observed).ok_or_else(|| kmipkit::ClientError::validation(kmipkit::ClientCauseCategory::InvalidInput, kmipkit::RequestDeliveryState::ResponseStarted, std::io::Error::other("missing result")))
+}
 
-    #[test]
-    fn test_equivalence_verifier_detects_matches_and_mismatches() {
-        let r_high = NormalizedResponse {
-            status: "Success".to_string(),
-            result_reason: None,
-            object_type: Some("SymmetricKey".to_string()),
-            sanitized_payload_hex: Some("deadbeef".to_string()),
-        };
-        let r_typed = NormalizedResponse {
-            status: "Success".to_string(),
-            result_reason: None,
-            object_type: Some("SymmetricKey".to_string()),
-            sanitized_payload_hex: Some("deadbeef".to_string()),
-        };
-        let r_diff = NormalizedResponse {
-            status: "OperationFailed".to_string(),
-            result_reason: Some("GeneralFailure".to_string()),
-            object_type: Some("SymmetricKey".to_string()),
-            sanitized_payload_hex: Some("deadbeef".to_string()),
-        };
+pub(crate) fn options(connection: &Connection) -> RequestOptions {
+    RequestOptions::default().with_wire_encoding(match connection.encoding.as_str() {
+        "JSON" => kmipkit_transport::WireEncoding::Json,
+        "XML" => kmipkit_transport::WireEncoding::Xml,
+        _ => kmipkit_transport::WireEncoding::Ttlv,
+    })
+}
 
-        let ok_match =
-            EquivalenceVerifier::verify_equivalence(&[("HighLevel", &r_high), ("Typed", &r_typed)]);
-        assert!(ok_match.is_equivalent);
-        assert!(ok_match.discrepancies.is_empty());
+pub(crate) fn batch(client: &mut Client, connection: &Connection, requests: Vec<ClientRequest>, asynchronous: bool) -> std::result::Result<Vec<Observed>, kmipkit::ClientError> {
+    let mut batch = ClientBatch::from_items(requests.into_iter().map(ClientBatchItem::new)).with_batch_order_option(true);
+    if asynchronous { batch = batch.with_asynchronous_indicator(1); }
+    let response = client.execute_with_options(batch, &kmipkit::ttlv::codec::CodecLimits::defaults(), &options(connection))?;
+    Ok(response.iter().map(observed).collect())
+}
 
-        let mismatch = EquivalenceVerifier::verify_equivalence(&[
-            ("HighLevel", &r_high),
-            ("LowLevel", &r_diff),
-        ]);
-        assert!(!mismatch.is_equivalent);
-        assert_eq!(mismatch.discrepancies.len(), 2);
-    }
-
-    #[test]
-    fn test_recipe_runner_guarantees_teardown_on_failure() {
-        use std::sync::atomic::{AtomicBool, Ordering};
-        use std::sync::Arc;
-
-        let teardown_called = Arc::new(AtomicBool::new(false));
-        let td_clone = teardown_called.clone();
-
-        let res: Result<(), String> = RecipeRunner::execute_with_guaranteed_teardown(
-            || Ok(()),
-            || Err("target failed".to_string()),
-            move || {
-                td_clone.store(true, Ordering::SeqCst);
-                Ok(())
-            },
-        );
-
-        assert!(res.is_err());
-        assert!(teardown_called.load(Ordering::SeqCst));
-    }
+pub(crate) fn asynchronous(client: &mut Client, connection: &Connection, operation: &str, correlation: &[u8]) -> std::result::Result<Observed, kmipkit::ClientError> {
+    use kmipkit::protocol::{CancelRequest, PollRequest, ProcessRequest, QueryAsyncRequestsRequest};
+    let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
+    let options = options(connection);
+    let response = match operation {
+        "Cancel" => client.execute_cancel_with_options(CancelRequest::new(correlation), &limits, &options),
+        "Process" => client.execute_process_with_options(ProcessRequest::new(correlation), None, &limits, &options),
+        "Query Asynchronous Requests" => client.execute_query_async_requests_with_options(QueryAsyncRequestsRequest::new(), None, &limits, &options),
+        _ => client.execute_poll_with_options(PollRequest::new(correlation), &limits, &options),
+    }?;
+    Ok(Observed { status: response.result().status().raw(), reason: response.result().reason().map(kmipkit::ResultReason::raw),
+        payload_tags: Vec::new(), identifier: None, identifiers: Vec::new(), bytes: None, ticket: None, correlation: None })
 }
