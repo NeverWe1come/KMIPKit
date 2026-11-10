@@ -205,7 +205,7 @@ class LiveContract(unittest.TestCase):
         self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
-        for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (0x100, "failed", "unknown")]:
+        for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
             with self.subTest(reason=reason), ControlledPeer(self.pki, lambda tree: response(0x18, reason=reason, message="secret-response-sentinel")) as peer:
                 _, report = self.command(self.connection(peer.port), self.rows("test-op-query"))
                 case = report["cases"][0]
