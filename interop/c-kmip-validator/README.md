@@ -55,9 +55,13 @@ The pinned release artifact preserves the configured KMIP version. Controlled
 TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login and
 the ordered Create/Destroy, Create/Activate/Revoke/Destroy,
 Create/Check/Revoke/Destroy, Create/Revoke/Destroy, Create/Destroy/Revoke/Destroy,
-Create/Get/Destroy, Create/Get Attributes/Destroy and Create/Get Attribute
-List/Destroy lifecycles under KMIP 2.1. Under KMIP 2.0
-they exercise Locate, Query, Log and all eight lifecycle recipes. Activate
+Create/Get/Destroy, Create/Get Attributes/Destroy, Create/Get Attribute
+List/Destroy and Create/Get Constraints/Revoke/Destroy lifecycles under KMIP
+2.1. Under KMIP 2.0 they exercise Locate, Query, Log and all nine lifecycle
+recipes except Get Constraints, which is available starting in KMIP 2.1. The
+2.0 catalog case verifies that KMIPKit rejects Get Constraints before sending
+it; because no KMIP response exists, server compatibility is reported as
+unknown. Activate
 moves the isolated key out of Pre-Active before revocation; Check verifies the
 returned object identifier, then revokes the isolated object before Destroy.
 Revoke verifies its returned identifier before Destroy. Destroy verifies its

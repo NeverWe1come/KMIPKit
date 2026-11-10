@@ -379,7 +379,7 @@ static const char *case_status_name(kmip_case_status_t status) {
 }
 
 static const char *library_correctness_name(const kmip_case_result_t *result);
-static const char *server_compatibility_name(kmip_case_status_t status);
+static const char *server_compatibility_name(const kmip_case_result_t *result);
 
 void kmip_render_ansi(const kmip_validation_summary_t *summary) {
     if (!summary) return;
@@ -432,7 +432,7 @@ bool kmip_render_markdown(const kmip_validation_summary_t *summary, const char *
         const char *st = case_status_name(r->status);
         fprintf(f, "| `%s` | %s | %s | %s | %s | not_compared |\n",
                 r->case_id, r->operation, st, library_correctness_name(r),
-                server_compatibility_name(r->status));
+                server_compatibility_name(r));
     }
 
     fclose(f);
@@ -469,7 +469,7 @@ bool kmip_render_html(const kmip_validation_summary_t *summary, const char *file
         const char *st = case_status_name(r->status);
         fprintf(f, "<tr><td><code>%s</code></td><td>%s</td><td class=\"%s\">%s</td><td>%s</td><td>%s</td><td>not_compared</td></tr>\n",
                 r->case_id, r->operation, cls, st, library_correctness_name(r),
-                server_compatibility_name(r->status));
+                server_compatibility_name(r));
     }
     fprintf(f, "</tbody>\n</table>\n</div>\n</body>\n</html>\n");
 
@@ -500,8 +500,12 @@ static const char *library_correctness_name(const kmip_case_result_t *result) {
     return result->library_correctness[0] ? result->library_correctness : "not_checked";
 }
 
-static const char *server_compatibility_name(kmip_case_status_t status) {
-    switch (status) {
+static const char *server_compatibility_name(const kmip_case_result_t *result) {
+    if (!result) return "unknown";
+    if (result->status == CASE_STATUS_SERVER_UNSUPPORTED) return "unsupported";
+    if (result->status == CASE_STATUS_POLICY_RESTRICTED) return "policy_restricted";
+    if (!result->has_result_status_code) return "unknown";
+    switch (result->status) {
         case CASE_STATUS_PASSED: return "supported";
         case CASE_STATUS_SERVER_UNSUPPORTED: return "unsupported";
         case CASE_STATUS_POLICY_RESTRICTED: return "policy_restricted";
@@ -558,7 +562,7 @@ bool kmip_render_json(const kmip_validation_summary_t *summary, const char *file
         fputs(",\n      \"library_correctness\": ", f);
         json_write_string(f, library_correctness_name(r));
         fputs(",\n      \"server_compatibility\": ", f);
-        json_write_string(f, server_compatibility_name(r->status));
+        json_write_string(f, server_compatibility_name(r));
         fputs(",\n      \"parity\": \"not_compared\"", f);
         if (r->has_result_status_code)
             fprintf(f, ",\n      \"result_status_code\": %u", r->result_status_code);

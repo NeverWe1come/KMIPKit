@@ -444,6 +444,26 @@ static bool activate_response_matches_created_key(
         same_text_identifier(created_identifier, &response_identifier);
 }
 
+static bool get_constraints_response_is_typed(
+    kmipkit_client_batch_item_response_t *response_item,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *constraints = NULL;
+    int32_t status = kmipkit_client_batch_item_response_get_constraints_ttlv(
+        response_item, &present, &constraints);
+    bool valid = status == 0 && present && constraints;
+    if (valid) {
+        kmipkit_ttlv_structure_view_t *view = NULL;
+        uint64_t field_count = 0;
+        valid = kmipkit_ttlv_structure_view(constraints, &view) == 0 && view &&
+            kmipkit_ttlv_structure_view_item_count(view, &field_count) == 0;
+        if (view) kmipkit_ttlv_structure_view_release(view);
+    }
+    if (constraints) kmipkit_ttlv_structure_release(constraints);
+    *out_status = status;
+    return valid;
+}
+
 static int32_t create_revocation_item(
     const kmipkit_unique_identifier_v1_t *unique_identifier,
     kmipkit_client_batch_item_t **out_item) {
@@ -1118,16 +1138,20 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0;
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
+    bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
+    bool get_constraints_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
     bool destroy_workflow = strcmp(test_case->case_id, "test-op-destroy") == 0;
-    bool revoke_cleanup_workflow = check_workflow || activate_workflow || destroy_workflow;
+    bool revoke_cleanup_workflow = check_workflow || activate_workflow || destroy_workflow ||
+        get_constraints_workflow;
     bool object_lifecycle_workflow = create_workflow || revoke_workflow ||
         revoke_cleanup_workflow || get_workflow ||
-        get_attributes_workflow || get_attribute_list_workflow;
+        get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow) {
         return outcome_not_run("Create variations are not yet mapped to isolated C fixtures");
     }
@@ -1142,6 +1166,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->operation, "Destroy") == 0 && !destroy_workflow) {
         return outcome_not_run("Destroy variations are not yet mapped to isolated C fixtures");
+    }
+    if (strcmp(test_case->operation, "Get Constraints") == 0 &&
+        !get_constraints_workflow && !get_constraints_boundary_workflow) {
+        return outcome_not_run("Get Constraints variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get") == 0 && !get_workflow) {
         return outcome_not_run("object-specific Get recipes are not yet mapped to isolated C fixtures");
@@ -1163,7 +1191,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     int32_t status = 0;
     const char *request_construction_step = "typed request";
     char request_validation_diagnostic[256] = {0};
-    if (strcmp(test_case->operation, "Discover Versions") == 0) {
+    if (get_constraints_boundary_workflow) {
+        status = kmipkit_client_batch_item_get_constraints(&item);
+    } else if (strcmp(test_case->operation, "Discover Versions") == 0) {
         status = kmipkit_client_batch_item_discover_versions(&item);
     } else if (strcmp(test_case->operation, "Ping") == 0 && client->protocol_minor == 1) {
         status = kmipkit_client_batch_item_ping(&item);
@@ -1212,6 +1242,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = create_revocation_item(&placeholder, &item);
             } else if (destroy_workflow) {
                 status = kmipkit_client_batch_item_destroy(&placeholder, &item);
+            } else if (get_constraints_workflow) {
+                status = kmipkit_client_batch_item_get_constraints(&item);
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
@@ -1251,6 +1283,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                            activate_workflow ? "interop-activate" :
                            revoke_workflow ? "interop-revoke" :
                            destroy_workflow ? "interop-destroy-target" :
+                           get_constraints_workflow ? "interop-get-constraints" :
                            get_workflow ? "interop-get" : "interop-attributes");
                 if (status == 0 && revoke_cleanup_workflow) {
                     status = set_batch_item_id(&revoke_item,
@@ -1347,6 +1380,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         uint32_t cause = 0;
         uint32_t delivery = 0;
         (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
+        if (get_constraints_boundary_workflow && delivery == 1) {
+            outcome.success = true;
+            outcome.library_validated = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit rejected the KMIP 2.1-only operation before sending under KMIP 2.0");
+            goto cleanup;
+        }
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                  "KMIPKit exchange failed with status %d (category=%u cause=%u delivery=%u)",
                  status, category, cause, delivery);
@@ -1640,6 +1680,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Query response omitted Operation enumeration fields");
+        }
+    } else if (get_constraints_workflow) {
+        if (!get_constraints_response_is_typed(response_item, &status)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Get Constraints did not return a typed Constraints structure");
+            goto cleanup;
         }
     } else if (destroy_workflow) {
         if (!destroy_response_matches_key(response_item, &created_identifier, &status)) {
