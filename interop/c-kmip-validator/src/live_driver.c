@@ -1082,8 +1082,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
-    bool object_lifecycle_workflow = check_workflow || get_workflow || get_attributes_workflow ||
-        get_attribute_list_workflow;
+    bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0;
+    bool object_lifecycle_workflow = create_workflow || check_workflow || get_workflow ||
+        get_attributes_workflow || get_attribute_list_workflow;
+    if (strcmp(test_case->operation, "Create") == 0 && !create_workflow) {
+        return outcome_not_run("Create variations are not yet mapped to isolated C fixtures");
+    }
     if (strcmp(test_case->operation, "Check") == 0 && !check_workflow) {
         return outcome_not_run("Check variations are not yet mapped to isolated C fixtures");
     }
@@ -1138,14 +1142,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = create_symmetric_key_attributes(client, &request_attributes) ? 0 : -1;
         if (status == 0) {
             request_construction_step = "Create Symmetric Key";
+            kmipkit_client_batch_item_t **create_item = create_workflow ? &item : &setup_item;
             status = kmipkit_client_batch_item_create(
-                KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, request_attributes, NULL, &setup_item);
+                KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, request_attributes, NULL, create_item);
             if (status == 0 && !request_item_is_valid(
-                    setup_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                    *create_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         }
-        if (status == 0) {
+        if (status == 0 && !create_workflow) {
             request_construction_step = "operation using ID Placeholder";
             if (check_workflow) {
                 status = kmipkit_client_batch_item_check(
@@ -1191,12 +1196,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         if (status == 0) {
             request_construction_step = "Unique Batch Item IDs";
-            status = set_batch_item_id(&setup_item, "interop-create");
-            if (status == 0) status = set_batch_item_id(
-                &item, check_workflow ? "interop-check" :
-                       get_workflow ? "interop-get" : "interop-attributes");
-            if (status == 0 && check_workflow) {
-                status = set_batch_item_id(&revoke_item, "interop-revoke");
+            if (create_workflow) {
+                status = set_batch_item_id(&item, "interop-create");
+            } else {
+                status = set_batch_item_id(&setup_item, "interop-create");
+                if (status == 0) status = set_batch_item_id(
+                    &item, check_workflow ? "interop-check" :
+                           get_workflow ? "interop-get" : "interop-attributes");
+                if (status == 0 && check_workflow) {
+                    status = set_batch_item_id(&revoke_item, "interop-revoke");
+                }
             }
             if (status == 0) status = set_batch_item_id(&cleanup_item, "interop-destroy");
         }
@@ -1238,7 +1247,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
     status = kmipkit_client_batch_create(&batch);
-    if (status == 0 && object_lifecycle_workflow) {
+    if (status == 0 && create_workflow) {
+        status = kmipkit_client_batch_set_order_option(batch, 1);
+        if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+            batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
+    } else if (status == 0 && object_lifecycle_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
@@ -1290,7 +1305,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
-    uint64_t expected_response_count = check_workflow ? 4 : object_lifecycle_workflow ? 3 : 1;
+    uint64_t expected_response_count = create_workflow ? 2 :
+        check_workflow ? 4 : object_lifecycle_workflow ? 3 : 1;
     if (status != 0 || response_count != expected_response_count) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
@@ -1315,7 +1331,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             status = kmipkit_client_batch_response_item_at(response, 2, &revoke_response_item);
         }
         if (status == 0) status = kmipkit_client_batch_response_item_at(
-            response, check_workflow ? 3 : 2, &cleanup_response_item);
+            response, create_workflow ? 1 : check_workflow ? 3 : 2, &cleanup_response_item);
         if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
             setup_response_item, &setup_metadata);
         if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
@@ -1381,7 +1397,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     }
     status = kmipkit_client_batch_response_item_at(
-        response, object_lifecycle_workflow ? 1 : 0, &response_item);
+        response, object_lifecycle_workflow && !create_workflow ? 1 : 0, &response_item);
     if (status != 0) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
