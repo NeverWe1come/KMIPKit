@@ -179,12 +179,16 @@ static bool attributes_match_created_symmetric_key(kmipkit_ttlv_structure_t *att
     return valid && algorithm_found && length_found;
 }
 
-static bool attributes_contain_created_algorithm(kmipkit_ttlv_structure_t *attributes) {
+static bool attributes_contain_value(kmipkit_ttlv_structure_t *attributes,
+                                     uint32_t expected_tag,
+                                     uint8_t expected_type,
+                                     uint32_t expected_enumeration,
+                                     int32_t expected_integer) {
     kmipkit_ttlv_structure_view_t *view = NULL;
     uint64_t count = 0;
     bool valid = attributes && kmipkit_ttlv_structure_view(attributes, &view) == 0 &&
         kmipkit_ttlv_structure_view_item_count(view, &count) == 0;
-    bool algorithm_found = false;
+    bool expected_value_found = false;
     for (uint64_t index = 0; valid && index < count; ++index) {
         kmipkit_ttlv_item_view_t *item = NULL;
         if (kmipkit_ttlv_structure_view_item_at(view, index, &item) != 0) {
@@ -192,17 +196,22 @@ static bool attributes_contain_created_algorithm(kmipkit_ttlv_structure_t *attri
             break;
         }
         kmipkit_ttlv_value_view_t *value = NULL;
-        if (item_view_has_tag(item, UINT32_C(0x420028),
-                              KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &value)) {
-            uint32_t actual = 0;
-            algorithm_found = kmipkit_ttlv_value_view_enumeration(value, &actual) == 0 &&
-                actual == KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+        if (item_view_has_tag(item, expected_tag, expected_type, &value)) {
+            if (expected_type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
+                uint32_t actual = 0;
+                expected_value_found = kmipkit_ttlv_value_view_enumeration(value, &actual) == 0 &&
+                    actual == expected_enumeration;
+            } else if (expected_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER) {
+                int32_t actual = 0;
+                expected_value_found = kmipkit_ttlv_value_view_integer(value, &actual) == 0 &&
+                    actual == expected_integer;
+            }
         }
         if (value) kmipkit_ttlv_value_view_release(value);
         kmipkit_ttlv_item_view_release(item);
     }
     if (view) kmipkit_ttlv_structure_view_release(view);
-    return valid && algorithm_found;
+    return valid && expected_value_found;
 }
 
 static bool same_text_identifier(const kmipkit_unique_identifier_v1_t *left,
@@ -1164,8 +1173,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool cryptographic_algorithm_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
+    bool cryptographic_length_attribute_workflow =
+        strcmp(test_case->case_id, "test-attr-cryptographic-length") == 0;
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0 ||
-        cryptographic_algorithm_attribute_workflow;
+        cryptographic_algorithm_attribute_workflow || cryptographic_length_attribute_workflow;
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
     bool get_constraints_boundary_workflow =
@@ -1276,15 +1287,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
-                if (cryptographic_algorithm_attribute_workflow) {
-                    static const kmipkit_attribute_reference_v1_t algorithm_reference = {
+                if (cryptographic_algorithm_attribute_workflow ||
+                    cryptographic_length_attribute_workflow) {
+                    const kmipkit_attribute_reference_v1_t attribute_reference = {
                         .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
                         .abi_version = 1,
                         .kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG,
-                        .tag_value = UINT32_C(0x420028)
+                        .tag_value = cryptographic_algorithm_attribute_workflow ?
+                            UINT32_C(0x420028) : UINT32_C(0x42002A)
                     };
                     status = kmipkit_client_batch_item_get_attributes(
-                        NULL, &algorithm_reference, 1, &item);
+                        NULL, &attribute_reference, 1, &item);
                 } else {
                     status = kmipkit_client_batch_item_get_attributes(NULL, NULL, 0, &item);
                 }
@@ -1779,7 +1792,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             response_item, &present, &response_identifier, &response_attributes);
         bool attributes_valid = response_attributes &&
             (cryptographic_algorithm_attribute_workflow ?
-                attributes_contain_created_algorithm(response_attributes) :
+                attributes_contain_value(response_attributes, UINT32_C(0x420028),
+                    KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+                    KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 0) :
+             cryptographic_length_attribute_workflow ?
+                attributes_contain_value(response_attributes, UINT32_C(0x42002A),
+                    KMIPKIT_TTLV_ITEM_TYPE_INTEGER, 0, 128) :
                 attributes_match_created_symmetric_key(response_attributes));
         bool valid_response = status == 0 && present && attributes_valid &&
             same_text_identifier(&created_identifier, &response_identifier);
