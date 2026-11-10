@@ -103,6 +103,27 @@ def receive(channel):
     return header + body
 
 
+def parity_signature(report, request_trees=()):
+    """Current full-catalog comparison, factored so its omissions are testable."""
+    return tuple((c["case_id"], c["status"], c["library_correctness"], c["server_compatibility"]) for c in report["cases"])
+
+
+class ParityContract(unittest.TestCase):
+    def case(self, result_status="Operation Failed", result_reason="Operation Not Supported"):
+        return {"cases": [{"case_id": "test-op-query", "status": "server_unsupported", "library_correctness": "passed", "server_compatibility": "unsupported", "result_status": result_status, "result_reason": result_reason}]}
+
+    def test_parity_signature_detects_different_kmip_result_reason(self):
+        self.assertNotEqual(parity_signature(self.case()), parity_signature(self.case(result_reason="Feature Not Supported")))
+
+    def test_parity_signature_detects_different_kmip_result_status(self):
+        self.assertNotEqual(parity_signature(self.case()), parity_signature(self.case(result_status="Operation Pending")))
+
+    def test_parity_signature_detects_different_deterministic_request(self):
+        aes256 = ((0x42002a, 2, 256),)
+        aes128 = ((0x42002a, 2, 128),)
+        self.assertNotEqual(parity_signature(self.case(), (aes256,)), parity_signature(self.case(), (aes128,)))
+
+
 class ControlledPeer:
     def __init__(self, pki, responder):
         self.listener = socket.socket()
@@ -306,7 +327,7 @@ class LiveContract(unittest.TestCase):
             for api in ("typed-protocol", "high-level"):
                 with self.subTest(version=version, api=api):
                     report = self.catalog_scenario(version, api)
-                    normalized = [(c["case_id"], c["status"], c["library_correctness"], c["server_compatibility"]) for c in report["cases"]]
+                    normalized = parity_signature(report)
                     if baseline is None:
                         baseline = normalized
                     else:
