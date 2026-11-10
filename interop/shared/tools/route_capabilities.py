@@ -67,6 +67,10 @@ def construction_inventory(root, commit):
     """
     api = json.loads(source(root, commit, 'specification/api/public-api.json'))
     operations = {normalized(o['name']): o for o in api['operations'] if o['scope'] == 'client_1_0'}
+    # The pinned metadata omits this public KMIP 2.1 constructor. Associate
+    # its exported source directly instead of treating a metadata gap as absence.
+    operations['setendpointrole'] = {'name': 'Set Endpoint Role',
+        'operationId': 'KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'}
     paths = subprocess.check_output(['git', '-C', str(root), 'ls-tree', '-r', '--name-only', commit,
                                      'crates/kmipkit-protocol/src'], text=True).splitlines()
     inventory = []
@@ -173,6 +177,21 @@ def validate(data, root=ROOT):
     missing = expected - constructors
     if missing:
         raise ValueError('missing public construction route: ' + repr(sorted(missing)))
+    canonical = build_manifest(root, commit)
+    canonical_routes = {r['route_id']: r for r in canonical['routes']}
+    for route in data['routes']:
+        expected_route = canonical_routes.get(route['route_id'])
+        if expected_route is None:
+            raise ValueError('unknown route_id: ' + route['route_id'])
+        if route['operation_ids'] != expected_route['operation_ids']:
+            raise ValueError('constructor operation mapping differs from public source')
+        if route['combinations'] != expected_route['combinations']:
+            raise ValueError('supported encoding/transport pairs differ from public source')
+        for field in ('public_api_symbol', 'mode', 'actions', 'execution_route_id', 'source_paths'):
+            if route[field] != expected_route[field]:
+                raise ValueError('public construction route mapping differs: ' + field)
+    if data['execution_routes'] != canonical['execution_routes']:
+        raise ValueError('execution route inventory differs from public source')
     for limitation in data['unavailable']:
         if (limitation['language'], limitation.get('public_api_symbol')) in constructors:
             raise ValueError('public constructor cannot be unavailable')
@@ -202,6 +221,7 @@ def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37')
             'routes': [], 'execution_routes': [], 'unavailable': []}
     api = json.loads(source(root, commit, data['public_api_manifest']))
     operations = {o['operationId']: o for o in api['operations']}
+    operations['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'] = {'name': 'Set Endpoint Role'}
     execution = {
         'rust': ('kmipkit_client::Client::execute', 'crates/kmipkit-client/src/execute.rs'),
         'c': ('kmipkit_client_execute', 'bindings/c/include/kmipkit.h'),
@@ -241,6 +261,11 @@ def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37')
             generic_path = next(r['source_paths'][0] for r in data['routes'] if r['language'] == language and r['api_level'] == 'generic-ttlv' and r['actions'] == ['decode'])
             data['unavailable'].append({'language': language, 'capability': capability,
                 'reason': reason, 'source_paths': [path if capability != 'generic-encode' else generic_path]})
+    for language in ('c', 'java', 'python'):
+        data['unavailable'].append({'language': language, 'capability': 'constructor',
+            'operation_ids': ['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'],
+            'reason': 'Set Endpoint Role has a Rust typed constructor, but the installed binding public surface has no corresponding request or client constructor.',
+            'source_paths': [execution[language][1]]})
     data['routes'].sort(key=lambda route: route['route_id'])
     return data
 

@@ -14897,6 +14897,69 @@
       "artifact_verification": "required"
     },
     {
+      "route_id": "rust.typed-protocol.set_endpoint_role_request.new",
+      "language": "rust",
+      "api_level": "typed-protocol",
+      "mode": "network",
+      "public_api_symbol": "kmipkit_protocol::SetEndpointRoleRequest::new",
+      "operation_ids": [
+        "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE"
+      ],
+      "case_categories": [
+        "enums_and_bitmasks",
+        "attributes",
+        "object_lifecycle",
+        "cryptography_and_rng",
+        "managed_objects",
+        "protocol_and_session",
+        "version_boundaries",
+        "server_initiated_operations",
+        "multipart_crypto",
+        "negative_and_boundary",
+        "batch_workflows",
+        "asynchronous_workflows"
+      ],
+      "protocol_versions": [
+        "2.0",
+        "2.1"
+      ],
+      "combinations": [
+        {
+          "encoding": "TTLV",
+          "transport": "raw_tls"
+        },
+        {
+          "encoding": "TTLV",
+          "transport": "https"
+        },
+        {
+          "encoding": "JSON",
+          "transport": "raw_tls"
+        },
+        {
+          "encoding": "JSON",
+          "transport": "https"
+        },
+        {
+          "encoding": "XML",
+          "transport": "raw_tls"
+        },
+        {
+          "encoding": "XML",
+          "transport": "https"
+        }
+      ],
+      "actions": [
+        "construct"
+      ],
+      "source_paths": [
+        "crates/kmipkit-protocol/src/set_endpoint_role.rs"
+      ],
+      "artifact_commit": "52a2be180340e5da3166401a52f652dfd368ad37",
+      "execution_route_id": "rust.execute.typed-batch",
+      "artifact_verification": "required"
+    },
+    {
       "route_id": "rust.typed-protocol.sign_request.new",
       "language": "rust",
       "api_level": "typed-protocol",
@@ -15309,6 +15372,39 @@
       "language": "python",
       "capability": "generic-send",
       "reason": "The public client sends typed batches or dedicated asynchronous inputs; arbitrary generic TTLV request submission is not exported.",
+      "source_paths": [
+        "bindings/python/src/kmipkit/client.py"
+      ]
+    },
+    {
+      "language": "c",
+      "capability": "constructor",
+      "operation_ids": [
+        "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE"
+      ],
+      "reason": "Set Endpoint Role has a Rust typed constructor, but the installed binding public surface has no corresponding request or client constructor.",
+      "source_paths": [
+        "bindings/c/include/kmipkit.h"
+      ]
+    },
+    {
+      "language": "java",
+      "capability": "constructor",
+      "operation_ids": [
+        "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE"
+      ],
+      "reason": "Set Endpoint Role has a Rust typed constructor, but the installed binding public surface has no corresponding request or client constructor.",
+      "source_paths": [
+        "bindings/java/src/main/java/org/kmipkit/extensions/Client.java"
+      ]
+    },
+    {
+      "language": "python",
+      "capability": "constructor",
+      "operation_ids": [
+        "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE"
+      ],
+      "reason": "Set Endpoint Role has a Rust typed constructor, but the installed binding public surface has no corresponding request or client constructor.",
       "source_paths": [
         "bindings/python/src/kmipkit/client.py"
       ]

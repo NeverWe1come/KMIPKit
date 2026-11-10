@@ -250,6 +250,13 @@
               "minLength": 1
             },
             "uniqueItems": true
+          },
+          "operation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
           }
         }
       }
