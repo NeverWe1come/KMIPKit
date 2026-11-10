@@ -129,6 +129,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 b"interop-create", b"interop-destroy-target",
                 b"interop-revoke-cleanup", b"interop-destroy-cleanup"
             )[item_index]
+        if operations == (1, 18, 20, 19, 20):
+            unique_batch_item_id = (
+                b"interop-create", b"interop-activate-before-destroy",
+                b"interop-destroy-active-target", b"interop-revoke-cleanup",
+                b"interop-destroy-cleanup"
+            )[item_index]
         item_fields = integer(0x42005C, operation, 5)
         if unique_batch_item_id is not None:
             item_fields += tlv(0x420093, 8, unique_batch_item_id)
@@ -321,6 +327,12 @@ def main() -> int:
                                              *((b"interop-revoke-cleanup", b"interop-destroy-cleanup")
                                                if destroy_lifecycle else ()),
                                              *((b"interop-destroy",) if not destroy_lifecycle else ()))
+                            if illegal_destroy_lifecycle:
+                                lifecycle_ids = (
+                                    b"interop-create", b"interop-activate-before-destroy",
+                                    b"interop-destroy-active-target", b"interop-revoke-cleanup",
+                                    b"interop-destroy-cleanup"
+                                )
                             if lifecycle_target and any(
                                     tlv(0x420093, 8, item_id) not in request for item_id in lifecycle_ids):
                                 raise AssertionError("lifecycle batch omitted a unique batch item ID")

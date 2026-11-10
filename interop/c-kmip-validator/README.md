@@ -66,8 +66,10 @@ unknown. The attribute catalog also sends Get Attributes requests selecting
 checks the returned AES and 128-bit values in both protocol versions. The
 `Symmetric Key` object catalog variant also runs Create followed by Destroy
 against an isolated object; the `Private Key` and `Public Key` variants create
-RSA-2048 objects and validate the respective typed responses before cleanup. Activate
-moves the isolated key out of Pre-Active before revocation; Check verifies the
+RSA-2048 objects and validate the respective typed responses before cleanup.
+Activate moves the isolated key out of Pre-Active before revocation; the
+negative Destroy case verifies `Operation Failed` with `Wrong Key Lifecycle
+State`, then revokes and destroys the active key. Check verifies the
 returned object identifier, then revokes the isolated object before Destroy.
 Revoke verifies its returned identifier before Destroy. Destroy verifies its
 target response and treats Object Not Found on the best-effort cleanup items as
