@@ -61,7 +61,7 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
                 else b""
             )
         elif operation == 10:
-            key_material = tlv(0x420043, 8, bytes(range(16)))
+            key_material = tlv(0x420043, 8, b"KMIPKIT-SECRET!!")
             key_value = tlv(0x420045, 1, key_material)
             key_block = (
                 enumeration(0x420042, 1) + key_value + enumeration(0x420028, 3)
@@ -246,6 +246,13 @@ def main() -> int:
                                 raise AssertionError("lifecycle batch omitted a unique batch item ID")
                             if lifecycle_target and enumeration(0x42000E, 1) not in request:
                                 raise AssertionError("lifecycle batch must continue to Destroy after a failed item")
+                            if lifecycle_target and (
+                                    enumeration(0x420028, 3) not in request
+                                    or integer(0x42002A, 128) not in request):
+                                raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
+                            if operations == (1, 10, 20) and request.count(
+                                    enumeration(0x420094, 1)) < 2:
+                                raise AssertionError("Get and Destroy must consume the created ID Placeholder")
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
                                     raise AssertionError("Locate request omitted its required Attributes structure")
@@ -402,7 +409,9 @@ def main() -> int:
             )
         if not markdown_path.is_file() or not html_path.is_file():
             raise AssertionError("requested human-readable reports were not written")
-        secret_values = (b"interop-user", b"interop-password", b"controlled-login-ticket")
+        secret_values = (
+            b"interop-user", b"interop-password", b"controlled-login-ticket", b"KMIPKIT-SECRET!!"
+        )
         for report_path in (result_path, markdown_path, html_path):
             report_bytes = report_path.read_bytes()
             if any(secret in report_bytes for secret in secret_values):

@@ -300,6 +300,89 @@ static bool destroy_response_matches_key(
         same_text_identifier(created_identifier, &destroyed_identifier);
 }
 
+static bool structure_view_find_value(kmipkit_ttlv_structure_view_t *structure,
+                                      uint32_t expected_tag,
+                                      uint8_t expected_type,
+                                      kmipkit_ttlv_value_view_t **out_value) {
+    uint64_t count = 0;
+    if (kmipkit_ttlv_structure_view_item_count(structure, &count) != 0) return false;
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *item = NULL;
+        if (kmipkit_ttlv_structure_view_item_at(structure, index, &item) != 0) return false;
+        bool found = item_view_has_tag(item, expected_tag, expected_type, out_value);
+        kmipkit_ttlv_item_view_release(item);
+        if (found) return true;
+    }
+    return false;
+}
+
+static bool get_response_matches_created_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    uint8_t payload_present = 0;
+    uint32_t object_type = 0;
+    kmipkit_unique_identifier_v1_t response_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_ttlv_structure_t *any_object = NULL;
+    int32_t status = kmipkit_client_batch_item_response_get(
+        response_item, &present, &payload_present, &object_type,
+        &response_identifier, &any_object);
+    bool valid = status == 0 && present && payload_present &&
+        object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
+        same_text_identifier(created_identifier, &response_identifier) && any_object;
+    kmipkit_ttlv_structure_view_t *any_object_view = NULL;
+    kmipkit_ttlv_value_view_t *symmetric_key_value = NULL;
+    kmipkit_ttlv_structure_view_t *symmetric_key = NULL;
+    kmipkit_ttlv_value_view_t *key_block_value = NULL;
+    kmipkit_ttlv_structure_view_t *key_block = NULL;
+    kmipkit_ttlv_value_view_t *key_value_value = NULL;
+    kmipkit_ttlv_structure_view_t *key_value = NULL;
+    kmipkit_ttlv_value_view_t *algorithm_value = NULL;
+    kmipkit_ttlv_value_view_t *key_material = NULL;
+    if (valid) valid = kmipkit_ttlv_structure_view(any_object, &any_object_view) == 0 &&
+        structure_view_find_value(any_object_view, UINT32_C(0x42008F),
+                                  KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &symmetric_key_value) &&
+        kmipkit_ttlv_value_view_structure(symmetric_key_value, &symmetric_key) == 0 &&
+        structure_view_find_value(symmetric_key, UINT32_C(0x420040),
+                                  KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &key_block_value) &&
+        kmipkit_ttlv_value_view_structure(key_block_value, &key_block) == 0 &&
+        structure_view_find_value(key_block, UINT32_C(0x420028),
+                                  KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &algorithm_value);
+    if (valid) {
+        uint32_t algorithm = 0;
+        valid = algorithm_value &&
+            kmipkit_ttlv_value_view_enumeration(algorithm_value, &algorithm) == 0 &&
+            algorithm == KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+    }
+    if (algorithm_value) kmipkit_ttlv_value_view_release(algorithm_value);
+    if (valid) valid = structure_view_find_value(key_block, UINT32_C(0x420045),
+                                                KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE,
+                                                &key_value_value) &&
+        kmipkit_ttlv_value_view_structure(key_value_value, &key_value) == 0 &&
+        structure_view_find_value(key_value, UINT32_C(0x420043),
+                                  KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &key_material);
+    if (valid) {
+        uint64_t key_length = 0;
+        valid = kmipkit_ttlv_value_view_byte_length(key_material, &key_length) == 0 &&
+            key_length > 0;
+    }
+    if (key_material) kmipkit_ttlv_value_view_release(key_material);
+    if (key_value) kmipkit_ttlv_structure_view_release(key_value);
+    if (key_value_value) kmipkit_ttlv_value_view_release(key_value_value);
+    if (key_block) kmipkit_ttlv_structure_view_release(key_block);
+    if (key_block_value) kmipkit_ttlv_value_view_release(key_block_value);
+    if (symmetric_key) kmipkit_ttlv_structure_view_release(symmetric_key);
+    if (symmetric_key_value) kmipkit_ttlv_value_view_release(symmetric_key_value);
+    if (any_object_view) kmipkit_ttlv_structure_view_release(any_object_view);
+    if (any_object) kmipkit_ttlv_structure_release(any_object);
+    *out_status = status;
+    return valid;
+}
+
 static bool create_authentication(kmip_live_client_t *client,
                                   kmipkit_authentication_t **out_authentication) {
     const char *username = getenv(client->username_env);
@@ -952,7 +1035,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0;
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
-    bool attribute_lifecycle_workflow = get_attributes_workflow || get_attribute_list_workflow;
+    bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
+    bool object_lifecycle_workflow = get_workflow || get_attributes_workflow ||
+        get_attribute_list_workflow;
+    if (strcmp(test_case->operation, "Get") == 0 && !get_workflow) {
+        return outcome_not_run("object-specific Get recipes are not yet mapped to isolated C fixtures");
+    }
     if (strcmp(test_case->operation, "Get Attributes") == 0 && !get_attributes_workflow) {
         return outcome_not_run(
             "attribute-specific Get Attributes recipes are not yet mapped to isolated C fixtures");
@@ -987,7 +1075,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
     } else if (strcmp(test_case->operation, "Login") == 0) {
         status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
-    } else if (attribute_lifecycle_workflow) {
+    } else if (object_lifecycle_workflow) {
         kmipkit_unique_identifier_v1_t placeholder = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
             .abi_version = 1,
@@ -1007,9 +1095,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         if (status == 0) {
             request_construction_step = "attribute read using ID Placeholder";
-            status = get_attributes_workflow
-                ? kmipkit_client_batch_item_get_attributes(NULL, NULL, 0, &item)
-                : kmipkit_client_batch_item_get_attribute_list(NULL, &item);
+            if (get_workflow) {
+                status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
+            } else if (get_attributes_workflow) {
+                status = kmipkit_client_batch_item_get_attributes(NULL, NULL, 0, &item);
+            } else {
+                status = kmipkit_client_batch_item_get_attribute_list(NULL, &item);
+            }
             if (status == 0 && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -1026,7 +1118,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) {
             request_construction_step = "Unique Batch Item IDs";
             status = set_batch_item_id(&setup_item, "interop-create");
-            if (status == 0) status = set_batch_item_id(&item, "interop-attributes");
+            if (status == 0) status = set_batch_item_id(
+                &item, get_workflow ? "interop-get" : "interop-attributes");
             if (status == 0) status = set_batch_item_id(&cleanup_item, "interop-destroy");
         }
     } else {
@@ -1066,7 +1159,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
     status = kmipkit_client_batch_create(&batch);
-    if (status == 0 && attribute_lifecycle_workflow) {
+    if (status == 0 && object_lifecycle_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
@@ -1115,14 +1208,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
-    uint64_t expected_response_count = attribute_lifecycle_workflow ? 3 : 1;
+    uint64_t expected_response_count = object_lifecycle_workflow ? 3 : 1;
     if (status != 0 || response_count != expected_response_count) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                  "KMIPKit returned an unexpected response item count");
         goto cleanup;
     }
-    if (attribute_lifecycle_workflow) {
+    if (object_lifecycle_workflow) {
         kmipkit_client_batch_item_metadata_v2_t setup_metadata = {
             .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
             .abi_version = 2
@@ -1184,7 +1277,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     }
     status = kmipkit_client_batch_response_item_at(
-        response, attribute_lifecycle_workflow ? 1 : 0, &response_item);
+        response, object_lifecycle_workflow ? 1 : 0, &response_item);
     if (status != 0) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
@@ -1354,6 +1447,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Query response omitted Operation enumeration fields");
+        }
+    } else if (get_workflow) {
+        if (!get_response_matches_created_key(response_item, &created_identifier, &status)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Get did not return the created AES key object");
+            goto cleanup;
         }
     } else if (get_attributes_workflow) {
         uint8_t present = 0;
