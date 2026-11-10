@@ -214,7 +214,7 @@ class ValidatorContractTests(unittest.TestCase):
         }
         report = _make_report(connection, connection_bytes, catalog, catalog_bytes, artifact, None, [result])
         self.assertEqual(report["summary"]["not_run"], 1)
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(dir=Path.cwd() / "build") as temporary:
             write_interop_reports(report, Path(temporary))
             data = json.loads((Path(temporary) / "results.json").read_text(encoding="utf-8"))
             self.assertEqual(data, report)

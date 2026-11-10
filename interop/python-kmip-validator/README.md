@@ -58,6 +58,10 @@ full operation catalog. Such cases remain `not_run_documented_api_gap`; they
 are never counted as server incompatibility. Cross-language normalized
 request/response parity is not claimed by this validator run.
 
+Report output is written beneath the current working directory. The artifact
+installer writes wheels and its provenance manifest beneath the validator
+project directory; paths that escape those roots are rejected.
+
 Reports use shared schema 2.0 and produce JSON, Markdown and HTML. They
 separate KMIPKit correctness, observed server compatibility, policy
 restrictions, parity and pending coverage. Credentials, key material, TTLV

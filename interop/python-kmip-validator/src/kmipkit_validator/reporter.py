@@ -6,6 +6,16 @@ from pathlib import Path
 from .models import CaseStatus, ValidationSummary
 
 
+def resolve_report_directory(output_dir: Path) -> Path:
+    """Resolve report output beneath the invocation directory only."""
+    root = Path.cwd().resolve()
+    candidate = Path(output_dir)
+    resolved = (candidate if candidate.is_absolute() else root / candidate).resolve()
+    if not resolved.is_relative_to(root):
+        raise ValueError("report output directory must remain under the current directory")
+    return resolved
+
+
 class MatrixReporter:
     @staticmethod
     def render_ansi(summary: ValidationSummary) -> None:
@@ -135,6 +145,7 @@ th {{ background: #f1f5f9; font-weight: 600; }}
 
 def write_interop_reports(report: dict, output_dir: Path) -> None:
     """Write the shared schema-2.0 evidence in JSON, Markdown and HTML."""
+    output_dir = resolve_report_directory(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "results.json").write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"

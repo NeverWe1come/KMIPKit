@@ -22,6 +22,15 @@ DEFAULT_WHEELHOUSE = PROJECT / "build" / "wheelhouse"
 DEFAULT_MANIFEST = PROJECT / "build" / "artifact-manifest.json"
 
 
+def resolve_project_output(path: Path) -> Path:
+    """Keep generated wheel artifacts and manifests within this validator."""
+    candidate = Path(path)
+    resolved = (candidate if candidate.is_absolute() else PROJECT / candidate).resolve()
+    if not resolved.is_relative_to(PROJECT.resolve()):
+        raise ValueError("artifact output must remain under the validator project")
+    return resolved
+
+
 def digest(path: Path) -> str:
     value = hashlib.sha256()
     with path.open("rb") as stream:
@@ -99,7 +108,9 @@ def main() -> int:
         ).stdout.strip()
         if resolved != commit:
             raise ValueError("resolved library commit differs from the requested pin")
-        wheel = build_wheel(args.repository.resolve(), commit, args.wheelhouse.resolve())
+        wheelhouse = resolve_project_output(args.wheelhouse)
+        manifest_path = resolve_project_output(args.manifest)
+        wheel = build_wheel(args.repository.resolve(), commit, wheelhouse)
         install(wheel)
         manifest = {
             "schema_version": "1.0",
@@ -109,8 +120,8 @@ def main() -> int:
             "artifact_file": str(wheel.resolve()),
             "artifact_sha256": digest(wheel),
         }
-        args.manifest.parent.mkdir(parents=True, exist_ok=True)
-        args.manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     except (KeyError, OSError, ValueError, RuntimeError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
         print(f"Python artifact installation failed: {type(error).__name__}", file=sys.stderr)
         return 1
