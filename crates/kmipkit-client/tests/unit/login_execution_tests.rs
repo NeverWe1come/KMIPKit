@@ -18,8 +18,11 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use kmipkit_protocol::LoginRequest;
+use crate::execute_test_support::{
+    asynchronous_response_bytes, asynchronous_response_bytes_with_version, test_item,
+    test_structure,
+};
+use kmipkit_protocol::{LoginRequest, ProtocolVersion};
 
 const LOGIN: u32 = 0x0000_002D;
 const SUCCESS: u32 = 0;
@@ -205,6 +208,36 @@ fn login_matches_pinned_fixture_request_and_returns_one_secret_safe_ticket() {
         operation_and_payload_tags(captured.borrow().as_deref().expect("request captured")),
         Some((LOGIN, vec![LEASE_TIME, REQUEST_COUNT]))
     );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn login_kmip_20_session_tags_pass_version_gate() {
+    let response = asynchronous_response_bytes_with_version(
+        ProtocolVersion::V2_0,
+        LOGIN,
+        SUCCESS,
+        None,
+        None,
+        Some(ticket_payload()),
+    );
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let outcome = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(fixture_request()))
+                .with_protocol_version(ProtocolVersion::V2_0),
+            &CodecLimits::defaults(),
+        )
+        .expect("KMIP 2.0 Login request and Ticket response pass version validation");
+
+    assert_eq!(outcome.get(0).expect("one Login result").outcome().result().status().raw(), SUCCESS);
+    let request = captured.borrow();
+    let request = request.as_deref().expect("Login request reached transport");
+    assert!(request_contains_tag(request, REQUEST_COUNT));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 

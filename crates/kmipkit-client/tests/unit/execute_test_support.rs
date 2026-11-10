@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
+use kmipkit_protocol::ProtocolVersion;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
@@ -223,6 +224,26 @@ pub(crate) fn asynchronous_response_bytes(
     )
 }
 
+pub(crate) fn asynchronous_response_bytes_with_version(
+    protocol_version: ProtocolVersion,
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    correlation_value: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
+    one_item_response_bytes_with_version(
+        protocol_version,
+        operation,
+        status,
+        reason,
+        None,
+        None,
+        correlation_value,
+        payload,
+    )
+}
+
 pub(crate) fn asynchronous_response_with_batch_id_bytes(
     operation: u32,
     status: u32,
@@ -251,9 +272,37 @@ pub(crate) fn one_item_response_bytes(
     asynchronous_correlation_value: Option<&[u8]>,
     payload: Option<Structure>,
 ) -> Vec<u8> {
+    one_item_response_bytes_with_version(
+        ProtocolVersion::V2_1,
+        operation,
+        status,
+        reason,
+        result_message,
+        unique_batch_item_id,
+        asynchronous_correlation_value,
+        payload,
+    )
+}
+
+pub(crate) fn one_item_response_bytes_with_version(
+    protocol_version: ProtocolVersion,
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    result_message: Option<&str>,
+    unique_batch_item_id: Option<&[u8]>,
+    asynchronous_correlation_value: Option<&[u8]>,
+    payload: Option<Structure>,
+) -> Vec<u8> {
     let response_version = structure([
-        item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
-        item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        item(
+            PROTOCOL_VERSION_MAJOR,
+            Value::integer(protocol_version.major()),
+        ),
+        item(
+            PROTOCOL_VERSION_MINOR,
+            Value::integer(protocol_version.minor()),
+        ),
     ]);
     let header = structure([
         item(PROTOCOL_VERSION, Value::structure(response_version)),

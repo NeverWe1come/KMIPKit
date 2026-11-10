@@ -115,15 +115,26 @@ fn test_version_gate_validates_operations_and_spans() {
 
 #[test]
 fn test_version_gate_validates_tags() {
-    let rotate_attr = 0x0042_014A; // Rotate Automatic (2.1)
+    let session_tag_range = 0x0042_0149..=0x0042_0152;
+    let rotate_attr = 0x0042_016B; // Rotate Automatic (2.1)
+    let constraints = 0x0042_0168; // Constraints (2.1)
     let pqc_attr = 0x0042_01C2; // NIST Security Category (3.0)
     let unknown_tag = 0x0042_9999;
 
+    // KMIP 2.0 §11.54, Table 446 assigns Ticket through Defaults Information.
+    // These include the tags used by Login, Logout and Delegated Login.
+    for tag in session_tag_range {
+        assert_eq!(VersionGate::tag_span(tag), None, "tag 0x{tag:08X}");
+        assert!(VersionGate::validate_tag(ProtocolVersion::V2_0, tag).is_ok());
+        assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, tag).is_ok());
+    }
+
     assert!(VersionGate::tag_span(rotate_attr).is_some());
+    assert!(VersionGate::tag_span(constraints).is_some());
     assert!(VersionGate::tag_span(pqc_attr).is_some());
     assert_eq!(VersionGate::tag_span(unknown_tag), None);
 
-    // KMIP 2.0 rejects Rotate Automatic
+    // KMIP 2.0 rejects the actual 2.1 Rotate Automatic and Constraints tags.
     assert_eq!(
         VersionGate::validate_tag(ProtocolVersion::V2_0, rotate_attr).unwrap_err(),
         VersionGateError::AttributeNotSupportedInVersion {
@@ -132,8 +143,16 @@ fn test_version_gate_validates_tags() {
             introduced: ProtocolVersion::V2_1,
         }
     );
+    assert_eq!(
+        VersionGate::validate_tag(ProtocolVersion::V2_0, constraints).unwrap_err(),
+        VersionGateError::AttributeNotSupportedInVersion {
+            tag: constraints,
+            negotiated: ProtocolVersion::V2_0,
+            introduced: ProtocolVersion::V2_1,
+        }
+    );
 
-    // KMIP 2.1 accepts Rotate Automatic, rejects PQC attribute
+    // KMIP 2.1 accepts actual 2.1 tags, rejects the 3.0 PQC attribute.
     assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, rotate_attr).is_ok());
     assert_eq!(
         VersionGate::validate_tag(ProtocolVersion::V2_1, pqc_attr).unwrap_err(),

@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::{LogoutRequest, SecretBytes, Ticket, TicketType};
+use kmipkit_protocol::{LogoutRequest, ProtocolVersion, SecretBytes, Ticket, TicketType};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
@@ -18,7 +18,10 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
 };
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, asynchronous_response_bytes_with_version, test_item,
+    test_structure,
+};
 
 const LOGOUT: u32 = 0x0000_002E;
 const SUCCESS: u32 = 0;
@@ -124,6 +127,33 @@ fn logout_sends_one_ticket_and_exposes_empty_success_without_leaking_it() {
             .windows(SECRET_SENTINEL.len())
             .any(|w| w == SECRET_SENTINEL)
     );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn logout_kmip_20_ticket_tags_pass_version_gate() {
+    let (mut client, transport, captured) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes_with_version(
+            ProtocolVersion::V2_0,
+            LOGOUT,
+            SUCCESS,
+            None,
+            None,
+            Some(test_structure([])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+
+    let outcome = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request()))
+                .with_protocol_version(ProtocolVersion::V2_0),
+            &CodecLimits::defaults(),
+        )
+        .expect("KMIP 2.0 Logout request and success response pass version validation");
+
+    assert_eq!(outcome.get(0).expect("one Logout result").outcome().result().status().raw(), SUCCESS);
+    assert!(captured.borrow().is_some(), "Logout request reached transport");
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
