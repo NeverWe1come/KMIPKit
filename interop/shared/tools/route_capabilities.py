@@ -252,7 +252,7 @@ def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37')
         data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
-            'case_categories': categories, 'protocol_versions': ['2.0', '2.1'],
+            'case_categories': categories + (['normative_inventory'] if generic else []), 'protocol_versions': ['2.0', '2.1'],
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
             'source_paths': [path], 'artifact_commit': commit,
             'execution_route_id': execution_id, 'artifact_verification': 'required'})

@@ -22,7 +22,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -63,7 +64,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -3804,7 +3806,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -3845,7 +3848,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -7586,7 +7590,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -7627,7 +7632,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -11368,7 +11374,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
@@ -11409,7 +11416,8 @@
         "multipart_crypto",
         "negative_and_boundary",
         "batch_workflows",
-        "asynchronous_workflows"
+        "asynchronous_workflows",
+        "normative_inventory"
       ],
       "protocol_versions": [
         "2.0",
