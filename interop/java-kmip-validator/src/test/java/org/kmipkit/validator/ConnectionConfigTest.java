@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConnectionConfigTest {
@@ -15,6 +16,8 @@ class ConnectionConfigTest {
     void acceptsTheSharedDedicatedEnvironmentContract() throws Exception {
         var connection = ConnectionConfig.load(EXAMPLE);
         assertDoesNotThrow(() -> connection.requireLiveExecution(false));
+        assertEquals("Unspecified KMIP server", connection.serverProduct());
+        assertEquals("not-recorded", connection.serverVersion());
     }
 
     @Test

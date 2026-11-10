@@ -23,7 +23,8 @@ class MainContractTest {
         Path connection = connection();
         Path catalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
-        Path output = temporaryDirectory.resolve("report");
+        Path output = Path.of(System.getProperty("kmipkit.reportOutputDir",
+                temporaryDirectory.resolve("report").toString()));
 
         assertCommand(0, "plan", "--connection", connection.toString(), "--catalog", catalog.toString());
         assertCommand(0, "preflight", "--connection", connection.toString(), "--catalog", catalog.toString(),
