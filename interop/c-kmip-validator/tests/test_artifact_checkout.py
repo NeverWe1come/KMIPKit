@@ -92,16 +92,24 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         self.assertIn("fetch-depth: 0", checkout_step)
 
     def test_pinned_c_artifact_is_consistent_and_in_release_history(self):
+        support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
+            encoding="utf-8"
+        )
         installer = (ROOT / "interop/c-kmip-validator/tools/install_artifact.py").read_text(
             encoding="utf-8"
         )
         verifier = (ROOT / "interop/c-kmip-validator/tools/verify_artifact.py").read_text(
             encoding="utf-8"
         )
-        match = re.search(r'^PIN = "([0-9a-f]{40})"$', installer, re.MULTILINE)
+        match = re.search(r'^PIN = "([0-9a-f]{40})"$', support, re.MULTILINE)
         self.assertIsNotNone(match)
         pin = match.group(1)
-        self.assertIn(f'PIN = "{pin}"', verifier)
+        for script in (installer, verifier):
+            self.assertIn("from artifact_support import", script)
+            self.assertNotRegex(script, r"^PIN = ", msg="release pin must have one source of truth")
+            self.assertNotRegex(script, r"^def sha256\(", msg="artifact hashing must be shared")
+        self.assertEqual(support.count("def sha256("), 1)
+        self.assertEqual(support.count("def verify_installed_artifact("), 1)
 
         cmake = (ROOT / "interop/c-kmip-validator/CMakeLists.txt").read_text(encoding="utf-8")
         workflow = WORKFLOW.read_text(encoding="utf-8")
