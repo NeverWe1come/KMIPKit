@@ -239,6 +239,67 @@ static bool request_item_is_valid(kmipkit_client_batch_item_t *item,
     return false;
 }
 
+static bool get_attribute_list_response_matches_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_unique_identifier_v1_t response_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    uint64_t reference_count = 0;
+    int32_t status = kmipkit_client_batch_item_response_get_attribute_list(
+        response_item, &present, &response_identifier, NULL, 0, &reference_count);
+    bool valid = status == 0 && present && reference_count > 0 &&
+        reference_count <= UINT64_C(4096) &&
+        same_text_identifier(created_identifier, &response_identifier);
+    kmipkit_attribute_reference_v1_t *references = NULL;
+    if (valid) {
+        references = calloc((size_t)reference_count, sizeof(*references));
+        valid = references != NULL;
+        if (!valid) status = KMIPKIT_ERROR_RESOURCE_LIMIT;
+    }
+    for (uint64_t index = 0; valid && index < reference_count; ++index) {
+        references[index].struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t);
+        references[index].abi_version = 1;
+    }
+    uint64_t copied_reference_count = 0;
+    if (valid) {
+        status = kmipkit_client_batch_item_response_get_attribute_list(
+            response_item, &present, &response_identifier, references,
+            reference_count, &copied_reference_count);
+        valid = status == 0 && present && copied_reference_count == reference_count &&
+            same_text_identifier(created_identifier, &response_identifier);
+    }
+    bool algorithm_found = false;
+    bool length_found = false;
+    for (uint64_t index = 0; valid && index < copied_reference_count; ++index) {
+        if (references[index].kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG &&
+            references[index].tag_value == UINT32_C(0x420028)) algorithm_found = true;
+        if (references[index].kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG &&
+            references[index].tag_value == UINT32_C(0x42002A)) length_found = true;
+    }
+    free(references);
+    *out_status = status;
+    return valid && algorithm_found && length_found;
+}
+
+static bool destroy_response_matches_key(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_unique_identifier_v1_t destroyed_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    *out_status = kmipkit_client_batch_item_response_destroy(
+        response_item, &present, &destroyed_identifier);
+    return *out_status == 0 && present &&
+        same_text_identifier(created_identifier, &destroyed_identifier);
+}
+
 static bool create_authentication(kmip_live_client_t *client,
                                   kmipkit_authentication_t **out_authentication) {
     const char *username = getenv(client->username_env);
@@ -890,9 +951,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             "the public C Login builder only supports KMIP 2.1");
     }
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0;
+    bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
+    bool attribute_lifecycle_workflow = get_attributes_workflow || get_attribute_list_workflow;
     if (strcmp(test_case->operation, "Get Attributes") == 0 && !get_attributes_workflow) {
         return outcome_not_run(
             "attribute-specific Get Attributes recipes are not yet mapped to isolated C fixtures");
+    }
+    if (strcmp(test_case->operation, "Get Attribute List") == 0 && !get_attribute_list_workflow) {
+        return outcome_not_run(
+            "attribute-specific Get Attribute List recipes are not yet mapped to isolated C fixtures");
     }
 
     kmipkit_client_batch_item_t *item = NULL;
@@ -920,7 +987,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
     } else if (strcmp(test_case->operation, "Login") == 0) {
         status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
-    } else if (get_attributes_workflow) {
+    } else if (attribute_lifecycle_workflow) {
         kmipkit_unique_identifier_v1_t placeholder = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
             .abi_version = 1,
@@ -939,8 +1006,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             }
         }
         if (status == 0) {
-            request_construction_step = "Get Attributes using ID Placeholder";
-            status = kmipkit_client_batch_item_get_attributes(NULL, NULL, 0, &item);
+            request_construction_step = "attribute read using ID Placeholder";
+            status = get_attributes_workflow
+                ? kmipkit_client_batch_item_get_attributes(NULL, NULL, 0, &item)
+                : kmipkit_client_batch_item_get_attribute_list(NULL, &item);
             if (status == 0 && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -997,7 +1066,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
     status = kmipkit_client_batch_create(&batch);
-    if (status == 0 && get_attributes_workflow) {
+    if (status == 0 && attribute_lifecycle_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
@@ -1046,14 +1115,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
-    uint64_t expected_response_count = get_attributes_workflow ? 3 : 1;
+    uint64_t expected_response_count = attribute_lifecycle_workflow ? 3 : 1;
     if (status != 0 || response_count != expected_response_count) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                  "KMIPKit returned an unexpected response item count");
         goto cleanup;
     }
-    if (get_attributes_workflow) {
+    if (attribute_lifecycle_workflow) {
         kmipkit_client_batch_item_metadata_v2_t setup_metadata = {
             .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
             .abi_version = 2
@@ -1107,9 +1176,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit did not expose the typed Create response for the isolated fixture");
             goto cleanup;
         }
+        if (!destroy_response_matches_key(cleanup_response_item, &created_identifier, &status)) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not confirm cleanup of the isolated test object");
+            goto cleanup;
+        }
     }
     status = kmipkit_client_batch_response_item_at(
-        response, get_attributes_workflow ? 1 : 0, &response_item);
+        response, attribute_lifecycle_workflow ? 1 : 0, &response_item);
     if (status != 0) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
@@ -1298,19 +1373,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit Get Attributes did not return the created AES-128 attributes");
             goto cleanup;
         }
-        uint8_t destroyed_present = 0;
-        kmipkit_unique_identifier_v1_t destroyed_identifier = {
-            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-            .abi_version = 1
-        };
-        status = kmipkit_client_batch_item_response_destroy(
-            cleanup_response_item, &destroyed_present, &destroyed_identifier);
-        if (status != 0 || !destroyed_present ||
-            !same_text_identifier(&created_identifier, &destroyed_identifier)) {
+    } else if (get_attribute_list_workflow) {
+        if (!get_attribute_list_response_matches_key(response_item, &created_identifier, &status)) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit did not confirm cleanup of the isolated test object");
+                     "KMIPKit Get Attribute List omitted the created AES-128 attributes");
+            goto cleanup;
         }
     }
 

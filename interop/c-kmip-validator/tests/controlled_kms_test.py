@@ -167,7 +167,11 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
-    expected_operations = (1, 8, 11, 12, 20, 24, 44) if protocol_version == "2.0" else (1, 8, 11, 12, 20, 24, 30, 44, 45, 59)
+    expected_operations = (
+        (1, 11, 20, 1, 12, 20, 8, 24, 44)
+        if protocol_version == "2.0"
+        else (1, 11, 20, 1, 12, 20, 8, 24, 30, 44, 45, 59)
+    )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
