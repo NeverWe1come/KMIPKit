@@ -1,63 +1,72 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kmipkit.org/schemas/validation-results.schema.json",
-  "title": "KMIP 2.1 Validation Suite Results",
+  "title": "KMIPKit Interoperability Run Evidence",
   "type": "object",
-  "required": ["run_id", "timestamp", "language", "server_id", "summary", "results"],
+  "required": ["schema_version", "run_id", "tested_at", "language", "server", "protocol_version", "catalog_sha256", "execution", "summary", "cases"],
   "properties": {
-    "run_id": { "type": "string" },
-    "timestamp": { "type": "string" },
-    "language": { "type": "string", "enum": ["rust", "c", "java", "python"] },
-    "server_id": { "type": "string" },
+    "schema_version": { "const": "2.0" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "tested_at": { "type": "string", "format": "date-time" },
+    "language": { "enum": ["rust", "c", "java", "python"] },
+    "server": {
+      "type": "object",
+      "required": ["id", "product", "version", "configuration_fingerprint"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "vendor": { "type": "string" },
+        "product": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "configuration_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "protocol_version": { "enum": ["2.0", "2.1"] },
+    "catalog_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "execution": {
+      "type": "object",
+      "required": ["transport", "encoding", "api_level", "library_commit", "artifact_sha256"],
+      "properties": {
+        "transport": { "enum": ["raw_tls", "https"] },
+        "encoding": { "enum": ["TTLV", "JSON", "XML"] },
+        "api_level": { "enum": ["high-level", "typed-protocol", "generic-ttlv"] },
+        "library_commit": { "type": "string", "minLength": 7 },
+        "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
     "summary": {
       "type": "object",
-      "required": ["total_cases", "passed", "failed", "unsupported_by_server"],
+      "required": ["total", "passed", "failed", "unsupported", "policy_restricted", "not_run"],
       "properties": {
-        "total_cases": { "type": "integer" },
-        "passed": { "type": "integer" },
-        "failed": { "type": "integer" },
-        "unsupported_by_server": { "type": "integer" },
-        "unexpected_success": { "type": "integer" }
-      }
+        "total": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "unsupported": { "type": "integer", "minimum": 0 },
+        "policy_restricted": { "type": "integer", "minimum": 0 },
+        "not_run": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
     },
-    "results": {
+    "cases": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["case_id", "operation", "status"],
+        "required": ["case_id", "status", "library_correctness", "server_compatibility", "parity"],
         "properties": {
-          "case_id": { "type": "string" },
-          "operation": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": [
-              "passed",
-              "failed",
-              "unsupported_skipped",
-              "unsupported_verified_rejected",
-              "unexpected_success"
-            ]
-          },
-          "encodings_verified": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "api_levels_verified": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "duration_ms": { "type": "number" },
-          "error_detail": {
-            "type": "object",
-            "properties": {
-              "message": { "type": "string" },
-              "result_reason": { "type": "string" },
-              "encoding": { "type": "string" },
-              "api_level": { "type": "string" }
-            }
-          }
-        }
+          "case_id": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["passed", "failed", "server_unsupported", "policy_restricted", "not_run"] },
+          "library_correctness": { "enum": ["passed", "failed", "not_checked"] },
+          "server_compatibility": { "enum": ["supported", "unsupported", "policy_restricted", "unknown"] },
+          "parity": { "enum": ["matched", "mismatched", "not_compared"] },
+          "duration_ms": { "type": "number", "minimum": 0 },
+          "result_status": { "type": "string" },
+          "result_reason": { "type": "string" },
+          "diagnostic": { "type": "string" }
+        },
+        "additionalProperties": false
       }
     }
-  }
+  },
+  "additionalProperties": false
 }
