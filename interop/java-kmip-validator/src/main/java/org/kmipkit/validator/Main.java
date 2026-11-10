@@ -60,10 +60,11 @@ public final class Main {
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
         long typed = "typed-protocol".equals(connection.apiLevel())
-                ? countCases(applicable, routes, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
-        long recipePending = countCases(applicable, routes, JavaRouteInventory.Status.TYPED_API_PENDING);
-        long payloadOnly = countCases(applicable, routes, JavaRouteInventory.Status.PAYLOAD_ONLY);
-        long apiUnavailable = countCases(applicable, routes, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
+                ? countCases(applicable, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
+        long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
+        long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
+        long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
+        long workflowUnavailable = countCases(applicable, JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE);
         long mutation = applicable.stream().filter(testCase -> "mutating".equals(testCase.execution().mutation())).count();
         out.println("KMIPKit Java interoperability plan");
         out.println("Server ID: " + connection.serverId());
@@ -73,6 +74,7 @@ public final class Main {
         out.println("Server exchanges executable through selected Java API level: " + typed);
         out.println("Public typed constructors awaiting catalog recipes: " + recipePending);
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
+        out.println("Server-initiated workflows without a Java listener: " + workflowUnavailable);
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
         out.println("Capability profiles are hypotheses and do not filter cases.");
         return 0;
@@ -106,7 +108,8 @@ public final class Main {
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
-                        && routes.get(testCase.operation()).status() == JavaRouteInventory.Status.EXECUTABLE_TYPED
+                        && JavaRouteInventory.routeFor(testCase).status()
+                                == JavaRouteInventory.Status.EXECUTABLE_TYPED
                         && "typed-protocol".equals(connection.apiLevel())
                         && !"2.0".equals(connection.protocolVersion()));
         JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
@@ -169,8 +172,8 @@ public final class Main {
                     "The pinned release artifact does not yet preserve Java KMIP 2.0 client configuration.",
                     elapsedMillis(start));
         }
-        if (!hasTypedRoute(testCase.operation())) {
-            return JavaKmipDriver.CaseOutcome.notRun(JavaRouteInventory.routeFor(testCase.operation()).reason(),
+        if (!hasTypedRoute(testCase)) {
+            return JavaKmipDriver.CaseOutcome.notRun(JavaRouteInventory.routeFor(testCase).reason(),
                     elapsedMillis(start));
         }
         if (driver == null) {
@@ -214,14 +217,13 @@ public final class Main {
                 testCase.execution().protocolVersions().contains(version)).toList();
     }
 
-    private static boolean hasTypedRoute(String operation) {
-        return JavaRouteInventory.routeFor(operation).status() == JavaRouteInventory.Status.EXECUTABLE_TYPED;
+    private static boolean hasTypedRoute(CatalogLoader.CatalogCase testCase) {
+        return JavaRouteInventory.routeFor(testCase).status() == JavaRouteInventory.Status.EXECUTABLE_TYPED;
     }
 
-    private static long countCases(List<CatalogLoader.CatalogCase> cases,
-            Map<String, JavaRouteInventory.Route> routes, JavaRouteInventory.Status status) {
+    private static long countCases(List<CatalogLoader.CatalogCase> cases, JavaRouteInventory.Status status) {
         return cases.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
-                .filter(testCase -> routes.get(testCase.operation()).status() == status).count();
+                .filter(testCase -> JavaRouteInventory.routeFor(testCase).status() == status).count();
     }
 
     private static double elapsedMillis(long start) {

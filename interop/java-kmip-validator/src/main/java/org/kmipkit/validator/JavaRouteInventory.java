@@ -17,7 +17,10 @@ public final class JavaRouteInventory {
     /** Returns a route classification for every operation found in the catalog. */
     public static Map<String, Route> classify(CatalogLoader.Catalog catalog) {
         var operations = new TreeSet<String>();
-        catalog.cases().forEach(testCase -> operations.add(testCase.operation()));
+        catalog.cases().forEach(testCase -> {
+            operations.add(testCase.operation());
+            routeFor(testCase);
+        });
         var classified = new LinkedHashMap<String, Route>();
         for (String operation : operations) {
             Route route = ROUTES.get(operation);
@@ -32,6 +35,16 @@ public final class JavaRouteInventory {
     /** Returns a route status for one operation, using an explicit fallback for future catalog additions. */
     public static Route routeFor(String operation) {
         return ROUTES.getOrDefault(operation, new Route(operation, Status.UNCLASSIFIED, "No Java route classification exists."));
+    }
+
+    /** Classifies one case while preserving its client-to-server or server-to-client workflow. */
+    public static Route routeFor(CatalogLoader.CatalogCase testCase) {
+        String workflow = testCase.requires().path("workflow_type").asText();
+        if ("server_to_client".equals(workflow)) {
+            return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
+                    "This catalog case requires a server-initiated workflow; the Java consumer has no server request listener.");
+        }
+        return routeFor(testCase.operation());
     }
 
     private static Map<String, Route> createRoutes() {
@@ -135,6 +148,7 @@ public final class JavaRouteInventory {
         TYPED_API_PENDING,
         PAYLOAD_ONLY,
         NO_PUBLIC_ROUTE,
+        WORKFLOW_UNAVAILABLE,
         UNCLASSIFIED
     }
 
