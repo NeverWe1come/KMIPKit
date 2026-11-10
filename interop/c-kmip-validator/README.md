@@ -54,13 +54,15 @@ The capability profile is informational; it never suppresses a probe.
 The pinned release artifact preserves the configured KMIP version. Controlled
 TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login and
 the ordered Create/Destroy, Create/Activate/Revoke/Destroy,
-Create/Check/Revoke/Destroy, Create/Revoke/Destroy, Create/Get/Destroy,
-Create/Get Attributes/Destroy and Create/Get Attribute List/Destroy lifecycles
-under KMIP 2.1. Under KMIP 2.0 they exercise Locate, Query, Log and all seven
-lifecycle recipes. Activate moves the isolated key out of Pre-Active before
-revocation; Check verifies the returned object identifier, then revokes the
-isolated object before Destroy. Revoke verifies its returned identifier before
-Destroy. Each lifecycle probe
+Create/Check/Revoke/Destroy, Create/Revoke/Destroy, Create/Destroy/Revoke/Destroy,
+Create/Get/Destroy, Create/Get Attributes/Destroy and Create/Get Attribute
+List/Destroy lifecycles under KMIP 2.1. Under KMIP 2.0
+they exercise Locate, Query, Log and all eight lifecycle recipes. Activate
+moves the isolated key out of Pre-Active before revocation; Check verifies the
+returned object identifier, then revokes the isolated object before Destroy.
+Revoke verifies its returned identifier before Destroy. Destroy verifies its
+target response and treats Object Not Found on the best-effort cleanup items as
+expected after deletion. Each lifecycle probe
 requests a generated AES-128 key, checks the response against the created
 object, and enables batch continuation so cleanup still runs after a failed
 operation. Get also checks the returned key format, algorithm and nonempty key
