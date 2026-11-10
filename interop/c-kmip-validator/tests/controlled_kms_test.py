@@ -57,6 +57,12 @@ def response(operation: int, protocol_minor: int) -> bytes:
             if protocol_minor == 1
             else b""
         )
+    elif operation == 45:
+        payload_value = tlv(
+            0x420149,
+            1,
+            enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-login-ticket"),
+        )
     batch_item = tlv(
         0x42000F,
         1,
@@ -137,11 +143,12 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
-    expected_operations = (8, 24, 44) if protocol_version == "2.0" else (8, 24, 30, 44, 59)
+    expected_operations = (8, 24, 44) if protocol_version == "2.0" else (8, 24, 30, 44, 45, 59)
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
-        else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log", "test-op-locate")
+        else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
+              "test-op-locate", "test-op-login")
     )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
@@ -323,7 +330,7 @@ def main() -> int:
             )
         if not markdown_path.is_file() or not html_path.is_file():
             raise AssertionError("requested human-readable reports were not written")
-        secret_values = (b"interop-user", b"interop-password")
+        secret_values = (b"interop-user", b"interop-password", b"controlled-login-ticket")
         for report_path in (result_path, markdown_path, html_path):
             report_bytes = report_path.read_bytes()
             if any(secret in report_bytes for secret in secret_values):
