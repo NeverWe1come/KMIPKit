@@ -18,4 +18,10 @@ class JavaResponseChecksTest {
                 List.of(new ProtocolVersion(2, 0)), requested));
         assertFalse(JavaResponseChecks.advertisesRequestedVersion(List.of(), requested));
     }
+
+    @Test
+    void queryOperationsFunctionMustReturnAtLeastOneOperation() {
+        assertTrue(JavaResponseChecks.queryAdvertisesOperations(List.of(0x3bL)));
+        assertFalse(JavaResponseChecks.queryAdvertisesOperations(List.of()));
+    }
 }
