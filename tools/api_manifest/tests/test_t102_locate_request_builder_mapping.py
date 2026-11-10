@@ -73,6 +73,29 @@ LOCATE_EXISTING_OPERATION_DECLARATIONS = {
     "T038:locate:python:type:03",
     "T038:locate:python:located_items:04",
     "T038:locate:python:unique_identifiers:05",
+    "rust-observed-0ed7f834e1e763c2bd24",
+    "rust-observed-1fb2f0ef8c85083f7aa2",
+    "rust-observed-2d35ba3aa643b1999e00",
+    "rust-observed-49d03cfe024d950280d2",
+    "rust-observed-4b4b00d4c5e187b32c38",
+    "rust-observed-5343a4e9de6bebc5507b",
+    "rust-observed-61a01d54f9ea83b9ae99",
+    "rust-observed-6aebffd1646efc60f126",
+    "rust-observed-756de058d68ae474dfba",
+    "rust-observed-7af3e273e3fd323acf39",
+    "rust-observed-7cb50a47a88a215f19f2",
+    "rust-observed-7e54c3deafa02329aaaa",
+    "rust-observed-823a64ae9538c5523f9d",
+    "rust-observed-9bb50225ddd5f1e28052",
+    "rust-observed-a723201e26375e01d907",
+    "rust-observed-a9946cf80e765b5b504e",
+    "rust-observed-cc1ac744ce26b9a9814b",
+    "rust-observed-d7c4979851ede798a073",
+    "rust-observed-d8189aa94d1d4a30f11e",
+    "rust-observed-dc67a63a9f318f844a4c",
+    "rust-observed-ddecc4abd5246e6facfd",
+    "rust-observed-f09e32ad434e77d86642",
+    "rust-observed-fabbb8c6a23f584c3668",
 }
 
 LOCATE_ATTRIBUTE_REQUEST_DECLARATIONS = {
@@ -97,6 +120,18 @@ LOCATE_ATTRIBUTE_REQUEST_DECLARATIONS = {
     "rust-observed-c0872e13783c072c07fb",
     "rust-observed-6eb74f84ebb61fd70253",
     "rust-observed-843c51bfe3611b61603b",
+    "rust-observed-0ed7f834e1e763c2bd24",
+    "rust-observed-1fb2f0ef8c85083f7aa2",
+    "rust-observed-2d35ba3aa643b1999e00",
+    "rust-observed-756de058d68ae474dfba",
+    "rust-observed-7af3e273e3fd323acf39",
+    "rust-observed-9bb50225ddd5f1e28052",
+    "rust-observed-a723201e26375e01d907",
+    "rust-observed-a9946cf80e765b5b504e",
+    "rust-observed-cc1ac744ce26b9a9814b",
+    "rust-observed-d7c4979851ede798a073",
+    "rust-observed-dc67a63a9f318f844a4c",
+    "rust-observed-ddecc4abd5246e6facfd",
 }
 
 LOCATE_FUNCTION_IDS = {
@@ -188,7 +223,7 @@ class T102LocateRequestBuilderMappingTests(unittest.TestCase):
             for declarations in operation["declarations"].values()
             for declaration_id in declarations
         }
-        self.assertEqual(51, len(locate_ids))
+        self.assertEqual(74, len(locate_ids))
         self.assertEqual(
             LOCATE_EXISTING_OPERATION_DECLARATIONS | {
                 declaration_id for declaration_id, _ in EXPECTED

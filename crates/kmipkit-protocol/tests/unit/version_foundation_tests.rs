@@ -116,7 +116,7 @@ fn test_version_gate_validates_operations_and_spans() {
 #[test]
 fn test_version_gate_validates_tags() {
     let rotate_attr = 0x0042_014A; // Rotate Automatic (2.1)
-    let pqc_attr = 0x0042_0153; // PQC (3.0)
+    let pqc_attr = 0x0042_01C2; // NIST Security Category (3.0)
     let unknown_tag = 0x0042_9999;
 
     assert!(VersionGate::tag_span(rotate_attr).is_some());
@@ -152,6 +152,33 @@ fn test_version_gate_validates_tags() {
         VersionGate::validate_tag(ProtocolVersion::from_raw(1, 2), rotate_attr).unwrap_err(),
         VersionGateError::UnsupportedProtocolVersion(ProtocolVersion::from_raw(1, 2))
     );
+}
+
+#[test]
+fn test_version_gate_uses_exact_kmip_30_tag_assignments() {
+    // Object Defaults and Protection Storage Masks are assigned by KMIP 2.0/2.1.
+    let object_defaults = 0x0042_0153;
+    let protection_storage_masks = 0x0042_015F;
+    // NIST Security Category is assigned in KMIP 3.0 §11.58, Table 605.
+    let nist_security_category = 0x0042_01C2;
+
+    assert_eq!(VersionGate::tag_span(object_defaults), None);
+    assert_eq!(VersionGate::tag_span(protection_storage_masks), None);
+    assert_eq!(
+        VersionGate::tag_span(nist_security_category),
+        Some(VersionSpan::since(ProtocolVersion::V3_0))
+    );
+    assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, object_defaults).is_ok());
+    assert!(VersionGate::validate_tag(ProtocolVersion::V2_1, protection_storage_masks).is_ok());
+    assert_eq!(
+        VersionGate::validate_tag(ProtocolVersion::V2_1, nist_security_category).unwrap_err(),
+        VersionGateError::AttributeNotSupportedInVersion {
+            tag: nist_security_category,
+            negotiated: ProtocolVersion::V2_1,
+            introduced: ProtocolVersion::V3_0,
+        }
+    );
+    assert!(VersionGate::validate_tag(ProtocolVersion::V3_0, nist_security_category).is_ok());
 }
 
 #[test]

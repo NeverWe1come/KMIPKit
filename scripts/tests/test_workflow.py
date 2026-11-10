@@ -44,6 +44,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def read_gradle_wrapper_properties(self) -> dict[str, str]:
+        wrapper_properties = REPOSITORY_ROOT / "bindings/java/gradle/wrapper/gradle-wrapper.properties"
+        return {
+            key: value
+            for line in wrapper_properties.read_text(encoding="utf-8").splitlines()
+            if "=" in line
+            for key, value in [line.split("=", maxsplit=1)]
+        }
+
     def assert_generator_check_step(
         self,
         job: str,
@@ -128,6 +137,16 @@ class WorkflowContractTests(unittest.TestCase):
             command="python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check",
         )
 
+    def test_normative_inventory_checks_generated_named_values(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "normative-inventory")
+        self.assert_generator_check_step(
+            job,
+            name="Verify generated named protocol values",
+            step_id="verify-generated-named-protocol-values",
+            command="python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check",
+        )
+
     def test_normative_inventory_checks_generated_client_profiles(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")
@@ -146,6 +165,28 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(line=line):
                 self.assertRegex(line, r"@[0-9a-f]{40}\s+#\s+.+v\d")
                 self.assertNotRegex(line, r"@(?:v\d|main|master)\b")
+
+    def require_stacked_pull_request_trigger(self, workflow_name: str) -> str:
+        contents = (REPOSITORY_ROOT / ".github" / "workflows" / workflow_name).read_text(
+            encoding="utf-8"
+        )
+        trigger = re.search(r"(?ms)^on:\s*\n(.*?)(?=^permissions:|^jobs:)", contents)
+        self.assertIsNotNone(trigger, workflow_name)
+        event = re.search(
+            r"(?ms)^  pull_request:\s*\n(.*?)(?=^  [a-z][\w-]*:|\Z)",
+            trigger.group(1),
+        )
+        self.assertIsNotNone(event, f"{workflow_name} must support pull_request.")
+        return event.group(1)
+
+    def test_ci_and_security_workflows_run_on_stacked_feature_pull_requests(self) -> None:
+        workflow_names = ("ci.yml", "codeql.yml", "zizmor.yml")
+        for workflow_name in workflow_names:
+            with self.subTest(workflow=workflow_name):
+                self.assertIn(
+                    "feature/KMIPKIT-*",
+                    self.require_stacked_pull_request_trigger(workflow_name),
+                )
 
     def test_workflow_has_no_secrets_or_repository_writes(self) -> None:
         contents = self.require_workflow()
@@ -929,6 +970,14 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             with self.subTest(required=required):
                 self.assertIn(required, smoke)
+
+    def test_gradle_wrapper_retries_transient_distribution_download_failures(self) -> None:
+        properties = self.read_gradle_wrapper_properties()
+        minimums = {"networkTimeout": 60_000, "retries": 3, "retryBackOffMs": 1_000}
+
+        for property_name, minimum in minimums.items():
+            with self.subTest(property_name=property_name):
+                self.assertGreaterEqual(int(properties.get(property_name, "0")), minimum)
 
     def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
         contents = self.require_workflow()

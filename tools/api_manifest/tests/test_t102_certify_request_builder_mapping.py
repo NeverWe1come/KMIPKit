@@ -13,6 +13,7 @@ from tools.api_manifest.tests.t102_manifest_totals import (
     T102_APPROVED_EXCLUSIONS,
     T102_BLOCKED_CANDIDATES,
     T102_PUBLIC_DECLARATIONS,
+    without_0047_versioned_values,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -153,7 +154,7 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
 # The non-target snapshot includes subsequent approved T102 manifest slices.
-DECLARATIONS_SHA256 = "06836a3a5acda28b85051dbfb9658beb6fb6c92ef7640b886bb8b7bcaa9455a9"
+DECLARATIONS_SHA256 = "3d846a7381813e44c6122e73ea85640944af24d3dec7f1278d0f96153c76010e"
 OPERATIONS_SHA256 = "1e3a9b590c081f5f72c65a804a8daaae988f2cb0d5f1fc93ad3bb97dd694585a"
 
 
@@ -434,6 +435,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 declaration.pop("approvalSource", None)
                 declaration.pop("languageMappings", None)
                 declaration.pop("parityEvidenceIds", None)
+        other_declarations = without_0047_versioned_values(other_declarations)
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

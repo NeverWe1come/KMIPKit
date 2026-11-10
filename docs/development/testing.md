@@ -268,12 +268,14 @@ Python uses the single exact-pinned test/build requirements set in
 `bindings/python/requirements-coverage.txt`: coverage 7.10.6, pytest-cov
 6.2.1, pytest 8.4.2, CFFI 1.17.1, and Maturin 1.9.4. The committed
 coverage.py configuration selects `kmipkit` as the measured source package
-and excludes only the two Maturin-generated CFFI wrappers:
+and excludes the two Maturin-generated CFFI wrappers:
 `kmipkit/_native_ffi/__init__.py` and `kmipkit/_native_ffi/ffi.py`. They are created during
 package installation, ignored by Git, and absent from the clean checkout used
 by the aggregate job. Their behavior remains exercised through Python API
-parity tests and the CFFI, C consumer, and JNI integration suites. All
-handwritten and checked-in generated Python modules under
+parity tests and the CFFI, C consumer, and JNI integration suites. It also
+excludes the catalog-generated `kmipkit/protocol_values.py` table: the pinned
+catalog generator verifies its exact contents, and Python binding tests cover
+known and unknown enum values and mask bits. All other handwritten and checked-in generated Python modules under
 `bindings/python/src/kmipkit` remain in the 85 percent gate. In particular,
 `_generated/public_api.py` is imported and validated by
 `tests/test_generated_api_manifest.py`, so the generated API declaration
@@ -300,8 +302,12 @@ test binary and calls it under the same coverage process. This keeps the
 behavior assertions in C while making their Rust ABI calls visible to LLVM.
 The ordinary CMake consumer test still runs in the language-bindings job. The
 coverage build uses the exact-pinned `cc` 1.6.0 build dependency only when the
-coverage feature is enabled. The C header contains declarations, not
-executable lines. The handwritten JNI implementation in
+coverage feature is enabled. The generated named-value C header contains
+`static inline` lookup functions, but C headers are not part of the aggregate
+raw line-coverage inputs. Their behavior is compiled and exercised by the
+`kmipkit_named_values_consumer` C test, and the exact generated header is
+checked with `python -B tools/normative_catalog/generate_named_values.py --repo-root . --check`.
+The handwritten JNI implementation in
 `bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
 coverage instrumentation and measured from its own report; JaCoCo and Rust
 coverage do not count those C++ lines. The JNI collector is Linux-only and
@@ -309,9 +315,14 @@ requires LLVM/Clang 20.1.8. Rust raw coverage also excludes the generated
 `crates/kmipkit-protocol/src/profiles_generated.rs` metadata file: its header
 states that it contains no executable conformance rules. CI checks its bytes
 with `python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`,
-and profile selection and readiness tests exercise its metadata consumers.
-The two Python CFFI wrappers above remain the only generated-source exclusions
-within the Python adapter package; Java metadata exclusions are listed above.
+and profile selection and readiness tests exercise its metadata consumers. It
+also excludes `crates/kmipkit-protocol/src/named_values_generated.rs`,
+`bindings/c/include/kmipkit_named_value_helpers_generated.h`,
+`bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java`, and
+`bindings/python/src/kmipkit/protocol_values.py` for the same catalog-generated
+reason: the named-value generator checks exact output and consumer tests
+exercise lookup behavior. These are exact path exclusions; handwritten
+adapter and protocol code remains subject to the existing coverage gates.
 
 The aggregate job requires these inputs at the report root:
 

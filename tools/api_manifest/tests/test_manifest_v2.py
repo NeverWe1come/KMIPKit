@@ -204,6 +204,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if declaration["packageId"] == package_id
         ]
 
+    def read_c_header_surface(self) -> str:
+        header_path = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
+        helper_path = (
+            ROOT
+            / "bindings"
+            / "c"
+            / "include"
+            / "kmipkit_named_value_helpers_generated.h"
+        )
+        header = header_path.read_text(encoding="utf-8")
+        helper_include = '#include "kmipkit_named_value_helpers_generated.h"'
+        self.assertIn(helper_include, header)
+        helper_header = helper_path.read_text(encoding="utf-8")
+        return header.replace(helper_include, helper_header, 1)
+
     def _approved_exclusions_by_key(self) -> dict[tuple[str, str], dict[str, object]]:
         return {
             (exclusion["packageId"], exclusion["exportName"]): exclusion
@@ -1723,7 +1738,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_client::PendingOutcome",
         )
         rust_report = json.loads(
-            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-11-06.json").read_text(
+            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-11-07.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -6349,7 +6364,23 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     },
                 )
                 self.assertIn("lifecycle counterpart", c_exclusions[symbol]["reason"])
-                self.assertIn("distinct four-language capability", c_exclusions[symbol]["reason"])
+                self.assertIn(
+                    "distinct four-language capability",
+                    c_exclusions[symbol]["reason"],
+                )
+            elif symbol == "kmipkit_client_batch_item_response_metadata_v1":
+                metadata_mappings = declarations_by_c_symbol[symbol]
+                self.assertEqual(
+                    {item["declarationId"] for item in metadata_mappings},
+                    {
+                        "client_batch_item_response_metadata_v1:java",
+                        "client_batch_item_response_metadata_v1:python",
+                    },
+                )
+                self.assertIn(
+                    "C-only metadata accessor",
+                    c_exclusions[symbol]["reason"],
+                )
             else:
                 self.assertNotIn(symbol, declarations_by_c_symbol)
 
@@ -6698,9 +6729,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
-        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
-            encoding="utf-8"
-        )
+        header = self.read_c_header_surface()
         declarations = self.declarations_for_package("c-kmipkit")
         ready_by_kind = {
             kind: {
@@ -6793,7 +6822,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         header_encoding_macros = set(
             re.findall(r"^#define (KMIPKIT_WIRE_ENCODING_\w+)", header, re.MULTILINE)
         )
-        self.assertEqual(header_ttlv_macros | header_encoding_macros, ready_by_kind["macro"])
+        header_named_value_macros = set(
+            re.findall(
+                r"^#define (KMIPKIT_(?:ENUMERATION|BITMASK)_\w+)",
+                header,
+                re.MULTILINE,
+            )
+        )
+        self.assertEqual(
+            header_ttlv_macros | header_encoding_macros | header_named_value_macros,
+            ready_by_kind["macro"],
+        )
         header_error_macros = set(
             re.findall(r"^#define (KMIPKIT_ERROR_\w+)", header, re.MULTILINE)
         )
@@ -6820,9 +6859,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(header_encoding_macros, manifest_encoding_macros)
 
     def test_c_header_only_declares_ready_manifest_entries(self) -> None:
-        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
-            encoding="utf-8"
-        )
+        header = self.read_c_header_surface()
         declarations = self.declarations_for_package("c-kmipkit")
         approved_exclusions = {
             exclusion["exportName"]

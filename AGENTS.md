@@ -23,7 +23,10 @@ human reviewer. Never silently invent a KMIP requirement.
 
 - Product name: KMIPKit.
 - License: Apache-2.0.
-- Protocol: OASIS KMIP 2.1 only for the 1.x line.
+- Protocol: modern OASIS KMIP 2.0, 2.1, and 3.0 (Draft/Standard) under
+  KMIPKIT-0069 and ADR-0022; KMIP 2.1 remains the 1.0 default. The supported
+  version-specific surface is limited to approved specifications and does not
+  imply blanket KMIP 3.0 conformance.
 - 1.0 encodings: TTLV, JSON, and XML, as specified by the approved
   KMIPKIT-0054 through KMIPKIT-0057 specifications.
 - 1.0 direction: client initiated operations (including asynchronous behavior),
@@ -122,10 +125,10 @@ Required layers include:
 
 Coverage gates:
 
-- `kmipkit-ttlv` and protocol/model code: at least 90 percent line coverage.
+- `kmipkit-ttlv` and protocol/model code: at least 95 percent line coverage.
 - Transport, FFI, and bindings: at least 85 percent line coverage.
 - Rust workspace overall: at least 90 percent line coverage.
-- New or changed production code: at least 90 percent line coverage.
+- New or changed production code: at least 95 percent line coverage.
 - Normative requirement traceability: 100 percent.
 
 Generated code may be excluded from raw coverage, but its behavior must be

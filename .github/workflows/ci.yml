@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - release/**
+      - 'feature/KMIPKIT-*'
   push:
     branches:
       - release/1.0.0
@@ -1043,6 +1044,10 @@ jobs:
       - name: Verify generated attribute policy lookup
         id: verify-generated-attribute-policy-lookup
         run: python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check
+
+      - name: Verify generated named protocol values
+        id: verify-generated-named-protocol-values
+        run: python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check
 
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage

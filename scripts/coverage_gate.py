@@ -20,6 +20,14 @@ import xml.etree.ElementTree as ET
 
 
 _RUST_RAW_STRING_PREFIX = re.compile(r'(?:br|cr|r)(?P<hashes>#{0,})"')
+_WORKSPACE_COVERAGE_MINIMUM = 90
+_CHANGED_PRODUCTION_COVERAGE_MINIMUM = 95
+_RUST_CRATE_COVERAGE_MINIMUMS = {
+    "kmipkit-ttlv": 95,
+    "kmipkit-protocol": 95,
+    "kmipkit-transport": 85,
+    "kmipkit-ffi": 85,
+}
 
 
 class CoverageDataError(RuntimeError):
@@ -102,10 +110,23 @@ _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "crates/kmipkit-protocol/src/profiles_generated.rs",
     }
 )
+# Catalog-generated named-value tables contain deterministic declarations and
+# lookup code. Their exact bytes are checked by the pinned generator, and the
+# generated lookup behavior is exercised by language binding tests. Keep these
+# exact files out of raw source coverage while retaining tests for their behavior.
+_CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS = frozenset(
+    {
+        "crates/kmipkit-protocol/src/named_values_generated.rs",
+        "bindings/c/include/kmipkit_named_value_helpers_generated.h",
+        "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java",
+        "bindings/python/src/kmipkit/protocol_values.py",
+    }
+)
 _COVERAGE_SOURCE_EXCLUSIONS = (
     _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS
     | _PYTHON_GENERATED_SOURCE_EXCLUSIONS
     | _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS
+    | _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS
 )
 
 
@@ -851,7 +872,8 @@ def parse_jacoco_report(document: str | bytes, workspace_root: str | Path) -> di
             if not isinstance(source_name, str) or Path(source_name).name != source_name:
                 raise CoverageDataError("JaCoCo sourcefile has an invalid name.")
             source_path = source_root.joinpath(*package_path.parts, source_name)
-            if source_path.relative_to(root).as_posix() in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+            relative_source = source_path.relative_to(root).as_posix()
+            if relative_source in _COVERAGE_SOURCE_EXCLUSIONS:
                 continue
             source = _coverage_report_source(source_path, root, "JaCoCo")
             if source in report:
@@ -1705,13 +1727,15 @@ def _evaluate_coverage(
         summary_only += sum(adapter_summary_excess.get(source, 0) for source in changed_adapter_sources)
         total = len(changed_executable) + summary_only
         rust_only = all(source.endswith(".rs") for source, _ in changed_executable)
-        if not meets_threshold(covered, total, 90):
+        if not meets_threshold(covered, total, _CHANGED_PRODUCTION_COVERAGE_MINIMUM):
             prefix = "Changed Rust code" if rust_only else "Changed production code"
-            raise CoverageDataError(f"{prefix} coverage {covered}/{total} is below 90%.")
+            raise CoverageDataError(
+                f"{prefix} coverage {covered}/{total} is below {_CHANGED_PRODUCTION_COVERAGE_MINIMUM}%."
+            )
         percentage = covered * 100 / total
         label = "Changed Rust" if rust_only else "Changed production"
         results.append(
-            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (90% minimum)."
+            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({_CHANGED_PRODUCTION_COVERAGE_MINIMUM}% minimum)."
         )
     else:
         changed_sources = {source for source in changed if source in merged}
@@ -1725,13 +1749,7 @@ def _evaluate_coverage(
             )
         results.append("Changed executable production lines: not applicable.")
 
-    crate_thresholds = {
-        "kmipkit-ttlv": 90,
-        "kmipkit-protocol": 90,
-        "kmipkit-transport": 85,
-        "kmipkit-ffi": 85,
-    }
-    for crate_name, threshold in crate_thresholds.items():
+    for crate_name, threshold in _RUST_CRATE_COVERAGE_MINIMUMS.items():
         crate_lines = {
             (source, line): count
             for (source, line), count in all_lines.items()
@@ -1788,11 +1806,11 @@ def _evaluate_coverage(
     covered = sum(count > 0 for count in all_lines.values())
     summary_only = sum(summary_uncovered_excess.values())
     total = len(all_lines) + summary_only
-    if not meets_threshold(covered, total, 90):
-        raise CoverageDataError(f"Workspace coverage {covered}/{total} is below 90%.")
+    if not meets_threshold(covered, total, _WORKSPACE_COVERAGE_MINIMUM):
+        raise CoverageDataError(f"Workspace coverage {covered}/{total} is below {_WORKSPACE_COVERAGE_MINIMUM}%.")
     percentage = covered * 100 / total
     results.append(
-        f"Workspace coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered (90% minimum)."
+        f"Workspace coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({_WORKSPACE_COVERAGE_MINIMUM}% minimum)."
     )
     return results
 
@@ -1838,13 +1856,7 @@ def _evaluate_scoped_coverage(
                     for source, count in report.summary_uncovered_excess.items():
                         summary_excess[source] = summary_excess.get(source, 0) + count
 
-            crate_thresholds = {
-                "kmipkit-ttlv": 90,
-                "kmipkit-protocol": 90,
-                "kmipkit-transport": 85,
-                "kmipkit-ffi": 85,
-            }
-            for crate_name, threshold in crate_thresholds.items():
+            for crate_name, threshold in _RUST_CRATE_COVERAGE_MINIMUMS.items():
                 crate_lines = {
                     (source, line): count
                     for source, line_counts in rust_lines.items()
@@ -1871,10 +1883,12 @@ def _evaluate_scoped_coverage(
             covered = sum(count > 0 for counts in rust_lines.values() for count in counts.values())
             extra = sum(summary_excess.values())
             total = sum(len(counts) for counts in rust_lines.values()) + extra
-            if not meets_threshold(covered, total, 90):
-                raise CoverageDataError(f"Workspace coverage {covered}/{total} is below 90%.")
+            if not meets_threshold(covered, total, _WORKSPACE_COVERAGE_MINIMUM):
+                raise CoverageDataError(
+                    f"Workspace coverage {covered}/{total} is below {_WORKSPACE_COVERAGE_MINIMUM}%."
+                )
             results.append(
-                f"Workspace coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered (90% minimum)."
+                f"Workspace coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered ({_WORKSPACE_COVERAGE_MINIMUM}% minimum)."
             )
 
     if "ffi-c" in required_scopes:
@@ -1981,9 +1995,14 @@ def _evaluate_scoped_coverage(
         )
         extra = sum(count for source, count in summary_excess.items() if source in changed)
         total = len(changed_executable) + extra
-        if not meets_threshold(covered, total, 90):
-            raise CoverageDataError(f"Changed production code coverage {covered}/{total} is below 90%.")
-        results.append(f"Changed production coverage: {covered}/{total} ({covered * 100 / total:.2f}%) (90% minimum).")
+        if not meets_threshold(covered, total, _CHANGED_PRODUCTION_COVERAGE_MINIMUM):
+            raise CoverageDataError(
+                f"Changed production code coverage {covered}/{total} is below {_CHANGED_PRODUCTION_COVERAGE_MINIMUM}%."
+            )
+        results.append(
+            f"Changed production coverage: {covered}/{total} ({covered * 100 / total:.2f}%) "
+            f"({_CHANGED_PRODUCTION_COVERAGE_MINIMUM}% minimum)."
+        )
     else:
         results.append("Changed executable production lines: not applicable.")
     return results

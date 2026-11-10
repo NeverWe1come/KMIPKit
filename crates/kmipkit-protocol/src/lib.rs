@@ -58,6 +58,8 @@ mod mac_verify;
 mod message;
 mod modify_attribute;
 mod multipart;
+/// Generated catalog-backed named values for KMIP 2.1 Enumerations and Bit Masks.
+pub mod named_values_generated;
 mod object_class;
 mod obtain_lease;
 mod operation_data;

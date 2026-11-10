@@ -6,17 +6,20 @@ Owner: NeverWe1come
 
 ## 1. Purpose
 
-KMIPKit will be an open source client library for OASIS Key Management
-Interoperability Protocol 2.1. The project has two goals:
+KMIPKit will be an open source client library for modern OASIS Key Management
+Interoperability Protocol versions 2.0, 2.1, and 3.0 under the approved
+multi-version architecture. KMIP 2.1 remains the 1.0 default; version-specific
+support follows KMIPKIT-0069 through KMIPKIT-0071 and does not imply blanket
+KMIP 3.0 conformance. The project has two goals:
 
-1. Build a rigorous, traceable understanding of KMIP 2.1.
+1. Build a rigorous, traceable understanding of the supported KMIP editions.
 2. Provide a production quality, multi-language client that makes KMIP usable
    without requiring every application developer to understand the wire
    protocol.
 
-The differentiator is the combination of complete KMIP 2.1 client coverage,
-a Rust core, a stable C ABI, idiomatic language APIs, high level operations,
-and evidence based conformance.
+The differentiator is the combination of complete client coverage for each
+approved target edition, a Rust core, a stable C ABI, idiomatic language APIs,
+high level operations, and evidence based conformance.
 
 ## 2. Release scope
 
@@ -24,7 +27,8 @@ and evidence based conformance.
 
 Version 1.0.0 includes:
 
-- KMIP 2.1 only.
+- KMIP 2.1 as the default, with the version-specific KMIP 2.0 and 3.0 support
+  expressly defined by KMIPKIT-0069 through KMIPKIT-0071.
 - TTLV, JSON, and XML encodings, with TTLV as the default.
 - Every operation initiated by a KMIP client.
 - KMIP protocol asynchronous semantics, including pending results and their
@@ -60,9 +64,11 @@ Version 1.0.0 excludes:
 
 ## 3. Completeness
 
-Completeness means every applicable KMIP 2.1 client operation, object,
-attribute, message structure, option, and value can be represented and used.
-Server policy determines whether an individual request is accepted.
+Completeness means every applicable client operation, object, attribute,
+message structure, option, and value for each approved KMIP edition can be
+represented and used. Version-specific support is bounded by the governing
+specifications. Server policy determines whether an individual request is
+accepted.
 
 The library does not preemptively reject legitimate standard options because
 a particular server might not support them. It validates protocol invariants
@@ -158,10 +164,10 @@ files.
 - No panic based production control flow.
 - Public APIs documented.
 - Normative traceability: 100 percent.
-- TTLV and protocol line coverage: at least 90 percent.
+- TTLV and protocol line coverage: at least 95 percent.
 - Transport, FFI, and bindings: at least 85 percent.
 - Workspace overall: at least 90 percent.
-- Changed production code: at least 90 percent.
+- Changed production code: at least 95 percent.
 - Two independent real KMIP implementations tested before 1.0.
 - Independent security review before 1.0.
 

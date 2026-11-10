@@ -21,6 +21,14 @@ pub enum VersionGateError {
         /// The earliest protocol version where this operation was introduced.
         introduced: ProtocolVersion,
     },
+    /// The operation value is outside the vendor-extension allocation and is
+    /// not assigned by the selected KMIP edition.
+    UnassignedOperationInVersion {
+        /// The unassigned KMIP operation enumeration.
+        operation: u32,
+        /// The effective negotiated or forced protocol version.
+        version: ProtocolVersion,
+    },
     /// A requested attribute or tag is not supported in the negotiated version.
     AttributeNotSupportedInVersion {
         /// The raw TTLV tag of the attribute or field.
@@ -58,6 +66,12 @@ impl fmt::Display for VersionGateError {
                     "operation 0x{operation:08X} requires KMIP {introduced} or newer, but session is {negotiated}"
                 )
             }
+            Self::UnassignedOperationInVersion { operation, version } => {
+                write!(
+                    formatter,
+                    "operation 0x{operation:08X} is not assigned by KMIP {version}"
+                )
+            }
             Self::AttributeNotSupportedInVersion {
                 tag,
                 negotiated,
@@ -87,17 +101,19 @@ impl VersionGate {
     /// Returns the normative version span for a known KMIP client-to-server operation.
     #[must_use]
     pub fn operation_span(operation: u32) -> Option<VersionSpan> {
-        match operation {
-            // Operations introduced in KMIP 2.1 (Set Defaults through Ping)
-            0x0000_0036..=0x0000_003B => Some(VersionSpan::since(ProtocolVersion::V2_1)),
+        use crate::named_values_generated::values::{
+            enumeration::operation as kmip_2_1,
+            versions::{v2_1, v3_0},
+        };
 
-            // Operations introduced in KMIP 3.0 (Create User through ReEncrypt)
-            0x0000_003C..=0x0000_0042 => Some(VersionSpan::since(ProtocolVersion::V3_0)),
-
-            // Base operations existing in KMIP 2.0 (and 2.1)
-            0x0000_0001..=0x0000_0035 => Some(VersionSpan::since(ProtocolVersion::V2_0)),
-
-            _ => None,
+        if v3_0::enumeration::operation::name(operation).is_some() {
+            Some(VersionSpan::since(ProtocolVersion::V3_0))
+        } else if v2_1::enumeration::operation::name(operation).is_some() {
+            Some(VersionSpan::since(ProtocolVersion::V2_1))
+        } else if kmip_2_1::name(operation).is_some() {
+            Some(VersionSpan::since(ProtocolVersion::V2_0))
+        } else {
+            None
         }
     }
 
@@ -115,14 +131,19 @@ impl VersionGate {
             return Err(VersionGateError::UnsupportedProtocolVersion(version));
         }
 
-        if let Some(span) = Self::operation_span(operation)
-            && !span.is_supported_in(version)
-        {
-            return Err(VersionGateError::OperationNotSupportedInVersion {
-                operation,
-                negotiated: version,
-                introduced: span.introduced,
-            });
+        match Self::operation_span(operation) {
+            Some(span) if !span.is_supported_in(version) => {
+                return Err(VersionGateError::OperationNotSupportedInVersion {
+                    operation,
+                    negotiated: version,
+                    introduced: span.introduced,
+                });
+            }
+            Some(_) => {}
+            None if is_operation_extension(operation) => {}
+            None => {
+                return Err(VersionGateError::UnassignedOperationInVersion { operation, version });
+            }
         }
 
         Ok(())
@@ -136,10 +157,9 @@ impl VersionGate {
             0x0042_014A..=0x0042_0150 | 0x0042_0152 => {
                 Some(VersionSpan::since(ProtocolVersion::V2_1))
             }
-
-            // KMIP 3.0 System Objects & PQC attributes
-            0x0042_0153..=0x0042_0172 => Some(VersionSpan::since(ProtocolVersion::V3_0)),
-
+            _ if KMIP_3_0_TAG_ASSIGNMENTS.binary_search(&tag).is_ok() => {
+                Some(VersionSpan::since(ProtocolVersion::V3_0))
+            }
             _ => None,
         }
     }
@@ -206,3 +226,75 @@ impl VersionGate {
         Ok(())
     }
 }
+
+// OASIS KMIP Enumeration extensions use the allocated 8XXXXXXX range. Keep
+// this exact extension allocation separate from the assigned standard table
+// values so numeric gaps never become standard operations.
+const fn is_operation_extension(operation: u32) -> bool {
+    matches!(operation, 0x8000_0000..=0x8FFF_FFFF)
+}
+
+// Exact assignments from KMIP 3.0 §11.58, Table 605. Do not replace this list
+// with an allocation range: adjacent tags are valid in KMIP 2.0/2.1.
+const KMIP_3_0_TAG_ASSIGNMENTS: &[u32] = &[
+    0x0042_0190,
+    0x0042_0191,
+    0x0042_0192,
+    0x0042_0193,
+    0x0042_0194,
+    0x0042_0195,
+    0x0042_0196,
+    0x0042_0197,
+    0x0042_0198,
+    0x0042_0199,
+    0x0042_019A,
+    0x0042_019B,
+    0x0042_019C,
+    0x0042_019D,
+    0x0042_019E,
+    0x0042_019F,
+    0x0042_01A0,
+    0x0042_01A1,
+    0x0042_01A2,
+    0x0042_01A3,
+    0x0042_01A4,
+    0x0042_01A5,
+    0x0042_01A6,
+    0x0042_01A7,
+    0x0042_01A8,
+    0x0042_01A9,
+    0x0042_01AA,
+    0x0042_01AB,
+    0x0042_01AC,
+    0x0042_01AD,
+    0x0042_01AE,
+    0x0042_01AF,
+    0x0042_01B0,
+    0x0042_01B1,
+    0x0042_01B2,
+    0x0042_01B3,
+    0x0042_01B4,
+    0x0042_01B5,
+    0x0042_01B6,
+    0x0042_01B7,
+    0x0042_01B8,
+    0x0042_01B9,
+    0x0042_01BA,
+    0x0042_01BB,
+    0x0042_01BC,
+    0x0042_01BD,
+    0x0042_01BE,
+    0x0042_01BF,
+    0x0042_01C0,
+    0x0042_01C1,
+    0x0042_01C2,
+    0x0042_01C3,
+    0x0042_01C4,
+    0x0042_01C5,
+    0x0042_01C6,
+    0x0042_01C7,
+    0x0042_01C8,
+    0x0042_01C9,
+    0x0042_01CA,
+    0x0042_01CB,
+];

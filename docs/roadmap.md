@@ -24,7 +24,7 @@ Parallel feature development must wait until this phase is accepted.
 - Transport abstraction and deterministic fake transport.
 - Raw TLS and HTTPS vertical skeleton with mTLS.
 - Synchronous request/response client skeleton.
-- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; assigned outbound Batch Error Continuation values under §9.6 and Table 435; response-size enforcement and large-response policy under `KMIPKIT-REQ-SPEC-9.12-001-002/-003`; and ADR-0002's KMIP 2.1-only request/response version enforcement, documented as the §9.16 scope exception `KMIPKIT-DISC-022`. `KMIPKIT-DISC-043` records the §9.6/Table 435 value-range discrepancy separately from `KMIPKIT-DISC-001`; delegated decision `KMIPKIT-DEC-002` accepts assigned values for the initial client while raw Enumeration values remain preserved. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; a property check accepting protocol-version pairs iff they equal `(2, 1)`, plus representative non-2.1 mismatches and signed-32-bit boundary cases; assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of Batch Error Continuation extension-range outbound values under the project policy, raw-value preservation, exact/over-limit response-size boundaries, and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
+- `KMIPKIT-0007-client-execution`: paired response validation; mixed synchronous/asynchronous response handling under `KMIPKIT-REQ-SPEC-8-003-002`; outbound Asynchronous Indicator validation under Table 432; assigned outbound Batch Error Continuation values under §9.6 and Table 435; response-size enforcement and large-response policy under `KMIPKIT-REQ-SPEC-9.12-001-002/-003`; and version enforcement for the initial KMIP 2.1 default. The later multi-version acceptance rules are owned by KMIPKIT-0069 through KMIPKIT-0071 and ADR-0022. `KMIPKIT-DISC-043` records the §9.6/Table 435 value-range discrepancy separately from `KMIPKIT-DISC-001`; delegated decision `KMIPKIT-DEC-002` accepts assigned values for the initial client while raw Enumeration values remain preserved. Acceptance tests cover a deterministic fake-transport batch containing completed and Pending items, accepting Pending only when the request indicator permits asynchronous results; protocol-version pair validation for the configured edition, assigned and extension-range Asynchronous Indicator acceptance, assigned Batch Error Continuation acceptance, rejection of Batch Error Continuation extension-range outbound values under the project policy, raw-value preservation, exact/over-limit response-size boundaries, and configured limits for operations likely to return large responses. The set of operations likely to return large responses awaits the Phase 2 operation inventory.
 - Minimal stable C ABI vertical slice.
 - Coverage, conformance, compatibility, and supply-chain CI gates.
 - `KMIPKIT-0011-dependency-policy-gates`: finite reviewed Cargo license/source
@@ -53,12 +53,11 @@ stabilized.
 
 ## Phase 3: complete public APIs
 
-- Rust high level builders for every operation.
-- Complete C ABI and generated header surface.
-- Generic TTLV public escape hatch.
-- Batch builder and per-item outcomes.
-- Secret result types and lifecycle controls.
-- Structured diagnostics.
+- Rust high-level builders for every operation, typed protocol models, the
+  complete C ABI, generic TTLV access, batch outcomes, secret lifecycle
+  controls, and structured diagnostics.
+- Java and Python bindings provide the corresponding operation and TTLV
+  capabilities as detailed in Phase 4.
 - **1.0.0 release gate:** approve a versioned public API manifest covering
   every in-scope client-initiated operation and generic TTLV, then generate
   and verify equivalent Rust, C, Java, and Python capabilities. The Rust
@@ -75,7 +74,22 @@ stabilized.
 - Native package loading and installation tests.
 - Maven Central and PyPI release pipelines in dry-run mode.
 
-## Phase 5: interoperability and release hardening
+## Phase 5: high-level API usability and preflight validation
+
+- Add named values for KMIP 2.1 enumerations and bitmasks, plus reviewed
+  edition-specific deltas for KMIP 2.1 and 3.0, while preserving unknown and
+  vendor values.
+- Add typed builders and readers for attributes and managed objects, key
+  material, and wrapping structures.
+- Complete typed operation parameters, request-scoped authentication, and
+  direct client methods for all client-initiated operations.
+- Provide schema-aware request validation and block locally detectable
+  normative violations before transport I/O.
+- Complete typed response readers and navigable generic TTLV access for the
+  response payload and nested structures in Rust, C, Java, and Python.
+- Reconcile the public API manifest, examples, and English and Spanish guides.
+
+## Phase 6: interoperability and release hardening
 
 Feature identifiers `KMIPKIT-0047` through `KMIPKIT-0053` are reserved for
 the Phase 5 ergonomics, `validate()`, and `.raw()` work. Multi-encoding work
@@ -101,7 +115,7 @@ must not reuse those Phase 5 identifiers.
   client and transports, then updates the manifest, generated API surfaces,
   and Rust/C/Java/Python parity together.
 
-## Phase 6: after 1.0
+## Phase 7: after 1.0
 
 - Evaluate and specify legacy KMIP version support using the
   [compatibility feasibility research](design/kmip-legacy-version-feasibility.md).
