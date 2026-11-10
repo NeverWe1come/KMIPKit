@@ -14,7 +14,7 @@ class ReportWriterTest {
     void emitsTheSharedSchemaAndDoesNotAcceptRemotePayloadText() throws Exception {
         String digest = "a".repeat(64);
         var evidence = new RunReport.CaseEvidence("test-op-ping", "passed", "passed", "supported",
-                "not_compared", 4.2, null);
+                "not_compared", 4.2, 0L, null, null);
         var report = new RunReport("2.0", "java-run", Instant.parse("2026-11-10T12:00:00Z").toString(),
                 "java", new RunReport.Server("demo", "KMIP server", "2.1", digest), "2.1", digest,
                 new RunReport.Execution("raw_tls", "TTLV", "typed-protocol", "9".repeat(40), digest),
