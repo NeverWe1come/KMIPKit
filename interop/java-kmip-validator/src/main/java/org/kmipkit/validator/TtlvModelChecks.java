@@ -4,6 +4,7 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
@@ -37,6 +38,22 @@ public final class TtlvModelChecks {
         }
     }
 
+    /** Decodes one deterministic TTLV Enumeration while preserving its unsigned raw value. */
+    public static long decodeEnumeration(long value) {
+        try (TtlvItem item = TtlvCodec.decode(wireScalar(0x420001, 0x05, (int) value));
+                var itemView = item.view(); var valueView = itemView.value()) {
+            return valueView.enumeration();
+        }
+    }
+
+    /** Decodes one deterministic TTLV Integer bitmask while preserving all raw bits. */
+    public static int decodeIntegerMask(int value) {
+        try (TtlvItem item = TtlvCodec.decode(wireScalar(0x420002, 0x02, value));
+                var itemView = item.view(); var valueView = itemView.value()) {
+            return valueView.integer();
+        }
+    }
+
     /** Builds a generic structure and verifies that item insertion order is preserved. */
     public static int[] roundTripTagOrder() {
         TtlvStructure structure = TtlvStructure.create();
@@ -54,12 +71,14 @@ public final class TtlvModelChecks {
     public static ModelCheck verifyLocalCase(CatalogLoader.CatalogCase testCase) {
         var requirements = testCase.requires();
         if (requirements.hasNonNull("enum_type")) {
-            long value = roundTripEnumeration(0xf0000001L);
-            return new ModelCheck(value == 0xf0000001L, "generic enumeration constructor/view");
+            long constructed = roundTripEnumeration(0xf0000001L);
+            long decoded = decodeEnumeration(0xf0000001L);
+            return new ModelCheck(constructed == decoded, "generic enumeration construction and decoding");
         }
         if (requirements.hasNonNull("bitmask_type")) {
-            int value = roundTripIntegerMask(0x80000001);
-            return new ModelCheck(value == 0x80000001, "generic integer mask constructor/view");
+            int constructed = roundTripIntegerMask(0x80000001);
+            int decoded = decodeIntegerMask(0x80000001);
+            return new ModelCheck(constructed == decoded, "generic integer mask construction and decoding");
         }
         return new ModelCheck(false, "local model case has no supported generic value type");
     }
@@ -70,6 +89,12 @@ public final class TtlvModelChecks {
                 TtlvValue ttlvValue = TtlvValue.Enumeration(value)) {
             return TtlvStructure.withItem(structure, TtlvItem.create(tag, ttlvValue, LIMITS), LIMITS);
         }
+    }
+
+    private static byte[] wireScalar(int tag, int type, int value) {
+        return java.nio.ByteBuffer.allocate(16)
+                .put((byte) (tag >>> 16)).put((byte) (tag >>> 8)).put((byte) tag)
+                .put((byte) type).putInt(4).putInt(value).putInt(0).array();
     }
 
     public record ModelCheck(boolean passed, String diagnostic) { }
