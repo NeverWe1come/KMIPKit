@@ -22,7 +22,6 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -56,7 +55,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
-        ClientBatchItem request = createRequest(testCase.operation());
+        ClientBatchItem request = TypedRequestFactory.create(testCase.operation());
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
                     elapsedMillis(start));
@@ -109,29 +108,27 @@ public final class JavaKmipDriver implements AutoCloseable {
         return switch (operation) {
             case "Ping" -> result.pingResponse().orElse(false);
             case "Query" -> {
-                var payload = result.queryResponse();
+                var payload = result.typedQueryResponse();
                 if (payload.isEmpty()) yield false;
                 payload.orElseThrow().close();
                 yield true;
             }
-            case "Get Constraints" -> result.getConstraintsResponse().isPresent();
-            case "Get Attribute List" -> result.getAttributeListResponse().isPresent();
-            case "Discover Versions" -> true;
+            case "Get Constraints" -> {
+                var payload = result.getConstraintsResponse();
+                if (payload.isEmpty()) yield false;
+                payload.orElseThrow().close();
+                yield true;
+            }
+            case "Get Attribute List" -> {
+                var payload = result.getAttributeListResponse();
+                if (payload.isEmpty()) yield false;
+                payload.orElseThrow().close();
+                yield true;
+            }
+            case "Discover Versions" -> JavaResponseChecks.advertisesRequestedVersion(
+                    result.supportedVersions().orElse(List.of()), toProtocolVersion(connection.protocolVersion()));
             default -> false;
         };
-    }
-
-    private static ClientBatchItem createRequest(String operation) {
-        ClientBatchItem request = switch (operation) {
-            case "Discover Versions" -> ClientBatchItem.discoverVersions();
-            case "Ping" -> ClientBatchItem.ping();
-            case "Query" -> ClientBatchItem.query(null, null);
-            case "Get Constraints" -> ClientBatchItem.getConstraints();
-            case "Get Attribute List" -> ClientBatchItem.getAttributeList();
-            default -> null;
-        };
-        return request == null ? null : request.withUniqueBatchItemId(
-                "item-0".getBytes(StandardCharsets.US_ASCII));
     }
 
     private static TransportConfiguration buildTransport(ConnectionConfig connection) {
