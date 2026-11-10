@@ -89,7 +89,11 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
                 + enumeration(0x42013B, 0x420028)
                 + enumeration(0x42013B, 0x42002A)
             )
+        elif operation == 9:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 19:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         unique_batch_item_id = {
             1: b"interop-create",
@@ -97,6 +101,8 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
             12: b"interop-attributes",
             20: b"interop-destroy",
             10: b"interop-get",
+            9: b"interop-check",
+            19: b"interop-revoke",
         }.get(operation)
         item_fields = integer(0x42005C, operation, 5)
         if unique_batch_item_id is not None:
@@ -181,19 +187,21 @@ def main() -> int:
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
     expected_operations = (
-        (1, 11, 20, 1, 12, 20, 1, 10, 20, 8, 24, 44)
+        (1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 8, 24, 44)
         if protocol_version == "2.0"
-        else (1, 11, 20, 1, 12, 20, 1, 10, 20, 8, 24, 30, 44, 45, 59)
+        else (1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 8, 24, 30, 44, 45, 59)
     )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
               "test-op-locate", "test-op-login", "test-op-get", "test-op-get-attributes",
-              "test-op-get-attribute-list")
+              "test-op-get-attribute-list", "test-op-check")
     )
     if protocol_version == "2.0":
-        expected_cases += ("test-op-get", "test-op-get-attributes", "test-op-get-attribute-list")
+        expected_cases += (
+            "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check"
+        )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
@@ -237,12 +245,22 @@ def main() -> int:
                             operations = tuple(int.from_bytes(
                                 request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big"
                             ) for offset in offsets)
+                            if operations == (1, 9, 20):
+                                raise AssertionError("Check fixture must revoke the created key before destroying it")
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
-                            lifecycle_target = {operations[1]: {10: b"interop-get", 11: b"interop-attributes", 12: b"interop-attributes"}.get(operations[1])} if len(operations) == 3 and operations[0] == 1 and operations[2] == 20 else {}
+                            check_lifecycle = operations == (1, 9, 19, 20)
+                            lifecycle_target = {operations[1]: {
+                                9: b"interop-check", 10: b"interop-get",
+                                11: b"interop-attributes", 12: b"interop-attributes"
+                            }.get(operations[1])} if len(operations) == 3 and operations[0] == 1 and operations[2] == 20 else {}
+                            if check_lifecycle:
+                                lifecycle_target = {9: b"interop-check"}
+                            lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
+                                             *((b"interop-revoke",) if check_lifecycle else ()),
+                                             b"interop-destroy")
                             if lifecycle_target and any(
-                                    tlv(0x420093, 8, item_id) not in request
-                                    for item_id in (b"interop-create", *lifecycle_target.values(), b"interop-destroy")):
+                                    tlv(0x420093, 8, item_id) not in request for item_id in lifecycle_ids):
                                 raise AssertionError("lifecycle batch omitted a unique batch item ID")
                             if lifecycle_target and enumeration(0x42000E, 1) not in request:
                                 raise AssertionError("lifecycle batch must continue to Destroy after a failed item")
@@ -250,9 +268,9 @@ def main() -> int:
                                     enumeration(0x420028, 3) not in request
                                     or integer(0x42002A, 128) not in request):
                                 raise AssertionError("lifecycle Create omitted the requested AES-128 attributes")
-                            if operations == (1, 10, 20) and request.count(
-                                    enumeration(0x420094, 1)) < 2:
-                                raise AssertionError("Get and Destroy must consume the created ID Placeholder")
+                            if operations in ((1, 9, 19, 20), (1, 10, 20)) and request.count(
+                                    enumeration(0x420094, 1)) < (3 if check_lifecycle else 2):
+                                raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
                                     raise AssertionError("Locate request omitted its required Attributes structure")
@@ -383,11 +401,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 76,
+            "passed": 77,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 136,
+            "not_run": 135,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -396,11 +414,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 71,
+            "passed": 72,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 132,
+            "not_run": 131,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
