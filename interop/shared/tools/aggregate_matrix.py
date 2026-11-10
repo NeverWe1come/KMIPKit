@@ -44,6 +44,8 @@ def _enum_key(value: str) -> str:
 
 
 def _numeric_enum_code(value: object) -> int | None:
+    if isinstance(value, bool):
+        return None
     if isinstance(value, int):
         return value
     text = str(value).strip()
