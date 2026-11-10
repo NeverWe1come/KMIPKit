@@ -1,7 +1,5 @@
 use kmipkit_protocol::attribute::typed;
-use kmipkit_protocol::{
-    Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier,
-};
+use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
@@ -9,7 +7,7 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
-use crate::fluent::{CryptographicUsageMask, FluentBuildError};
+use crate::fluent::{CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentBuildError};
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -50,10 +48,7 @@ fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Ve
             0x0042_0006,
             Value::byte_string(correlation.to_vec()),
         ));
-        item_fields.push(test_item(
-            0x0042_007C,
-            Value::structure(Structure::new()),
-        ));
+        item_fields.push(test_item(0x0042_007C, Value::structure(Structure::new())));
     } else {
         let mut payload = Structure::new();
         payload
@@ -81,7 +76,10 @@ fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Ve
             test_item(0x0042_000D, Value::integer(1)),
         ])),
     )];
-    message.push(test_item(0x0042_000F, Value::structure(test_structure(item_fields))));
+    message.push(test_item(
+        0x0042_000F,
+        Value::structure(test_structure(item_fields)),
+    ));
     encode_message_for_test(test_structure(message), &CodecLimits::defaults())
         .expect("fixture response is valid TTLV")
 }
@@ -122,12 +120,18 @@ fn aes_256_builder_emits_typed_attributes_and_interpreted_text_name() {
 
     let attributes = request.attributes().as_items();
     assert_eq!(attributes.len(), 4);
-    assert_eq!(attributes[0].tag().raw(), typed::CryptographicAlgorithm::TAG);
+    assert_eq!(
+        attributes[0].tag().raw(),
+        typed::CryptographicAlgorithm::TAG
+    );
     assert_eq!(attributes[0].item_type(), ItemType::Enumeration);
     assert_eq!(read_enumeration(&attributes[0]), Some(3));
     assert_eq!(attributes[1].tag().raw(), typed::CryptographicLength::TAG);
     assert_eq!(read_integer(&attributes[1]), Some(256));
-    assert_eq!(attributes[2].tag().raw(), typed::CryptographicUsageMask::TAG);
+    assert_eq!(
+        attributes[2].tag().raw(),
+        typed::CryptographicUsageMask::TAG
+    );
     assert_eq!(read_integer(&attributes[2]), Some(12));
     assert_eq!(attributes[3].tag().raw(), typed::Name::TAG);
     let name = attributes[3]
@@ -200,7 +204,7 @@ fn explicit_generic_attribute_and_vendor_attribute_are_retained() {
         .vendor_attribute(
             "Vendor_Name.1",
             "region",
-            item(0x0042_005C, Value::text_string("eu".to_owned())),
+            &item(0x0042_005C, Value::text_string("eu".to_owned())),
         )
         .build()
         .expect("valid expert attributes are preserved");
@@ -233,7 +237,10 @@ fn get_and_destroy_builders_require_a_typed_unique_identifier() {
         .request()
         .get(UniqueIdentifier::from("key-42"))
         .build();
-    assert_eq!(get.unique_identifier(), Some(&UniqueIdentifier::from("key-42")));
+    assert_eq!(
+        get.unique_identifier(),
+        Some(&UniqueIdentifier::from("key-42"))
+    );
 
     let mut client = failed_request_client();
     let destroy = client
@@ -260,6 +267,23 @@ fn builder_request_is_the_existing_typed_create_request() {
 }
 
 #[test]
+fn detached_create_builder_can_build_reusable_typed_requests_without_a_client() {
+    let builder = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .name("detached-key");
+
+    let first = builder
+        .build_request()
+        .expect("detached builders construct a typed request");
+    let second = builder
+        .build_request()
+        .expect("building a batch item does not consume the builder state");
+
+    assert_eq!(first.attributes().len(), second.attributes().len());
+}
+
+#[test]
 fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
     let response = response_bytes(1, 0, None);
     let (mut client, _, captured_request) = client_for(ExchangeScript::Success {
@@ -283,10 +307,12 @@ fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
         )),
         outcome => panic!("expected typed Create response, got {outcome:?}"),
     }
-    assert!(crate::asynchronous_execution_test_support::request_contains(
-        &captured_request,
-        b"payments-key"
-    ));
+    assert!(
+        crate::asynchronous_execution_test_support::request_contains(
+            &captured_request,
+            b"payments-key"
+        )
+    );
 }
 
 #[test]
@@ -308,7 +334,10 @@ fn execute_exposes_pending_correlation_without_polling() {
     assert_eq!(response.outcome().operation(), ClientOperation::Create);
     match response.outcome() {
         ClientBatchOutcome::Pending(pending) => {
-            assert_eq!(pending.asynchronous_correlation_value(), b"pending-correlation");
+            assert_eq!(
+                pending.asynchronous_correlation_value(),
+                b"pending-correlation"
+            );
         }
         outcome => panic!("expected Pending, got {outcome:?}"),
     }
@@ -324,6 +353,9 @@ fn invalid_fluent_create_execution_keeps_not_sent_delivery_state() {
         .execute(&CodecLimits::defaults())
         .expect_err("required fluent fields are validated before transport");
 
-    assert_eq!(error.delivery_state(), Some(kmipkit_transport::RequestDeliveryState::NotSent));
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
     assert_eq!(fake.borrow().exchange_count(), 0);
 }

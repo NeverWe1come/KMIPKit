@@ -71,6 +71,66 @@ profile support, or certification. The initial 2.1-only execution specification
 and ADR-0002 have been superseded in scope by later approved specifications and
 ADRs.
 
+## Fluent key lifecycle
+
+KMIPKIT-0091 adds a task-oriented path for the common symmetric-key lifecycle.
+It builds existing typed requests and keeps algorithm, key size, and usage
+policy explicit. The AES presets set only the algorithm and bit length; select
+the allowed operations yourself. Creation returns the server's typed Unique
+Identifier, which is then passed to Get and Destroy:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn fluent_key_lifecycle(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+let created = client
+    .request()
+    .create_symmetric_key()
+    .aes_256()
+    .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+    .name("application-key")
+    .execute(&limits)?;
+let identifier = created.outcome().create_response()
+    .and_then(|response| response.unique_identifier())
+    .expect("successful Create returns a Unique Identifier").clone();
+let key = client.request().get(identifier.clone()).execute(&limits)?;
+let destroyed = client.request().destroy(identifier).execute(&limits)?;
+let _ = (key, destroyed);
+Ok(())
+}
+
+fn main() {}
+```
+
+The same scoped flow is available in Java (`client.request().createSymmetricKey()`),
+Python (`client.request().create_symmetric_key()`), and C. Java and Python
+builders expose `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`,
+`name()`, and `execute()`, followed by `get(id)` and `destroy(id)`. Their direct
+client methods also expose `createSymmetricKey`, `getById`, and `destroyById`
+in Java, and `create_symmetric_key`, `get_by_id`, and `destroy_by_id` in Python.
+
+C provides direct one-operation helpers
+`kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1`, and
+`kmipkit_client_destroy_by_id_v1`, plus an opaque symmetric-key builder for
+expert attributes. For a compact raw-TLS/mTLS setup,
+`kmipkit_client_create_mtls_v1` accepts certificate and key spans and uses the
+default 8 MiB request cap when no cap is supplied. Certificate spans are read
+during construction; the returned client owns its transport configuration.
+The direct calls return the existing status code and owned typed response
+handles. Get receives the identifier returned by Create; the bindings do not
+invent one locally.
+
+Each language has a loopback TLS 1.3/mTLS journey that sends Create, Get, and
+Destroy to a controlled peer, reads the identifier from Create, and supplies it
+to the following requests. This proves the client path and typed exchange
+against the fixture, not interoperability with an external KMS. Pending remains
+an explicit outcome; the client does not poll or retry automatically.
+
 ## Direct operation methods and per-exchange options
 
 `Client` exposes a typed direct method for each of the 56 client-initiated

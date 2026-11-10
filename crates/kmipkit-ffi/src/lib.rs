@@ -224,6 +224,10 @@ pub struct kmipkit_client_batch_item_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_symmetric_key_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_register_request_t {
     _private: [u8; 0],
 }
@@ -576,6 +580,42 @@ pub struct kmipkit_unique_identifier_v1_t {
     pub text_length: u64,
     pub enumeration_value: u32,
     pub integer_value: i32,
+}
+
+/// Versioned semantic input for the common Create Symmetric Key task.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_symmetric_key_request_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub cryptographic_algorithm: u32,
+    pub cryptographic_length: i32,
+    pub cryptographic_usage_mask: i32,
+    pub name_present: u8,
+    pub reserved_0: u8,
+    pub reserved_1: u8,
+    pub reserved_2: u8,
+    pub name: kmipkit_byte_span_v1_t,
+}
+
+/// Simplified, versioned TLS 1.3/mTLS client configuration using DER byte spans and default
+/// transport timeouts. Certificate arrays and all spans are borrowed for the constructor call.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_mtls_client_config_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub endpoint_host: kmipkit_byte_span_v1_t,
+    pub endpoint_port: u16,
+    pub reserved: u16,
+    pub tls_server_name: kmipkit_byte_span_v1_t,
+    pub client_certificates: *const kmipkit_byte_span_v1_t,
+    pub client_certificate_count: u64,
+    pub client_private_key: kmipkit_byte_span_v1_t,
+    pub trust_certificates: *const kmipkit_byte_span_v1_t,
+    pub trust_certificate_count: u64,
+    /// Zero selects the standard 8 MiB request limit.
+    pub max_request_bytes: u64,
 }
 
 /// One lossless KMIP Attribute Reference returned by a successful operation.

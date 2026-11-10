@@ -27,10 +27,13 @@ use kmipkit_client::extension_registry::{
     validate_extension_value,
 };
 use kmipkit_client::{
-    Client, ClientBatch, ClientBatchItem, ClientCauseCategory, ClientRequest, RequestOptions,
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientCauseCategory, ClientOperation,
+    ClientRequest, CryptographicUsageMask, RequestOptions,
 };
 use kmipkit_protocol::extension;
-use kmipkit_protocol::{CancelRequest, PollRequest, ProcessRequest, QueryAsyncRequestsRequest};
+use kmipkit_protocol::{
+    CancelRequest, PollRequest, ProcessRequest, QueryAsyncRequestsRequest, UniqueIdentifier,
+};
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, HttpsTransport, PrivateKeyInput, RawTlsTransport,
@@ -46,6 +49,7 @@ const SERVER_NAME: &str = "server.kmipkit.test";
 const REQUEST_FRAME: [u8; 8] = [0x42, 0x00, 0x78, 0x01, 0, 0, 0, 0];
 const SIMPLE_RESPONSE_FRAME: [u8; 8] = [0x42, 0x00, 0x7B, 0x01, 0, 0, 0, 0];
 const PEER_TIMEOUT: Duration = Duration::from_secs(5);
+const FLUENT_LIFECYCLE_IDENTIFIER: &str = "fluent-key-42";
 
 #[derive(Clone, Copy)]
 enum PeerProtocol {
@@ -179,6 +183,200 @@ fn https_typed_client_executes_synchronously_inside_tokio_with_options() {
     assert_eq!(response.len(), 1);
     let captured_request = peer.join().expect("the HTTPS peer completes");
     assert_discover_versions_request(&captured_request);
+}
+
+#[test]
+fn fluent_client_completes_create_get_destroy_over_mutual_tls() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let (port, peer) = spawn_fluent_lifecycle_peer(&pki);
+    let config = transport_configuration(
+        &pki,
+        Endpoint::raw_tls("127.0.0.1", port),
+        TimeoutPolicy::default(),
+    );
+    let mut client = Client::new(empty_client_configuration(), config)
+        .expect("validated fluent TLS client construction succeeds");
+    let limits = kmipkit_ttlv::codec::CodecLimits::defaults();
+    let create = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name(FLUENT_LIFECYCLE_IDENTIFIER)
+        .execute(&limits)
+        .expect("the typed Create request completes over TLS");
+    assert_eq!(create.outcome().operation(), ClientOperation::Create);
+    let identifier = match create.outcome() {
+        ClientBatchOutcome::CreateCompleted(response) => response
+            .unique_identifier()
+            .expect("Create returns its generated identifier")
+            .clone(),
+        outcome => panic!("expected a successful typed Create outcome, got {outcome:?}"),
+    };
+    assert_eq!(
+        identifier,
+        UniqueIdentifier::TextString(FLUENT_LIFECYCLE_IDENTIFIER.to_owned())
+    );
+
+    let get = client
+        .request()
+        .get(identifier.clone())
+        .execute(&limits)
+        .expect("the typed Get request completes over TLS");
+    assert_eq!(get.outcome().operation(), ClientOperation::Get);
+    match get.outcome() {
+        ClientBatchOutcome::GetCompleted(response) => {
+            assert_eq!(response.result().status().raw(), 0);
+            assert_eq!(response.unique_identifier(), Some(&identifier));
+            assert!(response.object().is_some());
+        }
+        outcome => panic!("expected a successful typed Get outcome, got {outcome:?}"),
+    }
+
+    let destroy = client
+        .request()
+        .destroy(identifier.clone())
+        .execute(&limits)
+        .expect("the typed Destroy request completes over TLS");
+    assert_eq!(destroy.outcome().operation(), ClientOperation::Destroy);
+    match destroy.outcome() {
+        ClientBatchOutcome::Destroy(response) => {
+            assert_eq!(response.result().status().raw(), 0);
+            assert_eq!(response.unique_identifier(), Some(&identifier));
+        }
+        outcome => panic!("expected a successful typed Destroy outcome, got {outcome:?}"),
+    }
+    assert_eq!(
+        peer.join().expect("the TLS lifecycle peer completes").len(),
+        3
+    );
+}
+
+fn spawn_fluent_lifecycle_peer(pki: &EphemeralPki) -> (u16, JoinHandle<Vec<Vec<u8>>>) {
+    let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
+    let port = listener.local_addr().port();
+    let server_config = server_configuration(pki);
+    let peer = thread::spawn(move || {
+        let listener = listener.into_inner();
+        listener
+            .set_nonblocking(true)
+            .expect("the lifecycle fixture accepts with bounded waits");
+        let deadline = std::time::Instant::now() + PEER_TIMEOUT;
+        let mut captured_requests = Vec::with_capacity(3);
+        for operation in [1_u32, 10, 20] {
+            let (stream, _) = loop {
+                match listener.accept() {
+                    Ok(accepted) => break accepted,
+                    Err(error)
+                        if error.kind() == io::ErrorKind::WouldBlock
+                            && std::time::Instant::now() < deadline =>
+                    {
+                        thread::sleep(Duration::from_millis(5));
+                    }
+                    Err(error) => {
+                        panic!("the fluent client connects to the lifecycle peer: {error}")
+                    }
+                }
+            };
+            stream
+                .set_nonblocking(false)
+                .expect("the accepted lifecycle stream uses blocking TLS I/O");
+            stream
+                .set_read_timeout(Some(PEER_TIMEOUT))
+                .expect("the lifecycle peer read timeout is configured");
+            stream
+                .set_write_timeout(Some(PEER_TIMEOUT))
+                .expect("the lifecycle peer write timeout is configured");
+            let connection = ServerConnection::new(Arc::clone(&server_config))
+                .expect("the TLS 1.3 mutual-TLS server is configured");
+            let mut tls = StreamOwned::new(connection, stream);
+            let request = read_ttlv_frame(&mut tls);
+            assert_ttlv_operation(&request, operation);
+            if operation != 1 {
+                assert!(
+                    request
+                        .windows(FLUENT_LIFECYCLE_IDENTIFIER.len())
+                        .any(|window| window == FLUENT_LIFECYCLE_IDENTIFIER.as_bytes()),
+                    "Get and Destroy use the identifier returned by Create"
+                );
+            }
+            captured_requests.push(request);
+            tls.write_all(&fluent_lifecycle_response(operation))
+                .expect("the fixture returns the typed operation response");
+            tls.flush().expect("the fixture flushes each response");
+            let _ = tls.get_ref().shutdown(Shutdown::Both);
+        }
+        captured_requests
+    });
+    (port, peer)
+}
+
+fn assert_ttlv_operation(request: &[u8], expected: u32) {
+    let encoded_operation = [0x42, 0x00, 0x5C, 0x05, 0, 0, 0, 4];
+    assert!(request.windows(encoded_operation.len() + 4).any(|window| {
+        window[..encoded_operation.len()] == encoded_operation
+            && window[encoded_operation.len()..] == expected.to_be_bytes()
+    }));
+}
+
+fn fluent_lifecycle_response(operation: u32) -> Vec<u8> {
+    const IDENTIFIER: &[u8] = b"fluent-key-42";
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = match operation {
+        1 => structure(
+            0x0042_007C,
+            [
+                enumeration(0x0042_0057, 2),
+                ttlv_item(0x0042_0094, 0x07, IDENTIFIER),
+            ],
+        ),
+        10 => {
+            let key_block = structure(
+                0x0042_0040,
+                [
+                    enumeration(0x0042_0042, 1),
+                    structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
+                    enumeration(0x0042_0028, 3),
+                    integer(0x0042_002A, 256),
+                ],
+            );
+            structure(
+                0x0042_007C,
+                [
+                    enumeration(0x0042_0057, 2),
+                    ttlv_item(0x0042_0094, 0x07, IDENTIFIER),
+                    structure(0x0042_008F, [key_block]),
+                ],
+            )
+        }
+        20 => structure(0x0042_007C, [ttlv_item(0x0042_0094, 0x07, IDENTIFIER)]),
+        _ => unreachable!("the fixture only handles Create, Get, and Destroy"),
+    };
+    structure(
+        0x0042_007B,
+        [
+            header,
+            structure(
+                0x0042_000F,
+                [
+                    enumeration(0x0042_005C, operation),
+                    enumeration(0x0042_007F, 0),
+                    payload,
+                ],
+            ),
+        ],
+    )
 }
 
 #[test]

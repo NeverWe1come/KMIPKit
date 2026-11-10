@@ -4,6 +4,9 @@
 use super::*;
 use zeroize::{Zeroize, Zeroizing};
 
+#[path = "client_abi/fluent.rs"]
+mod fluent;
+
 #[cfg(test)]
 // These tests intentionally pass Rust references as raw C pointers and slice the byte above the
 // exact allocation bound to exercise the FFI's one-byte-over rejection path.

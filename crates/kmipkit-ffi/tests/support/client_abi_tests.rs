@@ -131,6 +131,7 @@ fn batch_authentication_setter_rejects_wrong_handles_and_consumes_on_success() {
 }
 
 #[test]
+#[cfg(feature = "coverage-c-consumer")]
 fn batch_item_operation_readback_and_encoded_probe_validate_handle_state() {
     let owner = Arc::new(Mutex::new(Some(ClientBatchBuilder::new())));
     let invalid_readback = make_handle(
@@ -225,6 +226,7 @@ fn batch_item_operation_readback_and_encoded_probe_validate_handle_state() {
     );
 }
 
+#[cfg(feature = "coverage-c-consumer")]
 fn operation_for_ping() -> u32 {
     ClientBatchItem::ping().operation()
 }

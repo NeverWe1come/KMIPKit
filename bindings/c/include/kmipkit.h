@@ -922,6 +922,9 @@ typedef struct kmipkit_cryptographic_parameters_t kmipkit_cryptographic_paramete
 typedef struct kmipkit_cryptographic_parameters_fields_v1_t kmipkit_cryptographic_parameters_fields_v1_t;
 typedef struct kmipkit_validation_report_t kmipkit_validation_report_t;
 typedef struct kmipkit_validation_issue_view_v1_t kmipkit_validation_issue_view_v1_t;
+typedef struct kmipkit_mtls_client_config_v1_t kmipkit_mtls_client_config_v1_t;
+typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
+typedef struct kmipkit_symmetric_key_request_v1_t kmipkit_symmetric_key_request_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1237,6 +1240,34 @@ struct kmipkit_validation_issue_view_v1_t {
     kmipkit_byte_span_v1_t source_reference;
 };
 
+struct kmipkit_mtls_client_config_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t endpoint_host;
+    uint16_t endpoint_port;
+    uint16_t reserved;
+    kmipkit_byte_span_v1_t tls_server_name;
+    const kmipkit_byte_span_v1_t * client_certificates;
+    uint64_t client_certificate_count;
+    kmipkit_byte_span_v1_t client_private_key;
+    const kmipkit_byte_span_v1_t * trust_certificates;
+    uint64_t trust_certificate_count;
+    uint64_t max_request_bytes;
+};
+
+struct kmipkit_symmetric_key_request_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t cryptographic_algorithm;
+    int32_t cryptographic_length;
+    int32_t cryptographic_usage_mask;
+    uint8_t name_present;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+    kmipkit_byte_span_v1_t name;
+};
+
 struct kmipkit_client_batch_item_metadata_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
@@ -1351,6 +1382,7 @@ void kmipkit_profile_readiness_release(kmipkit_profile_readiness_t *handle);
 void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result_t *handle);
 void kmipkit_cryptographic_parameters_release(kmipkit_cryptographic_parameters_t *handle);
 void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
+void kmipkit_symmetric_key_builder_release(kmipkit_symmetric_key_builder_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -3132,6 +3164,42 @@ int32_t kmipkit_client_batch_item_encapsulate(kmipkit_ttlv_structure_t * payload
  */
 /* KMIPKIT-0053-FR-018 */
 int32_t kmipkit_client_batch_item_decapsulate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_create_mtls_v1(kmipkit_client_configuration_t * configuration, const kmipkit_mtls_client_config_v1_t * input, kmipkit_client_t ** out_client);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_create_symmetric_key_v1(kmipkit_client_t * client, const kmipkit_symmetric_key_request_v1_t * request, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_create_symmetric_key_with_options_v1(kmipkit_client_t * client, const kmipkit_symmetric_key_request_v1_t * request, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_destroy_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_destroy_by_id_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_get_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_client_get_by_id_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_add_attribute_item(kmipkit_symmetric_key_builder_t * builder, kmipkit_ttlv_item_t * item);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_add_catalogued_attribute(kmipkit_symmetric_key_builder_t * builder, uint32_t tag, kmipkit_ttlv_value_t * value);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_add_vendor_attribute(kmipkit_symmetric_key_builder_t * builder, const uint8_t * vendor_data, uint64_t vendor_length, const uint8_t * name_data, uint64_t name_length, kmipkit_ttlv_item_t * attribute_value);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_build_batch_item(kmipkit_symmetric_key_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_create(kmipkit_symmetric_key_builder_t ** out_builder);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_execute_v1(kmipkit_symmetric_key_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_execute_with_options_v1(kmipkit_symmetric_key_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_set_algorithm(kmipkit_symmetric_key_builder_t * builder, uint32_t algorithm);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_set_length(kmipkit_symmetric_key_builder_t * builder, int32_t length);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_set_name(kmipkit_symmetric_key_builder_t * builder, const uint8_t * name_data, uint64_t name_length);
+/* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
+int32_t kmipkit_symmetric_key_builder_set_usage_mask(kmipkit_symmetric_key_builder_t * builder, int32_t usage_mask);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
