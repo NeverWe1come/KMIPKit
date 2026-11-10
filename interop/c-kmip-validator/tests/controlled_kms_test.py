@@ -100,6 +100,8 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 19 and result_status == 0:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 56:
+            payload_value = tlv(0x420168, 1, b"")
         unique_batch_item_id = {
             1: b"interop-create",
             11: b"interop-attributes",
@@ -109,6 +111,7 @@ def response(operations: tuple[int, ...], protocol_minor: int) -> bytes:
             9: b"interop-check",
             18: b"interop-activate",
             19: b"interop-revoke",
+            56: b"interop-get-constraints",
         }.get(operation)
         if operations == (1, 20, 19, 20):
             unique_batch_item_id = (
@@ -207,7 +210,7 @@ def main() -> int:
          1, 18, 19, 20, 8, 24, 44)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
-              1, 20, 19, 20, 1, 18, 19, 20, 8, 24, 30, 44, 45, 59)
+              1, 20, 19, 20, 1, 18, 19, 20, 1, 56, 19, 20, 8, 24, 30, 44, 45, 59)
     )
     expected_cases = (
         ("test-op-locate", "test-op-query", "test-op-log")
@@ -215,13 +218,14 @@ def main() -> int:
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
               "test-op-locate", "test-op-login", "test-op-get", "test-op-get-attributes",
               "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
-              "test-op-revoke", "test-op-destroy")
+              "test-op-revoke", "test-op-destroy", "test-op-get-constraints")
     )
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
             "test-op-create", "test-op-activate", "test-op-revoke", "test-op-destroy"
         )
+        expected_cases += ("test-v20-reject-get-constraints",)
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
@@ -274,6 +278,7 @@ def main() -> int:
                             activate_lifecycle = operations == (1, 18, 19, 20)
                             revoke_lifecycle = operations == (1, 19, 20)
                             destroy_lifecycle = operations == (1, 20, 19, 20)
+                            get_constraints_lifecycle = operations == (1, 56, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -286,6 +291,8 @@ def main() -> int:
                                 lifecycle_target = {19: b"interop-revoke"}
                             if destroy_lifecycle:
                                 lifecycle_target = {20: b"interop-destroy-target"}
+                            if get_constraints_lifecycle:
+                                lifecycle_target = {56: b"interop-get-constraints"}
                             if create_lifecycle:
                                 lifecycle_target = {1: b"interop-create"}
                             lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
@@ -305,7 +312,7 @@ def main() -> int:
                             if create_lifecycle and request.count(enumeration(0x420094, 1)) < 1:
                                 raise AssertionError("Create cleanup must Destroy through ID Placeholder")
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
-                                              (1, 20, 19, 20), (1, 10, 20)) and request.count(
+                                              (1, 20, 19, 20), (1, 56, 19, 20), (1, 10, 20)) and request.count(
                                     enumeration(0x420094, 1)) < (
                                         3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
@@ -418,6 +425,16 @@ def main() -> int:
                        if case["case_id"] in expected_cases and case["status"] != "passed"}
             raise AssertionError(f"controlled operation response checks failed: {details!r}")
         if protocol_version == "2.0":
+            constraints_boundary = next(
+                case for case in result["cases"]
+                if case["case_id"] == "test-v20-reject-get-constraints"
+            )
+            if constraints_boundary["status"] != "passed" or \
+                    constraints_boundary["server_compatibility"] != "unknown":
+                raise AssertionError(
+                    "KMIP 2.1-only Get Constraints must be rejected before transport under KMIP 2.0: "
+                    f"{constraints_boundary!r}"
+                )
             discovery = next(case for case in result["cases"]
                              if case["case_id"] == "test-op-discover-versions")
             if discovery["status"] != "not_run" or "cannot construct a KMIP 2.0 offer" not in discovery.get("diagnostic", ""):
@@ -439,11 +456,11 @@ def main() -> int:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
             "total": 212,
-            "passed": 81,
+            "passed": 82,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 131,
+            "not_run": 130,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -452,11 +469,11 @@ def main() -> int:
             )
         expected_kmip20_summary = {
             "total": 203,
-            "passed": 76,
+            "passed": 77,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 127,
+            "not_run": 126,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(
