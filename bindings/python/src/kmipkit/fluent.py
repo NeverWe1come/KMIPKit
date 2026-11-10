@@ -111,7 +111,6 @@ class Operation:
         _identifier(unique_identifier)
         self._client, self._operation, self._identifier = client, operation, unique_identifier
         self._options: RequestOptions | None = None
-        self._asynchronous_indicator: int | None = None
 
     def with_options(self, options: RequestOptions) -> Operation:
         if not isinstance(options, RequestOptions):
