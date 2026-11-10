@@ -119,6 +119,11 @@ exponen `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`, `name()` y
 `execute()`, seguidos por `get(id)` y `destroy(id)`. Los métodos directos del
 cliente también ofrecen `createSymmetricKey`, `getById` y `destroyById` en
 Java, y `create_symmetric_key`, `get_by_id` y `destroy_by_id` en Python.
+Los builders Get y Destroy también pueden producir ítems tipados de batch
+(`to_batch_item()` en Rust, `build()` / `toBatchItem()` en Java y `build()` /
+`to_batch_item()` en Python). El indicador asíncrono se configura aparte en la
+cabecera de la petición; `with_options` sigue limitado a las opciones de
+transporte de ese intercambio.
 
 C ofrece las funciones directas para una operación
 `kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1` y

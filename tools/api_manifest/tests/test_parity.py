@@ -866,6 +866,27 @@ class PublicApiParityTests(unittest.TestCase):
                     "opaque_object_from_fields",
                     "pgp_key_from_fields",
                     "certificate_request_from_fields",
+                    # The fluent Java facade composes the existing typed
+                    # client and batch JNI calls; these semantic methods do
+                    # not introduce one JNI export per facade operation.
+                    "client_create_mtls_v1",
+                    "client_create_symmetric_key_v1",
+                    "client_create_symmetric_key_with_options_v1",
+                    "client_destroy_by_id_v1",
+                    "client_destroy_by_id_with_options_v1",
+                    "client_get_by_id_v1",
+                    "client_get_by_id_with_options_v1",
+                    "symmetric_key_builder_add_attribute_item",
+                    "symmetric_key_builder_add_catalogued_attribute",
+                    "symmetric_key_builder_add_vendor_attribute",
+                    "symmetric_key_builder_build_batch_item",
+                    "symmetric_key_builder_create",
+                    "symmetric_key_builder_execute_v1",
+                    "symmetric_key_builder_execute_with_options_v1",
+                    "symmetric_key_builder_set_algorithm",
+                    "symmetric_key_builder_set_length",
+                    "symmetric_key_builder_set_name",
+                    "symmetric_key_builder_set_usage_mask",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":
