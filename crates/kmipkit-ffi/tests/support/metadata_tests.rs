@@ -89,6 +89,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
+            "fluent_dx_api",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
             "kmip30_draft_routes",

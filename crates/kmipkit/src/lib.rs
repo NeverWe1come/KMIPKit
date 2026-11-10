@@ -147,6 +147,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "credential_validation_error_parity"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
+            | "fluent_dx_api"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
             | "kmip30_draft_routes"
