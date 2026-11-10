@@ -22,6 +22,15 @@ from .client import (
 from .typed_attributes import StandardAttribute
 
 
+def _client_abi_pointer(c_type: str, pointer: Any) -> Any:
+    """Bridge an opaque handle into the client CFFI declaration set by address."""
+    try:
+        address = int(ffi.cast("uintptr_t", pointer))
+    except (TypeError, ValueError):
+        address = int(_base_ffi.cast("uintptr_t", pointer))
+    return ffi.cast(c_type, address)
+
+
 def _identifier(value: extensions.UniqueIdentifier) -> Any:
     if not isinstance(value, extensions.UniqueIdentifier):
         errors.raise_for_status(4)
@@ -50,10 +59,12 @@ def _execute_direct(client: Client, function: Any, identifier: Any,
     options_record = _request_options_record(options) if options is not None else None
     output = ffi.new("kmipkit_client_batch_response_t **")
     with _NATIVE_CALL_LOCK:
-        args = [client._pointer()]
+        args = [_client_abi_pointer("kmipkit_client_t *", client._pointer())]
         if record is not None:
             args.append(record)
-        args.extend([ffi.cast("kmipkit_codec_limits_t *", limits._pointer())])
+        args.append(
+            _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer())
+        )
         if options_record is not None:
             args.append(options_record)
         args.append(output)
@@ -74,7 +85,11 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
     output = ffi.new("kmipkit_client_batch_response_t **")
     function = (lib.kmipkit_client_create_symmetric_key_with_options_v1
                 if options is not None else lib.kmipkit_client_create_symmetric_key_v1)
-    args = [client._pointer(), request, ffi.cast("kmipkit_codec_limits_t *", limits._pointer())]
+    args = [
+        _client_abi_pointer("kmipkit_client_t *", client._pointer()),
+        request,
+        _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer()),
+    ]
     if options is not None:
         if not isinstance(options, RequestOptions):
             errors.raise_for_status(4)
