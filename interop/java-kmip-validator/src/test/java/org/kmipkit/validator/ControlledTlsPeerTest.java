@@ -468,8 +468,8 @@ class ControlledTlsPeerTest {
                 "Get must use the identifier returned by the fixture Create response.");
         assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
         JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
-        assertEquals("server_unsupported", report.path("cases").get(0).path("status").asText());
-        assertEquals(1L, report.path("cases").get(0).path("result_status_code").asLong());
+        assertEquals("passed", report.path("cases").get(0).path("status").asText());
+        assertEquals(0L, report.path("cases").get(0).path("result_status_code").asLong());
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
