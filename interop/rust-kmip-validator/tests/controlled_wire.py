@@ -135,7 +135,9 @@ def receive(channel, encoding, transport, ttlv_receive):
     while len(body) < LIMIT:
         part = channel.recv(min(65536, LIMIT - len(body)))
         if not part:
-            return None if not body else (_ for _ in ()).throw(AssertionError('controlled document truncated'))
+            if not body:
+                return None
+            raise AssertionError('controlled document truncated')
         body.extend(part)
         try:
             json.loads(body) if encoding == 'JSON' else ET.fromstring(body)
