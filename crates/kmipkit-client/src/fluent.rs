@@ -285,7 +285,7 @@ impl<'a> RegisterBuilder<'a> {
     /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
-        append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
+        self.append_object_attribute_item(item);
         self
     }
 
@@ -293,7 +293,7 @@ impl<'a> RegisterBuilder<'a> {
     #[must_use]
     pub fn attributes(mut self, attributes: AttributeSet) -> Self {
         for item in attributes.into_items() {
-            append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
+            self.append_object_attribute_item(item);
         }
         self
     }
@@ -323,7 +323,7 @@ impl<'a> RegisterBuilder<'a> {
         }
         match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
             Ok(item) => {
-                append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
+                self.append_object_attribute_item(item);
             }
             Err(error) => self.attribute_error = Some(error),
         }
@@ -458,6 +458,10 @@ impl<'a> RegisterBuilder<'a> {
             limits,
             &self.options.unwrap_or_default(),
         )
+    }
+
+    fn append_object_attribute_item(&mut self, item: Item) {
+        append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
     }
 }
 
