@@ -294,8 +294,15 @@ class PythonKmipDriver:
             finally:
                 attribute.close()
         if operation == "Modify Attribute":
-            current = self._legacy_attribute_item("old test value")
-            updated = self._legacy_attribute_item("new test value")
+            tag = 0x0042_00FD
+            kind = "text"
+            current_value = (
+                "old test value"
+                if case["case_id"] == "test-neg-modify-attribute-current-mismatch"
+                else "KMIPKit interop test"
+            )
+            current = self._legacy_attribute_item(current_value, tag=tag, kind=kind)
+            updated = self._legacy_attribute_item("new test value", tag=tag, kind=kind)
             try:
                 with attribute_operations.ModifyAttributeRequest.create(identifier, current, updated) as request:
                     return request.to_batch_item()
@@ -308,7 +315,7 @@ class PythonKmipDriver:
                 with attribute_operations.DeleteAttributeRequest.create(
                     identifier,
                     current,
-                    extensions.AttributeReference.name("KMIPKit", "Comment"),
+                    extensions.AttributeReference.tag(0x0042_00FD),
                 ) as request:
                     return request.to_batch_item()
             finally:
@@ -924,14 +931,11 @@ class PythonKmipDriver:
         return cls._item(tag_value, "structure", cls._structure(children))
 
     @classmethod
-    def _legacy_attribute_item(cls, value: str) -> Any:
-        return cls._structure_item(
-            0x0042_00BF,
-            [
-                cls._item(0x0042_00C0, "text", value),
-                cls._item(0x0042_00C1, "enumeration", 1),
-            ],
-        )
+    def _legacy_attribute_item(
+        cls, value: Any, *, tag: int = 0x0042_00FD, kind: str = "text"
+    ) -> Any:
+        """Build a direct standard Attribute Item for Current/New Attribute."""
+        return cls._item(tag, kind, value)
 
     @classmethod
     def _attribute(cls, name: str, tag_value: int, kind: str, value: Any) -> Any:
@@ -955,6 +959,7 @@ class PythonKmipDriver:
                 0x20 if algorithm in (4, 6) else 0x180 if algorithm == 9 else 0x0C,
             ),
             name_value,
+            cls._item(0x0042_00FD, "text", "KMIPKit interop test"),
         ]
         return cls._structure(attributes)
 
@@ -1219,19 +1224,40 @@ class PythonKmipDriver:
             if operation in {"Add Attribute", "Set Attribute", "Modify Attribute"}:
                 comment = self._item(0x0042_00FD, "text", "KMIPKit interop test")
                 if operation == "Add Attribute":
-                    return extension.client_batch_item_add_attribute(identifier, comment)
+                    try:
+                        return extension.client_batch_item_add_attribute(identifier, comment)
+                    finally:
+                        comment.close()
                 if operation == "Set Attribute":
-                    return extension.client_batch_item_set_attribute(identifier, comment)
-                current = self._legacy_attribute_item("old test value")
-                updated = self._legacy_attribute_item("new test value")
-                return extension.client_batch_item_modify_attribute(identifier, current, updated)
+                    try:
+                        return extension.client_batch_item_set_attribute(identifier, comment)
+                    finally:
+                        comment.close()
+                comment.close()
+                tag = 0x0042_00FD
+                kind = "text"
+                current_value = (
+                    "old test value"
+                    if case["case_id"] == "test-neg-modify-attribute-current-mismatch"
+                    else "KMIPKit interop test"
+                )
+                current = self._legacy_attribute_item(current_value, tag=tag, kind=kind)
+                updated = self._legacy_attribute_item("new test value", tag=tag, kind=kind)
+                try:
+                    return extension.client_batch_item_modify_attribute(identifier, current, updated)
+                finally:
+                    current.close()
+                    updated.close()
             if operation == "Delete Attribute":
                 current = self._legacy_attribute_item("KMIPKit interop test")
-                return extension.client_batch_item_delete_attribute(
-                    identifier,
-                    current,
-                    extensions.AttributeReference.name("KMIPKit", "Comment"),
-                )
+                try:
+                    return extension.client_batch_item_delete_attribute(
+                        identifier,
+                        current,
+                        extensions.AttributeReference.tag(0x0042_00FD),
+                    )
+                finally:
+                    current.close()
             if operation == "Adjust Attribute":
                 return extension.client_batch_item_adjust_attribute(
                     identifier,
