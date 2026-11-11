@@ -80,6 +80,36 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertFalse(any(target['kind'] in {'object_structure', 'operation_structure'}
                                  for target in route_targets), route['public_api_symbol'])
 
+    def test_object_item_constructors_do_not_claim_object_type_values_or_sibling_structures(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        routes = {route['public_api_symbol']: route for route in self.data['routes']}
+        certificate = routes['kmipkit_protocol::Certificate::try_new']
+        certificate_targets = [targets[target_id] for target_id in certificate['normative_target_ids']]
+        self.assertIn('KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE', certificate['normative_target_ids'])
+        self.assertFalse(any(target['kind'] == 'object_type' or
+                             target.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE']
+                             for target in certificate_targets))
+
+        unknown = routes['kmipkit_protocol::ManagedObject::unknown']
+        unknown_targets = [targets[target_id] for target_id in unknown['normative_target_ids']]
+        self.assertTrue(all(target['kind'] == 'tag_range' and target['target_id'] == 'KMIPKIT-RANGE-004'
+                            for target in unknown_targets), unknown['normative_target_ids'])
+
+    def test_scalar_ttlv_converters_only_claim_targets_they_can_emit(self):
+        routes = {route['public_api_symbol']: route for route in self.data['routes']}
+        expected = {
+            'kmipkit_protocol::SecretBytes::into_ttlv_value': {
+                'KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING',
+            },
+            'kmipkit_protocol::SecretText::into_ttlv_value': {
+                'KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING',
+            },
+        }
+        for symbol, emitted_targets in expected.items():
+            self.assertTrue(emitted_targets <= set(routes[symbol]['normative_target_ids']), symbol)
+            self.assertEqual(emitted_targets, set(routes[symbol]['normative_target_ids']), symbol)
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
