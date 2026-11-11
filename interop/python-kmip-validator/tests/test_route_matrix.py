@@ -83,6 +83,13 @@ class RouteMatrixTests(unittest.TestCase):
                                 route_manifest_sha256=report['route_manifest_sha256'],
                                 expected_artifact_sha256=self.artifact['artifact_sha256'])
 
+    def test_installed_distribution_records_the_exact_verified_wheel_digest(self):
+        from kmipkit_validator.contract import validate_artifact
+        artifact = validate_artifact()
+        artifact['artifact_sha256'] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'installed wheel identity'):
+            self.runner.verify_installed_artifact(artifact)
+
     def test_exception_text_and_values_never_escape_into_report_or_pending_coverage(self):
         catalog, manifest = self.integer_fixture()
         from unittest.mock import patch
