@@ -162,8 +162,10 @@ branches, and the common CI therefore reports a planned matrix only.
   collision and then on compound `Re-*` operation names. Green evidence:
   `test_route_capabilities.py` passed 40 tests before the final compound-name
   assertion; the new targeted test and `route_capabilities.py --write/--check`
-  pass with the complete fix. Full shared suite passed 139 tests while the
-  final manifest was being regenerated; rerun it on the final tree before
-  requesting review.
+  pass with the complete fix. Full shared suite passed 139 tests after the
+  final source and generated manifest were checked in the worktree.
+- Behavior-preserving refactor: `59850d9ee` extracts operation tokenization,
+  phrase variants, and contiguous-token matching into named helpers. The
+  focused regression and generated-manifest check pass after this refactor.
 - This corrects matrix applicability; it does not mark any language matrix
   complete. T006/T007 and all vendor interoperability runs remain open.
