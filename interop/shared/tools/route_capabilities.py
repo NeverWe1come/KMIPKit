@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the authored public construction-route inventory (KMIPKIT-0092).
+"""Validate the authored public API route inventory (KMIPKIT-0092).
 
 Construction and execution identities are separate. Public convenience send
 methods taking an already-built request do not create independent routes.
@@ -58,11 +58,61 @@ def function_symbols(api):
                 symbol = '.'.join(mapping.get(k, '') for k in ('package', 'class', 'method')).strip('.')
             else:
                 symbol = mapping.get('function')
-                if symbol and not symbol.startswith(mapping.get('module', '') + '.'):
+                if symbol and not symbol.startswith(('kmipkit.', mapping.get('module', '') + '.')):
                     symbol = mapping.get('module', '') + '.' + symbol
             if symbol:
                 result[language].add(symbol)
     return result
+
+
+def declared_package_symbols(api):
+    """Symbols physically exposed by each language's published package."""
+    packages = {package['id']: package['language'] for package in api['publicPackages']}
+    result = {language: set() for language in LANGUAGES}
+    for declaration in api['publicDeclarations']:
+        package_language = packages.get(declaration['packageId'])
+        if package_language in result:
+            result[package_language].add(declaration['exportName'])
+    return result
+
+
+def function_entrypoint(function, language):
+    """Return the exact public package symbol for a versioned API function."""
+    mapping = function.get(language, {})
+    if language == 'c':
+        return mapping.get('symbol')
+    if language == 'rust':
+        return '::'.join(value for value in (mapping.get('module'), mapping.get('name')) if value)
+    if language == 'java':
+        return '.'.join(value for value in (mapping.get('package'), mapping.get('class'), mapping.get('method')) if value)
+    if function['id'] == 'client_batch_response_item_count':
+        return 'kmipkit.client.BatchResult.item_count'
+    if function['id'] == 'client_batch_response_item_at':
+        return 'kmipkit.client.BatchResult.item_at'
+    symbol = mapping.get('function')
+    module = mapping.get('module')
+    if symbol and module and not symbol.startswith(('kmipkit.', module + '.')):
+        return module + '.' + symbol
+    return symbol
+
+
+def _function_route_kind(function_id):
+    """Classify public request serializers and response readers by behavior."""
+    value = function_id.lower()
+    if any(token in value for token in ('_from_ttlv', '_from_item', 'response_')):
+        return 'decode'
+    if any(token in value for token in ('_to_ttlv', '_into_ttlv')):
+        return 'encode'
+    if '_to_batch_item' in value:
+        return 'construct'
+    return None
+
+
+def _function_operation_id(function_id, operations):
+    value = normalized(function_id)
+    matches = [operation_id for operation_id, operation in operations.items()
+               if normalized(operation['name']) in value]
+    return max(matches, key=lambda operation_id: len(normalized(operations[operation_id]['name'])), default=None)
 
 
 @lru_cache(maxsize=None)
@@ -173,6 +223,11 @@ def validate(data, root=ROOT):
     models = _models(root, commit, json.dumps(targets, sort_keys=True))
     expected = {(lang, symbol) for lang, symbol, *_ in inventory}
     expected.update((row['language'], row['public_api_symbol']) for row in models)
+    package_symbols = declared_package_symbols(api)
+    expected.update((language, symbol) for function in api['functions']
+        if _function_route_kind(function['id']) is not None
+        for language in LANGUAGES
+        if (symbol := function_entrypoint(function, language)) and symbol in package_symbols[language])
     for route in data['routes']:
         if route['route_id'] in ids:
             raise ValueError('duplicate route_id: ' + route['route_id'])
@@ -194,7 +249,7 @@ def validate(data, root=ROOT):
             source(root, commit, path)
     missing = expected - constructors
     if missing:
-        raise ValueError('missing public construction route: ' + repr(sorted(missing)))
+        raise ValueError('missing public API route: ' + repr(sorted(missing)))
     canonical = build_manifest(root, commit)
     canonical_routes = {r['route_id']: r for r in canonical['routes']}
     for route in data['routes']:
@@ -207,7 +262,7 @@ def validate(data, root=ROOT):
             raise ValueError('supported encoding/transport pairs differ from public source')
         for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions'):
             if route[field] != expected_route[field]:
-                raise ValueError('public construction route mapping differs: ' + field)
+                raise ValueError('public API route mapping differs: ' + field)
     if data['execution_routes'] != canonical['execution_routes']:
         raise ValueError('execution route inventory differs from public source')
     for limitation in data['unavailable']:
@@ -249,6 +304,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             'public_api_manifest': 'specification/api/public-api.json',
             'routes': [], 'execution_routes': [], 'unavailable': [], 'value_symbols': []}
     api = _api(root, commit)
+    package_symbols = declared_package_symbols(api)
     targets = json.loads((root / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())['normative_targets']
     data['value_symbols'] = value_inventory(api, targets)
     operations = {o['operationId']: o for o in api['operations']}
@@ -300,8 +356,71 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             'normative_target_ids': model['normative_target_ids'],
             'case_categories': ['normative_inventory', 'attributes', 'managed_objects', 'enums_and_bitmasks'],
             'protocol_versions': ['2.0', '2.1'], 'combinations': [{'encoding': 'TTLV', 'transport': None}],
-            'actions': ['construct'], 'source_paths': model['source_paths'],
+            'actions': ['decode'] if re.search(r'(?:from|try_from)_(?:ttlv|item)$', symbol.lower())
+                or re.search(r'(?:::|\.)try_from_(?:ttlv|item)$', symbol.lower())
+                or symbol.lower().endswith(('::with_ttlv', '.with_ttlv', '::with_value', '.with_value'))
+                else ['construct'],
+            'source_paths': model['source_paths'],
             'artifact_commit': commit, 'execution_route_id': None, 'artifact_verification': 'required'})
+    # The API manifest records additional public TTLV converters and response
+    # readers which are not operation constructors or typed model factories.
+    # Keep these paths explicit so recipes must invoke each one rather than
+    # infer coverage from an unrelated request builder or Client.execute call.
+    route_by_symbol = {(route['language'], route['public_api_symbol']): route for route in data['routes']}
+    for function in api['functions']:
+        action = _function_route_kind(function['id'])
+        if action is None:
+            continue
+        for language in LANGUAGES:
+            symbol = function_entrypoint(function, language)
+            if not symbol or symbol not in package_symbols[language]:
+                continue
+            key = language, symbol
+            existing = route_by_symbol.get(key)
+            if existing:
+                if action == 'decode':
+                    existing['actions'] = ['decode']
+                elif action not in existing['actions']:
+                    existing['actions'].append(action)
+                    existing['actions'].sort()
+                continue
+            function_id = function['id']
+            operation_id = _function_operation_id(function_id, operations)
+            if operation_id and not operation_id.startswith('KMIPKIT-'):
+                operation_id = None
+            if operation_id:
+                target_ids = [operation_id] + sorted({target['target_id'] for target in targets
+                    if target.get('operation_id') == operation_id
+                    and target.get('role') == ('response' if action == 'decode' else 'request')})
+            else:
+                value = normalized(function_id)
+                target_ids = [target['target_id'] for target in targets
+                    if normalized(target.get('name', '')) and normalized(target['name']) in value]
+                if 'typedattribute' in value:
+                    target_ids.extend(target['target_id'] for target in targets
+                        if target['kind'] in {'attribute', 'attribute_structure'})
+                if 'managedobject' in value:
+                    target_ids.extend(target['target_id'] for target in targets
+                        if target['kind'] in {'object_type', 'object_structure'})
+                target_ids = sorted(set(target_ids)) or ['*']
+            network = action == 'construct' and '_to_batch_item' in function_id
+            mode = 'network' if network else 'local'
+            family = 'generic-ttlv' if function_id.startswith('ttlv_') else 'typed-protocol'
+            execution_id = language + '.execute.typed-batch' if network else None
+            combinations = ([{'encoding': encoding, 'transport': transport}
+                for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')]
+                if network else [{'encoding': 'TTLV', 'transport': None}])
+            route = {'route_id': f'{language}.{family}.function.{function_id}',
+                'language': language, 'api_level': family, 'mode': mode,
+                'public_api_symbol': symbol, 'operation_ids': [operation_id] if operation_id else [],
+                'normative_target_ids': target_ids,
+                'case_categories': categories + ['normative_inventory'],
+                'protocol_versions': ['2.0', '2.1'], 'combinations': combinations,
+                'actions': [action], 'source_paths': ['specification/api/public-api.json'],
+                'artifact_commit': commit, 'execution_route_id': execution_id,
+                'artifact_verification': 'required'}
+            data['routes'].append(route)
+            route_by_symbol[key] = route
     for language, (_, path) in execution.items():
         for capability, reason in [
             ('high-level-constructor', 'Public client convenience send methods accept an existing typed request or batch; no independent high-level request builder is exported.'),

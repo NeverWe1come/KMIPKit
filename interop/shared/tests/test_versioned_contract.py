@@ -75,7 +75,7 @@ def result_payload(
     api_level: str,
     status: str,
     configuration_fingerprint: str = "a" * 64,
-    library_commit: str = "abcdef0",
+    library_commit: str = "a" * 40,
     catalog_sha256: str = "c" * 64,
     server_version: str = "kms-1",
 ) -> dict:
@@ -140,19 +140,29 @@ class VersionedContractTests(unittest.TestCase):
             operation = case["operation"]
             if case["category"] in {"managed_objects", "attributes", "enums_and_bitmasks"}:
                 continue
+            scenario = case.get("requires", {}).get("protocol_scenario")
+            operations = scenario["operations"] if scenario else [operation]
             section_prefix = "6.2." if case.get("requires", {}).get("workflow_type") == "server_to_client" else "6.1."
+            case_versions = set(case["execution"]["protocol_versions"])
             for version in ("2.0", "2.1"):
-                matches = [
-                    section for section, title in self.sections[version].items()
-                    if section.startswith(section_prefix) and title.casefold() == operation.casefold()
-                ]
-                if matches:
-                    version_by_case.setdefault(case["case_id"], []).append(version)
+                if version not in case_versions:
+                    continue
+                available_operations = 0
+                for scenario_operation in operations:
+                    matches = [
+                        section for section, title in self.sections[version].items()
+                        if section.startswith(section_prefix) and title.casefold() == scenario_operation.casefold()
+                    ]
+                    if not matches:
+                        continue
+                    available_operations += 1
                     expected_ref = {
                         "document": f"OASIS KMIP {version} Specification",
                         "section": matches[0],
                     }
                     self.assertIn(expected_ref, case["normative_refs"], case["case_id"])
+                self.assertGreater(available_operations, 0, case["case_id"])
+                version_by_case.setdefault(case["case_id"], []).append(version)
             self.assertEqual(
                 sorted(version_by_case.get(case["case_id"], [])),
                 sorted(case["execution"]["protocol_versions"]),
@@ -257,7 +267,13 @@ class VersionedContractTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/interop-common.yml").read_text(encoding="utf-8")
         self.assertIn("feature/KMIPKIT-0088-interop-contract-matrix", workflow)
         self.assertIn("specs/088-interop-contract-version-matrix/**", workflow)
+        self.assertIn("feature/KMIPKIT-0092-interop-api-route-exhaustiveness", workflow)
+        self.assertIn("specs/092-interop-api-route-exhaustiveness/**", workflow)
+        self.assertIn("docs/superpowers/plans/2026-11-10-kmipkit-0092-interop-api-route-exhaustiveness.md", workflow)
         self.assertIn("generate_test_catalog.py --check", workflow)
+        self.assertIn("route_capabilities.py", workflow)
+        self.assertIn("coverage_matrix.py", workflow)
+        self.assertIn("--jsonl --output", workflow)
         self.assertIn("unittest discover -s interop/shared/tests", workflow)
 
     def test_aggregator_preserves_same_language_runs_and_execution_axes(self) -> None:
@@ -270,6 +286,8 @@ class VersionedContractTests(unittest.TestCase):
                 result_payload(run_id="python-xml", language="python", protocol_version="2.1", transport="https", encoding="XML", api_level="typed-protocol", status="server_unsupported"),
                 result_payload(run_id="rust-20", language="rust", protocol_version="2.0", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed"),
             ]
+            payloads[0]["execution"]["construction_route_id"] = "rust.typed.create.new"
+            payloads[0]["execution"]["execution_route_id"] = "rust.client.execute"
             payloads[0]["cases"].append({
                 "case_id": "test-ping", "status": "not_run", "library_correctness": "not_checked",
                 "server_compatibility": "unknown", "parity": "not_compared",
@@ -304,6 +322,8 @@ class VersionedContractTests(unittest.TestCase):
             self.assertIn(label, html.unescape(html_output))
         self.assertIn("rust-ttlv", json_output)
         self.assertIn('"api_level": "high-level"', json_output)
+        self.assertIn('"construction_route_id": "rust.typed.create.new"', json_output)
+        self.assertIn("rust.typed.create.new", markdown + html.unescape(html_output))
         self.assertNotIn("secret request bytes", json_output)
         self.assertNotIn("secret response bytes", json_output)
         self.assertNotIn("private key material", json_output)
@@ -318,7 +338,7 @@ class VersionedContractTests(unittest.TestCase):
             matrix = aggregate_results(paths)
             self.assertEqual("COMPARABLE", matrix["matrices"][0]["comparability"])
 
-            for field, replacement in (("library_commit", "1234567"), ("catalog_sha256", "e" * 64), ("configuration_fingerprint", "f" * 64), ("version", "kms-2")):
+            for field, replacement in (("library_commit", "1" * 40), ("catalog_sha256", "e" * 64), ("configuration_fingerprint", "f" * 64), ("product", "other KMIP service"), ("version", "kms-2")):
                 incompatible = json.loads(json.dumps(variant))
                 if field == "library_commit":
                     incompatible["execution"][field] = replacement
@@ -330,6 +350,12 @@ class VersionedContractTests(unittest.TestCase):
                 matrix = aggregate_results(paths)
                 with self.subTest(field=field):
                     self.assertEqual("INCOMPARABLE", matrix["matrices"][0]["comparability"])
+
+            missing_artifact = json.loads(json.dumps(variant))
+            missing_artifact["execution"].pop("artifact_sha256")
+            write_result(root, "b", missing_artifact)
+            matrix = aggregate_results(paths)
+            self.assertEqual("UNVERIFIED", matrix["matrices"][0]["comparability"])
 
             for field, replacement in (("id", "other-kms"), ("protocol_version", "2.0")):
                 separated = json.loads(json.dumps(variant))
@@ -394,6 +420,8 @@ class VersionedContractTests(unittest.TestCase):
         second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="passed")
         first["cases"][0].update({"result_status": "OperationSucceeded", "result_reason": "InvalidField"})
         second["cases"][0].update({"result_status": "operation_succeeded", "result_reason": "INVALID_FIELD"})
+        first["cases"][0]["parity"] = "matched"
+        second["cases"][0]["parity"] = "matched"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             matrix = aggregate_results([
@@ -403,6 +431,19 @@ class VersionedContractTests(unittest.TestCase):
         self.assertEqual("PARITY_OK", row["status"])
         self.assertEqual({0}, {result["result_status_code"] for result in row["results"].values()})
         self.assertEqual({7}, {result["result_reason_code"] for result in row["results"].values()})
+
+    def test_aggregator_does_not_call_uncompared_trees_parity_ok(self) -> None:
+        first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
+        second = result_payload(run_id="python", language="python", protocol_version="2.1", transport="https", encoding="JSON", api_level="high-level", status="passed")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = aggregate_results([
+                write_result(root, "first", first), write_result(root, "second", second),
+            ])
+        row = matrix["matrices"][0]["cases"][0]
+        self.assertEqual("COMPARABLE", matrix["matrices"][0]["comparability"])
+        self.assertEqual("NOT_COMPARED", row["status"])
+        self.assertTrue(all(result["parity"] == "not_compared" for result in row["results"].values()))
 
     def test_boolean_is_not_accepted_as_a_numeric_kmip_result_code(self) -> None:
         first = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")

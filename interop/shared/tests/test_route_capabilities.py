@@ -1,4 +1,4 @@
-"""KMIPKIT-0092-FR-001/002/009: source-backed construction routes."""
+"""KMIPKIT-0092-FR-001/002/009: source-backed public API routes."""
 from __future__ import annotations
 
 import copy
@@ -80,6 +80,33 @@ class RouteCapabilitiesTests(unittest.TestCase):
                        'org.kmipkit.ttlv.TtlvValue.Enumeration', 'kmipkit.ttlv.ttlv_value_enumeration'):
             self.assertTrue(symbol in symbols, symbol)
 
+    def test_public_request_serializers_and_response_readers_are_routes(self):
+        api = json.loads((ROOT / 'specification/api/public-api.json').read_text())
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        package_languages = {package['id']: package['language'] for package in api['publicPackages']}
+        declared = {(package_languages[declaration['packageId']], declaration['exportName'])
+                    for declaration in api['publicDeclarations']}
+        for function in api['functions']:
+            function_id = function['id'].lower()
+            if not any(token in function_id for token in (
+                    'to_ttlv', 'into_ttlv', 'from_ttlv', 'from_item',
+                    'to_batch_item', 'response_')):
+                continue
+            for language in ('rust', 'c', 'java', 'python'):
+                symbol = self.module.function_entrypoint(function, language)
+                if symbol:
+                    if (language, symbol) not in declared:
+                        continue
+                    with self.subTest(function=function['id'], language=language, symbol=symbol):
+                        self.assertTrue((language, symbol) in routes,
+                                        f"{function['id']} is missing {language} route {symbol}")
+                        expected_action = ('construct' if '_to_batch_item' in function_id else
+                                           'decode' if any(token in function_id for token in ('from_ttlv', 'from_item', 'response_')) else
+                                           'encode')
+                        if (language, symbol) in routes:
+                            self.assertIn(expected_action, routes[(language, symbol)]['actions'],
+                                          f"{function['id']} must be a {expected_action} route")
+
     def test_known_but_false_api_level_cannot_relabel_a_constructor(self):
         self.data['routes'][0]['api_level'] = 'high-level'
         self.reject(self.data, 'api_level')
@@ -156,7 +183,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_public_constructor_cannot_disappear(self):
         route = next(r for r in self.data['routes'] if r['mode'] == 'network')
         self.data['routes'].remove(route)
-        self.reject(self.data, 'missing public construction route')
+        self.reject(self.data, 'missing public API route')
 
     def test_false_unavailable_route_is_rejected(self):
         route = next(r for r in self.data['routes'] if r['mode'] == 'network')

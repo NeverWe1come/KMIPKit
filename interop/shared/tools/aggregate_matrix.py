@@ -116,7 +116,7 @@ def _summary_for_report(summary: dict) -> dict:
 def _evidence_signature(run: dict) -> tuple:
     server = run["server"]
     return (
-        server["id"], server["version"], server["configuration_fingerprint"],
+        server["id"], server.get("product"), server["version"], server["configuration_fingerprint"],
         run["catalog_sha256"], run["execution"]["library_commit"],
     )
 
@@ -129,6 +129,8 @@ def _case_result_for_run(run: dict, case_id: str) -> dict:
         "transport": run["execution"]["transport"],
         "encoding": run["execution"]["encoding"],
         "api_level": run["execution"]["api_level"],
+        "construction_route_id": run["execution"].get("construction_route_id"),
+        "execution_route_id": run["execution"].get("execution_route_id"),
         "status": case.get("status", "NOT_RUN") if case else "NOT_RUN",
         "library_correctness": case.get("library_correctness", "not_checked") if case else "not_checked",
         "server_compatibility": case.get("server_compatibility", "unknown") if case else "unknown",
@@ -194,6 +196,7 @@ def aggregate_results(result_files: list[Path]) -> dict:
             "language": language,
             "server": {
                 "id": server_id,
+                "product": server.get("product"),
                 "version": server.get("version"),
                 "configuration_fingerprint": server.get("configuration_fingerprint"),
             },
@@ -203,6 +206,8 @@ def aggregate_results(result_files: list[Path]) -> dict:
                 "transport": execution.get("transport"),
                 "encoding": execution.get("encoding"),
                 "api_level": execution.get("api_level"),
+                "construction_route_id": execution.get("construction_route_id"),
+                "execution_route_id": execution.get("execution_route_id"),
                 "library_commit": execution.get("library_commit"),
                 "artifact_sha256": execution.get("artifact_sha256"),
             },
@@ -221,7 +226,19 @@ def aggregate_results(result_files: list[Path]) -> dict:
             count = run_key_counts[run["run_id"]]
             run["result_key"] = run["run_id"] if count == 1 else f"{run['run_id']}#{count}"
         evidence = {_evidence_signature(run) for run in runs}
-        fields_complete = all(all(value is not None for value in item) for item in evidence)
+        fields_complete = (
+            all(all(value is not None for value in item) for item in evidence)
+            and all(
+                isinstance(run["execution"].get("artifact_sha256"), str)
+                and re.fullmatch(r"[0-9a-f]{64}", run["execution"]["artifact_sha256"])
+                and isinstance(run["execution"].get("library_commit"), str)
+                and re.fullmatch(r"[0-9a-f]{40}", run["execution"]["library_commit"])
+                and run["execution"].get("transport") in {"raw_tls", "https"}
+                and run["execution"].get("encoding") in {"TTLV", "JSON", "XML"}
+                and run["execution"].get("api_level") in {"high-level", "typed-protocol", "generic-ttlv"}
+                for run in runs
+            )
+        )
         comparability = "UNVERIFIED" if not fields_complete else ("COMPARABLE" if len(evidence) == 1 else "INCOMPARABLE")
         rows = []
         correctness = defaultdict(int)
@@ -256,8 +273,12 @@ def aggregate_results(result_files: list[Path]) -> dict:
                         row["status"] = "PARITY_MISMATCH"
                     elif len(executed_results) < len(runs):
                         row["status"] = "PARTIAL"
-                    else:
+                    elif all(result["parity"] == "matched" for result in executed_results):
                         row["status"] = "PARITY_OK"
+                    elif any(result["parity"] == "mismatched" for result in executed_results):
+                        row["status"] = "PARITY_MISMATCH"
+                    else:
+                        row["status"] = "NOT_COMPARED"
             rows.append(row)
         matrices.append({
             "server_id": server_id,
@@ -296,7 +317,9 @@ def generate_markdown(aggregated: dict) -> str:
         md.append(f"Cases not executed (not_run): **{matrix['summary']['not_executed']}**\n")
         md.append("Execution runs: " + "; ".join(
             f"`{run.get('result_key', run['run_id'])}` ({run['language']}, {run['execution']['transport'] or 'unknown'}, "
-            f"{run['execution']['encoding'] or 'unknown'}, {run['execution']['api_level'] or 'unknown'})"
+            f"{run['execution']['encoding'] or 'unknown'}, {run['execution']['api_level'] or 'unknown'}, "
+            f"construct={run['execution'].get('construction_route_id') or 'unknown'}, "
+            f"execute={run['execution'].get('execution_route_id') or 'unknown'})"
             for run in matrix["runs"]
         ) + "\n")
         columns = ["Case", "Category"] + [run.get("result_key", run["run_id"]) for run in matrix["runs"]] + ["Language/route differences"]
@@ -337,6 +360,7 @@ def generate_html(aggregated: dict) -> str:
                     language: {
                         "run_id": language, "language": language, "transport": None,
                         "encoding": None, "api_level": None,
+                        "construction_route_id": None, "execution_route_id": None,
                         "status": row.get("results", {}).get(language, "NOT_RUN"),
                         "library_correctness": "not_checked", "server_compatibility": "unknown",
                     } for language in languages
@@ -384,7 +408,10 @@ def generate_html(aggregated: dict) -> str:
         for run in runs:
             execution = run.get("execution", {})
             label = f"{run.get('result_key', run.get('run_id'))} · {run.get('language')}"
-            axes = f"{execution.get('transport') or 'unknown'} / {execution.get('encoding') or 'unknown'} / {execution.get('api_level') or 'unknown'}"
+            axes = (f"{execution.get('transport') or 'unknown'} / {execution.get('encoding') or 'unknown'} / "
+                    f"{execution.get('api_level') or 'unknown'} / "
+                    f"construct {execution.get('construction_route_id') or 'unknown'} / "
+                    f"execute {execution.get('execution_route_id') or 'unknown'}")
             out.append(f'<th>{html.escape(str(label))}<br><small>{html.escape(axes)}</small></th>')
         out.append('<th>Language/route differences</th></tr></thead><tbody>')
         for row in matrix.get("cases", []):

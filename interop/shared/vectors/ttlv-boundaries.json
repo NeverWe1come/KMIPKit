@@ -1,0 +1,139 @@
+{
+  "format_version": 1,
+  "source": {
+    "kmip_2_0": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+    "kmip_2_1": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+    "sections": ["1.5", "10.1.2", "10.1.3", "10.1.5", "11.1", "11.23"]
+  },
+  "tag": "420001",
+  "vectors": [
+    {
+      "data_type": "Structure",
+      "type_code": "01",
+      "branch_classes": ["length_multiple_of_8", "nested_structure_roundtrip", "child_order_preserved", "declared_length_matches_children", "inconsistent_nested_length_rejected"],
+      "samples": [
+        {"branch": "empty_structure", "hex": "4200010100000000", "valid": true},
+        {"branch": "nested_integer", "hex": "420001010000001042000102000000040000000100000000", "valid": true},
+        {"branch": "ordered_children", "hex": "42000101000000204200010200000004000000010000000042000205000000040000000200000000", "valid": true},
+        {"branch": "reversed_children", "hex": "42000101000000204200020500000004000000020000000042000102000000040000000100000000", "valid": true},
+        {"branch": "non_multiple_of_8_length", "hex": "42000101000000010000000000000000", "valid": false, "error_class": "invalid_structure_length"},
+        {"branch": "truncated_child", "hex": "4200010100000010420001020000000400000001", "valid": false, "error_class": "truncated_nested_value"}
+      ]
+    },
+    {
+      "data_type": "Integer",
+      "type_code": "02",
+      "branch_classes": ["signed_minimum_and_maximum", "negative_zero_positive", "exact_item_length_4", "invalid_item_length_rejected", "four_byte_padding_consumed"],
+      "samples": [
+        {"branch": "signed_minimum", "hex": "42000102000000048000000000000000", "valid": true},
+        {"branch": "zero", "hex": "42000102000000040000000000000000", "valid": true},
+        {"branch": "signed_maximum", "hex": "42000102000000047fffffff00000000", "valid": true},
+        {"branch": "wrong_length_3", "hex": "4200010200000003ffffff00000000", "valid": false, "error_class": "invalid_integer_length"}
+      ]
+    },
+    {
+      "data_type": "Long Integer",
+      "type_code": "03",
+      "branch_classes": ["signed_minimum_and_maximum", "negative_zero_positive", "exact_item_length_8", "invalid_item_length_rejected"],
+      "samples": [
+        {"branch": "signed_minimum", "hex": "42000103000000088000000000000000", "valid": true},
+        {"branch": "zero", "hex": "42000103000000080000000000000000", "valid": true},
+        {"branch": "signed_maximum", "hex": "42000103000000087fffffffffffffff", "valid": true},
+        {"branch": "wrong_length_4", "hex": "420001030000000400000000", "valid": false, "error_class": "invalid_long_integer_length"}
+      ]
+    },
+    {
+      "data_type": "Big Integer",
+      "type_code": "04",
+      "branch_classes": ["positive_and_negative", "minimum_sign_extension", "length_multiple_of_8", "non_multiple_length_rejected", "multiword_roundtrip"],
+      "samples": [
+        {"branch": "positive_one", "hex": "42000104000000080000000000000001", "valid": true},
+        {"branch": "negative_one", "hex": "4200010400000008ffffffffffffffff", "valid": true},
+        {"branch": "positive_multiword", "hex": "420001040000001000000000000000008000000000000000", "valid": true},
+        {"branch": "negative_multiword", "hex": "4200010400000010ffffffffffffffff7fffffffffffffff", "valid": true},
+        {"branch": "non_multiple_length_4", "hex": "420001040000000400000001", "valid": false, "error_class": "invalid_big_integer_length"},
+        {"branch": "excessive_sign_extension", "hex": "4200010400000010ffffffffffffffffffffffffffffffff", "valid": false, "error_class": "nonminimal_sign_extension"}
+      ]
+    },
+    {
+      "data_type": "Enumeration",
+      "type_code": "05",
+      "branch_classes": ["assigned_reserved_extension_and_unknown_values", "exact_item_length_4", "invalid_item_length_rejected"],
+      "samples": [
+        {"branch": "assigned_zero", "hex": "42000105000000040000000000000000", "valid": true},
+        {"branch": "unknown_value_preserved", "hex": "42000105000000041234567800000000", "valid": true},
+        {"branch": "extension_allocation", "hex": "42000105000000048000000000000000", "valid": true},
+        {"branch": "wrong_length_3", "hex": "420001050000000301020300000000", "valid": false, "error_class": "invalid_enumeration_length"}
+      ]
+    },
+    {
+      "data_type": "Boolean",
+      "type_code": "06",
+      "branch_classes": ["false_and_true", "non_boolean_value_rejected", "exact_item_length_8", "invalid_item_length_rejected"],
+      "samples": [
+        {"branch": "false", "hex": "42000106000000080000000000000000", "valid": true},
+        {"branch": "true", "hex": "42000106000000080000000000000001", "valid": true},
+        {"branch": "invalid_boolean_2", "hex": "42000106000000080000000000000002", "valid": false, "error_class": "invalid_boolean_value"},
+        {"branch": "wrong_length_4", "hex": "420001060000000400000000", "valid": false, "error_class": "invalid_boolean_length"}
+      ]
+    },
+    {
+      "data_type": "Text String",
+      "type_code": "07",
+      "branch_classes": ["empty_ascii_and_multibyte_utf8", "invalid_utf8_rejected", "length_boundaries_0_1_7_8_9", "minimal_alignment_padding"],
+      "samples": [
+        {"branch": "empty", "hex": "4200010700000000", "valid": true},
+        {"branch": "single_ascii_and_padding", "hex": "42000107000000014100000000000000", "valid": true},
+        {"branch": "seven_bytes", "hex": "42000107000000074142434445464700", "valid": true},
+        {"branch": "eight_bytes", "hex": "42000107000000084142434445464748", "valid": true},
+        {"branch": "nine_bytes", "hex": "420001070000000941424344454647480000000000000000", "valid": true},
+        {"branch": "multibyte_utf8", "hex": "4200010700000002c3a9000000000000", "valid": true},
+        {"branch": "invalid_utf8", "hex": "4200010700000001ff00000000000000", "valid": false, "error_class": "invalid_utf8"}
+      ]
+    },
+    {
+      "data_type": "Byte String",
+      "type_code": "08",
+      "branch_classes": ["empty_and_arbitrary_binary", "length_boundaries_0_1_7_8_9", "minimal_alignment_padding"],
+      "samples": [
+        {"branch": "empty", "hex": "4200010800000000", "valid": true},
+        {"branch": "one_byte", "hex": "4200010800000001ff00000000000000", "valid": true},
+        {"branch": "seven_bytes", "hex": "42000108000000070001020304050600", "valid": true},
+        {"branch": "eight_bytes", "hex": "42000108000000080001020304050607", "valid": true},
+        {"branch": "nine_bytes", "hex": "420001080000000900010203040506070800000000000000", "valid": true}
+      ]
+    },
+    {
+      "data_type": "Date Time",
+      "type_code": "09",
+      "branch_classes": ["epoch_and_adjacent_seconds", "eight_byte_signed_encoding", "exact_item_length_8", "invalid_item_length_rejected"],
+      "samples": [
+        {"branch": "one_second_before_epoch", "hex": "4200010900000008ffffffffffffffff", "valid": true},
+        {"branch": "unix_epoch", "hex": "42000109000000080000000000000000", "valid": true},
+        {"branch": "one_second_after_epoch", "hex": "42000109000000080000000000000001", "valid": true},
+        {"branch": "wrong_length_7", "hex": "420001090000000700000000000000", "valid": false, "error_class": "invalid_date_time_length"}
+      ]
+    },
+    {
+      "data_type": "Interval",
+      "type_code": "0A",
+      "branch_classes": ["unsigned_zero_and_maximum", "exact_item_length_4", "invalid_item_length_rejected"],
+      "samples": [
+        {"branch": "zero", "hex": "4200010a000000040000000000000000", "valid": true},
+        {"branch": "unsigned_maximum", "hex": "4200010a00000004ffffffff00000000", "valid": true},
+        {"branch": "wrong_length_3", "hex": "4200010a0000000301020300000000", "valid": false, "error_class": "invalid_interval_length"}
+      ]
+    },
+    {
+      "data_type": "Date Time Extended",
+      "type_code": "0B",
+      "branch_classes": ["microsecond_precision", "eight_byte_signed_encoding", "exact_item_length_8", "invalid_item_length_rejected"],
+      "samples": [
+        {"branch": "zero_microseconds", "hex": "4200010b000000080000000000000000", "valid": true},
+        {"branch": "one_microsecond", "hex": "4200010b000000080000000000000001", "valid": true},
+        {"branch": "negative_one_microsecond", "hex": "4200010b00000008ffffffffffffffff", "valid": true},
+        {"branch": "wrong_length_7", "hex": "4200010b0000000700000000000000", "valid": false, "error_class": "invalid_date_time_extended_length"}
+      ]
+    }
+  ]
+}

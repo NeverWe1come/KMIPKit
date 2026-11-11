@@ -132,10 +132,10 @@ class InteropSharedTests(unittest.TestCase):
         # Create mock result data
         mock_res1 = {
             "server_identifier": "mock-kms",
-            "server": {"id": "mock-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+            "server": {"id": "mock-kms", "product": "mock KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
             "protocol_version": "2.1",
             "catalog_sha256": "c" * 64,
-            "execution": {"library_commit": "abcdef0", "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
+            "execution": {"library_commit": "a" * 40, "artifact_sha256": "b" * 64, "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
             "language": "rust",
             "cases": [
                 {"case_id": "test-op-create", "category": "object_lifecycle", "status": "PASSED"},
@@ -144,10 +144,10 @@ class InteropSharedTests(unittest.TestCase):
         }
         mock_res2 = {
             "server_identifier": "mock-kms",
-            "server": {"id": "mock-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+            "server": {"id": "mock-kms", "product": "mock KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
             "protocol_version": "2.1",
             "catalog_sha256": "c" * 64,
-            "execution": {"library_commit": "abcdef0", "transport": "https", "encoding": "JSON", "api_level": "high-level"},
+            "execution": {"library_commit": "a" * 40, "artifact_sha256": "d" * 64, "transport": "https", "encoding": "JSON", "api_level": "high-level"},
             "language": "python",
             "cases": [
                 {"case_id": "test-op-create", "category": "object_lifecycle", "status": "PASSED"},

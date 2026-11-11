@@ -64,11 +64,15 @@ class ExecutableContractTests(unittest.TestCase):
             "server": {"id": "loopback", "product": "KMIPKit Test Server", "version": "test", "configuration_fingerprint": "a" * 64},
             "protocol_version": "2.1",
             "catalog_sha256": "c" * 64,
-            "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol", "library_commit": "abcdef0", "artifact_sha256": "b" * 64},
+            "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol", "library_commit": "a" * 40, "artifact_sha256": "b" * 64},
             "summary": {"total": 1, "passed": 1, "failed": 0, "unsupported": 0, "policy_restricted": 0, "not_run": 0},
             "cases": [{"case_id": "test-get", "status": "passed", "library_correctness": "passed", "server_compatibility": "supported", "parity": "not_compared", "result_status_code": 0, "result_reason_code": 7}],
         }
         jsonschema.validate(sample, result_schema)
+        short_commit = json.loads(json.dumps(sample))
+        short_commit["execution"]["library_commit"] = "abcdef0"
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(short_commit, result_schema)
         sample["cases"][0]["result_reason_code"] = 4294967296
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(sample, result_schema)
@@ -102,11 +106,11 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertFalse(set(profile["server"]["kmip_versions"]) & {"2.0", "2.1"})
 
     def test_aggregator_compares_language_specific_artifacts_built_from_same_commit(self) -> None:
-        def result(language: str, artifact: str, commit: str = "abcdef0") -> dict:
+        def result(language: str, artifact: str, commit: str = "a" * 40) -> dict:
             return {
                 "schema_version": "2.0",
                 "language": language,
-                "server": {"id": "test-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+                "server": {"id": "test-kms", "product": "test KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
                 "protocol_version": "2.1",
                 "catalog_sha256": "c" * 64,
                 "execution": {"library_commit": commit, "artifact_sha256": artifact, "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
@@ -128,10 +132,10 @@ class ExecutableContractTests(unittest.TestCase):
     def test_aggregator_marks_different_library_commits_incomparable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             paths = []
-            for language, commit in (("rust", "abcdef0"), ("python", "1234567")):
+            for language, commit in (("rust", "a" * 40), ("python", "b" * 40)):
                 payload = {
                     "language": language,
-                    "server": {"id": "test-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+                    "server": {"id": "test-kms", "product": "test KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
                     "protocol_version": "2.1",
                     "catalog_sha256": "c" * 64,
                     "execution": {"library_commit": commit, "artifact_sha256": "b" * 64, "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},

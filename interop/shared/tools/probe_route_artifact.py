@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Probe every declared constructor in an independently installed package.
+"""Probe every declared public API route in an independently installed package.
 
 This checks public availability, not case recipe behavior or interoperability.
 Artifacts must carry provenance for the exact capability-manifest commit.
@@ -51,7 +51,7 @@ def probe(data, language, artifact, provenance, *, python=None, build_dir=None):
         verify_digest(artifact, provenance['artifact_sha256'])
         if python is None:
             raise ValueError('the installed wheel Python interpreter is required')
-        script = '''import importlib,json,sys,zipfile
+        script = '''import dataclasses,importlib,json,sys,zipfile
 from pathlib import Path
 from importlib.metadata import distribution
 info=json.loads(distribution('kmipkit').read_text('direct_url.json'))
@@ -69,8 +69,13 @@ for symbol in inputs['symbols'] + [row['public_api_symbol'] for row in inputs['v
         try: value=importlib.import_module('.'.join(parts[:end]))
         except ModuleNotFoundError: continue
         try:
-            for part in parts[end:]: value=getattr(value,part)
-            if callable(value): found.append(symbol)
+            for part in parts[end:-1]: value=getattr(value,part)
+            owner=value
+            attribute=parts[-1]
+            value=getattr(owner,attribute)
+            declared_fields=getattr(owner,'__annotations__',{})
+            is_dataclass_field=dataclasses.is_dataclass(owner) and any(field.name==attribute for field in dataclasses.fields(owner))
+            if callable(value) or isinstance(value,property) or attribute in declared_fields or is_dataclass_field: found.append(symbol)
             elif isinstance(value,int): observed_values[symbol]=value
         except AttributeError: pass
         break
@@ -87,9 +92,27 @@ print(json.dumps({'symbols':found, 'values':observed_values}))
         classes = {symbol.rsplit('.', 1)[0] for symbol in symbols}
         classes.update(row['public_api_symbol'].rsplit('.', 1)[0] for row in values)
         found = set()
+
+        def binary_name(class_name):
+            parts = class_name.split('.')
+            class_start = next((index for index, part in enumerate(parts)
+                                if part[:1].isupper() or part == 'KmipValues'), len(parts) - 1)
+            return '.'.join(parts[:class_start] + ['$'.join(parts[class_start:])])
+
+        def public_hierarchy(class_name, seen=None):
+            seen = set() if seen is None else seen
+            runtime_class = binary_name(class_name)
+            if runtime_class in seen:
+                return ''
+            seen.add(runtime_class)
+            output = subprocess.check_output(['javap', '-public', '-constants', '-classpath', str(artifact), runtime_class], text=True)
+            parent = re.search(r'\bextends\s+([\w.$]+)', output)
+            if parent and parent[1] != 'java.lang.Object':
+                output += '\n' + public_hierarchy(parent[1].replace('$', '.'), seen)
+            return output
+
         for class_name in sorted(classes):
-            runtime_class = class_name.replace('KmipValues.', 'KmipValues$').replace('.Builder', '$Builder')
-            public = subprocess.check_output(['javap', '-public', '-constants', '-classpath', str(artifact), runtime_class], text=True)
+            public = public_hierarchy(class_name)
             found.update(symbol for symbol in symbols if symbol.rsplit('.', 1)[0] == class_name
                 and re.search(r'\b' + re.escape(symbol.rsplit('.', 1)[1]) + r'\(', public))
             for row in values:
@@ -142,6 +165,12 @@ print(json.dumps({'symbols':found, 'values':observed_values}))
                 body.append('let _ = || kmipkit_protocol::QueryRequest::new(Vec::<kmipkit_protocol::QueryFunction>::new());')
             elif symbol == 'kmipkit_protocol::GetAttributesRequest::try_new':
                 body.append('let _ = || kmipkit_protocol::GetAttributesRequest::try_new(None, Vec::<kmipkit_protocol::AttributeReference>::new());')
+            elif symbol.endswith('::with_ttlv'):
+                owner = symbol.removesuffix('::with_ttlv')
+                body.append(f'let _ = |value: &{owner}| value.with_ttlv(|_| ());')
+            elif symbol.endswith('::with_value'):
+                owner = symbol.removesuffix('::with_value')
+                body.append(f'let _ = |value: &{owner}| value.with_value(|_| ());')
             else:
                 body.append('let _ = ' + symbol + ';')
         body.extend(f'const _: () = assert!({row["public_api_symbol"]} == {row["wire_value"]});' for row in values)
@@ -153,7 +182,7 @@ print(json.dumps({'symbols':found, 'values':observed_values}))
     validate_installed_values(data, language, checked_values)
     return {'language': language, 'library_commit': data['library_commit'],
             'artifact_sha256': digest, 'public_symbols_checked': len(found), 'named_values_checked': len(checked_values), 'numeric_values_supported': len(numeric_values),
-            'scope': 'public-constructor-availability', 'status': 'verified'}
+            'scope': 'public-api-symbol-availability', 'status': 'verified'}
 
 
 def main():
