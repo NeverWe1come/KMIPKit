@@ -66,3 +66,10 @@ will be added here as each Red, Green, and Refactor commit is produced.
   protocol version. Version 99.99 returns `KMIPKIT_ERROR_INVALID_INPUT` before
   opening a connection, and the fixture receives exactly the seven subsequent
   KMIP 2.1 requests.
+- **Byte ownership and builder validation**: the TLS consumer overwrites its
+  source bytes after calling the C setters; the peer confirms every transmitted
+  Byte String retained the original input. A repeated Data setter sends only
+  the final value. The compiled C probe also rejects a Hash request without
+  Cryptographic Parameters, wrong-operation setters, null pointers, invalid
+  multipart flags, and invalid asynchronous indicators while preserving output
+  handles.

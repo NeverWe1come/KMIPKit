@@ -432,6 +432,46 @@ fn assert_fluent_crypto_request(encoded: &[u8], operation: u32) {
                     })
             }));
         });
+        let expected_byte_strings = match operation {
+            31 => 3,
+            32 => 4,
+            33 => 1,
+            34 => 3,
+            35 => 1,
+            36 => 2,
+            39 => 1,
+            _ => panic!("the fixture operation is one of the seven approved operations"),
+        };
+        let mut actual_byte_strings = 0;
+        for child in message.children() {
+            assert_fluent_crypto_byte_strings(
+                child,
+                b"fluent crypto input",
+                &mut actual_byte_strings,
+            );
+        }
+        assert_eq!(
+            actual_byte_strings, expected_byte_strings,
+            "operation {operation}: every byte setter copies its value, and the latest Data setter wins"
+        );
+    });
+}
+
+fn assert_fluent_crypto_byte_strings(item: &Item, expected: &[u8], count: &mut usize) {
+    item.with_value(|value| match value {
+        ValueView::ByteString(bytes) => {
+            assert_eq!(
+                bytes, expected,
+                "all C-owned byte inputs retain their copied value"
+            );
+            *count += 1;
+        }
+        ValueView::Structure(structure) => {
+            for child in structure.children() {
+                assert_fluent_crypto_byte_strings(child, expected, count);
+            }
+        }
+        _ => {}
     });
 }
 
