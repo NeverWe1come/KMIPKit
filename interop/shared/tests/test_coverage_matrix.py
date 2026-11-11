@@ -2,14 +2,17 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 
 SHARED = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
-from coverage_matrix import build_matrix, iter_cells  # noqa: E402
+from coverage_matrix import _resolve_output_path, build_matrix, iter_cells  # noqa: E402
 
 
 class CoverageMatrixTests(unittest.TestCase):
@@ -32,6 +35,17 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual([], matrix["execution_routes_without_cells"])
         self.assertEqual({language: len(self.catalog["test_cases"]) for language in ("rust", "c", "java", "python")},
                          matrix["coverage_by_language"])
+
+    def test_output_path_uses_the_active_runner_temp_root_after_symlink_resolution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory) / "runner-temp"
+            temporary_root.mkdir()
+            temporary_alias = Path(directory) / "runner-temp-alias"
+            temporary_alias.symlink_to(temporary_root, target_is_directory=True)
+            requested_output = temporary_alias / "matrix.jsonl"
+            with patch.dict(os.environ, {"RUNNER_TEMP": str(temporary_alias)}):
+                self.assertEqual(temporary_root / "matrix.jsonl",
+                                 _resolve_output_path(requested_output, SHARED.parents[1]))
 
     def test_every_case_version_language_has_at_least_one_route_cell(self):
         cells = list(iter_cells(self.catalog, self.manifest))

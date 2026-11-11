@@ -21,6 +21,13 @@ def _norm(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value.casefold())
 
 
+def _resolve_output_path(path: Path, root: Path) -> Path:
+    """Allow output only in the checkout or the active runner's temp directory."""
+    runner_temp = os.environ.get("RUNNER_TEMP")
+    temporary_root = Path(runner_temp) if runner_temp else Path(tempfile.gettempdir())
+    return resolve_within(path, (root, temporary_root))
+
+
 def _operation_ids(catalog: dict) -> dict[str, str]:
     return {
         _norm(target["name"]): target["target_id"]
@@ -308,8 +315,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.output is not None and not args.jsonl:
         parser.error("--output requires --jsonl")
-    output_path = (resolve_within(args.output, (args.root, Path(tempfile.gettempdir())))
-                   if args.output is not None else None)
+    output_path = _resolve_output_path(args.output, args.root) if args.output is not None else None
     catalog = json.loads((args.root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
     manifest = json.loads((args.root / "interop/shared/coverage/route-capabilities.json").read_text())
     if args.jsonl:
