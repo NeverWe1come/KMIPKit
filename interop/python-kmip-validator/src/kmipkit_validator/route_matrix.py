@@ -177,6 +177,8 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import ttlv
 
     symbol = cell['public_api_symbol']
+    if case['requires'].get('target_kind') in ('tag', 'tag_range') and case['requires'].get('allocation') in ('reserved', 'unused'):
+        return _tag_rejection_cell(cell, case)
     if symbol not in _GENERIC_SYMBOLS:
         raise RecipePending
     samples = _generic_samples(case, target, symbol)
@@ -666,3 +668,44 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
             observed.append(expected[2][0])
     tree_hash = digest(observed)
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+def _tag_rejection_cell(cell: dict, case: dict) -> dict:
+    """Check all catalog range endpoints without constructing a nonexistent Item."""
+    import re
+    from kmipkit import errors, ttlv
+
+    requires = case['requires']
+    if requires['target_kind'] == 'tag_range':
+        bounds = re.split(r'\s*[-–—]\s*', requires['wire_value'])
+        values = [int(bound.upper().replace('X', fill), 16)
+                  for bound, fill in zip(bounds, ('0', 'F'), strict=True)]
+    else:
+        values = PythonKmipDriver._wire_representatives(requires['wire_value'])
+    inputs = [[raw, 2, 0] for raw in values]
+    symbol = cell['public_api_symbol']
+    for tree in inputs:
+        raw = tree[0]
+        if symbol == 'kmipkit.ttlv.ttlv_decode':
+            try:
+                unexpected = ttlv.ttlv_decode(encode_fixture(tree))
+            except errors.TtlvDecodeError:
+                continue
+            unexpected.close()
+            raise ValueError('decoder accepted a reserved or unused tag allocation')
+        if symbol not in ('kmipkit.ttlv.raw_tag_from_raw', 'kmipkit.ttlv.raw_tag_try_checked'):
+            raise RecipePending
+        with ttlv.raw_tag_from_raw(raw) as value:
+            if ttlv.raw_tag_value(value) != raw:
+                raise ValueError('raw tag allocation identity was not preserved')
+            if symbol == 'kmipkit.ttlv.raw_tag_try_checked':
+                try:
+                    unexpected = ttlv.raw_tag_try_checked(value)
+                except errors.InvalidExtensionSchemaError:
+                    continue
+                unexpected.close()
+                raise ValueError('checked tag accepted a reserved or unused allocation')
+    if symbol == 'kmipkit.ttlv.ttlv_decode':
+        return {'decode_outcome': 'rejected', 'decode_rejection_code': 'tag_not_allocated',
+                'decode_input_sha256': hashlib.sha256(encode_fixture(inputs[0])).hexdigest()}
+    return {'request_tree_sha256': digest(inputs)}
