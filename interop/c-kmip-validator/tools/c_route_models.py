@@ -60,19 +60,21 @@ class ModelCases:
         owned.append(output)
         return output
 
+    def _exercise_key_block(self, tree: tuple, limits: C.c_void_p,
+                             owned: list[C.c_void_p]) -> None:
+        fields = self._from_fields('kmipkit_key_block_from_fields', tree[2], limits, owned)
+        converted = self._from_item('kmipkit_key_block_from_item', fields, owned)
+        self._read_and_check(converted, normalized(tree), 'key_block_item_tree_mismatch')
+
     def _execute_symmetric_key(self, protocol_version: str) -> dict:
         key_block_tree = self._key_block_tree(protocol_version)
-        key_format_tree = key_block_tree[2][0]
         limits = C.c_void_p()
         owned: list[C.c_void_p] = []
         try:
             self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
-            key_block = self._from_fields(
-                'kmipkit_key_block_from_fields', [key_format_tree], limits, owned)
-            key_block_roundtrip = self._from_item('kmipkit_key_block_from_item', key_block, owned)
+            self._exercise_key_block(key_block_tree, limits, owned)
             expected_key_block = normalized(key_block_tree)
             expected = [SYMMETRIC_KEY_TAG, 1, [expected_key_block]]
-            self._read_and_check(key_block_roundtrip, expected[2][0], 'key_block_item_tree_mismatch')
 
             symmetric = self._from_fields('kmipkit_symmetric_key_from_fields', [key_block_tree], limits, owned)
             normalized_tree = self._read_and_check(symmetric, expected, 'symmetric_key_fields_tree_mismatch')
@@ -95,10 +97,8 @@ class ModelCases:
         owned: list[C.c_void_p] = []
         try:
             self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
-            fields = self._from_fields('kmipkit_key_block_from_fields', key_block_tree[2], limits, owned)
-            converted = self._from_item('kmipkit_key_block_from_item', fields, owned)
-            normalized_tree = self._read_and_check(converted, normalized(key_block_tree),
-                                                   'key_block_item_tree_mismatch')
+            self._exercise_key_block(key_block_tree, limits, owned)
+            normalized_tree = normalized(key_block_tree)
             return {'sample_count': 1, 'normalized_tree': normalized_tree,
                     'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
         finally:
@@ -163,9 +163,7 @@ class ModelCases:
             for field in fields:
                 if field[0] != KEY_BLOCK_TAG:
                     continue
-                key_block = self._from_fields('kmipkit_key_block_from_fields', field[2], limits, owned)
-                key_block_roundtrip = self._from_item('kmipkit_key_block_from_item', key_block, owned)
-                self._read_and_check(key_block_roundtrip, normalized(field), 'key_block_item_tree_mismatch')
+                self._exercise_key_block(field, limits, owned)
             item = self._from_fields(constructor, fields, limits, owned)
             normalized_tree = self._read_and_check(item, expected, 'named_object_fields_tree_mismatch')
             managed = self._from_fields('kmipkit_managed_object_from_fields', fields, limits, owned,
