@@ -117,6 +117,12 @@ the final typed request before sending; duplicate or out-of-range positions
 fail with delivery state `NotSent`. This path cannot address a message header,
 batch item, or transport, and it does not enable arbitrary message submission.
 
+Java exposes the same expert operation as
+`SymmetricKeyBuilder.attributeItemAt(index, item)`. The index is zero-based in
+the final Object Attributes sequence; negative indices are rejected by Java,
+and out-of-range positions fail during typed request construction before
+transport.
+
 The same scoped flow is available in Java (`client.request().createSymmetricKey()`),
 Python (`client.request().create_symmetric_key()`), and C. Java and Python
 builders expose `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`,

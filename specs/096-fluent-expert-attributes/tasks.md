@@ -27,3 +27,17 @@
   The repository-wide audit still reports 4,938 unrelated existing declarations
   missing from its manifest; these are not introduced by this delivery.
 - PR CI remains required before T005 can be completed and this PR marked ready.
+
+## Dependent Binding Delivery Evidence
+
+- C exposes `kmipkit_symmetric_key_builder_insert_attribute_item`; the compiled
+  C consumer builds a valid positioned request and rejects an out-of-range
+  position. `cargo test -p kmipkit-ffi --all-features --locked` passed 471
+  unit tests, 56 C API tests, and the 56-operation parity test on the C branch.
+  Its exact-head hosted CI is still pending.
+- Java exposes `SymmetricKeyBuilder.attributeItemAt(int, TtlvItem)` and the
+  focused `FluentFacadeShapeTest` passes, including negative and out-of-range
+  position rejection. Red evidence is commit `6f58e371e`; Green evidence is
+  being completed in the dependent Java delivery.
+- Python binding parity and cross-language response views remain outstanding;
+  T006 stays open until those dependent deliveries pass exact-head CI.

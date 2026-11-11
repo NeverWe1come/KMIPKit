@@ -3090,6 +3090,23 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuil
     });
 }
 
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_symmetricKeyBuilderInsertAttributeItem(
+        JNIEnv* env, jclass, jlong raw_builder, jint index, jlong raw_item) {
+    guarded<int>(env, 0, [&] {
+        if (index < 0) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] {
+            return kmipkit_symmetric_key_builder_insert_attribute_item(
+                    from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
+                    static_cast<uint64_t>(index),
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item));
+        });
+        return 0;
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderCreate(
         JNIEnv* env, jclass, jint operation) {
     return guarded<jlong>(env, 0, [&] {

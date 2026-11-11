@@ -749317,6 +749317,22 @@
           "Inserts an explicit Object Attribute item at its final zero-based position. The item is copied and validated before request execution."
         ]
       }
+    },
+    {
+      "declarationId": "T096:java-fluent-crypto:attribute-item-at",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0096",
+      "blockedReason": "The Java insertion method is implemented, but KMIPKIT-0096 binding parity remains incomplete until response views and equivalent expert insertion are delivered in all bindings."
     }
   ],
   "approvedExclusions": [

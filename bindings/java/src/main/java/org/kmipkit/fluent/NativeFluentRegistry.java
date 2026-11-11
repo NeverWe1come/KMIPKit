@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 /** Package-private JNI bridge so fluent builder handles do not expand public exports. */
 final class NativeFluentRegistry {
     static final int CRYPTO_OPERATION_BUILDER = 72;
+    static final int SYMMETRIC_KEY_BUILDER = 71;
 
     private NativeFluentRegistry() {}
 
@@ -31,4 +32,7 @@ final class NativeFluentRegistry {
     static native void cryptoOperationBuilderSetIndicator(long builder, int indicator, boolean value);
 
     static native long cryptoOperationBuilderBuildBatchItem(long builder);
+
+    static native void symmetricKeyBuilderInsertAttributeItem(
+            long builder, int index, long item);
 }
