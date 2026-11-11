@@ -319,6 +319,9 @@ def _network_cell(cell: dict, case: dict, target: dict) -> dict:
     from .controlled_peer import ControlledTlsPeer, PKI
     from kmipkit import extensions, protocol_values
 
+    if case.get('requires', {}).get('expected_status') == 'NotSent':
+        return _not_sent_cell(cell, case)
+
     # Other positive operations need stateful, operation-specific fixtures. An
     # OperationNotSupported response cannot establish their positive semantics.
     if (case['case_id'] != 'test-op-ping' or cell['protocol_version'] != '2.1'
@@ -436,3 +439,79 @@ def run_command(output_dir: Path) -> int:
     (output / 'closure.json').write_text(json.dumps(closure, indent=2, sort_keys=True) + '\n')
     print(json.dumps(closure, sort_keys=True))
     return 0 if passed else 1
+
+
+def _not_sent_cell(cell: dict, case: dict) -> dict:
+    """Observe native version rejection with a listening, never-used endpoint."""
+    from kmipkit import async_operations, errors, extensions, ttlv
+    from .controlled_peer import PKI
+    import socket
+
+    operation = case['operation']
+    if cell['protocol_version'] != '2.0' or operation not in (
+            'Ping', 'Get Constraints', 'Set Constraints', 'Set Defaults',
+            'Process', 'Query Asynchronous Requests'):
+        raise RecipePending
+    with socket.socket() as listener, ExitStack() as owned:
+        listener.bind(('127.0.0.1', 0))
+        listener.listen()
+        port = listener.getsockname()[1]
+        connection = {
+            'server_id': 'controlled-fixture', 'protocol_version': '2.0',
+            'transport': cell['transport'], 'encoding': cell['encoding'], 'api_level': 'typed-protocol',
+            'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': port},
+                          'https': {'url': f'https://127.0.0.1:{port}/kmip'}},
+            'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                    'client_cert_path': str(PKI / 'client-cert.pem'),
+                    'client_key_path': str(PKI / 'client-key.pem'), 'server_name_override': 'localhost',
+                    'connect_timeout_seconds': 1, 'read_timeout_seconds': 1},
+        }
+        driver = PythonKmipDriver(connection)
+        owned.callback(driver.close)
+        payload = owned.enter_context(ttlv.ttlv_structure_create())
+        correlation = b'kmipkit-version-boundary'
+        if operation == 'Process':
+            request = owned.enter_context(async_operations.ProcessRequest.create(correlation))
+            payload = owned.enter_context(request.to_ttlv_payload())
+        elif operation == 'Query Asynchronous Requests':
+            request = owned.enter_context(async_operations.QueryAsyncRequestsRequest.create())
+            payload = owned.enter_context(request.to_ttlv_payload())
+        # The public typed-batch API has no request view. Normalize the exact
+        # explicit payload inputs; do not claim wire bytes for an unsent request.
+        payload_item = owned.enter_context(PythonKmipDriver._item(0x420079, 'structure', payload))
+        inputs = {'protocol_version': [2, 0], 'operation': operation, 'payload': item_tree(payload_item)}
+        if operation == 'Set Constraints':
+            inputs['parameters'] = {'constraints': []}
+        rejected = False
+        try:
+            if operation in ('Process', 'Query Asynchronous Requests'):
+                limits = owned.enter_context(ttlv.codec_limits_defaults())
+                outcome = (driver._client.execute_process(correlation, limits) if operation == 'Process'
+                           else driver._client.execute_query_async_requests(limits))
+                outcome.close()
+            else:
+                functions = {
+                    'Ping': extensions.client_batch_item_ping,
+                    'Get Constraints': extensions.client_batch_item_get_constraints,
+                    'Set Constraints': extensions.client_batch_item_set_constraints,
+                    'Set Defaults': extensions.client_batch_item_set_defaults,
+                }
+                constraints = owned.enter_context(ttlv.ttlv_structure_create()) if operation == 'Set Constraints' else None
+                item = owned.enter_context(functions[operation](constraints) if operation == 'Set Constraints'
+                                           else functions[operation]())
+                driver._exchange(item)
+        except errors.ClientExecutionError as error:
+            rejected = error.delivery is errors.DeliveryState.NOT_SENT
+        listener.settimeout(0.001)
+        attempts = 0
+        try:
+            accepted, _ = listener.accept()
+        except TimeoutError:
+            pass
+        else:
+            accepted.close()
+            attempts = 1
+        if not rejected or attempts:
+            raise ValueError('version-boundary request was not rejected before transport')
+        return {'request_tree_sha256': digest(inputs), 'request_delivery_state': 'not_sent',
+                'transport_invocation_count': 0}
