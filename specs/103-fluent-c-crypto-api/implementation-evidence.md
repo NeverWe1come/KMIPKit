@@ -8,8 +8,8 @@ will be added here as each Red, Green, and Refactor commit is produced.
 
 - Branch: `feature/KMIPKIT-0103-fluent-c-crypto-api`.
 - Parent: `feature/KMIPKIT-0102-fluent-crypto-operations` at
-  `fe4a5ba0804eec846154f77246ef180f09cb5ee5`.
-- Merge commit `d113ac1fe` synchronizes the latest 0102 head into this
+  `8eff582f2`.
+- Merge commit `8aa03f5b6` synchronizes the latest 0102 head into this
   published branch without rewriting the C API commits.
 - Normative operation shapes are owned by the approved KMIPKIT-0102 spec.
 
@@ -23,6 +23,8 @@ will be added here as each Red, Green, and Refactor commit is produced.
 - The 28 focused API-manifest tests passed; regeneration verified all 12
   outputs, and the export audit matched all 1,994 C, 2,265 Java, and 2,445
   Python declarations.
+- After synchronizing the corrected 0101 inventory regression, its complete
+  seven-module Python contract grouping passed all 31 tests on this branch.
 
 ## Verification
 
