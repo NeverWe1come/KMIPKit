@@ -327,6 +327,25 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue({'kmipkit_split_key_from_fields', 'kmipkit_key_block_from_fields',
                          'kmipkit_key_block_from_item'}.issubset(result['invoked_symbols']))
 
+    def test_cryptographic_parameters_recipe_preserves_the_exact_catalog_enum(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-ENUM-VALUE-BLOCK-CIPHER-MODE-GCM-00000009')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(target, '2.1')
+        self.assertEqual(result['sample_count'], 1)
+        self.assertEqual(result['normalized_tree'], [
+            [0x420011, 5, '00000009'], [0x4200cd, 2, '0000000c'],
+            [0x4200ce, 2, '00000010'],
+        ])
+        self.assertTrue({
+            'kmipkit_cryptographic_parameters_from_fields_v1',
+            'kmipkit_cryptographic_parameters_read_fields_v1',
+            'kmipkit_cryptographic_parameters_into_ttlv',
+            'kmipkit_ttlv_structure_view',
+        }.issubset(result['invoked_symbols']))
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
