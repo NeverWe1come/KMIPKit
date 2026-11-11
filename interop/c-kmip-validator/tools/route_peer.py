@@ -161,6 +161,31 @@ def numbers(node, tag):
     return [int.from_bytes(item[2], 'big') for item in descendants(node, tag)]
 
 
+def request_payload_field_present(target, batch_item, catalog):
+    """Check a request payload field under its exact operation's payload."""
+    if (target.get('kind') != 'operation_payload_field'
+            or target.get('role') != 'request'
+            or not isinstance(target.get('operation_id'), str)
+            or batch_item[0] != 0x42000F or batch_item[1] != 1):
+        return False
+    targets = {item['target_id']: item for item in catalog['normative_targets']}
+    operation = targets.get(target['operation_id'])
+    if operation is None or operation.get('kind') != 'operation':
+        return False
+    codec = Codec(catalog)
+    operation_value = codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
+    field_tag = codec.tags.get(normalize(target.get('name', '')))
+    if operation_value is None or field_tag is None:
+        return False
+    operation_fields = [child for child in batch_item[2]
+                        if child[0] == codec.tag('Operation') and child[1] == 5]
+    if len(operation_fields) != 1 or int.from_bytes(operation_fields[0][2], 'big') != operation_value:
+        return False
+    payloads = [child for child in batch_item[2]
+                if child[0] == codec.tag('Request Payload') and child[1] == 1]
+    return len(payloads) == 1 and any(child[0] == field_tag for child in payloads[0][2])
+
+
 def tree_digest(node):
     # Redact nondeterministic and sensitive fields before hashing. Preserve
     # numeric result codes, tag/type distinctions, and ordered batch structure.
@@ -484,7 +509,18 @@ def execute_network_cells(binary, catalog, manifest):
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
                                 target = next(t for t in catalog['normative_targets'] if t['target_id'] == cell['target_id'])
-                                if target['kind'] != 'operation' or target['name'] != operation_name:
+                                if target['kind'] == 'operation':
+                                    if target['name'] != operation_name:
+                                        continue
+                                elif target['kind'] == 'operation_payload_field':
+                                    # Request fields are proved from the actual
+                                    # request tree during construction and send.
+                                    # A response decode cannot prove a request field.
+                                    if (not is_network or cell['action'] == 'decode'
+                                            or not any(request_payload_field_present(target, item, catalog)
+                                                       for item in descendants(request_tree, 0x42000F))):
+                                        continue
+                                else:
                                     continue
                                 event = cell_fields(cell)
                                 event.update(status='passed', invocation_count=1, invocation_id=f'c-peer-{len(events)}')
