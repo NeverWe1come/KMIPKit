@@ -14,6 +14,14 @@ def resolve_within(path: Path, roots: tuple[Path, ...], *, must_exist: bool = Fa
     return resolved
 
 
+def write_text_within(path: Path, roots: tuple[Path, ...], content: str, *, encoding: str) -> Path:
+    """Write text only after resolving the destination beneath an approved root."""
+    resolved = resolve_within(path, roots)
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(content, encoding=encoding)  # NOSONAR: canonicalized and confined by resolve_within above
+    return resolved
+
+
 def validate_git_commit(commit: str) -> str:
     """Accept only full immutable SHA-1/SHA-256 object identifiers."""
     if not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", commit):

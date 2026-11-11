@@ -10,7 +10,7 @@ import re
 import tempfile
 from collections import defaultdict
 
-from cli_paths import resolve_within
+from cli_paths import resolve_within, write_text_within
 from coverage_matrix import iter_cells
 
 
@@ -704,8 +704,10 @@ def main() -> None:
                 reports[0], catalog, manifest, catalog_sha256=catalog_sha,
                 route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
             )
-            ledger_path.parent.mkdir(parents=True, exist_ok=True)
-            ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            ledger_path = write_text_within(
+                ledger_path, (root, Path(tempfile.gettempdir())),
+                json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+            )
             summary["ledger"] = {
                 "path": str(ledger_path), "planned_cells": ledger["planned_cells"],
                 "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
