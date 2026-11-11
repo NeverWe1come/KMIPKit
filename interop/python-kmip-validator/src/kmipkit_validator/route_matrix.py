@@ -364,6 +364,9 @@ _GENERIC_SYMBOLS = {
     )
 }
 
+_MATRIX_NETWORK_WORKERS = 16
+_MATRIX_MAX_NETWORK_IN_FLIGHT = 64
+
 
 def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
     if cell['transport'] is None:
@@ -404,7 +407,8 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
     gaps = []
     outcomes = []
     pending = []
-    with ThreadPoolExecutor(max_workers=16, thread_name_prefix='python-route-matrix') as executor:
+    with ThreadPoolExecutor(max_workers=_MATRIX_NETWORK_WORKERS,
+                            thread_name_prefix='python-route-matrix') as executor:
         for cell in iter_cells(catalog, manifest, languages=('python',)):
             if cell['transport'] is None:
                 outcomes.append(_execute_matrix_cell(cell, cases, targets))
@@ -412,7 +416,7 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
             future = executor.submit(_execute_matrix_cell, cell, cases, targets)
             outcomes.append(future)
             pending.append(future)
-            if len(pending) >= 64:
+            if len(pending) >= _MATRIX_MAX_NETWORK_IN_FLIGHT:
                 pending.pop(0).result()
     for outcome in outcomes:
         if isinstance(outcome, Future):
