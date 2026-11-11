@@ -91,6 +91,19 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertNotIn('private-key-sentinel', json.dumps([report, gaps]))
         self.assertEqual({'recipe_execution_failed'}, {gap['failure_code'] for gap in gaps})
 
+    def test_cli_matrix_dispatches_without_requiring_a_vendor_connection(self):
+        from kmipkit_validator import cli
+        from unittest.mock import patch
+        self.assertTrue(hasattr(self.runner, 'run_command'), 'matrix command must run the completeness gate')
+        with patch.object(self.runner, 'run_command', return_value=1) as execute:
+            self.assertEqual(1, cli.main(['matrix', '--output-dir', 'build/matrix']))
+        execute.assert_called_once()
+
+    def test_exact_installed_wheel_files_are_checked_before_evidence(self):
+        self.assertTrue(hasattr(self.runner, 'verify_installed_artifact'), 'wheel digest alone cannot prove installation identity')
+        from kmipkit_validator.contract import validate_artifact
+        self.runner.verify_installed_artifact(validate_artifact())
+
     def test_call_observation_does_not_confuse_shared_synchronization_wrappers(self):
         from kmipkit import ttlv
         with self.runner.CallTrace(['kmipkit.ttlv.ttlv_decode']) as trace:
