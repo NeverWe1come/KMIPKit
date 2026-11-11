@@ -65,5 +65,33 @@ class TypedResponseContractManifestTests(unittest.TestCase):
                 self.assertIn("cannot be zeroized", documentation)
 
 
+    def test_operation_response_view_requirement_mapping_is_four_language_parity(self):
+        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        declarations = manifest["publicDeclarations"]
+        by_package_and_name = {
+            (row["packageId"], row["exportName"]): row for row in declarations
+        }
+        response_views = [
+            row
+            for row in declarations
+            if "ClientResponseView::" in row["exportName"]
+            and "KMIPKIT-0093-FR-008" in row["requirementIds"]
+        ]
+        self.assertGreater(len(response_views), 0)
+        for row in response_views:
+            with self.subTest(export=row["exportName"]):
+                self.assertNotIn("KMIPKIT-0093-FR-005", row["requirementIds"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(row["languageMappings"]),
+                )
+                for language, mapping in row["languageMappings"].items():
+                    target = by_package_and_name[
+                        (mapping["packageId"], mapping["name"])
+                    ]
+                    with self.subTest(language=language):
+                        self.assertIn("KMIPKIT-0093-FR-008", target["requirementIds"])
+
+
 if __name__ == "__main__":
     unittest.main()
