@@ -132,9 +132,14 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
                        if elements.get(value, {}).get('kind') in ('enumeration', 'bitmask')), {})
         parent_name = parent.get('name', '')
         tag_entry = next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
-                          and entry.get('name') == parent_name), None)
+                          and _normalized_name(entry.get('name', '')) == _normalized_name(parent_name)), None)
         if tag_entry:
             tag = int(tag_entry['wire_value'], 16)
+        elif _normalized_name(parent_name) == 'itemtype':
+            # Item Type values are the TTLV header type codes, so there is no
+            # KMIP tag carrying them as a protocol Enumeration. Keep the exact
+            # numeric value while exercising the generic Enumeration value.
+            tag = 0x4200FF
         elif kind == 'referenced_enum_value':
             tag = 0x42015A if 'FUNCTION' in target_id else 0x42015D
         else:
@@ -176,10 +181,18 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
     elif kind == 'attribute':
         parent_tag = next((by_id.get(parent_id, {}) for parent_id in target.get('parent_element_ids', [])
                            if by_id.get(parent_id, {}).get('kind') == 'tag'), {})
+        if not parent_tag and _normalized_name(target.get('name', '')) == 'vendorattribute':
+            parent_tag = next((entry for entry in by_id.values()
+                               if entry.get('kind') == 'tag' and entry.get('name') == 'Attribute'), {})
         if not parent_tag:
             raise RecipePending
         tag = int(parent_tag['wire_value'], 16)
         type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
+        if not type_names and target.get('source_encoding'):
+            structure_names = {_normalized_name(entry.get('name', '')) for entry in elements.values()
+                               if entry.get('kind') in ('operation_structure', 'object_structure')}
+            if _normalized_name(target['source_encoding']) in structure_names:
+                type_names = {'Structure'}
     elif kind == 'operation_payload_value_variant' and target.get('kind') == 'operation_payload_value_variant' and requires['value_type'] != 'Structure':
         normalized = lambda name: ''.join(character for character in name.casefold() if character.isalnum())
         field_name = requires['field_name']
@@ -238,10 +251,18 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     for tag, name, value in samples:
         with ExitStack() as owned:
             if name == 'Structure':
-                child = owned.enter_context(PythonKmipDriver._item(0x420001, 'integer', 7))
-                children = owned.enter_context(ttlv.ttlv_structure_create())
-                with ttlv.codec_limits_defaults() as limits:
-                    children = owned.enter_context(ttlv.ttlv_structure_with_item(children, child, limits))
+                structure_children = []
+                if target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'vendorattribute':
+                    structure_children = [
+                        owned.enter_context(PythonKmipDriver._item(0x42009D, 'text', 'KMIPKit.Interop')),
+                        owned.enter_context(PythonKmipDriver._item(0x42000A, 'text', 'probe')),
+                        owned.enter_context(PythonKmipDriver._item(0x42000B, 'text', 'interop')),
+                    ]
+                elif target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'randomnumbergenerator':
+                    structure_children = [
+                        owned.enter_context(PythonKmipDriver._item(0x4200DA, 'enumeration', 1)),
+                    ]
+                children = owned.enter_context(PythonKmipDriver._structure(structure_children))
                 value = children
             item = owned.enter_context(PythonKmipDriver._item(tag, _TTLV_TYPE_KINDS[name], value))
             tree = item_tree(item)
