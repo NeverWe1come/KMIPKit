@@ -155,6 +155,51 @@ class ModelCases:
             self._enum_tree('Encoding Option', 'Encoding Option', 'TTLV Encoding', protocol_version),
         ])
 
+    def _key_material_section(self, target: dict) -> int | None:
+        identities = [target.get('target_id', ''), *target.get('parent_element_ids', [])]
+        for section in range(4, 13):
+            if any(f'-3-{section}-KEY-MATERIAL' in identity for identity in identities):
+                return section
+        return None
+
+    def _transparent_key_material(self, section: int, protocol_version: str) -> tuple[int, tuple]:
+        formats = {
+            4: ('Transparent Symmetric Key', [('Key', 8, b'\xa1')]),
+            5: ('Transparent DSA Private Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
+                                                ('G', 4, b'\x01'), ('X', 4, b'\x01')]),
+            6: ('Transparent DSA Public Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
+                                               ('G', 4, b'\x01'), ('Y', 4, b'\x01')]),
+            7: ('Transparent RSA Private Key', [
+                ('Modulus', 4, b'\x01'), ('Public Exponent', 4, b'\x01\x00\x01'),
+                ('Private Exponent', 4, b'\x01'), ('P', 4, b'\x01'), ('Q', 4, b'\x01'),
+                ('Prime Exponent P', 4, b'\x01'), ('Prime Exponent Q', 4, b'\x01'),
+                ('CRT Coefficient', 4, b'\x01'),
+            ]),
+            8: ('Transparent RSA Public Key', [('Modulus', 4, b'\x01'),
+                                                ('Public Exponent', 4, b'\x01\x00\x01')]),
+            9: ('Transparent DH Private Key', [
+                ('P', 4, b'\x01'), ('Q', 4, b'\x01'), ('G', 4, b'\x01'),
+                ('J', 4, b'\x01'), ('X', 4, b'\x01'),
+            ]),
+            10: ('Transparent DH Public Key', [
+                ('P', 4, b'\x01'), ('Q', 4, b'\x01'), ('G', 4, b'\x01'),
+                ('J', 4, b'\x01'), ('Y', 4, b'\x01'),
+            ]),
+            11: ('Transparent EC Private Key', [
+                ('Recommended Curve', 5, self._enum_value('Recommended Curve', 'P-256', protocol_version)
+                 .to_bytes(4, 'big')), ('D', 4, b'\x01'),
+            ]),
+            12: ('Transparent EC Public Key', [
+                ('Recommended Curve', 5, self._enum_value('Recommended Curve', 'P-256', protocol_version)
+                 .to_bytes(4, 'big')), ('Q String', 8, b'\x04\x01\x02'),
+            ]),
+        }
+        name, members = formats[section]
+        key_format = self._enum_value('Key Format Type', name, protocol_version)
+        key_material = (self._tag('Key Material'), 1,
+                        [(self._tag(member), item_type, value) for member, item_type, value in members])
+        return key_format, key_material
+
     def _execute_key_block_target(self, target: dict, protocol_version: str) -> dict | None:
         kind = target.get('kind')
         name = target.get('name', '').rstrip(',')
@@ -170,21 +215,18 @@ class ModelCases:
         expected_value = None
         target_id = target.get('target_id', '')
         parents = set(target.get('parent_element_ids', []))
-        if (target_id == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL'
-                or any(parent == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL'
-                       for parent in parents)):
-            key_format = self._enum_value('Key Format Type', 'Transparent RSA Public Key', protocol_version)
-            key_material = (self._tag('Key Material'), 1, [
-                (self._tag('Modulus'), 4, b'\x01'),
-                (self._tag('Public Exponent'), 4, b'\x01\x00\x01'),
-            ])
+        key_material_section = self._key_material_section(target)
+        if key_material_section is not None:
+            key_format, key_material = self._transparent_key_material(key_material_section, protocol_version)
             fields.append((self._tag('Key Value'), 1, [key_material]))
+        elif kind in {'tag', 'structure_member'} and name == 'Key Material':
+            fields.append(self._key_value_tree())
         if kind == 'object_structure':
             if target.get('target_id') == KEY_BLOCK_STRUCTURE:
                 pass
             elif target.get('target_id') == KEY_VALUE_STRUCTURE:
                 fields.append(self._key_value_tree())
-            elif target.get('target_id') == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL':
+            elif key_material_section is not None:
                 pass
             elif target.get('name') in {'Key Wrapping Data', 'Encryption Key Information',
                                         'MAC/Signature Key Information'}:
@@ -221,8 +263,9 @@ class ModelCases:
         elif kind in {'tag', 'structure_member', 'attribute'}:
             if name == 'Key Block':
                 pass
-            elif (name in {'Key Material', 'Modulus', 'Public Exponent'}
-                  and any('OBJECT-STRUCTURE-3-8-KEY-MATERIAL' in parent for parent in parents)):
+            elif key_material_section is not None:
+                pass
+            elif name == 'Key Material':
                 pass
             elif name == 'Cryptographic Algorithm':
                 expected_value = self._enum_value(name, 'AES', protocol_version)
