@@ -407,10 +407,10 @@ class _CryptoOperationBuilder:
     def _set_bytes(self, function: Any, value: bytes | bytearray | memoryview) -> Self:
         self._ensure_open()
         staged, pointer = _stage_crypto_bytes(value)
-        span = ffi.new("kmipkit_byte_span_v1_t *")
-        span.data = pointer
-        span.length = len(staged)
         try:
+            span = ffi.new("kmipkit_byte_span_v1_t *")
+            span.data = pointer
+            span.length = len(staged)
             with _NATIVE_CALL_LOCK:
                 _raise_client_status(function(self._handle, span))
         finally:

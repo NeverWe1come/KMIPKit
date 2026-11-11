@@ -240,6 +240,87 @@ def test_crypto_builder_wipes_staging_when_span_allocation_fails(
 
 
 @pytest.mark.parametrize(
+    ("setter", "invalid"),
+    (
+        ("cryptographic_parameters", object()),
+        ("cryptographic_parameters_structure", object()),
+        ("data_value", object()),
+        ("init_indicator", 1),
+        ("final_indicator", 0),
+        ("with_options", object()),
+    ),
+)
+def test_crypto_builder_rejects_wrong_setter_types_locally(
+    setter: str, invalid: object,
+) -> None:
+    """KMIPKIT-0105-FR-002/003/005: invalid Python inputs fail before execution."""
+    with fluent.EncryptBuilder() as builder:
+        with pytest.raises(errors.InvalidInputError):
+            getattr(builder, setter)(invalid)
+
+
+@pytest.mark.parametrize("invalid", ("secret", None, 1))
+def test_crypto_builder_rejects_non_buffer_data(invalid: object) -> None:
+    with fluent.EncryptBuilder() as builder:
+        with pytest.raises(errors.InvalidInputError):
+            builder.data(invalid)  # type: ignore[arg-type]
+
+
+def test_crypto_builder_rejects_released_memoryview() -> None:
+    released = memoryview(b"secret")
+    released.release()
+
+    with fluent.EncryptBuilder() as builder:
+        with pytest.raises(errors.InvalidInputError):
+            builder.data(released)
+
+
+def test_crypto_builder_rejects_non_contiguous_memoryview() -> None:
+    caller_buffer = bytearray(b"caller-owned-secret")
+    with memoryview(caller_buffer)[::2] as view, fluent.EncryptBuilder() as builder:
+        with pytest.raises(errors.InvalidInputError):
+            builder.data(view)
+
+    assert caller_buffer == b"caller-owned-secret"
+
+
+def test_crypto_builder_rejects_oversized_data_before_copying() -> None:
+    with fluent.EncryptBuilder() as builder:
+        with pytest.raises(errors.ResourceLimitError):
+            builder.data(bytes(16 * 1024 * 1024 + 1))
+
+
+def test_crypto_builder_validation_preserves_reusable_builder() -> None:
+    """KMIPKIT-0105-FR-005: local validation does not consume the request."""
+    with fluent.HashBuilder() as builder, _hash_parameters() as parameters:
+        builder.cryptographic_parameters(parameters).data(b"hash input")
+
+        builder.validate()
+
+        with builder.to_batch_item() as item:
+            assert item.operation == protocol_values.Operation.HASH
+
+
+def test_crypto_builder_execute_requires_a_client() -> None:
+    with fluent.EncryptBuilder() as builder, ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(errors.InvalidInputError):
+            builder.execute(limits)
+
+
+def test_crypto_builder_context_closes_on_exception() -> None:
+    builder = fluent.EncryptBuilder()
+    with pytest.raises(ValueError, match="consumer failure"):
+        with builder:
+            raise ValueError("consumer failure")
+
+    with pytest.raises(RuntimeError, match="closed"):
+        builder.data(b"secret")
+    with pytest.raises(RuntimeError, match="closed"):
+        with builder:
+            pytest.fail("closed builder must reject context entry")
+
+
+@pytest.mark.parametrize(
     ("factory_name", "operation", "extra_fields", "expected_wire_fields"),
     (
         (

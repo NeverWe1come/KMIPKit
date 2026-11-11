@@ -25,10 +25,26 @@
   `MemoryError` propagated and the caller buffer remained unchanged.
 - Root cause: `_set_bytes()` allocated/initialized the byte-span after
   staging but before entering its wiping `try/finally`.
-- Red commit: this commit; exact hash recorded in the Green update.
+- Red commit: `c5d168dd671e403a6ac67a81ebc4b81501ade84d`
+  (`test(python): expose crypto staging allocation cleanup gap`).
 
-## Remaining work
+## Green
 
-Apply the smallest cleanup fix, add meaningful invalid-input/ownership
-coverage, rerun focused tests and changed-line measurement, then record Green
-and Refactor evidence in separate signed-off commits. Parent owns push and CI.
+- Moved byte-span allocation and initialization inside the existing wiping
+  `try/finally`. No native ABI, supported surface, transport, threshold,
+  exclusion, or generated artifact changed.
+- Added local type-error tests for typed parameters, structures, expert Data,
+  indicators, request options, and non-buffer Data. Added released,
+  non-contiguous, and oversized buffer tests, local validation/reuse,
+  execution without a client, and context closure after consumer exceptions.
+- Command: `target/python312-venv/bin/python -m pytest -q bindings/python/tests/test_fluent_crypto.py`.
+- Result: **28 passed**.
+- Command: `target/python312-venv/bin/python -m py_compile bindings/python/src/kmipkit/fluent.py bindings/python/tests/test_fluent_crypto.py`.
+- Result: passed.
+- Command: `git diff --check`.
+- Result: passed.
+
+## Remaining verification
+
+Full Python coverage and changed-line measurement are in progress. Parent
+owns push and exact-head CI; no remote completion is claimed.
