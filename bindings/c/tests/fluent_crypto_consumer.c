@@ -326,6 +326,63 @@ int kmipkit_public_crypto_builders_probe(void) {
     return 0;
 }
 
+int kmipkit_public_positioned_attribute_probe(void) {
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_symmetric_key_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *batch_item = NULL;
+    int result = 1;
+
+    if (kmipkit_codec_limits_create(UINT64_C(16777216), UINT64_C(64), UINT64_C(100000),
+                                    &limits) != INT32_C(0) ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x54F001), &raw_tag) != INT32_C(0) ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != INT32_C(0) ||
+        kmipkit_ttlv_value_integer(INT32_C(17), &value) != INT32_C(0) ||
+        kmipkit_ttlv_item_create(tag, value, limits, &item) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_create(&builder) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_usage_mask(builder, INT32_C(4)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_insert_attribute_item(builder, UINT64_C(0), item) !=
+            INT32_C(0) ||
+        kmipkit_symmetric_key_builder_build_batch_item(builder, &batch_item) != INT32_C(0) ||
+        batch_item == NULL) {
+        goto cleanup;
+    }
+    result = 0;
+    kmipkit_client_batch_item_release(batch_item);
+    batch_item = NULL;
+
+    kmipkit_symmetric_key_builder_release(builder);
+    builder = NULL;
+    if (kmipkit_symmetric_key_builder_create(&builder) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_usage_mask(builder, INT32_C(4)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_insert_attribute_item(builder, UINT64_C(99), item) !=
+            INT32_C(0) ||
+        kmipkit_symmetric_key_builder_build_batch_item(builder, &batch_item) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        batch_item != NULL) {
+        result = 2;
+    }
+
+cleanup:
+    kmipkit_client_batch_item_release(batch_item);
+    kmipkit_symmetric_key_builder_release(builder);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int execute_crypto_operation(
     crypto_builder_create_fn create,
     uint32_t expected_operation,
