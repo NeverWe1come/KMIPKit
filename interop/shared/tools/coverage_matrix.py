@@ -204,6 +204,15 @@ def applicable_routes(case: dict, manifest: dict, language: str, operation_ids: 
     return candidates
 
 
+def _network_response_actions(case: dict, target_id: str, normative_targets: dict[str, dict]) -> tuple[str, ...]:
+    """Do not attach response decoding to a request-field-only obligation."""
+    expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
+    request_target = normative_targets.get(target_id, {}).get("role") == "request"
+    if expected_status.replace("_", "") == "notsent" or request_target:
+        return ("send",)
+    return ("send", "decode")
+
+
 def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LANGUAGES) -> Iterator[dict]:
     """Yield construction, execution, and response-decode obligations separately."""
     operation_ids = _operation_ids(catalog)
@@ -272,11 +281,7 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                                     raise ValueError(f"network construction route has an invalid action: {action}")
                                 yield {**base, "action": "construct", "execution_route_id": execution_route_id,
                                        "execution_api_symbol": execution["public_api_symbol"]}
-                            expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
-                            request_target = normative_targets.get(obligation["target_id"], {}).get("role") == "request"
-                            actions = (("send",) if expected_status.replace("_", "") == "notsent"
-                                       or request_target else ("send", "decode"))
-                            for action in actions:
+                            for action in _network_response_actions(case, obligation["target_id"], normative_targets):
                                 yield {**base, "action": action, "execution_route_id": execution_route_id,
                                        "execution_api_symbol": execution["public_api_symbol"]}
 
