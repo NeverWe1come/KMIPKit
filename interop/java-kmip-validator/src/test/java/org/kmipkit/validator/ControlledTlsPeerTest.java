@@ -285,6 +285,14 @@ class ControlledTlsPeerTest {
         int enumerationEventCount = enumerationFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * 4).sum();
         assertEquals(68 + enumerationEventCount, report.path("events").size());
+        long bitmaskEvents = 0;
+        for (JsonNode event : report.path("events")) {
+            if ("test-bitmask-cryptographic-usage-mask".equals(event.path("case_id").asText())) {
+                bitmaskEvents++;
+            }
+        }
+        assertEquals(350, bitmaskEvents,
+                "Every named Cryptographic Usage Mask bit needs all seven local routes in both versions.");
         assertEquals(7 + enumerationFixtures.size(), report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
