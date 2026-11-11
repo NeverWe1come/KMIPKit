@@ -86,3 +86,51 @@ and a decoder, but it has no generic TTLV encoder and no generic TTLV request di
 It also exposes no high-level client API. The consumer records those route
 limits as library/API gaps. Live runs require a dedicated test KMS, valid
 mutual-TLS credentials and explicit opt-in for mutations.
+
+## KMIPKIT-0092 per-cell route evidence (WIP)
+
+The matrix coordinator executes exact assigned tag/enum/bit-mask values through
+local public C ABI constructors and the decoder, compares the inspected values,
+and records decoder rejection of reserved tags. It invokes the compiled C
+consumer against a controlled peer in TTLV, JSON, and XML over raw TLS and HTTPS
+for the implemented operation recipes in KMIP 2.0 and 2.1. Each positive request
+has recipe-specific field assertions, response checks, and lifecycle state and
+teardown checks. A negative active-Destroy recipe checks the numeric failure
+outcome before revocation and deletion. The KMIP 2.0 Get Constraints boundary
+checks the typed executor invocation and zero observed transport connections.
+
+On Linux, CMake generates link wrappers from the installed public header. The
+wrappers observe only calls the compiled consumer actually makes; temporary
+observations contain public symbol names and numeric status codes. They never
+record KMIP bodies. The coordinator credits a matrix route only if its symbol
+and executor were observed. Local opaque-handle calls use typed `ctypes`
+signatures against the same verified installed C library.
+
+Run from the checkout root after building the installed consumer:
+
+```sh
+python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
+python3 interop/c-kmip-validator/tests/test_route_matrix.py
+python3 interop/c-kmip-validator/tools/route_matrix.py \
+  --binary interop/c-kmip-validator/build/kmip_validator_c \
+  --output interop/c-kmip-validator/build/route-execution-evidence.json
+python3 interop/shared/tools/validate_route_evidence.py \
+  --report interop/c-kmip-validator/build/route-execution-evidence.json \
+  --artifact-sha256 "$(sha256sum interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
+```
+
+Both completeness commands currently exit nonzero because semantic branch,
+auxiliary model/accessor, cryptographic, asynchronous, and additional typed
+construction recipes remain pending. CI deliberately fails on these gaps.
+The `*.gaps.json` sidecar identifies every unexecuted matrix obligation rather
+than misclassifying it as an unavailable library route. Other sidecars retain
+installed-artifact availability checks and sanitized controlled-peer outcomes.
+The evidence JSON passes the shared schema independently of completeness.
+
+A generic TTLV wire encoder, generic-TTLV request dispatcher, and high-level
+C client are absent from the exact installed public artifact. The harness's
+independent vector serialization is never credited as a public C encoder.
+Reserved tags can be represented by RawTag and rejected by the decoder/checked
+conversion; construction requiring an already checked Tag remains an explicit
+matrix-applicability question. Cross-language normalized-tree parity and vendor
+interoperability remain unverified.

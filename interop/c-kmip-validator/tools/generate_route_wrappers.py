@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""Generate link-time C ABI call observations from the exact installed header.
+
+Only calls made by this independent C consumer are wrapped. The shared KMIPKit
+library and its sources are unchanged. Observations contain only public symbol
+names and numeric status codes, and are written only when explicitly enabled.
+"""
+import argparse
+import json
+from pathlib import Path
+import re
+
+
+def generate(header: str, symbols: list[str]) -> str:
+    result = ['/* Generated from installed kmipkit.h; do not edit. */',
+              '#include "kmipkit.h"', '#include <stdio.h>', '#include <stdlib.h>',
+              'static void observe(const char *symbol, int32_t status) {',
+              '  const char *path = getenv("KMIPKIT_C_ROUTE_OBSERVATIONS");',
+              '  if (!path || !*path) return;',
+              '  FILE *output = fopen(path, "ab");',
+              '  if (!output) return;',
+              '  fprintf(output, "%s\\t%d\\n", symbol, (int)status);',
+              '  fclose(output);', '}']
+    for symbol in sorted(set(symbols)):
+        match = re.search(r'int32_t\s+' + re.escape(symbol) + r'\(([^;]*)\);', header)
+        if not match:
+            raise ValueError(f'installed_header_signature_missing:{symbol}')
+        arguments = match[1]
+        parameters = [] if arguments.strip() in ('', 'void') else arguments.split(',')
+        names = []
+        for parameter in parameters:
+            name = re.search(r'(\w+)\s*$', parameter)
+            if not name:
+                raise ValueError(f'unsupported_installed_signature:{symbol}')
+            names.append(name[1])
+        result.extend([f'int32_t __real_{symbol}({arguments});',
+                       f'int32_t __wrap_{symbol}({arguments}) {{',
+                       f'  int32_t status = __real_{symbol}({", ".join(names)});',
+                       f'  observe("{symbol}", status);', '  return status;', '}'])
+    return '\n'.join(result) + '\n'
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--header', type=Path, required=True)
+    parser.add_argument('--manifest', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    manifest = json.loads(args.manifest.read_text())
+    symbols = [r['public_api_symbol'] for r in manifest['routes'] + manifest['execution_routes'] if r['language'] == 'c']
+    args.output.write_text(generate(args.header.read_text(), symbols))
+
+
+if __name__ == '__main__':
+    main()

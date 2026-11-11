@@ -16,6 +16,8 @@ endif()
 get_filename_component(KMIPKIT_C_INSTALL_DIR_ABSOLUTE "${KMIPKIT_C_INSTALL_DIR}"
     ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(KMIPKIT_LIBRARY_COMMIT "9a16cc90a12205101d22a38501a5e74c665df4dc")
+# The selected install is authoritative even when reusing an older build cache.
+unset(KMIPKIT_FFI_LIBRARY CACHE)
 find_library(KMIPKIT_FFI_LIBRARY
     NAMES kmipkit_ffi
     PATHS "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib"
@@ -28,7 +30,7 @@ endif()
 file(SHA256 "${KMIPKIT_FFI_LIBRARY}" KMIPKIT_C_ARTIFACT_SHA256)
 file(SHA256 "${CMAKE_CURRENT_SOURCE_DIR}/../shared/catalog/kmipkit-1.0-test-catalog.json"
     KMIPKIT_C_CATALOG_SHA256)
-set(KMIPKIT_C_INCLUDE_DIR "${KMIPKIT_C_INSTALL_DIR}/include")
+set(KMIPKIT_C_INCLUDE_DIR "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/include")
 
 set(VALIDATOR_SOURCES
     src/c_validator.c
@@ -54,6 +56,33 @@ target_compile_definitions(kmip_validator_c PRIVATE
     KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE=$<BOOL:${KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE}>
 )
 set_target_properties(kmip_validator_c PROPERTIES BUILD_RPATH "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib")
+
+
+# Linux CI records the actual installed public ABI calls, never request bodies.
+# Generate from the installed header so signatures cannot drift from the pin.
+if(UNIX AND NOT APPLE)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    set(ROUTE_MANIFEST "${CMAKE_CURRENT_SOURCE_DIR}/../shared/coverage/route-capabilities.json")
+    set(ROUTE_WRAPPERS "${CMAKE_CURRENT_BINARY_DIR}/route_wrappers.c")
+    execute_process(COMMAND "${Python3_EXECUTABLE}" -c
+        "import json; m=json.load(open(r'${ROUTE_MANIFEST}')); print(';'.join(sorted({r['public_api_symbol'] for r in m['routes']+m['execution_routes'] if r['language']=='c'})))"
+        OUTPUT_VARIABLE ROUTE_SYMBOLS OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE ROUTE_SYMBOL_STATUS)
+    if(NOT ROUTE_SYMBOL_STATUS EQUAL 0)
+        message(FATAL_ERROR "Could not load public C route symbols")
+    endif()
+    add_custom_command(OUTPUT "${ROUTE_WRAPPERS}"
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_route_wrappers.py"
+            --header "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/include/kmipkit.h"
+            --manifest "${ROUTE_MANIFEST}" --output "${ROUTE_WRAPPERS}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_route_wrappers.py"
+            "${ROUTE_MANIFEST}" "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/include/kmipkit.h")
+    target_sources(kmip_validator_c PRIVATE "${ROUTE_WRAPPERS}")
+    foreach(ROUTE_SYMBOL IN LISTS ROUTE_SYMBOLS)
+        target_link_options(kmip_validator_c PRIVATE "-Wl,--wrap=${ROUTE_SYMBOL}")
+    endforeach()
+endif()
 
 enable_testing()
 
@@ -91,6 +120,10 @@ set_tests_properties(c_validator_plan_2689_cases PROPERTIES
 find_package(Python3 COMPONENTS Interpreter QUIET)
 find_program(OPENSSL_EXECUTABLE openssl)
 if(Python3_Interpreter_FOUND AND OPENSSL_EXECUTABLE)
+    add_test(
+        NAME c_validator_route_matrix_contracts
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_route_matrix.py"
+    )
     add_test(
         NAME c_validator_artifact_checkout_history
         COMMAND "${Python3_EXECUTABLE}"
