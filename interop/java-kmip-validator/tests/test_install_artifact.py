@@ -40,5 +40,29 @@ class InstallArtifactPathTests(unittest.TestCase):
         )
 
 
+class InstalledRouteProbeWorkflowTests(unittest.TestCase):
+    def test_java_workflow_probes_and_persists_installed_package_routes(self):
+        workflow = Path(__file__).parents[3] / ".github" / "workflows" / "interop-java.yml"
+        content = workflow.read_text(encoding="utf-8")
+
+        self.assertIn("name: Probe installed Java package public routes", content)
+        self.assertIn("../../interop/shared/tools/probe_route_artifact.py", content)
+        self.assertIn("--language java", content)
+        self.assertIn("--artifact build/maven-repository/org/kmipkit/kmipkit-java/1.0.0/kmipkit-java-1.0.0-linux-glibc-x86_64.jar", content)
+        self.assertIn("--provenance build/artifact-manifest.json", content)
+        self.assertIn("| tee build/route-capability-probe.json", content)
+        self.assertIn("name: Upload Java route capability evidence", content)
+        self.assertIn("name: java-route-capability-evidence", content)
+        self.assertIn("path: interop/java-kmip-validator/build/route-capability-probe.json", content)
+        self.assertLess(
+            content.index("name: Build and install the pinned JNI package"),
+            content.index("name: Probe installed Java package public routes"),
+        )
+        self.assertLess(
+            content.index("name: Probe installed Java package public routes"),
+            content.index("name: Upload Java route capability evidence"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
