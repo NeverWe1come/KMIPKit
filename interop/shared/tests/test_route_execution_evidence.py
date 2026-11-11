@@ -114,8 +114,8 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             ],
         }
 
-    def test_ledger_writer_uses_only_the_fixed_java_build_destination(self):
-        writer = getattr(route_evidence, "write_selected_scope_ledger", None)
+    def test_route_evidence_ledger_writer_uses_fixed_java_build_destination(self):
+        writer = getattr(route_evidence, "write_java_route_evidence_ledger", None)
         self.assertTrue(callable(writer), "route ledgers must use a fixed repository output")
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"

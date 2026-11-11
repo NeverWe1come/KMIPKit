@@ -449,7 +449,7 @@ def build_evidence_ledger(report: dict, catalog: dict, manifest: dict, *, catalo
     }
 
 
-def write_selected_scope_ledger(ledger: dict) -> Path:
+def write_java_route_evidence_ledger(ledger: dict) -> Path:
     """Write the Java route ledger to its fixed, repository-owned build path."""
     repository = Path(__file__).resolve(strict=True).parents[3]
     output_path = repository / "interop/java-kmip-validator/build/route-evidence-ledger.json"
@@ -709,7 +709,7 @@ def main() -> None:
                 reports[0], catalog, manifest, catalog_sha256=catalog_sha,
                 route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
             )
-            ledger_path = write_selected_scope_ledger(ledger)
+            ledger_path = write_java_route_evidence_ledger(ledger)
             summary["ledger"] = {
                 "path": str(ledger_path), "planned_cells": ledger["planned_cells"],
                 "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
