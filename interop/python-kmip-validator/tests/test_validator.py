@@ -190,6 +190,36 @@ class ValidatorContractTests(unittest.TestCase):
 
         self.assertEqual(expected, invoked, f"uninvoked Python request routes: {sorted(expected - invoked)}")
 
+    def test_comment_attribute_is_present_only_for_existing_attribute_recipes(self):
+        from kmipkit import ttlv
+
+        def tags(attributes):
+            view = ttlv.ttlv_structure_view(attributes)
+            try:
+                values = []
+                for index in range(ttlv.ttlv_structure_view_item_count(view)):
+                    item = ttlv.ttlv_structure_view_item_at(view, index)
+                    try:
+                        tag = ttlv.ttlv_item_view_tag(item)
+                        try:
+                            values.append(ttlv.tag_value(tag))
+                        finally:
+                            tag.close()
+                    finally:
+                        item.close()
+                return values
+            finally:
+                view.close()
+
+        without_comment = PythonKmipDriver._attributes("attribute-fixture")
+        with_comment = PythonKmipDriver._attributes("attribute-fixture", include_comment=True)
+        try:
+            self.assertNotIn(0x0042_00FD, tags(without_comment))
+            self.assertIn(0x0042_00FD, tags(with_comment))
+        finally:
+            without_comment.close()
+            with_comment.close()
+
     def test_python_mutation_gate_includes_required_setup_and_cleanup(self):
         catalog, _ = load_catalog(CATALOG)
         by_id = {case["case_id"]: case for case in catalog["test_cases"]}
