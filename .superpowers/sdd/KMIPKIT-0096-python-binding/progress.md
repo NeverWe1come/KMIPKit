@@ -56,3 +56,12 @@ and typed-build endpoints. This supersedes the initial Python-only ruling.
   and final checks are recorded in `task-2-report.md`.
 - No new ABI, public symbol, exception class, or manifest declaration is
   required. The original cross-binding metadata gap is resolved.
+- Green commit: `92c5000b2`. Refactor consolidates the C classification
+  inside the existing `ffi_entrypoint` panic boundary and removes the
+  provisional Python metadata shim, so all bindings use the same native
+  result. No panic-boundary or coverage policy check was relaxed.
+- Final local results: 474 FFI unit tests, 56 compiled C tests, the
+  56-operation parity test, 708 Java tests (one skipped), and 1,344 Python
+  tests plus 119 subtests pass. Clippy with warnings denied and export audits
+  pass. Focused changed-line coverage is 53/56 (94.64%). See task-2-report.md
+  for exact commands, the resolved temporary-filesystem issue and scope limits.
