@@ -235,6 +235,44 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void processAndQueryAsyncRejectKmip20BeforeOpeningTheTransport() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        listener.setSoTimeout(3_000);
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var operationCases = casesById(catalog, "test-v20-reject-process", "test-v20-reject-query-asynchronous-requests");
+        Path connectionFile = temporaryDirectory.resolve("kmip20-async-boundary-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, "2.0"));
+        byte[] correlation = {0x20, 0x20, 0x20, 0x31};
+        FutureTask<Boolean> peer = new FutureTask<>(() -> acceptsConnection(listener));
+        Thread peerThread = new Thread(peer, "java-validator-kmip20-async-boundary-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        boolean accepted;
+        try {
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                for (var testCase : operationCases) {
+                    var outcome = driver.executeAsynchronousRequest(testCase, correlation);
+                    assertEquals("failed", outcome.status(), testCase.operation() + ": " + outcome);
+                    assertTrue(outcome.diagnostic().contains("InvalidInputException"),
+                            testCase.operation() + ": " + outcome);
+                }
+            }
+            accepted = peer.get(5, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+        assertEquals(false, accepted,
+                "KMIP 2.0 must reject Process and Query Asynchronous Requests before transport invocation.");
+    }
+
+    @Test
     void typedLogSendsTheRequiredMessageAndVerifiesAnEmptyResponsePayload() throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -935,6 +973,14 @@ class ControlledTlsPeerTest {
             }
         }
         return List.copyOf(requests);
+    }
+
+    private static boolean acceptsConnection(SSLServerSocket listener) throws Exception {
+        try (SSLSocket ignored = (SSLSocket) listener.accept()) {
+            return true;
+        } catch (java.net.SocketTimeoutException timeout) {
+            return false;
+        }
     }
 
     private static List<CatalogLoader.CatalogCase> casesById(CatalogLoader.Catalog catalog, String... caseIds) {
