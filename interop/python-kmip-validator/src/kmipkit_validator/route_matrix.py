@@ -222,6 +222,8 @@ def execute_cell(cell: dict, case: dict, target: dict) -> dict:
     if cell['transport'] is None:
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
+        if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
+            return _crypto_parameters_cell(cell, case, target)
         return _generic_cell(cell, case, target)
     return _network_cell(cell, case, target)
 
@@ -601,5 +603,66 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
             if item_tree(decoded) != expected:
                 raise ValueError('typed attribute generic roundtrip assertion failed')
             observed.append(expected)
+    tree_hash = digest(observed)
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Exercise named open-enum setters, typed getters and lossless converters."""
+    from kmipkit import ttlv
+    from kmipkit.cryptographic_parameters import CryptographicParameters
+
+    if case['requires'].get('target_kind') != 'enumeration_value':
+        raise RecipePending
+    names = {
+        'Block Cipher Mode': 'block_cipher_mode', 'Padding Method': 'padding_method',
+        'Hashing Algorithm': 'hashing_algorithm', 'Key Role Type': 'key_role_type',
+        'Digital Signature Algorithm': 'digital_signature_algorithm',
+        'Cryptographic Algorithm': 'cryptographic_algorithm', 'Mask Generator': 'mask_generator',
+    }
+    by_id, _, _ = _catalog_model_data()
+    methods = {int(item['wire_value'], 16): names[item['name']] for item in by_id.values()
+               if item.get('kind') == 'tag' and item.get('name') in names}
+    samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
+    if not samples or any(tag not in methods or kind != 'Enumeration' for tag, kind, _ in samples):
+        raise RecipePending
+    observed = []
+    for tag, _, value in samples:
+        field = methods[tag]
+        # Hashing Algorithm also supplies Mask Generator Hashing Algorithm;
+        # choose the exact public setter required by this route.
+        if cell['public_api_symbol'].endswith('.mask_generator_hashing_algorithm'):
+            field = 'mask_generator_hashing_algorithm'
+            tag = 0x420102
+        with ExitStack() as owned:
+            builder = owned.enter_context(CryptographicParameters.builder())
+            getattr(builder, field)(value)
+            context_fields = []
+            # KMIP 2.1 Table 59 requires IV Length for CTR/CCM/GCM,
+            # and Tag Length for GCM; these are explicit fixture inputs.
+            if field == 'block_cipher_mode' and value in (6, 8, 9):
+                iv_length = 128 if value == 6 else 96
+                builder.iv_length(iv_length)
+                context_fields.append([0x4200CD, 2, iv_length])
+                if value == 9:
+                    builder.tag_length(128)
+                    context_fields.append([0x4200CE, 2, 128])
+            model = owned.enter_context(builder.build())
+            if getattr(model, field)() != value:
+                raise ValueError('cryptographic parameter getter did not preserve the enum')
+            payload = owned.enter_context(model.into_ttlv())
+            copied = owned.enter_context(CryptographicParameters.from_ttlv(payload))
+            if getattr(copied, field)() != value:
+                raise ValueError('cryptographic parameter decoder did not preserve the enum')
+            copied_payload = owned.enter_context(copied.into_ttlv())
+            item = owned.enter_context(PythonKmipDriver._item(0x42002B, 'structure', payload))
+            copied_item = owned.enter_context(PythonKmipDriver._item(0x42002B, 'structure', copied_payload))
+            expected = [0x42002B, 1, [[tag, 5, value], *context_fields]]
+            if item_tree(item) != expected or item_tree(copied_item) != expected:
+                raise ValueError('cryptographic parameter typed/generic tree assertion failed')
+            decoded = owned.enter_context(ttlv.ttlv_decode(encode_fixture(expected)))
+            if item_tree(decoded) != expected:
+                raise ValueError('cryptographic parameter generic roundtrip assertion failed')
+            observed.append(expected[2][0])
     tree_hash = digest(observed)
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
