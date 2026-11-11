@@ -143,3 +143,11 @@ bilingual guide with KMIPKIT-0093 and KMIPKIT-0100.
   passed after the refactor.
 - SonarCloud and exact-head CI must be rerun after the follow-up commit; PR
   #183 remains a WIP draft until the quality gate is green.
+- The first follow-up reduced SonarCloud duplication to 39 lines (3.16%),
+  leaving the new-code quality gate 0.16 percentage points above its limit.
+  A second focused adjustment routes Register's public expert-attribute
+  appenders through its own private funnel to separate the remaining builder
+  blocks while retaining the common validator. After that adjustment,
+  `cargo test -p kmipkit-client --all-features --locked` again passed all 839
+  unit tests, UI tests, and doctests; format and Clippy also passed. SonarCloud
+  must still report the final exact-head result before this PR can leave WIP.
