@@ -3,10 +3,11 @@
 ## Branch and dependency
 
 - Branch: `feature/KMIPKIT-0102-fluent-cryptographic-operations`.
-- Base: PR #184 at `1885a509e` (unmerged; exact-head CI is running).
+- Base: PR #184 at `bf9cd80d75bd6c5be12371bf8cfe6edf6337aff2` (latest
+  published head; CI is still running).
 - Draft PR: #185, based on #184; title retains `[WIP]`.
 - Red/Green/Refactor commits: `c077230d2`, `a8fc68cf3`, and `8e536b121`.
-- Commit `2c495141d` merges the latest #184 branch head into this already-pushed
+- Commit `83748325a` merges the latest #184 branch head into this already-pushed
   branch without rewriting the published feature commits.
 - Scope: Rust fluent builders for Encrypt, Decrypt, Sign, Signature Verify,
   MAC, MAC Verify, and Hash.
@@ -66,7 +67,8 @@
   outputs are current.
 - Full-client verification with the updated #184 head:
   `cargo test -p kmipkit-client --all-features --locked --quiet` — passed
-  (865 unit tests, package integration tests, and doctests; 3 external KMS
+  (875 unit tests before the coverage additions, package integration tests,
+  and doctests; 3 external KMS
   tests ignored because no KMS is configured).
 - `cargo clippy -p kmipkit-client --all-targets --all-features -- -D
   warnings` — passed.
@@ -76,4 +78,19 @@
   passed, 31 tests.
 - `python3 -B tools/api_manifest/generate.py --check`: passed; 12 outputs
   verified.
-- Full coverage and exact-head CI remain pending on the stacked draft PR.
+- The first coverage run against the updated base exposed uncovered builder
+  options, expert parameter setters, and typed execute routes. Commit
+  `2aa95fdb3` adds deterministic tests for those paths without changing the
+  public implementation.
+- `cargo llvm-cov -p kmipkit-client --all-features --locked --json
+  --output-path /tmp/kmipkit-0102-client-coverage-final.json`: passed all 879
+  unit tests plus package integration and documentation tests; the changed
+  Rust production lines against base `bf9cd80d75bd6c5be12371bf8cfe6edf6337aff2`
+  are covered 386/386 (100.00%). The three external KMS tests remain ignored
+  because no KMS is configured.
+- `cargo fmt --all --check` and `git diff --check`: passed.
+- The earlier exact-head CI run on `e578c1fe0` failed its stale manifest
+  snapshot, changed-code coverage, and Sonar duplication checks. The branch now
+  includes the current #184 head, refreshed manifest snapshots, the shared
+  crypto request-state refactor, and the added coverage tests. Exact-head CI
+  for the updated branch is pending after push; PR #185 remains `[WIP]`.
