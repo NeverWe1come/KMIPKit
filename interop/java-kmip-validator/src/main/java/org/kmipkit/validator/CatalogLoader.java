@@ -130,7 +130,7 @@ public final class CatalogLoader {
 
     private static long resolveAttributeTag(JsonNode targets, JsonNode requires, String location) {
         JsonNode attributeName = requires.get("attribute");
-        if (attributeName == null) return 0x42000aL;
+        if (attributeName == null) return 0;
         require(attributeName.isTextual() && !attributeName.textValue().isBlank(),
                 location + ".requires.attribute must be a non-empty string");
         String attributeTargetId = requiredText(requires, "normative_target_id", location + ".requires");

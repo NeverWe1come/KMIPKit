@@ -50,5 +50,6 @@ class CatalogLoaderTest {
 
         assertEquals(0x420028L, byId.get("test-attr-cryptographic-algorithm").attributeTag());
         assertEquals(0x420053L, byId.get("test-attr-name").attributeTag());
+        assertEquals(0L, byId.get("test-op-get-attributes").attributeTag());
     }
 }

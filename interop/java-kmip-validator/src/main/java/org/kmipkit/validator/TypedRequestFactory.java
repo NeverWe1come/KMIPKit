@@ -32,7 +32,7 @@ import java.util.Map;
 /** Constructs deterministic public Java requests from the installed KMIPKit package. */
 final class TypedRequestFactory {
     private static final CodecLimits LIMITS = CodecLimits.defaults();
-    private static final long DEFAULT_ATTRIBUTE_TAG = 0x42000aL;
+    private static final long DEFAULT_ATTRIBUTE_TAG = 0x4200fdL;
     private static final byte[] BATCH_ITEM_ID = "item-0".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] LOG_MESSAGE =
             "KMIPKit interoperability diagnostic".getBytes(StandardCharsets.UTF_8);
@@ -45,12 +45,16 @@ final class TypedRequestFactory {
 
     /** Constructs one catalog operation through its public ClientBatchItem factory, if available. */
     static ClientBatchItem create(String operation) {
-        return create(operation, null);
+        return create(operation, null, defaultAttributeTag(operation));
     }
 
     /** Constructs one operation while replacing generic object identifiers with an owned fixture ID. */
     static ClientBatchItem create(String operation, UniqueIdentifier fixtureIdentifier) {
-        return create(operation, fixtureIdentifier, DEFAULT_ATTRIBUTE_TAG);
+        return create(operation, fixtureIdentifier, defaultAttributeTag(operation));
+    }
+
+    private static long defaultAttributeTag(String operation) {
+        return "Get Attributes".equals(operation) ? 0 : DEFAULT_ATTRIBUTE_TAG;
     }
 
     /** Constructs a case-specific request using its catalogued KMIP attribute tag when needed. */
