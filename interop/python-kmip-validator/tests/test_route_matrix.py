@@ -120,6 +120,24 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(report['events'])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_cryptographic_parameter_enum_setters_preserve_exact_values_and_types(self):
+        names = ('BLOCK-CIPHER-MODE', 'PADDING-METHOD', 'HASHING-ALGORITHM', 'KEY-ROLE-TYPE',
+                 'DIGITAL-SIGNATURE-ALGORITHM', 'CRYPTOGRAPHIC-ALGORITHM', 'MASK-GENERATOR')
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['requires'].get('target_kind') == 'enumeration_value'
+                                 and any(case['requires'].get('normative_target_id', '').startswith(
+                                     'KMIPKIT-ELEM-ENUM-VALUE-' + name + '-') for name in names)]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.')]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping'))
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual(0, len(gaps), f'{len(gaps)} parameter enum cells lack recipes')
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertGreater(len(report['events']), 200)
+
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
