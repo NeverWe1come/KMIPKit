@@ -159,6 +159,24 @@ class TreeAbi(InstalledAbi):
         finally:
             self.release('ttlv_item_view', view)
 
+    def read_structure(self, structure):
+        view = C.c_void_p()
+        try:
+            self.call('kmipkit_ttlv_structure_view', structure, C.byref(view))
+            count = C.c_uint64()
+            self.call('kmipkit_ttlv_structure_view_item_count', view, C.byref(count))
+            items = []
+            for index in range(count.value):
+                item_view = C.c_void_p()
+                try:
+                    self.call('kmipkit_ttlv_structure_view_item_at', view, index, C.byref(item_view))
+                    items.append(self.read_view(item_view))
+                finally:
+                    self.release('ttlv_item_view', item_view)
+            return items
+        finally:
+            self.release('ttlv_structure_view', view)
+
     def roundtrip(self, wire):
         self.called.clear()
         limits, constructed, decoded = C.c_void_p(), C.c_void_p(), C.c_void_p()

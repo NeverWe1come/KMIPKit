@@ -170,7 +170,7 @@ class ModelCases:
         matches = [value for parent, value in fields.items() if parent in parents]
         return matches[0] if len(matches) == 1 else None
 
-    def _execute_cryptographic_enum(self, target: dict) -> dict | None:
+    def _execute_cryptographic_enum(self, target: dict, protocol_version: str) -> dict | None:
         selected = self._crypto_enum_field(target)
         if selected is None or 'X' in target.get('wire_value', '').upper():
             return None
@@ -184,15 +184,15 @@ class ModelCases:
         expected = [(self._tag(tag_name), 5, value.to_bytes(4, 'big'))]
         if field_name == 'block_cipher_mode':
             iv_required = {
-                self._enum_value('Block Cipher Mode', 'CTR', '2.1'),
-                self._enum_value('Block Cipher Mode', 'CCM', '2.1'),
-                self._enum_value('Block Cipher Mode', 'GCM', '2.1'),
+                self._enum_value('Block Cipher Mode', 'CTR', protocol_version),
+                self._enum_value('Block Cipher Mode', 'CCM', protocol_version),
+                self._enum_value('Block Cipher Mode', 'GCM', protocol_version),
             }
             if value in iv_required:
                 fields.iv_length_present = 1
                 fields.iv_length = 12
                 expected.append((self._tag('IV Length'), 2, (12).to_bytes(4, 'big', signed=True)))
-            if value == self._enum_value('Block Cipher Mode', 'GCM', '2.1'):
+            if value == self._enum_value('Block Cipher Mode', 'GCM', protocol_version):
                 fields.tag_length_present = 1
                 fields.tag_length = 16
                 expected.append((self._tag('Tag Length'), 2, (16).to_bytes(4, 'big', signed=True)))
@@ -224,27 +224,7 @@ class ModelCases:
             self.abi.call('kmipkit_cryptographic_parameters_into_ttlv',
                           parameters, C.byref(structure))
             parameters = C.c_void_p()
-            self.abi.bind('kmipkit_ttlv_structure_view', [C.c_void_p, C.POINTER(C.c_void_p)])
-            self.abi.bind('kmipkit_ttlv_structure_view_item_count', [C.c_void_p, C.POINTER(C.c_uint64)])
-            self.abi.bind('kmipkit_ttlv_structure_view_item_at',
-                          [C.c_void_p, C.c_uint64, C.POINTER(C.c_void_p)])
-            self.abi.library.kmipkit_ttlv_structure_view_release.argtypes = [C.c_void_p]
-            self.abi.library.kmipkit_ttlv_structure_view_release.restype = None
-            view = C.c_void_p()
-            self.abi.call('kmipkit_ttlv_structure_view', structure, C.byref(view))
-            try:
-                count = C.c_uint64()
-                self.abi.call('kmipkit_ttlv_structure_view_item_count', view, C.byref(count))
-                for index in range(count.value):
-                    item_view = C.c_void_p()
-                    try:
-                        self.abi.call('kmipkit_ttlv_structure_view_item_at',
-                                      view, index, C.byref(item_view))
-                        children.append(self.abi.read_view(item_view))
-                    finally:
-                        self.abi.release('ttlv_item_view', item_view)
-            finally:
-                self.abi.library.kmipkit_ttlv_structure_view_release(view)
+            children.extend(self.abi.read_structure(structure))
             if children != expected:
                 raise ValueError('cryptographic_parameters_ttlv_mismatch')
             normalized_tree = [
@@ -391,7 +371,7 @@ class ModelCases:
             selected = self._crypto_enum_field(target)
             if selected is not None:
                 self.abi.called.clear()
-                return self._execute_cryptographic_enum(target)
+                return self._execute_cryptographic_enum(target, protocol_version)
         parents = set(target.get('parent_element_ids', []))
         if target.get('target_id') == KEY_VALUE_STRUCTURE or KEY_VALUE_STRUCTURE in parents:
             self.abi.called.clear()
