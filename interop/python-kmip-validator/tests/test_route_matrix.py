@@ -235,6 +235,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([], gaps)
         self.assertEqual(2, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        expected = self.runner.digest([[0x4200FF, 1, [[0x4200FF, 2, 7]]]])
+        self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
     def test_generic_ttlv_routes_encode_and_decode_the_client_operation_value(self):
         catalog = copy.deepcopy(self.catalog)

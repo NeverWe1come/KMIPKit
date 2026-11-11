@@ -252,18 +252,23 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
         with ExitStack() as owned:
             if name == 'Structure':
                 structure_children = []
-                if target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'vendorattribute':
-                    structure_children = [
-                        owned.enter_context(PythonKmipDriver._item(0x42009D, 'text', 'KMIPKit.Interop')),
-                        owned.enter_context(PythonKmipDriver._item(0x42000A, 'text', 'probe')),
-                        owned.enter_context(PythonKmipDriver._item(0x42000B, 'text', 'interop')),
-                    ]
-                elif target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'randomnumbergenerator':
-                    structure_children = [
-                        owned.enter_context(PythonKmipDriver._item(0x4200DA, 'enumeration', 1)),
-                    ]
-                children = owned.enter_context(PythonKmipDriver._structure(structure_children))
-                value = children
+                if symbol == 'kmipkit.ttlv.ttlv_structure_with_item':
+                    child = owned.enter_context(PythonKmipDriver._item(0x4200FF, 'integer', 7))
+                    children = owned.enter_context(ttlv.ttlv_structure_create())
+                    limits = owned.enter_context(ttlv.codec_limits_defaults())
+                    value = owned.enter_context(ttlv.ttlv_structure_with_item(children, child, limits))
+                else:
+                    if target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'vendorattribute':
+                        structure_children = [
+                            owned.enter_context(PythonKmipDriver._item(0x42009D, 'text', 'KMIPKit.Interop')),
+                            owned.enter_context(PythonKmipDriver._item(0x42000A, 'text', 'probe')),
+                            owned.enter_context(PythonKmipDriver._item(0x42000B, 'text', 'interop')),
+                        ]
+                    elif target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'randomnumbergenerator':
+                        structure_children = [
+                            owned.enter_context(PythonKmipDriver._item(0x4200DA, 'enumeration', 1)),
+                        ]
+                    value = owned.enter_context(PythonKmipDriver._structure(structure_children))
             item = owned.enter_context(PythonKmipDriver._item(tag, _TTLV_TYPE_KINDS[name], value))
             tree = item_tree(item)
             # Verify the public constructor's scalar value, not only its type.
