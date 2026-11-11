@@ -127,6 +127,34 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertFalse(any(targets[target_id]['kind'] in {'object_structure', 'structure_member'}
                              for target_id in protocol_version['normative_target_ids']))
 
+    def test_credential_value_serializers_only_claim_their_own_ttlv_shapes(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        routes = {route['public_api_symbol']: route for route in self.data['routes']}
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        hashed = set(routes['kmipkit_protocol::HashedPasswordCredential::into_ttlv']['normative_target_ids'])
+        self.assertIn('KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD', hashed)
+        self.assertIn('KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005', hashed)
+        self.assertIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD', hashed)
+        self.assertNotIn('KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL', hashed)
+        self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD', hashed)
+        self.assertNotIn('KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-PASSWORD-00000001', hashed)
+
+        credential_value = set(routes['kmipkit_protocol::CredentialValue::into_ttlv']['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL', credential_value)
+        variant_roots = {target['target_id'] for target in catalog['normative_targets']
+                         if target['kind'] == 'credential'
+                         and target['target_id'] != 'KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL'}
+        self.assertTrue(variant_roots <= credential_value)
+        self.assertTrue(all(target_id in targets for target_id in credential_value))
+
+    def test_typed_sensitive_attribute_does_not_claim_same_named_reason_enum(self):
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] ==
+                     'kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Sensitive>::from_item')
+        self.assertEqual({'KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE', 'KMIPKIT-ELEM-TAG-420120'},
+                         set(route['normative_target_ids']))
+
     def test_scalar_ttlv_converters_only_claim_targets_they_can_emit(self):
         routes = {route['public_api_symbol']: route for route in self.data['routes']}
         expected = {
