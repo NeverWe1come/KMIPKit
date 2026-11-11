@@ -50,6 +50,23 @@ shared adapter over the existing typed response and retained tree.
 - Refactor: consolidate traceability/reporting and remove redundant test setup
   without changing the public contract; rerun focused suites and commit.
 
+### Red evidence
+
+Commit `b22cb7b70` adds the failing response-contract test. The command
+`/tmp/kmipkit-0095-py312/bin/python -B -m pytest -q
+tools/api_manifest/tests/test_0093_typed_response_contract.py --tb=short`
+exited 1 as expected. Eight subtests fail because the already implemented
+typed result and response renderer declarations do not yet map to
+KMIPKIT-0093-FR-005/008/009; two non-targeted subtests pass. The failures are
+traceability gaps, not missing runtime behavior.
+
+Commit `401c12d66` adds the C caller-copy contract regression. The same
+command exited 1 with three subtest failures because the generated public C
+declarations did not tell callers that copied bytes cannot be zeroized by
+KMIPKit. The first attempt exposed a test field-path typo (`documentation`
+lives under `c`); the test setup was corrected before recording the expected
+contract failure.
+
 ## Exclusions
 
 - No arbitrary-message or generic TTLV request submission.
@@ -57,3 +74,18 @@ shared adapter over the existing typed response and retained tree.
 - No raw wire-byte fidelity or promise to zeroize copies owned by C, Java, or
   Python runtimes.
 - No changes to pinned upstream OASIS files or generated outputs by hand.
+
+### Green evidence
+
+The manifest regression test now passes: 3 tests and 11 subtests passed. The
+pinned generator check reports all 12 generated outputs verified. The manifest
+adds FR-005/008/009 mappings to the existing Rust and foreign typed-result and
+response-render APIs; generated C and parity fixtures now include those IDs.
+C renderer declarations explicitly state that copies retained by C callers
+remain caller-managed and cannot be zeroized by KMIPKit. The FR-005, FR-008,
+and FR-009 traceability rows cite the exact KMIP 2.1 sections, Table 417,
+operation response tables, and KMIP Profiles v2.1 encoding sections.
+
+The response implementation predates this slice in the approved 0095/0096
+stack. Its Rust, C, Java, and Python behavior is being revalidated on the
+rebased head before the separate Refactor evidence is recorded.
