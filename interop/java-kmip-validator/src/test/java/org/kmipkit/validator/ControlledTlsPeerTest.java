@@ -209,6 +209,7 @@ class ControlledTlsPeerTest {
         Files.deleteIfExists(reportPath);
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode events = mapper.createArrayNode();
+        List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         byte[] queryOperation = queryOperationTtlv();
         String requestTreeHash = normalizedTreeSha256(queryOperation);
 
@@ -216,6 +217,7 @@ class ControlledTlsPeerTest {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
+            appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -277,7 +279,6 @@ class ControlledTlsPeerTest {
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
-        List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
@@ -1166,8 +1167,9 @@ class ControlledTlsPeerTest {
             }
             if (versions.isEmpty()) continue;
             String wireValue = target.path("wire_value").asText();
+            if (wireValue.contains("-")) continue;
             long enumValue = "extension".equals(target.path("allocation").asText())
-                    ? 0x8000_0000L : parseFirstEnumerationWireValue(wireValue);
+                    ? 0x8000_0000L : Long.parseUnsignedLong(wireValue.replaceFirst("^0[xX]", ""), 16);
             String tagWireValue = tagTarget.path("wire_value").asText().replaceFirst("^0[xX]", "");
             int rawTag = Math.toIntExact(Long.parseLong(tagWireValue, 16));
             fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
@@ -1176,9 +1178,45 @@ class ControlledTlsPeerTest {
         return List.copyOf(fixtures);
     }
 
-    private static long parseFirstEnumerationWireValue(String wireValue) {
-        String firstValue = wireValue.split("-", 2)[0];
-        return Long.parseUnsignedLong(firstValue, 16);
+    private static void appendGenericEnumerationRouteEvents(ArrayNode events,
+            List<EnumerationFixture> fixtures, String protocolVersion) throws Exception {
+        for (EnumerationFixture fixture : fixtures) {
+            if (!fixture.protocolVersions().contains(protocolVersion)) continue;
+            byte[] wire = item(fixture.rawTag(), 5, intBytes((int) fixture.value()));
+            String treeHash = normalizedTreeSha256(wire);
+            try (TtlvValue value = TtlvValue.Enumeration(fixture.value())) {
+                appendRouteEvent(events, fixture.caseId(),
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                        fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.Enumeration", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+                try (RawTag raw = RawTag.fromRaw(fixture.rawTag());
+                        Tag tag = raw.checked();
+                        TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                        var view = created.view();
+                        var createdValue = view.value()) {
+                    assertEquals(fixture.rawTag(), view.tag().raw());
+                    assertEquals(TtlvItemType.Enumeration, view.itemType());
+                    assertEquals(fixture.value(), createdValue.enumeration());
+                }
+            }
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(wire);
+                    var view = decoded.view();
+                    var decodedValue = view.value()) {
+                assertEquals(fixture.rawTag(), view.tag().raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(fixture.value(), decodedValue.enumeration());
+            }
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
     }
 
     private static String normalizeTargetName(String value) {
@@ -1540,6 +1578,7 @@ class ControlledTlsPeerTest {
         ArrayNode caseIds = report.putArray("case_ids").add("test-op-query");
         TAG_RANGE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-attr-activation-date");
+        genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
         combination.put("encoding", "TTLV");
