@@ -46,6 +46,69 @@ fn kind(target_id: &str) -> u32 {
     }
 }
 
+fn credential_kind_from_id(target_id: &str) -> Option<u32> {
+    [
+        ("USERNAME-AND-PASSWORD", 1),
+        ("DEVICE", 2),
+        ("ATTESTATION", 3),
+        ("ONE-TIME-PASSWORD", 4),
+        ("HASHED-PASSWORD", 5),
+        ("TICKET", 6),
+    ]
+    .into_iter()
+    .find_map(|(name, value)| target_id.contains(name).then_some(value))
+}
+
+fn kind_for_target(symbol: &str, target: &Json, elements: &[Json]) -> u32 {
+    let target_id = target["target_id"].as_str().unwrap_or_default();
+    if symbol.starts_with("kmipkit_protocol::UsernameAndPasswordCredential::") {
+        return 1;
+    }
+    if symbol.starts_with("kmipkit_protocol::DeviceCredential::") {
+        return 2;
+    }
+    if symbol.starts_with("kmipkit_protocol::AttestationCredential::") {
+        return 3;
+    }
+    if symbol.starts_with("kmipkit_protocol::HashedPasswordCredential::") {
+        return 5;
+    }
+    if let Some(value) = credential_kind_from_id(target_id) {
+        return value;
+    }
+    if target["kind"] == "tag" {
+        let name = target["name"]
+            .as_str()
+            .unwrap_or_default()
+            .chars()
+            .filter(|character| character.is_ascii_alphanumeric())
+            .flat_map(char::to_lowercase)
+            .collect::<String>();
+        if let Some(value) = elements.iter().find_map(|element| {
+            if element["kind"] != "structure_member" {
+                return None;
+            }
+            let member_name = element["name"]
+                .as_str()?
+                .chars()
+                .filter(|character| character.is_ascii_alphanumeric())
+                .flat_map(char::to_lowercase)
+                .collect::<String>();
+            if member_name != name {
+                return None;
+            }
+            element["parent_element_ids"]
+                .as_array()?
+                .iter()
+                .filter_map(Json::as_str)
+                .find_map(credential_kind_from_id)
+        }) {
+            return value;
+        }
+    }
+    kind(target_id)
+}
+
 fn replace(tree: Item, target: Option<&Item>) -> Result<Item> {
     if let Some(target) = target
         && tree.tag().raw() == target.tag().raw()
@@ -168,7 +231,12 @@ macro_rules! variant {
 }
 
 #[allow(clippy::too_many_lines)] // Each exact public route remains visible next to its prerequisite.
-pub(crate) fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Result<Item>> {
+pub(crate) fn invoke(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
     let selected = symbol.rsplit("::").next()?;
     if !["try_from_ttlv", "into_ttlv", "new"].contains(&selected) {
         return None;
@@ -198,7 +266,7 @@ pub(crate) fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Res
         return Some(item(0x0042_00c8, Value::structure(model.into_ttlv())));
     }
     if symbol.starts_with("kmipkit_protocol::CredentialValue::") {
-        let kind = kind(target_id);
+        let kind = kind_for_target(symbol, target, elements);
         let input = body(&value(kind, Some(sample)).ok()?).ok()?;
         if symbol.ends_with("::try_from_ttlv") {
             return Some(
@@ -211,7 +279,7 @@ pub(crate) fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Res
         return Some(item(0x0042_0025, Value::structure(model.into_ttlv())));
     }
     if symbol.starts_with("kmipkit_protocol::Credential::") {
-        let mut kind = kind(target_id);
+        let mut kind = kind_for_target(symbol, target, elements);
         if sample.tag().raw() == 0x0042_0024 {
             kind = sample.with_value(|value| match value {
                 ValueView::Enumeration(raw) => Some(*raw),
@@ -230,17 +298,11 @@ pub(crate) fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Res
         return Some(item(0x0042_0023, Value::structure(model.into_ttlv())));
     }
     if symbol.starts_with("kmipkit_protocol::Authentication::") {
+        let kind = kind_for_target(symbol, target, elements);
         let input = if sample.tag().raw() == 0x0042_000c {
             body(sample).ok()?
         } else {
-            body(
-                &node(
-                    0x0042_000c,
-                    vec![credential(kind(target_id), Some(sample)).ok()?],
-                )
-                .ok()?,
-            )
-            .ok()?
+            body(&node(0x0042_000c, vec![credential(kind, Some(sample)).ok()?]).ok()?).ok()?
         };
         if symbol.ends_with("::try_from_ttlv") {
             return Some(
@@ -280,10 +342,21 @@ mod tests {
     #[test]
     fn credential_value_route_builds_the_branch_containing_its_target_tag() {
         let sample = item(0x0042_0038, Value::enumeration(6)).unwrap();
+        let target = serde_json::json!({
+            "kind": "tag",
+            "name": "Hashing Algorithm",
+            "target_id": "KMIPKIT-ELEM-TAG-420038"
+        });
+        let elements = vec![serde_json::json!({
+            "kind": "structure_member",
+            "name": "Hashing Algorithm",
+            "parent_element_ids": ["KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD"]
+        })];
         let result = invoke(
             "kmipkit_protocol::CredentialValue::into_ttlv",
             &sample,
-            "KMIPKIT-ELEM-TAG-420038",
+            &target,
+            &elements,
         )
         .unwrap()
         .unwrap();

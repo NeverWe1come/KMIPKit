@@ -228,8 +228,8 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
 }
 
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
-fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Result<Item>> {
-    if let Some(result) = crate::local_credentials::invoke(symbol, sample, target_id) {
+fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Option<Result<Item>> {
+    if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
         return Some(result);
     }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
@@ -505,7 +505,7 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             pending += 1;
             continue;
         };
-        let Some(result) = invoke(symbol, &sample, text(row, "target_id")?) else {
+        let Some(result) = invoke(symbol, &sample, target, elements) else {
             pending += 1;
             continue;
         };
