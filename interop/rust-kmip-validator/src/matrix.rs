@@ -229,7 +229,12 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             pending += 1;
             continue;
         };
-        let result = result.and_then(|item| crate::local_wire::roundtrip(&item));
+        let result = result.and_then(|item| {
+            if crate::local_wire::encode(&item)? != crate::local_wire::encode(&sample)? {
+                return Err("constructor changed the normative value");
+            }
+            crate::local_wire::roundtrip(&item)
+        });
         let mut event = json!({"case_id":row["case_id"],"route_id":row["route_id"],"target_id":row["target_id"],
             "public_api_symbol":symbol,"execution_route_id":null,"execution_api_symbol":null,
             "invocation_id":format!("rust-local-{}",events.len()),"action":row["action"],
