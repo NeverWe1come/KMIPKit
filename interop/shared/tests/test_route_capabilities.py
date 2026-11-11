@@ -100,10 +100,10 @@ class RouteCapabilitiesTests(unittest.TestCase):
         routes = {route['public_api_symbol']: route for route in self.data['routes']}
         expected = {
             'kmipkit_protocol::SecretBytes::into_ttlv_value': {
-                'KMIPKIT-ELEM-TAG-4200A0',
+                'KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING',
             },
             'kmipkit_protocol::SecretText::into_ttlv_value': {
-                'KMIPKIT-ELEM-TAG-42009F',
+                'KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING',
             },
         }
         for symbol, emitted_targets in expected.items():
