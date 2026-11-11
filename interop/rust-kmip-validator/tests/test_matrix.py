@@ -308,12 +308,11 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['invoked_local_cells'], 1)
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
-    def test_missing_request_recipe_cannot_pass_an_empty_structure(self):
+    def test_query_response_payload_accessor_reconstructs_the_decoded_response(self):
         cell = self.cell('kmipkit_protocol::QueryResponse::to_ttlv_payload', 'KMIPKIT-ELEM-OP-C2S-QUERY')
         process, report = self.run_matrix([cell])
-        self.assertNotEqual(process.returncode, 0)
-        self.assertEqual(report['events'], [])
-        self.assertIn('pending_recipe', process.stderr)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('passed', report['events'][0]['status'])
 
     def test_parameter_modifier_projects_the_exact_constructed_target(self):
         cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::with_padding_method',
