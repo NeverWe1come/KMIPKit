@@ -235,16 +235,7 @@ class ModelCases:
             return None
         field_name, tag_name, item_type, value = selected
         if isinstance(value, tuple):
-            samples = [self._execute_cryptographic_parameters(
-                {**target, 'wire_value': f'{sample:08X}'}, protocol_version)
-                for sample in value]
-            if any(sample is None for sample in samples):
-                return None
-            normalized_samples = [sample['normalized_tree'] for sample in samples]
-            symbols = set().union(*(sample['invoked_symbols'] for sample in samples))
-            return {'sample_count': sum(sample['sample_count'] for sample in samples),
-                    'normalized_tree': normalized_samples,
-                    'tree_sha256': digest(normalized_samples), 'invoked_symbols': symbols}
+            return self._execute_cryptographic_enum_boundaries(target, value, protocol_version)
         fields = _CryptographicParametersFieldsV1()
         fields.struct_size = C.sizeof(fields)
         fields.abi_version = 1
@@ -329,6 +320,18 @@ class ModelCases:
         finally:
             self.abi.release('ttlv_structure', structure)
             self.abi.release('cryptographic_parameters', parameters)
+
+    def _execute_cryptographic_enum_boundaries(self, target: dict, values: tuple[int, int],
+                                               protocol_version: str) -> dict | None:
+        samples = [self._execute_cryptographic_parameters(
+            {**target, 'wire_value': f'{value:08X}'}, protocol_version) for value in values]
+        if any(sample is None for sample in samples):
+            return None
+        normalized_samples = [sample['normalized_tree'] for sample in samples]
+        symbols = set().union(*(sample['invoked_symbols'] for sample in samples))
+        return {'sample_count': sum(sample['sample_count'] for sample in samples),
+                'normalized_tree': normalized_samples,
+                'tree_sha256': digest(normalized_samples), 'invoked_symbols': symbols}
 
     def _tag(self, name: str) -> int:
         matches = [item for item in self.catalog['normative_targets']
