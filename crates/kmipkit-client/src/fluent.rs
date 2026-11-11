@@ -2266,42 +2266,38 @@ impl<'a> RekeyBuilder<'a> {
 
     /// Sets the server-side date difference for the replacement object.
     #[must_use]
-    pub fn offset(self, value: u32) -> Self {
-        Self {
-            state: self.state.offset(value),
-        }
+    pub fn offset(mut self, value: u32) -> Self {
+        self.state.request = std::mem::take(&mut self.state.request).with_offset(value);
+        self
     }
 
     /// Sets the ordered generic Attributes Structure.
     #[must_use]
-    pub fn attributes(self, value: Structure) -> Self {
-        Self {
-            state: self.state.attributes(value),
-        }
+    pub fn attributes(mut self, value: Structure) -> Self {
+        self.state.request = std::mem::take(&mut self.state.request).with_attributes(value);
+        self
     }
 
     /// Sets the optional Protection Storage Masks Structure.
     #[must_use]
-    pub fn protection_storage_masks(self, value: Structure) -> Self {
-        Self {
-            state: self.state.protection_storage_masks(value),
-        }
+    pub fn protection_storage_masks(mut self, value: Structure) -> Self {
+        self.state.request =
+            std::mem::take(&mut self.state.request).with_protection_storage_masks(value);
+        self
     }
 
     /// Sets exchange-local options without changing client policy.
     #[must_use]
-    pub fn with_options(self, options: RequestOptions) -> Self {
-        Self {
-            state: self.state.with_options(options),
-        }
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.state.options = Some(options);
+        self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
-    pub fn with_asynchronous_indicator(self, value: u32) -> Self {
-        Self {
-            state: self.state.with_asynchronous_indicator(value),
-        }
+    pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.state.asynchronous_indicator = Some(value);
+        self
     }
 
     /// Validates the typed request without sending it.
@@ -2310,7 +2306,7 @@ impl<'a> RekeyBuilder<'a> {
     ///
     /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
-        self.state.validate()
+        validate_fluent_request(&self.state.request)
     }
 
     /// Builds the existing typed request without sending it.
@@ -2590,7 +2586,8 @@ impl<'a> RecertifyBuilder<'a> {
     ///
     /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
     pub fn build_request(self) -> Result<RecertifyRequest, FluentBuildError> {
-        self.state.build_request()
+        validate_fluent_request(&self.state.request)?;
+        Ok(self.state.request)
     }
 
     /// Converts this request to its typed batch item.
@@ -2599,7 +2596,8 @@ impl<'a> RecertifyBuilder<'a> {
     ///
     /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
     pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
-        self.state.into_batch_item()
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Recertify(request)))
     }
 
     /// Executes exactly one typed request exchange.

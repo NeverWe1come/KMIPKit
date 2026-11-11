@@ -37,10 +37,23 @@
   KMIP 3.0 draft catalog's pinned source, inventory, and checksum inputs.
 - The creation parity regression accepts both `declared` and `verified`
   public-declaration states while still rejecting blocked records.
+
+## Quality-gate repair
+
+- SonarCloud reported 4.92% duplicated lines on new code (102 lines; limit
+  3%) for head `5d9c223690a527ce9390debda5d3672f9e989d77`. The duplicated span
+  was the common Re-key and Re-certify builder forwarding surface.
+- The fix keeps both operation-specific public structs and their explicit
+  signatures, while using their typed request setters directly in the Re-key
+  wrapper. A generic public type alias was rejected by the client AST boundary
+  and was discarded before commit.
+- Commit `b4ba16415` adds regression coverage for both named builders and their
+  concrete typed request outputs. The operation behavior is unchanged.
+
 ## Verification
 
 - `cargo fmt --all -- --check`: passed.
-- `cargo test -p kmipkit-client --all-features --locked`: 851 unit tests,
+- `cargo test -p kmipkit-client --all-features --locked`: 852 unit tests,
   compile-fail/UI checks, and 10 doctests passed.
 - `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`:
   passed.
@@ -63,5 +76,6 @@
 - `python3 -B tools/api_manifest/audit_binding_exports.py --check`: C 1,967,
   Java 2,265, and Python 2,445 declarations matched; all three reports were
   complete with no issues.
-- PR #183 exact-head CI passed; its branch remains unmerged. Draft PR #184 is open with `[WIP]` and is based on #183. Exact-head CI for
-  `4bcbc23ef0bb33ccd1bf79cb078a4b4879cb4bdc` is pending.
+- PR #183 exact-head CI passed; its branch remains unmerged. Draft PR #184
+  remains `[WIP]` while its prior-head SonarCloud duplication failure is
+  rechecked on the repaired head.
