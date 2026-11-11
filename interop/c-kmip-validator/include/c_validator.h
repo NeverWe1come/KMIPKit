@@ -6,7 +6,8 @@
 #include <stdint.h>
 
 #define KMIP_MAX_NAME_LEN 256
-#define KMIP_MAX_CASES 512
+#define KMIP_MAX_CASES 4096
+#define KMIP_MAX_CAPABILITIES 512
 #define KMIP_MAX_REASONS 8
 #define KMIP_VERSION_MASK_2_0 1U
 #define KMIP_VERSION_MASK_2_1 2U
@@ -31,7 +32,7 @@ typedef struct {
     char workflow_type[64];
     char enum_type[KMIP_MAX_NAME_LEN];
     char bitmask_type[KMIP_MAX_NAME_LEN];
-    char normative_sections[KMIP_MAX_VERSIONS][32];
+    char normative_sections[KMIP_MAX_VERSIONS][512];
     unsigned int protocol_version_mask;
 } kmip_test_case_t;
 
@@ -61,11 +62,11 @@ typedef struct {
 
 typedef struct {
     char server_id[KMIP_MAX_NAME_LEN];
-    char supported_operations[KMIP_MAX_CASES][KMIP_MAX_NAME_LEN];
+    char supported_operations[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN];
     size_t supported_operations_count;
-    char supported_objects[KMIP_MAX_CASES][KMIP_MAX_NAME_LEN];
+    char supported_objects[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN];
     size_t supported_objects_count;
-    char supported_attributes[KMIP_MAX_CASES][KMIP_MAX_NAME_LEN];
+    char supported_attributes[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN];
     size_t supported_attributes_count;
 } kmip_server_capabilities_t;
 

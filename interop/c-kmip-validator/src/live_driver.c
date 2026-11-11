@@ -1162,8 +1162,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run(
             "the C binding exposes no high-level client route for this case");
     }
+    bool get_constraints_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
-        return execute_local_model_case(test_case);
+        if (!get_constraints_boundary_workflow) return execute_local_model_case(test_case);
+        if (strcmp(client->api_level, "typed-protocol") != 0) {
+            return outcome_not_run(
+                "the generic C TTLV API cannot invoke a typed request to verify pre-transport version rejection");
+        }
     }
     if (strcmp(client->api_level, "generic-ttlv") == 0) {
         return outcome_not_run(
@@ -1172,7 +1178,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (!client->client || !client->limits) {
         return outcome_not_run("live client is not initialized");
     }
-    if (strcmp(test_case->mode, "server_exchange") != 0) {
+    if (strcmp(test_case->mode, "server_exchange") != 0 && !get_constraints_boundary_workflow) {
         return outcome_not_run("catalog mode is not supported by the C validator");
     }
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
@@ -1192,8 +1198,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         cryptographic_algorithm_attribute_workflow || cryptographic_length_attribute_workflow;
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
-    bool get_constraints_boundary_workflow =
-        strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;

@@ -8,7 +8,8 @@
 #include <string.h>
 
 #define JSON_MAX_BYTES (16U * 1024U * 1024U)
-#define JSON_MAX_TOKENS 100000U
+/* The shared 2.0/2.1 catalog contains over 270,000 JSON tokens. */
+#define JSON_MAX_TOKENS 400000U
 
 static void skip_space(const char *source, size_t length, size_t *position) {
     while (*position < length && isspace((unsigned char)source[*position])) {

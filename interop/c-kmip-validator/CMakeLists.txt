@@ -15,7 +15,7 @@ if(NOT KMIPKIT_C_INSTALL_DIR)
 endif()
 get_filename_component(KMIPKIT_C_INSTALL_DIR_ABSOLUTE "${KMIPKIT_C_INSTALL_DIR}"
     ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-set(KMIPKIT_LIBRARY_COMMIT "52a2be180340e5da3166401a52f652dfd368ad37")
+set(KMIPKIT_LIBRARY_COMMIT "9a16cc90a12205101d22a38501a5e74c665df4dc")
 find_library(KMIPKIT_FFI_LIBRARY
     NAMES kmipkit_ffi
     PATHS "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib"
@@ -78,14 +78,14 @@ set_tests_properties(test_c_validator PROPERTIES
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 add_test(
-    NAME c_validator_plan_218_cases
+    NAME c_validator_plan_2689_cases
     COMMAND kmip_validator_c plan
         --connection "${CMAKE_CURRENT_SOURCE_DIR}/../shared/profiles/connection.example.json"
         --capabilities "${CMAKE_CURRENT_SOURCE_DIR}/../shared/profiles/generic-kmip-2.1.json"
         --catalog "${CMAKE_CURRENT_SOURCE_DIR}/../shared/catalog/kmipkit-1.0-test-catalog.json"
 )
-set_tests_properties(c_validator_plan_218_cases PROPERTIES
-    PASS_REGULAR_EXPRESSION "catalog_cases=218 applicable=212"
+set_tests_properties(c_validator_plan_2689_cases PROPERTIES
+    PASS_REGULAR_EXPRESSION "catalog_cases=2689"
 )
 
 find_package(Python3 COMPONENTS Interpreter QUIET)

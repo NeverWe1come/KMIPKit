@@ -47,7 +47,7 @@ jobs:
         run: python3 interop/c-kmip-validator/tools/verify_artifact.py
 
       - name: Configure CMake
-        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/52a2be180340e5da3166401a52f652dfd368ad37
+        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc
 
       - name: Build C validator
         run: cmake --build interop/c-kmip-validator/build

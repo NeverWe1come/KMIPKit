@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static bool string_in_list(const char *target, const char list[KMIP_MAX_CASES][KMIP_MAX_NAME_LEN], size_t count) {
+static bool string_in_list(const char *target, const char list[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN], size_t count) {
     if (!target || target[0] == '\0') return true;
     for (size_t i = 0; i < count; i++) {
         if (strcmp(target, list[i]) == 0) return true;
@@ -23,7 +23,7 @@ static bool copy_member(const json_document_t *document, int object, const char 
 }
 
 static bool load_supported_names(const json_document_t *document, int object,
-                                 char values[KMIP_MAX_CASES][KMIP_MAX_NAME_LEN],
+                                 char values[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN],
                                  size_t *out_count) {
     if (object < 0) return true;
     for (size_t i = 0;; ++i) {
@@ -34,7 +34,7 @@ static bool load_supported_names(const json_document_t *document, int object,
         int supported_token = json_object_get(document, value, "supported");
         if (!json_boolean(document, supported_token, &supported)) return false;
         if (!supported) continue;
-        if (*out_count >= KMIP_MAX_CASES ||
+        if (*out_count >= KMIP_MAX_CAPABILITIES ||
             !json_string_copy(document, key, values[*out_count], KMIP_MAX_NAME_LEN)) return false;
         ++(*out_count);
     }
@@ -218,9 +218,16 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
                                    sizeof(test_case->enum_type)) &&
             load_optional_requires(&document, requires, "bitmask_type", test_case->bitmask_type,
                                    sizeof(test_case->bitmask_type));
-        if (!valid) break;
+        if (!valid) {
+            fprintf(stderr, "invalid test catalog row %zu\n", i);
+            break;
+        }
         size_t version_count = json_array_length(&document, versions);
-        if (version_count == 0 || version_count > KMIP_MAX_VERSIONS) { valid = false; break; }
+        if (version_count == 0 || version_count > KMIP_MAX_VERSIONS) {
+            fprintf(stderr, "invalid protocol version count in test catalog row %zu\n", i);
+            valid = false;
+            break;
+        }
         for (size_t j = 0; j < version_count; ++j) {
             char version[8];
             int version_token = json_array_get(&document, versions, j);
@@ -235,7 +242,7 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
         for (size_t j = 0; valid && j < json_array_length(&document, normative); ++j) {
             int reference = json_array_get(&document, normative, j);
             char name[64];
-            char section[32];
+            char section[128];
             if (!copy_member(&document, reference, "document", name, sizeof(name), true) ||
                 !copy_member(&document, reference, "section", section, sizeof(section), true)) {
                 valid = false;
@@ -243,11 +250,24 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             }
             size_t version_index = strcmp(name, "OASIS KMIP 2.0 Specification") == 0 ? 0 :
                                   strcmp(name, "OASIS KMIP 2.1 Specification") == 0 ? 1 : KMIP_MAX_VERSIONS;
-            if (version_index >= KMIP_MAX_VERSIONS || test_case->normative_sections[version_index][0] != '\0') {
+            if (version_index >= KMIP_MAX_VERSIONS) {
                 valid = false;
                 break;
             }
-            memcpy(test_case->normative_sections[version_index], section, strlen(section) + 1);
+            char *sections = test_case->normative_sections[version_index];
+            size_t current_length = strlen(sections);
+            size_t section_length = strlen(section);
+            size_t separator_length = current_length == 0 ? 0 : 1;
+            if (current_length + separator_length + section_length >=
+                sizeof(test_case->normative_sections[version_index])) {
+                valid = false;
+                break;
+            }
+            if (separator_length != 0) {
+                sections[current_length] = ',';
+                ++current_length;
+            }
+            memcpy(sections + current_length, section, section_length + 1);
         }
         if (test_case->protocol_version_mask == 0 ||
             (strcmp(test_case->mode, "local_model") != 0 && strcmp(test_case->mode, "server_exchange") != 0) ||

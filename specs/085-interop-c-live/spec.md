@@ -3,7 +3,7 @@
 **Rama**: `feature/KMIPKIT-0085-interop-c-live`  
 **Estado**: aprobado para implementación por autorización explícita del plan KMIPKIT de interoperabilidad  
 **Identificador**: KMIPKIT-0085  
-**Base**: release `52a2be180340e5da3166401a52f652dfd368ad37`
+**Base**: release `9a16cc90a12205101d22a38501a5e74c665df4dc`
 
 ## Alcance
 

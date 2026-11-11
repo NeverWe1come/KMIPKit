@@ -152,8 +152,12 @@ int main(int argc, char **argv) {
     }
 
     kmip_connection_config_t connection;
-    kmip_test_case_t cases[KMIP_MAX_CASES];
+    kmip_test_case_t *cases = calloc(KMIP_MAX_CASES, sizeof(*cases));
     size_t case_count = 0;
+    if (!cases) {
+        fprintf(stderr, "Error: could not allocate the bounded catalog view.\n");
+        return 2;
+    }
     if (!kmip_load_connection(connection_path, &connection)) {
         fprintf(stderr, "Error: invalid connection configuration.\n");
         return 1;

@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-PIN = "52a2be180340e5da3166401a52f652dfd368ad37"
+PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/c-live"
 BUNDLE = LOCAL / f"kmipkit-c-1.0.0-{PIN[:12]}.tar.gz"
