@@ -97,6 +97,15 @@ def catalog_enum_values(catalog: dict, enum_name: str, protocol_version: str) ->
                   and re.fullmatch(r'[0-9a-fA-F]{8}', target.get('wire_value', '')))
 
 
+def catalog_parent_tag(target: dict, tags: dict[str, int]) -> int | None:
+    parent = target.get('parent_name')
+    if not parent:
+        parents = target.get('parent_element_ids', [])
+        parent = parents[0] if parents else ''
+    name = re.sub(r'^KMIPKIT-ELEM-(?:ENUMERATION|BITMASK)-', '', parent)
+    return {_name(tag_name): value for tag_name, value in tags.items()}.get(_name(name))
+
+
 def numeric_boundaries(value: str) -> tuple[int, int] | None:
     endpoints = re.findall(r'[0-9A-Fa-fXx]+', value)
     if not endpoints:
@@ -155,9 +164,7 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if (target['kind'] in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}
             and target.get('allocation') in {'extension', 'reserved'}):
         boundaries = numeric_boundaries(target.get('wire_value', ''))
-        parent = target.get('parent_name') or target.get('parent_element_ids', [''])[0]
-        enum_name = re.sub(r'^KMIPKIT-ELEM-(?:ENUMERATION|BITMASK)-', '', parent)
-        tag = {_name(name): value for name, value in tags.items()}.get(_name(enum_name))
+        tag = catalog_parent_tag(target, tags)
         if boundaries is not None and tag is not None:
             item_type = 2 if target['kind'] == 'bitmask_value' else 5
             return [(tag, item_type, value.to_bytes(4, 'big')) for value in dict.fromkeys(boundaries)]
@@ -222,11 +229,7 @@ def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = No
         return tag, 5, int(raw, 16).to_bytes(4, 'big')
     if kind not in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}:
         return None
-    parents = target.get('parent_element_ids', [])
-    parent = target.get('parent_name', '')
-    if parents:
-        parent = re.sub(r'^KMIPKIT-ELEM-(ENUMERATION|BITMASK)-', '', parents[0])
-    tag = normalized_tags.get(_name(parent))
+    tag = catalog_parent_tag(target, tags)
     if tag is None or not re.fullmatch(r'[0-9a-fA-F]{1,8}', target.get('wire_value', '')):
         return None
     return tag, 2 if kind == 'bitmask_value' else 5, int(target['wire_value'], 16).to_bytes(4, 'big')
