@@ -111,3 +111,6 @@ will be added here as each Red, Green, and Refactor commit is produced.
   exact complete matches for C (1994), Java (2265), and Python (2445);
   `python3 -m unittest tools.normative_catalog.tests.test_feature_traceability`
   passes all 31 tests.
+- **Publication**: draft PR [#186](https://github.com/NeverWe1come/KMIPKit/pull/186)
+  is open as `[WIP]`, based on KMIPKIT-0102. The title remains WIP pending
+  successful exact-head CI.
