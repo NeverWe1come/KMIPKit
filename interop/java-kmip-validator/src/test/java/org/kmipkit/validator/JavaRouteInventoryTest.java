@@ -31,6 +31,12 @@ class JavaRouteInventoryTest {
             assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
                     inventory.get(entry.getKey()).status(), entry.getKey());
         }
+        var cancelCase = catalog.cases().stream()
+                .filter(testCase -> testCase.caseId().equals("test-op-cancel"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING,
+                JavaRouteInventory.routeFor(cancelCase).status());
+        assertTrue(JavaRouteInventory.routeFor(cancelCase).reason().contains("correlation"));
     }
 
     @Test
@@ -56,7 +62,7 @@ class JavaRouteInventoryTest {
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Get Attribute List").status());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Get Constraints").status());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Create").status());
-        assertEquals(JavaRouteInventory.Status.PAYLOAD_ONLY, inventory.get("Cancel").status());
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Cancel").status());
         assertEquals(JavaRouteInventory.Status.NO_PUBLIC_ROUTE, inventory.get("Set Endpoint Role").status());
 
         var clientQuery = catalog.cases().stream()
@@ -84,10 +90,7 @@ class JavaRouteInventoryTest {
             assertFalse(route.reason().isBlank(), route.operation());
             assertTrue(route.status() != JavaRouteInventory.Status.UNCLASSIFIED, route.operation());
         }
-        assertEquals(Set.of("Cancel", "Poll", "Process", "Query Asynchronous Requests"),
-                inventory.values().stream()
-                        .filter(route -> route.status() == JavaRouteInventory.Status.PAYLOAD_ONLY)
-                        .map(JavaRouteInventory.Route::operation)
-                        .collect(Collectors.toSet()));
+        assertTrue(inventory.values().stream()
+                .noneMatch(route -> route.status() == JavaRouteInventory.Status.PAYLOAD_ONLY));
     }
 }

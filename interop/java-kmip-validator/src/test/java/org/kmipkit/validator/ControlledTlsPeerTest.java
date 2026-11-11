@@ -162,6 +162,47 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void asynchronousOperationsUseTheirInstalledDedicatedExecutorsAndTypedResponses() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var operationCases = List.of("test-op-cancel", "test-op-poll", "test-op-process",
+                "test-op-query-asynchronous-requests").stream()
+                .map(caseId -> catalog.cases().stream().filter(testCase -> testCase.caseId().equals(caseId))
+                        .findFirst().orElseThrow())
+                .toList();
+        var peer = new FutureTask<List<byte[]>>(() -> serveAsynchronousResponses(listener, operationCases.size()));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-async-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("async-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true));
+        byte[] correlation = {0x4b, 0x4d, 0x49, 0x50, 0x2d, 0x74, 0x65, 0x73, 0x74};
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            for (var testCase : operationCases) {
+                var outcome = driver.executeAsynchronousRequest(testCase, correlation);
+                assertEquals("passed", outcome.status(), testCase.operation() + ": " + outcome);
+            }
+        } finally {
+            listener.close();
+        }
+
+        var requests = peer.get(20, TimeUnit.SECONDS);
+        assertEquals(List.of(0x19L, 0x1aL, 0x3aL, 0x39L),
+                requests.stream().map(ControlledTlsPeerTest::requestOperation).toList());
+        for (byte[] request : requests) {
+            assertTrue(contains(request, item(0x420006, 8, correlation)),
+                    "The public asynchronous route must send the caller-supplied correlation value.");
+        }
+    }
+
+    @Test
     void typedLogSendsTheRequiredMessageAndVerifiesAnEmptyResponsePayload() throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -840,6 +881,53 @@ class ControlledTlsPeerTest {
                 item(0x42007f, 5, intBytes(1)),
                 item(0x42007e, 5, intBytes(Math.toIntExact(KmipValues.ResultReason.OPERATION_NOT_SUPPORTED))));
         return structure(0x42007b, header, responseItem);
+    }
+
+    private static List<byte[]> serveAsynchronousResponses(SSLServerSocket listener, int count) throws Exception {
+        var requests = new ArrayList<byte[]>();
+        for (int index = 0; index < count; index++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = readTtlv(socket.getInputStream());
+                requests.add(request);
+                socket.getOutputStream().write(asynchronousResponse(requestOperation(request),
+                        requestCorrelation(request)));
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(requests);
+    }
+
+    private static byte[] asynchronousResponse(long operation, byte[] correlation) throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        List<byte[]> fields = new ArrayList<>();
+        fields.add(item(0x42005c, 5, intBytes(Math.toIntExact(operation))));
+        fields.add(item(0x42007f, 5, intBytes(operation == 0x19 ? 0 : 2)));
+        if (operation == 0x19) {
+            fields.add(structure(0x42007c, item(0x420006, 8, correlation),
+                    item(0x420012, 5, intBytes(1))));
+        } else {
+            fields.add(item(0x420006, 8, correlation));
+            if (operation != 0x1a) fields.add(structure(0x42007c));
+        }
+        return structure(0x42007b, header, structure(0x42000f, fields.toArray(byte[][]::new)));
+    }
+
+    private static byte[] requestCorrelation(byte[] request) {
+        for (int offset = 0; offset <= request.length - 8; offset++) {
+            if (request[offset] == 0x42 && request[offset + 1] == 0x00 && request[offset + 2] == 0x06
+                    && request[offset + 3] == 8) {
+                int length = ByteBuffer.wrap(request, offset + 4, 4).getInt();
+                if (length < 1 || length > 1024 || offset + 8 + length > request.length) break;
+                return java.util.Arrays.copyOfRange(request, offset + 8, offset + 8 + length);
+            }
+        }
+        throw new AssertionError("The asynchronous request omitted its correlation value.");
     }
 
     private static byte[] readTtlv(InputStream input) throws Exception {
