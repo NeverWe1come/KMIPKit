@@ -210,6 +210,7 @@ RECIPES = {
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-002': ((1, 20), 'create'),
+    'test-norm-payload-client-create-request-21-003': ((1, 20), 'create'),
     'test-op-get': ((1, 10, 20), 'get'),
     'test-op-get-attributes': ((1, 11, 20), 'get_attributes'),
     'test-op-get-attribute-list': ((1, 12, 20), 'get_attribute_list'),
@@ -241,6 +242,7 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-create-request-20-002',
     'test-norm-payload-client-create-request-21-001',
     'test-norm-payload-client-create-request-21-002',
+    'test-norm-payload-client-create-request-21-003',
 })
 
 
@@ -275,6 +277,10 @@ def assert_recipe(node, case_id, version):
         raise ValueError('fixture_attribute_reference_mismatch')
     if RECIPES[case_id][1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
+    if case_id == 'test-norm-payload-client-create-request-21-003':
+        masks = list(descendants(node, 0x42015F))
+        if len(masks) != 1 or masks[0][1] != 1 or masks[0][2]:
+            raise ValueError('fixture_create_storage_masks_mismatch')
     if case_id == 'test-norm-payload-client-query-request-21-002':
         groups = list(descendants(node, 0x420166))
         if (len(groups) != 1 or groups[0][1] != 1

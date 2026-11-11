@@ -1309,7 +1309,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-norm-payload-client-create-request-20-001") == 0 ||
         strcmp(test_case->case_id, "test-norm-payload-client-create-request-20-002") == 0 ||
         strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-001") == 0 ||
-        strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-002") == 0;
+        strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-002") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-003") == 0;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0 ||
         strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || rsa_key_workflow ||
         create_payload_workflow;
@@ -1365,6 +1366,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     kmipkit_client_batch_item_t *revoke_item = NULL;
     kmipkit_client_batch_item_t *cleanup_item = NULL;
     kmipkit_ttlv_structure_t *request_attributes = NULL;
+    kmipkit_ttlv_structure_t *request_storage_masks = NULL;
     kmipkit_ttlv_value_t *request_data = NULL;
     int32_t status = 0;
     const char *request_construction_step = "typed request";
@@ -1429,12 +1431,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = (rsa_key_workflow ?
             create_rsa_key_attributes(client, &request_attributes) :
             create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
+        if (status == 0 &&
+            strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-003") == 0) {
+            status = kmipkit_ttlv_structure_create(&request_storage_masks);
+        }
         if (status == 0) {
             request_construction_step = rsa_key_workflow ? "Create RSA Key" :
                 "Create Symmetric Key";
             kmipkit_client_batch_item_t **create_item = create_workflow ? &item : &setup_item;
             status = kmipkit_client_batch_item_create(
-                requested_object_type, request_attributes, NULL, create_item);
+                requested_object_type, request_attributes, request_storage_masks, create_item);
             if (status == 0 && !request_item_is_valid(
                     *create_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -2127,5 +2133,6 @@ cleanup:
     if (revoke_item) kmipkit_client_batch_item_release(revoke_item);
     if (cleanup_item) kmipkit_client_batch_item_release(cleanup_item);
     if (request_attributes) kmipkit_ttlv_structure_release(request_attributes);
+    if (request_storage_masks) kmipkit_ttlv_structure_release(request_storage_masks);
     return outcome;
 }
