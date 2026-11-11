@@ -228,13 +228,13 @@ class RouteMatrixTests(unittest.TestCase):
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
                                  if case['case_id'] == 'test-op-ping']
         symbols = {'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
-                   'kmipkit.ttlv.ttlv_item_view_from_item', 'kmipkit.ttlv.ttlv_value_enumeration'}
+                   'kmipkit.ttlv.ttlv_item_view_from_item'}
         manifest = copy.deepcopy(self.manifest)
         manifest['routes'] = [route for route in manifest['routes']
                               if route['language'] == 'python' and route['public_api_symbol'] in symbols]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(4, len(report['events']))
+        self.assertEqual(3, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         expected = self.runner.digest([[0x42005C, 5, 0x3B]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})

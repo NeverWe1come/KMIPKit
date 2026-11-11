@@ -117,7 +117,7 @@ def encode_fixture(tree: list) -> bytes:
 def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, str, Any]]:
     """Resolve the finite numeric/type representatives from this exact catalog case."""
     requires = case['requires']
-    kind = requires.get('target_kind')
+    kind = requires.get('target_kind', target.get('kind'))
     target_id = target['target_id']
     by_id, element_types, elements = _catalog_model_data()
     tag = 0x4200FF
@@ -138,6 +138,19 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         type_name = 'Integer' if kind == 'bitmask_value' else 'Enumeration'
         return [(tag, type_name, value if type_name == 'Enumeration' or value < 0x80000000
                  else value - 0x100000000) for value in raw_values]
+    if kind == 'operation':
+        operation_enum = next((entry for entry in elements.values()
+                               if entry.get('kind') == 'enumeration_value'
+                               and entry.get('name') == target.get('name')
+                               and 'KMIPKIT-ELEM-ENUMERATION-OPERATION' in entry.get('parent_element_ids', [])), None)
+        if operation_enum is None:
+            raise RecipePending
+        operation_tag = next((entry for entry in elements.values()
+                              if entry.get('kind') == 'tag' and entry.get('name') == 'Operation'), None)
+        if operation_tag is None:
+            raise RecipePending
+        return [(int(operation_tag['wire_value'], 16), 'Enumeration',
+                 int(operation_enum['wire_value'], 16))]
     if kind == 'tag' and requires.get('allocation') in ('assigned', 'extension'):
         return [(raw, 'Integer', 0) for raw in PythonKmipDriver._wire_representatives(requires['wire_value'])]
     if kind == 'tag_range' and requires.get('allocation') == 'extension':
