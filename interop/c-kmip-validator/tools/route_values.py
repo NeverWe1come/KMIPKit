@@ -34,9 +34,21 @@ class ValueCases:
                 results.append([vector['type_code'], result['tree_sha256']])
                 symbols.update(result['invoked_symbols'])
                 count += result['sample_count']
+            values = sorted(int(target['wire_value'], 16) for target in self.catalog['normative_targets']
+                if target['kind'] == 'enumeration_value'
+                and target.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE']
+                and version in target['protocol_versions'])
+            tag = self.tags.get(norm('Operation'))
+            if tag is None or not values:
+                return None
+            for value in [*values, 0xFFFFFFFF]:
+                result = self.abi.roundtrip(encode((tag, 5, value.to_bytes(4, 'big'))))
+                results.append([value, result['normalized_tree']])
+                symbols.update(result['invoked_symbols'])
+                count += 1
             return {'tree_sha256': digest(results), 'invoked_symbols': symbols,
-                    'sample_count': count, 'known_values_checked': 11,
-                    'unknown_value_preserved': False, 'tag': None}
+                    'sample_count': count, 'known_values_checked': len(values),
+                    'unknown_value_preserved': True, 'values_checked': values, 'tag': tag}
         tag = self.tags.get(norm(type_name))
         if tag is None:
             return None
