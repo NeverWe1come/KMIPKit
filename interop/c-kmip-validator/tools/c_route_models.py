@@ -17,6 +17,7 @@ SYMMETRIC_KEY_TAG = 0x42008F
 KEY_BLOCK_TAG = 0x420040
 KEY_FORMAT_TYPE_TAG = 0x420042
 SYMMETRIC_KEY_OBJECT_TYPE = 2
+KEY_BLOCK_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK'
 
 
 class ModelCases:
@@ -81,6 +82,23 @@ class ModelCases:
             managed_item = self._from_item('kmipkit_managed_object_from_item', symmetric, owned,
                                            (SYMMETRIC_KEY_OBJECT_TYPE,))
             self._read_and_check(managed_item, expected, 'managed_symmetric_key_item_tree_mismatch')
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            for handle in reversed(owned):
+                self.abi.release('ttlv_item', handle)
+            self.abi.release('codec_limits', limits)
+
+    def _execute_key_block(self, protocol_version: str) -> dict:
+        key_block_tree = self._key_block_tree(protocol_version)
+        limits = C.c_void_p()
+        owned: list[C.c_void_p] = []
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            fields = self._from_fields('kmipkit_key_block_from_fields', key_block_tree[2], limits, owned)
+            converted = self._from_item('kmipkit_key_block_from_item', fields, owned)
+            normalized_tree = self._read_and_check(converted, normalized(key_block_tree),
+                                                   'key_block_item_tree_mismatch')
             return {'sample_count': 1, 'normalized_tree': normalized_tree,
                     'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
         finally:
@@ -162,11 +180,28 @@ class ModelCases:
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
 
+    def _supports_target(self, target: dict, result: dict) -> bool:
+        if target['kind'] == 'object_structure':
+            return result['normalized_tree'][0] == self._tag(target['name'])
+        if target['kind'] != 'structure_member':
+            return False
+        expected_tag = self._tag(target['name'])
+
+        def contains_tag(tree: list) -> bool:
+            return tree[0] == expected_tag or (tree[1] == 1 and any(contains_tag(child) for child in tree[2]))
+
+        return contains_tag(result['normalized_tree'])
+
     def execute(self, target: dict, protocol_version: str) -> dict | None:
         parents = set(target.get('parent_element_ids', []))
+        if target.get('target_id') == KEY_BLOCK_STRUCTURE or KEY_BLOCK_STRUCTURE in parents:
+            self.abi.called.clear()
+            result = self._execute_key_block(protocol_version)
+            return result if self._supports_target(target, result) else None
         if target.get('target_id') == SYMMETRIC_KEY_STRUCTURE or SYMMETRIC_KEY_STRUCTURE in parents:
             self.abi.called.clear()
-            return self._execute_symmetric_key(protocol_version)
+            result = self._execute_symmetric_key(protocol_version)
+            return result if self._supports_target(target, result) else None
         root = next((item for item in self.catalog['normative_targets']
                      if item['kind'] == 'object_structure'
                      and (item['target_id'] == target.get('target_id')
@@ -174,7 +209,8 @@ class ModelCases:
         if root is not None and root['name'] in {
                 'Certificate Request', 'PGP Key', 'Private Key', 'Public Key'}:
             self.abi.called.clear()
-            return self._execute_named_object(root, protocol_version)
+            result = self._execute_named_object(root, protocol_version)
+            return result if self._supports_target(target, result) else None
         if target.get('target_id') != CERTIFICATE_STRUCTURE and CERTIFICATE_STRUCTURE not in parents:
             return None
         certificate_type = next((item for item in self.catalog['normative_targets']
@@ -184,6 +220,8 @@ class ModelCases:
                                  and protocol_version in item['protocol_versions']), None)
         if certificate_type is None:
             return None
+
+        self.abi.called.clear()
 
         self.abi.called.clear()
         limits, output, generic_output = C.c_void_p(), C.c_void_p(), C.c_void_p()
