@@ -14,8 +14,9 @@ from pathlib import Path
 import re
 import subprocess
 import tarfile
+import tempfile
 
-from route_capabilities import ROOT, validate, validate_artifact_identity, validate_installed_symbols
+from route_capabilities import ROOT, validate, validate_artifact_identity, validate_installed_symbols, validate_installed_values
 
 
 def sha256(path):
@@ -31,11 +32,20 @@ def probe(data, language, artifact, provenance, *, python=None, build_dir=None):
     validate_artifact_identity(data, provenance)
     symbols = {r['public_api_symbol'] for r in data['routes'] if r['language'] == language}
     symbols.update(r['public_api_symbol'] for r in data['execution_routes'] if r['language'] == language)
+    values = [row for row in data['value_symbols'] if row['language'] == language and row['availability'] == 'named-constant']
+    numeric_values = [row for row in data['value_symbols'] if row['language'] == language and row['availability'] == 'numeric-only']
+    checked_values = {}
     if language == 'c':
         for name, digest in provenance['files'].items():
             verify_digest(artifact / name, digest)
         library = ctypes.CDLL(str(artifact / 'lib/libkmipkit_ffi.so'))
         found = {symbol for symbol in symbols if callable(getattr(library, symbol, None))}
+        with tempfile.TemporaryDirectory(prefix='kmipkit-c-route-probe-') as directory:
+            consumer = Path(directory) / 'values.c'
+            assertions = [f'_Static_assert({row["public_api_symbol"]} == {row["wire_value"]}U, "named value mismatch");' for row in values]
+            consumer.write_text('#include "kmipkit.h"\n' + '\n'.join(assertions) + '\n')
+            subprocess.run(['cc', '-std=c11', '-fsyntax-only', '-I', str(artifact / 'include'), str(consumer)], check=True)
+        checked_values = {row['public_api_symbol']: row['wire_value'] for row in values}
         digest = provenance['files']['lib/libkmipkit_ffi.so']
     elif language == 'python':
         verify_digest(artifact, provenance['artifact_sha256'])
@@ -50,8 +60,10 @@ with zipfile.ZipFile(sys.argv[2]) as wheel:
     for name in wheel.namelist():
         if name.startswith('kmipkit/') and not name.endswith('/'):
             assert distribution('kmipkit').locate_file(name).read_bytes()==wheel.read(name), 'installed wheel file mismatch'
+inputs=json.load(sys.stdin)
 found=[]
-for symbol in json.load(sys.stdin):
+observed_values={}
+for symbol in inputs['symbols'] + [row['public_api_symbol'] for row in inputs['values']]:
     parts=symbol.split('.')
     for end in range(len(parts)-1,0,-1):
         try: value=importlib.import_module('.'.join(parts[:end]))
@@ -59,22 +71,33 @@ for symbol in json.load(sys.stdin):
         try:
             for part in parts[end:]: value=getattr(value,part)
             if callable(value): found.append(symbol)
+            elif isinstance(value,int): observed_values[symbol]=value
         except AttributeError: pass
         break
-print(json.dumps(found))
+print(json.dumps({'symbols':found, 'values':observed_values}))
 '''
         result = subprocess.run([str(python), '-I', '-c', script, provenance['artifact_sha256'], str(artifact)],
-            input=json.dumps(sorted(symbols)), capture_output=True, text=True, check=True)
-        found = set(json.loads(result.stdout))
+            input=json.dumps({'symbols': sorted(symbols), 'values': values}), capture_output=True, text=True, check=True)
+        observations = json.loads(result.stdout)
+        found = set(observations['symbols'])
+        checked_values = observations['values']
         digest = provenance['artifact_sha256']
     elif language == 'java':
         verify_digest(artifact, provenance['artifact_sha256'])
         classes = {symbol.rsplit('.', 1)[0] for symbol in symbols}
+        classes.update(row['public_api_symbol'].rsplit('.', 1)[0] for row in values)
         found = set()
         for class_name in sorted(classes):
-            public = subprocess.check_output(['javap', '-public', '-classpath', str(artifact), class_name], text=True)
+            runtime_class = class_name.replace('KmipValues.', 'KmipValues$').replace('.Builder', '$Builder')
+            public = subprocess.check_output(['javap', '-public', '-constants', '-classpath', str(artifact), runtime_class], text=True)
             found.update(symbol for symbol in symbols if symbol.rsplit('.', 1)[0] == class_name
                 and re.search(r'\b' + re.escape(symbol.rsplit('.', 1)[1]) + r'\(', public))
+            for row in values:
+                if row['public_api_symbol'].rsplit('.', 1)[0] == class_name:
+                    field = row['public_api_symbol'].rsplit('.', 1)[1]
+                    match = re.search(r'\b' + re.escape(field) + r' = (\d+)[lL]?;', public)
+                    if match:
+                        checked_values[row['public_api_symbol']] = int(match[1])
         digest = provenance['artifact_sha256']
     else:
         # The installer records the distribution-bundle digest. Rust imports are
@@ -83,6 +106,10 @@ print(json.dumps(found))
         verify_digest(bundle, provenance['artifact_sha256'])
         if (artifact / 'library-commit').read_text().strip() != data['library_commit']:
             raise ValueError('installed Rust artifact commit mismatch')
+        with tarfile.open(bundle) as distribution:
+            for member in distribution.getmembers():
+                if member.isfile() and (artifact / member.name).read_bytes() != distribution.extractfile(member).read():
+                    raise ValueError('installed Rust distribution file mismatch')
         for package in sorted((artifact / 'packages').glob('*.crate')):
             with tarfile.open(package) as archive:
                 for member in archive.getmembers():
@@ -103,18 +130,29 @@ print(json.dumps(found))
         (build_dir / 'Cargo.toml').write_text(manifest)
         body = []
         for symbol in sorted(symbols):
-            if symbol == 'kmipkit_protocol::QueryRequest::new':
+            if symbol == 'kmipkit_protocol::AttributeReference::name':
+                body.append('let _ = || kmipkit_protocol::AttributeReference::name(String::new(), String::new());')
+            elif symbol == 'kmipkit_protocol::QueryAsyncRequestsRequest::with_operations':
+                body.append('let _ = kmipkit_protocol::QueryAsyncRequestsRequest::with_operations::<Vec<u32>>;')
+            elif symbol == 'kmipkit_protocol::QueryAsyncRequestsRequest::with_correlation_values':
+                body.append('let _ = kmipkit_protocol::QueryAsyncRequestsRequest::with_correlation_values::<Vec<Vec<u8>>>;')
+            elif symbol == 'kmipkit_protocol::AttributeSet::try_new':
+                body.append('let _ = || kmipkit_protocol::AttributeSet::try_new(Vec::<kmipkit_ttlv::Item>::new());')
+            elif symbol == 'kmipkit_protocol::QueryRequest::new':
                 body.append('let _ = || kmipkit_protocol::QueryRequest::new(Vec::<kmipkit_protocol::QueryFunction>::new());')
             elif symbol == 'kmipkit_protocol::GetAttributesRequest::try_new':
                 body.append('let _ = || kmipkit_protocol::GetAttributesRequest::try_new(None, Vec::<kmipkit_protocol::AttributeReference>::new());')
             else:
                 body.append('let _ = ' + symbol + ';')
+        body.extend(f'const _: () = assert!({row["public_api_symbol"]} == {row["wire_value"]});' for row in values)
         (build_dir / 'src/main.rs').write_text('fn main() {\n' + '\n'.join(body) + '\n}\n')
         subprocess.run(['cargo', '+1.94', 'check', '--manifest-path', str(build_dir / 'Cargo.toml')], check=True)
         found, digest = symbols, provenance['artifact_sha256']
+        checked_values = {row['public_api_symbol']: row['wire_value'] for row in values}
     validate_installed_symbols(data, language, found)
+    validate_installed_values(data, language, checked_values)
     return {'language': language, 'library_commit': data['library_commit'],
-            'artifact_sha256': digest, 'public_symbols_checked': len(found),
+            'artifact_sha256': digest, 'public_symbols_checked': len(found), 'named_values_checked': len(checked_values), 'numeric_values_supported': len(numeric_values),
             'scope': 'public-constructor-availability', 'status': 'verified'}
 
 

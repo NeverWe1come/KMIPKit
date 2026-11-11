@@ -10,7 +10,8 @@
     "public_api_manifest",
     "routes",
     "execution_routes",
-    "unavailable"
+    "unavailable",
+    "value_symbols"
   ],
   "properties": {
     "schema_version": {
@@ -43,7 +44,8 @@
           "source_paths",
           "artifact_commit",
           "execution_route_id",
-          "artifact_verification"
+          "artifact_verification",
+          "normative_target_ids"
         ],
         "properties": {
           "route_id": {
@@ -164,6 +166,14 @@
           },
           "artifact_verification": {
             "const": "required"
+          },
+          "normative_target_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -232,7 +242,8 @@
               "high-level-constructor",
               "generic-encode",
               "generic-send",
-              "constructor"
+              "constructor",
+              "named-value-symbol"
             ]
           },
           "public_api_symbol": {
@@ -257,6 +268,59 @@
               "type": "string"
             },
             "uniqueItems": true
+          },
+          "normative_target_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "value_symbols": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "language",
+          "target_id",
+          "public_api_symbol",
+          "wire_value",
+          "availability"
+        ],
+        "properties": {
+          "language": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "public_api_symbol": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "wire_value": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "availability": {
+            "enum": [
+              "named-constant",
+              "numeric-only"
+            ]
+          },
+          "numeric_constructor": {
+            "type": "string"
           }
         }
       }

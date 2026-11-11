@@ -14,8 +14,11 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 
 import jsonschema
+
+from route_models import model_inventory, value_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
@@ -31,6 +34,11 @@ def normalized(value):
 def source(root, commit, path):
     """Read immutable release input, never an uncommitted source approximation."""
     return subprocess.check_output(['git', '-C', str(root), 'show', f'{commit}:{path}'], text=True)
+
+
+@lru_cache(maxsize=4)
+def _api(root, commit):
+    return json.loads(source(root, commit, 'specification/api/public-api.json'))
 
 
 def function_symbols(api):
@@ -57,6 +65,7 @@ def function_symbols(api):
     return result
 
 
+@lru_cache(maxsize=None)
 def construction_inventory(root, commit):
     """Enumerate operation constructors from immutable public source.
 
@@ -65,7 +74,7 @@ def construction_inventory(root, commit):
     editing generated declarations. Add new constructor forms here when the
     library surface changes; a missing candidate is a completeness failure.
     """
-    api = json.loads(source(root, commit, 'specification/api/public-api.json'))
+    api = _api(root, commit)
     operations = {normalized(o['name']): o for o in api['operations'] if o['scope'] == 'client_1_0'}
     # The pinned metadata omits this public KMIP 2.1 constructor. Associate
     # its exported source directly instead of treating a metadata gap as absence.
@@ -143,6 +152,12 @@ def construction_inventory(root, commit):
     return sorted(set(inventory))
 
 
+@lru_cache(maxsize=4)
+def _models(root, commit, targets_json):
+    api = _api(root, commit)
+    return model_inventory(root, commit, source, api, json.loads(targets_json))
+
+
 def validate(data, root=ROOT):
     schema = json.loads((root / 'interop/shared/coverage/route-capabilities.schema.json').read_text())
     try:
@@ -151,10 +166,13 @@ def validate(data, root=ROOT):
         raise ValueError(f'{list(error.absolute_path)}: {error.message}') from None
     ids, constructors = set(), set()
     commit = data['library_commit']
-    api = json.loads(source(root, commit, 'specification/api/public-api.json'))
+    api = _api(root, commit)
     symbols = function_symbols(api)
     inventory = construction_inventory(root, commit)
+    targets = json.loads((root / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())['normative_targets']
+    models = _models(root, commit, json.dumps(targets, sort_keys=True))
     expected = {(lang, symbol) for lang, symbol, *_ in inventory}
+    expected.update((row['language'], row['public_api_symbol']) for row in models)
     for route in data['routes']:
         if route['route_id'] in ids:
             raise ValueError('duplicate route_id: ' + route['route_id'])
@@ -187,7 +205,7 @@ def validate(data, root=ROOT):
             raise ValueError('constructor operation mapping differs from public source')
         if route['combinations'] != expected_route['combinations']:
             raise ValueError('supported encoding/transport pairs differ from public source')
-        for field in ('public_api_symbol', 'mode', 'actions', 'execution_route_id', 'source_paths'):
+        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions'):
             if route[field] != expected_route[field]:
                 raise ValueError('public construction route mapping differs: ' + field)
     if data['execution_routes'] != canonical['execution_routes']:
@@ -195,6 +213,8 @@ def validate(data, root=ROOT):
     for limitation in data['unavailable']:
         if (limitation['language'], limitation.get('public_api_symbol')) in constructors:
             raise ValueError('public constructor cannot be unavailable')
+    if data['value_symbols'] != canonical['value_symbols']:
+        raise ValueError('public named value symbols differ from source metadata')
     if data['unavailable'] != canonical['unavailable']:
         raise ValueError('unavailable capabilities differ from public source evidence')
     return data
@@ -213,7 +233,13 @@ def validate_installed_symbols(data, language, symbols):
         raise ValueError('installed artifact is missing public symbols: ' + repr(sorted(missing)))
 
 
-def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37'):
+def validate_installed_values(data, language, values):
+    for row in data['value_symbols']:
+        if row['language'] == language and row['availability'] == 'named-constant' and values.get(row['public_api_symbol']) != row['wire_value']:
+            raise ValueError('installed named value is missing or has a different wire code: ' + row['public_api_symbol'])
+
+
+def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc'):
     """Generate constructor identities from the exact package's public sources."""
     categories = ['enums_and_bitmasks', 'attributes', 'object_lifecycle',
         'cryptography_and_rng', 'managed_objects', 'protocol_and_session',
@@ -221,8 +247,10 @@ def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37')
         'negative_and_boundary', 'batch_workflows', 'asynchronous_workflows']
     data = {'schema_version': '1.0', 'library_commit': commit,
             'public_api_manifest': 'specification/api/public-api.json',
-            'routes': [], 'execution_routes': [], 'unavailable': []}
-    api = json.loads(source(root, commit, data['public_api_manifest']))
+            'routes': [], 'execution_routes': [], 'unavailable': [], 'value_symbols': []}
+    api = _api(root, commit)
+    targets = json.loads((root / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())['normative_targets']
+    data['value_symbols'] = value_inventory(api, targets)
     operations = {o['operationId']: o for o in api['operations']}
     operations['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'] = {'name': 'Set Endpoint Role'}
     execution = {
@@ -252,10 +280,28 @@ def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37')
         data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
-            'case_categories': categories + (['normative_inventory'] if generic else []), 'protocol_versions': ['2.0', '2.1'],
+            'normative_target_ids': ([operation_id] + sorted({t['target_id'] for t in targets
+                if t.get('operation_id') == operation_id and (mode == 'network' or t.get('role') == 'request')})) if operation_id else ['*'],
+            'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
             'source_paths': [path], 'artifact_commit': commit,
             'execution_route_id': execution_id, 'artifact_verification': 'required'})
+    request_symbols = {(route['language'], route['public_api_symbol']) for route in data['routes']}
+    for model in _models(root, commit, json.dumps(targets, sort_keys=True)):
+        if (model['language'], model['public_api_symbol']) in request_symbols:
+            continue
+        language = model['language']
+        symbol = model['public_api_symbol']
+        suffix = re.sub('[^a-z0-9]+', '.', symbol.lower()).strip('.')
+        family = model.get('api_level', 'typed-protocol')
+        data['routes'].append({'route_id': f'{language}.{family}.model.{suffix}',
+            'language': language, 'api_level': family, 'mode': 'local',
+            'public_api_symbol': symbol, 'operation_ids': [model['operation_id']] if model.get('operation_id') else [],
+            'normative_target_ids': model['normative_target_ids'],
+            'case_categories': ['normative_inventory', 'attributes', 'managed_objects', 'enums_and_bitmasks'],
+            'protocol_versions': ['2.0', '2.1'], 'combinations': [{'encoding': 'TTLV', 'transport': None}],
+            'actions': ['construct'], 'source_paths': model['source_paths'],
+            'artifact_commit': commit, 'execution_route_id': None, 'artifact_verification': 'required'})
     for language, (_, path) in execution.items():
         for capability, reason in [
             ('high-level-constructor', 'Public client convenience send methods accept an existing typed request or batch; no independent high-level request builder is exported.'),
@@ -269,18 +315,51 @@ def build_manifest(root=ROOT, commit='52a2be180340e5da3166401a52f652dfd368ad37')
             'operation_ids': ['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'],
             'reason': 'Set Endpoint Role has a Rust typed constructor, but the installed binding public surface has no corresponding request or client constructor.',
             'source_paths': [execution[language][1]]})
+    for language in LANGUAGES:
+        numeric_targets = [row['target_id'] for row in data['value_symbols'] if row['language'] == language and row['availability'] == 'numeric-only']
+        if numeric_targets:
+            data['unavailable'].append({'language': language, 'capability': 'named-value-symbol',
+                'normative_target_ids': numeric_targets, 'reason': 'The public package does not export assigned named constants for these referenced PKCS#11 functions/return codes. Their exact numeric values are constructible using the declared public generic Enumeration constructor; this is not a missing validator recipe.',
+                'source_paths': ['specification/api/public-api.json']})
     data['routes'].sort(key=lambda route: route['route_id'])
     return data
 
 
+def serialize_manifest(data):
+    """Keep generated per-route and per-target records reviewable as JSON rows."""
+    lines = ['{']
+    fields = list(data.items())
+    for index, (key, value) in enumerate(fields):
+        suffix = ',' if index + 1 < len(fields) else ''
+        if isinstance(value, list):
+            lines.append('  ' + json.dumps(key) + ': [')
+            lines.extend('    ' + json.dumps(row) + (',' if i + 1 < len(value) else '')
+                         for i, row in enumerate(value))
+            lines.append('  ]' + suffix)
+        else:
+            lines.append('  ' + json.dumps(key) + ': ' + json.dumps(value) + suffix)
+    lines.append('}')
+    return '\n'.join(lines) + '\n'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--write', action='store_true', help='regenerate metadata from the exact release source')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--write', action='store_true', help='regenerate metadata from the exact release source')
+    mode.add_argument('--check', action='store_true', help='verify generated metadata without writing')
     parser.add_argument('--manifest', type=Path, default=COVERAGE / 'route-capabilities.json')
     args = parser.parse_args()
     if args.write:
-        args.manifest.write_text(json.dumps(build_manifest(), indent=2) + '\n')
+        generated = validate(build_manifest())
+        serialized = serialize_manifest(generated)
+        json.loads(serialized)
+        with tempfile.NamedTemporaryFile('w', dir=args.manifest.parent, suffix='.tmp', delete=False) as output:
+            output.write(serialized)
+            temporary = Path(output.name)
+        temporary.replace(args.manifest)
     data = validate(json.loads(args.manifest.read_text()))
+    if args.check and args.manifest.read_text() != serialize_manifest(build_manifest()):
+        raise SystemExit('route capability metadata is stale; regenerate with --write')
     print(json.dumps({'library_commit': data['library_commit'], 'routes': len(data['routes'])}, sort_keys=True))
 
 
