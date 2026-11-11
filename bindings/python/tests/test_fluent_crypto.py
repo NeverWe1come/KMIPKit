@@ -248,6 +248,9 @@ def test_crypto_builder_wipes_staging_when_span_allocation_fails(
         ("init_indicator", 1),
         ("final_indicator", 0),
         ("with_options", object()),
+        ("data", "secret"),
+        ("data", None),
+        ("data", 1),
     ),
 )
 def test_crypto_builder_rejects_wrong_setter_types_locally(
@@ -257,13 +260,6 @@ def test_crypto_builder_rejects_wrong_setter_types_locally(
     with fluent.EncryptBuilder() as builder:
         with pytest.raises(errors.InvalidInputError):
             getattr(builder, setter)(invalid)
-
-
-@pytest.mark.parametrize("invalid", ("secret", None, 1))
-def test_crypto_builder_rejects_non_buffer_data(invalid: object) -> None:
-    with fluent.EncryptBuilder() as builder:
-        with pytest.raises(errors.InvalidInputError):
-            builder.data(invalid)  # type: ignore[arg-type]
 
 
 def test_crypto_builder_rejects_released_memoryview() -> None:
