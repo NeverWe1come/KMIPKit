@@ -17,20 +17,33 @@ def norm(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
 
-def target_ids(targets, names, *, all_attributes=False, all_objects=False, operation_id=None):
+def target_ids(targets, names, *, all_attributes=False, all_objects=False, operation_id=None,
+               exclude_subtree_kinds=()):
     """Associate model/field identities, then expand their normative children."""
     targets = [target for target in targets if 'operation_id' not in target
         or (operation_id is not None and target['operation_id'] == operation_id
             and target.get('role', 'request') == 'request')]
+    blocked = {target['target_id'] for target in targets if target['kind'] in exclude_subtree_kinds}
+    changed = True
+    while changed:
+        previous = len(blocked)
+        blocked.update(target['target_id'] for target in targets
+            if blocked.intersection(target.get('parent_element_ids', [])))
+        changed = len(blocked) != previous
     names = {norm(name) for name in names}
-    roots = {t['target_id'] for t in targets if norm(t['name']) in names or norm(t['target_id']) in names}
+    roots = {t['target_id'] for t in targets if t['target_id'] not in blocked
+        and (norm(t['name']) in names or norm(t['target_id']) in names)}
     if all_attributes:
-        roots.update(t['target_id'] for t in targets if t['kind'] in {'attribute', 'attribute_structure'})
+        roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked
+            and t['kind'] in {'attribute', 'attribute_structure'})
     if all_objects:
-        roots.update(t['target_id'] for t in targets if t['kind'] in {'object_type', 'object_structure'})
+        roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked
+            and t['kind'] in {'object_type', 'object_structure'})
     # Parent families are referenced by values even when a source inventory
     # emits individual values rather than a separate family row.
     for target in targets:
+        if target['target_id'] in blocked:
+            continue
         for parent in target.get('parent_element_ids', []):
             family = parent.replace('KMIPKIT-ELEM-ENUMERATION-', '').replace('KMIPKIT-ELEM-BITMASK-', '')
             if norm(family) in names:
@@ -39,7 +52,7 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
     while changed:
         previous = len(roots)
         for target in targets:
-            if roots.intersection(target.get('parent_element_ids', [])):
+            if target['target_id'] not in blocked and roots.intersection(target.get('parent_element_ids', [])):
                 roots.add(target['target_id'])
         changed = len(roots) != previous
     return sorted(roots)
@@ -53,10 +66,13 @@ def model_inventory(root, commit, source, api, targets):
     generated = source(root, commit, 'crates/kmipkit-protocol/src/typed_attributes_generated.rs')
     markers = re.findall(r'element_id: "([^"]+)",\s*source_name: "([^"]+)",\s*marker_name: "([^"]+)"', generated)
 
-    def add(language, symbol, path, names, *, attributes=False, objects=False, operation_id=None):
+    def add(language, symbol, path, names, *, attributes=False, exclude_object_structures=False,
+            objects=False, operation_id=None):
         if attributes:
             names = [name for _, name, _ in markers] + [marker for _, _, marker in markers]
-        ids = target_ids(targets, names, all_objects=objects, operation_id=operation_id)
+        ids = target_ids(targets, names, all_objects=objects, operation_id=operation_id,
+            exclude_subtree_kinds={'object_structure', 'operation_structure'}
+                if attributes or exclude_object_structures else ())
         if operation_id and any(norm(name) in operations and operations[norm(name)] == operation_id for name in names):
             ids = sorted(set(ids) | {target['target_id'] for target in targets
                 if target.get('operation_id') == operation_id and target.get('role', 'request') == 'request'})
@@ -148,13 +164,14 @@ def model_inventory(root, commit, source, api, targets):
     # satisfy the typed attribute route for another normative target.
     generated = source(root, commit, 'crates/kmipkit-protocol/src/typed_attributes_generated.rs')
     markers = re.findall(r'element_id: "([^"]+)",\s*source_name: "([^"]+)",\s*marker_name: "([^"]+)"', generated)
-    attribute_ids = []
-    for element_id, name, marker in markers:
-        attribute_ids.append(element_id)
+    for element_id, _source_name, marker in markers:
         for method in ('new', 'from_item'):
             symbol = f'kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::{marker}>::{method}'
-            add('rust', symbol, 'crates/kmipkit-protocol/src/typed_attributes.rs', [name, marker])
-        add('rust', f'kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::{marker}>', 'crates/kmipkit-protocol/src/attribute.rs', [name, marker])
+            add('rust', symbol, 'crates/kmipkit-protocol/src/typed_attributes.rs', [element_id, marker],
+                exclude_object_structures=True)
+        typed_push = f'kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::{marker}>'
+        add('rust', typed_push, 'crates/kmipkit-protocol/src/attribute.rs', [element_id, marker],
+            exclude_object_structures=True)
     for method in ('try_new', 'try_push'):
         add('rust', f'kmipkit_protocol::AttributeSet::{method}',
             'crates/kmipkit-protocol/src/attribute.rs', [], attributes=True)
@@ -162,9 +179,11 @@ def model_inventory(root, commit, source, api, targets):
     for owner in ('CurrentAttribute', 'NewAttribute'):
         add('rust', f'kmipkit_protocol::{owner}::new',
             'crates/kmipkit-protocol/src/attribute.rs', [], attributes=True)
-        for _, name, marker in markers:
-            add('rust', f'kmipkit_protocol::{owner}::from_typed::<kmipkit_protocol::attribute::typed::{marker}>',
-                'crates/kmipkit-protocol/src/attribute.rs', [name, marker])
+        for element_id, _source_name, marker in markers:
+            symbol = f'kmipkit_protocol::{owner}::from_typed::<kmipkit_protocol::attribute::typed::{marker}>'
+            add('rust', symbol,
+                'crates/kmipkit-protocol/src/attribute.rs', [element_id, marker],
+                exclude_object_structures=True)
 
     # Inspect binding facades directly: the older function metadata sometimes
     # points at an internal JNI trampoline rather than the installed public API.

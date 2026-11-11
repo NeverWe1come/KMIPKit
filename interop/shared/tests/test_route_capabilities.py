@@ -55,6 +55,91 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(routes)
         self.assertTrue(any('KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE' in r['normative_target_ids'] for r in routes))
 
+    def test_typed_attribute_marker_does_not_inherit_a_sibling_attribute_name(self):
+        routes = [route for route in self.data['routes']
+                  if route['language'] == 'rust' and 'typed::Comment>' in route['public_api_symbol']]
+        self.assertTrue(routes)
+        for route in routes:
+            targets = set(route['normative_target_ids'])
+            self.assertIn('KMIPKIT-ELEM-ATTRIBUTE-COMMENT', targets)
+            self.assertIn('KMIPKIT-ELEM-TAG-4200FD', targets)
+            self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION', targets)
+            self.assertNotIn('KMIPKIT-ELEM-TAG-4200FC', targets)
+
+    def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        routes = [route for route in self.data['routes']
+                  if route['api_level'] == 'typed-protocol'
+                  and any(token in route['public_api_symbol'].casefold()
+                          for token in ('typedattribute', 'typed_attribute', 'attributeset', 'attribute_set'))]
+        self.assertTrue(routes)
+        for route in routes:
+            route_targets = [targets[target_id] for target_id in route['normative_target_ids']
+                             if target_id in targets]
+            self.assertFalse(any(target['kind'] in {'object_structure', 'operation_structure'}
+                                 for target in route_targets), route['public_api_symbol'])
+
+    def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
+        expected = {
+            'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
+            'c': {'c.generic-ttlv.kmipkit_ttlv_item_create', 'c.generic-ttlv.model.kmipkit.ttlv.structure.with.item'},
+            'java': {'java.generic-ttlv.ttlv_item.create', 'java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem'},
+            'python': {'python.generic-ttlv.ttlv.ttlv_item_create', 'python.generic-ttlv.model.kmipkit.ttlv.ttlv.structure.with.item'},
+        }
+        for language, route_ids in expected.items():
+            routes = {route['route_id']: route for route in self.data['routes']
+                      if route['language'] == language}
+            for route_id in route_ids:
+                route = routes[route_id]
+                self.assertEqual([{
+                    'target_kinds': ['tag', 'tag_range'],
+                    'allocations': ['reserved', 'unused'],
+                    'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+                    'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
+                }], route['case_exclusions'])
+
+    def test_reserved_tag_item_view_exclusions_require_decoder_rejection_sources(self):
+        expected = {
+            'rust': ('rust.generic-ttlv.function.ttlv_item_view_from_item',
+                     'crates/kmipkit-ttlv/src/item.rs'),
+            'java': ('java.generic-ttlv.function.ttlv_item_view_from_item',
+                     'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java'),
+            'python': ('python.generic-ttlv.function.ttlv_item_view_from_item',
+                        'bindings/python/src/kmipkit/ttlv.py'),
+        }
+        for language, (route_id, route_source) in expected.items():
+            route = next(route for route in self.data['routes'] if route['route_id'] == route_id)
+            self.assertEqual([{
+                'target_kinds': ['tag', 'tag_range'],
+                'allocations': ['reserved', 'unused'],
+                'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
+                'source_paths': [route_source, 'crates/kmipkit-ttlv/src/codec/decoder.rs',
+                                 'crates/kmipkit-ttlv/src/tag.rs'],
+            }], route['case_exclusions'])
+
+    def test_async_request_routes_use_the_exact_public_operation_executor(self):
+        expected = {
+            'rust': 'kmipkit_client::Client::execute_{operation}',
+            'c': 'kmipkit_client_execute_{operation}',
+            'java': 'org.kmipkit.extensions.Client.execute{operation_title}',
+            'python': 'kmipkit.client.Client.execute_{operation}',
+        }
+        operations = {
+            'cancel': 'cancel',
+            'poll': 'poll',
+            'process': 'process',
+            'queryasyncrequests': 'query_async_requests',
+        }
+        routes = {(route['language'], route['execution_route_id']): route
+                  for route in self.data['execution_routes']}
+        for language, template in expected.items():
+            for route_id, method_name in operations.items():
+                title = ''.join(part.title() for part in method_name.split('_'))
+                symbol = template.format(operation=method_name, operation_title=title)
+                route = routes[(language, f'{language}.execute.{route_id}')]
+                self.assertEqual(symbol, route['public_api_symbol'])
+
     def test_every_named_enum_and_mask_target_has_an_exact_public_value_symbol(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         target_ids = {t['target_id'] for t in catalog['normative_targets']

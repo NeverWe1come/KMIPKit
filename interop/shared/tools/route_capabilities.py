@@ -26,6 +26,50 @@ COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
 
+CHECKED_TAG_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::Structure::try_push'): 'crates/kmipkit-ttlv/src/structure.rs',
+    ('c', 'kmipkit_ttlv_item_create'): 'bindings/c/include/kmipkit.h',
+    ('c', 'kmipkit_ttlv_structure_with_item'): 'bindings/c/include/kmipkit.h',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.create'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('java', 'org.kmipkit.ttlv.TtlvStructure.withItem'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvStructure.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_create'): 'bindings/python/src/kmipkit/ttlv.py',
+    ('python', 'kmipkit.ttlv.ttlv_structure_with_item'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+ITEM_VIEW_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::with_value'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.view'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_view_from_item'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+
+
+def _case_exclusions(root, commit, language, symbol):
+    path = CHECKED_TAG_INPUTS.get((language, symbol))
+    if path is not None:
+        # Checked constructors cannot represent these tags; RawTag routes can.
+        source_paths = [path, 'crates/kmipkit-ttlv/src/tag.rs']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        return [{
+            'target_kinds': ['tag', 'tag_range'],
+            'allocations': ['reserved', 'unused'],
+            'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+            'source_paths': source_paths,
+        }]
+    path = ITEM_VIEW_INPUTS.get((language, symbol))
+    if path is None:
+        return []
+    # Decoder rejection produces no Item to pass to the Item view accessor.
+    source_paths = [path, 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'crates/kmipkit-ttlv/src/tag.rs']
+    for source_path in source_paths:
+        source(root, commit, source_path)
+    return [{
+        'target_kinds': ['tag', 'tag_range'],
+        'allocations': ['reserved', 'unused'],
+        'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
+        'source_paths': source_paths,
+    }]
+
 
 def normalized(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
@@ -116,6 +160,20 @@ def _function_operation_id(function_id, operations):
     matches = [operation_id for operation_id, operation in operations.items()
                if normalized(operation['name']) in value]
     return max(matches, key=lambda operation_id: len(normalized(operations[operation_id]['name'])), default=None)
+
+
+def _async_execution_entrypoint(api, language, operation_name, package_symbols):
+    expected = normalized(operation_name)
+    for function in api['functions']:
+        function_id = function['id']
+        if not function_id.startswith('client_execute_'):
+            continue
+        if normalized(function_id.removeprefix('client_execute_')) != expected:
+            continue
+        symbol = function_entrypoint(function, language)
+        if symbol and symbol in package_symbols[language]:
+            return symbol
+    return None
 
 
 @lru_cache(maxsize=None)
@@ -251,6 +309,9 @@ def validate(data, root=ROOT):
             raise ValueError('route artifact commit differs from manifest')
         for path in route['source_paths']:
             source(root, commit, path)
+        for exclusion in route.get('case_exclusions', []):
+            for path in exclusion['source_paths']:
+                source(root, commit, path)
     missing = expected - constructors
     if missing:
         raise ValueError('missing public API route: ' + repr(sorted(missing)))
@@ -264,8 +325,8 @@ def validate(data, root=ROOT):
             raise ValueError('constructor operation mapping differs from public source')
         if route['combinations'] != expected_route['combinations']:
             raise ValueError('supported encoding/transport pairs differ from public source')
-        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions'):
-            if route[field] != expected_route[field]:
+        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions', 'case_exclusions'):
+            if route.get(field) != expected_route.get(field):
                 raise ValueError('public API route mapping differs: ' + field)
     if data['execution_routes'] != canonical['execution_routes']:
         raise ValueError('execution route inventory differs from public source')
@@ -330,11 +391,22 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
         suffix = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', suffix).lower()
         route_id = f'{language}.{family}.{suffix}'
         execution_id = None if mode == 'local' else language + '.execute.typed-batch'
-        is_async_send = operation_id and normalized(operations[operation_id]['name']) in ASYNC and mode == 'network' and language != 'rust'
+        is_async_send = operation_id and normalized(operations[operation_id]['name']) in ASYNC and mode == 'network'
         if is_async_send:
             execution_id = language + '.execute.' + normalized(operations[operation_id]['name'])
-            data['execution_routes'].append({'execution_route_id': execution_id,
-                'language': language, 'public_api_symbol': symbol, 'source_paths': [path]})
+            execution_symbol = _async_execution_entrypoint(
+                api, language, operations[operation_id]['name'], package_symbols)
+            if execution_symbol is None:
+                raise ValueError(f'missing public async executor for {language} {operations[operation_id]["name"]}')
+            execution_route = {'execution_route_id': execution_id,
+                'language': language, 'public_api_symbol': execution_symbol,
+                'source_paths': [execution[language][1]]}
+            existing_execution = next((row for row in data['execution_routes']
+                if row['execution_route_id'] == execution_id), None)
+            if existing_execution and existing_execution != execution_route:
+                raise ValueError(f'conflicting public async executors for {execution_id}')
+            if existing_execution is None:
+                data['execution_routes'].append(execution_route)
         combinations = ([{'encoding': 'TTLV', 'transport': None}] if mode == 'local' else
             [{'encoding': encoding, 'transport': transport}
              for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')])
@@ -445,6 +517,10 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             data['unavailable'].append({'language': language, 'capability': 'named-value-symbol',
                 'normative_target_ids': numeric_targets, 'reason': 'The public package does not export assigned named constants for these referenced PKCS#11 functions/return codes. Their exact numeric values are constructible using the declared public generic Enumeration constructor; this is not a missing validator recipe.',
                 'source_paths': ['specification/api/public-api.json']})
+    for route in data['routes']:
+        exclusions = _case_exclusions(root, commit, route['language'], route['public_api_symbol'])
+        if exclusions:
+            route['case_exclusions'] = exclusions
     data['routes'].sort(key=lambda route: route['route_id'])
     return data
 
