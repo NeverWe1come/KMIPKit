@@ -154,6 +154,65 @@ intercambio tipado contra el fixture, no la interoperabilidad con un KMS
 externo. Pending sigue siendo un resultado explícito; el cliente no ejecuta
 Poll ni reintenta automáticamente.
 
+## Create Key Pair fluido en Rust
+
+KMIPKIT-0097 añade `client.request().create_key_pair()` sobre la petición tipada
+Create Key Pair existente. Selecciona explícitamente algoritmo y longitud y
+elige por separado las máscaras de uso y los nombres de las claves privada y
+pública:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_protocol::CryptographicAlgorithm;
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn create_signing_key_pair(client: &mut Client, limits: &CodecLimits) -> Result<(), ClientError> {
+    let response = client.request().create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
+        .length(3072)
+        .private_usage_mask(CryptographicUsageMask::SIGN)
+        .public_usage_mask(CryptographicUsageMask::VERIFY)
+        .private_name("application-signing-private")
+        .public_name("application-signing-public")
+        .execute(limits)?;
+    if let Some(pair) = response.outcome().create_key_pair_response() {
+        let private_id = pair.private_key_unique_identifier();
+        let public_id = pair.public_key_unique_identifier();
+        let _ = (private_id, public_id);
+    }
+    Ok(())
+}
+
+fn main() {}
+```
+
+El servidor proporciona ambos Unique Identifiers; consulta
+`create_key_pair_response()` y sus accesores `private_key_unique_identifier()` /
+`public_key_unique_identifier()` cuando el resultado esté completado. Failure
+y Pending conservan sus tipos de resultado existentes; los identificadores
+solo aparecen con Success y Pending conserva la correlación asíncrona.
+No hay Poll ni reintentos automáticos. El ejemplo ejecuta un intercambio tipado.
+
+`common_attribute`, `private_attribute` y `public_attribute` añaden valores
+`Attribute<D>` tipados a sus grupos separados. `build()` y `build_request()`
+validan y devuelven el `CreateKeyPairRequest` existente; `to_batch_item()` crea
+un ítem de batch tipado sin enviarlo. Se conserva el orden de grupos y
+atributos. Los errores locales no contienen payload; la ausencia de algoritmo
+o longitud produce `FluentBuildError::MissingCreateKeyPairAlgorithm` o
+`FluentBuildError::MissingCreateKeyPairLength`. Una construcción inválida impide
+el intercambio y `execute()` devuelve el estado de entrega `NotSent`.
+
+El builder no deduce máscara de uso, curva, formato de clave ni versión de
+protocolo. El cliente conserva su versión configurada (2.1 por defecto); la
+sobrescritura explícita de versión sigue en `RequestOptions`. `with_options`
+aporta opciones del intercambio y `with_asynchronous_indicator` selecciona
+explícitamente el indicador de la cabecera. Esta entrega solo cubre Rust:
+los builders equivalentes de C, Java y Python siguen bloqueados en el manifiesto
+hasta sus especificaciones de bindings.
+
+
 ## Métodos directos y opciones por intercambio
 
 `Client` ofrece un método directo tipado para cada una de las 56 operaciones

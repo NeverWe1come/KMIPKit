@@ -398,6 +398,11 @@
     "KMIPKIT-0096-FR-002",
     "KMIPKIT-0096-FR-003",
     "KMIPKIT-0096-FR-004",
+    "KMIPKIT-0097-FR-001",
+    "KMIPKIT-0097-FR-002",
+    "KMIPKIT-0097-FR-003",
+    "KMIPKIT-0097-FR-004",
+    "KMIPKIT-0097-FR-005",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -715141,6 +715146,690 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0096",
       "blockedReason": "The Rust expert insertion path is implemented; equivalent C, Java, and Python mappings are scheduled in dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-eb6d1ec8288619e888fd",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-588da4315fbc5cd074d6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::algorithm",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-f3a7bb988e9afa4cb534",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-538898e1e27a0316d88e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-aa4ec2115ae7dfe94f57",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::common_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-96f6e44f0c44bf234041",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-226b8e076a8aa6f1a3f7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::length",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-1b34d88cd90014dbf3c1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::private_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-92e383448b1e44d8899f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::private_name",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-f4614413dfe08be4b852",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::private_usage_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-ad23e907817e29d23a67",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::public_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-4a6ac90d3d85ce4353e5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::public_name",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-89df8a429c374e4b8d83",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::public_usage_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-d9e99224fb32b581f0dc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-a8c4fea3a136eb9d4b38",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-458555bdd87f926d69c3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-a01b755b549d445571c7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateKeyPairAlgorithm",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-262a46210a77645c160d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateKeyPairLength",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-36b3afc3e5d8712855ca",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::create_key_pair",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-c2bf49a080bd13a3a55a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-102d18a954fc22d3792a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-2961213a47a3d6dd13bc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-0257b89d10bb0a1c51bf",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-415e367943568c9c9d95",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-a4f7e8567c65c32bef60",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-f1a524d91989b66242e8",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-5bfb646e3349c9619b78",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-38bc1744bfefd3f5a065",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_name",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-7d545991fa3b880e9d2f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-6bf0c4a7c1586fa05db6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-ef265eabff65515f0d88",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_name",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-4ae0a26f7fb4a735299f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-a43249828aa4950d7181",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-eea6ada7f602fc404e66",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-819a1c28f59ba75e4f28",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-448219041f78456fa460",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateKeyPairAlgorithm",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-3e3d69fe8c05f1b7319a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateKeyPairLength",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-a4de93d1f1c0dd6479a9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-002",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-004",
+        "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
     }
   ],
   "approvedExclusions": [
@@ -977537,6 +978226,222 @@
         "evidence": "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
       },
       "evidence": "KMIPKIT-0095-FR-003; this compiler-visible Rust standard-trait path does not add a separate response rendering behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateKeyPairBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateKeyPairBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateKeyPairBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateKeyPairBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateKeyPairBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateKeyPairBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateKeyPairBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/097-fluent-create-key-pair/spec.md",
+        "status": "Approved",
+        "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
     }
   ],
   "apiLevels": [

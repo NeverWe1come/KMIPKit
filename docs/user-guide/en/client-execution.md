@@ -145,6 +145,63 @@ to the following requests. This proves the client path and typed exchange
 against the fixture, not interoperability with an external KMS. Pending remains
 an explicit outcome; the client does not poll or retry automatically.
 
+## Fluent Create Key Pair in Rust
+
+KMIPKIT-0097 adds `client.request().create_key_pair()` over the existing typed
+Create Key Pair request. Select the algorithm and length explicitly, then
+choose independent private/public usage masks and names:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_protocol::CryptographicAlgorithm;
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn create_signing_key_pair(client: &mut Client, limits: &CodecLimits) -> Result<(), ClientError> {
+    let response = client.request().create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
+        .length(3072)
+        .private_usage_mask(CryptographicUsageMask::SIGN)
+        .public_usage_mask(CryptographicUsageMask::VERIFY)
+        .private_name("application-signing-private")
+        .public_name("application-signing-public")
+        .execute(limits)?;
+    if let Some(pair) = response.outcome().create_key_pair_response() {
+        let private_id = pair.private_key_unique_identifier();
+        let public_id = pair.public_key_unique_identifier();
+        let _ = (private_id, public_id);
+    }
+    Ok(())
+}
+
+fn main() {}
+```
+
+The server supplies both Unique Identifiers; inspect the existing typed
+`create_key_pair_response()` and its `private_key_unique_identifier()` /
+`public_key_unique_identifier()` accessors when the outcome is completed.
+Failure and Pending retain their existing outcome types; identifiers are
+success-only, and Pending preserves the asynchronous correlation value.
+There is no automatic Poll or retry. The example executes one typed exchange.
+
+`common_attribute`, `private_attribute`, and `public_attribute` append typed
+`Attribute<D>` values to their separate groups. `build()` and
+`build_request()` validate and return the existing `CreateKeyPairRequest`;
+`to_batch_item()` creates a typed batch item without sending it. Group and
+attribute order are preserved. Local construction errors are payload-free;
+missing algorithm/length produce `FluentBuildError::MissingCreateKeyPairAlgorithm`
+or `FluentBuildError::MissingCreateKeyPairLength`. Invalid construction prevents
+an exchange and `execute()` reports delivery state `NotSent`.
+
+No usage mask, curve, key format, or protocol version is inferred by this
+builder. The client retains its configured version (2.1 by default); an explicit
+version override stays in `RequestOptions`. `with_options` supplies exchange
+options, and `with_asynchronous_indicator` explicitly selects the request-header
+indicator. This slice is Rust-only: equivalent C, Java, and Python builder
+mappings remain blocked in the manifest pending their binding specifications.
+
+
 ## Direct operation methods and per-exchange options
 
 `Client` exposes a typed direct method for each of the 56 client-initiated
