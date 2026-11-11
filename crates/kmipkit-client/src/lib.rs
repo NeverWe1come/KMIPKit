@@ -176,6 +176,10 @@ mod fluent_request_tests;
 mod fluent_create_key_pair_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_create_split_key_tests.rs"]
+mod fluent_create_split_key_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_execution_tests.rs"]
 mod create_key_pair_execution_tests;
 
