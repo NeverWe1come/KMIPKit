@@ -699,4 +699,37 @@ mod tests {
         .unwrap();
         assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
     }
+
+    /// OASIS KMIP 2.1 §4.21, Table 69 defines Digest as an attribute Structure.
+    #[test]
+    fn typed_attribute_route_wraps_each_member_in_its_attribute_structure() {
+        let cases: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json = serde_json::from_str(include_str!(
+            "../../../specification/catalog/kmip-2.1.json"
+        ))
+        .unwrap();
+        let target = cases["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| {
+                target["target_id"] == "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-21-DIGEST-VALUE"
+            })
+            .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let fixture = sample(target, elements).unwrap();
+        let result = invoke(
+            "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Digest>::from_item",
+            &fixture,
+            target,
+            elements,
+        )
+        .unwrap()
+        .unwrap();
+
+        assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
+    }
 }
