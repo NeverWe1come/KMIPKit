@@ -485,10 +485,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(18, len(report['events']))
         for event in report['events']:
             self.assertEqual('passed', event['status'])
-            self.assertEqual([1], event['peer_observed_result_status_codes'])
-            from kmipkit import protocol_values
-            self.assertEqual([protocol_values.ResultReason.OPERATION_NOT_SUPPORTED],
-                             event['peer_observed_result_reason_codes'])
+            self.assertEqual([0], event['peer_observed_result_status_codes'])
+            self.assertNotIn('peer_observed_result_reason_codes', event)
+            self.assertEqual('response_received', event['request_delivery_state'])
         by_encoding = {}
         for event in report['events']:
             by_encoding.setdefault(event['encoding'], set()).add(
