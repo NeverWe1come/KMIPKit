@@ -58,6 +58,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
@@ -153,13 +154,12 @@ class ControlledTlsPeerTest {
         Files.deleteIfExists(reportPath);
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode events = mapper.createArrayNode();
-        String requestTreeHash;
         byte[] queryOperation = queryOperationTtlv();
-        requestTreeHash = normalizedTreeSha256(queryOperation);
+        String requestTreeHash = normalizedTreeSha256(queryOperation);
 
         for (String protocolVersion : List.of("2.0", "2.1")) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
-            TtlvDecodeException tagRejection = org.junit.jupiter.api.Assertions.assertThrows(
+            TtlvDecodeException tagRejection = assertThrows(
                     TtlvDecodeException.class, () -> TtlvCodec.decode(UNALLOCATED_TAG_INTEGER));
             assertEquals(TtlvDecodeErrorKind.UNALLOCATED_TAG, tagRejection.kind());
             appendRejectedTagEvent(events, protocolVersion);
@@ -192,7 +192,7 @@ class ControlledTlsPeerTest {
                             assertEquals(0L, result.resultStatus());
                             try (var genericPayload = result.queryResponse().orElseThrow()) {
                                 try (var view = genericPayload.view()) {
-                                assertEquals(2, view.itemCount());
+                                    assertEquals(2, view.itemCount());
                                 }
                             }
                             try (QueryResponse typed = result.typedQueryResponse().orElseThrow()) {
@@ -1044,10 +1044,10 @@ class ControlledTlsPeerTest {
             }
             appendRouteEvent(events, "test-op-query", "java.generic-ttlv.ttlv_item.create",
                     "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                    "construct", protocolVersion, null, operationTreeHash, null, false);
+                    "construct", protocolVersion, null, operationTreeHash, null);
             appendRouteEvent(events, "test-op-query", "java.generic-ttlv.function.ttlv_item_view_from_item",
                     "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                    "decode", protocolVersion, null, null, operationTreeHash, false);
+                    "decode", protocolVersion, null, null, operationTreeHash);
         }
 
         try (TtlvItem decoded = TtlvCodec.decode(queryOperationTtlv())) {
@@ -1055,7 +1055,7 @@ class ControlledTlsPeerTest {
         }
         appendRouteEvent(events, "test-op-query", "java.generic-ttlv.ttlv_codec.decode",
                 "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                "decode", protocolVersion, null, null, operationTreeHash, false);
+                "decode", protocolVersion, null, null, operationTreeHash);
     }
 
     private static void appendRejectedTagEvent(ArrayNode events, String protocolVersion) throws Exception {
@@ -1068,37 +1068,37 @@ class ControlledTlsPeerTest {
     }
 
     private static void appendNetworkQueryRouteEvents(ArrayNode events, String protocolVersion,
-            String requestTreeHash, String responseTreeHash) throws Exception {
+            String requestTreeHash, String responseTreeHash) {
         String routeId = "java.typed-protocol.client_batch_item.query";
         String symbol = "org.kmipkit.extensions.ClientBatchItem.query";
         String executionRoute = "java.execute.typed-batch";
         String executionSymbol = "org.kmipkit.extensions.Client.execute";
         appendRouteEvent(events, "test-op-query", routeId, "KMIPKIT-ELEM-OP-C2S-QUERY", symbol,
                 executionRoute, executionSymbol, "construct", protocolVersion, "raw_tls",
-                requestTreeHash, null, false);
+                requestTreeHash, null);
         ObjectNode sent = appendRouteEvent(events, "test-op-query", routeId,
                 "KMIPKIT-ELEM-OP-C2S-QUERY", symbol, executionRoute, executionSymbol,
-                "send", protocolVersion, "raw_tls", requestTreeHash, null, false);
+                "send", protocolVersion, "raw_tls", requestTreeHash, null);
         sent.put("request_delivery_state", "response_received");
         sent.put("transport_invocation_count", 1);
         appendRouteEvent(events, "test-op-query", routeId, "KMIPKIT-ELEM-OP-C2S-QUERY", symbol,
                 executionRoute, executionSymbol, "decode", protocolVersion, "raw_tls",
-                null, responseTreeHash, false);
+                null, responseTreeHash);
         appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query",
                 "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.ClientBatchItemResult.queryResponse",
-                null, null, "decode", protocolVersion, null, null, responseTreeHash, false);
+                null, null, "decode", protocolVersion, null, null, responseTreeHash);
         appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query_field_at",
                 "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.QueryResponse.fieldAt",
-                null, null, "decode", protocolVersion, null, null, responseTreeHash, false);
+                null, null, "decode", protocolVersion, null, null, responseTreeHash);
         appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query_field_count",
                 "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.QueryResponse.fieldCount",
-                null, null, "decode", protocolVersion, null, null, responseTreeHash, false);
+                null, null, "decode", protocolVersion, null, null, responseTreeHash);
     }
 
     private static ObjectNode appendRouteEvent(ArrayNode events, String caseId, String routeId,
             String targetId, String publicApiSymbol, String executionRouteId, String executionApiSymbol,
             String action, String protocolVersion, String transport, String requestHash,
-            String responseHash, boolean rejectedDecode) throws Exception {
+            String responseHash) {
         ObjectNode event = newRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
                 executionRouteId, executionApiSymbol, action, protocolVersion, transport);
         if (requestHash != null) event.put("request_tree_sha256", requestHash);
